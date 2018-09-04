@@ -1,0 +1,41 @@
+# Compiled source #
+###################
+*.com
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages #
+############
+*.7z
+*.gz
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs #
+########
+*.log
+*.sql
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Trashes
+Thumbs.db
+
+# Some Shell files #
+####################
+*.sh
+
+# Folders #
+###########
+trash
+
+# For UNIX #
+############
+*~
