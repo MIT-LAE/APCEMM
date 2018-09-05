@@ -60,7 +60,7 @@ void CallSpeciesDiffusion( Solution& Data, \
                            vector<vector<double> >& diffFactor, \
                            vector<vector<complex<double> > >& advFactor, \
                            const char* fileName_FFTW );
-
+//extern "C" int KPP_Main( );
 int PlumeModel( double temperature_K, double pressure_Pa, \
                  double relHumidity_w, double longitude_deg, \
                  double latitude_deg )
@@ -192,6 +192,13 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 //    for ( int )
 
+    start_s = clock();
+    
+    //
+    //KPP_Main ( ) ;    
+
+    stop_s = clock();
+    std::cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << " [ms], ";
     return 1;
 
 } /* End of PlumeModel */

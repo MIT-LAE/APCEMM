@@ -10,14 +10,19 @@
 # To display a complete list of options, type "make help".
 # To clean the current folder of .o and excutable files, type "make clean".
 
-#
-# 'make depend' uses makedepend to automatically generate dependencies
-#               (dependencies are added to end of Makefile)
 # 'make'        build executable file 'APCEMM'
 # 'make clean'  removes all .o and executable files
 
 # Set default shell to bash
 SHELL :=/bin/bash 
+
+# Set root directory
+ROOT := ..
+
+# Set src folder
+SRC_FOLDER := src
+
+CURR_FOLDER := Main
 
 #---------------------------------------------------
 # Compiler settings
@@ -63,36 +68,39 @@ endif
 
 # Define any libraries to link into executable: use -llibname option
 LDFLAGS := -lstdc++ -lm -lfftw3
-#-L/opt/intel/compilers_and_libraries_2017.4.196/linux/mkl/include/fftw/ -L/usr/lib/x86_64-linux-gnu/ -L$(LD_LIBRARY_PATH) -lstdc++ -lm -lfftw3 -L/usr/include/c++/4.8/bits
 
-BUILD := ./build
-OBJ_DIR := $(BUILD)/objects
-APP_DIR := $(BUILD)/apps
+ifndef BUILD
+	BUILD := $(ROOT)/build
+endif
+ifndef APP_DIR
+	APP_DIR := $(BUILD)/apps
+endif
+OBJ_DIR := $(BUILD)/objects/$(CURR_FOLDER)
 
 # Define the executable file: TARGET
 TARGET := APCEMM
 
 # Define any directories containing header files
-INCLUDE := -Iinclude/ #-I/usr/include #-I/opt/intel/compilers_and_libraries_2017.4.196/linux/mkl/include/fftw/
+INCLUDE := -I./include
 
-HEADERS = $(wildcard include/*.h) 
+HEADERS = $(wildcard ./include/*.h) 
 
 # Define the C++ source files
-SRC = $(wildcard src/*.cpp)
+SRC = $(wildcard $(SRC_FOLDER)/*.cpp)
 
 # Define the C++ object files
-OBJ = ${SRC:%.cpp=$(OBJ_DIR)/%.o}
+OBJ = ${SRC:$(SRC_FOLDER)/%.cpp=$(OBJ_DIR)/%.o}
 
 all:	build $(APP_DIR)/$(TARGET)
 
-$(OBJ_DIR)/%.o: %.cpp
+$(OBJ_DIR)/%.o: $(SRC_FOLDER)/%.cpp
 	@mkdir -p $(@D)
 	$(COMP) $(CFLAGS) $(INCLUDE) -o $@ -c $<
 
 $(APP_DIR)/$(TARGET): $(OBJ)
 	@mkdir -p $(@D)
 	$(COMP) $(CFLAGS) $(INCLUDE) -o $(APP_DIR)/$(TARGET) $(OBJ) $(LDFLAGS)
-	@echo Executable file $(MAIN) has been compiled!
+	@echo "---> Executable file $(TARGET) has been compiled! <---"
 
 .PHONY: all build clean debug release
 
@@ -107,7 +115,7 @@ release: CFLAGS += $(OPT)
 release: all
 
 clean:
-	@echo "===> Making clean in current directory <==="
+	@echo "---> Making clean <---"
 	-@rm -rvf $(OBJ_DIR)/*
 	-@rm -rvf $(APP_DIR)/*
 
