@@ -32,7 +32,7 @@
 
  /* Names of chemical species */
 
-  char *  SPC_NAMES[] = {
+  const char *  SPC_NAMES[] = {
      "CO2","PPN","BrNO2","IEPOX","PMNN","N2O","N","PAN",
      "ALK4","MAP","MPN","Cl2O2","ETP","HNO2","C3H8","RA3P",
      "RB3P","OClO","ClNO2","ISOP","HNO4","MAOP","MP","ClOO",
@@ -78,7 +78,7 @@
 
  /* Equation names */
 
-  char *  EQN_NAMES[] = {
+  const char *  EQN_NAMES[] = {
      "       NO + O3 --> NO2 + O2      ",
      "       O3 + OH --> HO2 + O2      ",
      "      O3 + HO2 --> OH + 2 O2     ",

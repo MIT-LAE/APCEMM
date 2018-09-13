@@ -3,27 +3,27 @@
 /*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
-/* BuildMesh Program File                                           */
+/* MolarWeights Header File                                         */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 7/26/2018                                 */
-/* File                 : BuildMesh.cpp                             */
+/* File                 : MolarWeights.h                            */
 /* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-void BuildMesh( double *x, double *y, double const xlim, double const ylim , unsigned int const nx, unsigned int const ny )
-{
 
-    double const hx = 2 * xlim / nx;
-    double const hy = 2 * ylim / ny;
+#ifndef MOLARWEIGHTS_H_INCLUDED
+#define MOLARWEIGHTS_H_INCLUDED
 
-    for ( unsigned int i = 0; i < nx; i++ )
-        x[i] = i * hx - xlim + hx / 2;
+/* Molar weights, Unit : [ kg / mol ] */
+#define mW_Air    28.5766E-03
+#define mW_O2     31.9988E-03
+#define mW_N2     28.0134E-03
+#define mW_H2O    18.0153E-03
+#define mW_HNO3   63.0128E-03
+#define mW_SO4    98.0785E-03
+#define mW_SO2    64.0638E-03
 
-    for ( unsigned int j = 0; j < ny; j++ )
-        y[j] = j * hy - ylim + hy / 2;
 
-} /* End of BuildMesh */
-
-
+#endif /* MOLARWEIGHTS_H_INCLUDED */

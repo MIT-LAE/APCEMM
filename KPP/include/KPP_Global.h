@@ -50,10 +50,10 @@ extern double STEPMAX;                          /* Upper bound for integration s
 extern double CFACTOR;                          /* Conversion factor for concentration units */
 extern int DDMTYPE;                             /* DDM sensitivity w.r.t.: 0=init.val., 1=params */
 extern int LOOKAT[NLOOKAT];                     /* Indexes of species to look at */
-extern int MONITOR[NMONITOR];                   /* Indexes of species to monitor */
-extern char * SPC_NAMES[NSPEC];                 /* Names of chemical species */
+//extern int MONITOR[NMONITOR];                   /* Indexes of species to monitor */
+extern const char * SPC_NAMES[NSPEC];                 /* Names of chemical species */
 extern char * SMASS[NMASS];                     /* Names of atoms for mass balance */
-extern char * EQN_NAMES[NREACT];                /* Equation names */
+extern const char * EQN_NAMES[NREACT];                /* Equation names */
 extern char * EQN_TAGS[NREACT];                 /* Equation tags */
 extern double PHOTOL[NPHOTOL];                  /* Photolysis rates */
 

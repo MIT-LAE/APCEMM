@@ -3,11 +3,11 @@
 /*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
-/* Struct_SetToAmbient Program File                                 */
+/* SaveWisdomFile Program File                                      */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 7/26/2018                                 */
-/* File                 : Struct_SetToAmbient.cpp                   */
+/* File                 : SaveWisdomFile.cpp                        */
 /* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -19,7 +19,7 @@
 #include <vector>
 #include <fftw3.h>
 
-#include "Parameters.h"
+#include "Parameters.hpp"
 
 typedef fftw_complex T;
 

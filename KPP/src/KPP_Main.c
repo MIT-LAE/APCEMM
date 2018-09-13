@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+
 #include "KPP_Parameters.h"
 #include "KPP_Global.h"
 #include "KPP_Sparse.h"
@@ -41,14 +42,10 @@ double SUN;                              /* Sunlight intensity between [0,1] */
 double TEMP;                             /* Temperature */
 double Patm;                             /* Pressure */
 double CFACTOR;                          /* Conversion factor for concentration units */
-double LAT;                              /* Latitude */
-double LON;                              /* Longitude */
-unsigned int DOY;                        /* Day of the year */
 double SINLAT;                           /* SZA coordinates */
 double COSLAT;                           /* SZA coordinates */
 double SINDEC;                           /* SZA coordinates */
 double COSDEC;                           /* SZA coordinates */
-double PHOTOL[NPHOTOL];                  /* Photolysis rates */
 double RTOLS;                            /* (scalar) Relative tolerance */
 double TSTART;                           /* Integration start time */
 double TEND;                             /* Integration end time */
@@ -57,7 +54,6 @@ double ATOL[NVAR];                       /* Absolute tolerance */
 double RTOL[NVAR];                       /* Relative tolerance */
 double STEPMIN;                          /* Lower bound for integration step */
 double STEPMAX;                          /* Upper bound for integration step */
-double CFACTOR;                          /* Conversion factor for concentration units */
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /*                                                                  */
@@ -66,86 +62,52 @@ double CFACTOR;                          /* Conversion factor for concentration 
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-int  InitSaveData();
-void Initialize();
 void Read_JRates( double JRates[] );
-int  SaveData();
-int  CloseSaveData();
-int  GenerateMatlab( char * prefix );
 void GetMass( double CL[], double Mass[] );
 void INTEGRATE( double TIN, double TOUT );
 
-int main()
+int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, \
+              double airDens, double temperature, double pressure, \
+              double SINLAT, double COSLAT, double SINDEC, double COSDEC, \
+              double RTOLS, double ATOLS )
 {
-double dval[NSPEC];
-int i;
+    int i;
  
-/* ---- TIME VARIABLES ------------------ */
+    /* ---- TIME VARIABLES ------------------ */
 
-  RTOLS = 1e-3;
-  TSTART = 3600*12;
-  TEND = TSTART + 3600*24*5;
-  DT = 3600.;
-  TEMP = 236.21;
-  Patm = 220.0E2;
-  CFACTOR = Patm / (1.38E-23 * TEMP) * 1.00E-06;
-  LAT = 60.0;
-  LON = -15.0;
-  DOY = 79;
+    TSTART = currentT; // Solar time
+    TEND = TSTART + dt;
+    TEMP = temperature;
+    Patm = pressure;
+    CFACTOR = airDens;
 
-  SINLAT = sin(LAT*3.141592653589793/180.0);
-  COSLAT = cos(LAT*3.141592653589793/180.0);
-
-  const double A0 = 0.006918;
-  const double A1 = 0.399912;
-  const double A2 = 0.006758;
-  const double A3 = 0.002697;
-  const double B1 = 0.070257;
-  const double B2 = 0.000907;
-  const double B3 = 0.000148;
-
-  double R = 2*3.141592653589793*(DOY - 1)/365.0;
-  double DEC = A0 - A1*cos(1*R) + B1*sin(1*R) \
-                  - A2*cos(2*R) + B2*sin(2*R) \
-                  - A3*cos(3*R) + B3*sin(3*R);
-  SINDEC = sin(DEC);
-  COSDEC = cos(DEC);
-
-  Read_JRates( PHOTOL );
+    Read_JRates( PHOTOL );
   
-  Initialize();
+    for ( i = 0; i < NVAR; i++ ) {
+        VAR[i] = varArray[i];
+    }
+
+    for ( i = 0; i < NFIX; i++ ) {
+        FIX[i] = fixArray[i];
+    }
+
+    for( i = 0; i < NVAR; i++ ) {
+        RTOL[i] = RTOLS;
+        ATOL[i] = ATOLS; // 1.0
+    }
+    STEPMIN = 0.01;
+    STEPMAX = 900;
       
-  for( i = 0; i < NVAR; i++ ) {
-    RTOL[i] = RTOLS;
-    ATOL[i] = 1.0;
-  }
-  STEPMIN = 0.01;
-  STEPMAX = 900;
-      
-/* ********** TIME LOOP **************************** */
+    /* ********** TIME LOOP **************************** */
 
-  printf("\n%7s %7s   ", "done[%]", "Time[h]");
-  for( i = 0; i < NMONITOR; i++ )  
-    printf( "%8s  ", SPC_NAMES[MONITOR[i]] );
-  for( i = 0; i < NMASS; i++ )  
-    printf( "(%6s)  ", SMASS[i] );
-  
-  TIME = TSTART;
-  while (TIME <= TEND) {
-    GetMass( C, dval );
-    printf("\n%6.1f%% %7.2f   ", (TIME-TSTART)/(TEND-TSTART)*100, TIME/3600 );
-    for( i = 0; i < NMONITOR; i++ ) 
-      printf( "%9.3e  ", C[ MONITOR[i] ]/CFACTOR );
-    for( i = 0; i < NMASS; i++ ) 
-      printf( "%9.3e  ", dval[i]/CFACTOR );
-    
-    INTEGRATE( TIME , TIME+DT );
-    TIME += DT;
-  }
+    TIME = TSTART;
+    INTEGRATE( TIME, TIME+dt );
 
-/* *********** END TIME LOOP *********************** */
+    /* *********** END TIME LOOP *********************** */
 
-  printf("\n");
+    for ( i = 0; i < NVAR; i++ ) {
+        varArray[i] = VAR[i];
+    }
 
     return 0; /*didnt return anything initially */
 

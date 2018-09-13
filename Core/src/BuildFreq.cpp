@@ -14,7 +14,7 @@
 
 #include <cmath>
 
-#include "PhysConstant.h"
+#include "PhysConstant.hpp"
 
 void BuildFreq( double *kx, double *ky, double *kxx, double *kyy, \
                 double const xlim, double const ylim, unsigned int const nx, unsigned int const ny )
@@ -39,6 +39,6 @@ void BuildFreq( double *kx, double *ky, double *kxx, double *kyy, \
         i0++;
     }
 
-} /* Enf of BuildFreq */
+} /* End of BuildFreq */
 
 

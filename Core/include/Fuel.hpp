@@ -3,27 +3,41 @@
 /*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
-/* BuildMesh Program File                                           */
+/* Fuel Header File                                                 */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 7/26/2018                                 */
-/* File                 : BuildMesh.cpp                             */
+/* File                 : Fuel.hpp                                  */
 /* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-void BuildMesh( double *x, double *y, double const xlim, double const ylim , unsigned int const nx, unsigned int const ny )
+#ifndef FUEL_H_INCLUDED
+#define FUEL_H_INCLUDED
+
+#include <string>
+#include <iostream>
+#include <cstring>
+
+class Fuel
 {
+    public:
 
-    double const hx = 2 * xlim / nx;
-    double const hy = 2 * ylim / ny;
+        Fuel( const char *fuelName );
+        ~Fuel( );
+        void GetAtoms( const char *fuelChem );
 
-    for ( unsigned int i = 0; i < nx; i++ )
-        x[i] = i * hx - xlim + hx / 2;
+        /* Atomic composition: CxHy */
+        double atomC;
+        double atomH;
+        double atomN;
+        double atomS;
 
-    for ( unsigned int j = 0; j < ny; j++ )
-        y[j] = j * hy - ylim + hy / 2;
+        /* Sulfur content */
+        double FSC; /* [ppm] */
 
-} /* End of BuildMesh */
+    private:
 
+};
 
+#endif /* FUEL_H_INCLUDED */

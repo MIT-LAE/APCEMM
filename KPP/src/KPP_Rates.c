@@ -257,7 +257,7 @@ double GC_OHCO( float A0, float B0, float C0, float Patm, float CFACTOR, float T
     return OHCO_RES;
     }
 
-double GC_RO2NO( char *B, float A0, float B0, float C0, float A1, float B1, float C1, float TEMP, float CFACTOR )
+double GC_RO2NO( const char *B, float A0, float B0, float C0, float A1, float B1, float C1, float TEMP, float CFACTOR )
     {
     double RO2NO_RES = 0.0;
     double Y300;
@@ -265,8 +265,8 @@ double GC_RO2NO( char *B, float A0, float B0, float C0, float A1, float B1, floa
     double XM0, XMINF, XF;
     double K0, K1;
     double XXYN, YYYN, AAA, ZZYN, RARB, FYRNO3;
-    const char STRA[1] = "A";
-    const char STRB[1] = "B";
+    const char *STRA = "A";
+    const char *STRB = "B";
 
     Y300 = 0.826E+00;
     ALPHA = 1.94E-22;

@@ -14,7 +14,7 @@
 
 #include <iostream>
 #include <cmath>
-#include "Parameters.h"
+#include "Parameters.hpp"
 
 void DiffParam( double time, double &d_H, double &d_V )
 {

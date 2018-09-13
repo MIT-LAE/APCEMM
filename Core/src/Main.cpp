@@ -18,12 +18,6 @@
 #include <string>
 #include <vector>
 
-#include "Parameters.h"
-#include "Monitor.h"
-#include "PhysConstant.h"
-
-#include "Structure.h"
-
 using namespace std;
 
 void PrintMessage( bool doPrint );

@@ -3,27 +3,23 @@
 /*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
-/* BuildMesh Program File                                           */
+/* Util Header File                                                 */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 7/26/2018                                 */
-/* File                 : BuildMesh.cpp                             */
+/* File                 : Util.h                                    */
 /* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-void BuildMesh( double *x, double *y, double const xlim, double const ylim , unsigned int const nx, unsigned int const ny )
+#include <iostream>
+#include <vector>
+
+namespace util
 {
+    double** EW_Multiply( double** A, double** B, unsigned int N, unsigned int M );
+    double** Vect2Array( std::vector<std::vector<double> > &vals, unsigned int N, unsigned int M );
+    std::vector<std::vector<double> > Array2Vect( double** A, unsigned int N, unsigned int M);
+    void PrintVector( std::vector<std::vector<double> > Array );
 
-    double const hx = 2 * xlim / nx;
-    double const hy = 2 * ylim / ny;
-
-    for ( unsigned int i = 0; i < nx; i++ )
-        x[i] = i * hx - xlim + hx / 2;
-
-    for ( unsigned int j = 0; j < ny; j++ )
-        y[j] = j * hy - ylim + hy / 2;
-
-} /* End of BuildMesh */
-
-
+}

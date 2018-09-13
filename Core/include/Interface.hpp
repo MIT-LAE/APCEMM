@@ -3,27 +3,26 @@
 /*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
-/* BuildMesh Program File                                           */
+/* Interface Header File                                            */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
-/* Time                 : 7/26/2018                                 */
-/* File                 : BuildMesh.cpp                             */
+/* Time                 : 8/12/2018                                 */
+/* File                 : Interface.h                               */
 /* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-void BuildMesh( double *x, double *y, double const xlim, double const ylim , unsigned int const nx, unsigned int const ny )
-{
+#ifndef INTERFACE_H_INCLUDED
+#define INTERFACE_H_INCLUDED
 
-    double const hx = 2 * xlim / nx;
-    double const hy = 2 * ylim / ny;
+/* TRANSPORT */
+#define DIFFUSION               1    /* Is diffusion turned on? */
+#define ADVECTION               1    /* Is advection turned on? */
 
-    for ( unsigned int i = 0; i < nx; i++ )
-        x[i] = i * hx - xlim + hx / 2;
+/* FFTW */
+#define FFTW_WISDOM             0    /* Find most efficient algorithm through FFTW_wisdom. Takes ~ 10s */
 
-    for ( unsigned int j = 0; j < ny; j++ )
-        y[j] = j * hy - ylim + hy / 2;
+/* OUTPUT */
+#define DOSAVEPL                1    /* Save chemical rates */
 
-} /* End of BuildMesh */
-
-
+#endif /* INTERFACE_H_INCLUDED */

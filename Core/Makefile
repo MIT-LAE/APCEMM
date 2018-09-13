@@ -18,11 +18,12 @@ SHELL :=/bin/bash
 
 # Set root directory
 ROOT := ..
+KPP  :=$(ROOT)/KPP
 
 # Set src folder
-SRC_FOLDER := src
+SRC_DIR := src
 
-CURR_FOLDER := Main
+CURR_DIR := Core
 
 #---------------------------------------------------
 # Compiler settings
@@ -39,6 +40,8 @@ ifeq ($(shell [[ "$(OMP)" =~ $(REGEXP) ]] && echo true),true)
 	USER_DEFS += -DNO_OMP
 endif
 
+USER_DEFS += -std=c++11
+
 # %%% Set default compiler %%%
 #
 # %%% If COMP is not defined, default to the $(CXX) variable, which %%%
@@ -52,9 +55,9 @@ ifeq ($(COMP),g++)
 	# Base set of compiler flags
 	CFLAGS := -Wall -Wextra -pedantic-errors #-Werror
 
-	# Default optimization level for all routines (-O2)
+	# Default optimization level for all routines (-O3)
 	ifndef OPT
-		OPT := -O2
+		OPT := -O3
 		CFLAGS += $(OPT)
 	endif
 
@@ -66,8 +69,17 @@ endif
 # -Wall turns on most compiler warnings
 # -O3   turns on optimization mode #3
 
+# Define library folder
+LIB_DIR := $(ROOT)/lib
+
+# Add path to library folder
+LDFLAGS := -L$(LIB_DIR)
+
 # Define any libraries to link into executable: use -llibname option
-LDFLAGS := -lstdc++ -lm -lfftw3
+LDFLAGS := $(LDFLAGS) -lstdc++ -lm
+
+# Add custom libraries
+LDFLAGS := $(LDFLAGS) -lfftw3 -lKpp
 
 ifndef BUILD
 	BUILD := $(ROOT)/build
@@ -75,7 +87,8 @@ endif
 ifndef APP_DIR
 	APP_DIR := $(BUILD)/apps
 endif
-OBJ_DIR := $(BUILD)/objects/$(CURR_FOLDER)
+
+OBJ_DIR := $(BUILD)/objects/$(CURR_DIR)
 
 # Define the executable file: TARGET
 TARGET := APCEMM
@@ -83,26 +96,32 @@ TARGET := APCEMM
 # Define any directories containing header files
 INCLUDE := -I./include
 
-HEADERS = $(wildcard ./include/*.h) 
+HEADERS = $(wildcard ./include/*.h*) 
 
 # Define the C++ source files
-SRC = $(wildcard $(SRC_FOLDER)/*.cpp)
+SRC = $(wildcard $(SRC_DIR)/*.cpp)
 
 # Define the C++ object files
-OBJ = ${SRC:$(SRC_FOLDER)/%.cpp=$(OBJ_DIR)/%.o}
+OBJ = ${SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o}
 
 all:	build $(APP_DIR)/$(TARGET)
 
-$(OBJ_DIR)/%.o: $(SRC_FOLDER)/%.cpp
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
-	$(COMP) $(CFLAGS) $(INCLUDE) -o $@ -c $<
+	$(COMP) $(CFLAGS) $(INCLUDE) $(LDFLAGS) -o $@ -c $<
 
-$(APP_DIR)/$(TARGET): $(OBJ)
+$(APP_DIR)/$(TARGET): $(OBJ) $(KPPOBJ)
 	@mkdir -p $(@D)
 	$(COMP) $(CFLAGS) $(INCLUDE) -o $(APP_DIR)/$(TARGET) $(OBJ) $(LDFLAGS)
 	@echo "---> Executable file $(TARGET) has been compiled! <---"
 
-.PHONY: all build clean debug release
+libkpp:
+	@$(MAKE) -C $(KPP)
+
+libhelp:
+	@$(AR) -t $(LIB_DIR)/libKpp.a
+
+.PHONY: all libkpp libhelp build clean debug release
 
 build:
 	@mkdir -p $(APP_DIR)
@@ -115,7 +134,7 @@ release: CFLAGS += $(OPT)
 release: all
 
 clean:
-	@echo "---> Making clean <---"
+	@echo "---> Making clean in Core <---"
 	-@rm -rvf $(OBJ_DIR)/*
 	-@rm -rvf $(APP_DIR)/*
 

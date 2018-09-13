@@ -17,10 +17,11 @@
 #include <complex>
 #include <fftw3.h>
 
-#include "Parameters.h"
-#include "Interface.h"
+#include "Parameters.hpp"
+#include "Interface.hpp"
 
-typedef fftw_complex T;
+typedef double Real;
+typedef fftw_complex Complex;
 
 void DiffusionSolver( std::vector<std::vector<double> >& vect, \
                       std::vector<std::vector<double> >& diffFactor, \
@@ -55,13 +56,13 @@ void DiffusionSolver( std::vector<std::vector<double> >& vect, \
          * http://www.fftw.org/fftw3_doc/Multi_002dDimensional-DFTs-of-Real-Data.html */
         const unsigned int NYH = NY/2 + 1;
 
-        T *in_IFFT, *out_FFT;
+        Complex *in_IFFT, *out_FFT;
         double *in_FFT, *out_IFFT;
-        in_FFT   = (double*) fftw_malloc(sizeof(double) * NCELL);
-        out_FFT  = (T*) fftw_malloc(sizeof(T) * NX * NYH);
+        in_FFT   = (Real*) fftw_malloc(sizeof(Real) * NCELL);
+        out_FFT  = (Complex*) fftw_malloc(sizeof(Complex) * NX * NYH);
     //  in_IFFT  = out_FFT .* diffFactor .* advFactor;
-        in_IFFT  = (T*) fftw_malloc(sizeof(T) * NX * NYH);
-        out_IFFT = (double*) fftw_malloc(sizeof(double) * NCELL);
+        in_IFFT  = (Complex*) fftw_malloc(sizeof(Complex) * NX * NYH);
+        out_IFFT = (Real*) fftw_malloc(sizeof(Real) * NCELL);
 
         /* Allocate FFT plans */
         fftw_plan plan_FFT, plan_IFFT;
@@ -69,7 +70,7 @@ void DiffusionSolver( std::vector<std::vector<double> >& vect, \
         /* Fill input */
         for ( i = 0; i < NX; i++ ) {
             for ( j = 0; j < NY; j++ )
-                in_FFT[i*NY + j] = (double) vect[j][i];
+                in_FFT[i*NY + j] = (Real) vect[j][i];
         }
 
         /* Define plan FFT */
@@ -97,7 +98,7 @@ void DiffusionSolver( std::vector<std::vector<double> >& vect, \
         /* Fill output */
         for ( i = 0; i < NX; i++ ) {
             for ( j = 0; j < NY; j++ ) 
-                vect[j][i] = ( out_IFFT[i*NY+j] ) / ( double( NCELL ) );
+                vect[j][i] = ( out_IFFT[i*NY+j] ) / ( Real( NCELL ) );
         }
 
         /* Destroy FFT plans */
@@ -115,12 +116,12 @@ void DiffusionSolver( std::vector<std::vector<double> >& vect, \
     else {
     
         /* Dynamic allocation */
-        T *in_FFT, *out_FFT, *in_IFFT, *out_IFFT;
-        in_FFT   = (T*) fftw_malloc(sizeof(T) * NCELL);
-        out_FFT  = (T*) fftw_malloc(sizeof(T) * NCELL);
+        Complex *in_FFT, *out_FFT, *in_IFFT, *out_IFFT;
+        in_FFT   = (Complex*) fftw_malloc(sizeof(Complex) * NCELL);
+        out_FFT  = (Complex*) fftw_malloc(sizeof(Complex) * NCELL);
     //  in_IFFT  = out_FFT .* diffFactor .* advFactor;
-        in_IFFT  = (T*) fftw_malloc(sizeof(T) * NCELL);
-        out_IFFT = (T*) fftw_malloc(sizeof(T) * NCELL);
+        in_IFFT  = (Complex*) fftw_malloc(sizeof(Complex) * NCELL);
+        out_IFFT = (Complex*) fftw_malloc(sizeof(Complex) * NCELL);
     
         /* Allocate FFT plans */
         fftw_plan plan_FFT, plan_IFFT;
@@ -156,7 +157,7 @@ void DiffusionSolver( std::vector<std::vector<double> >& vect, \
         /* Fill output */
         for ( i = 0; i < NX; i++ ) {
             for ( j = 0; j < NY; j++ ) 
-                vect[j][i] = ( out_IFFT[i*NY+j][0] ) / ( double( NCELL ) );
+                vect[j][i] = ( out_IFFT[i*NY+j][0] ) / ( Real( NCELL ) );
         }
 
         /* Destroy FFT plans */

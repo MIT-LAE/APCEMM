@@ -15,7 +15,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "Parameters.h"
+#include "Parameters.hpp"
 
 double UpdateTime( double time, double tStart, double sunRise, double sunSet )
 {

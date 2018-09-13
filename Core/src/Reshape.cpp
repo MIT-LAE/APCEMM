@@ -62,4 +62,4 @@ std::vector<std::vector<double> > Reshape_Vector( std::vector<std::vector<double
 
     return output;
 
-} /* Enf of Reshape_Vector */
+} /* End of Reshape_Vector */
