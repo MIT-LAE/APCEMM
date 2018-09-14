@@ -3,43 +3,55 @@
 /*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
-/* Fuel Header File                                                 */
+/* Aircraft Header File                                             */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 7/26/2018                                 */
-/* File                 : Fuel.hpp                                  */
+/* File                 : Aircraft.hpp                              */
 /* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef FUEL_H_INCLUDED
-#define FUEL_H_INCLUDED
+#ifndef AIRCRAFT_H_INCLUDED
+#define AIRCRAFT_H_INCLUDED
 
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include <cstring>
 
-class Fuel
+#include "Engine.hpp"
+
+class Aircraft
 {
     public:
 
-        Fuel( const char *fuelName );
-        ~Fuel( );
-        void GetAtoms( const char *fuelChem );
+        Aircraft( const char *aircraftName, double temperature_K, double pressure_Pa, double relHumidity_w );
+        ~Aircraft( );
+        void Debug( ) const;
 
-        /* Atomic composition: CxHy */
-        double atomC;
-        double atomH;
-        double atomN;
-        double atomS;
+        /* Aircraft name */
+        std::string Name;
 
-        /* Sulfur content */
-        double FSC; /* [ppm] */
+        /* Flight speed & mach Number */
+        double vFlight_ms;
+        double machNumber;
 
-        std::string ChemFormula;
+        /* Dimensions */
+        double wingSpan; /* [m] */
+
+        /* Weight */
+        double MTOW; /* [kg] */
+        double currMass; /* [kg] */
+
+        /* Engine */
+        Engine engine;
+
+        /* Number of engines */
+        unsigned int engNumber;
 
     private:
 
 };
 
-#endif /* FUEL_H_INCLUDED */
+#endif /* AIRCRAFT_H_INCLUDED */

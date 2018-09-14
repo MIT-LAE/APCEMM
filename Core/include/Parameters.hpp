@@ -12,7 +12,6 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
 #ifndef PARAMETERS_H_INCLUDED
 #define PARAMETERS_H_INCLUDED
 
@@ -23,9 +22,15 @@
 #define XLIM              1.0E+04     /* x-limits of the domain [m] */
 #define YLIM              1.4E+03     /* y-limits of the domain [m] */
 
+/* Ring structure */
+#define RINGS             1           /* 1 or 0? 1: Ring structure, 0: No rings */
+#if RINGS == 1
+    #define NRING             15          /* Number of rings */
+#endif /* RINGS */
+
 /* Time */
-#define TSTART            0.0E+00     /* Initial time [hrs] */
-#define TSIMUL            2.4E+01     /* Final time [hrs] */
+#define TSTART            0.0E+00     /* Initial time [hrs] (after emission) */
+#define TSIMUL            2.4E+01     /* Simulation time [hrs] */
 #define DT                9.0E+02     /* Default time step [s] */
 
 /* Diffusion */

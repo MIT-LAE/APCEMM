@@ -23,19 +23,15 @@
 #include "PhysConstant.hpp"
 #include "Interface.hpp"
 #include "Monitor.hpp"
+#if RINGS == 1
+    #include "Ring.hpp"
+    #include "Species.hpp"
+#endif
 #include "Structure.hpp"
 #include "Fuel.hpp"
 #include "Engine.hpp"
-
-#ifdef __cplusplus
-extern "C"{
-#endif
-
-#include "cheader.h"
-
-#ifdef __cplusplus
-}
-#endif
+#include "Aircraft.hpp"
+#include "Emission.hpp"
 
 typedef std::complex<double> Complex;
 
@@ -68,6 +64,16 @@ void SPCDiffusion( Solution& Data, \
                    std::vector<std::vector<double> >& diffFactor, \
                    std::vector<std::vector<Complex > >& advFactor, \
                    const char* fileName_FFTW );
+#ifdef __cplusplus
+extern "C" {
+#endif
+int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, \
+              double airDens, double temperature, double pressure, \
+              double sinLAT, double cosLAT, double sinDEC, double cosDEC, \
+              double rtols, double atols );
+#ifdef __cplusplus
+}
+#endif
 
 
 int PlumeModel( double temperature_K, double pressure_Pa, \
@@ -78,12 +84,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* For clock */
     int start_s, stop_s;
 
-    double x[NX], y[NY];
-    double kx[NX], ky[NY], kxx[NX], kyy[NY];
-    
-    BuildMesh(  x,  y, XLIM, YLIM, NX, NY );
-    BuildFreq( kx, ky, kxx, kyy, XLIM, YLIM, NX, NY );
-
     double relHumidity_i = relHumidity_w * pSat_H2Ol( temperature_K )\
                                          / pSat_H2Os( temperature_K );
 
@@ -91,44 +91,136 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     double sunRise, sunSet; /* sun rise and sun set in hours */
     double SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC;
 
+    /* Define sun parameters */
     SZA( latitude_deg, dayGMT,\
          sunRise, sunSet,\
          SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC );
+    
 
-    double tEmission = std::fmod(8.0,24.0);
-    double tInitial = tEmission + TSTART;
-    double tFinal = tInitial + TSIMUL;
-    double curr_Time = 3600.0*tInitial;
 
-    std::vector<double> timeArray;
-    int nTime = 0;
+    /** ~~~~~~~~~~~~~~~~~ **/
+    /**        Mesh       **/
+    /** ~~~~~~~~~~~~~~~~~ **/
+    double x[NX], y[NY];
+    double kx[NX], ky[NY], kxx[NX], kyy[NY]; 
+    BuildMesh(  x,  y, XLIM, YLIM, NX, NY );
+    BuildFreq( kx, ky, kxx, kyy, XLIM, YLIM, NX, NY );
+
+
+
+    /** ~~~~~~~~~~~~~~~~~ **/
+    /**        Time       **/
+    /** ~~~~~~~~~~~~~~~~~ **/
+    /* Define emission and simulation time */
+    double tEmission = std::fmod(8.0,24.0); /* [hr] */
+    double tInitial = tEmission + TSTART;   /* [hr] */
+    double tFinal = tInitial + TSIMUL;      /* [hr] */
+
+    double curr_Time = 3600.0*tInitial; /* [s] */
 
     /* Create time array */
+    std::vector<double> timeArray;
+    int nTime = 0;
     timeArray = BuildTime ( 3600.0*tInitial, 3600.0*tFinal, 3600.0*sunRise, 3600.0*sunSet );
-    //nTime = timeArray.size();
+    
 
+
+    /* Rings? */
+    if ( RINGS ) {
+        /** ~~~~~~~~~~~~~~~~~ **/
+        /**        Ring       **/
+        /** ~~~~~~~~~~~~~~~~~ **/
+        
+        /* Create rings */
+        unsigned int iRing;
+        unsigned int nRing = NRING;
+        bool semiRing = 0;
+        double sigmaX0, sigmaY0;
+        sigmaX0 = 73.796;
+        sigmaY0 = 27.361;
+        double dH0, dV0;
+        std::vector<double> ringSizes;
+        if ( !semiRing )
+            ringSizes = {0.0, 0.25, 1.0, 2.0, 4.0, 6.0, 8.0, 12.0, 16.0, 20.0, 25.0, 30.0, 35.0, 40.0, 48.0};
+        else
+            ringSizes = {0.0, 0.0, 0.25, 0.25, 1.0, 1.0, 2.0, 2.0, 4.0, 4.0, 6.0, 6.0, 8.0, 8.0, 12.0, 12.0, \
+                         16.0, 16.0, 20.0, 20.0, 25.0, 25.0, 30.0, 30.0, 35.0, 35.0, 40.0, 40.0, 48.0, 48.0};
+
+        dH0 = 15;
+        dV0 = 0.15;
+        /* If supersaturated, asymmetry arises -> half-rings */
+        if ( relHumidity_i > 100.0 ) {
+            nRing = nRing * 2;
+            semiRing = 1;
+        }
+
+        std::vector<Ring> Rings(nRing);
+
+        for ( iRing = 0; iRing < nRing; iRing++ ) {
+            Rings[iRing].Create( sqrt( sigmaX0 * sigmaX0 + 16*dH0*3600.0*ringSizes[iRing] ), sqrt( sigmaY0 * sigmaY0 + 16*dV0*3600.0*ringSizes[iRing] ) );
+            if ( semiRing ) {
+                /* Build half-rings */
+                Rings[iRing+1] = Rings[iRing].Copy();
+                iRing++;
+            }
+        }
+
+        SpeciesArray ringSpecies;
+        ringSpecies.Build( nRing, timeArray.size() );
+
+    }
+   
+
+
+
+    /** ~~~~~~~~~~~~~~~~~ **/
+    /**     Emissions     **/
+    /** ~~~~~~~~~~~~~~~~~ **/
     /* Define fuel */
     char const *ChemFormula("C12H24");
-    Fuel JetA( ChemFormula );
+    const Fuel JetA( ChemFormula );
 
-    /* Define engine */
-    char const *EngineFile("./data/ENG_EI.txt");
-    char const *EngineName("GE90-90B");
-    std::cout << "Engine name: " << EngineName << std::endl;
-    double vFlight = 250; 
-    Engine eng( EngineFile, EngineName, temperature_K, pressure_Pa, relHumidity_w, vFlight );
+    /* Define aircraft */
+    char const *aircraftName("B747-800");
+    const Aircraft aircraft( aircraftName, temperature_K, pressure_Pa, relHumidity_w );
 
+    /* Print AC Debug? */
+    if ( DEBUG_AC_INPUT ) 
+        aircraft.Debug();
+
+    /* Aggregate emissions from engine and fuel characteristics */
+    Emission EI;
+    EI.Populate( aircraft.engine, JetA );
+
+    /* Print Emission Debug? */
+    if ( DEBUG_EI_INPUT ) 
+        EI.Debug(); 
+
+
+
+    /** ~~~~~~~~~~~~~~~~~ **/
+    /**     Background    **/
+    /** ~~~~~~~~~~~~~~~~~ **/
     /* Assign solution structure */
     Solution Data(N_SPC, NX, NY);
 
     /* Compute airDens from pressure and temperature */
-    double airDens = pressure_Pa / ( kB * temperature_K ) * 1.00E-06;
-    /* [molec/cm3] = [Pa = J/m3] / ([J/K] * [K])         * [m3/cm3] */
+    double airDens = pressure_Pa / ( kB   * temperature_K ) * 1.00E-06;
+    /* [molec/cm3] = [Pa = J/m3] / ([J/K] * [K])            * [m3/cm3] */
 
     char const *fileName("data/Ambient.txt");
     /* Set solution arrays to ambient data */
     Data.Initialize( fileName, temperature_K, airDens, relHumidity_w );
 
+    /* Print Background Debug? */
+    if ( DEBUG_BG_INPUT )
+        Data.Debug( airDens );
+
+
+
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+    /**     Advection & Diffusion    **/
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /* 2D Diffusion and advection arrays */
     std::vector<std::vector<double> > diffFactor;
     std::vector<std::vector<Complex > > advFactor;
@@ -142,7 +234,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     /* Compute diffusion parameters */
     double d_x, d_y;
-    if ( DIFFUSION == 1 )
+    if ( DIFFUSION )
         DiffParam( curr_Time - 3600.0*tInitial, d_x, d_y );
     else {
         d_x = 0.0;
@@ -151,7 +243,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     /* Compute advection parameters */
     double v_x, v_y;
-    if ( ADVECTION == 1 ) {
+    if ( ADVECTION ) {
         v_x = 0; // > 0 means left, < 0 means right
         v_y = 0; // > 0 means upwards, < 0 means downwards
     }
@@ -165,8 +257,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     dt = UpdateTime( curr_Time, 3600.0*tInitial, 3600.0*sunRise, 3600.0*sunSet );
     Assign_diffFactor( diffFactor, d_x, d_y, kxx, kyy, dt );
     Assign_advFactor ( advFactor , v_x, v_y, kx , ky , dt );
-    std::cout << "Diffusion param: " << d_x << ", " << d_y << " [m^2/s]" << std::endl;
-    std::cout << "Advection param: " << v_x << ", " << v_y << " [m/s]" << std::endl;
     
     /* Run FFTW_Wisdom */
     const char *fileName_FFTW("data/FFTW_Wisdom.txt");
@@ -179,10 +269,13 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         std::cout << "time: " << (stop_wisdom-start_wisdom)/double(CLOCKS_PER_SEC) << " [s]" << std::endl;
     }
 
+
+    
+    
     double sum = 0;
 
     double BackG = Data.O3[0][0];
-    for ( int i = 0; i < 2; i++ ) {
+    for ( int i = 0; i < 0; i++ ) {
         if ( i == 0 ) {
             for ( int k = 0; k < NX; k++ ) {
                 for ( int l = 0; l < NY; l++ )
@@ -205,7 +298,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
         stop_s = clock();
 
-        std::cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << " [ms], ";
         if ( i > -1 ) {
             sum = 0;
             for ( int k = 0; k < NX; k++ ) {
@@ -222,8 +314,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     double varArray[N_VAR];
     double fixArray[N_FIX];
     Data.GetData( varArray, fixArray, iNx, jNy );
-    std::cout << varArray[ind_CO2]/airDens*1E6 << std::endl;
-    std::cout << varArray[ind_O3]/airDens*1E9 << std::endl;
     
     start_s = clock();
     for ( int i = 0; i < 100; i++ ) {
@@ -236,8 +326,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     stop_s = clock();
 
     std::cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << " [ms], " << std::endl;
-    std::cout << varArray[ind_CO2]/airDens*1E6 << std::endl;
-    std::cout << varArray[ind_O3]/airDens*1E9 << std::endl;
  
  
  

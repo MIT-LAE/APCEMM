@@ -7,7 +7,7 @@
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 8/12/2018                                 */
-/* File                 : Interface.h                               */
+/* File                 : Interface.hpp                             */
 /* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -24,5 +24,10 @@
 
 /* OUTPUT */
 #define DOSAVEPL                1    /* Save chemical rates */
+
+/* DEBUG */
+#define DEBUG_AC_INPUT          0    /* Debug AC Input? */
+#define DEBUG_BG_INPUT          0    /* Debug Background Input? */
+#define DEBUG_EI_INPUT          0    /* Debut Emission Input? */
 
 #endif /* INTERFACE_H_INCLUDED */

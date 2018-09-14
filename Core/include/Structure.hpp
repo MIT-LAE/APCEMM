@@ -2,6 +2,7 @@
 #define STRUCTURE_H_INCLUDED
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -21,8 +22,8 @@ class Solution
         void SetToValue( std::vector<std::vector<double> >& vector_2D, double value = 0.0 );
         void Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max = NX, unsigned int j_max = NY );
         void Initialize( char const *fileName, double temperature, double airDens, double relHum );
-
         void GetData( double varArray[], double fixArray[], unsigned int i, unsigned int j );
+        void Debug( double airDens );
 
         /* Gaseous species */
         std::vector<std::vector<double> > CO2, PPN, BrNO2, IEPOX, PMNN, N2O, N, PAN,\

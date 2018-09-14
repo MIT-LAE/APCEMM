@@ -3,17 +3,38 @@
 /*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
-/* ReadEmission Program File                                        */
+/* Ring Header File                                                 */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
-/* Time                 : 7/26/2018                                 */
-/* File                 : ReadEmission.cpp                          */
+/* Time                 : 8/12/2018                                 */
+/* File                 : Ring.hpp                                  */
 /* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-void ReadEmission( const char *fileName )
+#ifndef RING_H_INCLUDED
+#define RING_H_INCLUDED
+
+#include <iostream>
+
+class Ring
 {
 
+    public:
 
-} /* End of ReadEmission */
+        Ring( );
+        void Create( double a, double b );
+        ~Ring( );
+        void Print( ) const;
+        double GetHAxis( ) const;
+        double GetVAxis( ) const;
+        Ring Copy( );
+
+        double horizontalAxis;
+        double verticalAxis;
+
+    private:
+
+};
+
+#endif /* RING_H_INCLUDED */

@@ -16,6 +16,7 @@
 #define EMISSION_H_INCLUDED
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -25,24 +26,40 @@
 class Emission
 {
     public:
-        
-        Emission( Engine engine, Fuel fuel );
+
+        Emission( );
+        void Populate( const Engine &engine, const Fuel &fuel );
         ~Emission( );
-        void Populate_withEngine( Engine engine );
-        void Populate_withFuel( Fuel fuel );
+        void Populate_withEngine( const Engine &engine );
+        void Populate_withFuel( const Fuel &fuel );
+        Emission operator+( const Emission &emission_add );
+        void Debug( ) const;
 
-       /* Gaseous species */
-       double EI_CO2; /* [g/kg fuel] */
-       double EI_H2O; /* [g/kg fuel] */
-       double EI_NOx; /* [g/kg fuel] */
-       double EI_SO2; /* [g/kg fuel] */
-       double EI_CO;  /* [g/kg fuel] */
-       double EI_HC;  /* [g/kg fuel] */
-       double EI_OH;  /* [g/kg fuel] */
+        /* Gaseous species */
+        double CO2;  /* [g/kg fuel] */
+        double H2O;  /* [g/kg fuel] */
+        double NOx;  /* [g/kg fuel] */
+        double NO;   /* [g/kg fuel] */
+        double NO2;  /* [g/kg fuel] */
+        double HNO2; /* [g/kg fuel] */
+        double SO2;  /* [g/kg fuel] */
+        double CO;   /* [g/kg fuel] */
+        double HC;   /* [g/kg fuel] */
+        double CH4;  /* [g/kg fuel] */
+        double C2H6; /* [g/kg fuel] */
+        double PRPE; /* [g/kg fuel] */
+        double ALK4; /* [g/kg fuel] */
+        double CH2O; /* [g/kg fuel] */
+        double ALD2; /* [g/kg fuel] */
+        double GLYX; /* [g/kg fuel] */
+        double MGLY; /* [g/kg fuel] */
 
-       /* BC */
-       double EI_Soot; /* [g/kg fuel] */
-       double SootRad;  /* [m] */
+        /* BC */
+        double Soot; /* [g/kg fuel] */
+        double SootRad;  /* [m] */
+
+        std::string engineName;
+        std::string fuelChem;
 
     private:
 

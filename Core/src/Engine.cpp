@@ -1,6 +1,6 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /*                                                                  */
-/*     Aircraft Plume Chemistry, Engine and Microphysics Model    */
+/*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
 /* Engine Header File                                               */
@@ -14,40 +14,38 @@
 
 #include "Engine.hpp"
 
-Engine::Engine( const char *fileName, const char *engineName, double tempe_K, double pres_Pa, double relHum_w, double vFlight_ms )
+const char * const Engine::engineFileName = "./data/ENG_EI.txt";
+
+Engine::Engine( )
 {
     /* Constructor */
+}
 
-    std::ifstream enginefile;
-    OpenFile( fileName, enginefile );
+void Engine::Build( const char *engineName, double tempe_K, double pres_Pa, double relHum_w, double machNumber )
+{
+    Name = engineName;
+
+    std::ifstream engineFile;
+    OpenFile( engineFileName, engineFile );
     
-    std::string search( engineName );
-    std::string delimiter = ",";
-
-    std::string endch(1,search.back());
-    if ( delimiter.compare(endch) != 0)
-        search += delimiter;
-
-    size_t pos;
-    bool found = 0;
-    std::string line;
     std::string idle, approach, climbout, takeoff;
-    while ((enginefile.eof() == 0) && (found == 0)) {
-        getline( enginefile, line );
-        pos = line.find( search );
-        if ( pos != std::string::npos ) {
-            approach = line;
-            getline( enginefile, line );
-            climbout = line;
-            getline( enginefile, line );
-            takeoff = line;
-            getline( enginefile, line );
-            idle = line;
-            found = 1;
-        }
+    bool foundEngine;
+    
+    /* Get value at specific thrust settings from the EDB database */
+    foundEngine = GetEDB( engineFile, engineName, idle, approach, climbout, takeoff );
+    
+    if ( foundEngine == 0 ) {
+        std::cout << "Engine " << engineName << " was not found in " << engineFileName << std::cout;
+        return;
     }
 
-    CloseFile( enginefile );
+    CloseFile( engineFile );
+
+    /* Set fuelflow */
+    fuelflow = 0.8;
+
+
+    std::string delimiter = ",";
 
     ratedThrust.push_back(4);
     LTO_fuelflow.push_back(4);
@@ -144,6 +142,7 @@ Engine::Engine( const char *fileName, const char *engineName, double tempe_K, do
         }
     }
 
+    /** Computing engine NOx emission index **/
     /* Finding log-log relationship between fuelflow and EI_NOx */
     std::vector<double> log_LTO_fuelflow(4);
     std::vector<double> log_LTO_NOx(4);
@@ -194,13 +193,10 @@ Engine::Engine( const char *fileName, const char *engineName, double tempe_K, do
             p[i] += invVV[i][k] * vect[k];
     }
 
+    delta = pres_Pa / PRES_SL;
+    theta = tempe_K / TEMP_SL;
 
-    double fuelflow = 0.8;
-
-    double delta = pres_Pa / PRES_SL;
-    double theta = tempe_K / TEMP_SL;
-    double mach  = vFlight_ms / sqrt( gamma * R_Air * tempe_K );
-
+    double mach  = machNumber;
     double fuelflow_factor;
     
     /* Fuel flow rate converted to SLS-ISA conditions (installed engine) */
@@ -218,31 +214,34 @@ Engine::Engine( const char *fileName, const char *engineName, double tempe_K, do
 
     EI_NOx *= exp( H ) * pow( pow( delta, 1.02 ) / pow( theta, 3.3 ), 0.5 );
 
-    std::cout << "NOx Emission Index: " << EI_NOx << std::endl;
-
+    /* Computing NOx partitioning */
     EI_NO   = NOxtoNO   * EI_NOx;
     EI_NO2  = NOxtoNO2  * EI_NOx;
     EI_HNO2 = NOxtoHNO2 * EI_NOx;
 
 
-    double line1, line2, line3;
+    /** Computing engine CO emission index **/
+    double line1, line2, line3, horzline, intercept;
+    
     line1 = (log10( LTO_CO[1] ) - log10( LTO_CO[0] )) / ( log10( LTO_fuelflow[1] ) - log10( LTO_fuelflow[0]) );
     line2 = log10( LTO_fuelflow[0] );
     line3 = log10( LTO_CO[0] );
 
-    double horzline;
+    /* Horizontal line is bisect of two higher power values */
     horzline = log10( LTO_CO[2] ) + log10( LTO_CO[3] ) / 2.0;
 
-    double intercept;
+    /* Find intercept of the two lines */
     intercept = ( 2 * log10( LTO_fuelflow[0] ) * line1 + log10( LTO_CO[2] ) + log10( LTO_CO[3] ) - 2 * log10( LTO_CO[0]) ) / ( 2 * line1 );
-
-    std::cout << intercept << std::endl;
-    if ( intercept > log10( LTO_fuelflow[2] ) )
+    
+    /* Intercept might be greater than 85% value, set intercept to be at 85% value (SAGE v1.5, Issue 1) */
+    if ( intercept > log10( LTO_fuelflow[2] ) ) 
         intercept = log10( LTO_fuelflow[2] );
+    /* Intercept might be lower than 30% value, create horz line at the 30% value (SAGE v1.5, Issue 2) */
     else if ( intercept < log10( LTO_fuelflow[1] ) && ( line1 < 0 ) ) {
         horzline = log10( LTO_CO[1] );
         intercept = log10( LTO_fuelflow[1] );
     }
+    /* If the gradient of the slanted line is +ve, use horz line for all values (SAGE v1.5, Issue 3) */
     else if ( line1 >= 0 ) {
         line1 = 0;
         line2 = 0;
@@ -250,15 +249,54 @@ Engine::Engine( const char *fileName, const char *engineName, double tempe_K, do
         intercept = log10( LTO_fuelflow[1] );
     }
 
-
-
+    if ( log10( fuelflow_factor ) < intercept  && fuelflow_factor > 0 )
+        EI_CO = pow( 10.0, line1 * ( log10(fuelflow_factor) - line2) + line3 );
+    else
+        EI_CO = pow( 10.0, horzline );
 
     /* Cruise correction for CO */
     EI_CO *= pow( theta, 3.3 ) / pow(delta, 1.02 );
 
+
+    /** Computing engine CO emission index **/
+    line1 = (log10( LTO_HC[1] ) - log10( LTO_HC[0] )) / ( log10( LTO_fuelflow[1] ) - log10( LTO_fuelflow[0]) );
+    line2 = log10( LTO_fuelflow[0] );
+    line3 = log10( LTO_HC[0] );
+
+    /* Horizontal line is bisect of two higher power values */
+    horzline = log10( LTO_HC[2] ) + log10( LTO_HC[3] ) / 2.0;
+
+    /* Find intercept of the two lines */
+    intercept = ( 2 * log10( LTO_fuelflow[0] ) * line1 + log10( LTO_HC[2] ) + log10( LTO_HC[3] ) - 2 * log10( LTO_HC[0]) ) / ( 2 * line1 );
+
+    /* Intercept might be greater than 85% value, set intercept to be at 85% value (SAGE v1.5, Issue 1) */
+    if ( intercept > log10( LTO_fuelflow[2] ) )
+        intercept = log10( LTO_fuelflow[2] );
+    /* Intercept might be lower than 30% value, create horz line at the 30% value (SAGE v1.5, Issue 2) */
+    else if ( intercept < log10( LTO_fuelflow[1] ) && ( line1 < 0 ) ) {
+        horzline = log10( LTO_HC[1] );
+        intercept = log10( LTO_fuelflow[1] );
+    }
+    /* If the gradient of the slanted line is +ve, use horz line for all values (SAGE v1.5, Issue 3) */
+    else if ( line1 >= 0 ) {
+        line1 = 0;
+        line2 = 0;
+        line3 = horzline;
+        intercept = log10( LTO_fuelflow[1] );
+    }
+
+    if ( log10( fuelflow_factor ) < intercept  && fuelflow_factor > 0 )
+        EI_HC = pow( 10.0, line1 * ( log10(fuelflow_factor) - line2) + line3 );
+    else
+        EI_HC = pow( 10.0, horzline );
+
     /* Cruise correction for HC */
     EI_HC *= pow( theta, 3.3 ) / pow(delta, 1.02 );
 
+
+    /** Computing engine Soot emission index **/
+    EI_Soot = 0.02; /* [g/kg fuel] */
+    SootRad = 20.0E-09; /* [m] */
 
 }
 
@@ -267,7 +305,7 @@ Engine::~Engine( )
     /* Destructor */
 }
 
-bool Engine::CheckFile( const char *fileName )
+bool Engine::CheckFile( const char *fileName ) const
 {
     std::ifstream f( fileName );
     return f.is_open();
@@ -282,7 +320,6 @@ void Engine::OpenFile( const char *fileName, std::ifstream &file )
         std::cout << "ERROR: In " << currFunc << ": Can't read (" << fileName << ")" << std::endl;
         return;
     }
-    std::cout << "Reading emission data from file: " << fileName << std::endl;
 
     file.open( fileName );
 
@@ -291,6 +328,38 @@ void Engine::OpenFile( const char *fileName, std::ifstream &file )
 void Engine::CloseFile( std::ifstream &file )
 {
     file.close( );
+}
+
+bool Engine::GetEDB( std::ifstream &enginefile, const char *engineName, std::string &idle, std::string &approach, std::string &climbout, std::string &takeoff )
+{
+    
+    std::string search( engineName );
+    std::string delimiter = ",";
+
+    std::string endch(1,search.back());
+    if ( delimiter.compare(endch) != 0 )
+        search += delimiter;
+
+    size_t pos;
+    bool found = 0;
+    std::string line;
+    while ((enginefile.eof() == 0) && (found == 0)) {
+        getline( enginefile, line );
+        pos = line.find( search );
+        if ( pos != std::string::npos ) {
+            approach = line;
+            getline( enginefile, line );
+            climbout = line;
+            getline( enginefile, line );
+            takeoff = line;
+            getline( enginefile, line );
+            idle = line;
+            found = 1;
+        }
+    }
+
+    return found;
+
 }
 
 /* End of Engine.cpp */

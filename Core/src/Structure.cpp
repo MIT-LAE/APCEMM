@@ -1,29 +1,44 @@
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/*                                                                  */
+/*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
+/*                             (APCEMM)                             */
+/*                                                                  */
+/* Structure Program File                                           */
+/*                                                                  */
+/* Author               : Thibaud M. Fritz                          */
+/* Time                 : 7/26/2018                                 */
+/* File                 : Structure.cpp                             */
+/* Working directory    : /home/fritzt/APCEMM-SourceCode            */
+/*                                                                  */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
 #include "Structure.hpp"
 
 double pSat_H2Ol( double T );
-//double pSat_H2Os( double T );
 
 Solution::Solution( const int nVar, const int n_x, const int n_y ) : \
         nVariables( nVar ), size_x( n_x ), size_y( n_y )
 {
     /* Constructor */
-}
+
+} /* End of Solution::Solution */
 
 Solution::~Solution()
 {
     /* Destructor */
-}
 
-void Solution::Clear ( std::vector<std::vector<double> >& vector_2D )
+} /* End of Solution::~Solution */
+
+void Solution::Clear( std::vector<std::vector<double> >& vector_2D )
 {
     for ( unsigned int i = 0; i < vector_2D.size(); i++ ) {
         vector_2D[i].clear();
     }
     vector_2D.clear();
 
-}
+} /* End of Solution::Clear */
 
-void Solution::SetShape ( std::vector<std::vector<double> >& vector_2D, unsigned int n_x, unsigned int n_y, double value )
+void Solution::SetShape( std::vector<std::vector<double> >& vector_2D, unsigned int n_x, unsigned int n_y, double value )
 {
     Clear( vector_2D );
 
@@ -32,7 +47,7 @@ void Solution::SetShape ( std::vector<std::vector<double> >& vector_2D, unsigned
         vector_2D.push_back( std::vector<double>( n_x, value ) );
     }
 
-}
+} /* End of Solution::SetShape */
 
 void Solution::SetToValue( std::vector<std::vector<double> >& vector_2D, double value )
 {
@@ -42,7 +57,7 @@ void Solution::SetToValue( std::vector<std::vector<double> >& vector_2D, double 
         }
     }
 
-}
+} /* End of Solution::SetToValue */
 
 void Solution::Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max, unsigned int j_max )
 {
@@ -52,7 +67,8 @@ void Solution::Print( std::vector<std::vector<double> >& vector_2D, unsigned int
         }
         std::cout << "" << std::endl;
     }
-}
+
+} /* End of Solution::Print */
 
 void Solution::Initialize( char const *fileName, double temperature, double airDens, double relHum )
 {
@@ -245,7 +261,7 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
     SetShape( SLA , NX, NY, (double) 0.0 );
     SetShape( SPA , NX, NY, (double) 0.0 );
 
-}
+} /* End of Solution::Initialize */
 
 void Solution::GetData( double varArray[], double fixArray[], unsigned int i, unsigned int j )
 {
@@ -385,6 +401,563 @@ void Solution::GetData( double varArray[], double fixArray[], unsigned int i, un
     fixArray[  6] = O2[j][i];
     fixArray[  7] = RCOOH[j][i];
 
-}
+} /* End of Solution::GetData */
+
+void Solution::Debug( double airDens )
+{
+    unsigned int iNx, jNy;
+    iNx = 0;
+    jNy = 0;
+
+    std::cout << std::endl;
+    std::cout << "**** Input Debugger ****" << std::endl;
+    std::cout << "Background concentrations: " << std::endl;
+    std::cout << std::endl;
+    std::cout << "   Species " << "    Value" << " Units " << std::endl;
+
+    std::cout << std::setw(9);
+    std::cout << "CO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << CO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "PPN" << ": ";
+    std::cout << std::setw(9);
+    std::cout << PPN[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "BrNO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << BrNO2[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "IEPOX" << ": ";
+    std::cout << std::setw(9);
+    std::cout << IEPOX[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "PMNN" << ": ";
+    std::cout << std::setw(9);
+    std::cout << PMNN[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "N2O" << ": ";
+    std::cout << std::setw(9);
+    std::cout << N2O[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "N" << ": ";
+    std::cout << std::setw(9);
+    std::cout << N[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "PAN" << ": ";
+    std::cout << std::setw(9);
+    std::cout << PAN[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ALK4" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ALK4[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MAP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MAP[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MPN" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MPN[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "Cl2O2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << Cl2O2[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ETP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ETP[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HNO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HNO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "C3H8" << ": ";
+    std::cout << std::setw(9);
+    std::cout << C3H8[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "RA3P" << ": ";
+    std::cout << std::setw(9);
+    std::cout << RA3P[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "RB3P" << ": ";
+    std::cout << std::setw(9);
+    std::cout << RB3P[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "OClO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << OClO[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ClNO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ClNO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ISOP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ISOP[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HNO4" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HNO4[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MAOP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MAOP[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MP[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ClOO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ClOO[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "RP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << RP[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "BrCl" << ": ";
+    std::cout << std::setw(9);
+    std::cout << BrCl[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "PP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << PP[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "PRPN" << ": ";
+    std::cout << std::setw(9);
+    std::cout << PRPN[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "SO4" << ": ";
+    std::cout << std::setw(9);
+    std::cout << SO4[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "Br2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << Br2[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ETHLN" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ETHLN[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MVKN" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MVKN[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "R4P" << ": ";
+    std::cout << std::setw(9);
+    std::cout << R4P[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "C2H6" << ": ";
+    std::cout << std::setw(9);
+    std::cout << C2H6[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "RIP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << RIP[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "VRP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << VRP[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ATOOH" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ATOOH[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "IAP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << IAP[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "DHMOB" << ": ";
+    std::cout << std::setw(9);
+    std::cout << DHMOB[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MOBA" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MOBA[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MRP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MRP[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "N2O5" << ": ";
+    std::cout << std::setw(9);
+    std::cout << N2O5[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ISNOHOO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ISNOHOO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ISNP" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ISNP[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ISOPNB" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ISOPNB[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "IEPOXOO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << IEPOXOO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MACRNO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MACRNO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ROH" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ROH[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MOBAOO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MOBAOO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "DIBOO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << DIBOO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "PMN" << ": ";
+    std::cout << std::setw(9);
+    std::cout << PMN[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ISNOOB" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ISNOOB[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "INPN" << ": ";
+    std::cout << std::setw(9);
+    std::cout << INPN[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "H" << ": ";
+    std::cout << std::setw(9);
+    std::cout << H[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "BrNO3" << ": ";
+    std::cout << std::setw(9);
+    std::cout << BrNO3[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "PRPE" << ": ";
+    std::cout << std::setw(9);
+    std::cout << PRPE[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MVKOO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MVKOO[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "Cl2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << Cl2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ISOPND" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ISOPND[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HOBr" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HOBr[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "A3O2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << A3O2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "PROPNN" << ": ";
+    std::cout << std::setw(9);
+    std::cout << PROPNN[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "GLYX" << ": ";
+    std::cout << std::setw(9);
+    std::cout << GLYX[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MAOPO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MAOPO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "CH4" << ": ";
+    std::cout << std::setw(9);
+    std::cout << CH4[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "GAOO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << GAOO[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "B3O2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << B3O2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ACET" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ACET[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MACRN" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MACRN[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "CH2OO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << CH2OO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MGLYOO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MGLYOO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "VRO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << VRO2[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MGLOO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MGLOO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MACROO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MACROO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "PO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << PO2[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "CH3CHOO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << CH3CHOO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MAN2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MAN2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ISNOOA" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ISNOOA[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "H2O2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << H2O2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "PRN1" << ": ";
+    std::cout << std::setw(9);
+    std::cout << PRN1[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ETO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ETO2[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "KO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << KO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "RCO3" << ": ";
+    std::cout << std::setw(9);
+    std::cout << RCO3[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HC5OO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HC5OO[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "GLYC" << ": ";
+    std::cout << std::setw(9);
+    std::cout << GLYC[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ClNO3" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ClNO3[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "RIO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << RIO2[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "R4N1" << ": ";
+    std::cout << std::setw(9);
+    std::cout << R4N1[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HOCl" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HOCl[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ATO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ATO2[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HNO3" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HNO3[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ISN1" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ISN1[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MAO3" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MAO3[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MRO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MRO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "INO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << INO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HAC" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HAC[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HC5" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HC5[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MGLY" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MGLY[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ISOPNBO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ISOPNBO2[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ISOPNDO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ISOPNDO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "R4O2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << R4O2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "R4N2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << R4N2[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "BrO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << BrO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "RCHO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << RCHO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MEK" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MEK[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ClO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ClO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MACR" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MACR[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "SO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << SO2[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MVK" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MVK[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ALD2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ALD2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MCO3" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MCO3[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "CH2O" << ": ";
+    std::cout << std::setw(9);
+    std::cout << CH2O[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "H2O" << ": ";
+    std::cout << std::setw(9);
+    std::cout << H2O[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "Br" << ": ";
+    std::cout << std::setw(9);
+    std::cout << Br[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "NO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << NO[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "NO3" << ": ";
+    std::cout << std::setw(9);
+    std::cout << NO3[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "Cl" << ": ";
+    std::cout << std::setw(9);
+    std::cout << Cl[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "O" << ": ";
+    std::cout << std::setw(9);
+    std::cout << O[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "O1D" << ": ";
+    std::cout << std::setw(9);
+    std::cout << O1D[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "O3" << ": ";
+    std::cout << std::setw(9);
+    std::cout << O3[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "NO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << NO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "OH" << ": ";
+    std::cout << std::setw(9);
+    std::cout << OH[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HBr" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HBr[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HCl" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HCl[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "CO" << ": ";
+    std::cout << std::setw(9);
+    std::cout << CO[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MO2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MO2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";//" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "ACTA" << ": ";
+    std::cout << std::setw(9);
+    std::cout << ACTA[jNy][iNx]/airDens*1.0E+09 << " [ppb],";// << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "EOH" << ": ";
+    std::cout << std::setw(9);
+    std::cout << EOH[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "H2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << H2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";// << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "HCOOH" << ": ";
+    std::cout << std::setw(9);
+    std::cout << HCOOH[jNy][iNx]/airDens*1.0E+09 << " [ppb],";// << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "MOH" << ": ";
+    std::cout << std::setw(9);
+    std::cout << MOH[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "N2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << N2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";// << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "O2" << ": ";
+    std::cout << std::setw(9);
+    std::cout << O2[jNy][iNx]/airDens*1.0E+09 << " [ppb],";// << std::endl;
+    std::cout << std::setw(9);
+    std::cout << "RCOOH" << ": ";
+    std::cout << std::setw(9);
+    std::cout << RCOOH[jNy][iNx]/airDens*1.0E+09 << " [ppb]" << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
+
+} /* End of Solution::Debug */
 
 /* End of Structure.cpp */

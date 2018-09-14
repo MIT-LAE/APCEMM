@@ -20,6 +20,8 @@ Fuel::Fuel( const char *fuelChem )
     GetAtoms( fuelChem );
 
     FSC = 1600; /* [ppm] */
+
+    std::string ChemFormula( fuelChem );
 }
 
 Fuel::~Fuel( )
