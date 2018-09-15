@@ -8,21 +8,20 @@
 #include <fstream>
 #include <sstream>
 
-#include "Parameters.hpp"
 #include "PhysConstant.hpp"
 
 class Solution
 {
     public:
 
-        Solution( const int nVar, const int n_x, const int n_y );
+        Solution( const unsigned int nVar, const unsigned int n_x, const unsigned int n_y );
         ~Solution();
         void Clear( std::vector<std::vector<double> >& vector_2D );
         void SetShape( std::vector<std::vector<double> >& vector_2D, unsigned int n_x, unsigned int n_y, double value = 0.0 );
         void SetToValue( std::vector<std::vector<double> >& vector_2D, double value = 0.0 );
-        void Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max = NX, unsigned int j_max = NY );
+        void Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max = 1, unsigned int j_max = 1 );
         void Initialize( char const *fileName, double temperature, double airDens, double relHum );
-        void GetData( double varArray[], double fixArray[], unsigned int i, unsigned int j );
+        void GetData( double varArray[], double fixArray[], unsigned int i = 0, unsigned int j = 0 );
         void Debug( double airDens );
 
         /* Gaseous species */
@@ -55,9 +54,9 @@ class Solution
 
     private:
 
-        const int nVariables;
-        const int size_x;
-        const int size_y;
+        const unsigned int nVariables;
+        const unsigned int size_x;
+        const unsigned int size_y;
 
 };
 

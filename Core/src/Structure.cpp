@@ -16,7 +16,7 @@
 
 double pSat_H2Ol( double T );
 
-Solution::Solution( const int nVar, const int n_x, const int n_y ) : \
+Solution::Solution( const unsigned int nVar, const unsigned int n_x, const unsigned int n_y ) : \
         nVariables( nVar ), size_x( n_x ), size_y( n_y )
 {
     /* Constructor */
@@ -31,6 +31,7 @@ Solution::~Solution()
 
 void Solution::Clear( std::vector<std::vector<double> >& vector_2D )
 {
+
     for ( unsigned int i = 0; i < vector_2D.size(); i++ ) {
         vector_2D[i].clear();
     }
@@ -40,6 +41,7 @@ void Solution::Clear( std::vector<std::vector<double> >& vector_2D )
 
 void Solution::SetShape( std::vector<std::vector<double> >& vector_2D, unsigned int n_x, unsigned int n_y, double value )
 {
+    
     Clear( vector_2D );
 
     /* Dimensions are transposed! */
@@ -51,6 +53,7 @@ void Solution::SetShape( std::vector<std::vector<double> >& vector_2D, unsigned 
 
 void Solution::SetToValue( std::vector<std::vector<double> >& vector_2D, double value )
 {
+    
     for ( unsigned int i = 0; i < vector_2D.size(); i++ ) {
         for ( unsigned int j = 0; j < vector_2D[0].size(); j++ ) {
             vector_2D[i][j] = (double) value;
@@ -61,6 +64,7 @@ void Solution::SetToValue( std::vector<std::vector<double> >& vector_2D, double 
 
 void Solution::Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max, unsigned int j_max )
 {
+    
     for ( unsigned int i = 0; i < i_max; i++ ) {
         for ( unsigned int j = 0; j < j_max; j++ ) {
             std::cout << vector_2D[i][j];
@@ -72,7 +76,8 @@ void Solution::Print( std::vector<std::vector<double> >& vector_2D, unsigned int
 
 void Solution::Initialize( char const *fileName, double temperature, double airDens, double relHum )
 {
-    double amb_Value[N_SPC];
+
+    std::vector<double> amb_Value(nVariables);
     std::ifstream file;
 
     file.open( fileName );
@@ -99,167 +104,167 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
     }
 
     /* Gaseous species */
-    SetShape( CO2  , NX, NY, amb_Value[  0] * airDens );
-    SetShape( PPN  , NX, NY, amb_Value[  1] * airDens );
-    SetShape( BrNO2, NX, NY, amb_Value[  2] * airDens );
-    SetShape( IEPOX, NX, NY, amb_Value[  3] * airDens );
-    SetShape( PMNN , NX, NY, amb_Value[  4] * airDens );
-    SetShape( N2O  , NX, NY, amb_Value[  5] * airDens );
-    SetShape( N    , NX, NY, amb_Value[  6] * airDens );
-    SetShape( PAN  , NX, NY, amb_Value[  7] * airDens );
-    SetShape( ALK4 , NX, NY, amb_Value[  8] * airDens );
-    SetShape( MAP  , NX, NY, amb_Value[  9] * airDens );
-    SetShape( MPN  , NX, NY, amb_Value[ 10] * airDens );
-    SetShape( Cl2O2, NX, NY, amb_Value[ 11] * airDens );
-    SetShape( ETP  , NX, NY, amb_Value[ 12] * airDens );
-    SetShape( HNO2 , NX, NY, amb_Value[ 13] * airDens );
-    SetShape( C3H8 , NX, NY, amb_Value[ 14] * airDens );
-    SetShape( RA3P , NX, NY, amb_Value[ 15] * airDens );
-    SetShape( RB3P , NX, NY, amb_Value[ 16] * airDens );
-    SetShape( OClO , NX, NY, amb_Value[ 17] * airDens );
-    SetShape( ClNO2, NX, NY, amb_Value[ 18] * airDens );
-    SetShape( ISOP , NX, NY, amb_Value[ 19] * airDens );
-    SetShape( HNO4 , NX, NY, amb_Value[ 20] * airDens );
-    SetShape( MAOP , NX, NY, amb_Value[ 21] * airDens );
-    SetShape( MP   , NX, NY, amb_Value[ 22] * airDens );
-    SetShape( ClOO , NX, NY, amb_Value[ 23] * airDens );
-    SetShape( RP   , NX, NY, amb_Value[ 24] * airDens );
-    SetShape( BrCl , NX, NY, amb_Value[ 25] * airDens );
-    SetShape( PP   , NX, NY, amb_Value[ 26] * airDens );
-    SetShape( PRPN , NX, NY, amb_Value[ 27] * airDens );
-    SetShape( SO4  , NX, NY, amb_Value[ 28] * airDens );
-    SetShape( Br2  , NX, NY, amb_Value[ 29] * airDens );
-    SetShape( ETHLN, NX, NY, amb_Value[ 30] * airDens );
-    SetShape( MVKN , NX, NY, amb_Value[ 31] * airDens );
-    SetShape( R4P  , NX, NY, amb_Value[ 32] * airDens );
-    SetShape( C2H6 , NX, NY, amb_Value[ 33] * airDens );
-    SetShape( RIP  , NX, NY, amb_Value[ 34] * airDens );
-    SetShape( VRP  , NX, NY, amb_Value[ 35] * airDens );
-    SetShape( ATOOH, NX, NY, amb_Value[ 36] * airDens );
-    SetShape( IAP  , NX, NY, amb_Value[ 37] * airDens );
-    SetShape( DHMOB, NX, NY, amb_Value[ 38] * airDens );
-    SetShape( MOBA , NX, NY, amb_Value[ 39] * airDens );
-    SetShape( MRP  , NX, NY, amb_Value[ 40] * airDens );
-    SetShape( N2O5 , NX, NY, amb_Value[ 41] * airDens );
-    SetShape( ISNOHOO, NX, NY, amb_Value[ 42] * airDens );
-    SetShape( ISNP , NX, NY, amb_Value[ 43] * airDens );
-    SetShape( ISOPNB, NX, NY, amb_Value[ 44] * airDens );
-    SetShape( IEPOXOO, NX, NY, amb_Value[ 45] * airDens );
-    SetShape( MACRNO2, NX, NY, amb_Value[ 46] * airDens );
-    SetShape( ROH  , NX, NY, amb_Value[ 47] * airDens );
-    SetShape( MOBAOO, NX, NY, amb_Value[ 48] * airDens );
-    SetShape( DIBOO, NX, NY, amb_Value[ 49] * airDens );
-    SetShape( PMN  , NX, NY, amb_Value[ 50] * airDens );
-    SetShape( ISNOOB, NX, NY, amb_Value[ 51] * airDens );
-    SetShape( INPN , NX, NY, amb_Value[ 52] * airDens );
-    SetShape( H    , NX, NY, amb_Value[ 53] * airDens );
-    SetShape( BrNO3, NX, NY, amb_Value[ 54] * airDens );
-    SetShape( PRPE , NX, NY, amb_Value[ 55] * airDens );
-    SetShape( MVKOO, NX, NY, amb_Value[ 56] * airDens );
-    SetShape( Cl2  , NX, NY, amb_Value[ 57] * airDens );
-    SetShape( ISOPND, NX, NY, amb_Value[ 58] * airDens );
-    SetShape( HOBr , NX, NY, amb_Value[ 59] * airDens );
-    SetShape( A3O2 , NX, NY, amb_Value[ 60] * airDens );
-    SetShape( PROPNN, NX, NY, amb_Value[ 61] * airDens );
-    SetShape( GLYX , NX, NY, amb_Value[ 62] * airDens );
-    SetShape( MAOPO2, NX, NY, amb_Value[ 63] * airDens );
-    SetShape( CH4  , NX, NY, amb_Value[ 64] * airDens );
-    SetShape( GAOO , NX, NY, amb_Value[ 65] * airDens );
-    SetShape( B3O2 , NX, NY, amb_Value[ 66] * airDens );
-    SetShape( ACET , NX, NY, amb_Value[ 67] * airDens );
-    SetShape( MACRN, NX, NY, amb_Value[ 68] * airDens );
-    SetShape( CH2OO, NX, NY, amb_Value[ 69] * airDens );
-    SetShape( MGLYOO, NX, NY, amb_Value[ 70] * airDens );
-    SetShape( VRO2 , NX, NY, amb_Value[ 71] * airDens );
-    SetShape( MGLOO, NX, NY, amb_Value[ 72] * airDens );
-    SetShape( MACROO, NX, NY, amb_Value[ 73] * airDens );
-    SetShape( PO2  , NX, NY, amb_Value[ 74] * airDens );
-    SetShape( CH3CHOO, NX, NY, amb_Value[ 75] * airDens );
-    SetShape( MAN2 , NX, NY, amb_Value[ 76] * airDens );
-    SetShape( ISNOOA, NX, NY, amb_Value[ 77] * airDens );
-    SetShape( H2O2 , NX, NY, amb_Value[ 78] * airDens );
-    SetShape( PRN1 , NX, NY, amb_Value[ 79] * airDens );
-    SetShape( ETO2 , NX, NY, amb_Value[ 80] * airDens );
-    SetShape( KO2  , NX, NY, amb_Value[ 81] * airDens );
-    SetShape( RCO3 , NX, NY, amb_Value[ 82] * airDens );
-    SetShape( HC5OO, NX, NY, amb_Value[ 83] * airDens );
-    SetShape( GLYC , NX, NY, amb_Value[ 84] * airDens );
-    SetShape( ClNO3, NX, NY, amb_Value[ 85] * airDens );
-    SetShape( RIO2 , NX, NY, amb_Value[ 86] * airDens );
-    SetShape( R4N1 , NX, NY, amb_Value[ 87] * airDens );
-    SetShape( HOCl , NX, NY, amb_Value[ 88] * airDens );
-    SetShape( ATO2 , NX, NY, amb_Value[ 89] * airDens );
-    SetShape( HNO3 , NX, NY, amb_Value[ 90] * airDens );
-    SetShape( ISN1 , NX, NY, amb_Value[ 91] * airDens );
-    SetShape( MAO3 , NX, NY, amb_Value[ 92] * airDens );
-    SetShape( MRO2 , NX, NY, amb_Value[ 93] * airDens );
-    SetShape( INO2 , NX, NY, amb_Value[ 94] * airDens );
-    SetShape( HAC  , NX, NY, amb_Value[ 95] * airDens );
-    SetShape( HC5  , NX, NY, amb_Value[ 96] * airDens );
-    SetShape( MGLY , NX, NY, amb_Value[ 97] * airDens );
-    SetShape( ISOPNBO2, NX, NY, amb_Value[ 98] * airDens );
-    SetShape( ISOPNDO2, NX, NY, amb_Value[ 99] * airDens );
-    SetShape( R4O2 , NX, NY, amb_Value[100] * airDens );
-    SetShape( R4N2 , NX, NY, amb_Value[101] * airDens );
-    SetShape( BrO  , NX, NY, amb_Value[102] * airDens );
-    SetShape( RCHO , NX, NY, amb_Value[103] * airDens );
-    SetShape( MEK  , NX, NY, amb_Value[104] * airDens );
-    SetShape( ClO  , NX, NY, amb_Value[105] * airDens );
-    SetShape( MACR , NX, NY, amb_Value[106] * airDens );
-    SetShape( SO2  , NX, NY, amb_Value[107] * airDens );
-    SetShape( MVK  , NX, NY, amb_Value[108] * airDens );
-    SetShape( ALD2 , NX, NY, amb_Value[109] * airDens );
-    SetShape( MCO3 , NX, NY, amb_Value[110] * airDens );
-    SetShape( CH2O , NX, NY, amb_Value[111] * airDens );
-    SetShape( H2O  , NX, NY, amb_Value[112] * airDens );
-    SetShape( Br   , NX, NY, amb_Value[113] * airDens );
-    SetShape( NO   , NX, NY, amb_Value[114] * airDens );
-    SetShape( NO3  , NX, NY, amb_Value[115] * airDens );
-    SetShape( Cl   , NX, NY, amb_Value[116] * airDens );
-    SetShape( O    , NX, NY, amb_Value[117] * airDens );
-    SetShape( O1D  , NX, NY, amb_Value[118] * airDens );
-    SetShape( O3   , NX, NY, amb_Value[119] * airDens );
-    SetShape( HO2  , NX, NY, amb_Value[120] * airDens );
-    SetShape( NO2  , NX, NY, amb_Value[121] * airDens );
-    SetShape( OH   , NX, NY, amb_Value[122] * airDens );
-    SetShape( HBr  , NX, NY, amb_Value[123] * airDens );
-    SetShape( HCl  , NX, NY, amb_Value[124] * airDens );
-    SetShape( CO   , NX, NY, amb_Value[125] * airDens );
-    SetShape( MO2  , NX, NY, amb_Value[126] * airDens );
-    SetShape( ACTA , NX, NY, amb_Value[127] * airDens );
-    SetShape( EOH  , NX, NY, amb_Value[128] * airDens );
-    SetShape( H2   , NX, NY, amb_Value[129] * airDens );
-    SetShape( HCOOH, NX, NY, amb_Value[130] * airDens );
-    SetShape( MOH  , NX, NY, amb_Value[131] * airDens );
-    SetShape( N2   , NX, NY, amb_Value[132] * airDens );
-    SetShape( O2   , NX, NY, amb_Value[133] * airDens );
-    SetShape( RCOOH, NX, NY, amb_Value[134] * airDens );
+    SetShape( CO2  , size_x, size_y, amb_Value[  0] * airDens );
+    SetShape( PPN  , size_x, size_y, amb_Value[  1] * airDens );
+    SetShape( BrNO2, size_x, size_y, amb_Value[  2] * airDens );
+    SetShape( IEPOX, size_x, size_y, amb_Value[  3] * airDens );
+    SetShape( PMNN , size_x, size_y, amb_Value[  4] * airDens );
+    SetShape( N2O  , size_x, size_y, amb_Value[  5] * airDens );
+    SetShape( N    , size_x, size_y, amb_Value[  6] * airDens );
+    SetShape( PAN  , size_x, size_y, amb_Value[  7] * airDens );
+    SetShape( ALK4 , size_x, size_y, amb_Value[  8] * airDens );
+    SetShape( MAP  , size_x, size_y, amb_Value[  9] * airDens );
+    SetShape( MPN  , size_x, size_y, amb_Value[ 10] * airDens );
+    SetShape( Cl2O2, size_x, size_y, amb_Value[ 11] * airDens );
+    SetShape( ETP  , size_x, size_y, amb_Value[ 12] * airDens );
+    SetShape( HNO2 , size_x, size_y, amb_Value[ 13] * airDens );
+    SetShape( C3H8 , size_x, size_y, amb_Value[ 14] * airDens );
+    SetShape( RA3P , size_x, size_y, amb_Value[ 15] * airDens );
+    SetShape( RB3P , size_x, size_y, amb_Value[ 16] * airDens );
+    SetShape( OClO , size_x, size_y, amb_Value[ 17] * airDens );
+    SetShape( ClNO2, size_x, size_y, amb_Value[ 18] * airDens );
+    SetShape( ISOP , size_x, size_y, amb_Value[ 19] * airDens );
+    SetShape( HNO4 , size_x, size_y, amb_Value[ 20] * airDens );
+    SetShape( MAOP , size_x, size_y, amb_Value[ 21] * airDens );
+    SetShape( MP   , size_x, size_y, amb_Value[ 22] * airDens );
+    SetShape( ClOO , size_x, size_y, amb_Value[ 23] * airDens );
+    SetShape( RP   , size_x, size_y, amb_Value[ 24] * airDens );
+    SetShape( BrCl , size_x, size_y, amb_Value[ 25] * airDens );
+    SetShape( PP   , size_x, size_y, amb_Value[ 26] * airDens );
+    SetShape( PRPN , size_x, size_y, amb_Value[ 27] * airDens );
+    SetShape( SO4  , size_x, size_y, amb_Value[ 28] * airDens );
+    SetShape( Br2  , size_x, size_y, amb_Value[ 29] * airDens );
+    SetShape( ETHLN, size_x, size_y, amb_Value[ 30] * airDens );
+    SetShape( MVKN , size_x, size_y, amb_Value[ 31] * airDens );
+    SetShape( R4P  , size_x, size_y, amb_Value[ 32] * airDens );
+    SetShape( C2H6 , size_x, size_y, amb_Value[ 33] * airDens );
+    SetShape( RIP  , size_x, size_y, amb_Value[ 34] * airDens );
+    SetShape( VRP  , size_x, size_y, amb_Value[ 35] * airDens );
+    SetShape( ATOOH, size_x, size_y, amb_Value[ 36] * airDens );
+    SetShape( IAP  , size_x, size_y, amb_Value[ 37] * airDens );
+    SetShape( DHMOB, size_x, size_y, amb_Value[ 38] * airDens );
+    SetShape( MOBA , size_x, size_y, amb_Value[ 39] * airDens );
+    SetShape( MRP  , size_x, size_y, amb_Value[ 40] * airDens );
+    SetShape( N2O5 , size_x, size_y, amb_Value[ 41] * airDens );
+    SetShape( ISNOHOO, size_x, size_y, amb_Value[ 42] * airDens );
+    SetShape( ISNP , size_x, size_y, amb_Value[ 43] * airDens );
+    SetShape( ISOPNB, size_x, size_y, amb_Value[ 44] * airDens );
+    SetShape( IEPOXOO, size_x, size_y, amb_Value[ 45] * airDens );
+    SetShape( MACRNO2, size_x, size_y, amb_Value[ 46] * airDens );
+    SetShape( ROH  , size_x, size_y, amb_Value[ 47] * airDens );
+    SetShape( MOBAOO, size_x, size_y, amb_Value[ 48] * airDens );
+    SetShape( DIBOO, size_x, size_y, amb_Value[ 49] * airDens );
+    SetShape( PMN  , size_x, size_y, amb_Value[ 50] * airDens );
+    SetShape( ISNOOB, size_x, size_y, amb_Value[ 51] * airDens );
+    SetShape( INPN , size_x, size_y, amb_Value[ 52] * airDens );
+    SetShape( H    , size_x, size_y, amb_Value[ 53] * airDens );
+    SetShape( BrNO3, size_x, size_y, amb_Value[ 54] * airDens );
+    SetShape( PRPE , size_x, size_y, amb_Value[ 55] * airDens );
+    SetShape( MVKOO, size_x, size_y, amb_Value[ 56] * airDens );
+    SetShape( Cl2  , size_x, size_y, amb_Value[ 57] * airDens );
+    SetShape( ISOPND, size_x, size_y, amb_Value[ 58] * airDens );
+    SetShape( HOBr , size_x, size_y, amb_Value[ 59] * airDens );
+    SetShape( A3O2 , size_x, size_y, amb_Value[ 60] * airDens );
+    SetShape( PROPNN, size_x, size_y, amb_Value[ 61] * airDens );
+    SetShape( GLYX , size_x, size_y, amb_Value[ 62] * airDens );
+    SetShape( MAOPO2, size_x, size_y, amb_Value[ 63] * airDens );
+    SetShape( CH4  , size_x, size_y, amb_Value[ 64] * airDens );
+    SetShape( GAOO , size_x, size_y, amb_Value[ 65] * airDens );
+    SetShape( B3O2 , size_x, size_y, amb_Value[ 66] * airDens );
+    SetShape( ACET , size_x, size_y, amb_Value[ 67] * airDens );
+    SetShape( MACRN, size_x, size_y, amb_Value[ 68] * airDens );
+    SetShape( CH2OO, size_x, size_y, amb_Value[ 69] * airDens );
+    SetShape( MGLYOO, size_x, size_y, amb_Value[ 70] * airDens );
+    SetShape( VRO2 , size_x, size_y, amb_Value[ 71] * airDens );
+    SetShape( MGLOO, size_x, size_y, amb_Value[ 72] * airDens );
+    SetShape( MACROO, size_x, size_y, amb_Value[ 73] * airDens );
+    SetShape( PO2  , size_x, size_y, amb_Value[ 74] * airDens );
+    SetShape( CH3CHOO, size_x, size_y, amb_Value[ 75] * airDens );
+    SetShape( MAN2 , size_x, size_y, amb_Value[ 76] * airDens );
+    SetShape( ISNOOA, size_x, size_y, amb_Value[ 77] * airDens );
+    SetShape( H2O2 , size_x, size_y, amb_Value[ 78] * airDens );
+    SetShape( PRN1 , size_x, size_y, amb_Value[ 79] * airDens );
+    SetShape( ETO2 , size_x, size_y, amb_Value[ 80] * airDens );
+    SetShape( KO2  , size_x, size_y, amb_Value[ 81] * airDens );
+    SetShape( RCO3 , size_x, size_y, amb_Value[ 82] * airDens );
+    SetShape( HC5OO, size_x, size_y, amb_Value[ 83] * airDens );
+    SetShape( GLYC , size_x, size_y, amb_Value[ 84] * airDens );
+    SetShape( ClNO3, size_x, size_y, amb_Value[ 85] * airDens );
+    SetShape( RIO2 , size_x, size_y, amb_Value[ 86] * airDens );
+    SetShape( R4N1 , size_x, size_y, amb_Value[ 87] * airDens );
+    SetShape( HOCl , size_x, size_y, amb_Value[ 88] * airDens );
+    SetShape( ATO2 , size_x, size_y, amb_Value[ 89] * airDens );
+    SetShape( HNO3 , size_x, size_y, amb_Value[ 90] * airDens );
+    SetShape( ISN1 , size_x, size_y, amb_Value[ 91] * airDens );
+    SetShape( MAO3 , size_x, size_y, amb_Value[ 92] * airDens );
+    SetShape( MRO2 , size_x, size_y, amb_Value[ 93] * airDens );
+    SetShape( INO2 , size_x, size_y, amb_Value[ 94] * airDens );
+    SetShape( HAC  , size_x, size_y, amb_Value[ 95] * airDens );
+    SetShape( HC5  , size_x, size_y, amb_Value[ 96] * airDens );
+    SetShape( MGLY , size_x, size_y, amb_Value[ 97] * airDens );
+    SetShape( ISOPNBO2, size_x, size_y, amb_Value[ 98] * airDens );
+    SetShape( ISOPNDO2, size_x, size_y, amb_Value[ 99] * airDens );
+    SetShape( R4O2 , size_x, size_y, amb_Value[100] * airDens );
+    SetShape( R4N2 , size_x, size_y, amb_Value[101] * airDens );
+    SetShape( BrO  , size_x, size_y, amb_Value[102] * airDens );
+    SetShape( RCHO , size_x, size_y, amb_Value[103] * airDens );
+    SetShape( MEK  , size_x, size_y, amb_Value[104] * airDens );
+    SetShape( ClO  , size_x, size_y, amb_Value[105] * airDens );
+    SetShape( MACR , size_x, size_y, amb_Value[106] * airDens );
+    SetShape( SO2  , size_x, size_y, amb_Value[107] * airDens );
+    SetShape( MVK  , size_x, size_y, amb_Value[108] * airDens );
+    SetShape( ALD2 , size_x, size_y, amb_Value[109] * airDens );
+    SetShape( MCO3 , size_x, size_y, amb_Value[110] * airDens );
+    SetShape( CH2O , size_x, size_y, amb_Value[111] * airDens );
+    SetShape( H2O  , size_x, size_y, amb_Value[112] * airDens );
+    SetShape( Br   , size_x, size_y, amb_Value[113] * airDens );
+    SetShape( NO   , size_x, size_y, amb_Value[114] * airDens );
+    SetShape( NO3  , size_x, size_y, amb_Value[115] * airDens );
+    SetShape( Cl   , size_x, size_y, amb_Value[116] * airDens );
+    SetShape( O    , size_x, size_y, amb_Value[117] * airDens );
+    SetShape( O1D  , size_x, size_y, amb_Value[118] * airDens );
+    SetShape( O3   , size_x, size_y, amb_Value[119] * airDens );
+    SetShape( HO2  , size_x, size_y, amb_Value[120] * airDens );
+    SetShape( NO2  , size_x, size_y, amb_Value[121] * airDens );
+    SetShape( OH   , size_x, size_y, amb_Value[122] * airDens );
+    SetShape( HBr  , size_x, size_y, amb_Value[123] * airDens );
+    SetShape( HCl  , size_x, size_y, amb_Value[124] * airDens );
+    SetShape( CO   , size_x, size_y, amb_Value[125] * airDens );
+    SetShape( MO2  , size_x, size_y, amb_Value[126] * airDens );
+    SetShape( ACTA , size_x, size_y, amb_Value[127] * airDens );
+    SetShape( EOH  , size_x, size_y, amb_Value[128] * airDens );
+    SetShape( H2   , size_x, size_y, amb_Value[129] * airDens );
+    SetShape( HCOOH, size_x, size_y, amb_Value[130] * airDens );
+    SetShape( MOH  , size_x, size_y, amb_Value[131] * airDens );
+    SetShape( N2   , size_x, size_y, amb_Value[132] * airDens );
+    SetShape( O2   , size_x, size_y, amb_Value[133] * airDens );
+    SetShape( RCOOH, size_x, size_y, amb_Value[134] * airDens );
 
     /* Setting up ambient water vapor */
-    for ( unsigned int i = 0; i < NX; i++ ) {
-        for ( unsigned int j = 0; j < NY; j++ ) {
+    for ( unsigned int i = 0; i < size_x; i++ ) {
+        for ( unsigned int j = 0; j < size_y; j++ ) {
             H2O[j][i] = (relHum/((double) 100.0) * \
                              pSat_H2Ol( temperature ) / ( kB * temperature )) / 1.00E+06;
-            /* RH_w = x_H2O*P/Psat_H2Ol = [H2O]*1E6 * kB*T/Psat_H2Ol */
+            /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
 
         }
     }
 
     /* Liquid/solid species */
-    SetShape( SO4L , NX, NY, (double) 0.0 );
-    SetShape( H2OL , NX, NY, (double) 0.0 );
-    SetShape( H2OS , NX, NY, (double) 0.0 );
-    SetShape( HNO3L, NX, NY, (double) 0.0 );
-    SetShape( HNO3S, NX, NY, (double) 0.0 );
-    SetShape( HClL , NX, NY, (double) 0.0 );
-    SetShape( HOClL, NX, NY, (double) 0.0 );
-    SetShape( HBrL , NX, NY, (double) 0.0 );
-    SetShape( HOBrL, NX, NY, (double) 0.0 );
+    SetShape( SO4L , size_x, size_y, (double) 0.0 );
+    SetShape( H2OL , size_x, size_y, (double) 0.0 );
+    SetShape( H2OS , size_x, size_y, (double) 0.0 );
+    SetShape( HNO3L, size_x, size_y, (double) 0.0 );
+    SetShape( HNO3S, size_x, size_y, (double) 0.0 );
+    SetShape( HClL , size_x, size_y, (double) 0.0 );
+    SetShape( HOClL, size_x, size_y, (double) 0.0 );
+    SetShape( HBrL , size_x, size_y, (double) 0.0 );
+    SetShape( HOBrL, size_x, size_y, (double) 0.0 );
 
     /* Aerosols */
-    SetShape( Soot, NX, NY, (double) 0.0 );
-    SetShape( SLA , NX, NY, (double) 0.0 );
-    SetShape( SPA , NX, NY, (double) 0.0 );
+    SetShape( Soot, size_x, size_y, (double) 0.0 );
+    SetShape( SLA , size_x, size_y, (double) 0.0 );
+    SetShape( SPA , size_x, size_y, (double) 0.0 );
 
 } /* End of Solution::Initialize */
 
