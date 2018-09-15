@@ -27,7 +27,7 @@ double pSat_H2Ol( double T )
     return HUN * exp( - 6096.9385 / T \
                       + 16.635794 \
                       - 0.02711193 * T \
-                      + 1.673952E-5 * pow( T, TWO ) \
+                      + 1.673952E-5 * T * T \
                       + 2.433502 * log( T ) );
 
 } /* End of pSat_H2Ol */
@@ -39,7 +39,7 @@ double pSat_H2Os( double T )
     return HUN * exp( - 6024.5282 / T \
                       + 24.7219 \
                       + 0.010613868 * T \
-                      - 1.3198825E-5 * pow( T, TWO ) \
+                      - 1.3198825E-5 * T * T \
                       - 0.49382577 * log( T ) );
 
 } /* End of pSat_H2Os */
