@@ -28,13 +28,38 @@ class Emission
     public:
 
         Emission( );
-        void Populate( const Engine &engine, const Fuel &fuel );
+        Emission( const Engine &engine, const Fuel &fuel );
+        Emission( const Emission &e );
         ~Emission( );
         void Populate_withEngine( const Engine &engine );
         void Populate_withFuel( const Fuel &fuel );
-        Emission operator+( const Emission &emission_add );
+        Emission& operator=( const Emission &em );
+        Emission& operator+( const Emission &em );
+        double GetCO2( ) const;
+        double GetH2O( ) const;
+        double GetNOx( ) const;
+        double GetNO( ) const;
+        double GetNO2( ) const;
+        double GetHNO2( ) const;
+        double GetSO2( ) const;
+        double GetCO( ) const;
+        double GetHC( ) const;
+        double GetCH4( ) const;
+        double GetC2H6( ) const;
+        double GetPRPE( ) const;
+        double GetALK4( ) const;
+        double GetCH2O( ) const;
+        double GetALD2( ) const;
+        double GetGLYX( ) const;
+        double GetMGLY( ) const;
+        double GetSoot( ) const;
+        double GetSootRad( ) const;
+        std::string GetEngineName( ) const;
+        std::string GetFuelChem( ) const;
         void Debug( ) const;
 
+    protected:
+        
         /* Gaseous species */
         double CO2;  /* [g/kg fuel] */
         double H2O;  /* [g/kg fuel] */

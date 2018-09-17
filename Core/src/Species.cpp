@@ -16,12 +16,14 @@
 
 SpeciesArray::SpeciesArray( )
 {
-    /* Constructor */
+    /* Default Constructor */
 
 } /* End of SpeciesArray::SpeciesArray */
 
-void SpeciesArray::Build( unsigned int nRing, unsigned int nTime )
+SpeciesArray::SpeciesArray( unsigned int nRing, unsigned int nTime )
 {
+
+    /* Constructor */
         
     for ( unsigned int i = 0; i < nTime; i++ ) {
         CO2.push_back( std::vector<double> ( nRing + 1 ) );
@@ -153,7 +155,294 @@ void SpeciesArray::Build( unsigned int nRing, unsigned int nTime )
         MO2.push_back( std::vector<double> ( nRing + 1 ) );
     }
 
-} /* End of SpeciesArray::Build */
+} /* End of SpeciesArray::SpeciesArray */
+
+SpeciesArray::SpeciesArray( const SpeciesArray &sp )
+{
+
+    CO2 = sp.CO2;
+    PPN = sp.PPN;
+    BrNO2 = sp.BrNO2;
+    IEPOX = sp.IEPOX;
+    PMNN = sp.PMNN;
+    N2O = sp.N2O;
+    N = sp.N;
+    PAN = sp.PAN;
+    ALK4 = sp.ALK4;
+    MAP = sp.MAP;
+    MPN = sp.MPN;
+    Cl2O2 = sp.Cl2O2;
+    ETP = sp.ETP;
+    HNO2 = sp.HNO2;
+    C3H8 = sp.C3H8;
+    RA3P = sp.RA3P;
+    RB3P = sp.RB3P;
+    OClO = sp.OClO;
+    ClNO2 = sp.ClNO2;
+    ISOP = sp.ISOP;
+    HNO4 = sp.HNO4;
+    MAOP = sp.MAOP;
+    MP = sp.MP;
+    ClOO = sp.ClOO;
+    RP = sp.RP;
+    BrCl = sp.BrCl;
+    PP = sp.PP;
+    PRPN = sp.PRPN;
+    SO4 = sp.SO4;
+    Br2 = sp.Br2;
+    ETHLN = sp.ETHLN;
+    MVKN = sp.MVKN;
+    R4P = sp.R4P;
+    C2H6 = sp.C2H6;
+    RIP = sp.RIP;
+    VRP = sp.VRP;
+    ATOOH = sp.ATOOH;
+    IAP = sp.IAP;
+    DHMOB = sp.DHMOB;
+    MOBA = sp.MOBA;
+    MRP = sp.MRP;
+    N2O5 = sp.N2O5;
+    ISNOHOO = sp.ISNOHOO;
+    ISNP = sp.ISNP;
+    ISOPNB = sp.ISOPNB;
+    IEPOXOO = sp.IEPOXOO;
+    MACRNO2 = sp.MACRNO2;
+    ROH = sp.ROH;
+    MOBAOO = sp.MOBAOO;
+    DIBOO = sp.DIBOO;
+    PMN = sp.PMN;
+    ISNOOB = sp.ISNOOB;
+    INPN = sp.INPN;
+    H = sp.H;
+    BrNO3 = sp.BrNO3;
+    PRPE = sp.PRPE;
+    MVKOO = sp.MVKOO;
+    Cl2 = sp.Cl2;
+    ISOPND = sp.ISOPND;
+    HOBr = sp.HOBr;
+    A3O2 = sp.A3O2;
+    PROPNN = sp.PROPNN;
+    GLYX = sp.GLYX;
+    MAOPO2 = sp.MAOPO2;
+    CH4 = sp.CH4;
+    GAOO = sp.GAOO;
+    B3O2 = sp.B3O2;
+    ACET = sp.ACET;
+    MACRN = sp.MACRN;
+    CH2OO = sp.CH2OO;
+    MGLYOO = sp.MGLYOO;
+    VRO2 = sp.VRO2;
+    MGLOO = sp.MGLOO;
+    MACROO = sp.MACROO;
+    PO2 = sp.PO2;
+    CH3CHOO = sp.CH3CHOO;
+    MAN2 = sp.MAN2;
+    ISNOOA = sp.ISNOOA;
+    H2O2 = sp.H2O2;
+    PRN1 = sp.PRN1;
+    ETO2 = sp.ETO2;
+    KO2 = sp.KO2;
+    RCO3 = sp.RCO3;
+    HC5OO = sp.HC5OO;
+    GLYC = sp.GLYC;
+    ClNO3 = sp.ClNO3;
+    RIO2 = sp.RIO2;
+    R4N1 = sp.R4N1;
+    HOCl = sp.HOCl;
+    ATO2 = sp.ATO2;
+    HNO3 = sp.HNO3;
+    ISN1 = sp.ISN1;
+    MAO3 = sp.MAO3;
+    MRO2 = sp.MRO2;
+    INO2 = sp.INO2;
+    HAC = sp.HAC;
+    HC5 = sp.HC5;
+    MGLY = sp.MGLY;
+    ISOPNBO2 = sp.ISOPNBO2;
+    ISOPNDO2 = sp.ISOPNDO2;
+    R4O2 = sp.R4O2;
+    R4N2 = sp.R4N2;
+    BrO = sp.BrO;
+    RCHO = sp.RCHO;
+    MEK = sp.MEK;
+    ClO = sp.ClO;
+    MACR = sp.MACR;
+    SO2 = sp.SO2;
+    MVK = sp.MVK;
+    ALD2 = sp.ALD2;
+    MCO3 = sp.MCO3;
+    CH2O = sp.CH2O;
+    H2O = sp.H2O;
+    Br = sp.Br;
+    NO = sp.NO;
+    NO3 = sp.NO3;
+    Cl = sp.Cl;
+    O = sp.O;
+    O1D = sp.O1D;
+    O3 = sp.O3;
+    HO2 = sp.HO2;
+    NO2 = sp.NO2;
+    OH = sp.OH;
+    HBr = sp.HBr;
+    HCl = sp.HCl;
+    CO = sp.CO;
+    MO2 = sp.MO2;
+    ACTA = sp.ACTA;
+    EOH = sp.EOH;
+    H2 = sp.H2;
+    HCOOH = sp.HCOOH;
+    MOH = sp.MOH;
+    N2 = sp.N2;
+    O2 = sp.O2;
+    RCOOH = sp.RCOOH;  
+
+} /* End of SpeciesArray::SpeciesArray */
+    
+SpeciesArray& SpeciesArray::operator=( const SpeciesArray &sp )
+{
+
+    if ( &sp == this )
+        return *this;
+    
+    CO2 = sp.CO2;
+    PPN = sp.PPN;
+    BrNO2 = sp.BrNO2;
+    IEPOX = sp.IEPOX;
+    PMNN = sp.PMNN;
+    N2O = sp.N2O;
+    N = sp.N;
+    PAN = sp.PAN;
+    ALK4 = sp.ALK4;
+    MAP = sp.MAP;
+    MPN = sp.MPN;
+    Cl2O2 = sp.Cl2O2;
+    ETP = sp.ETP;
+    HNO2 = sp.HNO2;
+    C3H8 = sp.C3H8;
+    RA3P = sp.RA3P;
+    RB3P = sp.RB3P;
+    OClO = sp.OClO;
+    ClNO2 = sp.ClNO2;
+    ISOP = sp.ISOP;
+    HNO4 = sp.HNO4;
+    MAOP = sp.MAOP;
+    MP = sp.MP;
+    ClOO = sp.ClOO;
+    RP = sp.RP;
+    BrCl = sp.BrCl;
+    PP = sp.PP;
+    PRPN = sp.PRPN;
+    SO4 = sp.SO4;
+    Br2 = sp.Br2;
+    ETHLN = sp.ETHLN;
+    MVKN = sp.MVKN;
+    R4P = sp.R4P;
+    C2H6 = sp.C2H6;
+    RIP = sp.RIP;
+    VRP = sp.VRP;
+    ATOOH = sp.ATOOH;
+    IAP = sp.IAP;
+    DHMOB = sp.DHMOB;
+    MOBA = sp.MOBA;
+    MRP = sp.MRP;
+    N2O5 = sp.N2O5;
+    ISNOHOO = sp.ISNOHOO;
+    ISNP = sp.ISNP;
+    ISOPNB = sp.ISOPNB;
+    IEPOXOO = sp.IEPOXOO;
+    MACRNO2 = sp.MACRNO2;
+    ROH = sp.ROH;
+    MOBAOO = sp.MOBAOO;
+    DIBOO = sp.DIBOO;
+    PMN = sp.PMN;
+    ISNOOB = sp.ISNOOB;
+    INPN = sp.INPN;
+    H = sp.H;
+    BrNO3 = sp.BrNO3;
+    PRPE = sp.PRPE;
+    MVKOO = sp.MVKOO;
+    Cl2 = sp.Cl2;
+    ISOPND = sp.ISOPND;
+    HOBr = sp.HOBr;
+    A3O2 = sp.A3O2;
+    PROPNN = sp.PROPNN;
+    GLYX = sp.GLYX;
+    MAOPO2 = sp.MAOPO2;
+    CH4 = sp.CH4;
+    GAOO = sp.GAOO;
+    B3O2 = sp.B3O2;
+    ACET = sp.ACET;
+    MACRN = sp.MACRN;
+    CH2OO = sp.CH2OO;
+    MGLYOO = sp.MGLYOO;
+    VRO2 = sp.VRO2;
+    MGLOO = sp.MGLOO;
+    MACROO = sp.MACROO;
+    PO2 = sp.PO2;
+    CH3CHOO = sp.CH3CHOO;
+    MAN2 = sp.MAN2;
+    ISNOOA = sp.ISNOOA;
+    H2O2 = sp.H2O2;
+    PRN1 = sp.PRN1;
+    ETO2 = sp.ETO2;
+    KO2 = sp.KO2;
+    RCO3 = sp.RCO3;
+    HC5OO = sp.HC5OO;
+    GLYC = sp.GLYC;
+    ClNO3 = sp.ClNO3;
+    RIO2 = sp.RIO2;
+    R4N1 = sp.R4N1;
+    HOCl = sp.HOCl;
+    ATO2 = sp.ATO2;
+    HNO3 = sp.HNO3;
+    ISN1 = sp.ISN1;
+    MAO3 = sp.MAO3;
+    MRO2 = sp.MRO2;
+    INO2 = sp.INO2;
+    HAC = sp.HAC;
+    HC5 = sp.HC5;
+    MGLY = sp.MGLY;
+    ISOPNBO2 = sp.ISOPNBO2;
+    ISOPNDO2 = sp.ISOPNDO2;
+    R4O2 = sp.R4O2;
+    R4N2 = sp.R4N2;
+    BrO = sp.BrO;
+    RCHO = sp.RCHO;
+    MEK = sp.MEK;
+    ClO = sp.ClO;
+    MACR = sp.MACR;
+    SO2 = sp.SO2;
+    MVK = sp.MVK;
+    ALD2 = sp.ALD2;
+    MCO3 = sp.MCO3;
+    CH2O = sp.CH2O;
+    H2O = sp.H2O;
+    Br = sp.Br;
+    NO = sp.NO;
+    NO3 = sp.NO3;
+    Cl = sp.Cl;
+    O = sp.O;
+    O1D = sp.O1D;
+    O3 = sp.O3;
+    HO2 = sp.HO2;
+    NO2 = sp.NO2;
+    OH = sp.OH;
+    HBr = sp.HBr;
+    HCl = sp.HCl;
+    CO = sp.CO;
+    MO2 = sp.MO2;
+    ACTA = sp.ACTA;
+    EOH = sp.EOH;
+    H2 = sp.H2;
+    HCOOH = sp.HCOOH;
+    MOH = sp.MOH;
+    N2 = sp.N2;
+    O2 = sp.O2;
+    RCOOH = sp.RCOOH;
+
+    return *this;
+
+} /* End of SpeciesArray::operator= */
 
 SpeciesArray::~SpeciesArray( )
 {
@@ -161,5 +450,19 @@ SpeciesArray::~SpeciesArray( )
 
 } /* End of SpeciesArray::~SpeciesArray */
 
+unsigned int SpeciesArray::GetnRing() const
+{
+
+    return nRing;
+
+} /* End of SpeciesArray::GetnRing */
+
+unsigned int SpeciesArray::GetnTime() const
+{
+
+    return nTime;
+
+} /* End of SpeciesArray::GetnTime */
 
 
+/* End of Species.cpp */

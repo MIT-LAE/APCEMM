@@ -16,6 +16,7 @@
 #define CLUSTER_H_INCLUDED
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <cmath>
 #include "Ring.hpp"
@@ -34,6 +35,7 @@ class Cluster
         bool halfRing() const;
         std::vector<Ring> GetRings() const; 
         void PrintRings() const;
+        void Debug() const;
 
     protected:
 

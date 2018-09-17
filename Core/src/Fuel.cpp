@@ -14,22 +14,64 @@
 
 #include "Fuel.hpp"
 
+Fuel::Fuel( )
+{
+
+    /* Default Constructor */
+
+} /* End of Fuel::Fuel */
+
 Fuel::Fuel( const char *fuelChem )
 {
+
     /* Constructor */
-    GetAtoms( fuelChem );
+    getAtoms( fuelChem );
 
     FSC = 1600; /* [ppm] */
 
     std::string ChemFormula( fuelChem );
-}
+
+} /* End of Fuel::Fuel */
+
+Fuel::Fuel( const Fuel &f )
+{
+
+    /* Constructor */
+    
+    atomC = f.getAtomC();
+    atomH = f.getAtomH();
+    atomN = f.getAtomN();
+    atomS = f.getAtomS();
+    FSC = f.getFSC();
+    ChemFormula = f.getChemFormula();
+
+} /* End of Fuel::Fuel */
+
+Fuel& Fuel::operator=( const Fuel &f )
+{
+
+    if ( &f == this )
+        return *this;
+
+    atomC = f.getAtomC();
+    atomH = f.getAtomH();
+    atomN = f.getAtomN();
+    atomS = f.getAtomS();
+    FSC = f.getFSC();
+    ChemFormula = f.getChemFormula();
+
+    return *this;
+
+} /* End of Fuel::operator= */
 
 Fuel::~Fuel( )
 {
-    /* Destructor */
-}
 
-void Fuel::GetAtoms( const char *fuelChem )
+    /* Destructor */
+
+} /* End of Fuel::~Fuel */
+
+void Fuel::getAtoms( const char *fuelChem )
 {
     atomC = 0;
     atomH = 0;
@@ -82,5 +124,50 @@ void Fuel::GetAtoms( const char *fuelChem )
         return;
     }
 
-}
+} /* End of Fuel::getAtoms */
+
+double Fuel::getAtomC() const
+{
+
+    return atomC;
+
+} /* End of Fuel::getAtomC */
+
+double Fuel::getAtomH() const
+{
+
+    return atomH;
+
+} /* End of Fuel::getAtomH */
+
+double Fuel::getAtomN() const
+{
+
+    return atomN;
+
+} /* End of Fuel::getAtomN */
+
+double Fuel::getAtomS() const
+{
+
+    return atomS;
+
+} /* End of Fuel::getAtomS */
+
+double Fuel::getFSC() const
+{
+
+    return FSC;
+
+} /* End of Fuel::getFSC */
+
+std::string Fuel::getChemFormula() const
+{
+
+    return ChemFormula;
+
+} /* End of Fuel::getChemFormula */
+
+
+/* End of Fuel.cpp */
 

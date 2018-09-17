@@ -157,4 +157,51 @@ void Cluster::PrintRings() const
 
 } /* End of Cluster::PrintRings */
 
+void Cluster::Debug() const
+{
+
+    std::streamsize ss = std::cout.precision();
+
+    std::cout.precision(5);
+
+    std::cout << std::endl;
+    std::cout << "**** Input Debugger ****" << std::endl;
+    std::cout << "Cluster parameters: " << std::endl;
+    std::cout << std::endl;
+    std::setw(15);
+    std::cout << "Ring number   ";
+    std::setw(15);
+    std::cout << "Horizontal dimension   ";
+    std::setw(15);
+    std::cout << "Vertical dimension";
+    std::cout << std::endl;
+    for ( unsigned int i = 0; i < nR; i++ ) {
+        std::setw(7);
+        std::cout << "     ";
+        std::setw(15);
+        std::cout << i;
+        std::setw(7);
+        if ( i >= 10 )
+            std::cout << "     ";
+        else
+            std::cout << "      ";
+        std::setw(15);
+        std::cout << "        ";
+        std::setw(15);
+        std::cout << Rings[i].GetHAxis();
+        std::cout << "        ";
+        std::setw(15);
+        std::cout << "        ";
+        std::setw(15);
+        std::cout << Rings[i].GetVAxis();
+        std::cout << "        ";
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    std::cout << std::endl;
+    
+    std::cout.precision(ss);
+
+} /* End of Cluster::Debug */
+
 /* End of Cluster.cpp */

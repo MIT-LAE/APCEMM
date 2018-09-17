@@ -18,10 +18,12 @@ const char * const Engine::engineFileName = "./data/ENG_EI.txt";
 
 Engine::Engine( )
 {
-    /* Constructor */
-}
 
-void Engine::Build( const char *engineName, double tempe_K, double pres_Pa, double relHum_w, double machNumber )
+    /* Default Constructor */
+
+} /* End of Engine::Engine */
+
+Engine::Engine( const char *engineName, double tempe_K, double pres_Pa, double relHum_w, double machNumber )
 {
     Name = engineName;
 
@@ -298,18 +300,61 @@ void Engine::Build( const char *engineName, double tempe_K, double pres_Pa, doub
     EI_Soot = 0.02; /* [g/kg fuel] */
     SootRad = 20.0E-09; /* [m] */
 
-}
+} /* End of Engine::Engine */
+
+Engine::Engine( const Engine &e )
+{
+
+    Name = e.getName();
+    EI_NOx = e.getEI_NOx();
+    EI_NO = e.getEI_NO();
+    EI_NO2 = e.getEI_NO2();
+    EI_HNO2 = e.getEI_HNO2();
+    EI_CO = e.getEI_CO();
+    EI_HC = e.getEI_HC();
+    EI_Soot = e.getEI_Soot();
+    SootRad = e.getSootRad();
+    fuelflow = e.getFuelFlow();
+    theta = e.getTheta();
+    delta = e.getDelta();
+
+} /* End of Engine::Engine */
+
+Engine& Engine::operator=( const Engine &e )
+{
+
+    if ( &e == this )
+        return *this;
+
+    Name = e.getName();
+    EI_NOx = e.getEI_NOx();
+    EI_NO = e.getEI_NO();
+    EI_NO2 = e.getEI_NO2();
+    EI_HNO2 = e.getEI_HNO2();
+    EI_CO = e.getEI_CO();
+    EI_HC = e.getEI_HC();
+    EI_Soot = e.getEI_Soot();
+    SootRad = e.getSootRad();
+    fuelflow = e.getFuelFlow();
+    theta = e.getTheta();
+    delta = e.getDelta();
+    return *this;
+
+} /* End of Engine::operator= */
 
 Engine::~Engine( )
 {
+
     /* Destructor */
-}
+
+} /* End of Engine::~Engine */
 
 bool Engine::CheckFile( const char *fileName ) const
 {
     std::ifstream f( fileName );
     return f.is_open();
-}
+
+} /* End of Engine::CheckFile */
 
 void Engine::OpenFile( const char *fileName, std::ifstream &file )
 {
@@ -323,12 +368,13 @@ void Engine::OpenFile( const char *fileName, std::ifstream &file )
 
     file.open( fileName );
 
-}
+} /* End of Engine::OpenFile */
 
 void Engine::CloseFile( std::ifstream &file )
 {
     file.close( );
-}
+
+} /* End of Engine::CloseFile */
 
 bool Engine::GetEDB( std::ifstream &enginefile, const char *engineName, std::string &idle, std::string &approach, std::string &climbout, std::string &takeoff )
 {
@@ -360,7 +406,91 @@ bool Engine::GetEDB( std::ifstream &enginefile, const char *engineName, std::str
 
     return found;
 
-}
+} /* End of Engine::GetEDB */
+
+std::string Engine::getName() const
+{
+
+    return Name;
+
+} /* End of Engine::getName */
+
+double Engine::getEI_NOx() const
+{
+
+    return EI_NOx;
+
+} /* End of Engine::getEI_NOx */
+
+double Engine::getEI_NO() const
+{
+
+    return EI_NO;
+
+} /* End of Engine::getEI_NO */
+
+double Engine::getEI_NO2() const
+{
+
+    return EI_NO2;
+
+} /* End of Engine::getEI_NO2 */
+
+double Engine::getEI_HNO2() const
+{
+
+    return EI_HNO2;
+
+} /* End of Engine::getEI_HNO2 */
+
+double Engine::getEI_CO() const
+{
+
+    return EI_CO;
+
+} /* End of Engine::getEI_CO */
+
+double Engine::getEI_HC() const
+{
+
+    return EI_HC;
+
+} /* End of Engine::getEI_HC */
+
+double Engine::getEI_Soot() const
+{
+
+    return EI_Soot;
+
+} /* End of Engine::getEI_Soot */
+
+double Engine::getSootRad() const
+{
+
+    return SootRad;
+
+} /* End of Engine::getSootRad */
+
+double Engine::getFuelFlow() const
+{
+
+    return fuelflow;
+
+} /* End of Engine::getFuelFlow */
+
+double Engine::getTheta() const
+{
+
+    return theta;
+
+} /* End of Engine::getTheta */
+
+double Engine::getDelta() const
+{
+
+    return delta;
+
+} /* End of Engine::getDelta */
 
 /* End of Engine.cpp */
 

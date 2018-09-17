@@ -22,13 +22,23 @@
 
 #include "Engine.hpp"
 
-class Aircraft
+class Aircraft 
 {
     public:
 
         Aircraft( const char *aircraftName, double temperature_K, double pressure_Pa, double relHumidity_w );
         ~Aircraft( );
         void Debug( ) const;
+        std::string getName() const;
+        double getVFlight() const;
+        double getMach() const;
+        double getWingSpan() const;
+        double getMTOW() const;
+        double getCurrMass() const;
+        Engine getEngine() const;
+        unsigned int getEngNumber() const;
+
+    protected:
 
         /* Aircraft name */
         std::string Name;

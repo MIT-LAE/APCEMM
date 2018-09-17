@@ -23,9 +23,20 @@ class Fuel
 {
     public:
 
+        Fuel( );
         Fuel( const char *fuelName );
+        Fuel( const Fuel &f );
+        Fuel& operator=( const Fuel &f );
         ~Fuel( );
-        void GetAtoms( const char *fuelChem );
+        void getAtoms( const char *fuelChem );
+        double getAtomC() const;
+        double getAtomH() const;
+        double getAtomN() const;
+        double getAtomS() const;
+        double getFSC() const;
+        std::string getChemFormula() const;
+        
+    protected:
 
         /* Atomic composition: CxHy */
         double atomC;

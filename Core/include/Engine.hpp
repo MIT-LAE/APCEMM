@@ -30,12 +30,28 @@ class Engine
     public:
         
         Engine( );
-        void Build( const char *engineName, double tempe_K, double pres_Pa, double relHum_w, double machNumber );
+        Engine( const char *engineName, double tempe_K, double pres_Pa, double relHum_w, double machNumber );
+        Engine( const Engine &e );
+        Engine& operator=( const Engine &e );
         ~Engine( );
         bool CheckFile( const char *fileName ) const;
         void OpenFile( const char *fileName, std::ifstream &file );
         void CloseFile( std::ifstream &file );
         bool GetEDB( std::ifstream &file, const char *engineName, std::string &idle, std::string &approach, std::string &climbout, std::string &takeoff );
+        std::string getName() const;
+        double getEI_NOx() const;
+        double getEI_NO() const;
+        double getEI_NO2() const;
+        double getEI_HNO2() const;
+        double getEI_CO() const;
+        double getEI_HC() const;
+        double getEI_Soot() const;
+        double getSootRad() const;
+        double getFuelFlow() const;
+        double getTheta() const;
+        double getDelta() const;
+
+    protected:
 
         /* Engine name */
         std::string Name;
