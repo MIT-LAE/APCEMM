@@ -3,42 +3,46 @@
 /*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
-/* Ring Header File                                                 */
+/* Cluster Header File                                              */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 8/12/2018                                 */
-/* File                 : Ring.hpp                                  */
+/* File                 : Cluster.hpp                               */
 /* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef RING_H_INCLUDED
-#define RING_H_INCLUDED
+#ifndef CLUSTER_H_INCLUDED
+#define CLUSTER_H_INCLUDED
 
 #include <iostream>
+#include <vector>
+#include <cmath>
+#include "Ring.hpp"
 
-class Ring
+class Cluster
 {
 
     public:
 
-        Ring( );
-        Ring( double a, double b );
-        Ring( const Ring &r );
-        Ring& operator=( const Ring &r );
-        ~Ring( );
-        void Assign( double a, double b );
-        void Print( ) const;
-        double GetHAxis( ) const;
-        double GetVAxis( ) const;
+        Cluster( );
+        Cluster( unsigned int n, bool sRing, double sigma1, double sigma2, double d1, double d2 );
+        Cluster( const Cluster& cl );
+        Cluster& operator=( const Cluster& cl );
+        ~Cluster( );
+        unsigned int nRing() const;
+        bool halfRing() const;
+        std::vector<Ring> GetRings() const; 
+        void PrintRings() const;
 
     protected:
 
-        double horizontalAxis;
-        double verticalAxis;
-
-    private:
+        unsigned int nR;
+        bool semiRing;
+        double sigmaX, sigmaY;
+        double dH, dV;
+        std::vector<Ring> Rings;
 
 };
 
-#endif /* RING_H_INCLUDED */
+#endif /* CLUSTER_H_INCLUDED */

@@ -24,7 +24,8 @@
 #include "Interface.hpp"
 #include "Monitor.hpp"
 #if RINGS == 1
-    #include "Ring.hpp"
+//    #include "Ring.hpp"
+    #include "Cluster.hpp"
     #include "Species.hpp"
 #endif
 #include "Structure.hpp"
@@ -127,51 +128,20 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     /* Rings? */
     if ( RINGS ) {
-        /** ~~~~~~~~~~~~~~~~~ **/
-        /**        Ring       **/
-        /** ~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~ **/
+        /**  Cluster of rings  **/
+        /** ~~~~~~~~~~~~~~~~~~ **/
         
-        /* Create rings */
-        unsigned int iRing;
-        unsigned int nRing = NRING;
-        bool semiRing = 0;
-        double sigmaX0, sigmaY0;
-        sigmaX0 = 73.796;
-        sigmaY0 = 27.361;
-        double dH0, dV0;
-        std::vector<double> ringSizes;
-        if ( !semiRing )
-            ringSizes = {0.0, 0.25, 1.0, 2.0, 4.0, 6.0, 8.0, 12.0, 16.0, 20.0, 25.0, 30.0, 35.0, 40.0, 48.0};
-        else
-            ringSizes = {0.0, 0.0, 0.25, 0.25, 1.0, 1.0, 2.0, 2.0, 4.0, 4.0, 6.0, 6.0, 8.0, 8.0, 12.0, 12.0, \
-                         16.0, 16.0, 20.0, 20.0, 25.0, 25.0, 30.0, 30.0, 35.0, 35.0, 40.0, 40.0, 48.0, 48.0};
-
-        dH0 = 15;
-        dV0 = 0.15;
-        /* If supersaturated, asymmetry arises -> half-rings */
-        if ( relHumidity_i > 100.0 ) {
-            nRing = nRing * 2;
-            semiRing = 1;
-        }
-
-        std::vector<Ring> Rings(nRing);
-
-        for ( iRing = 0; iRing < nRing; iRing++ ) {
-            Rings[iRing].Create( sqrt( sigmaX0 * sigmaX0 + 16*dH0*3600.0*ringSizes[iRing] ), sqrt( sigmaY0 * sigmaY0 + 16*dV0*3600.0*ringSizes[iRing] ) );
-            if ( semiRing ) {
-                /* Build half-rings */
-                Rings[iRing+1] = Rings[iRing].Copy();
-                iRing++;
-            }
-        }
+        Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), 0.0, 0.0, 0.0, 0.0 );
+      
+        if ( DEBUG_RINGS )
+            ringCluster.PrintRings();
 
         SpeciesArray ringSpecies;
-        ringSpecies.Build( nRing, timeArray.size() );
+        ringSpecies.Build( ringCluster.nRing(), timeArray.size() );
 
     }
    
-
-
 
     /** ~~~~~~~~~~~~~~~~~ **/
     /**     Emissions     **/

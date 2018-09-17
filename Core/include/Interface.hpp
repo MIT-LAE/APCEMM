@@ -28,6 +28,7 @@
 /* DEBUG */
 #define DEBUG_AC_INPUT          0    /* Debug AC Input? */
 #define DEBUG_BG_INPUT          0    /* Debug Background Input? */
-#define DEBUG_EI_INPUT          0    /* Debut Emission Input? */
+#define DEBUG_EI_INPUT          0    /* Debug Emission Input? */
+#define DEBUG_RINGS             0    /* Debug Rings? */
 
 #endif /* INTERFACE_H_INCLUDED */
