@@ -28,6 +28,7 @@
     #include "Cluster.hpp"
     #include "Species.hpp"
 #endif
+#include "Mesh.hpp"
 #include "Structure.hpp"
 #include "Fuel.hpp"
 #include "Engine.hpp"
@@ -38,9 +39,6 @@ typedef std::complex<double> Complex;
 typedef std::vector<double> Real_1DVector;
 typedef std::vector<Real_1DVector> Real_2DVector;
 
-void BuildMesh( double *x, double *y, \
-                double const xlim, double const ylim, \
-                unsigned int const nx, unsigned int const ny );
 void SZA( double latitude_deg, int dayGMT,\
           double &sunRise, double &sunSet,\
           double &SZASINLAT, double &SZACOSLAT,\
@@ -48,10 +46,10 @@ void SZA( double latitude_deg, int dayGMT,\
 void DiffParam( double time, double &d_H, double &d_V );
 std::vector<double> BuildTime( double tStart, double tFinal, \
                double sunRise, double sunSet );
-double pSat_H2Ol( double T );
-double pSat_H2Os( double T );
 double UpdateTime( double time, double tStart, \
                    double sunRise, double sunSet );
+double pSat_H2Ol( double T );
+double pSat_H2Os( double T );
 void CallSolver( Solution& Data, Solver& SANDS );
 
 #ifdef __cplusplus
@@ -91,13 +89,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /** ~~~~~~~~~~~~~~~~~ **/
     /**        Mesh       **/
     /** ~~~~~~~~~~~~~~~~~ **/
-    double x[NX], y[NY];
-    BuildMesh(  x,  y, XLIM, YLIM, NX, NY );
-
-    bool fillNegValues = 1;
-    double fillWith = 0.0;
-    Solver SANDS_Solver( fillNegValues, fillWith );
-
+    Mesh m;
 
 
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -116,8 +108,49 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     timeArray = BuildTime ( 3600.0*tInitial, 3600.0*tFinal, 3600.0*sunRise, 3600.0*sunSet );
     
 
+    
+    /** ~~~~~~~~~~~~~~~~~ **/
+    /**     Background    **/
+    /** ~~~~~~~~~~~~~~~~~ **/
+    /* Assign solution structure */
+    Solution Data(N_SPC, NX, NY);
 
-    /* Rings? */
+    /* Compute airDens from pressure and temperature */
+    double airDens = pressure_Pa / ( kB   * temperature_K ) * 1.00E-06;
+    /* [molec/cm3] = [Pa = J/m3] / ([J/K] * [K])            * [m3/cm3] */
+
+    char const *fileName("data/Ambient.txt");
+    /* Set solution arrays to ambient data */
+    Data.Initialize( fileName, temperature_K, airDens, relHumidity_w );
+
+    /* Print Background Debug? */
+    if ( DEBUG_BG_INPUT )
+        Data.Debug( airDens );
+
+    
+    
+    /** ~~~~~~~~~~~~~~~~~ **/
+    /**      Solver       **/
+    /** ~~~~~~~~~~~~~~~~~ **/
+    bool fillNegValues = 1;
+    double fillWith = 0.0;
+    Solver SANDS_Solver( fillNegValues, fillWith );
+    
+    /* Run FFTW_Wisdom? */
+    if ( FFTW_WISDOM ) {
+        int start_wisdom, stop_wisdom;
+        start_wisdom = clock();
+        std::cout << "FFTW_Wisdom..." << std::endl;
+        SANDS_Solver.Wisdom( Data.CO2 );
+        stop_wisdom = clock();
+        std::cout << "time: " << (stop_wisdom-start_wisdom)/double(CLOCKS_PER_SEC) << " [s]" << std::endl;
+    }
+
+
+
+    /** ~~~~~~~~~~~~~~~~~ **/
+    /**      Rings?       **/
+    /** ~~~~~~~~~~~~~~~~~ **/
     if ( RINGS ) {
         /** ~~~~~~~~~~~~~~~~~~ **/
         /**  Cluster of rings  **/
@@ -132,10 +165,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
         /* Allocate species-ring vector */
         SpeciesArray ringSpecies( ringCluster.nRing(), timeArray.size() );
-
     }
    
 
+    
     /** ~~~~~~~~~~~~~~~~~ **/
     /**     Emissions     **/
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -160,32 +193,16 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 
 
-    /** ~~~~~~~~~~~~~~~~~ **/
-    /**     Background    **/
-    /** ~~~~~~~~~~~~~~~~~ **/
-    /* Assign solution structure */
-    Solution Data(N_SPC, NX, NY);
-
-    /* Compute airDens from pressure and temperature */
-    double airDens = pressure_Pa / ( kB   * temperature_K ) * 1.00E-06;
-    /* [molec/cm3] = [Pa = J/m3] / ([J/K] * [K])            * [m3/cm3] */
-
-    char const *fileName("data/Ambient.txt");
-    /* Set solution arrays to ambient data */
-    Data.Initialize( fileName, temperature_K, airDens, relHumidity_w );
-
-    /* Print Background Debug? */
-    if ( DEBUG_BG_INPUT )
-        Data.Debug( airDens );
-
-    std::cout << "NY: " << Data.O3.size() << std::endl;
-    std::cout << "NX: " << Data.O3[0].size() << std::endl;
-
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+    /**      Update Time Step      **/
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /* Define initial time step and diffusion and advection arrays */
     double dt;
     dt = UpdateTime( curr_Time, 3600.0*tInitial, 3600.0*sunRise, 3600.0*sunSet );
     SANDS_Solver.UpdateTimeStep( dt );
     
+
+
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /**     Advection & Diffusion    **/
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
@@ -212,15 +229,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     SANDS_Solver.UpdateDiff( d_x, d_y );
     SANDS_Solver.UpdateAdv( v_x, v_y );
 
-    /* Run FFTW_Wisdom */
-    if ( ( nTime == 0 ) && ( FFTW_WISDOM ) ) {
-        int start_wisdom, stop_wisdom;
-        start_wisdom = clock();
-        std::cout << "FFTW_Wisdom..." << std::endl;
-        SANDS_Solver.Wisdom( Data.CO2 );
-        stop_wisdom = clock();
-        std::cout << "time: " << (stop_wisdom-start_wisdom)/double(CLOCKS_PER_SEC) << " [s]" << std::endl;
-    }
 
     double sum = 0;
 
