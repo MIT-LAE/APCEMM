@@ -19,9 +19,17 @@
 #define DIFFUSION               1    /* Is diffusion turned on? */
 #define ADVECTION               1    /* Is advection turned on? */
 
+/* SYMMETRIES */
+#define X_SYMMETRY              1    /* Is the problem symmetric around the x-axis? */
+#define Y_SYMMETRY              1    /* Is the problem symmetric around the y-axis? */
+
 /* FFTW */
 #define FFTW_WISDOM             0    /* Find most efficient algorithm through FFTW_wisdom. Takes ~ 10s */
 const char* const WISDOMFILE = "../SANDS/data/FFTW_Wisdom.out"; 
+
+/* MICROPHYSICS */
+#define ICE_MICROPHYSICS        1    /* Is ice microphysics turned on? */
+#define SUL_MICROPHYSICS        1    /* Is sulfate microphysics turned on? */
 
 /* BACKGROUND MIX RATIO */
 const char* const AMBFILE    = "data/Ambient.txt";

@@ -75,6 +75,19 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     double relHumidity_i = relHumidity_w * pSat_H2Ol( temperature_K )\
                                          / pSat_H2Os( temperature_K );
 
+    /* If ICE_MICROPHYSICS is turned on and the domain is supersaturated, break the x-symmetry */
+#if ICE_MICROPHYSICS && X_SYMMETRY  
+
+    /* Is supersaturated? */
+    if ( relHumidity_i > 100.0 ) {
+
+#undef X_SYMMETRY
+#define X_SYMMETRY                  0     /* Set x-symmetry to 0 */
+
+    }
+#endif
+
+
     unsigned int dayGMT(81);
     double sunRise, sunSet; /* sun rise and sun set in hours */
     double SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC;
@@ -104,7 +117,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     /* Create time array */
     std::vector<double> timeArray;
-    int nTime = 0;
+    unsigned int nTime = 0;
     timeArray = BuildTime ( 3600.0*tInitial, 3600.0*tFinal, 3600.0*sunRise, 3600.0*sunSet );
     
 
@@ -146,28 +159,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     }
 
 
-
-    /** ~~~~~~~~~~~~~~~~~ **/
-    /**      Rings?       **/
-    /** ~~~~~~~~~~~~~~~~~ **/
-    if ( RINGS ) {
-        /** ~~~~~~~~~~~~~~~~~~ **/
-        /**  Cluster of rings  **/
-        /** ~~~~~~~~~~~~~~~~~~ **/
-        
-        /* Create cluster of rings */
-        Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), 0.0, 0.0, 0.0, 0.0 );
-      
-        /* Print Ring Debug? */
-        if ( DEBUG_RINGS )
-            ringCluster.Debug();
-
-        /* Allocate species-ring vector */
-        SpeciesArray ringSpecies( ringCluster.nRing(), timeArray.size() );
-    }
-   
-
-    
     /** ~~~~~~~~~~~~~~~~~ **/
     /**     Emissions     **/
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -189,6 +180,49 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Print Emission Debug? */
     if ( DEBUG_EI_INPUT )
         EI.Debug(); 
+
+
+
+    /** ~~~~~~~~~~~~~~~~~ **/
+    /**      Rings?       **/
+    /** ~~~~~~~~~~~~~~~~~ **/
+
+    if ( RINGS ) {
+        
+        /** ~~~~~~~~~~~~~~~~~~ **/
+        /**  Cluster of rings  **/
+        /** ~~~~~~~~~~~~~~~~~~ **/
+        
+        /* Create cluster of rings */
+        Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), 0.0, 0.0, 0.0, 0.0 );
+      
+        /* Print Ring Debug? */
+        if ( DEBUG_RINGS )
+            ringCluster.Debug();
+
+        /* Allocate species-ring vector */
+        SpeciesArray ringSpecies( ringCluster.nRing(), timeArray.size() );
+
+        start_s = clock();
+        
+        m.Ring2Mesh( ringCluster );
+
+        stop_s = clock();
+        std::cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << " [ms], " << std::endl;
+
+        start_s = clock();
+      
+        /* Fill in variables species for initial time */
+
+        ringSpecies.FillIn( Data, m, nTime );
+
+        stop_s = clock();
+        std::cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << " [ms], " << std::endl;
+
+    }
+   
+
+    
 
 
 
@@ -265,12 +299,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 //            std::cout << sum/airDens*1E9 << std::endl;
         }
             
-        for ( int k = -3; k < 3; k++ ) {
-            for ( int l = -3; l < 3; l++ ) 
-                std::cout << (Data.O3[NY/2+k][NX/2+l])/airDens*1E9 << ", "; 
-            std::cout << std::endl;
-        }
-
     }
 
 

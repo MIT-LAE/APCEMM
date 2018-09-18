@@ -18,6 +18,10 @@
 #include <iostream> 
 #include <vector>
 
+#include "Interface.hpp"
+#include "Structure.hpp"
+#include "Mesh.hpp"
+
 class SpeciesArray
 {
 
@@ -29,6 +33,7 @@ class SpeciesArray
         SpeciesArray& operator=( const SpeciesArray &sp );
         SpeciesArray& operator+( const SpeciesArray &sp );
         ~SpeciesArray( );
+        void FillIn( Solution &Data, Mesh &m, unsigned int nCounter );
         unsigned int GetnRing() const;
         unsigned int GetnTime() const;
 
