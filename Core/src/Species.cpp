@@ -294,6 +294,15 @@ SpeciesArray::SpeciesArray( const SpeciesArray &sp )
     HCl = sp.HCl;
     CO = sp.CO;
     MO2 = sp.MO2;
+    ACTA = sp.ACTA;
+    EOH = sp.EOH;
+    H2 = sp.H2;
+    HCOOH = sp.HCOOH;
+    MOH = sp.MOH;
+    N2 = sp.N2;
+    O2 = sp.O2;
+    RCOOH = sp.RCOOH;
+
 
 } /* End of SpeciesArray::SpeciesArray */
     
@@ -430,6 +439,14 @@ SpeciesArray& SpeciesArray::operator=( const SpeciesArray &sp )
     HCl = sp.HCl;
     CO = sp.CO;
     MO2 = sp.MO2;
+    ACTA = sp.ACTA;
+    EOH = sp.EOH;
+    H2 = sp.H2;
+    HCOOH = sp.HCOOH;
+    MOH = sp.MOH;
+    N2 = sp.N2;
+    O2 = sp.O2;
+    RCOOH = sp.RCOOH;
     return *this;
 
 } /* End of SpeciesArray::operator= */
@@ -726,6 +743,16 @@ void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
         MO2[nCounter][iRing]   /= ( nMap[iRing] / fMult );
 
     }
+
+    ACTA  = Data.ACTA[0][0];
+    EOH   = Data.EOH[0][0];
+    H2    = Data.H2[0][0];
+    HCOOH = Data.HCOOH[0][0];
+    MOH   = Data.MOH[0][0];
+    N2    = Data.N2[0][0];
+    O2    = Data.O2[0][0];
+    RCOOH = Data.RCOOH[0][0];
+
 
 
 } /* End of SpeciesArray::FillIn */

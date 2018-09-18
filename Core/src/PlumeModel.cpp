@@ -203,21 +203,11 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /* Allocate species-ring vector */
         SpeciesArray ringSpecies( ringCluster.nRing(), timeArray.size() );
 
-        start_s = clock();
-        
+        /* Compute Grid to Ring mapping */        
         m.Ring2Mesh( ringCluster );
 
-        stop_s = clock();
-        std::cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << " [ms], " << std::endl;
-
-        start_s = clock();
-      
         /* Fill in variables species for initial time */
-
         ringSpecies.FillIn( Data, m, nTime );
-
-        stop_s = clock();
-        std::cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << " [ms], " << std::endl;
 
     }
    
