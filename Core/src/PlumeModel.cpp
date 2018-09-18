@@ -119,9 +119,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     double airDens = pressure_Pa / ( kB   * temperature_K ) * 1.00E-06;
     /* [molec/cm3] = [Pa = J/m3] / ([J/K] * [K])            * [m3/cm3] */
 
-    char const *fileName("data/Ambient.txt");
     /* Set solution arrays to ambient data */
-    Data.Initialize( fileName, temperature_K, airDens, relHumidity_w );
+    Data.Initialize( AMBFILE, temperature_K, airDens, relHumidity_w );
 
     /* Print Background Debug? */
     if ( DEBUG_BG_INPUT )
