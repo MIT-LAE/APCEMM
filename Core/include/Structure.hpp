@@ -22,6 +22,8 @@ class Solution
         void Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max = 1, unsigned int j_max = 1 );
         void Initialize( char const *fileName, double temperature, double airDens, double relHum );
         void GetData( double varArray[], double fixArray[], unsigned int i = 0, unsigned int j = 0 );
+        unsigned int getNx() const;
+        unsigned int getNy() const;
         void Debug( double airDens );
 
         /* Gaseous species */

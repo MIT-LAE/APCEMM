@@ -1,14 +1,13 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /*                                                                  */
-/*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
-/*                             (APCEMM)                             */
+/*              Spectral Advection aNd Diffusion Solver             */
+/*                             (SANDS)                              */
 /*                                                                  */
-/* SaveWisdomFile Program File                                      */
+/* SaveWisdom Program File                                          */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 7/26/2018                                 */
-/* File                 : SaveWisdomFile.cpp                        */
-/* Working directory    : /home/fritzt/APCEMM-SourceCode            */
+/* File                 : SaveWisdom.cpp                            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -19,11 +18,11 @@
 #include <vector>
 #include <fftw3.h>
 
-#include "Parameters.hpp"
+#include "../../Core/include/Parameters.hpp"
 
 typedef fftw_complex T;
 
-void SaveWisdomFile( std::vector<std::vector<double> > &Data, const char* fileName )
+void SaveWisdom( std::vector<std::vector<double> > &Data, const char* fileName )
 {
 
     unsigned int i, j;
@@ -59,3 +58,4 @@ void SaveWisdomFile( std::vector<std::vector<double> > &Data, const char* fileNa
 
     fftw_destroy_plan( plan_FFT );
 }
+

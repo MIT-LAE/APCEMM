@@ -19,6 +19,7 @@ SHELL :=/bin/bash
 # Set root directory
 ROOT := ..
 KPP  :=$(ROOT)/KPP
+SANDS:=$(ROOT)/SANDS
 
 # Set src folder
 SRC_DIR := src
@@ -79,7 +80,7 @@ LDFLAGS := -L$(LIB_DIR)
 LDFLAGS := $(LDFLAGS) -lstdc++ -lm
 
 # Add custom libraries
-LDFLAGS := $(LDFLAGS) -lfftw3 -lKpp
+LDFLAGS := $(LDFLAGS) -lSands -lfftw3 -lKpp
 
 ifndef BUILD
 	BUILD := $(ROOT)/build
@@ -94,9 +95,9 @@ OBJ_DIR := $(BUILD)/objects/$(CURR_DIR)
 TARGET := APCEMM
 
 # Define any directories containing header files
-INCLUDE := -I./include
+INCLUDE := -Iinclude
 
-HEADERS = $(wildcard ./include/*.h*) 
+HEADERS = $(wildcard include/*.h*) 
 
 # Define the C++ source files
 SRC = $(wildcard $(SRC_DIR)/*.cpp)
@@ -118,10 +119,16 @@ $(APP_DIR)/$(TARGET): $(OBJ) $(KPPOBJ)
 libkpp:
 	@$(MAKE) -C $(KPP)
 
-libhelp:
-	@$(AR) -t $(LIB_DIR)/libKpp.a
+libsands:
+	@$(MAKE) -C $(SANDS)
 
-.PHONY: all libkpp libhelp build clean debug release
+libhelp:
+	@echo " --> In libKpp.a: "
+	@$(AR) -t $(LIB_DIR)/libKpp.a
+	@echo " --> In libSands.a: "
+	@$(AR) -t $(LIB_DIR)/libSands.a
+
+.PHONY: all libkpp libsands libhelp build clean debug release
 
 build:
 	@mkdir -p $(APP_DIR)

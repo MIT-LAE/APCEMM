@@ -26,6 +26,7 @@
 # Directories
 APCEMMDIR := Core
 KPPDIR    := KPP
+SANDSDIR  := SANDS
 
 ###############################################################################
 ###																			###
@@ -36,8 +37,10 @@ KPPDIR    := KPP
 
 all: 
 	@$(MAKE) -C $(KPPDIR)
+	@$(MAKE) -C $(SANDSDIR)
 	@$(MAKE) -C $(APCEMMDIR) all
 
 clean:
 	@$(MAKE) -C $(KPPDIR) clean
+	@$(MAKE) -C $(SANDSDIR) clean
 	@$(MAKE) -C $(APCEMMDIR) clean

@@ -21,6 +21,7 @@
 
 /* FFTW */
 #define FFTW_WISDOM             0    /* Find most efficient algorithm through FFTW_wisdom. Takes ~ 10s */
+const char* const WISDOMFILE = "../SANDS/data/FFTW_Wisdom.out"; 
 
 /* OUTPUT */
 #define DOSAVEPL                1    /* Save chemical rates */

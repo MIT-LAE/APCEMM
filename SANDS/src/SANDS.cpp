@@ -1,41 +1,32 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /*                                                                  */
-/*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
-/*                             (APCEMM)                             */
+/*              Spectral Advection aNd Diffusion Solver             */
+/*                             (SANDS)                              */
 /*                                                                  */
-/* DiffusionSolver Program File                                     */
+/* SANDS Program File                                               */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 7/26/2018                                 */
-/* File                 : DiffusionSolver.cpp                       */
+/* File                 : SANDS.cpp                                 */
 /* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include <iostream>
-#include <vector>
-#include <complex>
-#include <fftw3.h>
+#include "Solver.hpp"
 
-#include "Parameters.hpp"
-#include "Interface.hpp"
-
-typedef double Real;
-typedef fftw_complex Complex;
-
-void DiffusionSolver( std::vector<std::vector<double> >& vect, \
-                      std::vector<std::vector<double> >& diffFactor, \
-                      std::vector<std::vector<std::complex<double> > >& advFactor, \
-                      const char* fileName_FFTW, \
-                      const bool realInput )
+void SANDS( Real_2DVector &vect, \
+            Real_2DVector &diffFactor, \
+            Complex_2DVector &advFactor, \
+            const char* fileName_FFTW, \
+            const bool realInput = 1 )
 {
 
     unsigned int i, j;
 
     /* If dealing with real input, set realInput to 1.
      * Output will be the same, the algorithm is roughly
-     * 3 times after and requires ~75% of the original
-     * memory requirement. */
+     * 3 times faster after and requires ~75% of the 
+     * original memory requirement. */
         
     unsigned flags;
     /* Restoring plans from disk.
@@ -56,13 +47,13 @@ void DiffusionSolver( std::vector<std::vector<double> >& vect, \
          * http://www.fftw.org/fftw3_doc/Multi_002dDimensional-DFTs-of-Real-Data.html */
         const unsigned int NYH = NY/2 + 1;
 
-        Complex *in_IFFT, *out_FFT;
-        double *in_FFT, *out_IFFT;
-        in_FFT   = (Real*) fftw_malloc(sizeof(Real) * NCELL);
-        out_FFT  = (Complex*) fftw_malloc(sizeof(Complex) * NX * NYH);
+        FFTW_ComplexDouble *in_IFFT, *out_FFT;
+        RealDouble *in_FFT, *out_IFFT;
+        in_FFT   = (RealDouble*) fftw_malloc(sizeof(RealDouble) * NX * NY);
+        out_FFT  = (FFTW_ComplexDouble*) fftw_malloc(sizeof(FFTW_ComplexDouble) * NX * NYH);
     //  in_IFFT  = out_FFT .* diffFactor .* advFactor;
-        in_IFFT  = (Complex*) fftw_malloc(sizeof(Complex) * NX * NYH);
-        out_IFFT = (Real*) fftw_malloc(sizeof(Real) * NCELL);
+        in_IFFT  = (FFTW_ComplexDouble*) fftw_malloc(sizeof(FFTW_ComplexDouble) * NX * NYH);
+        out_IFFT = (RealDouble*) fftw_malloc(sizeof(RealDouble) * NX * NY);
 
         /* Allocate FFT plans */
         fftw_plan plan_FFT, plan_IFFT;
@@ -70,7 +61,7 @@ void DiffusionSolver( std::vector<std::vector<double> >& vect, \
         /* Fill input */
         for ( i = 0; i < NX; i++ ) {
             for ( j = 0; j < NY; j++ )
-                in_FFT[i*NY + j] = (Real) vect[j][i];
+                in_FFT[i*NY + j] = (RealDouble) vect[j][i];
         }
 
         /* Define plan FFT */
@@ -98,7 +89,7 @@ void DiffusionSolver( std::vector<std::vector<double> >& vect, \
         /* Fill output */
         for ( i = 0; i < NX; i++ ) {
             for ( j = 0; j < NY; j++ ) 
-                vect[j][i] = ( out_IFFT[i*NY+j] ) / ( Real( NCELL ) );
+                vect[j][i] = ( out_IFFT[i*NY+j] ) / ( RealDouble( NX * NY ) );
         }
 
         /* Destroy FFT plans */
@@ -116,12 +107,12 @@ void DiffusionSolver( std::vector<std::vector<double> >& vect, \
     else {
     
         /* Dynamic allocation */
-        Complex *in_FFT, *out_FFT, *in_IFFT, *out_IFFT;
-        in_FFT   = (Complex*) fftw_malloc(sizeof(Complex) * NCELL);
-        out_FFT  = (Complex*) fftw_malloc(sizeof(Complex) * NCELL);
+        FFTW_ComplexDouble *in_FFT, *out_FFT, *in_IFFT, *out_IFFT;
+        in_FFT   = (FFTW_ComplexDouble*) fftw_malloc(sizeof(FFTW_ComplexDouble) * NX * NY);
+        out_FFT  = (FFTW_ComplexDouble*) fftw_malloc(sizeof(FFTW_ComplexDouble) * NX * NY);
     //  in_IFFT  = out_FFT .* diffFactor .* advFactor;
-        in_IFFT  = (Complex*) fftw_malloc(sizeof(Complex) * NCELL);
-        out_IFFT = (Complex*) fftw_malloc(sizeof(Complex) * NCELL);
+        in_IFFT  = (FFTW_ComplexDouble*) fftw_malloc(sizeof(FFTW_ComplexDouble) * NX * NY);
+        out_IFFT = (FFTW_ComplexDouble*) fftw_malloc(sizeof(FFTW_ComplexDouble) * NX * NY);
     
         /* Allocate FFT plans */
         fftw_plan plan_FFT, plan_IFFT;
@@ -129,7 +120,7 @@ void DiffusionSolver( std::vector<std::vector<double> >& vect, \
         /* Fill input */
         for ( i = 0; i < NX; i++ ) {
             for ( j = 0; j < NY; j++ )
-                in_FFT[i*NY + j][0] = (double) vect[j][i];
+                in_FFT[i*NY + j][0] = (RealDouble) vect[j][i];
         }
 
         /* Define plan FFT */
@@ -157,7 +148,7 @@ void DiffusionSolver( std::vector<std::vector<double> >& vect, \
         /* Fill output */
         for ( i = 0; i < NX; i++ ) {
             for ( j = 0; j < NY; j++ ) 
-                vect[j][i] = ( out_IFFT[i*NY+j][0] ) / ( Real( NCELL ) );
+                vect[j][i] = ( out_IFFT[i*NY+j][0] ) / ( RealDouble( NX * NY ) );
         }
 
         /* Destroy FFT plans */

@@ -23,8 +23,8 @@
 #include "PhysConstant.hpp"
 #include "Interface.hpp"
 #include "Monitor.hpp"
+#include "SANDS_Solver.hpp"
 #if RINGS == 1
-//    #include "Ring.hpp"
     #include "Cluster.hpp"
     #include "Species.hpp"
 #endif
@@ -35,12 +35,10 @@
 #include "Emission.hpp"
 
 typedef std::complex<double> Complex;
+typedef std::vector<double> Real_1DVector;
+typedef std::vector<Real_1DVector> Real_2DVector;
 
 void BuildMesh( double *x, double *y, \
-                double const xlim, double const ylim, \
-                unsigned int const nx, unsigned int const ny );
-void BuildFreq( double *kx, double *ky, \
-                double *kxx, double *kyy, \
                 double const xlim, double const ylim, \
                 unsigned int const nx, unsigned int const ny );
 void SZA( double latitude_deg, int dayGMT,\
@@ -54,17 +52,8 @@ double pSat_H2Ol( double T );
 double pSat_H2Os( double T );
 double UpdateTime( double time, double tStart, \
                    double sunRise, double sunSet );
-void SaveWisdomFile( std::vector<std::vector<double> >& Data, const char* fileName );
-void Assign_diffFactor( std::vector<std::vector<double> >& diffFactor, \
-                        double d_x, double d_y, \
-                        double kxx[], double kyy[], double dt );
-void Assign_advFactor( std::vector<std::vector<Complex > >& advFactor, \
-                        double v_x, double v_y, \
-                        double kx[], double ky[], double dt );
-void SPCDiffusion( Solution& Data, \
-                   std::vector<std::vector<double> >& diffFactor, \
-                   std::vector<std::vector<Complex > >& advFactor, \
-                   const char* fileName_FFTW );
+void CallSolver( Solution& Data, Solver& SANDS );
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -78,8 +67,8 @@ int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, 
 
 
 int PlumeModel( double temperature_K, double pressure_Pa, \
-                 double relHumidity_w, double longitude_deg, \
-                 double latitude_deg )
+                double relHumidity_w, double longitude_deg, \
+                double latitude_deg )
 {
 
     /* For clock */
@@ -103,9 +92,11 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /**        Mesh       **/
     /** ~~~~~~~~~~~~~~~~~ **/
     double x[NX], y[NY];
-    double kx[NX], ky[NY], kxx[NX], kyy[NY]; 
     BuildMesh(  x,  y, XLIM, YLIM, NX, NY );
-    BuildFreq( kx, ky, kxx, kyy, XLIM, YLIM, NX, NY );
+
+    bool fillNegValues = 1;
+    double fillWith = 0.0;
+    Solver SANDS_Solver( fillNegValues, fillWith );
 
 
 
@@ -132,13 +123,15 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /**  Cluster of rings  **/
         /** ~~~~~~~~~~~~~~~~~~ **/
         
+        /* Create cluster of rings */
         Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), 0.0, 0.0, 0.0, 0.0 );
       
+        /* Print Ring Debug? */
         if ( DEBUG_RINGS )
-            ringCluster.PrintRings();
+            ringCluster.Debug();
 
-        SpeciesArray ringSpecies;
-        ringSpecies.Build( ringCluster.nRing(), timeArray.size() );
+        /* Allocate species-ring vector */
+        SpeciesArray ringSpecies( ringCluster.nRing(), timeArray.size() );
 
     }
    
@@ -155,15 +148,14 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     const Aircraft aircraft( aircraftName, temperature_K, pressure_Pa, relHumidity_w );
 
     /* Print AC Debug? */
-    if ( DEBUG_AC_INPUT ) 
+    if ( DEBUG_AC_INPUT )
         aircraft.Debug();
 
     /* Aggregate emissions from engine and fuel characteristics */
-    Emission EI;
-    EI.Populate( aircraft.engine, JetA );
+    Emission EI( aircraft.getEngine(), JetA );
 
     /* Print Emission Debug? */
-    if ( DEBUG_EI_INPUT ) 
+    if ( DEBUG_EI_INPUT )
         EI.Debug(); 
 
 
@@ -186,22 +178,17 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     if ( DEBUG_BG_INPUT )
         Data.Debug( airDens );
 
-
-
-    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
-    /**     Advection & Diffusion    **/
-    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
-    /* 2D Diffusion and advection arrays */
-    std::vector<std::vector<double> > diffFactor;
-    std::vector<std::vector<Complex > > advFactor;
-    for ( unsigned int i = 0; i < NY; i++ ) {
-        diffFactor.push_back( std::vector<double>( NX ) );
-        advFactor .push_back( std::vector<Complex >( NX ) );
-    }
-
     std::cout << "NY: " << Data.O3.size() << std::endl;
     std::cout << "NX: " << Data.O3[0].size() << std::endl;
 
+    /* Define initial time step and diffusion and advection arrays */
+    double dt;
+    dt = UpdateTime( curr_Time, 3600.0*tInitial, 3600.0*sunRise, 3600.0*sunSet );
+    SANDS_Solver.UpdateTimeStep( dt );
+    
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+    /**     Advection & Diffusion    **/
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /* Compute diffusion parameters */
     double d_x, d_y;
     if ( DIFFUSION )
@@ -221,31 +208,24 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         v_x = 0;
         v_y = 0;
     }
+   
+    SANDS_Solver.UpdateDiff( d_x, d_y );
+    SANDS_Solver.UpdateAdv( v_x, v_y );
 
-    /* Define initial time step and diffusion and advection arrays */
-    double dt;
-    dt = UpdateTime( curr_Time, 3600.0*tInitial, 3600.0*sunRise, 3600.0*sunSet );
-    Assign_diffFactor( diffFactor, d_x, d_y, kxx, kyy, dt );
-    Assign_advFactor ( advFactor , v_x, v_y, kx , ky , dt );
-    
     /* Run FFTW_Wisdom */
-    const char *fileName_FFTW("data/FFTW_Wisdom.txt");
     if ( ( nTime == 0 ) && ( FFTW_WISDOM ) ) {
         int start_wisdom, stop_wisdom;
         start_wisdom = clock();
         std::cout << "FFTW_Wisdom..." << std::endl;
-        SaveWisdomFile( Data.CO2, fileName_FFTW );
+        SANDS_Solver.Wisdom( Data.CO2 );
         stop_wisdom = clock();
         std::cout << "time: " << (stop_wisdom-start_wisdom)/double(CLOCKS_PER_SEC) << " [s]" << std::endl;
     }
 
-
-    
-    
     double sum = 0;
 
     double BackG = Data.O3[0][0];
-    for ( int i = 0; i < 0; i++ ) {
+    for ( int i = 0; i < 2; i++ ) {
         if ( i == 0 ) {
             for ( int k = 0; k < NX; k++ ) {
                 for ( int l = 0; l < NY; l++ )
@@ -264,9 +244,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         }
         start_s = clock();
         
-        SPCDiffusion( Data, diffFactor, advFactor, fileName_FFTW );
+        CallSolver( Data, SANDS_Solver );
 
         stop_s = clock();
+        std::cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << " [ms], " << std::endl;
 
         if ( i > -1 ) {
             sum = 0;
@@ -274,8 +255,15 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 for ( int l = 0; l < NY; l++ )
                     sum += (Data.O3[l][k] - BackG);
             }
-            std::cout << sum/airDens*1E9 << std::endl;
+//            std::cout << sum/airDens*1E9 << std::endl;
         }
+            
+        for ( int k = -3; k < 3; k++ ) {
+            for ( int l = -3; l < 3; l++ ) 
+                std::cout << (Data.O3[NY/2+k][NX/2+l])/airDens*1E9 << ", "; 
+            std::cout << std::endl;
+        }
+
     }
 
 
@@ -318,6 +306,8 @@ void SZA( double latitude_deg, int dayGMT,\
     double const B2 = 0.000907;
     double const B3 = 0.000148;
 
+    const double PI = 3.141592653589793238460; /* \pi */
+
     double r_SZA = 2*PI*(floor(dayGMT) - 1)/365.0;
 
     double DEC = A0 - A1*cos(1*r_SZA) + B1*sin(1*r_SZA)\
@@ -336,26 +326,4 @@ void SZA( double latitude_deg, int dayGMT,\
 
 } /* End of SZA */
 
-void Assign_diffFactor( std::vector<std::vector<double> >& diffFactor, double d_x, double d_y, \
-                        double kxx[], double kyy[], double dt )
-{
-
-    for ( unsigned int i = 0; i < NX; i++ ) {
-        for ( unsigned int j = 0; j < NY; j++ )
-            diffFactor[j][i] = exp( dt * ( d_x * kxx[i] + d_y * kyy[j] ) );
-    }
-
-} /* End of Assign_diffFactor */
-
-void Assign_advFactor( std::vector<std::vector<Complex > >& advFactor, double v_x, double v_y, \
-                        double kx[], double ky[], double dt )
-{
-
-    Complex _1j (0.0, 1.0);
-    for ( unsigned int i = 0; i < NX; i++ ) {
-        for ( unsigned int j = 0; j < NY; j++ )
-            advFactor[j][i] = exp( _1j * dt * ( v_x * kx[i] + v_y * ky[j] ) ); 
-    }
-
-} /* End of Assign_advFactor */
 
