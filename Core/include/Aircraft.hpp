@@ -26,7 +26,10 @@ class Aircraft
 {
     public:
 
+        Aircraft( );
         Aircraft( const char *aircraftName, double temperature_K, double pressure_Pa, double relHumidity_w );
+        Aircraft( const Aircraft &ac );
+        Aircraft& operator=( const Aircraft &ac ); 
         ~Aircraft( );
         void Debug( ) const;
         std::string getName() const;

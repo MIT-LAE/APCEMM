@@ -14,6 +14,13 @@
 
 #include "Aircraft.hpp"
 
+Aircraft::Aircraft( )
+{
+
+    /* Default Constructor */
+
+} /* End of Aircraft::Aircraft */
+
 Aircraft::Aircraft( const char *aircraftName, double temperature_K, double pressure_Pa, double relHumidity_w )
 {
     /* Constructor */
@@ -41,6 +48,37 @@ Aircraft::Aircraft( const char *aircraftName, double temperature_K, double press
 
 } /* End of Aircraft::Aircraft */
 
+Aircraft::Aircraft( const Aircraft &ac )
+{
+
+    Name = ac.Name;
+    vFlight_ms = ac.vFlight_ms;
+    machNumber = ac.machNumber;
+    wingSpan = ac.wingSpan;
+    MTOW = ac.MTOW;
+    currMass = ac.currMass;
+    engine = ac.engine;
+    engNumber = ac.engNumber;
+
+} /* End of Aircraft::Aircraft */
+
+Aircraft& Aircraft::operator=( const Aircraft &ac )
+{
+
+    if ( &ac == this )
+        return *this;
+
+    Name = ac.Name;
+    vFlight_ms = ac.vFlight_ms;
+    machNumber = ac.machNumber;
+    wingSpan = ac.wingSpan;
+    MTOW = ac.MTOW;
+    currMass = ac.currMass;
+    engine = ac.engine;
+    engNumber = ac.engNumber;
+    return *this;
+
+} /* End of Aircraft::operator= */
 Aircraft::~Aircraft( )
 {
     /* Destructor */
