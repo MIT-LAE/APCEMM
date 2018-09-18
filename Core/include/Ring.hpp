@@ -29,8 +29,8 @@ class Ring
         ~Ring( );
         void Assign( double a, double b );
         void Print( ) const;
-        double GetHAxis( ) const;
-        double GetVAxis( ) const;
+        double getHAxis( ) const;
+        double getVAxis( ) const;
 
     protected:
 

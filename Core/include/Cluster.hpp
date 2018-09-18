@@ -33,7 +33,7 @@ class Cluster
         ~Cluster( );
         unsigned int nRing() const;
         bool halfRing() const;
-        std::vector<Ring> GetRings() const; 
+        std::vector<Ring> getRings() const; 
         void PrintRings() const;
         void Debug() const;
 

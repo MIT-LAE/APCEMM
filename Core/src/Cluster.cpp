@@ -142,18 +142,18 @@ bool Cluster::halfRing( ) const
 
 } /* End of Cluster::halfRing */
 
-std::vector<Ring> Cluster::GetRings( ) const
+std::vector<Ring> Cluster::getRings( ) const
 {
 
     return Rings;
 
-} /* End of Cluster::GetRings */
+} /* End of Cluster::getRings */
 
 void Cluster::PrintRings() const
 {
 
     for ( unsigned int i = 0; i < nR; i++ )
-        std::cout << "Ring's horizontal and vertical axis: " << Rings[i].GetHAxis() << ", " << Rings[i].GetVAxis() << " [m]" << std::endl;
+        std::cout << "Ring's horizontal and vertical axis: " << Rings[i].getHAxis() << ", " << Rings[i].getVAxis() << " [m]" << std::endl;
 
 } /* End of Cluster::PrintRings */
 
@@ -188,12 +188,12 @@ void Cluster::Debug() const
         std::setw(15);
         std::cout << "        ";
         std::setw(15);
-        std::cout << Rings[i].GetHAxis();
+        std::cout << Rings[i].getHAxis();
         std::cout << "        ";
         std::setw(15);
         std::cout << "        ";
         std::setw(15);
-        std::cout << Rings[i].GetVAxis();
+        std::cout << Rings[i].getVAxis();
         std::cout << "        ";
         std::cout << std::endl;
     }

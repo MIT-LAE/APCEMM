@@ -44,8 +44,8 @@ Ring::Ring( const Ring &r )
 
     /* Constructor */
 
-    horizontalAxis = r.GetHAxis();
-    verticalAxis = r.GetVAxis();
+    horizontalAxis = r.getHAxis();
+    verticalAxis = r.getVAxis();
     
 } /* End of Ring::Ring */
 
@@ -55,8 +55,8 @@ Ring& Ring::operator=( const Ring &r )
     if ( &r == this )
         return *this;
 
-    horizontalAxis = r.GetHAxis();
-    verticalAxis = r.GetVAxis();
+    horizontalAxis = r.getHAxis();
+    verticalAxis = r.getVAxis();
 
     return *this;
 
@@ -89,18 +89,18 @@ void Ring::Print( ) const
 
 } /* End of Ring::Print */
 
-double Ring::GetHAxis( ) const
+double Ring::getHAxis( ) const
 {
     
     return horizontalAxis;
 
-} /* End of Ring::GetHAxis */
+} /* End of Ring::getHAxis */
 
-double Ring::GetVAxis( ) const
+double Ring::getVAxis( ) const
 {
     
     return verticalAxis;
 
-} /* End of Ring::GetVAxis */
+} /* End of Ring::getVAxis */
 
 /* End of Ring.cpp */
