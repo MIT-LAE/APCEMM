@@ -408,6 +408,20 @@ void Solution::GetData( double varArray[], double fixArray[], unsigned int i, un
 
 } /* End of Solution::GetData */
 
+unsigned int Solution::getNx() const
+{
+
+    return size_x;
+
+} /* End of Solution::getNx */
+
+unsigned int Solution::getNy() const
+{
+
+    return size_y;
+
+} /* End of Solution::getNy */
+
 void Solution::Debug( double airDens )
 {
     unsigned int iNx, jNy;
