@@ -18,8 +18,12 @@
 #include <vector>
 
 #include "Parameters.hpp"
+#include "Interface.hpp"
+#include "Cluster.hpp"
+#include "Ring.hpp"
 
 typedef std::vector<double> Real_1DVector;
+
 typedef double RealDouble;
 
 class Mesh
@@ -30,12 +34,15 @@ class Mesh
         ~Mesh( );
         Mesh( const Mesh &m );
         Mesh& operator=( const Mesh &m );
+        void Ring2Mesh( Cluster &c );
         Real_1DVector getX( ) const;
         Real_1DVector getY( ) const;
         RealDouble gethx( ) const;
         RealDouble gethy( ) const;
         unsigned int getNx( ) const;
         unsigned int getNy( ) const;
+        std::vector<std::vector<std::vector<bool> > > getMap( ) const;
+        std::vector<int> getnMap( ) const;
 
     private:
 
@@ -43,6 +50,8 @@ class Mesh
         RealDouble xlim, ylim;
         RealDouble hx, hy;
         unsigned int nx, ny;
+        std::vector<int> nCellMap;
+        std::vector<std::vector<std::vector<bool> > > RingMeshMap;
 
 };
 
