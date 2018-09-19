@@ -19,14 +19,12 @@
 #define NX                256         /* Number of grid cells in the x-direction */
 #define NY                256         /* Number of grid cells in the y-direction */
 #define NCELL             NX*NY       /* Number of grid cells */
-#define XLIM              1.0E+04     /* x-limits of the domain [m] */
-#define YLIM              1.4E+03     /* y-limits of the domain [m] */
+#define XLIM              5.0E+03     /* x-limits of the domain [m] */
+#define YLIM              7.0E+02     /* y-limits of the domain [m] */
 
 /* Ring structure */
 #define RINGS             1           /* 1 or 0? 1: Ring structure, 0: No rings */
-#if RINGS == 1
-    #define NRING             15          /* Number of rings */
-#endif /* RINGS */
+#define NRING             15          /* Number of rings */
 
 /* Time */
 #define TSTART            0.0E+00     /* Initial time [hrs] (after emission) */

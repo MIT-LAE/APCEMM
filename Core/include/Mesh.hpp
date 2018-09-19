@@ -15,6 +15,7 @@
 #define MESH_H_INCLUDED
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
 
 #include "Parameters.hpp"
@@ -42,7 +43,9 @@ class Mesh
         unsigned int getNx( ) const;
         unsigned int getNy( ) const;
         std::vector<std::vector<std::vector<bool> > > getMap( ) const;
-        std::vector<int> getnMap( ) const;
+        std::vector<std::vector<std::pair<unsigned int, unsigned int> > > getList() const;
+        std::vector<unsigned int> getnMap( ) const;
+        void Debug() const;
 
     private:
 
@@ -50,7 +53,8 @@ class Mesh
         RealDouble xlim, ylim;
         RealDouble hx, hy;
         unsigned int nx, ny;
-        std::vector<int> nCellMap;
+        std::vector<unsigned int> nCellMap;
+        std::vector<std::vector<std::pair<unsigned int, unsigned int> > > indList;
         std::vector<std::vector<std::vector<bool> > > RingMeshMap;
 
 };

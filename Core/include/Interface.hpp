@@ -42,5 +42,6 @@ const char* const AMBFILE    = "data/Ambient.txt";
 #define DEBUG_BG_INPUT          0    /* Debug Background Input? */
 #define DEBUG_EI_INPUT          0    /* Debug Emission Input? */
 #define DEBUG_RINGS             0    /* Debug Rings? */
+#define DEBUG_MAPPING           0    /* Debug Mesh to ring mapping? */
 
 #endif /* INTERFACE_H_INCLUDED */

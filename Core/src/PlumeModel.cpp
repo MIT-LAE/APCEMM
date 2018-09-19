@@ -24,7 +24,7 @@
 #include "Interface.hpp"
 #include "Monitor.hpp"
 #include "SANDS_Solver.hpp"
-#if RINGS == 1
+#if RINGS
     #include "Cluster.hpp"
     #include "Species.hpp"
 #endif
@@ -76,7 +76,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                                          / pSat_H2Os( temperature_K );
 
     /* If ICE_MICROPHYSICS is turned on and the domain is supersaturated, break the x-symmetry */
-#if ICE_MICROPHYSICS && X_SYMMETRY  
+#if ( ICE_MICROPHYSICS && X_SYMMETRY )
 
     /* Is supersaturated? */
     if ( relHumidity_i > 100.0 ) {
@@ -87,6 +87,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     }
 #endif
 
+    std::cout << "Symmetry: " << X_SYMMETRY << std::endl;
 
     unsigned int dayGMT(81);
     double sunRise, sunSet; /* sun rise and sun set in hours */
@@ -206,6 +207,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /* Compute Grid to Ring mapping */        
         m.Ring2Mesh( ringCluster );
 
+        if ( DEBUG_MAPPING )
+            m.Debug();
+
         /* Fill in variables species for initial time */
         ringSpecies.FillIn( Data, m, nTime );
 
@@ -229,10 +233,12 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /**     Advection & Diffusion    **/
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+    
     /* Compute diffusion parameters */
     double d_x, d_y;
-    if ( DIFFUSION )
+    if ( DIFFUSION ) {
         DiffParam( curr_Time - 3600.0*tInitial, d_x, d_y );
+    }
     else {
         d_x = 0.0;
         d_y = 0.0;
@@ -251,6 +257,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
    
     SANDS_Solver.UpdateDiff( d_x, d_y );
     SANDS_Solver.UpdateAdv( v_x, v_y );
+
 
 
     double sum = 0;
