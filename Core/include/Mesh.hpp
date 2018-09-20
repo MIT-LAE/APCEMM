@@ -42,6 +42,7 @@ class Mesh
         Real_1DVector getX_e( ) const;
         Real_1DVector getY_e( ) const;
         Real_2DVector getAreas( ) const;
+        RealDouble getTotArea( ) const;
         RealDouble gethx( ) const;
         RealDouble gethy( ) const;
         unsigned int getNx( ) const;
@@ -61,6 +62,9 @@ class Mesh
 
         /* Cell areas */
         Real_2DVector areas;
+
+        /* Total area */
+        RealDouble totArea;
 
         RealDouble xlim, ylim;
         RealDouble hx, hy;

@@ -47,12 +47,14 @@ Mesh::Mesh( )
     y_e.push_back( (double) 0.0 );
     y_e[ny] = y_e[ny-1] + hy;
 
+    totArea = 0;
     for ( unsigned int jNy = 0; jNy < ny; jNy++ ) {
         areas.push_back( Real_1DVector( nx, 0.0 ) );
         for ( unsigned int iNx = 0; iNx < nx; iNx++ ) {
             areas[jNy][iNx] = ( y_e[jNy+1] - y_e[jNy] ) * \
                               ( x_e[iNx+1] - x_e[iNx] );
             /* Comes down to hx * hy, if mesh is cartesian uniform */
+            totArea += areas[jNy][iNx];
         }
     }
 
@@ -297,6 +299,13 @@ Real_2DVector Mesh::getAreas( ) const
     return areas;
 
 } /* End of Mesh::getAreas */
+
+RealDouble Mesh::getTotArea( ) const
+{
+
+    return totArea;
+
+} /* End of Mesh::getTotArea */
 
 RealDouble Mesh::gethx( ) const
 {
