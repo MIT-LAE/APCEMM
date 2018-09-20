@@ -230,7 +230,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         aircraft.Debug();
 
     /* Aggregate emissions from engine and fuel characteristics */
-    Emission EI( aircraft.getEngine(), JetA );
+    const Emission EI( aircraft.getEngine(), JetA );
 
     /* Print Emission Debug? */
     if ( DEBUG_EI_INPUT )
@@ -275,7 +275,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         ringCluster.Debug();
 
     /* Allocate species-ring vector */
-    SpeciesArray ringSpecies( ringCluster.getnRing(), timeArray.size() );
+    SpeciesArray ringSpecies( ringCluster.getnRing(), timeArray.size(), ringCluster.halfRing() );
 
     /* Compute Grid to Ring mapping */        
     m.Ring2Mesh( ringCluster );
@@ -288,6 +288,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     if ( DEBUG_MAPPING )
         m.Debug();
 
+    /* Add emission into the grid */
+    Data.addEmission( EI, aircraft, mapRing2Mesh, m.getAreas() , ringCluster.halfRing() ); 
+    
     /* Fill in variables species for initial time */
     ringSpecies.FillIn( Data, m, nTime );
 
@@ -295,7 +298,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Allocate an additional array for KPP */
     double tempArray[N_VAR];
 
-    
+ 
     /* Otherwise we do not have a ring structure and chemistry is solved on the grid */
 #else
     
@@ -304,20 +307,20 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     unsigned int jNy = 0;
 
 #endif /* RINGS */
+   
+
+    std::cout << std::endl;
+
+    for ( int jNy = -10; jNy < 10; jNy++ ) {
+        for ( int iNx = -10; iNx < 10; iNx++ ) { 
+            std::cout << std::setw(5) << Data.NO[NY/2+jNy][NX/2+iNx]/airDens*1E12 << ", ";
+        }
+       std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
     
 
-    double BackCO2G = Data.CO2[0][0];
-    Data.CO2[NY/2][NX/2] += BackCO2G;
-    Data.CO2[NY/2-1][NX/2] += BackCO2G;
-    Data.CO2[NY/2][NX/2-1] += BackCO2G;
-    Data.CO2[NY/2-1][NX/2-1] += BackCO2G;
-    
-    double BackG = Data.NO[0][0];
-    Data.NO[NY/2][NX/2] += BackG;
-    Data.NO[NY/2-1][NX/2] += BackG;
-    Data.NO[NY/2][NX/2-1] += BackG;
-    Data.NO[NY/2-1][NX/2-1] += BackG;
-   
     double sum = 0;
 
 
@@ -524,10 +527,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         SANDS_clock_cumul += SANDS_clock;
         KPP_clock_cumul   += KPP_clock;
         std::cout << " ** Clock breakdown: " << std::endl;
-        std::cout << " ** -> SANDS: " << SANDS_clock << " [ms]" << std::endl;
-        std::cout << " ** -> KPP  : " << KPP_clock << " [ms]" << std::endl;
         std::cout << " ** ----------------- " << std::endl;
-        std::cout << " ** Total: " << SANDS_clock + KPP_clock << " [ms]" << std::endl;
+        std::cout << " ** Total: " << SANDS_clock + KPP_clock << " [ms]";
+        std::cout << " ( SANDS: " << 100 * ( SANDS_clock / double( SANDS_clock + KPP_clock ) ) << "% , KPP: " << 100 * ( KPP_clock / double( SANDS_clock + KPP_clock ) ) << "% )" << std::endl;
 
 #endif /* TIME_IT */
 
@@ -540,6 +542,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     Stopwatch_cumul.Stop( );
     clock_cumul = Stopwatch_cumul.Elapsed( );
+
     std::cout << std::endl;
     std::cout << " ** Final clock breakdown: " << std::endl;
     
@@ -556,6 +559,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     std::cout << " ** Total   : ";
     std::cout << std::setw(6) << clock_cumul / double(1000) << " [s]" << std::endl;
     std::cout << std::endl;
+
 
 #endif /* TIME_IT */
     
