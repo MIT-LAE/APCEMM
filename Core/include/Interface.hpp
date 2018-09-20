@@ -42,6 +42,9 @@ const char* const AMBFILE    = "data/Ambient.txt";
 /* TIME */
 #define TIME_IT                 1    /* Time simulation? */
 
+/* MASS CHECK */
+#define NOy_MASS_CHECK          1    /* NOy mass check? */
+
 /* DEBUG */
 #define DEBUG_AC_INPUT          0    /* Debug AC Input? */
 #define DEBUG_BG_INPUT          0    /* Debug Background Input? */

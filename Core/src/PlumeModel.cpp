@@ -84,6 +84,12 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     
 #endif /* TIME_IT */
 
+#if ( NOy_MASS_CHECK )
+
+    double mass_Ambient, mass_Emitted;
+
+#endif /* TIME_IT */
+
     /* Compute relative humidity w.r.t ice */
     double relHumidity_i = relHumidity_w * pSat_H2Ol( temperature_K )\
                                          / pSat_H2Os( temperature_K );
@@ -118,6 +124,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     
     Mesh m;
 
+    /* Get cell areas */
+    std::vector<std::vector<double>> cellAreas;
+    cellAreas = m.getAreas();
 
 
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -289,7 +298,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         m.Debug();
 
     /* Add emission into the grid */
-    Data.addEmission( EI, aircraft, mapRing2Mesh, m.getAreas() , ringCluster.halfRing() ); 
+    Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing() ); 
     
     /* Fill in variables species for initial time */
     ringSpecies.FillIn( Data, m, nTime );
@@ -309,19 +318,17 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 #endif /* RINGS */
    
 
-    std::cout << std::endl;
-
-    for ( int jNy = -10; jNy < 10; jNy++ ) {
-        for ( int iNx = -10; iNx < 10; iNx++ ) { 
-            std::cout << std::setw(5) << Data.NO[NY/2+jNy][NX/2+iNx]/airDens*1E12 << ", ";
-        }
-       std::cout << std::endl;
-    }
-    std::cout << std::endl;
+//    std::cout << std::endl;
+//
+//    for ( int jNy = -10; jNy < 10; jNy++ ) {
+//        for ( int iNx = -10; iNx < 10; iNx++ ) { 
+//            std::cout << std::setw(5) << Data.NO[NY/2+jNy][NX/2+iNx]/airDens*1E12 << ", ";
+//        }
+//       std::cout << std::endl;
+//    }
+//    std::cout << std::endl;
 
     
-
-    double sum = 0;
 
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
@@ -427,14 +434,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* TIME_IT */
         
-        /* Mass check */
-        sum = 0;
-        for ( unsigned int k = 0; k < NX; k++ ) {
-            for ( unsigned int l = 0; l < NY; l++ )
-                sum += ( Data.NO[l][k] + Data.NO2[l][k] + Data.NO3[l][k] + Data.HNO2[l][k] + Data.HNO3[l][k] + Data.HNO4[l][k] + 2*Data.N2O5[l][k] + Data.PAN[l][k] + Data.MPN[l][k] + Data.N[l][k] + Data.PROPNN[l][k] + Data.BrNO2[l][k] + Data.BrNO3[l][k] + Data.ClNO2[l][k] + Data.ClNO3[l][k] + Data.PPN[l][k] + Data.PRPN[l][k] + Data.R4N1[l][k] + Data.PRN1[l][k] + Data.R4N2[l][k] + 2*Data.N2O[l][k]); //- ( Data.NO[50][50] + Data.NO2[50][50] + Data.HNO2[50][50] + Data.HNO3[50][50] + Data.HNO4[50][50] + 2*Data.N2O5[50][50] + Data.PAN[50][50] + Data.MPN[50][50] + Data.N[50][50] + Data.PROPNN[50][50] + Data.BrNO2[50][50] + Data.BrNO3[50][50] + Data.ClNO2[50][50] + Data.ClNO3[50][50] + Data.PPN[50][50] + Data.PRPN[50][50] + Data.R4N1[50][50] + Data.PRN1[50][50] + Data.R4N2[50][50]));
-        }
-        std::cout << "NOy: " << ( sum/airDens*1E9 ) / ((double)NCELL) << " [ppb]" << std::endl;
-
         /* Update temperature field and pressure at new location */
         /*
          * To be implemented
@@ -520,8 +519,37 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* TIME_IT */
 
-        
-        
+#if ( NOy_MASS_CHECK )
+
+        /* Compute ambient concentrations */
+        mass_Ambient = Data.NO[0][0] + Data.NO2[0][0] + Data.HNO2[0][0] + Data.HNO3[0][0] + Data.HNO4[0][0] \
+                     + 2*Data.N2O5[0][0] + Data.PAN[0][0] + Data.MPN[0][0] + Data.N[0][0] + Data.PROPNN[0][0] \
+                     + Data.BrNO2[0][0] + Data.BrNO3[0][0] + Data.ClNO2[0][0] + Data.ClNO3[0][0] + Data.PPN[0][0] \
+                     + Data.PRPN[0][0] + Data.R4N1[0][0] + Data.PRN1[0][0] + Data.R4N2[0][0] + 2*Data.N2O[0][0];
+
+        /* Compute emitted */
+        mass_Emitted = 0;
+        for ( unsigned int iNx = 0; iNx < NX; iNx++ ) {
+            for ( unsigned int jNy = 0; jNy < NY; jNy++ )
+                mass_Emitted += ( Data.NO[jNy][iNx] + Data.NO2[jNy][iNx] + Data.NO3[jNy][iNx] + Data.HNO2[jNy][iNx] \
+                                + Data.HNO3[jNy][iNx] + Data.HNO4[jNy][iNx] + 2*Data.N2O5[jNy][iNx] + Data.PAN[jNy][iNx] \
+                                + Data.MPN[jNy][iNx] + Data.N[jNy][iNx] + Data.PROPNN[jNy][iNx] + Data.BrNO2[jNy][iNx] \
+                                + Data.BrNO3[jNy][iNx] + Data.ClNO2[jNy][iNx] + Data.ClNO3[jNy][iNx]  + Data.PPN[jNy][iNx] \
+                                + Data.PRPN[jNy][iNx] + Data.R4N1[jNy][iNx] + Data.PRN1[jNy][iNx] + Data.R4N2[jNy][iNx] \
+                                + 2*Data.N2O[jNy][iNx] \
+                                - mass_Ambient ) * cellAreas[jNy][iNx];
+        }
+        mass_Emitted /= m.getTotArea();
+
+        /* Print to console */
+        std::cout << std::endl;
+        std::cout << " ** NOy mass check: " << std::endl;
+        std::cout << " Ambient NOy (including N2O): " << std::setw(6) << mass_Ambient / airDens*1E9 << " [ppb], " << std::setw(6) << ( mass_Ambient - 2*Data.N2O[0][0] ) / airDens*1E12 << " [ppt] (without N2O)" << std::endl;
+        std::cout << " Emitted NOy: " << std::setw(6) << mass_Emitted / airDens*1E12 << " [ppt], " << std::endl;;
+        std::cout << std::endl;
+
+#endif /* NOy_MASS_CHECK */
+
 #if ( TIME_IT )
 
         SANDS_clock_cumul += SANDS_clock;
