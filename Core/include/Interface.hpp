@@ -40,7 +40,7 @@ const char* const AMBFILE    = "data/Ambient.txt";
 #define DOSAVEPL                1    /* Save chemical rates? */
 
 /* TIME */
-#define TIME_IT                 0    /* Time simulation? */
+#define TIME_IT                 1    /* Time simulation? */
 
 /* DEBUG */
 #define DEBUG_AC_INPUT          0    /* Debug AC Input? */

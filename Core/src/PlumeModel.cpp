@@ -18,8 +18,6 @@
 #include <algorithm>
 #include <complex>
 
-#include <ctime> // for clock();
-
 #include "Parameters.hpp"
 #include "PhysConstant.hpp"
 #include "Interface.hpp"
@@ -35,6 +33,9 @@
 #include "Engine.hpp"
 #include "Aircraft.hpp"
 #include "Emission.hpp"
+#if ( TIME_IT )
+    #include "Timer.hpp"
+#endif /* TIME_IT */
 
 typedef std::complex<double> Complex;
 typedef std::vector<double> Real_1DVector;
@@ -74,8 +75,12 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #if ( TIME_IT )
 
-    int start_, stop_;
-    int SANDS_clock, KPP_clock;
+    Timer Stopwatch, Stopwatch_cumul;
+    unsigned long SANDS_clock, KPP_clock;
+    unsigned long SANDS_clock_cumul = 0;
+    unsigned long KPP_clock_cumul = 0;
+    unsigned long clock_cumul = 0;
+    bool reset = 1;
     
 #endif /* TIME_IT */
 
@@ -320,6 +325,12 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /**         Time Loop          **/
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
+#if ( TIME_IT )
+
+    Stopwatch_cumul.Start( );
+
+#endif /* TIME_IT */
+
     while ( curr_Time_s < tFinal_s ) {
 
         /* Print message */
@@ -400,7 +411,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         
 #if ( TIME_IT )
 
-        start_ = clock();
+        Stopwatch.Start( reset );
 
 #endif /* TIME_IT */
 
@@ -408,8 +419,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #if ( TIME_IT )
     
-        stop_ = clock();
-        SANDS_clock = (stop_ - start_) / double(CLOCKS_PER_SEC) * 1000;
+        Stopwatch.Stop( );
+        SANDS_clock = Stopwatch.Elapsed( );
 
 #endif /* TIME_IT */
         
@@ -435,7 +446,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #if ( TIME_IT )
        
-        start_ = clock();
+        Stopwatch.Start( reset );
 
 #endif /* TIME_IT */
 
@@ -501,8 +512,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         
 #if ( TIME_IT )
         
-        stop_ = clock();
-        KPP_clock = (stop_ - start_) / double(CLOCKS_PER_SEC) * 1000;
+        Stopwatch.Stop( );
+        KPP_clock = Stopwatch.Elapsed( );
 
 #endif /* TIME_IT */
 
@@ -510,9 +521,13 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         
 #if ( TIME_IT )
 
+        SANDS_clock_cumul += SANDS_clock;
+        KPP_clock_cumul   += KPP_clock;
         std::cout << " ** Clock breakdown: " << std::endl;
-        std::cout << " ** -> SANDS: " << SANDS_clock << " [ms]" << std::end;
-        std::cout << " ** -> KPP: " << KPP_clock << " [ms]" << std::end;
+        std::cout << " ** -> SANDS: " << SANDS_clock << " [ms]" << std::endl;
+        std::cout << " ** -> KPP  : " << KPP_clock << " [ms]" << std::endl;
+        std::cout << " ** ----------------- " << std::endl;
+        std::cout << " ** Total: " << SANDS_clock + KPP_clock << " [ms]" << std::endl;
 
 #endif /* TIME_IT */
 
@@ -520,7 +535,29 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         nTime++;
 
     }
+
+#if ( TIME_IT )
+
+    Stopwatch_cumul.Stop( );
+    clock_cumul = Stopwatch_cumul.Elapsed( );
+    std::cout << std::endl;
+    std::cout << " ** Final clock breakdown: " << std::endl;
     
+    std::cout << " ** -> SANDS: ";
+    std::cout << std::setw(6) <<SANDS_clock_cumul / double(1000) << " [s] (" << 100 * SANDS_clock_cumul / double(clock_cumul) << " %)" << std::endl;
+    
+    std::cout << " ** -> KPP  : ";
+    std::cout << std::setw(6) << KPP_clock_cumul / double(1000) << " [s] (" << 100 * KPP_clock_cumul / double(clock_cumul) << " %)" << std::endl;
+    
+    std::cout << " ** -> Rem. : ";
+    std::cout << std::setw(6) << ( clock_cumul - SANDS_clock_cumul - KPP_clock_cumul ) / double(1000) << " [s] (" << 100 * ( clock_cumul - SANDS_clock_cumul - KPP_clock_cumul ) / double(clock_cumul) << " %)" << std::endl;
+    
+    std::cout << " ** ----------------- " << std::endl;
+    std::cout << " ** Total   : ";
+    std::cout << std::setw(6) << clock_cumul / double(1000) << " [s]" << std::endl;
+    std::cout << std::endl;
+
+#endif /* TIME_IT */
     
     return 1;
 
