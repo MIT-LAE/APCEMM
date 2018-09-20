@@ -128,7 +128,7 @@ Cluster::~Cluster( )
 
 } /* End of Cluster::~Cluster */
 
-unsigned int Cluster::nRing( ) const
+unsigned int Cluster::getnRing( ) const
 {
 
     return nR;

@@ -81,7 +81,7 @@ Mesh::~Mesh( )
 void Mesh::Ring2Mesh( Cluster &c )
 {
     
-    unsigned int nRing = c.nRing();
+    unsigned int nRing = c.getnRing();
 
     std::vector<std::vector<bool >> v2d;
     std::vector<bool> v1d;
@@ -176,12 +176,12 @@ void Mesh::Ring2Mesh( Cluster &c )
         /* Do region 2 */
         for ( unsigned int iNx = 0; iNx < nx_max; iNx++ ) {
             for ( unsigned int jNy = ny_max; jNy < NY; jNy++ ) {
-                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][NY-jNy][iNx];
+                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][(NY - 1) - jNy][iNx];
             }
         }
         
         for ( unsigned int iList = 0; iList < nCellMap[iRing]; iList++ ) {
-            indList[iRing].push_back( std::make_pair(indList[iRing][iList].first, NY-indList[iRing][iList].second) );
+            indList[iRing].push_back( std::make_pair(indList[iRing][iList].first, (NY - 1) - indList[iRing][iList].second) );
         }
         nCellMap[iRing] *= 2;
         
@@ -189,19 +189,19 @@ void Mesh::Ring2Mesh( Cluster &c )
         /* 3 */
         for ( unsigned int iNx = nx_max; iNx < NX; iNx++ ) {
             for ( unsigned int jNy = 0; jNy < ny_max; jNy++ ) {
-                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][jNy][NX-iNx];
+                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][jNy][(NX - 1) - iNx];
             }
         }
        
         /* 4 */
         for ( unsigned int iNx = nx_max; iNx < NX; iNx++ ) {
             for ( unsigned int jNy = ny_max; jNy < NY; jNy++ ) {
-                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][NY-jNy][NX-iNx];
+                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][(NY - 1) - jNy][(NX - 1) - iNx];
             }
         }
         
         for ( unsigned int iList = 0; iList < nCellMap[iRing]; iList++ ) {
-            indList[iRing].push_back( std::make_pair(NX-indList[iRing][iList].first, indList[iRing][iList].second) );
+            indList[iRing].push_back( std::make_pair((NX - 1) - indList[iRing][iList].first, indList[iRing][iList].second) );
         }
         nCellMap[iRing] *= 2;
 
@@ -212,12 +212,12 @@ void Mesh::Ring2Mesh( Cluster &c )
         /* 2 and 4 */
         for ( unsigned int iNx = 0; iNx < NX; iNx++ ) {
             for ( unsigned int jNy = ny_max; jNy < NY; jNy++ ) {
-                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][NY-jNy][iNx];
+                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][(NY - 1) - jNy][iNx];
             }
         }
         
         for ( unsigned int iList = 0; iList < nCellMap[iRing]; iList++ ) {
-            indList[iRing].push_back( std::make_pair(indList[iRing][iList].first, NY-indList[iRing][iList].second) );
+            indList[iRing].push_back( std::make_pair(indList[iRing][iList].first, (NY - 1) - indList[iRing][iList].second) );
         }
         nCellMap[iRing] *= 2;
 
@@ -228,12 +228,12 @@ void Mesh::Ring2Mesh( Cluster &c )
         /* 3 and 4 */
         for ( unsigned int iNx = nx_max; iNx < NX; iNx++ ) {
             for ( unsigned int jNy = 0; jNy < NY; jNy++ ) {
-                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][jNy][NX-iNx];
+                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][jNy][(NX - 1) - iNx];
             }
         }
 
         for ( unsigned int iList = 0; iList < nCellMap[iRing]; iList++ ) {
-            indList[iRing].push_back( std::make_pair(NX-indList[iRing][iList].first, indList[iRing][iList].second) );
+            indList[iRing].push_back( std::make_pair((NX - 1) - indList[iRing][iList].first, indList[iRing][iList].second) );
         }
         nCellMap[iRing] *= 2;
 

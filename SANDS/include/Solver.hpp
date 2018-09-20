@@ -71,10 +71,6 @@
 
 //            RealDouble MassCheck( Real_2DVector &v );
 
-            Real_2DVector getDiffFactor( ) const;
-
-            Complex_2DVector getAdvFactor( ) const;
-
             /* Update time step */
             void UpdateTimeStep( double T );
 
@@ -86,7 +82,14 @@
            
             void Solve( Real_2DVector &V, const bool realInput );
 
+            /* Fill value between threshold with val */
+            void Fill( Real_2DVector &V, RealDouble val, RealDouble threshold = 0.0 );
+
             void Wisdom( Real_2DVector &V );
+
+            Real_2DVector getDiffFactor( ) const;
+
+            Complex_2DVector getAdvFactor( ) const;
 
             unsigned int getNx() const;
             unsigned int getNy() const;

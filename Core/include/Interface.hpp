@@ -8,7 +8,6 @@
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 8/12/2018                                 */
 /* File                 : Interface.hpp                             */
-/* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -19,23 +18,29 @@
 #define DIFFUSION               1    /* Is diffusion turned on? */
 #define ADVECTION               1    /* Is advection turned on? */
 
-/* SYMMETRIES */
-#define X_SYMMETRY              1    /* Is the problem symmetric around the x-axis? */
-#define Y_SYMMETRY              1    /* Is the problem symmetric around the y-axis? */
-
 /* FFTW */
 #define FFTW_WISDOM             0    /* Find most efficient algorithm through FFTW_wisdom. Takes ~ 10s */
 const char* const WISDOMFILE = "../SANDS/data/FFTW_Wisdom.out"; 
+
+/* CHEMISTRY */
+#define CHEMISTRY               1    /* Is chemistry turned on? */
 
 /* MICROPHYSICS */
 #define ICE_MICROPHYSICS        1    /* Is ice microphysics turned on? */
 #define SUL_MICROPHYSICS        1    /* Is sulfate microphysics turned on? */
 
+/* SYMMETRIES */
+#define X_SYMMETRY              1    /* Is the problem symmetric around the x-axis? */
+#define Y_SYMMETRY              1    /* Is the problem symmetric around the y-axis? */
+
 /* BACKGROUND MIX RATIO */
 const char* const AMBFILE    = "data/Ambient.txt";
 
 /* OUTPUT */
-#define DOSAVEPL                1    /* Save chemical rates */
+#define DOSAVEPL                1    /* Save chemical rates? */
+
+/* TIME */
+#define TIME_IT                 0    /* Time simulation? */
 
 /* DEBUG */
 #define DEBUG_AC_INPUT          0    /* Debug AC Input? */

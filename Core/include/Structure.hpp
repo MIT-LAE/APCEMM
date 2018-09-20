@@ -21,7 +21,9 @@ class Solution
         void SetToValue( std::vector<std::vector<double> >& vector_2D, double value = 0.0 );
         void Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max = 1, unsigned int j_max = 1 );
         void Initialize( char const *fileName, double temperature, double airDens, double relHum );
-        void GetData( double varArray[], double fixArray[], unsigned int i = 0, unsigned int j = 0 );
+        void getData( double varArray[], double fixArray[], unsigned int i = 0, unsigned int j = 0 );
+        void applyData( double varArray[], unsigned int i = 0, unsigned int j = 0 );
+        void applyRing( double varArray[], double tempArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int iRing );
         unsigned int getNx() const;
         unsigned int getNy() const;
         void Debug( double airDens );

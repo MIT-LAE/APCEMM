@@ -745,23 +745,303 @@ void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
     O2    = Data.O2[0][0];
     RCOOH = Data.RCOOH[0][0];
 
+} /* End of SpeciesArray::FillIn */
+
+void SpeciesArray::FillIn( double varArray[], unsigned int iTime, unsigned int iRing )
+{
+
+    CO2[iTime][iRing]   = varArray[  0];
+    PPN[iTime][iRing]   = varArray[  1];
+    BrNO2[iTime][iRing] = varArray[  2];
+    IEPOX[iTime][iRing] = varArray[  3];
+    PMNN[iTime][iRing]  = varArray[  4];
+    N2O[iTime][iRing]   = varArray[  5];
+    N[iTime][iRing]     = varArray[  6];
+    PAN[iTime][iRing]   = varArray[  7];
+    ALK4[iTime][iRing]  = varArray[  8];
+    MAP[iTime][iRing]   = varArray[  9];
+    MPN[iTime][iRing]   = varArray[ 10];
+    Cl2O2[iTime][iRing] = varArray[ 11];
+    ETP[iTime][iRing]   = varArray[ 12];
+    HNO2[iTime][iRing]  = varArray[ 13];
+    C3H8[iTime][iRing]  = varArray[ 14];
+    RA3P[iTime][iRing]  = varArray[ 15];
+    RB3P[iTime][iRing]  = varArray[ 16];
+    OClO[iTime][iRing]  = varArray[ 17];
+    ClNO2[iTime][iRing] = varArray[ 18];
+    ISOP[iTime][iRing]  = varArray[ 19];
+    HNO4[iTime][iRing]  = varArray[ 20];
+    MAOP[iTime][iRing]  = varArray[ 21];
+    MP[iTime][iRing]    = varArray[ 22];
+    ClOO[iTime][iRing]  = varArray[ 23];
+    RP[iTime][iRing]    = varArray[ 24];
+    BrCl[iTime][iRing]  = varArray[ 25];
+    PP[iTime][iRing]    = varArray[ 26];
+    PRPN[iTime][iRing]  = varArray[ 27];
+    SO4[iTime][iRing]   = varArray[ 28];
+    Br2[iTime][iRing]   = varArray[ 29];
+    ETHLN[iTime][iRing] = varArray[ 30];
+    MVKN[iTime][iRing]  = varArray[ 31];
+    R4P[iTime][iRing]   = varArray[ 32];
+    C2H6[iTime][iRing]  = varArray[ 33];
+    RIP[iTime][iRing]   = varArray[ 34];
+    VRP[iTime][iRing]   = varArray[ 35];
+    ATOOH[iTime][iRing] = varArray[ 36];
+    IAP[iTime][iRing]   = varArray[ 37];
+    DHMOB[iTime][iRing] = varArray[ 38];
+    MOBA[iTime][iRing]  = varArray[ 39];
+    MRP[iTime][iRing]   = varArray[ 40];
+    N2O5[iTime][iRing]  = varArray[ 41];
+    ISNOHOO[iTime][iRing]= varArray[ 42];
+    ISNP[iTime][iRing]  = varArray[ 43];
+    ISOPNB[iTime][iRing]= varArray[ 44];
+    IEPOXOO[iTime][iRing]= varArray[ 45];
+    MACRNO2[iTime][iRing]= varArray[ 46];
+    ROH[iTime][iRing]   = varArray[ 47];
+    MOBAOO[iTime][iRing]= varArray[ 48];
+    DIBOO[iTime][iRing] = varArray[ 49];
+    PMN[iTime][iRing]   = varArray[ 50];
+    ISNOOB[iTime][iRing]= varArray[ 51];
+    INPN[iTime][iRing]  = varArray[ 52];
+    H[iTime][iRing]     = varArray[ 53];
+    BrNO3[iTime][iRing] = varArray[ 54];
+    PRPE[iTime][iRing]  = varArray[ 55];
+    MVKOO[iTime][iRing] = varArray[ 56];
+    Cl2[iTime][iRing]   = varArray[ 57];
+    ISOPND[iTime][iRing]= varArray[ 58];
+    HOBr[iTime][iRing]  = varArray[ 59];
+    A3O2[iTime][iRing]  = varArray[ 60];
+    PROPNN[iTime][iRing]= varArray[ 61];
+    GLYX[iTime][iRing]  = varArray[ 62];
+    MAOPO2[iTime][iRing]= varArray[ 63];
+    CH4[iTime][iRing]   = varArray[ 64];
+    GAOO[iTime][iRing]  = varArray[ 65];
+    B3O2[iTime][iRing]  = varArray[ 66];
+    ACET[iTime][iRing]  = varArray[ 67];
+    MACRN[iTime][iRing] = varArray[ 68];
+    CH2OO[iTime][iRing] = varArray[ 69];
+    MGLYOO[iTime][iRing]= varArray[ 70];
+    VRO2[iTime][iRing]  = varArray[ 71];
+    MGLOO[iTime][iRing] = varArray[ 72];
+    MACROO[iTime][iRing]= varArray[ 73];
+    PO2[iTime][iRing]   = varArray[ 74];
+    CH3CHOO[iTime][iRing]= varArray[ 75];
+    MAN2[iTime][iRing]  = varArray[ 76];
+    ISNOOA[iTime][iRing]= varArray[ 77];
+    H2O2[iTime][iRing]  = varArray[ 78];
+    PRN1[iTime][iRing]  = varArray[ 79];
+    ETO2[iTime][iRing]  = varArray[ 80];
+    KO2[iTime][iRing]   = varArray[ 81];
+    RCO3[iTime][iRing]  = varArray[ 82];
+    HC5OO[iTime][iRing] = varArray[ 83];
+    GLYC[iTime][iRing]  = varArray[ 84];
+    ClNO3[iTime][iRing] = varArray[ 85];
+    RIO2[iTime][iRing]  = varArray[ 86];
+    R4N1[iTime][iRing]  = varArray[ 87];
+    HOCl[iTime][iRing]  = varArray[ 88];
+    ATO2[iTime][iRing]  = varArray[ 89];
+    HNO3[iTime][iRing]  = varArray[ 90];
+    ISN1[iTime][iRing]  = varArray[ 91];
+    MAO3[iTime][iRing]  = varArray[ 92];
+    MRO2[iTime][iRing]  = varArray[ 93];
+    INO2[iTime][iRing]  = varArray[ 94];
+    HAC[iTime][iRing]   = varArray[ 95];
+    HC5[iTime][iRing]   = varArray[ 96];
+    MGLY[iTime][iRing]  = varArray[ 97];
+    ISOPNBO2[iTime][iRing]= varArray[ 98];
+    ISOPNDO2[iTime][iRing]= varArray[ 99];
+    R4O2[iTime][iRing]  = varArray[100];
+    R4N2[iTime][iRing]  = varArray[101];
+    BrO[iTime][iRing]   = varArray[102];
+    RCHO[iTime][iRing]  = varArray[103];
+    MEK[iTime][iRing]   = varArray[104];
+    ClO[iTime][iRing]   = varArray[105];
+    MACR[iTime][iRing]  = varArray[106];
+    SO2[iTime][iRing]   = varArray[107];
+    MVK[iTime][iRing]   = varArray[108];
+    ALD2[iTime][iRing]  = varArray[109];
+    MCO3[iTime][iRing]  = varArray[110];
+    CH2O[iTime][iRing]  = varArray[111];
+    H2O[iTime][iRing]   = varArray[112];
+    Br[iTime][iRing]    = varArray[113];
+    NO[iTime][iRing]    = varArray[114];
+    NO3[iTime][iRing]   = varArray[115];
+    Cl[iTime][iRing]    = varArray[116];
+    O[iTime][iRing]     = varArray[117];
+    O1D[iTime][iRing]   = varArray[118];
+    O3[iTime][iRing]    = varArray[119];
+    HO2[iTime][iRing]   = varArray[120];
+    NO2[iTime][iRing]   = varArray[121];
+    OH[iTime][iRing]    = varArray[122];
+    HBr[iTime][iRing]   = varArray[123];
+    HCl[iTime][iRing]   = varArray[124];
+    CO[iTime][iRing]    = varArray[125];
+    MO2[iTime][iRing]   = varArray[126];
 
 
 } /* End of SpeciesArray::FillIn */
 
-unsigned int SpeciesArray::GetnRing() const
+void SpeciesArray::getData( double varArray[], double fixArray[], unsigned int iTime, unsigned int iRing )
+{
+
+    varArray[  0] = CO2[iTime][iRing];
+    varArray[  1] = PPN[iTime][iRing];
+    varArray[  2] = BrNO2[iTime][iRing];
+    varArray[  3] = IEPOX[iTime][iRing];
+    varArray[  4] = PMNN[iTime][iRing];
+    varArray[  5] = N2O[iTime][iRing];
+    varArray[  6] = N[iTime][iRing];
+    varArray[  7] = PAN[iTime][iRing];
+    varArray[  8] = ALK4[iTime][iRing];
+    varArray[  9] = MAP[iTime][iRing];
+    varArray[ 10] = MPN[iTime][iRing];
+    varArray[ 11] = Cl2O2[iTime][iRing];
+    varArray[ 12] = ETP[iTime][iRing];
+    varArray[ 13] = HNO2[iTime][iRing];
+    varArray[ 14] = C3H8[iTime][iRing];
+    varArray[ 15] = RA3P[iTime][iRing];
+    varArray[ 16] = RB3P[iTime][iRing];
+    varArray[ 17] = OClO[iTime][iRing];
+    varArray[ 18] = ClNO2[iTime][iRing];
+    varArray[ 19] = ISOP[iTime][iRing];
+    varArray[ 20] = HNO4[iTime][iRing];
+    varArray[ 21] = MAOP[iTime][iRing];
+    varArray[ 22] = MP[iTime][iRing];
+    varArray[ 23] = ClOO[iTime][iRing];
+    varArray[ 24] = RP[iTime][iRing];
+    varArray[ 25] = BrCl[iTime][iRing];
+    varArray[ 26] = PP[iTime][iRing];
+    varArray[ 27] = PRPN[iTime][iRing];
+    varArray[ 28] = SO4[iTime][iRing];
+    varArray[ 29] = Br2[iTime][iRing];
+    varArray[ 30] = ETHLN[iTime][iRing];
+    varArray[ 31] = MVKN[iTime][iRing];
+    varArray[ 32] = R4P[iTime][iRing];
+    varArray[ 33] = C2H6[iTime][iRing];
+    varArray[ 34] = RIP[iTime][iRing];
+    varArray[ 35] = VRP[iTime][iRing];
+    varArray[ 36] = ATOOH[iTime][iRing];
+    varArray[ 37] = IAP[iTime][iRing];
+    varArray[ 38] = DHMOB[iTime][iRing];
+    varArray[ 39] = MOBA[iTime][iRing];
+    varArray[ 40] = MRP[iTime][iRing];
+    varArray[ 41] = N2O5[iTime][iRing];
+    varArray[ 42] = ISNOHOO[iTime][iRing];
+    varArray[ 43] = ISNP[iTime][iRing];
+    varArray[ 44] = ISOPNB[iTime][iRing];
+    varArray[ 45] = IEPOXOO[iTime][iRing];
+    varArray[ 46] = MACRNO2[iTime][iRing];
+    varArray[ 47] = ROH[iTime][iRing];
+    varArray[ 48] = MOBAOO[iTime][iRing];
+    varArray[ 49] = DIBOO[iTime][iRing];
+    varArray[ 50] = PMN[iTime][iRing];
+    varArray[ 51] = ISNOOB[iTime][iRing];
+    varArray[ 52] = INPN[iTime][iRing];
+    varArray[ 53] = H[iTime][iRing];
+    varArray[ 54] = BrNO3[iTime][iRing];
+    varArray[ 55] = PRPE[iTime][iRing];
+    varArray[ 56] = MVKOO[iTime][iRing];
+    varArray[ 57] = Cl2[iTime][iRing];
+    varArray[ 58] = ISOPND[iTime][iRing];
+    varArray[ 59] = HOBr[iTime][iRing];
+    varArray[ 60] = A3O2[iTime][iRing];
+    varArray[ 61] = PROPNN[iTime][iRing];
+    varArray[ 62] = GLYX[iTime][iRing];
+    varArray[ 63] = MAOPO2[iTime][iRing];
+    varArray[ 64] = CH4[iTime][iRing];
+    varArray[ 65] = GAOO[iTime][iRing];
+    varArray[ 66] = B3O2[iTime][iRing];
+    varArray[ 67] = ACET[iTime][iRing];
+    varArray[ 68] = MACRN[iTime][iRing];
+    varArray[ 69] = CH2OO[iTime][iRing];
+    varArray[ 70] = MGLYOO[iTime][iRing];
+    varArray[ 71] = VRO2[iTime][iRing];
+    varArray[ 72] = MGLOO[iTime][iRing];
+    varArray[ 73] = MACROO[iTime][iRing];
+    varArray[ 74] = PO2[iTime][iRing];
+    varArray[ 75] = CH3CHOO[iTime][iRing];
+    varArray[ 76] = MAN2[iTime][iRing];
+    varArray[ 77] = ISNOOA[iTime][iRing];
+    varArray[ 78] = H2O2[iTime][iRing];
+    varArray[ 79] = PRN1[iTime][iRing];
+    varArray[ 80] = ETO2[iTime][iRing];
+    varArray[ 81] = KO2[iTime][iRing];
+    varArray[ 82] = RCO3[iTime][iRing];
+    varArray[ 83] = HC5OO[iTime][iRing];
+    varArray[ 84] = GLYC[iTime][iRing];
+    varArray[ 85] = ClNO3[iTime][iRing];
+    varArray[ 86] = RIO2[iTime][iRing];
+    varArray[ 87] = R4N1[iTime][iRing];
+    varArray[ 88] = HOCl[iTime][iRing];
+    varArray[ 89] = ATO2[iTime][iRing];
+    varArray[ 90] = HNO3[iTime][iRing];
+    varArray[ 91] = ISN1[iTime][iRing];
+    varArray[ 92] = MAO3[iTime][iRing];
+    varArray[ 93] = MRO2[iTime][iRing];
+    varArray[ 94] = INO2[iTime][iRing];
+    varArray[ 95] = HAC[iTime][iRing];
+    varArray[ 96] = HC5[iTime][iRing];
+    varArray[ 97] = MGLY[iTime][iRing];
+    varArray[ 98] = ISOPNBO2[iTime][iRing];
+    varArray[ 99] = ISOPNDO2[iTime][iRing];
+    varArray[100] = R4O2[iTime][iRing];
+    varArray[101] = R4N2[iTime][iRing];
+    varArray[102] = BrO[iTime][iRing];
+    varArray[103] = RCHO[iTime][iRing];
+    varArray[104] = MEK[iTime][iRing];
+    varArray[105] = ClO[iTime][iRing];
+    varArray[106] = MACR[iTime][iRing];
+    varArray[107] = SO2[iTime][iRing];
+    varArray[108] = MVK[iTime][iRing];
+    varArray[109] = ALD2[iTime][iRing];
+    varArray[110] = MCO3[iTime][iRing];
+    varArray[111] = CH2O[iTime][iRing];
+    varArray[112] = H2O[iTime][iRing];
+    varArray[113] = Br[iTime][iRing];
+    varArray[114] = NO[iTime][iRing];
+    varArray[115] = NO3[iTime][iRing];
+    varArray[116] = Cl[iTime][iRing];
+    varArray[117] = O[iTime][iRing];
+    varArray[118] = O1D[iTime][iRing];
+    varArray[119] = O3[iTime][iRing];
+    varArray[120] = HO2[iTime][iRing];
+    varArray[121] = NO2[iTime][iRing];
+    varArray[122] = OH[iTime][iRing];
+    varArray[123] = HBr[iTime][iRing];
+    varArray[124] = HCl[iTime][iRing];
+    varArray[125] = CO[iTime][iRing];
+    varArray[126] = MO2[iTime][iRing];
+    fixArray[  0] = ACTA;
+    fixArray[  1] = EOH;
+    fixArray[  2] = H2;
+    fixArray[  3] = HCOOH;
+    fixArray[  4] = MOH;
+    fixArray[  5] = N2;
+    fixArray[  6] = O2;
+    fixArray[  7] = RCOOH;
+
+    /* Ensure positiveness */
+    for ( unsigned int i = 0; i < N_VAR; i++ ) {
+        if ( varArray[i] <= 0.0 ) {
+            varArray[i] = 1.0E-50;
+        }
+    }
+
+} /* End of SpeciesArray::getData */
+
+unsigned int SpeciesArray::getnRing() const
 {
 
     return nRing;
 
-} /* End of SpeciesArray::GetnRing */
+} /* End of SpeciesArray::getnRing */
 
-unsigned int SpeciesArray::GetnTime() const
+unsigned int SpeciesArray::getnTime() const
 {
 
     return nTime;
 
-} /* End of SpeciesArray::GetnTime */
+} /* End of SpeciesArray::getnTime */
 
 
 /* End of Species.cpp */

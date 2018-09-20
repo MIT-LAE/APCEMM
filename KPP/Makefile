@@ -90,5 +90,5 @@ build:
 clean:
 	@echo "---> Making clean in KPP <---"
 	-@rm -rv $(OBJ_DIR)/*
-	-@rm -rv $(LIB_DIR)/*
+	-@rm -rv $(LIB_DIR)/$(LIB)
 

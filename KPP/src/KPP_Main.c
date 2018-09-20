@@ -68,7 +68,7 @@ void INTEGRATE( double TIN, double TOUT );
 
 int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, \
               double airDens, double temperature, double pressure, \
-              double SINLAT, double COSLAT, double SINDEC, double COSDEC, \
+              double SINLAT_, double COSLAT_, double SINDEC_, double COSDEC_, \
               double RTOLS, double ATOLS )
 {
     int i;
@@ -80,6 +80,11 @@ int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, 
     TEMP = temperature;
     Patm = pressure;
     CFACTOR = airDens;
+
+    SINLAT = SINLAT_;
+    COSLAT = COSLAT_;
+    SINDEC = SINDEC_;
+    COSDEC = COSDEC_;
 
     Read_JRates( PHOTOL );
   

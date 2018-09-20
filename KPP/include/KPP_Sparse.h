@@ -13,8 +13,6 @@
 /*        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany */
 /*                                                                  */
 /* File                 : KPP_Sparse.h                              */
-/* Time                 : Tue Sep  4 17:12:00 2018                  */
-/* Working directory    : /home/fritzt/Documents/kpp-2.2.3/Research/UCX_Forw_C_2 */
 /* Equation file        : KPP.kpp                                   */
 /* Output root filename : KPP                                       */
 /*                                                                  */

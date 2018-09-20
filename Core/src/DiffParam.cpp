@@ -8,7 +8,6 @@
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 7/26/2018                                 */
 /* File                 : DiffParam.cpp                             */
-/* Working directory    : /home/fritzt/APCEMM-SourceCode            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -16,30 +15,54 @@
 #include <cmath>
 #include "Parameters.hpp"
 
-void DiffParam( double time, double &d_H, double &d_V )
+void DiffParam( double time, double &d_x, double &d_y )
 {
 
-    if ( DPROF == 0 ) {
+    /* DiffParam:
+     * Computes diffusion parameters
+     *
+     * INPUTS:
+     * (double) time: current time since simulation started in [s]
+     *
+     * OUTPUTS:
+     * (double) d_x: current horizontal diffusion coefficient at time in [m^2/s]
+     * (double) d_y: current vertical diffusion coefficient at time in [m^2/s]
+     */
+    
+     if ( DPROF == 0 ) {
         if ( time <= tH0 )
-            d_H = DH0;
+            d_x = DH0;
         else
-            d_H = DH;
+            d_x = DH;
         if ( time <= tV0 )
-            d_V = DV0;
+            d_y = DV0;
         else
-            d_V = DV0;
+            d_y = DV0;
     }
     else if ( DPROF == 1 ) {
-        d_H = std::max( DH, DH0 + (DH - DH0)/tH0 * time );
-        d_V = std::max( DV, DV0 + (DV - DV0)/tV0 * time );
+        d_x = std::max( DH, DH0 + (DH - DH0) * time / tH0 );
+        d_x = std::max( DV, DV0 + (DV - DV0) * time / tV0 );
     }
     else if (DPROF == 2 ) {
-        d_H = DH + (DH - DH0)*exp( -time / tH0 );
-        d_V = DV + (DV - DV0)*exp( -time / tV0 );
+        d_x = DH + (DH - DH0) * exp( -time / tH0 );
+        d_y = DV + (DV - DV0) * exp( -time / tV0 );
     }
     else {
         std::string const currFile("DiffParam.cpp");
         std::cout << "ERROR: In " << currFile << ": DPROF set to " << DPROF << std::endl;
     }
+
+    if ( d_x < 0.0 ) {
+        std::cout << "d_x is negative: d_x = " << d_x << " [m^2/s]" << std::endl;
+        std::cout << "Setting d_x to 0.0" << std::endl;
+        d_x = 0.0;
+    }
+
+    if ( d_y < 0.0 ) {
+        std::cout << "d_y is negative: d_y = " << d_y << " [m^2/s]" << std::endl;
+        std::cout << "Setting d_y to 0.0" << std::endl;
+        d_y = 0.0;
+    }
+
 
 } /* End of DiffParam */

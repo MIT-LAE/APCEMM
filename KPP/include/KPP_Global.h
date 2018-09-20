@@ -13,8 +13,6 @@
 /*        R. Sander, Max-Planck Institute for Chemistry, Mainz, Germany */
 /*                                                                  */
 /* File                 : KPP_Global.h                              */
-/* Time                 : Fri Jul 13 11:26:33 2018                  */
-/* Working directory    : /home/fritzt/Documents/kpp-2.2.3/Research/UCX_ADJ */
 /* Equation file        : KPP.kpp                                   */
 /* Output root filename : KPP                                       */
 /*                                                                  */
@@ -28,8 +26,6 @@
 extern double C[NSPEC];                         /* Concentration of all species */
 extern double * VAR;
 extern double * FIX;
-extern double TARGET[NVAR];                     /* Plume model target */
-extern double VAR_AMB[NVAR];                    /* Ambient concentrations */
 extern double RCONST[NREACT];                   /* Rate constants (global) */
 extern double TIME;                             /* Current integration time */
 extern double SUN;                              /* Sunlight intensity between [0,1] */
@@ -50,10 +46,9 @@ extern double STEPMAX;                          /* Upper bound for integration s
 extern double CFACTOR;                          /* Conversion factor for concentration units */
 extern int DDMTYPE;                             /* DDM sensitivity w.r.t.: 0=init.val., 1=params */
 extern int LOOKAT[NLOOKAT];                     /* Indexes of species to look at */
-//extern int MONITOR[NMONITOR];                   /* Indexes of species to monitor */
-extern const char * SPC_NAMES[NSPEC];                 /* Names of chemical species */
+extern const char * SPC_NAMES[NSPEC];           /* Names of chemical species */
 extern char * SMASS[NMASS];                     /* Names of atoms for mass balance */
-extern const char * EQN_NAMES[NREACT];                /* Equation names */
+extern const char * EQN_NAMES[NREACT];          /* Equation names */
 extern char * EQN_TAGS[NREACT];                 /* Equation tags */
 extern double PHOTOL[NPHOTOL];                  /* Photolysis rates */
 
