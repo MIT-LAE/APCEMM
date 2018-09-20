@@ -31,7 +31,7 @@ class Cluster
         Cluster( const Cluster& cl );
         Cluster& operator=( const Cluster& cl );
         ~Cluster( );
-        unsigned int nRing() const;
+        unsigned int getnRing() const;
         bool halfRing() const;
         std::vector<Ring> getRings() const; 
         void PrintRings() const;

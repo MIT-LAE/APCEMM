@@ -268,8 +268,9 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
 
 } /* End of Solution::Initialize */
 
-void Solution::GetData( double varArray[], double fixArray[], unsigned int i, unsigned int j )
+void Solution::getData( double varArray[], double fixArray[], unsigned int i, unsigned int j )
 {
+
     varArray[  0] = CO2[j][i];
     varArray[  1] = PPN[j][i];
     varArray[  2] = BrNO2[j][i];
@@ -406,7 +407,281 @@ void Solution::GetData( double varArray[], double fixArray[], unsigned int i, un
     fixArray[  6] = O2[j][i];
     fixArray[  7] = RCOOH[j][i];
 
-} /* End of Solution::GetData */
+} /* End of Solution::getData */
+
+void Solution::applyData( double varArray[], unsigned int i, unsigned int j )
+{
+
+    CO2[j][i] = varArray[  0];
+    PPN[j][i] = varArray[  1];
+    BrNO2[j][i] = varArray[  2];
+    IEPOX[j][i] = varArray[  3];
+    PMNN[j][i] = varArray[  4];
+    N2O[j][i] = varArray[  5];
+    N[j][i] = varArray[  6];
+    PAN[j][i] = varArray[  7];
+    ALK4[j][i] = varArray[  8];
+    MAP[j][i] = varArray[  9];
+    MPN[j][i] = varArray[ 10];
+    Cl2O2[j][i] = varArray[ 11];
+    ETP[j][i] = varArray[ 12];
+    HNO2[j][i] = varArray[ 13];
+    C3H8[j][i] = varArray[ 14];
+    RA3P[j][i] = varArray[ 15];
+    RB3P[j][i] = varArray[ 16];
+    OClO[j][i] = varArray[ 17];
+    ClNO2[j][i] = varArray[ 18];
+    ISOP[j][i] = varArray[ 19];
+    HNO4[j][i] = varArray[ 20];
+    MAOP[j][i] = varArray[ 21];
+    MP[j][i] = varArray[ 22];
+    ClOO[j][i] = varArray[ 23];
+    RP[j][i] = varArray[ 24];
+    BrCl[j][i] = varArray[ 25];
+    PP[j][i] = varArray[ 26];
+    PRPN[j][i] = varArray[ 27];
+    SO4[j][i] = varArray[ 28];
+    Br2[j][i] = varArray[ 29];
+    ETHLN[j][i] = varArray[ 30];
+    MVKN[j][i] = varArray[ 31];
+    R4P[j][i] = varArray[ 32];
+    C2H6[j][i] = varArray[ 33];
+    RIP[j][i] = varArray[ 34];
+    VRP[j][i] = varArray[ 35];
+    ATOOH[j][i] = varArray[ 36];
+    IAP[j][i] = varArray[ 37];
+    DHMOB[j][i] = varArray[ 38];
+    MOBA[j][i] = varArray[ 39];
+    MRP[j][i] = varArray[ 40];
+    N2O5[j][i] = varArray[ 41];
+    ISNOHOO[j][i] = varArray[ 42];
+    ISNP[j][i] = varArray[ 43];
+    ISOPNB[j][i] = varArray[ 44];
+    IEPOXOO[j][i] = varArray[ 45];
+    MACRNO2[j][i] = varArray[ 46];
+    ROH[j][i] = varArray[ 47];
+    MOBAOO[j][i] = varArray[ 48];
+    DIBOO[j][i] = varArray[ 49];
+    PMN[j][i] = varArray[ 50];
+    ISNOOB[j][i] = varArray[ 51];
+    INPN[j][i] = varArray[ 52];
+    H[j][i] = varArray[ 53];
+    BrNO3[j][i] = varArray[ 54];
+    PRPE[j][i] = varArray[ 55];
+    MVKOO[j][i] = varArray[ 56];
+    Cl2[j][i] = varArray[ 57];
+    ISOPND[j][i] = varArray[ 58];
+    HOBr[j][i] = varArray[ 59];
+    A3O2[j][i] = varArray[ 60];
+    PROPNN[j][i] = varArray[ 61];
+    GLYX[j][i] = varArray[ 62];
+    MAOPO2[j][i] = varArray[ 63];
+    CH4[j][i] = varArray[ 64];
+    GAOO[j][i] = varArray[ 65];
+    B3O2[j][i] = varArray[ 66];
+    ACET[j][i] = varArray[ 67];
+    MACRN[j][i] = varArray[ 68];
+    CH2OO[j][i] = varArray[ 69];
+    MGLYOO[j][i] = varArray[ 70];
+    VRO2[j][i] = varArray[ 71];
+    MGLOO[j][i] = varArray[ 72];
+    MACROO[j][i] = varArray[ 73];
+    PO2[j][i] = varArray[ 74];
+    CH3CHOO[j][i] = varArray[ 75];
+    MAN2[j][i] = varArray[ 76];
+    ISNOOA[j][i] = varArray[ 77];
+    H2O2[j][i] = varArray[ 78];
+    PRN1[j][i] = varArray[ 79];
+    ETO2[j][i] = varArray[ 80];
+    KO2[j][i] = varArray[ 81];
+    RCO3[j][i] = varArray[ 82];
+    HC5OO[j][i] = varArray[ 83];
+    GLYC[j][i] = varArray[ 84];
+    ClNO3[j][i] = varArray[ 85];
+    RIO2[j][i] = varArray[ 86];
+    R4N1[j][i] = varArray[ 87];
+    HOCl[j][i] = varArray[ 88];
+    ATO2[j][i] = varArray[ 89];
+    HNO3[j][i] = varArray[ 90];
+    ISN1[j][i] = varArray[ 91];
+    MAO3[j][i] = varArray[ 92];
+    MRO2[j][i] = varArray[ 93];
+    INO2[j][i] = varArray[ 94];
+    HAC[j][i] = varArray[ 95];
+    HC5[j][i] = varArray[ 96];
+    MGLY[j][i] = varArray[ 97];
+    ISOPNBO2[j][i] = varArray[ 98];
+    ISOPNDO2[j][i] = varArray[ 99];
+    R4O2[j][i] = varArray[100];
+    R4N2[j][i] = varArray[101];
+    BrO[j][i] = varArray[102];
+    RCHO[j][i] = varArray[103];
+    MEK[j][i] = varArray[104];
+    ClO[j][i] = varArray[105];
+    MACR[j][i] = varArray[106];
+    SO2[j][i] = varArray[107];
+    MVK[j][i] = varArray[108];
+    ALD2[j][i] = varArray[109];
+    MCO3[j][i] = varArray[110];
+    CH2O[j][i] = varArray[111];
+    H2O[j][i] = varArray[112];
+    Br[j][i] = varArray[113];
+    NO[j][i] = varArray[114];
+    NO3[j][i] = varArray[115];
+    Cl[j][i] = varArray[116];
+    O[j][i] = varArray[117];
+    O1D[j][i] = varArray[118];
+    O3[j][i] = varArray[119];
+    HO2[j][i] = varArray[120];
+    NO2[j][i] = varArray[121];
+    OH[j][i] = varArray[122];
+    HBr[j][i] = varArray[123];
+    HCl[j][i] = varArray[124];
+    CO[j][i] = varArray[125];
+    MO2[j][i] = varArray[126];
+
+
+} /* End of Solution::applyData */
+
+void Solution::applyRing( double varArray[], double tempArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int iRing )
+{
+
+    unsigned int i, j;
+    unsigned int size = mapRing2Mesh[iRing].size();
+    for ( unsigned int iList = 0; iList < size; iList++ ) {
+        i = mapRing2Mesh[iRing][iList].first;
+        j = mapRing2Mesh[iRing][iList].second;
+        CO2[j][i] = CO2[j][i] * varArray[  0] / tempArray[  0];
+        PPN[j][i] = PPN[j][i] * varArray[  1] / tempArray[  1];
+        BrNO2[j][i] = BrNO2[j][i] * varArray[  2] / tempArray[  2];
+        IEPOX[j][i] = IEPOX[j][i] * varArray[  3] / tempArray[  3];
+        PMNN[j][i] = PMNN[j][i] * varArray[  4] / tempArray[  4];
+        N2O[j][i] = N2O[j][i] * varArray[  5] / tempArray[  5];
+        N[j][i] = N[j][i] * varArray[  6] / tempArray[  6];
+        PAN[j][i] = PAN[j][i] * varArray[  7] / tempArray[  7];
+        ALK4[j][i] = ALK4[j][i] * varArray[  8] / tempArray[  8];
+        MAP[j][i] = MAP[j][i] * varArray[  9] / tempArray[  9];
+        MPN[j][i] = MPN[j][i] * varArray[ 10] / tempArray[ 10];
+        Cl2O2[j][i] = Cl2O2[j][i] * varArray[ 11] / tempArray[ 11];
+        ETP[j][i] = ETP[j][i] * varArray[ 12] / tempArray[ 12];
+        HNO2[j][i] = HNO2[j][i] * varArray[ 13] / tempArray[ 13];
+        C3H8[j][i] = C3H8[j][i] * varArray[ 14] / tempArray[ 14];
+        RA3P[j][i] = RA3P[j][i] * varArray[ 15] / tempArray[ 15];
+        RB3P[j][i] = RB3P[j][i] * varArray[ 16] / tempArray[ 16];
+        OClO[j][i] = OClO[j][i] * varArray[ 17] / tempArray[ 17];
+        ClNO2[j][i] = ClNO2[j][i] * varArray[ 18] / tempArray[ 18];
+        ISOP[j][i] = ISOP[j][i] * varArray[ 19] / tempArray[ 19];
+        HNO4[j][i] = HNO4[j][i] * varArray[ 20] / tempArray[ 20];
+        MAOP[j][i] = MAOP[j][i] * varArray[ 21] / tempArray[ 21];
+        MP[j][i] = MP[j][i] * varArray[ 22] / tempArray[ 22];
+        ClOO[j][i] = ClOO[j][i] * varArray[ 23] / tempArray[ 23];
+        RP[j][i] = RP[j][i] * varArray[ 24] / tempArray[ 24];
+        BrCl[j][i] = BrCl[j][i] * varArray[ 25] / tempArray[ 25];
+        PP[j][i] = PP[j][i] * varArray[ 26] / tempArray[ 26];
+        PRPN[j][i] = PRPN[j][i] * varArray[ 27] / tempArray[ 27];
+        SO4[j][i] = SO4[j][i] * varArray[ 28] / tempArray[ 28];
+        Br2[j][i] = Br2[j][i] * varArray[ 29] / tempArray[ 29];
+        ETHLN[j][i] = ETHLN[j][i] * varArray[ 30] / tempArray[ 30];
+        MVKN[j][i] = MVKN[j][i] * varArray[ 31] / tempArray[ 31];
+        R4P[j][i] = R4P[j][i] * varArray[ 32] / tempArray[ 32];
+        C2H6[j][i] = C2H6[j][i] * varArray[ 33] / tempArray[ 33];
+        RIP[j][i] = RIP[j][i] * varArray[ 34] / tempArray[ 34];
+        VRP[j][i] = VRP[j][i] * varArray[ 35] / tempArray[ 35];
+        ATOOH[j][i] = ATOOH[j][i] * varArray[ 36] / tempArray[ 36];
+        IAP[j][i] = IAP[j][i] * varArray[ 37] / tempArray[ 37];
+        DHMOB[j][i] = DHMOB[j][i] * varArray[ 38] / tempArray[ 38];
+        MOBA[j][i] = MOBA[j][i] * varArray[ 39] / tempArray[ 39];
+        MRP[j][i] = MRP[j][i] * varArray[ 40] / tempArray[ 40];
+        N2O5[j][i] = N2O5[j][i] * varArray[ 41] / tempArray[ 41];
+        ISNOHOO[j][i] = ISNOHOO[j][i] * varArray[ 42] / tempArray[ 42];
+        ISNP[j][i] = ISNP[j][i] * varArray[ 43] / tempArray[ 43];
+        ISOPNB[j][i] = ISOPNB[j][i] * varArray[ 44] / tempArray[ 44];
+        IEPOXOO[j][i] = IEPOXOO[j][i] * varArray[ 45] / tempArray[ 45];
+        MACRNO2[j][i] = MACRNO2[j][i] * varArray[ 46] / tempArray[ 46];
+        ROH[j][i] = ROH[j][i] * varArray[ 47] / tempArray[ 47];
+        MOBAOO[j][i] = MOBAOO[j][i] * varArray[ 48] / tempArray[ 48];
+        DIBOO[j][i] = DIBOO[j][i] * varArray[ 49] / tempArray[ 49];
+        PMN[j][i] = PMN[j][i] * varArray[ 50] / tempArray[ 50];
+        ISNOOB[j][i] = ISNOOB[j][i] * varArray[ 51] / tempArray[ 51];
+        INPN[j][i] = INPN[j][i] * varArray[ 52] / tempArray[ 52];
+        H[j][i] = H[j][i] * varArray[ 53] / tempArray[ 53];
+        BrNO3[j][i] = BrNO3[j][i] * varArray[ 54] / tempArray[ 54];
+        PRPE[j][i] = PRPE[j][i] * varArray[ 55] / tempArray[ 55];
+        MVKOO[j][i] = MVKOO[j][i] * varArray[ 56] / tempArray[ 56];
+        Cl2[j][i] = Cl2[j][i] * varArray[ 57] / tempArray[ 57];
+        ISOPND[j][i] = ISOPND[j][i] * varArray[ 58] / tempArray[ 58];
+        HOBr[j][i] = HOBr[j][i] * varArray[ 59] / tempArray[ 59];
+        A3O2[j][i] = A3O2[j][i] * varArray[ 60] / tempArray[ 60];
+        PROPNN[j][i] = PROPNN[j][i] * varArray[ 61] / tempArray[ 61];
+        GLYX[j][i] = GLYX[j][i] * varArray[ 62] / tempArray[ 62];
+        MAOPO2[j][i] = MAOPO2[j][i] * varArray[ 63] / tempArray[ 63];
+        CH4[j][i] = CH4[j][i] * varArray[ 64] / tempArray[ 64];
+        GAOO[j][i] = GAOO[j][i] * varArray[ 65] / tempArray[ 65];
+        B3O2[j][i] = B3O2[j][i] * varArray[ 66] / tempArray[ 66];
+        ACET[j][i] = ACET[j][i] * varArray[ 67] / tempArray[ 67];
+        MACRN[j][i] = MACRN[j][i] * varArray[ 68] / tempArray[ 68];
+        CH2OO[j][i] = CH2OO[j][i] * varArray[ 69] / tempArray[ 69];
+        MGLYOO[j][i] = MGLYOO[j][i] * varArray[ 70] / tempArray[ 70];
+        VRO2[j][i] = VRO2[j][i] * varArray[ 71] / tempArray[ 71];
+        MGLOO[j][i] = MGLOO[j][i] * varArray[ 72] / tempArray[ 72];
+        MACROO[j][i] = MACROO[j][i] * varArray[ 73] / tempArray[ 73];
+        PO2[j][i] = PO2[j][i] * varArray[ 74] / tempArray[ 74];
+        CH3CHOO[j][i] = CH3CHOO[j][i] * varArray[ 75] / tempArray[ 75];
+        MAN2[j][i] = MAN2[j][i] * varArray[ 76] / tempArray[ 76];
+        ISNOOA[j][i] = ISNOOA[j][i] * varArray[ 77] / tempArray[ 77];
+        H2O2[j][i] = H2O2[j][i] * varArray[ 78] / tempArray[ 78];
+        PRN1[j][i] = PRN1[j][i] * varArray[ 79] / tempArray[ 79];
+        ETO2[j][i] = ETO2[j][i] * varArray[ 80] / tempArray[ 80];
+        KO2[j][i] = KO2[j][i] * varArray[ 81] / tempArray[ 81];
+        RCO3[j][i] = RCO3[j][i] * varArray[ 82] / tempArray[ 82];
+        HC5OO[j][i] = HC5OO[j][i] * varArray[ 83] / tempArray[ 83];
+        GLYC[j][i] = GLYC[j][i] * varArray[ 84] / tempArray[ 84];
+        ClNO3[j][i] = ClNO3[j][i] * varArray[ 85] / tempArray[ 85];
+        RIO2[j][i] = RIO2[j][i] * varArray[ 86] / tempArray[ 86];
+        R4N1[j][i] = R4N1[j][i] * varArray[ 87] / tempArray[ 87];
+        HOCl[j][i] = HOCl[j][i] * varArray[ 88] / tempArray[ 88];
+        ATO2[j][i] = ATO2[j][i] * varArray[ 89] / tempArray[ 89];
+        HNO3[j][i] = HNO3[j][i] * varArray[ 90] / tempArray[ 90];
+        ISN1[j][i] = ISN1[j][i] * varArray[ 91] / tempArray[ 91];
+        MAO3[j][i] = MAO3[j][i] * varArray[ 92] / tempArray[ 92];
+        MRO2[j][i] = MRO2[j][i] * varArray[ 93] / tempArray[ 93];
+        INO2[j][i] = INO2[j][i] * varArray[ 94] / tempArray[ 94];
+        HAC[j][i] = HAC[j][i] * varArray[ 95] / tempArray[ 95];
+        HC5[j][i] = HC5[j][i] * varArray[ 96] / tempArray[ 96];
+        MGLY[j][i] = MGLY[j][i] * varArray[ 97] / tempArray[ 97];
+        ISOPNBO2[j][i] = ISOPNBO2[j][i] * varArray[ 98] / tempArray[ 98];
+        ISOPNDO2[j][i] = ISOPNDO2[j][i] * varArray[ 99] / tempArray[ 99];
+        R4O2[j][i] = R4O2[j][i] * varArray[100] / tempArray[100];
+        R4N2[j][i] = R4N2[j][i] * varArray[101] / tempArray[101];
+        BrO[j][i] = BrO[j][i] * varArray[102] / tempArray[102];
+        RCHO[j][i] = RCHO[j][i] * varArray[103] / tempArray[103];
+        MEK[j][i] = MEK[j][i] * varArray[104] / tempArray[104];
+        ClO[j][i] = ClO[j][i] * varArray[105] / tempArray[105];
+        MACR[j][i] = MACR[j][i] * varArray[106] / tempArray[106];
+        SO2[j][i] = SO2[j][i] * varArray[107] / tempArray[107];
+        MVK[j][i] = MVK[j][i] * varArray[108] / tempArray[108];
+        ALD2[j][i] = ALD2[j][i] * varArray[109] / tempArray[109];
+        MCO3[j][i] = MCO3[j][i] * varArray[110] / tempArray[110];
+        CH2O[j][i] = CH2O[j][i] * varArray[111] / tempArray[111];
+        H2O[j][i] = H2O[j][i] * varArray[112] / tempArray[112];
+        Br[j][i] = Br[j][i] * varArray[113] / tempArray[113];
+        NO[j][i] = NO[j][i] * varArray[114] / tempArray[114];
+        NO3[j][i] = NO3[j][i] * varArray[115] / tempArray[115];
+        Cl[j][i] = Cl[j][i] * varArray[116] / tempArray[116];
+        O[j][i] = O[j][i] * varArray[117] / tempArray[117];
+        O1D[j][i] = O1D[j][i] * varArray[118] / tempArray[118];
+        O3[j][i] = O3[j][i] * varArray[119] / tempArray[119];
+        HO2[j][i] = HO2[j][i] * varArray[120] / tempArray[120];
+        NO2[j][i] = NO2[j][i] * varArray[121] / tempArray[121];
+        OH[j][i] = OH[j][i] * varArray[122] / tempArray[122];
+        HBr[j][i] = HBr[j][i] * varArray[123] / tempArray[123];
+        HCl[j][i] = HCl[j][i] * varArray[124] / tempArray[124];
+        CO[j][i] = CO[j][i] * varArray[125] / tempArray[125];
+        MO2[j][i] = MO2[j][i] * varArray[126] / tempArray[126];
+
+    }
+
+} /* End of Solution::applyRing */
 
 unsigned int Solution::getNx() const
 {

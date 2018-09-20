@@ -41,7 +41,19 @@
 #define DPROF             1           /* Time profile of the initial diffusion parameter [0,1,2]
                                        * 0: Step
                                        * 1: Linear
-                                       * 2: Exponential */
+                                       * 2: Exponential
+                                       */
+
+/* Advection  */
+#define VX                0.0E+00     /* Steady-state horizontal advection velocity [m/s] */
+#define VY                0.0E+00     /* Steady-state vertical advection velocity [m/s] */
+#define SYNLIFT           0           /* Initial synoptic lifting? */
+#define T_SYN             3.6E+03     /* Timescale associated to synoptic lifting */
+#define V_SYN             5.0E-02     /* Velocity magnitude [m/s] */
+#define SYNPROF           1           /* Time profile of the initial synoptic lifting [0,1]
+                                       * 0: Step
+                                       * 1: Linear
+                                       */
 
 /* Chemistry parameters */
 #define N_SPC                 135         /* Number of chemical species */
