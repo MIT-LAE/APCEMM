@@ -23,9 +23,10 @@
 #include "Cluster.hpp"
 #include "Ring.hpp"
 
-typedef std::vector<double> Real_1DVector;
-
 typedef double RealDouble;
+typedef std::vector<RealDouble> Real_1DVector;
+typedef std::vector<Real_1DVector> Real_2DVector;
+
 
 class Mesh
 {
@@ -38,6 +39,9 @@ class Mesh
         void Ring2Mesh( Cluster &c );
         Real_1DVector getX( ) const;
         Real_1DVector getY( ) const;
+        Real_1DVector getX_e( ) const;
+        Real_1DVector getY_e( ) const;
+        Real_2DVector getAreas( ) const;
         RealDouble gethx( ) const;
         RealDouble gethy( ) const;
         unsigned int getNx( ) const;
@@ -49,7 +53,15 @@ class Mesh
 
     private:
 
+        /* Cell center coordinates */
         Real_1DVector x, y;
+
+        /* Cell edges */
+        Real_1DVector x_e, y_e;
+
+        /* Cell areas */
+        Real_2DVector areas;
+
         RealDouble xlim, ylim;
         RealDouble hx, hy;
         unsigned int nx, ny;

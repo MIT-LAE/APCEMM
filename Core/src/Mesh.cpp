@@ -27,16 +27,35 @@ Mesh::Mesh( )
     hx = 2 * xlim / nx;
     hy = 2 * ylim / ny;
 
+    /* Cell center x-coordinates */
     for ( unsigned int i = 0; i < nx; i++ ) {
         x.push_back( (double) 0.0 );
         x[i] = i * hx - xlim + hx / 2;
+        x_e.push_back( (double) 0.0 );
+        x_e[i] = x[i] - hx/2;
     }
-
+    x_e.push_back( (double) 0.0 );
+    x_e[nx] = x_e[nx-1] + hx;
+    
+    /* Cell center y-coordinates */
     for ( unsigned int j = 0; j < ny; j++ ) {
         y.push_back( (double) 0.0 );
         y[j] = j * hy - ylim + hy / 2;
+        y_e.push_back( (double) 0.0 );
+        y_e[j] = y[j] - hy/2;
     }
-    
+    y_e.push_back( (double) 0.0 );
+    y_e[ny] = y_e[ny-1] + hy;
+
+    for ( unsigned int jNy = 0; jNy < ny; jNy++ ) {
+        areas.push_back( Real_1DVector( nx, 0.0 ) );
+        for ( unsigned int iNx = 0; iNx < nx; iNx++ ) {
+            areas[jNy][iNx] = ( y_e[jNy+1] - y_e[jNy] ) * \
+                              ( x_e[iNx+1] - x_e[iNx] );
+            /* Comes down to hx * hy, if mesh is cartesian uniform */
+        }
+    }
+
 } /* End of Mesh::Mesh */
 
 Mesh::Mesh( const Mesh &m )
@@ -258,6 +277,27 @@ Real_1DVector Mesh::getY( ) const
 
 } /* End of Mesh::getY */
         
+Real_1DVector Mesh::getX_e( ) const
+{
+
+    return x_e;
+
+} /* End of Mesh::getX_e */
+
+Real_1DVector Mesh::getY_e( ) const
+{
+
+    return y_e;
+
+} /* End of Mesh::getY_e */
+
+Real_2DVector Mesh::getAreas( ) const
+{
+
+    return areas;
+
+} /* End of Mesh::getAreas */
+
 RealDouble Mesh::gethx( ) const
 {
 
