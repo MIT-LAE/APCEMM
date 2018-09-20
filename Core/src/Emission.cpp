@@ -234,152 +234,152 @@ Emission& Emission::operator+( const Emission &em )
 } /* End of Emission::operator+ */
 
 
-double Emission::GetCO2( ) const
+double Emission::getCO2( ) const
 {
 
     return CO2;
 
-} /* End of Emission::GetCO2 */
+} /* End of Emission::getCO2 */
 
-double Emission::GetH2O( ) const
+double Emission::getH2O( ) const
 {
 
     return H2O;
 
-} /* End of Emission::GetH2O */
+} /* End of Emission::getH2O */
 
-double Emission::GetNOx( ) const
+double Emission::getNOx( ) const
 {
 
     return NOx;
 
-} /* End of Emission::GetNOx */
+} /* End of Emission::getNOx */
 
-double Emission::GetNO( ) const
+double Emission::getNO( ) const
 {
 
     return NO;
 
-} /* End of Emission::GetNO */
+} /* End of Emission::getNO */
 
-double Emission::GetNO2( ) const
+double Emission::getNO2( ) const
 {
 
     return NO2;
 
-} /* End of Emission::GetNO2 */
+} /* End of Emission::getNO2 */
 
-double Emission::GetHNO2( ) const
+double Emission::getHNO2( ) const
 {
 
     return HNO2;
 
-} /* End of Emission::GetHNO2 */
+} /* End of Emission::getHNO2 */
 
-double Emission::GetSO2( ) const
+double Emission::getSO2( ) const
 {
 
     return SO2;
 
-} /* End of Emission::GetSO2 */
+} /* End of Emission::getSO2 */
 
-double Emission::GetCO( ) const
+double Emission::getCO( ) const
 {
 
     return CO;
 
-} /* End of Emission::GetCO */
+} /* End of Emission::getCO */
 
-double Emission::GetHC( ) const
+double Emission::getHC( ) const
 {
 
     return HC;
 
-} /* End of Emission::GetHC */
+} /* End of Emission::getHC */
 
-double Emission::GetCH4( ) const
+double Emission::getCH4( ) const
 {
 
     return CH4;
 
-} /* End of Emission::GetCH4 */
+} /* End of Emission::getCH4 */
 
-double Emission::GetC2H6( ) const
+double Emission::getC2H6( ) const
 {
 
     return C2H6;
 
-} /* End of Emission::GetC2H6 */
+} /* End of Emission::getC2H6 */
 
-double Emission::GetPRPE( ) const
+double Emission::getPRPE( ) const
 {
 
     return PRPE;
 
-} /* End of Emission::GetPRPE */
+} /* End of Emission::getPRPE */
 
-double Emission::GetALK4( ) const
+double Emission::getALK4( ) const
 {
 
     return ALK4;
 
-} /* End of Emission::GetALK4 */
+} /* End of Emission::getALK4 */
 
-double Emission::GetCH2O( ) const
+double Emission::getCH2O( ) const
 {
 
     return CH2O;
 
-} /* End of Emission::GetCH2O */
+} /* End of Emission::getCH2O */
 
-double Emission::GetALD2( ) const
+double Emission::getALD2( ) const
 {
 
     return ALD2;
 
-} /* End of Emission::GetALD2 */
+} /* End of Emission::getALD2 */
 
-double Emission::GetGLYX( ) const
+double Emission::getGLYX( ) const
 {
 
     return GLYX;
 
-} /* End of Emission::GetGLYX */
+} /* End of Emission::getGLYX */
 
-double Emission::GetMGLY( ) const
+double Emission::getMGLY( ) const
 {
 
     return MGLY;
 
-} /* End of Emission::GetMGLY */
+} /* End of Emission::getMGLY */
 
-double Emission::GetSoot( ) const
+double Emission::getSoot( ) const
 {
 
     return Soot;
 
-} /* End of Emission::GetSoot */
+} /* End of Emission::getSoot */
 
-double Emission::GetSootRad( ) const
+double Emission::getSootRad( ) const
 {
 
     return SootRad;
 
-} /* End of Emission::GetSootRad */
+} /* End of Emission::getSootRad */
 
-std::string Emission::GetEngineName( ) const
+std::string Emission::getEngineName( ) const
 {
 
     return engineName;
 
-} /* End of Emission::GetEngineName */
+} /* End of Emission::getEngineName */
 
-std::string Emission::GetFuelChem( ) const
+std::string Emission::getFuelChem( ) const
 {
 
     return fuelChem;
 
-} /* End of Emission::GetFuelChem */
+} /* End of Emission::getFuelChem */
 
 
 void Emission::Debug( ) const
