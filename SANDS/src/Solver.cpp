@@ -203,7 +203,24 @@
 
        SANDS( V, DiffFactor, AdvFactor, wisdomFile, realInput ); 
 
+       if ( doFill )
+           Fill( V, fillVal );
+
     } /* End of Solver::SANDS */
+
+    void Solver::Fill( Real_2DVector &V, RealDouble val, RealDouble threshold )
+    {
+
+        for ( unsigned int iNx = 0; iNx < n_x; iNx++ ) {
+            for ( unsigned int jNy = 0; jNy < n_y; jNy++ ) {
+                if ( V[jNy][iNx] <= threshold ) 
+                    V[jNy][iNx] = val;
+            }
+        }
+        
+
+    } /* End of Solver::Fill */
+
 
     void Solver::Wisdom( Real_2DVector &V )
     {
