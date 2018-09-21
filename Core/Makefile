@@ -54,7 +54,7 @@ endif
 ifeq ($(COMP),g++)
 
 	# Base set of compiler flags
-	CFLAGS := -Wall -Wextra -pedantic-errors #-Werror
+	CFLAGS := -Wall -Wextra -pedantic-errors #-DUSE_NETCDF4 #-Werror
 
 	# Default optimization level for all routines (-O3)
 	ifndef OPT
@@ -73,14 +73,17 @@ endif
 # Define library folder
 LIB_DIR := $(ROOT)/lib
 
-# Add path to library folder
+# Add path to APCEMM's library folder
 LDFLAGS := -L$(LIB_DIR)
+
+# Add path/to/lib folder
+LDFLAGS := $(LDFLAGS)
 
 # Define any libraries to link into executable: use -llibname option
 LDFLAGS := $(LDFLAGS) -lstdc++ -lm
 
 # Add custom libraries
-LDFLAGS := $(LDFLAGS) -lSands -lfftw3 -lKpp
+LDFLAGS := $(LDFLAGS) -lSands -lfftw3 -lKpp -lnetcdf_c++
 
 ifndef BUILD
 	BUILD := $(ROOT)/build
