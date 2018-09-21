@@ -39,6 +39,10 @@ build
 trash
 lib/*
 
+# netCDF files #
+################
+*.nc
+
 # For UNIX #
 ############
 *~
