@@ -36,6 +36,7 @@
 #if ( TIME_IT )
     #include "Timer.hpp"
 #endif /* TIME_IT */
+#include "FileHandler.hpp"
 
 typedef std::complex<double> Complex;
 typedef std::vector<double> Real_1DVector;
@@ -341,7 +342,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* TIME_IT */
 
-    while ( curr_Time_s < tFinal_s ) {
+    while ( curr_Time_s < 0*tFinal_s ) {
 
         /* Print message */
         std::cout << std::endl;
@@ -591,6 +592,20 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* TIME_IT */
     
+    if ( 1 ) { 
+        bool doWrite = 0;
+        bool doRead = 1;
+        const char* currFileName("test.nc");
+        FileHandler<double> fileHandler( currFileName, doWrite, doRead );
+        NcFile currFile = fileHandler.openFile();
+        if ( !fileHandler.isFileOpen() )
+            std::cout << "File " << currFileName << " didn't open!" << std::endl;
+        fileHandler.closeFile( currFile );
+        if ( fileHandler.isFileOpen() )
+            std::cout << "File " << currFileName << " didn't close properly!" << std::endl;
+
+    }
+
     return 1;
 
 } /* End of PlumeModel */
