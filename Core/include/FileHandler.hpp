@@ -36,7 +36,8 @@ class FileHandler
         int getNumVar( NcFile &dataFile ) const;
         int getNumAtt( NcFile &dataFile ) const;
         int addVar( NcFile &dataFile, T *inputVar, const char* varName, long size, const char* type, const char* unit = "" );
-        NcVar* getVar( NcFile &dataFile, NcToken token ) const; /* NcToken -> const char* */
+        NcVar* getVar( NcFile &dataFile, const char* varName ) const; /* NcToken -> const char* */
+        char* getAtt( NcFile &dataFile, NcVar* var ) const;
         const char* getFileName( ) const;
         bool isFileOpen( ) const;
 
@@ -280,12 +281,37 @@ int FileHandler<T>::addVar( NcFile &dataFile, T *inputVar, const char* varName, 
 }
 
 template <typename T>
-NcVar* FileHandler<T>::getVar( NcFile &dataFile, NcToken token ) const
+NcVar* FileHandler<T>::getVar( NcFile &dataFile, const char* varName ) const
 {
 
-    return dataFile.get_var( token );
+    NcVar* var;
+
+    /* Give back a pointer to the requested NcVar */
+    if ( !(var = dataFile.get_var( varName )) ) {
+        std::cout << "In FileHandler<T>::getVar: getting variable " << varName << " failed for " << fileName << std::endl;
+    }
+        
+    return var;
 
 } /* End of FileHandler<T>::getVar */
+
+template <typename T>
+char* FileHandler<T>::getAtt( NcFile &dataFile, NcVar* var ) const
+{
+
+    /* Each of the netCDF variables has a "units" attribute */
+    NcAtt *att;
+    char *units;
+
+    if ( !(att = var->get_att("units")) ) {
+        std::cout << "In FileHandler<T>::getAtt: getting atribute 'units' failed in " << fileName << std::endl;
+    }
+    units = att->as_string(0);
+    delete att;
+
+    return units;
+
+} /* End of FileHandler<T>::getAtt */
 
 template <typename T>
 const char* FileHandler<T>::getFileName( ) const
