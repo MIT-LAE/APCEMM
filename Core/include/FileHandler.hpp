@@ -18,7 +18,9 @@
 #include <cstring>
 #include <netcdfcpp.h>
 
-template <typename T>
+static const int NC_ERROR = 2;
+static const int NC_SUCCESS = 1;
+
 class FileHandler
 {
 
@@ -35,9 +37,40 @@ class FileHandler
         int getNumDim( NcFile &dataFile ) const;
         int getNumVar( NcFile &dataFile ) const;
         int getNumAtt( NcFile &dataFile ) const;
-        int addVar( NcFile &dataFile, T *inputVar, const char* varName, long size, const char* type, const char* unit = "" );
+        NcDim* addDim( NcFile &dataFile, const char* dimName, long size = 0 ) const;
+        template <class T>
+        int addConst( NcFile &dataFile, T *inputVar, const char* varName, long size, const char* type, const char* unit, const char* varFullName ) const;
+        template <class T>
+        inline int addConst( NcFile &dataFile, T *inputVar, const char* varName, long size, const char* type, const char* unit ) const {
+            return addConst( dataFile, inputVar, varName, size, type, unit, varName );
+        }
+        template <class T>
+        inline int addConst( NcFile &dataFile, T *inputVar, const char* varName, long size, const char* type) const {
+            return addConst( dataFile, inputVar, varName, size, type, "-", varName );
+        }
+        template <class T>
+        int addVar( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim, const char* type, const char* unit, const char* varFullName ) const;
+        template <class T>
+        inline int addVar( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim, const char* type, const char* unit ) const {
+            return addVar( dataFile, inputVar, varName, varDim, type, unit, varName );
+        }
+        template <class T>
+        inline int addVar( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim, const char* type ) const {
+            return addVar( dataFile, inputVar, varName, varDim, type, "-", varName );
+        }
+        template <class T>
+        int addVar2D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
+        template <class T>
+        inline int addVar2D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit ) const {
+            return addVar2D( dataFile, inputVar, varName, varDim1, varDim2, type, unit, varName );
+        }
+        template <class T>
+        inline int addVar2D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type ) const {
+            return addVar2D( dataFile, inputVar, varName, varDim1, varDim2, type, "-", varName );
+        }
+        int addAtt( NcFile &dataFile, const char* attName, const char* attValue ) const;
         NcVar* getVar( NcFile &dataFile, const char* varName ) const; /* NcToken -> const char* */
-        char* getAtt( NcFile &dataFile, NcVar* var ) const;
+        char* getAtt( NcVar* var ) const;
         const char* getFileName( ) const;
         bool isFileOpen( ) const;
 
@@ -58,12 +91,8 @@ class FileHandler
 
 };
 
-
-static const int NC_ERROR = 0;
-static const int NC_SUCCESS = 1;
-
-template <typename T>
-FileHandler<T>::FileHandler( )
+    
+FileHandler::FileHandler( )
     : fileName( NULL )
     , doRead( 0 )
     , doWrite( 0 )
@@ -72,10 +101,10 @@ FileHandler<T>::FileHandler( )
 
     /* Default Constructor */
 
-} /* End of FileHandler<T>::FileHandler */
+} /* End of FileHandler::FileHandler */
 
-template <typename T>
-FileHandler<T>::FileHandler( const char* fileName_, bool doWrite_, bool doRead_, bool overWrite_ )
+
+FileHandler::FileHandler( const char* fileName_, bool doWrite_, bool doRead_, bool overWrite_ )
 {
     
     /* Constructor */
@@ -89,18 +118,20 @@ FileHandler<T>::FileHandler( const char* fileName_, bool doWrite_, bool doRead_,
 
     NcError err( NcError::silent_nonfatal );
 
-} /* End of FileHandler<T>::FileHandler */
+    UpdateMode();
 
-template <typename T>
-FileHandler<T>::~FileHandler( )
+} /* End of FileHandler::FileHandler */
+
+
+FileHandler::~FileHandler( )
 {
 
     /* Destructor */
 
-} /* End of FileHandler<T>::~FileHandler */
+} /* End of FileHandler::~FileHandler */
 
-template <typename T>
-void FileHandler<T>::UpdateMode( )
+
+void FileHandler::UpdateMode( )
 {
 
     switch ( doWrite ) {
@@ -108,8 +139,8 @@ void FileHandler<T>::UpdateMode( )
             switch ( doRead ) {
                 case 0:
                     /* Neither read nor write */
-                    std::cout << " netCDF fileName: " << fileName << std::endl;
-                    std::cout << " -> doRead and doWrite set to 0" << std::endl;
+                    std::cout << " netCDF fileName: " << fileName << "\n";
+                    std::cout << " -> doRead and doWrite set to 0" << "\n";
                 case 1:
                     /* Read only */
                     mode = NcFile::ReadOnly;
@@ -125,10 +156,10 @@ void FileHandler<T>::UpdateMode( )
             }
     }
 
-} /* End of FileHandler<T>::UpdateMode */
+} /* End of FileHandler::UpdateMode */
 
-template <typename T>
-FileHandler<T>::FileHandler( const FileHandler &f )
+
+FileHandler::FileHandler( const FileHandler &f )
 {
 
     /* Copy file name*/ 
@@ -142,10 +173,10 @@ FileHandler<T>::FileHandler( const FileHandler &f )
     /* Copy file */
     isOpen = f.isOpen;
 
-} /* End of FileHandler<T>::FileHandler */
+} /* End of FileHandler::FileHandler */
 
-template <typename T>
-FileHandler<T>& FileHandler<T>::operator=( const FileHandler &f )
+
+FileHandler& FileHandler::operator=( const FileHandler &f )
 {
 
     if ( &f == this )
@@ -163,10 +194,10 @@ FileHandler<T>& FileHandler<T>::operator=( const FileHandler &f )
     isOpen = f.isOpen;
     return *this;
 
-} /* End of FileHandler<T>::operator= */
+} /* End of FileHandler::operator= */
 
-template <typename T>
-NcFile FileHandler<T>::openFile( )
+
+NcFile FileHandler::openFile( )
 {
 
     NcFile dataFile( fileName, mode );
@@ -174,162 +205,299 @@ NcFile FileHandler<T>::openFile( )
     isOpen = 1;
     
     if ( !( dataFile.is_valid() ) ) {
-        std::cout << " In FileHandler<T>::FileHandler: Couldn't open: " << fileName << std::endl;
-        std::cout << " -> doRead   : " << doRead << std::endl;
-        std::cout << " -> doWrite  : " << doWrite << std::endl;
-        std::cout << " -> overWrite: " << overWrite << std::endl;
+        std::cout << " In FileHandler::FileHandler: Couldn't open: " << fileName << "\n";
+        std::cout << " -> doRead   : " << doRead << "\n";
+        std::cout << " -> doWrite  : " << doWrite << "\n";
+        std::cout << " -> overWrite: " << overWrite << "\n";
+        std::cout << " -> mode: " << mode << "\n";
         isOpen = 0;
     }
     return dataFile;
 
-} /* End of FileHandler<T>::openFile */
+} /* End of FileHandler::openFile */
 
-template <typename T>
-void FileHandler<T>::closeFile( NcFile &dataFile )
+
+void FileHandler::closeFile( NcFile &dataFile )
 {
 
-//    dataFile.close( );
     isOpen = 0;
 
     if ( !(dataFile.close()) ) {
-        std::cout << "In FileHandler<T>::closeFile: Couldn't close " << fileName << std::endl;
-        std::cout << "In FileHandler<T>::closeFile: is_valid returns: " << dataFile.is_valid() << std::endl;
-        isOpen = 1;
+        std::cout << "In FileHandler::closeFile: Couldn't close " << fileName << "\n";
+        if ( dataFile.is_valid() ) {
+            std::cout << "In FileHandler::closeFile: is_valid returns: " << dataFile.is_valid() << "\n";
+            isOpen = 1;
+        }
     }
 
-} /* End of FileHandler<T>::closeFile */
+} /* End of FileHandler::closeFile */
 
-template <typename T>
-int FileHandler<T>::getNumDim( NcFile &dataFile ) const
+
+int FileHandler::getNumDim( NcFile &dataFile ) const
 {
 
     return dataFile.num_dims( );
 
-} /* End of FileHandler<T>::getNumDim */
+} /* End of FileHandler::getNumDim */
 
-template <typename T>
-int FileHandler<T>::getNumVar( NcFile &dataFile ) const
+
+int FileHandler::getNumVar( NcFile &dataFile ) const
 {
 
     return dataFile.num_vars( );
 
-} /* End of FileHandler<T>::getNumVar */
+} /* End of FileHandler::getNumVar */
 
-template <typename T>
-int FileHandler<T>::getNumAtt( NcFile &dataFile ) const
+
+int FileHandler::getNumAtt( NcFile &dataFile ) const
 {
 
     return dataFile.num_atts( );
 
-} /* End of FileHandler<T>::getNumAtt */
+} /* End of FileHandler::getNumAtt */
 
-template <typename T>
-int FileHandler<T>::addVar( NcFile &dataFile, T *inputVar, const char* varName, long size, const char* type, const char* unit )
+NcDim* FileHandler::addDim( NcFile &dataFile, const char* dimName, long size ) const
 {
 
-    /* Define the dimensions. netCDF will hand back an NcDim object. */
+    /* If size = 0, dimension is unlimited */
+
     NcDim *varDim;
-    if ( !(varDim = dataFile.add_dim( varName, size )) ) {
-        std::cout << "In FileHandler<T>::addVar: defining dimension failed for " << varName << " in " << fileName << std::endl;
-        return NC_ERROR;
+    /* Define the dimensions. netCDF will hand back an NcDim object. */
+    if ( !(varDim = dataFile.add_dim( dimName, size )) ) {
+        std::cout << "In FileHandler::addDim: defining dimension failed for " << dimName << "\n";
     }
+
+    return varDim;
+
+} /* End of FileHandler::addDim */
+
+template <class T>
+int FileHandler::addConst( NcFile &dataFile, T *inputVar, const char* varName, long size, const char* type, const char* unit, const char* varFullName ) const
+{
 
     /* Convert input type to netCDF type */
     NcType varType;
-    if ( strcmp(type, "double") ) {
+    if ( strcmp(type, "double") == 0 ) {
         varType = ncDouble;
-    } else if ( strcmp(type, "float") ) {
+    } else if ( strcmp(type, "float") == 0 ) {
         varType = ncFloat;
-    } else if ( strcmp(type, "long") ) {
+    } else if ( strcmp(type, "long") == 0 ) {
         varType = ncLong;
-    } else if ( strcmp(type, "int") ) {
+    } else if ( strcmp(type, "int") == 0 ) {
         varType = ncInt;
-    } else if ( strcmp(type, "short") ) {
+    } else if ( strcmp(type, "short") == 0 ) {
         varType = ncShort;
-    } else if ( strcmp(type, "char") ) {
+    } else if ( strcmp(type, "char") == 0 ) {
         varType = ncChar;
-    } else if ( strcmp(type, "byte") ) {
+    } else if ( strcmp(type, "byte") == 0 ) {
         varType = ncByte;
     } else {
         varType = ncNoType;
-        std::cout << "In FileHandler<T>::addVar: varType takes an undefined value. varType: " << varType << " in " << fileName << std::endl;
+        std::cout << "In FileHandler::addConst: varType takes an undefined value. varType: " << varType << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Create netCDF variables which hold the actual specified variable */
+    NcVar *var;
+    if ( !(var = dataFile.add_var( varName, varType )) ) {
+        std::cout << "In FileHandler::addConst: defining variable failed for " << varName << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Define unit attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the unit */
+    if ( !var->add_att("unit", unit) ) {
+        std::cout << "In FileHandler::addConst: unit definition failed for " << varName << " ( unit: [" << unit << "]) in " << fileName << "\n";
+        return NC_ERROR;
+    }
+    
+    /* Define long name attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the long name */
+    if ( !var->add_att("long_name", varFullName) ) {
+        std::cout << "In FileHandler::addConst: full name definition failed for " << varName << " ( full name: [" << varFullName << "]) in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Write the variable data. The arrays of data are the same size as the netCDF variables we have defined, and below we write it in one step */
+    if ( !var->put(inputVar, size) ) {
+        std::cout << "In FileHandler::addConst: writing variable failed for " << varName << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    std::cout << " -> Variable " << varName << " has been written to " << fileName << "!" << "\n";
+    return NC_SUCCESS;
+
+} /* End of FileHandler::addConst */
+
+template <class T>
+int FileHandler::addVar( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim, const char* type, const char* unit, const char* varFullName ) const
+{
+
+    /* Convert input type to netCDF type */
+    NcType varType;
+    if ( strcmp(type, "double") == 0 ) {
+        varType = ncDouble;
+    } else if ( strcmp(type, "float") == 0 ) {
+        varType = ncFloat;
+    } else if ( strcmp(type, "long") == 0 ) {
+        varType = ncLong;
+    } else if ( ( strcmp(type, "int") == 0 ) || ( strcmp(type, "unsigned int") == 0 ) ) {
+        varType = ncInt;
+    } else if ( strcmp(type, "short") == 0 ) {
+        varType = ncShort;
+    } else if ( strcmp(type, "char") == 0 ) {
+        varType = ncChar;
+    } else if ( strcmp(type, "byte") == 0 ) {
+        varType = ncByte;
+    } else {
+        varType = ncNoType;
+        std::cout << "In FileHandler::addVar: varType takes an undefined value. varType: " << varType << " in " << fileName << "\n";
         return NC_ERROR;
     }
 
     /* Create netCDF variables which hold the actual specified variable */
     NcVar *var;
     if ( !(var = dataFile.add_var( varName, varType, varDim )) ) {
-        std::cout << "In FileHandler<T>::addVar: defining variable failed for " << varName << " in " << fileName << std::endl;
+        std::cout << "In FileHandler::addVar: defining variable failed for " << varName << " in " << fileName << "\n";
         return NC_ERROR;
     }
 
-    /* Define units attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the units */
-    if ( !var->add_att("units", unit) ) {
-        std::cout << "In FileHandler<T>::addVar: unit definition failed for " << varName << " ( unit: [" << unit << "]) in " << fileName << std::endl;  
+    /* Define unit attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the unit */
+    if ( !var->add_att("unit", unit) ) {
+        std::cout << "In FileHandler::addVar: unit definition failed for " << varName << " ( unit: [" << unit << "]) in " << fileName << "\n";
         return NC_ERROR;
     }
 
+    /* Define long name attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the long name */
+    if ( !var->add_att("long_name", varFullName) ) {
+        std::cout << "In FileHandler::addConst: full name definition failed for " << varName << " ( full name: [" << varFullName << "]) in " << fileName << "\n";
+        return NC_ERROR;
+    }
+    
     /* Write the variable data. The arrays of data are the same size as the netCDF variables we have defined, and below we write it in one step */
-    if ( !var->put(inputVar, size) ) {
-        std::cout << "In FileHandler<T>::addVar: writing variable failed for " << varName << " in " << fileName << std::endl;  
+    if ( !var->put( inputVar, varDim->size() ) ) {
+        std::cout << "In FileHandler::addVar: writing variable failed for " << varName << " in " << fileName << "\n";
         return NC_ERROR;
     }
 
-    std::cout << " Variable " << varName << " has been written to " << fileName << "!" << std::endl;
+    std::cout << " -> Variable " << varName << " has been written to " << fileName << "!" << "\n";
     return NC_SUCCESS;
 
-}
+} /* End of FileHandler::addVar */
 
-template <typename T>
-NcVar* FileHandler<T>::getVar( NcFile &dataFile, const char* varName ) const
+template <class T>
+int FileHandler::addVar2D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const
+{
+
+    /* Convert input type to netCDF type */
+    NcType varType;
+    if ( strcmp(type, "double") == 0 ) {
+        varType = ncDouble;
+    } else if ( strcmp(type, "float") == 0 ) {
+        varType = ncFloat;
+    } else if ( strcmp(type, "long") == 0 ) {
+        varType = ncLong;
+    } else if ( strcmp(type, "int") == 0 ) {
+        varType = ncInt;
+    } else if ( strcmp(type, "short") == 0 ) {
+        varType = ncShort;
+    } else if ( strcmp(type, "char") == 0 ) {
+        varType = ncChar;
+    } else if ( strcmp(type, "byte") == 0 ) {
+        varType = ncByte;
+    } else {
+        varType = ncNoType;
+        std::cout << "In FileHandler::addVar2D: varType takes an undefined value. varType: " << varType << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Create netCDF variables which hold the actual specified variable */
+    NcVar *var;
+    if ( !(var = dataFile.add_var( varName, varType, varDim1, varDim2 )) ) {
+        std::cout << "In FileHandler::addVar2D: defining variable failed for " << varName << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Define unit attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the unit */
+    if ( !var->add_att("unit", unit) ) {
+        std::cout << "In FileHandler::addVar2D: unit definition failed for " << varName << " ( unit: [" << unit << "]) in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Define long name attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the long name */
+    if ( !var->add_att("long_name", varFullName) ) {
+        std::cout << "In FileHandler::addConst: full name definition failed for " << varName << " ( full name: [" << varFullName << "]) in " << fileName << "\n";
+        return NC_ERROR;
+    }
+    
+    /* Write the variable data. The arrays of data are the same size as the netCDF variables we have defined, and below we write it in one step */
+    if ( !var->put( inputVar, varDim1->size(), varDim2->size() ) ) {
+        std::cout << "In FileHandler::addVar2D: writing variable failed for " << varName << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    std::cout << " -> Variable " << varName << " has been written to " << fileName << "!" << "\n";
+    return NC_SUCCESS;
+
+} /* End of FileHandler::addVar2D */
+
+int FileHandler::addAtt( NcFile &dataFile, const char* attName, const char* attValue ) const
+{
+
+    if ( !dataFile.add_att( attName, attValue ) ) {
+        std::cout << "In FileHandler::addAtt: adding attribute " << attName << " with value " << attValue << "failed! \n";
+        return NC_ERROR;
+    }
+
+    return NC_SUCCESS;
+
+} /* End of FileHandler::addAtt */
+
+NcVar* FileHandler::getVar( NcFile &dataFile, const char* varName ) const
 {
 
     NcVar* var;
 
     /* Give back a pointer to the requested NcVar */
     if ( !(var = dataFile.get_var( varName )) ) {
-        std::cout << "In FileHandler<T>::getVar: getting variable " << varName << " failed for " << fileName << std::endl;
+        std::cout << "In FileHandler::getVar: getting variable " << varName << " failed for " << fileName << "\n";
     }
         
     return var;
 
-} /* End of FileHandler<T>::getVar */
+} /* End of FileHandler::getVar */
 
-template <typename T>
-char* FileHandler<T>::getAtt( NcFile &dataFile, NcVar* var ) const
+
+char* FileHandler::getAtt( NcVar* var ) const
 {
 
-    /* Each of the netCDF variables has a "units" attribute */
+    /* Each of the netCDF variables has a "unit" attribute */
     NcAtt *att;
-    char *units;
+    char *unit;
 
-    if ( !(att = var->get_att("units")) ) {
-        std::cout << "In FileHandler<T>::getAtt: getting atribute 'units' failed in " << fileName << std::endl;
+    if ( !(att = var->get_att("unit")) ) {
+        std::cout << "In FileHandler::getAtt: getting atribute 'unit' failed in " << fileName << "\n";
     }
-    units = att->as_string(0);
+    unit = att->as_string(0);
     delete att;
 
-    return units;
+    return unit;
 
-} /* End of FileHandler<T>::getAtt */
+} /* End of FileHandler::getAtt */
 
-template <typename T>
-const char* FileHandler<T>::getFileName( ) const
+
+const char* FileHandler::getFileName( ) const
 {
 
     return fileName;
 
-} /* End of FileHandler<T>::getFileName */
+} /* End of FileHandler::getFileName */
 
-template <typename T>
-bool FileHandler<T>::isFileOpen( ) const
+
+bool FileHandler::isFileOpen( ) const
 {
 
     return isOpen;
 
-} /* End of FileHandler<T>::isOpen */
+} /* End of FileHandler::isOpen */
 
 
-
-#endif /* FILEHANDLER_H_INCLUDED */
-
+#endif

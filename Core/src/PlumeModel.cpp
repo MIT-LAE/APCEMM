@@ -17,6 +17,7 @@
 #include <cmath>
 #include <algorithm>
 #include <complex>
+#include <ctime>
 
 #include "Parameters.hpp"
 #include "PhysConstant.hpp"
@@ -210,7 +211,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     
     /* Run FFTW_Wisdom? */
     if ( FFTW_WISDOM ) {
-        std::cout << "FFTW_Wisdom..." << std::endl;
+        std::cout << "FFTW_Wisdom..." << "\n";
         SANDS_Solver.Wisdom( Data.CO2 );
     }
 
@@ -293,10 +294,13 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Get mapping */
     std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh;
     mapRing2Mesh = m.getList();
-
+    
     /* Print ring to mesh mapping? */
     if ( DEBUG_MAPPING )
         m.Debug();
+    
+    /* Compute ring areas */
+    ringCluster.ComputeRingAreas( cellAreas, mapRing2Mesh );
 
     /* Add emission into the grid */
     Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing() ); 
@@ -319,15 +323,15 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 #endif /* RINGS */
    
 
-//    std::cout << std::endl;
+//    std::cout << "\n";
 //
 //    for ( int jNy = -10; jNy < 10; jNy++ ) {
 //        for ( int iNx = -10; iNx < 10; iNx++ ) { 
 //            std::cout << std::setw(5) << Data.NO[NY/2+jNy][NX/2+iNx]/airDens*1E12 << ", ";
 //        }
-//       std::cout << std::endl;
+//       std::cout << "\n";
 //    }
-//    std::cout << std::endl;
+//    std::cout << "\n";
 
     
 
@@ -345,9 +349,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     while ( curr_Time_s < 0*tFinal_s ) {
 
         /* Print message */
-        std::cout << std::endl;
-        std::cout << " - Time step: " << nTime << " out of " << timeArray.size() << std::endl;
-        std::cout << " -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
+        std::cout << "\n";
+        std::cout << " - Time step: " << nTime << " out of " << timeArray.size() << "\n";
+        std::cout << " -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]" << "\n";
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /**      Update Time Step      **/
@@ -543,11 +547,11 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         mass_Emitted /= m.getTotArea();
 
         /* Print to console */
-        std::cout << std::endl;
-        std::cout << " ** NOy mass check: " << std::endl;
-        std::cout << " Ambient NOy (including N2O): " << std::setw(6) << mass_Ambient / airDens*1E9 << " [ppb], " << std::setw(6) << ( mass_Ambient - 2*Data.N2O[0][0] ) / airDens*1E12 << " [ppt] (without N2O)" << std::endl;
-        std::cout << " Emitted NOy: " << std::setw(6) << mass_Emitted / airDens*1E12 << " [ppt], " << std::endl;;
-        std::cout << std::endl;
+        std::cout << "\n";
+        std::cout << " ** NOy mass check: " << "\n";
+        std::cout << " Ambient NOy (including N2O): " << std::setw(6) << mass_Ambient / airDens*1E9 << " [ppb], " << std::setw(6) << ( mass_Ambient - 2*Data.N2O[0][0] ) / airDens*1E12 << " [ppt] (without N2O)" << "\n";
+        std::cout << " Emitted NOy: " << std::setw(6) << mass_Emitted / airDens*1E12 << " [ppt], " << "\n";;
+        std::cout << "\n";
 
 #endif /* NOy_MASS_CHECK */
 
@@ -555,10 +559,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
         SANDS_clock_cumul += SANDS_clock;
         KPP_clock_cumul   += KPP_clock;
-        std::cout << " ** Clock breakdown: " << std::endl;
-        std::cout << " ** ----------------- " << std::endl;
+        std::cout << " ** Clock breakdown: " << "\n";
+        std::cout << " ** ----------------- " << "\n";
         std::cout << " ** Total: " << SANDS_clock + KPP_clock << " [ms]";
-        std::cout << " ( SANDS: " << 100 * ( SANDS_clock / double( SANDS_clock + KPP_clock ) ) << "% , KPP: " << 100 * ( KPP_clock / double( SANDS_clock + KPP_clock ) ) << "% )" << std::endl;
+        std::cout << " ( SANDS: " << 100 * ( SANDS_clock / double( SANDS_clock + KPP_clock ) ) << "% , KPP: " << 100 * ( KPP_clock / double( SANDS_clock + KPP_clock ) ) << "% )" << "\n";
 
 #endif /* TIME_IT */
 
@@ -572,37 +576,93 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     Stopwatch_cumul.Stop( );
     clock_cumul = Stopwatch_cumul.Elapsed( );
 
-    std::cout << std::endl;
-    std::cout << " ** Final clock breakdown: " << std::endl;
+    std::cout << "\n";
+    std::cout << " ** Final clock breakdown: " << "\n";
     
     std::cout << " ** -> SANDS: ";
-    std::cout << std::setw(6) <<SANDS_clock_cumul / double(1000) << " [s] (" << 100 * SANDS_clock_cumul / double(clock_cumul) << " %)" << std::endl;
+    std::cout << std::setw(6) <<SANDS_clock_cumul / double(1000) << " [s] (" << 100 * SANDS_clock_cumul / double(clock_cumul) << " %)" << "\n";
     
     std::cout << " ** -> KPP  : ";
-    std::cout << std::setw(6) << KPP_clock_cumul / double(1000) << " [s] (" << 100 * KPP_clock_cumul / double(clock_cumul) << " %)" << std::endl;
+    std::cout << std::setw(6) << KPP_clock_cumul / double(1000) << " [s] (" << 100 * KPP_clock_cumul / double(clock_cumul) << " %)" << "\n";
     
     std::cout << " ** -> Rem. : ";
-    std::cout << std::setw(6) << ( clock_cumul - SANDS_clock_cumul - KPP_clock_cumul ) / double(1000) << " [s] (" << 100 * ( clock_cumul - SANDS_clock_cumul - KPP_clock_cumul ) / double(clock_cumul) << " %)" << std::endl;
+    std::cout << std::setw(6) << ( clock_cumul - SANDS_clock_cumul - KPP_clock_cumul ) / double(1000) << " [s] (" << 100 * ( clock_cumul - SANDS_clock_cumul - KPP_clock_cumul ) / double(clock_cumul) << " %)" << "\n";
     
-    std::cout << " ** ----------------- " << std::endl;
+    std::cout << " ** ----------------- " << "\n";
     std::cout << " ** Total   : ";
-    std::cout << std::setw(6) << clock_cumul / double(1000) << " [s]" << std::endl;
-    std::cout << std::endl;
+    std::cout << std::setw(6) << clock_cumul / double(1000) << " [s]" << "\n";
+    std::cout << "\n";
 
 
 #endif /* TIME_IT */
     
     if ( 1 ) { 
-        bool doWrite = 0;
+
+        bool doWrite = 1;
         bool doRead = 1;
+        bool overWrite = 1;
         const char* currFileName("test.nc");
-        FileHandler<double> fileHandler( currFileName, doWrite, doRead );
+        int didSaveSucceed = 1;
+        time_t rawtime;
+        char buffer[80];
+        
+        FileHandler fileHandler( currFileName, doWrite, doRead, overWrite );
         NcFile currFile = fileHandler.openFile();
-        if ( !fileHandler.isFileOpen() )
-            std::cout << "File " << currFileName << " didn't open!" << std::endl;
+        if ( !fileHandler.isFileOpen() ) {
+            std::cout << "File " << currFileName << " didn't open!" << "\n";
+        } else {
+            std::cout << "\nStarting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
+            time( &rawtime );
+            strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
+
+            const NcDim *timeDim = fileHandler.addDim( currFile, "time", long(timeArray.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "time", timeDim, "float", "s", "Time");
+           
+            const NcDim *ringDim = fileHandler.addDim( currFile, "ring", long(ringCluster.getnRing()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &(ringCluster.getRingIndex())[0], "ring index", ringDim, "short", "-", "Ring Indices");
+
+            didSaveSucceed *= fileHandler.addAtt( currFile, "FileName", fileHandler.getFileName() );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Author", "Thibaud M. Fritz (fritzt@mit.edu)" );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Contact", "Thibaud M. Fritz (fritzt@mit.edu)" );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "GenerationDate", buffer );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Format", "NetCDF-4" );
+
+            didSaveSucceed *= fileHandler.addConst( currFile, &temperature_K, "Temperature", 1, "float", "K"  , "Ambient Temperature" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Pressure"   , 1, "float", "hPa", "Ambient Pressure" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &airDens      , "Air Density", 1, "float", "molecule / cm ^ 3", "Molecular density" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_w, "RHW"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_i, "RHI"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &longitude_deg, "Longitude"  , 1, "float", "deg", "Longitude" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &latitude_deg , "Latitude"   , 1, "float", "deg", "Latitude" );
+
+            didSaveSucceed *= fileHandler.addVar( currFile, &(ringCluster.getRingArea())[0], "Ring Area", ringDim, "float", "m^2", "Ring Area" );
+            
+            double mydata[124][15];
+            for ( int iRing = 0; iRing < nRing; iRing++ ) {
+                for ( int iTime = 0; iTime < timeArray.size(); iTime++ ) {
+                    mydata[iTime][iRing] = ringSpecies.CO2[iTime][iRing]/airDens*1E6;
+                }
+            }
+
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.CO2)[0][0], "CO2", timeDim, ringDim, "float", "ppm", "CO2 mixing ratio" ); 
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.O3)[0][0], "O3", timeDim, ringDim, "float", "ppm", "O3 mixing ratio" ); 
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.NO)[0][0], "NO", timeDim, ringDim, "float", "ppm", "NO mixing ratio" ); 
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.NO2)[0][0], "NO2", timeDim, ringDim, "float", "ppm", "NO2 mixing ratio" ); 
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.HNO3)[0][0], "HNO3", timeDim, ringDim, "float", "ppm", "HNO3 mixing ratio" ); 
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.HNO4)[0][0], "HNO4", timeDim, ringDim, "float", "ppm", "HNO4 mixing ratio" ); 
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.N2O5)[0][0], "N2O5", timeDim, ringDim, "float", "ppm", "N2O5 mixing ratio" ); 
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.OH)[0][0], "OH", timeDim, ringDim, "float", "ppm", "OH mixing ratio" ); 
+
+            if ( didSaveSucceed == NC_SUCCESS ) {
+                std::cout << "Done saving to netCDF!" << "\n";
+            } else if ( didSaveSucceed != NC_SUCCESS ) {
+                std::cout << "Error occured in saving data: didSaveSucceed: " << didSaveSucceed << "\n";
+            }
+
         fileHandler.closeFile( currFile );
         if ( fileHandler.isFileOpen() )
-            std::cout << "File " << currFileName << " didn't close properly!" << std::endl;
+            std::cout << "File " << currFileName << " didn't close properly!" << "\n";
+        }
 
     }
 
