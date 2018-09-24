@@ -31,9 +31,12 @@ class Cluster
         Cluster( const Cluster& cl );
         Cluster& operator=( const Cluster& cl );
         ~Cluster( );
+        void ComputeRingAreas( std::vector<std::vector<double>> cellAreas, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> map );
         unsigned int getnRing() const;
         bool halfRing() const;
         std::vector<Ring> getRings() const; 
+        std::vector<int> getRingIndex() const;
+        std::vector<double> getRingArea( ) const;
         void PrintRings() const;
         void Debug() const;
 
@@ -44,6 +47,8 @@ class Cluster
         double sigmaX, sigmaY;
         double dH, dV;
         std::vector<Ring> Rings;
+        std::vector<int> ringIndices;
+        std::vector<double> ringAreas;
 
 };
 
