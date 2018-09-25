@@ -25,7 +25,7 @@
 #define Na        6.022140857E+23 /* Avogadro number   , Unit : [ 1 / mol ] */
 #define kB        1.380648528E-23 /* Boltzmann constant, Unit : [ J /  K ] */
 #define R         8.314459848E+00 /* Ideal gas constant, Unit : [ J / ( K.mol ) ] */
-#define R_Air     R/mW_Air        /* Specific gas constant, Unit : [ J / (K.kg) ] */
+#define R_Air     R/MW_Air        /* Specific gas constant, Unit : [ J / (K.kg) ] */
 
 #define gamma_Air 1.4             /* Heat capacity ratio of air, Unit : [ - ] */
 

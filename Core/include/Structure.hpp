@@ -8,7 +8,11 @@
 #include <fstream>
 #include <sstream>
 
+#include "Parameters.hpp"
 #include "PhysConstant.hpp"
+#include "Emission.hpp"
+#include "Aircraft.hpp"
+#include "Engine.hpp"
 
 class Solution
 {
@@ -24,6 +28,9 @@ class Solution
         void getData( double varArray[], double fixArray[], unsigned int i = 0, unsigned int j = 0 );
         void applyData( double varArray[], unsigned int i = 0, unsigned int j = 0 );
         void applyRing( double varArray[], double tempArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int iRing );
+        void applyAmbient( double varArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int ambIndex );
+        void addEmission( const Emission &EI, const Aircraft &ac, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing );
+        std::vector<double> getAmbient( ) const;
         unsigned int getNx() const;
         unsigned int getNy() const;
         void Debug( double airDens );

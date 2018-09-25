@@ -60,8 +60,10 @@ Cluster::Cluster( unsigned int n, bool sRing, double sigma1, double sigma2, doub
     /* Create rings */
     double sigmaXRing, sigmaYRing;
     for ( unsigned int iRing = 0; iRing < nR; iRing++ ) {
+        
         /* Add new element */
         Rings.push_back( Ring() );
+        ringIndices.push_back( iRing );
 
         /* X and Y axis */
         sigmaXRing = sqrt( sigmaX * sigmaX + 16*dH*3600.0*ringSizes[iRing] );
@@ -75,6 +77,7 @@ Cluster::Cluster( unsigned int n, bool sRing, double sigma1, double sigma2, doub
             
             /* Add new element */
             Rings.push_back( Ring() );
+            ringIndices.push_back( iRing );
             
             /* Copy previous ring */
             Rings[iRing+1] = Rings[iRing];
@@ -127,6 +130,25 @@ Cluster::~Cluster( )
     /* Default destructor */
 
 } /* End of Cluster::~Cluster */
+        
+void Cluster::ComputeRingAreas( std::vector<std::vector<double>> cellAreas, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> map ) 
+{
+
+    double currRingArea;
+    unsigned int i, j;
+
+    for ( unsigned int iRing = 0; iRing < nR; iRing++ ) {
+        currRingArea = 0;
+        for ( unsigned iList = 0; iList < map[iRing].size(); iList++ ) {
+            i = map[iRing][iList].first;
+            j = map[iRing][iList].second;
+            currRingArea += cellAreas[j][i];
+        }
+        ringAreas.push_back( currRingArea );
+    }
+
+
+} /* End of Cluster::ComputeRingAreas */
 
 unsigned int Cluster::getnRing( ) const
 {
@@ -148,6 +170,20 @@ std::vector<Ring> Cluster::getRings( ) const
     return Rings;
 
 } /* End of Cluster::getRings */
+
+std::vector<int> Cluster::getRingIndex( ) const
+{
+
+    return ringIndices;
+
+} /* End of Cluster::getRingIndex */
+
+std::vector<double> Cluster::getRingArea( ) const
+{
+
+    return ringAreas;
+
+} /* End of Cluster::getRingArea */
 
 void Cluster::PrintRings() const
 {

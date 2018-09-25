@@ -27,16 +27,37 @@ Mesh::Mesh( )
     hx = 2 * xlim / nx;
     hy = 2 * ylim / ny;
 
+    /* Cell center x-coordinates */
     for ( unsigned int i = 0; i < nx; i++ ) {
         x.push_back( (double) 0.0 );
         x[i] = i * hx - xlim + hx / 2;
+        x_e.push_back( (double) 0.0 );
+        x_e[i] = x[i] - hx/2;
     }
-
+    x_e.push_back( (double) 0.0 );
+    x_e[nx] = x_e[nx-1] + hx;
+    
+    /* Cell center y-coordinates */
     for ( unsigned int j = 0; j < ny; j++ ) {
         y.push_back( (double) 0.0 );
         y[j] = j * hy - ylim + hy / 2;
+        y_e.push_back( (double) 0.0 );
+        y_e[j] = y[j] - hy/2;
     }
-    
+    y_e.push_back( (double) 0.0 );
+    y_e[ny] = y_e[ny-1] + hy;
+
+    totArea = 0;
+    for ( unsigned int jNy = 0; jNy < ny; jNy++ ) {
+        areas.push_back( Real_1DVector( nx, 0.0 ) );
+        for ( unsigned int iNx = 0; iNx < nx; iNx++ ) {
+            areas[jNy][iNx] = ( y_e[jNy+1] - y_e[jNy] ) * \
+                              ( x_e[iNx+1] - x_e[iNx] );
+            /* Comes down to hx * hy, if mesh is cartesian uniform */
+            totArea += areas[jNy][iNx];
+        }
+    }
+
 } /* End of Mesh::Mesh */
 
 Mesh::Mesh( const Mesh &m )
@@ -103,7 +124,8 @@ void Mesh::Ring2Mesh( Cluster &c )
     ny_max = NY;
 #endif /* X_SYMMETRY */
 
-    for ( unsigned int iRing = 0; iRing < nRing; iRing++ ) {
+    /* For rings and ambient */
+    for ( unsigned int iRing = 0; iRing < nRing + 1; iRing++ ) {
         nCellMap.push_back( 0 );
         RingMeshMap.push_back( v2d );
         indList.push_back( v1d_int );
@@ -117,7 +139,7 @@ void Mesh::Ring2Mesh( Cluster &c )
     double hAxis, vAxis, hAxis_in, vAxis_in;
     double xRatio, xRatio_in;
     unsigned int val;
-    for ( unsigned int iRing = 0; iRing < nRing; iRing++ ) {
+    for ( unsigned int iRing = 0; iRing < nRing + 1; iRing++ ) {
         val = 0;
         if ( iRing == 0 ) {
             hAxis = RingV[iRing].getHAxis();
@@ -135,7 +157,7 @@ void Mesh::Ring2Mesh( Cluster &c )
                 }
             }
         }
-        else {
+        else if ( ( iRing > 0 ) && ( iRing < nRing ) ) {
             hAxis = RingV[iRing].getHAxis();
             vAxis = RingV[iRing].getVAxis();
             hAxis_in = RingV[iRing-1].getHAxis();
@@ -146,6 +168,21 @@ void Mesh::Ring2Mesh( Cluster &c )
                 for ( unsigned int jNy = 0; jNy < ny_max; jNy++ ) {
                     /* If point is within the region and out of the smaller region */
                     if ( ( xRatio + ( y[jNy] / vAxis ) * ( y[jNy] / vAxis ) <= 1 ) && ( xRatio_in + ( y[jNy] / vAxis_in ) * ( y[jNy] / vAxis_in ) > 1 ) ) {
+                        RingMeshMap[iRing][jNy][iNx] = 1;
+                        indList[iRing].push_back( std::make_pair(iNx, jNy) );
+                        val++;
+                    }
+                }
+            }
+        }
+        else {
+            hAxis = RingV[nRing-1].getHAxis();
+            vAxis = RingV[nRing-1].getVAxis();
+            for ( unsigned int iNx = 0; iNx < nx_max; iNx++ ) {
+                xRatio    = ( x[iNx]  /  hAxis    ) * ( x[iNx]  /  hAxis    );
+                for ( unsigned int jNy = 0; jNy < ny_max; jNy++ ) {
+                    /* If point is within the region and out of the smaller region */
+                    if ( ( xRatio + ( y[jNy] / vAxis ) * ( y[jNy] / vAxis ) > 1 ) ) {
                         RingMeshMap[iRing][jNy][iNx] = 1;
                         indList[iRing].push_back( std::make_pair(iNx, jNy) );
                         val++;
@@ -258,6 +295,34 @@ Real_1DVector Mesh::getY( ) const
 
 } /* End of Mesh::getY */
         
+Real_1DVector Mesh::getX_e( ) const
+{
+
+    return x_e;
+
+} /* End of Mesh::getX_e */
+
+Real_1DVector Mesh::getY_e( ) const
+{
+
+    return y_e;
+
+} /* End of Mesh::getY_e */
+
+Real_2DVector Mesh::getAreas( ) const
+{
+
+    return areas;
+
+} /* End of Mesh::getAreas */
+
+RealDouble Mesh::getTotArea( ) const
+{
+
+    return totArea;
+
+} /* End of Mesh::getTotArea */
+
 RealDouble Mesh::gethx( ) const
 {
 

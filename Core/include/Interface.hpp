@@ -34,13 +34,20 @@ const char* const WISDOMFILE = "../SANDS/data/FFTW_Wisdom.out";
 #define Y_SYMMETRY              1    /* Is the problem symmetric around the y-axis? */
 
 /* BACKGROUND MIX RATIO */
-const char* const AMBFILE    = "data/Ambient.txt";
+const char* const AMBFILE     = "data/Ambient.txt";
 
 /* OUTPUT */
-#define DOSAVEPL                1    /* Save chemical rates? */
+#define SAVE_OUTPUT             1    /* Save output? */
+const char* const OUTPUT_FILE = "data/output.nc";
+#define SAVE_TO_DOUBLE          1    /* Save output as double? otherwise float */
+#include "Output.hpp"
 
 /* TIME */
-#define TIME_IT                 0    /* Time simulation? */
+#define TIME_IT                 1    /* Time simulation? */
+
+/* MASS CHECK */
+#define NOy_MASS_CHECK          1    /* NOy mass check? */
+#define CO2_MASS_CHECK          0    /* CO2 mass check? */
 
 /* DEBUG */
 #define DEBUG_AC_INPUT          0    /* Debug AC Input? */

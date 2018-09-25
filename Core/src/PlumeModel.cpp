@@ -17,8 +17,7 @@
 #include <cmath>
 #include <algorithm>
 #include <complex>
-
-#include <ctime> // for clock();
+#include <ctime>
 
 #include "Parameters.hpp"
 #include "PhysConstant.hpp"
@@ -31,10 +30,17 @@
 #endif /* RINGS */
 #include "Mesh.hpp"
 #include "Structure.hpp"
+#include "Ambient.hpp"
 #include "Fuel.hpp"
 #include "Engine.hpp"
 #include "Aircraft.hpp"
 #include "Emission.hpp"
+#if ( TIME_IT )
+    #include "Timer.hpp"
+#endif /* TIME_IT */
+#if ( SAVE_OUTPUT )
+    #include "Save.hpp"
+#endif /* SAVE_OUTPUT */
 
 typedef std::complex<double> Complex;
 typedef std::vector<double> Real_1DVector;
@@ -74,10 +80,27 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #if ( TIME_IT )
 
-    int start_, stop_;
-    int SANDS_clock, KPP_clock;
+    Timer Stopwatch, Stopwatch_cumul;
+    unsigned long SANDS_clock, KPP_clock;
+    unsigned long SANDS_clock_cumul = 0;
+    unsigned long KPP_clock_cumul = 0;
+    unsigned long clock_cumul = 0;
+    bool reset = 1;
     
 #endif /* TIME_IT */
+
+#if ( NOy_MASS_CHECK )
+
+    double mass_Ambient_NOy, mass_Emitted_NOy;
+
+#endif /* NOy_MASS_CHECK */
+
+#if ( CO2_MASS_CHECK )
+
+    double mass_Ambient_CO2, mass_Emitted_CO2;
+
+#endif /* CO2_MASS_CHECK */
+
 
     /* Compute relative humidity w.r.t ice */
     double relHumidity_i = relHumidity_w * pSat_H2Ol( temperature_K )\
@@ -113,6 +136,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     
     Mesh m;
 
+    /* Get cell areas */
+    std::vector<std::vector<double>> cellAreas;
+    cellAreas = m.getAreas();
 
 
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -169,6 +195,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     if ( DEBUG_BG_INPUT )
         Data.Debug( airDens );
 
+    /* Create ambient struture */
+    Ambient ambientData( timeArray.size(), Data.getAmbient() );
     
     
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -195,7 +223,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     
     /* Run FFTW_Wisdom? */
     if ( FFTW_WISDOM ) {
-        std::cout << "FFTW_Wisdom..." << std::endl;
+        std::cout << "FFTW_Wisdom..." << "\n";
         SANDS_Solver.Wisdom( Data.CO2 );
     }
 
@@ -225,7 +253,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         aircraft.Debug();
 
     /* Aggregate emissions from engine and fuel characteristics */
-    Emission EI( aircraft.getEngine(), JetA );
+    const Emission EI( aircraft.getEngine(), JetA );
 
     /* Print Emission Debug? */
     if ( DEBUG_EI_INPUT )
@@ -270,7 +298,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         ringCluster.Debug();
 
     /* Allocate species-ring vector */
-    SpeciesArray ringSpecies( ringCluster.getnRing(), timeArray.size() );
+    SpeciesArray ringSpecies( ringCluster.getnRing(), timeArray.size(), ringCluster.halfRing() );
 
     /* Compute Grid to Ring mapping */        
     m.Ring2Mesh( ringCluster );
@@ -278,11 +306,17 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Get mapping */
     std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh;
     mapRing2Mesh = m.getList();
-
+    
     /* Print ring to mesh mapping? */
     if ( DEBUG_MAPPING )
         m.Debug();
+    
+    /* Compute ring areas */
+    ringCluster.ComputeRingAreas( cellAreas, mapRing2Mesh );
 
+    /* Add emission into the grid */
+    Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing() ); 
+    
     /* Fill in variables species for initial time */
     ringSpecies.FillIn( Data, m, nTime );
 
@@ -290,7 +324,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Allocate an additional array for KPP */
     double tempArray[N_VAR];
 
-    
+ 
     /* Otherwise we do not have a ring structure and chemistry is solved on the grid */
 #else
     
@@ -299,33 +333,25 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     unsigned int jNy = 0;
 
 #endif /* RINGS */
-    
-
-    double BackCO2G = Data.CO2[0][0];
-    Data.CO2[NY/2][NX/2] += BackCO2G;
-    Data.CO2[NY/2-1][NX/2] += BackCO2G;
-    Data.CO2[NY/2][NX/2-1] += BackCO2G;
-    Data.CO2[NY/2-1][NX/2-1] += BackCO2G;
-    
-    double BackG = Data.NO[0][0];
-    Data.NO[NY/2][NX/2] += BackG;
-    Data.NO[NY/2-1][NX/2] += BackG;
-    Data.NO[NY/2][NX/2-1] += BackG;
-    Data.NO[NY/2-1][NX/2-1] += BackG;
    
-    double sum = 0;
 
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /**         Time Loop          **/
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
+#if ( TIME_IT )
+
+    Stopwatch_cumul.Start( );
+
+#endif /* TIME_IT */
+
     while ( curr_Time_s < tFinal_s ) {
 
         /* Print message */
-        std::cout << std::endl;
-        std::cout << " - Time step: " << nTime << " out of " << timeArray.size() << std::endl;
-        std::cout << " -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
+        std::cout << "\n";
+        std::cout << " - Time step: " << nTime << " out of " << timeArray.size() << "\n";
+        std::cout << " -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]" << "\n";
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /**      Update Time Step      **/
@@ -400,7 +426,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         
 #if ( TIME_IT )
 
-        start_ = clock();
+        Stopwatch.Start( reset );
 
 #endif /* TIME_IT */
 
@@ -408,23 +434,15 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #if ( TIME_IT )
     
-        stop_ = clock();
-        SANDS_clock = (stop_ - start_) / double(CLOCKS_PER_SEC) * 1000;
+        Stopwatch.Stop( );
+        SANDS_clock = Stopwatch.Elapsed( );
 
 #endif /* TIME_IT */
         
-        /* Mass check */
-        sum = 0;
-        for ( unsigned int k = 0; k < NX; k++ ) {
-            for ( unsigned int l = 0; l < NY; l++ )
-                sum += ( Data.NO[l][k] + Data.NO2[l][k] + Data.NO3[l][k] + Data.HNO2[l][k] + Data.HNO3[l][k] + Data.HNO4[l][k] + 2*Data.N2O5[l][k] + Data.PAN[l][k] + Data.MPN[l][k] + Data.N[l][k] + Data.PROPNN[l][k] + Data.BrNO2[l][k] + Data.BrNO3[l][k] + Data.ClNO2[l][k] + Data.ClNO3[l][k] + Data.PPN[l][k] + Data.PRPN[l][k] + Data.R4N1[l][k] + Data.PRN1[l][k] + Data.R4N2[l][k] + 2*Data.N2O[l][k]); //- ( Data.NO[50][50] + Data.NO2[50][50] + Data.HNO2[50][50] + Data.HNO3[50][50] + Data.HNO4[50][50] + 2*Data.N2O5[50][50] + Data.PAN[50][50] + Data.MPN[50][50] + Data.N[50][50] + Data.PROPNN[50][50] + Data.BrNO2[50][50] + Data.BrNO3[50][50] + Data.ClNO2[50][50] + Data.ClNO3[50][50] + Data.PPN[50][50] + Data.PRPN[50][50] + Data.R4N1[50][50] + Data.PRN1[50][50] + Data.R4N2[50][50]));
-        }
-        std::cout << "NOy: " << ( sum/airDens*1E9 ) / ((double)NCELL) << " [ppb]" << std::endl;
-
         /* Update temperature field and pressure at new location */
         /*
          * To be implemented
-         * Use dTrav_x and dTrav_y to upted the temperature and pressure
+         * Use dTrav_x and dTrav_y to update the temperature and pressure
          */
 
 
@@ -435,20 +453,21 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #if ( TIME_IT )
        
-        start_ = clock();
+        Stopwatch.Start( reset );
 
 #endif /* TIME_IT */
 
         /* Are we solving the chemistry in a ring structure? */
 #if ( RINGS )
-        
+       
         /* Fill in variables species for current time */
         ringSpecies.FillIn( Data, m, nTime + 1 );
 
         /* Is chemistry turned on? */
         if ( CHEMISTRY ) {
         
-            for ( iRing = 0; iRing < nRing; iRing++ ) {
+            /* In-ring chemistry */
+            for ( iRing = 0; iRing < nRing ; iRing++ ) {
 
                 /* Convert ring structure to KPP inputs (varArray and fixArray) */
                 ringSpecies.getData( varArray, fixArray, nTime + 1, iRing );
@@ -462,10 +481,23 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                       RTOLS, ATOLS );
                 
                 ringSpecies.FillIn( varArray, nTime + 1, iRing );
-    
+   
                 Data.applyRing( varArray, tempArray, mapRing2Mesh, iRing );
-
+                
             }
+
+            /* Ambient chemistry */
+            ambientData.getData( varArray, fixArray, nTime );
+
+            /* Call KPP */
+            KPP_Main( varArray, fixArray, curr_Time_s, dt, \
+                  airDens, temperature_K, pressure_Pa, \
+                  SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC, \
+                  RTOLS, ATOLS );
+
+            ambientData.FillIn( varArray, nTime + 1 );
+                
+            Data.applyAmbient( varArray, mapRing2Mesh, nRing );
             
         }
 
@@ -501,18 +533,74 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         
 #if ( TIME_IT )
         
-        stop_ = clock();
-        KPP_clock = (stop_ - start_) / double(CLOCKS_PER_SEC) * 1000;
+        Stopwatch.Stop( );
+        KPP_clock = Stopwatch.Elapsed( );
 
 #endif /* TIME_IT */
 
+#if ( NOy_MASS_CHECK )
+
+        /* Compute ambient concentrations */
+        mass_Ambient_NOy = ambientData.NO[nTime] + ambientData.NO2[nTime] + ambientData.HNO2[nTime] + ambientData.HNO3[nTime] + ambientData.HNO4[nTime] \
+                         + 2*ambientData.N2O5[nTime] + ambientData.PAN[nTime] + ambientData.MPN[nTime] + ambientData.N[nTime] + ambientData.PROPNN[nTime] \
+                         + ambientData.BrNO2[nTime] + ambientData.BrNO3[nTime] + ambientData.ClNO2[nTime] + ambientData.ClNO3[nTime] + ambientData.PPN[nTime] \
+                         + ambientData.PRPN[nTime] + ambientData.R4N1[nTime] + ambientData.PRN1[nTime] + ambientData.R4N2[nTime] + 2*ambientData.N2O[nTime];
+
+        /* Compute emitted */
+        mass_Emitted_NOy = 0;
+        for ( unsigned int iNx = 0; iNx < NX; iNx++ ) {
+            for ( unsigned int jNy = 0; jNy < NY; jNy++ ) {
+                mass_Emitted_NOy += ( Data.NO[jNy][iNx] + Data.NO2[jNy][iNx] + Data.NO3[jNy][iNx] + Data.HNO2[jNy][iNx] \
+                                    + Data.HNO3[jNy][iNx] + Data.HNO4[jNy][iNx] + 2*Data.N2O5[jNy][iNx] + Data.PAN[jNy][iNx] \
+                                    + Data.MPN[jNy][iNx] + Data.N[jNy][iNx] + Data.PROPNN[jNy][iNx] + Data.BrNO2[jNy][iNx] \
+                                    + Data.BrNO3[jNy][iNx] + Data.ClNO2[jNy][iNx] + Data.ClNO3[jNy][iNx]  + Data.PPN[jNy][iNx] \
+                                    + Data.PRPN[jNy][iNx] + Data.R4N1[jNy][iNx] + Data.PRN1[jNy][iNx] + Data.R4N2[jNy][iNx] \
+                                    + 2*Data.N2O[jNy][iNx] \
+                                   - mass_Ambient_NOy ) * cellAreas[jNy][iNx];
+            }
+        }
+        mass_Emitted_NOy /= m.getTotArea();
+
+        /* Print to console */
+        std::cout << "\n";
+        std::cout << " ** NOy mass check: " << "\n";
+        std::cout << " Ambient NOy (including N2O): " << std::setw(6) << mass_Ambient_NOy / airDens*1E9 << " [ppb], " << std::setw(6) << ( mass_Ambient_NOy - 2*ambientData.N2O[nTime] ) / airDens*1E12 << " [ppt] (without N2O)" << "\n";
+        std::cout << " Emitted NOy: " << std::setw(6) << mass_Emitted_NOy / airDens*1E12 << " [ppt], " << "\n";;
+        std::cout << "\n";
         
+#endif /* NOy_MASS_CHECK */
+
+#if ( CO2_MASS_CHECK )
+
+        /* CO2 is not an exactly conserved quantity because of the oxidation CO and other compounds (unless chemistry is turned off) */
+
+        mass_Ambient_CO2 = ambientData.CO2[nTime];
         
+        /* Compute emitted */
+        mass_Emitted_CO2 = 0;
+        for ( unsigned int iNx = 0; iNx < NX; iNx++ ) {
+            for ( unsigned int jNy = 0; jNy < NY; jNy++ ) {
+                mass_Emitted_CO2 += ( Data.CO2[jNy][iNx] - Data.CO2[0][0] ) * cellAreas[jNy][iNx];
+            }
+        }
+        mass_Emitted_CO2 /= m.getTotArea();
+
+        std::cout << "\n";
+        std::cout << " ** CO2 mass check: " << "\n";
+        std::cout << " Ambient CO2: " << std::setw(6) << mass_Ambient_CO2 / airDens*1E6 << " [ppm]\n";
+        std::cout << " Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 / airDens*1E9 << " [ppb]\n";;
+        std::cout << "\n";
+
+#endif /* CO2_MASS_CHECK */
+
 #if ( TIME_IT )
 
-        std::cout << " ** Clock breakdown: " << std::endl;
-        std::cout << " ** -> SANDS: " << SANDS_clock << " [ms]" << std::end;
-        std::cout << " ** -> KPP: " << KPP_clock << " [ms]" << std::end;
+        SANDS_clock_cumul += SANDS_clock;
+        KPP_clock_cumul   += KPP_clock;
+        std::cout << " ** Clock breakdown: " << "\n";
+        std::cout << " ** ----------------- " << "\n";
+        std::cout << " ** Total: " << SANDS_clock + KPP_clock << " [ms]";
+        std::cout << " ( SANDS: " << 100 * ( SANDS_clock / double( SANDS_clock + KPP_clock ) ) << "% , KPP: " << 100 * ( KPP_clock / double( SANDS_clock + KPP_clock ) ) << "% )" << "\n";
 
 #endif /* TIME_IT */
 
@@ -520,8 +608,43 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         nTime++;
 
     }
+
+#if ( TIME_IT )
+
+    Stopwatch_cumul.Stop( );
+    clock_cumul = Stopwatch_cumul.Elapsed( );
+
+    std::cout << "\n";
+    std::cout << " ** Final clock breakdown: " << "\n";
     
+    std::cout << " ** -> SANDS: ";
+    std::cout << std::setw(6) <<SANDS_clock_cumul / double(1000) << " [s] (" << 100 * SANDS_clock_cumul / double(clock_cumul) << " %)" << "\n";
     
+    std::cout << " ** -> KPP  : ";
+    std::cout << std::setw(6) << KPP_clock_cumul / double(1000) << " [s] (" << 100 * KPP_clock_cumul / double(clock_cumul) << " %)" << "\n";
+    
+    std::cout << " ** -> Rem. : ";
+    std::cout << std::setw(6) << ( clock_cumul - SANDS_clock_cumul - KPP_clock_cumul ) / double(1000) << " [s] (" << 100 * ( clock_cumul - SANDS_clock_cumul - KPP_clock_cumul ) / double(clock_cumul) << " %)" << "\n";
+    
+    std::cout << " ** ----------------- " << "\n";
+    std::cout << " ** Total   : ";
+    std::cout << std::setw(6) << clock_cumul / double(1000) << " [s]" << "\n";
+    std::cout << "\n";
+
+
+#endif /* TIME_IT */
+    
+#if ( SAVE_OUTPUT )
+
+    int isSaved = output::Write( ringSpecies, ambientData, ringCluster, timeArray, temperature_K, pressure_Pa, airDens, relHumidity_w, relHumidity_i, longitude_deg, latitude_deg, sunRise, sunSet );
+    if ( isSaved == output::SAVE_FAILURE ) {
+        std::cout << "Saving file failed...\n";
+        return -2;
+    }
+
+#endif /* SAVE_OUTPUT */
+
+
     return 1;
 
 } /* End of PlumeModel */
