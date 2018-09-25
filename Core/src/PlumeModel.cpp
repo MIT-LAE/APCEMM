@@ -30,6 +30,7 @@
 #endif /* RINGS */
 #include "Mesh.hpp"
 #include "Structure.hpp"
+#include "Ambient.hpp"
 #include "Fuel.hpp"
 #include "Engine.hpp"
 #include "Aircraft.hpp"
@@ -37,7 +38,9 @@
 #if ( TIME_IT )
     #include "Timer.hpp"
 #endif /* TIME_IT */
-#include "FileHandler.hpp"
+#if ( SAVE_OUTPUT )
+    #include "Save.hpp"
+#endif /* SAVE_OUTPUT */
 
 typedef std::complex<double> Complex;
 typedef std::vector<double> Real_1DVector;
@@ -88,9 +91,16 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #if ( NOy_MASS_CHECK )
 
-    double mass_Ambient, mass_Emitted;
+    double mass_Ambient_NOy, mass_Emitted_NOy;
 
-#endif /* TIME_IT */
+#endif /* NOy_MASS_CHECK */
+
+#if ( CO2_MASS_CHECK )
+
+    double mass_Ambient_CO2, mass_Emitted_CO2;
+
+#endif /* CO2_MASS_CHECK */
+
 
     /* Compute relative humidity w.r.t ice */
     double relHumidity_i = relHumidity_w * pSat_H2Ol( temperature_K )\
@@ -185,6 +195,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     if ( DEBUG_BG_INPUT )
         Data.Debug( airDens );
 
+    /* Create ambient struture */
+    Ambient ambientData( timeArray.size(), Data.getAmbient() );
     
     
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -323,18 +335,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 #endif /* RINGS */
    
 
-//    std::cout << "\n";
-//
-//    for ( int jNy = -10; jNy < 10; jNy++ ) {
-//        for ( int iNx = -10; iNx < 10; iNx++ ) { 
-//            std::cout << std::setw(5) << Data.NO[NY/2+jNy][NX/2+iNx]/airDens*1E12 << ", ";
-//        }
-//       std::cout << "\n";
-//    }
-//    std::cout << "\n";
-
-    
-
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /**         Time Loop          **/
@@ -346,7 +346,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* TIME_IT */
 
-    while ( curr_Time_s < 0*tFinal_s ) {
+    while ( curr_Time_s < tFinal_s ) {
 
         /* Print message */
         std::cout << "\n";
@@ -442,7 +442,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /* Update temperature field and pressure at new location */
         /*
          * To be implemented
-         * Use dTrav_x and dTrav_y to upted the temperature and pressure
+         * Use dTrav_x and dTrav_y to update the temperature and pressure
          */
 
 
@@ -459,14 +459,15 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
         /* Are we solving the chemistry in a ring structure? */
 #if ( RINGS )
-        
+       
         /* Fill in variables species for current time */
         ringSpecies.FillIn( Data, m, nTime + 1 );
 
         /* Is chemistry turned on? */
         if ( CHEMISTRY ) {
         
-            for ( iRing = 0; iRing < nRing; iRing++ ) {
+            /* In-ring chemistry */
+            for ( iRing = 0; iRing < nRing ; iRing++ ) {
 
                 /* Convert ring structure to KPP inputs (varArray and fixArray) */
                 ringSpecies.getData( varArray, fixArray, nTime + 1, iRing );
@@ -480,10 +481,23 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                       RTOLS, ATOLS );
                 
                 ringSpecies.FillIn( varArray, nTime + 1, iRing );
-    
+   
                 Data.applyRing( varArray, tempArray, mapRing2Mesh, iRing );
-
+                
             }
+
+            /* Ambient chemistry */
+            ambientData.getData( varArray, fixArray, nTime );
+
+            /* Call KPP */
+            KPP_Main( varArray, fixArray, curr_Time_s, dt, \
+                  airDens, temperature_K, pressure_Pa, \
+                  SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC, \
+                  RTOLS, ATOLS );
+
+            ambientData.FillIn( varArray, nTime + 1 );
+                
+            Data.applyAmbient( varArray, mapRing2Mesh, nRing );
             
         }
 
@@ -527,33 +541,57 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 #if ( NOy_MASS_CHECK )
 
         /* Compute ambient concentrations */
-        mass_Ambient = Data.NO[0][0] + Data.NO2[0][0] + Data.HNO2[0][0] + Data.HNO3[0][0] + Data.HNO4[0][0] \
-                     + 2*Data.N2O5[0][0] + Data.PAN[0][0] + Data.MPN[0][0] + Data.N[0][0] + Data.PROPNN[0][0] \
-                     + Data.BrNO2[0][0] + Data.BrNO3[0][0] + Data.ClNO2[0][0] + Data.ClNO3[0][0] + Data.PPN[0][0] \
-                     + Data.PRPN[0][0] + Data.R4N1[0][0] + Data.PRN1[0][0] + Data.R4N2[0][0] + 2*Data.N2O[0][0];
+        mass_Ambient_NOy = ambientData.NO[nTime] + ambientData.NO2[nTime] + ambientData.HNO2[nTime] + ambientData.HNO3[nTime] + ambientData.HNO4[nTime] \
+                         + 2*ambientData.N2O5[nTime] + ambientData.PAN[nTime] + ambientData.MPN[nTime] + ambientData.N[nTime] + ambientData.PROPNN[nTime] \
+                         + ambientData.BrNO2[nTime] + ambientData.BrNO3[nTime] + ambientData.ClNO2[nTime] + ambientData.ClNO3[nTime] + ambientData.PPN[nTime] \
+                         + ambientData.PRPN[nTime] + ambientData.R4N1[nTime] + ambientData.PRN1[nTime] + ambientData.R4N2[nTime] + 2*ambientData.N2O[nTime];
 
         /* Compute emitted */
-        mass_Emitted = 0;
+        mass_Emitted_NOy = 0;
         for ( unsigned int iNx = 0; iNx < NX; iNx++ ) {
-            for ( unsigned int jNy = 0; jNy < NY; jNy++ )
-                mass_Emitted += ( Data.NO[jNy][iNx] + Data.NO2[jNy][iNx] + Data.NO3[jNy][iNx] + Data.HNO2[jNy][iNx] \
-                                + Data.HNO3[jNy][iNx] + Data.HNO4[jNy][iNx] + 2*Data.N2O5[jNy][iNx] + Data.PAN[jNy][iNx] \
-                                + Data.MPN[jNy][iNx] + Data.N[jNy][iNx] + Data.PROPNN[jNy][iNx] + Data.BrNO2[jNy][iNx] \
-                                + Data.BrNO3[jNy][iNx] + Data.ClNO2[jNy][iNx] + Data.ClNO3[jNy][iNx]  + Data.PPN[jNy][iNx] \
-                                + Data.PRPN[jNy][iNx] + Data.R4N1[jNy][iNx] + Data.PRN1[jNy][iNx] + Data.R4N2[jNy][iNx] \
-                                + 2*Data.N2O[jNy][iNx] \
-                                - mass_Ambient ) * cellAreas[jNy][iNx];
+            for ( unsigned int jNy = 0; jNy < NY; jNy++ ) {
+                mass_Emitted_NOy += ( Data.NO[jNy][iNx] + Data.NO2[jNy][iNx] + Data.NO3[jNy][iNx] + Data.HNO2[jNy][iNx] \
+                                    + Data.HNO3[jNy][iNx] + Data.HNO4[jNy][iNx] + 2*Data.N2O5[jNy][iNx] + Data.PAN[jNy][iNx] \
+                                    + Data.MPN[jNy][iNx] + Data.N[jNy][iNx] + Data.PROPNN[jNy][iNx] + Data.BrNO2[jNy][iNx] \
+                                    + Data.BrNO3[jNy][iNx] + Data.ClNO2[jNy][iNx] + Data.ClNO3[jNy][iNx]  + Data.PPN[jNy][iNx] \
+                                    + Data.PRPN[jNy][iNx] + Data.R4N1[jNy][iNx] + Data.PRN1[jNy][iNx] + Data.R4N2[jNy][iNx] \
+                                    + 2*Data.N2O[jNy][iNx] \
+                                   - mass_Ambient_NOy ) * cellAreas[jNy][iNx];
+            }
         }
-        mass_Emitted /= m.getTotArea();
+        mass_Emitted_NOy /= m.getTotArea();
 
         /* Print to console */
         std::cout << "\n";
         std::cout << " ** NOy mass check: " << "\n";
-        std::cout << " Ambient NOy (including N2O): " << std::setw(6) << mass_Ambient / airDens*1E9 << " [ppb], " << std::setw(6) << ( mass_Ambient - 2*Data.N2O[0][0] ) / airDens*1E12 << " [ppt] (without N2O)" << "\n";
-        std::cout << " Emitted NOy: " << std::setw(6) << mass_Emitted / airDens*1E12 << " [ppt], " << "\n";;
+        std::cout << " Ambient NOy (including N2O): " << std::setw(6) << mass_Ambient_NOy / airDens*1E9 << " [ppb], " << std::setw(6) << ( mass_Ambient_NOy - 2*ambientData.N2O[nTime] ) / airDens*1E12 << " [ppt] (without N2O)" << "\n";
+        std::cout << " Emitted NOy: " << std::setw(6) << mass_Emitted_NOy / airDens*1E12 << " [ppt], " << "\n";;
+        std::cout << "\n";
+        
+#endif /* NOy_MASS_CHECK */
+
+#if ( CO2_MASS_CHECK )
+
+        /* CO2 is not an exactly conserved quantity because of the oxidation CO and other compounds (unless chemistry is turned off) */
+
+        mass_Ambient_CO2 = ambientData.CO2[nTime];
+        
+        /* Compute emitted */
+        mass_Emitted_CO2 = 0;
+        for ( unsigned int iNx = 0; iNx < NX; iNx++ ) {
+            for ( unsigned int jNy = 0; jNy < NY; jNy++ ) {
+                mass_Emitted_CO2 += ( Data.CO2[jNy][iNx] - Data.CO2[0][0] ) * cellAreas[jNy][iNx];
+            }
+        }
+        mass_Emitted_CO2 /= m.getTotArea();
+
+        std::cout << "\n";
+        std::cout << " ** CO2 mass check: " << "\n";
+        std::cout << " Ambient CO2: " << std::setw(6) << mass_Ambient_CO2 / airDens*1E6 << " [ppm]\n";
+        std::cout << " Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 / airDens*1E9 << " [ppb]\n";;
         std::cout << "\n";
 
-#endif /* NOy_MASS_CHECK */
+#endif /* CO2_MASS_CHECK */
 
 #if ( TIME_IT )
 
@@ -596,75 +634,16 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* TIME_IT */
     
-    if ( 1 ) { 
+#if ( SAVE_OUTPUT )
 
-        bool doWrite = 1;
-        bool doRead = 1;
-        bool overWrite = 1;
-        const char* currFileName("test.nc");
-        int didSaveSucceed = 1;
-        time_t rawtime;
-        char buffer[80];
-        
-        FileHandler fileHandler( currFileName, doWrite, doRead, overWrite );
-        NcFile currFile = fileHandler.openFile();
-        if ( !fileHandler.isFileOpen() ) {
-            std::cout << "File " << currFileName << " didn't open!" << "\n";
-        } else {
-            std::cout << "\nStarting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
-            time( &rawtime );
-            strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
-
-            const NcDim *timeDim = fileHandler.addDim( currFile, "time", long(timeArray.size()) );
-            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "time", timeDim, "float", "s", "Time");
-           
-            const NcDim *ringDim = fileHandler.addDim( currFile, "ring", long(ringCluster.getnRing()) );
-            didSaveSucceed *= fileHandler.addVar( currFile, &(ringCluster.getRingIndex())[0], "ring index", ringDim, "short", "-", "Ring Indices");
-
-            didSaveSucceed *= fileHandler.addAtt( currFile, "FileName", fileHandler.getFileName() );
-            didSaveSucceed *= fileHandler.addAtt( currFile, "Author", "Thibaud M. Fritz (fritzt@mit.edu)" );
-            didSaveSucceed *= fileHandler.addAtt( currFile, "Contact", "Thibaud M. Fritz (fritzt@mit.edu)" );
-            didSaveSucceed *= fileHandler.addAtt( currFile, "GenerationDate", buffer );
-            didSaveSucceed *= fileHandler.addAtt( currFile, "Format", "NetCDF-4" );
-
-            didSaveSucceed *= fileHandler.addConst( currFile, &temperature_K, "Temperature", 1, "float", "K"  , "Ambient Temperature" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Pressure"   , 1, "float", "hPa", "Ambient Pressure" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &airDens      , "Air Density", 1, "float", "molecule / cm ^ 3", "Molecular density" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_w, "RHW"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_i, "RHI"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &longitude_deg, "Longitude"  , 1, "float", "deg", "Longitude" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &latitude_deg , "Latitude"   , 1, "float", "deg", "Latitude" );
-
-            didSaveSucceed *= fileHandler.addVar( currFile, &(ringCluster.getRingArea())[0], "Ring Area", ringDim, "float", "m^2", "Ring Area" );
-            
-            double mydata[124][15];
-            for ( int iRing = 0; iRing < nRing; iRing++ ) {
-                for ( int iTime = 0; iTime < timeArray.size(); iTime++ ) {
-                    mydata[iTime][iRing] = ringSpecies.CO2[iTime][iRing]/airDens*1E6;
-                }
-            }
-
-            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.CO2)[0][0], "CO2", timeDim, ringDim, "float", "ppm", "CO2 mixing ratio" ); 
-            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.O3)[0][0], "O3", timeDim, ringDim, "float", "ppm", "O3 mixing ratio" ); 
-            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.NO)[0][0], "NO", timeDim, ringDim, "float", "ppm", "NO mixing ratio" ); 
-            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.NO2)[0][0], "NO2", timeDim, ringDim, "float", "ppm", "NO2 mixing ratio" ); 
-            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.HNO3)[0][0], "HNO3", timeDim, ringDim, "float", "ppm", "HNO3 mixing ratio" ); 
-            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.HNO4)[0][0], "HNO4", timeDim, ringDim, "float", "ppm", "HNO4 mixing ratio" ); 
-            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.N2O5)[0][0], "N2O5", timeDim, ringDim, "float", "ppm", "N2O5 mixing ratio" ); 
-            didSaveSucceed *= fileHandler.addVar2D( currFile, &(ringSpecies.OH)[0][0], "OH", timeDim, ringDim, "float", "ppm", "OH mixing ratio" ); 
-
-            if ( didSaveSucceed == NC_SUCCESS ) {
-                std::cout << "Done saving to netCDF!" << "\n";
-            } else if ( didSaveSucceed != NC_SUCCESS ) {
-                std::cout << "Error occured in saving data: didSaveSucceed: " << didSaveSucceed << "\n";
-            }
-
-        fileHandler.closeFile( currFile );
-        if ( fileHandler.isFileOpen() )
-            std::cout << "File " << currFileName << " didn't close properly!" << "\n";
-        }
-
+    int isSaved = output::Write( ringSpecies, ambientData, ringCluster, timeArray, temperature_K, pressure_Pa, airDens, relHumidity_w, relHumidity_i, longitude_deg, latitude_deg, sunRise, sunSet );
+    if ( isSaved == output::SAVE_FAILURE ) {
+        std::cout << "Saving file failed...\n";
+        return -2;
     }
+
+#endif /* SAVE_OUTPUT */
+
 
     return 1;
 
