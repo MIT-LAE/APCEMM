@@ -13,6 +13,8 @@
 
 #include "Species.hpp"
 
+static const double ZERO = 1.00E-50;
+
 SpeciesArray::SpeciesArray( )
 {
     /* Default Constructor */
@@ -28,8 +30,7 @@ SpeciesArray::SpeciesArray( unsigned int nRing_, unsigned int nTime_, bool halfR
     nTime = nTime_;
     halfRing = halfRing_;
 
-    std::vector<double> v1d;
-    v1d = std::vector<double>( nRing + 1, 0.0 );
+    std::vector<double> v1d = std::vector<double>( nRing, 0.0 );
 
     for ( unsigned int i = 0; i < nTime; i++ ) {
         CO2.push_back( v1d );
@@ -463,12 +464,12 @@ SpeciesArray& SpeciesArray::operator+( const SpeciesArray &sp )
 {
 
     if ( nRing != sp.getnRing() ) {
-        std::cout << "Can't perform + on SpeciesArray: nRing exception: " << nRing << " != " << sp.nRing << std::endl;
+        std::cout << "Can't perform + on SpeciesArray: nRing exception: " << nRing << " != " << sp.getnRing() << std::endl;
         return *this;
     }
     
     if ( nTime != sp.getnTime() ) {
-        std::cout << "Can't perform + on SpeciesArray: nTime exception: " << nTime << " != " << sp.nTime << std::endl;
+        std::cout << "Can't perform + on SpeciesArray: nTime exception: " << nTime << " != " << sp.getnTime() << std::endl;
         return *this;
     }
 
@@ -1074,6 +1075,13 @@ void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
 void SpeciesArray::FillIn( double varArray[], unsigned int iTime, unsigned int iRing )
 {
 
+    /* Ensure positiveness */
+    for ( unsigned int i = 0; i < N_VAR; i++ ) {
+        if ( varArray[i] <= 0.0 ) {
+            varArray[i] = ZERO;
+        }
+    }
+
     CO2[iTime][iRing]      = varArray[  0];
     PPN[iTime][iRing]      = varArray[  1];
     BrNO2[iTime][iRing]    = varArray[  2];
@@ -1347,7 +1355,7 @@ void SpeciesArray::getData( double varArray[], double fixArray[], unsigned int i
     /* Ensure positiveness */
     for ( unsigned int i = 0; i < N_VAR; i++ ) {
         if ( varArray[i] <= 0.0 ) {
-            varArray[i] = 1.0E-50;
+            varArray[i] = ZERO;
         }
     }
 
