@@ -684,6 +684,148 @@ void Solution::applyRing( double varArray[], double tempArray[], std::vector<std
 
 } /* End of Solution::applyRing */
 
+void Solution::applyAmbient( double varArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int ambIndex )
+{
+
+    unsigned int i, j;
+    unsigned int size = mapRing2Mesh[ambIndex].size();
+    for ( unsigned int iList = 0; iList < size; iList++ ) {
+        i = mapRing2Mesh[ambIndex][iList].first;
+        j = mapRing2Mesh[ambIndex][iList].second;
+
+        CO2[j][i]    = varArray[  0];
+        PPN[j][i]    = varArray[  1];
+        BrNO2[j][i]  = varArray[  2];
+        IEPOX[j][i]  = varArray[  3];
+        PMNN[j][i]   = varArray[  4];
+        N2O[j][i]    = varArray[  5];
+        N[j][i]      = varArray[  6];
+        PAN[j][i]    = varArray[  7];
+        ALK4[j][i]   = varArray[  8];
+        MAP[j][i]    = varArray[  9];
+        MPN[j][i]    = varArray[ 10];
+        Cl2O2[j][i]  = varArray[ 11];
+        ETP[j][i]    = varArray[ 12];
+        HNO2[j][i]   = varArray[ 13];
+        C3H8[j][i]   = varArray[ 14];
+        RA3P[j][i]   = varArray[ 15];
+        RB3P[j][i]   = varArray[ 16];
+        OClO[j][i]   = varArray[ 17];
+        ClNO2[j][i]  = varArray[ 18];
+        ISOP[j][i]   = varArray[ 19];
+        HNO4[j][i]   = varArray[ 20];
+        MAOP[j][i]   = varArray[ 21];
+        MP[j][i]     = varArray[ 22];
+        ClOO[j][i]   = varArray[ 23];
+        RP[j][i]     = varArray[ 24];
+        BrCl[j][i]   = varArray[ 25];
+        PP[j][i]     = varArray[ 26];
+        PRPN[j][i]   = varArray[ 27];
+        SO4[j][i]    = varArray[ 28];
+        Br2[j][i]    = varArray[ 29];
+        ETHLN[j][i]  = varArray[ 30];
+        MVKN[j][i]   = varArray[ 31];
+        R4P[j][i]    = varArray[ 32];
+        C2H6[j][i]   = varArray[ 33];
+        RIP[j][i]    = varArray[ 34];
+        VRP[j][i]    = varArray[ 35];
+        ATOOH[j][i]  = varArray[ 36];
+        IAP[j][i]    = varArray[ 37];
+        DHMOB[j][i]  = varArray[ 38];
+        MOBA[j][i]   = varArray[ 39];
+        MRP[j][i]    = varArray[ 40];
+        N2O5[j][i]   = varArray[ 41];
+        ISNOHOO[j][i]= varArray[ 42];
+        ISNP[j][i]   = varArray[ 43];
+        ISOPNB[j][i] = varArray[ 44];
+        IEPOXOO[j][i]= varArray[ 45];
+        MACRNO2[j][i]= varArray[ 46];
+        ROH[j][i]    = varArray[ 47];
+        MOBAOO[j][i] = varArray[ 48];
+        DIBOO[j][i]  = varArray[ 49];
+        PMN[j][i]    = varArray[ 50];
+        ISNOOB[j][i] = varArray[ 51];
+        INPN[j][i]   = varArray[ 52];
+        H[j][i]      = varArray[ 53];
+        BrNO3[j][i]  = varArray[ 54];
+        PRPE[j][i]   = varArray[ 55];
+        MVKOO[j][i]  = varArray[ 56];
+        Cl2[j][i]    = varArray[ 57];
+        ISOPND[j][i] = varArray[ 58];
+        HOBr[j][i]   = varArray[ 59];
+        A3O2[j][i]   = varArray[ 60];
+        PROPNN[j][i] = varArray[ 61];
+        GLYX[j][i]   = varArray[ 62];
+        MAOPO2[j][i] = varArray[ 63];
+        CH4[j][i]    = varArray[ 64];
+        GAOO[j][i]   = varArray[ 65];
+        B3O2[j][i]   = varArray[ 66];
+        ACET[j][i]   = varArray[ 67];
+        MACRN[j][i]  = varArray[ 68];
+        CH2OO[j][i]  = varArray[ 69];
+        MGLYOO[j][i] = varArray[ 70];
+        VRO2[j][i]   = varArray[ 71];
+        MGLOO[j][i]  = varArray[ 72];
+        MACROO[j][i] = varArray[ 73];
+        PO2[j][i]    = varArray[ 74];
+        CH3CHOO[j][i]= varArray[ 75];
+        MAN2[j][i]   = varArray[ 76];
+        ISNOOA[j][i] = varArray[ 77];
+        H2O2[j][i]   = varArray[ 78];
+        PRN1[j][i]   = varArray[ 79];
+        ETO2[j][i]   = varArray[ 80];
+        KO2[j][i]    = varArray[ 81];
+        RCO3[j][i]   = varArray[ 82];
+        HC5OO[j][i]  = varArray[ 83];
+        GLYC[j][i]   = varArray[ 84];
+        ClNO3[j][i]  = varArray[ 85];
+        RIO2[j][i]   = varArray[ 86];
+        R4N1[j][i]   = varArray[ 87];
+        HOCl[j][i]   = varArray[ 88];
+        ATO2[j][i]   = varArray[ 89];
+        HNO3[j][i]   = varArray[ 90];
+        ISN1[j][i]   = varArray[ 91];
+        MAO3[j][i]   = varArray[ 92];
+        MRO2[j][i]   = varArray[ 93];
+        INO2[j][i]   = varArray[ 94];
+        HAC[j][i]    = varArray[ 95];
+        HC5[j][i]    = varArray[ 96];
+        MGLY[j][i]   = varArray[ 97];
+        ISOPNBO2[j][i]= varArray[ 98];
+        ISOPNDO2[j][i]= varArray[ 99];
+        R4O2[j][i]   = varArray[100];
+        R4N2[j][i]   = varArray[101];
+        BrO[j][i]    = varArray[102];
+        RCHO[j][i]   = varArray[103];
+        MEK[j][i]    = varArray[104];
+        ClO[j][i]    = varArray[105];
+        MACR[j][i]   = varArray[106];
+        SO2[j][i]    = varArray[107];
+        MVK[j][i]    = varArray[108];
+        ALD2[j][i]   = varArray[109];
+        MCO3[j][i]   = varArray[110];
+        CH2O[j][i]   = varArray[111];
+        H2O[j][i]    = varArray[112];
+        Br[j][i]     = varArray[113];
+        NO[j][i]     = varArray[114];
+        NO3[j][i]    = varArray[115];
+        Cl[j][i]     = varArray[116];
+        O[j][i]      = varArray[117];
+        O1D[j][i]    = varArray[118];
+        O3[j][i]     = varArray[119];
+        HO2[j][i]    = varArray[120];
+        NO2[j][i]    = varArray[121];
+        OH[j][i]     = varArray[122];
+        HBr[j][i]    = varArray[123];
+        HCl[j][i]    = varArray[124];
+        CO[j][i]     = varArray[125];
+        MO2[j][i]    = varArray[126];
+
+    }
+
+} /* End of Solution::applyAmbient */
+
+
 void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing )
 {
 
@@ -740,7 +882,6 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
     }
     else {
         /* Half rings */
-
         nCell = map[0].size() + map[1].size();
         for ( innerRing = 0; innerRing <= 1; innerRing++ ) {
             for ( unsigned int iList = 0; iList < nCell; iList++ ) {
@@ -770,6 +911,151 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
     }
 
 } /* End of Solution::addEmission */
+
+std::vector<double> Solution::getAmbient() const
+{
+
+    std::vector<double> ambVector( N_SPC, 0.0 );
+    
+    ambVector[  0] = CO2[0][0]      ;
+    ambVector[  1] = PPN[0][0]      ;
+    ambVector[  2] = BrNO2[0][0]    ;
+    ambVector[  3] = IEPOX[0][0]    ;
+    ambVector[  4] = PMNN[0][0]     ;
+    ambVector[  5] = N2O[0][0]      ;
+    ambVector[  6] = N[0][0]        ;
+    ambVector[  7] = PAN[0][0]      ;
+    ambVector[  8] = ALK4[0][0]     ;
+    ambVector[  9] = MAP[0][0]      ;
+    ambVector[ 10] = MPN[0][0]      ;
+    ambVector[ 11] = Cl2O2[0][0]    ;
+    ambVector[ 12] = ETP[0][0]      ;
+    ambVector[ 13] = HNO2[0][0]     ;
+    ambVector[ 14] = C3H8[0][0]     ;
+    ambVector[ 15] = RA3P[0][0]     ;
+    ambVector[ 16] = RB3P[0][0]     ;
+    ambVector[ 17] = OClO[0][0]     ;
+    ambVector[ 18] = ClNO2[0][0]    ;
+    ambVector[ 19] = ISOP[0][0]     ;
+    ambVector[ 20] = HNO4[0][0]     ;
+    ambVector[ 21] = MAOP[0][0]     ;
+    ambVector[ 22] = MP[0][0]       ;
+    ambVector[ 23] = ClOO[0][0]     ;
+    ambVector[ 24] = RP[0][0]       ;
+    ambVector[ 25] = BrCl[0][0]     ;
+    ambVector[ 26] = PP[0][0]       ;
+    ambVector[ 27] = PRPN[0][0]     ;
+    ambVector[ 28] = SO4[0][0]      ;
+    ambVector[ 29] = Br2[0][0]      ;
+    ambVector[ 30] = ETHLN[0][0]    ;
+    ambVector[ 31] = MVKN[0][0]     ;
+    ambVector[ 32] = R4P[0][0]      ;
+    ambVector[ 33] = C2H6[0][0]     ;
+    ambVector[ 34] = RIP[0][0]      ;
+    ambVector[ 35] = VRP[0][0]      ;
+    ambVector[ 36] = ATOOH[0][0]    ;
+    ambVector[ 37] = IAP[0][0]      ;
+    ambVector[ 38] = DHMOB[0][0]    ;
+    ambVector[ 39] = MOBA[0][0]     ;
+    ambVector[ 40] = MRP[0][0]      ;
+    ambVector[ 41] = N2O5[0][0]     ;
+    ambVector[ 42] = ISNOHOO[0][0]  ;
+    ambVector[ 43] = ISNP[0][0]     ;
+    ambVector[ 44] = ISOPNB[0][0]   ;
+    ambVector[ 45] = IEPOXOO[0][0]  ;
+    ambVector[ 46] = MACRNO2[0][0]  ;
+    ambVector[ 47] = ROH[0][0]      ;
+    ambVector[ 48] = MOBAOO[0][0]   ;
+    ambVector[ 49] = DIBOO[0][0]    ;
+    ambVector[ 50] = PMN[0][0]      ;
+    ambVector[ 51] = ISNOOB[0][0]   ;
+    ambVector[ 52] = INPN[0][0]     ;
+    ambVector[ 53] = H[0][0]        ;
+    ambVector[ 54] = BrNO3[0][0]    ;
+    ambVector[ 55] = PRPE[0][0]     ;
+    ambVector[ 56] = MVKOO[0][0]    ;
+    ambVector[ 57] = Cl2[0][0]      ;
+    ambVector[ 58] = ISOPND[0][0]   ;
+    ambVector[ 59] = HOBr[0][0]     ;
+    ambVector[ 60] = A3O2[0][0]     ;
+    ambVector[ 61] = PROPNN[0][0]   ;
+    ambVector[ 62] = GLYX[0][0]     ;
+    ambVector[ 63] = MAOPO2[0][0]   ;
+    ambVector[ 64] = CH4[0][0]      ;
+    ambVector[ 65] = GAOO[0][0]     ;
+    ambVector[ 66] = B3O2[0][0]     ;
+    ambVector[ 67] = ACET[0][0]     ;
+    ambVector[ 68] = MACRN[0][0]    ;
+    ambVector[ 69] = CH2OO[0][0]    ;
+    ambVector[ 70] = MGLYOO[0][0]   ;
+    ambVector[ 71] = VRO2[0][0]     ;
+    ambVector[ 72] = MGLOO[0][0]    ;
+    ambVector[ 73] = MACROO[0][0]   ;
+    ambVector[ 74] = PO2[0][0]      ;
+    ambVector[ 75] = CH3CHOO[0][0]  ;
+    ambVector[ 76] = MAN2[0][0]     ;
+    ambVector[ 77] = ISNOOA[0][0]   ;
+    ambVector[ 78] = H2O2[0][0]     ;
+    ambVector[ 79] = PRN1[0][0]     ;
+    ambVector[ 80] = ETO2[0][0]     ;
+    ambVector[ 81] = KO2[0][0]      ;
+    ambVector[ 82] = RCO3[0][0]     ;
+    ambVector[ 83] = HC5OO[0][0]    ;
+    ambVector[ 84] = GLYC[0][0]     ;
+    ambVector[ 85] = ClNO3[0][0]    ;
+    ambVector[ 86] = RIO2[0][0]     ;
+    ambVector[ 87] = R4N1[0][0]     ;
+    ambVector[ 88] = HOCl[0][0]     ;
+    ambVector[ 89] = ATO2[0][0]     ;
+    ambVector[ 90] = HNO3[0][0]     ;
+    ambVector[ 91] = ISN1[0][0]     ;
+    ambVector[ 92] = MAO3[0][0]     ;
+    ambVector[ 93] = MRO2[0][0]     ;
+    ambVector[ 94] = INO2[0][0]     ;
+    ambVector[ 95] = HAC[0][0]      ;
+    ambVector[ 96] = HC5[0][0]      ;
+    ambVector[ 97] = MGLY[0][0]     ;
+    ambVector[ 98] = ISOPNBO2[0][0] ;
+    ambVector[ 99] = ISOPNDO2[0][0] ;
+    ambVector[100] = R4O2[0][0]     ;
+    ambVector[101] = R4N2[0][0]     ;
+    ambVector[102] = BrO[0][0]      ;
+    ambVector[103] = RCHO[0][0]     ;
+    ambVector[104] = MEK[0][0]      ;
+    ambVector[105] = ClO[0][0]      ;
+    ambVector[106] = MACR[0][0]     ;
+    ambVector[107] = SO2[0][0]      ;
+    ambVector[108] = MVK[0][0]      ;
+    ambVector[109] = ALD2[0][0]     ;
+    ambVector[110] = MCO3[0][0]     ;
+    ambVector[111] = CH2O[0][0]     ;
+    ambVector[112] = H2O[0][0]      ;
+    ambVector[113] = Br[0][0]       ;
+    ambVector[114] = NO[0][0]       ;
+    ambVector[115] = NO3[0][0]      ;
+    ambVector[116] = Cl[0][0]       ;
+    ambVector[117] = O[0][0]        ;
+    ambVector[118] = O1D[0][0]      ;
+    ambVector[119] = O3[0][0]       ;
+    ambVector[120] = HO2[0][0]      ;
+    ambVector[121] = NO2[0][0]      ;
+    ambVector[122] = OH[0][0]       ;
+    ambVector[123] = HBr[0][0]      ;
+    ambVector[124] = HCl[0][0]      ;
+    ambVector[125] = CO[0][0]       ;
+    ambVector[126] = MO2[0][0]      ;
+    ambVector[127] = ACTA[0][0]     ;
+    ambVector[128] = EOH[0][0]      ;
+    ambVector[129] = H2[0][0]       ;
+    ambVector[130] = HCOOH[0][0]    ;
+    ambVector[131] = MOH[0][0]      ;
+    ambVector[132] = N2[0][0]       ;
+    ambVector[133] = O2[0][0]       ;
+    ambVector[134] = RCOOH[0][0]    ;
+
+    return ambVector;
+
+} /* End of Solution::getAmbient */
 
 unsigned int Solution::getNx() const
 {
