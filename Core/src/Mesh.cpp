@@ -124,7 +124,8 @@ void Mesh::Ring2Mesh( Cluster &c )
     ny_max = NY;
 #endif /* X_SYMMETRY */
 
-    for ( unsigned int iRing = 0; iRing < nRing; iRing++ ) {
+    /* For rings and ambient */
+    for ( unsigned int iRing = 0; iRing < nRing + 1; iRing++ ) {
         nCellMap.push_back( 0 );
         RingMeshMap.push_back( v2d );
         indList.push_back( v1d_int );
@@ -138,7 +139,7 @@ void Mesh::Ring2Mesh( Cluster &c )
     double hAxis, vAxis, hAxis_in, vAxis_in;
     double xRatio, xRatio_in;
     unsigned int val;
-    for ( unsigned int iRing = 0; iRing < nRing; iRing++ ) {
+    for ( unsigned int iRing = 0; iRing < nRing + 1; iRing++ ) {
         val = 0;
         if ( iRing == 0 ) {
             hAxis = RingV[iRing].getHAxis();
@@ -156,7 +157,7 @@ void Mesh::Ring2Mesh( Cluster &c )
                 }
             }
         }
-        else {
+        else if ( ( iRing > 0 ) && ( iRing < nRing ) ) {
             hAxis = RingV[iRing].getHAxis();
             vAxis = RingV[iRing].getVAxis();
             hAxis_in = RingV[iRing-1].getHAxis();
@@ -167,6 +168,21 @@ void Mesh::Ring2Mesh( Cluster &c )
                 for ( unsigned int jNy = 0; jNy < ny_max; jNy++ ) {
                     /* If point is within the region and out of the smaller region */
                     if ( ( xRatio + ( y[jNy] / vAxis ) * ( y[jNy] / vAxis ) <= 1 ) && ( xRatio_in + ( y[jNy] / vAxis_in ) * ( y[jNy] / vAxis_in ) > 1 ) ) {
+                        RingMeshMap[iRing][jNy][iNx] = 1;
+                        indList[iRing].push_back( std::make_pair(iNx, jNy) );
+                        val++;
+                    }
+                }
+            }
+        }
+        else {
+            hAxis = RingV[nRing-1].getHAxis();
+            vAxis = RingV[nRing-1].getVAxis();
+            for ( unsigned int iNx = 0; iNx < nx_max; iNx++ ) {
+                xRatio    = ( x[iNx]  /  hAxis    ) * ( x[iNx]  /  hAxis    );
+                for ( unsigned int jNy = 0; jNy < ny_max; jNy++ ) {
+                    /* If point is within the region and out of the smaller region */
+                    if ( ( xRatio + ( y[jNy] / vAxis ) * ( y[jNy] / vAxis ) > 1 ) ) {
                         RingMeshMap[iRing][jNy][iNx] = 1;
                         indList[iRing].push_back( std::make_pair(iNx, jNy) );
                         val++;
