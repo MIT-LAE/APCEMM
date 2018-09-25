@@ -41,26 +41,26 @@ void DiffParam( double time, double &d_x, double &d_y )
     }
     else if ( DPROF == 1 ) {
         d_x = std::max( DH, DH0 + (DH - DH0) * time / tH0 );
-        d_x = std::max( DV, DV0 + (DV - DV0) * time / tV0 );
+        d_y = std::max( DV, DV0 + (DV - DV0) * time / tV0 );
     }
     else if (DPROF == 2 ) {
-        d_x = DH + (DH - DH0) * exp( -time / tH0 );
-        d_y = DV + (DV - DV0) * exp( -time / tV0 );
+        d_x = DH + (DH0 - DH) * exp( -time / tH0 );
+        d_y = DV + (DV0 - DV) * exp( -time / tV0 );
     }
     else {
         std::string const currFile("DiffParam.cpp");
-        std::cout << "ERROR: In " << currFile << ": DPROF set to " << DPROF << std::endl;
+        std::cout << "ERROR: In " << currFile << ": DPROF set to " << DPROF << "\n";
     }
 
     if ( d_x < 0.0 ) {
-        std::cout << "d_x is negative: d_x = " << d_x << " [m^2/s]" << std::endl;
-        std::cout << "Setting d_x to 0.0" << std::endl;
+        std::cout << "d_x is negative: d_x = " << d_x << " [m^2/s]" << "\n";
+        std::cout << "Setting d_x to 0.0" << "\n";
         d_x = 0.0;
     }
 
     if ( d_y < 0.0 ) {
-        std::cout << "d_y is negative: d_y = " << d_y << " [m^2/s]" << std::endl;
-        std::cout << "Setting d_y to 0.0" << std::endl;
+        std::cout << "d_y is negative: d_y = " << d_y << " [m^2/s]" << "\n";
+        std::cout << "Setting d_y to 0.0" << "\n";
         d_y = 0.0;
     }
 
