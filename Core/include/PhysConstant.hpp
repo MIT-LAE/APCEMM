@@ -34,6 +34,11 @@
 #define PRES_SL   101325.0        /* Pressure at sea level, Unit : [ Pa ] */
 #define TEMP_SL   288.15          /* Temperature at sea leve, Unit : [ K ] */
 
+#define EPSILON   1.00E-05        /* Turbulent dissipation rate, 
+                                   * Range : ( 1.0E-08 - 1.0E-02 ), 
+                                   * Unit  : [ m ^ 2 / s ^ 3 ]
+                                   * Source: U. Schumann, A contrail cirrus prediction model, Geo. Sc. Dev., 2012 */
+
 #endif /* PHYS_CONSTANTS */
 
 #endif /* PHYSCONSTANT_H_INCLUDED */

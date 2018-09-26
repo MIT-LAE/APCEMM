@@ -46,6 +46,8 @@ Aircraft::Aircraft( const char *aircraftName, double temperature_K, double press
 
     }
 
+    vortex = Vortex( temperature_K, pressure_Pa, 1.3E-02, wingSpan, currMass, vFlight_ms  );
+
 } /* End of Aircraft::Aircraft */
 
 Aircraft::Aircraft( const Aircraft &ac )
@@ -149,37 +151,47 @@ void Aircraft::Debug( ) const
 
     std::cout.precision(5);
     
-    std::cout << std::endl;
-    std::cout << "**** Input Debugger ****" << std::endl;
-    std::cout << "Aircraft and Engine parameters: " << std::endl;
-    std::cout << std::endl;
+    std::cout << "\n";
+    std::cout << "**** Input Debugger ****" << "\n";
+    std::cout << "Aircraft and Engine parameters: " << "\n";
+    std::cout << "\n";
     std::cout << std::setw(15);
     std::cout << "Variable";
     std::cout << std::setw(19);
     std::cout << "Value";
     std::cout << std::setw(12);
-    std::cout << "Units" << std::endl;
-    std::cout << "  -Aircraft Name          : " << Name << std::endl;
-    std::cout << "  -Aircraft Engine Number : " << engNumber << std::endl;
-    std::cout << "  -Aircraft Flight Speed  : " << vFlight_ms << "         [ m/s ]" << std::endl;
-    std::cout << "  -Aircraft Mach Number   : " << machNumber << "     [ - ]" << std::endl;
-    std::cout << "  -Aircraft WingSpan      : " << wingSpan << "        [ m ]" << std::endl;
-    std::cout << "  -Aircraft MTOW          : " << MTOW << "  [ kg ]" << std::endl;
-    std::cout << "  -Aircraft Current Mass  : " << currMass << "  [ kg ]" << std::endl;
-    std::cout << "      +Engine Name        : " << engine.getName() << std::endl;
-    std::cout << "      +Engine EI NOx      : " << engine.getEI_NOx() << "      [ g/kg ]" << std::endl;
-    std::cout << "      +Engine EI NO       : " << engine.getEI_NO() << "      [ g/kg ]" << std::endl;
-    std::cout << "      +Engine EI NO2      : " << engine.getEI_NO2() << "      [ g/kg ]" << std::endl;
-    std::cout << "      +Engine EI HNO2     : " << engine.getEI_HNO2() << "     [ g/kg ]" << std::endl;
-    std::cout << "      +Engine EI CO       : " << engine.getEI_CO() << "      [ g/kg ]" << std::endl;
-    std::cout << "      +Engine EI HC       : " << engine.getEI_HC() << "   [ g/kg ]" << std::endl;
-    std::cout << "      +Engine EI Soot     : " << engine.getEI_Soot() << "        [ g/kg ]" << std::endl;
-    std::cout << "      +Engine SootRad     : " << engine.getSootRad() << "       [ m ]" << std::endl;
-    std::cout << "      +Engine FuelFlow    : " << engine.getFuelFlow() << "         [ kg/s ]" << std::endl;
-    std::cout << "      +Engine theta       : " << engine.getTheta() << "     [ - ]" << std::endl;
-    std::cout << "      +Engine delta       : " << engine.getDelta() << "     [ - ]" << std::endl;
-    std::cout << std::endl;
-    std::cout << std::endl;
+    std::cout << "Units" << "\n";
+    std::cout << "  -Aircraft Name          : " << Name << "\n";
+    std::cout << "  -Aircraft Engine Number : " << engNumber << "\n";
+    std::cout << "  -Aircraft Flight Speed  : " << vFlight_ms << "         [ m/s ]" << "\n";
+    std::cout << "  -Aircraft Mach Number   : " << machNumber << "     [ - ]" << "\n";
+    std::cout << "  -Aircraft WingSpan      : " << wingSpan << "        [ m ]" << "\n";
+    std::cout << "  -Aircraft MTOW          : " << MTOW << "  [ kg ]" << "\n";
+    std::cout << "  -Aircraft Current Mass  : " << currMass << "  [ kg ]" << "\n";
+    std::cout << " --- \n";
+    std::cout << "      +Engine Name        : " << engine.getName() << "\n";
+    std::cout << "      +Engine EI NOx      : " << engine.getEI_NOx() << "      [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI NO       : " << engine.getEI_NO() << "      [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI NO2      : " << engine.getEI_NO2() << "      [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI HNO2     : " << engine.getEI_HNO2() << "     [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI CO       : " << engine.getEI_CO() << "      [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI HC       : " << engine.getEI_HC() << "   [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI Soot     : " << engine.getEI_Soot() << "        [ g/kg ]" << "\n";
+    std::cout << "      +Engine SootRad     : " << engine.getSootRad() << "       [ m ]" << "\n";
+    std::cout << "      +Engine FuelFlow    : " << engine.getFuelFlow() << "         [ kg/s ]" << "\n";
+    std::cout << "      +Engine theta       : " << engine.getTheta() << "     [ - ]" << "\n";
+    std::cout << "      +Engine delta       : " << engine.getDelta() << "     [ - ]" << "\n";
+    std::cout << " --- \n";
+    std::cout << "      +Wake vortex separation : " << vortex.getb() << "   [ m ]" << "\n";
+    std::cout << "      +Initial circulation    : " << vortex.getgamma() << "   [ m^2/s ]" << "\n";
+    std::cout << "      +Wake eff. time scale   : " << vortex.gett() << "    [ s ]" << "\n";
+    std::cout << "      +Initial velocity scale : " << vortex.getw() << "   [ m/s ]" << "\n";
+    std::cout << "      +Normalized dissip. rate: " << vortex.geteps() << " [ - ]" << "\n";
+    std::cout << "      +Max. downwash displace.: " << vortex.getdeltazw() << "   [ m ]" << "\n";
+    std::cout << "      +Mean downwash displace.: " << vortex.getdeltaz1() << "   [ m ]" << "\n";
+    std::cout << "      +Initial contrail depth : " << vortex.getD1() << "   [ m ]" << "\n";
+    std::cout << "\n";
+    std::cout << "\n";
 
     std::cout.precision(ss);
 

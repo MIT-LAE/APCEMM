@@ -249,7 +249,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     const Aircraft aircraft( aircraftName, temperature_K, pressure_Pa, relHumidity_w );
 
     /* Print AC Debug? */
-    if ( DEBUG_AC_INPUT )
+    if ( DEBUG_AC_INPUT ) {}
         aircraft.Debug();
 
     /* Aggregate emissions from engine and fuel characteristics */
@@ -630,7 +630,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     std::cout << " ** Total   : ";
     std::cout << std::setw(6) << clock_cumul / double(1000) << " [s]" << "\n";
     std::cout << "\n";
-
 
 #endif /* TIME_IT */
     

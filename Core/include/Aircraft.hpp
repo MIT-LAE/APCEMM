@@ -21,6 +21,7 @@
 #include <cstring>
 
 #include "Engine.hpp"
+#include "Vortex.hpp"
 
 class Aircraft 
 {
@@ -62,6 +63,9 @@ class Aircraft
 
         /* Number of engines */
         unsigned int engNumber;
+
+        /* Vortex */
+        Vortex vortex;
 
     private:
 
