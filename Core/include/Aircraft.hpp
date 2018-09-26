@@ -40,6 +40,7 @@ class Aircraft
         double getMTOW() const;
         double getCurrMass() const;
         Engine getEngine() const;
+        double getFuelFlow() const;
         unsigned int getEngNumber() const;
 
     protected:

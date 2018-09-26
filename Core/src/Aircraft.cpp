@@ -136,6 +136,13 @@ Engine Aircraft::getEngine() const
 
 } /* End of Aircraft::getEngine */
 
+double Aircraft::getFuelFlow() const
+{
+
+    return engine.getFuelFlow() * engNumber;
+
+} /* End of Aircraft::getFuelFlow() */
+
 unsigned int Aircraft::getEngNumber() const
 {
 
