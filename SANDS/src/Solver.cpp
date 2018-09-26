@@ -115,13 +115,18 @@
 
         unsigned int i0;
         int k;
-      
+     
+        /* The domain extends from -xlim to xlim
+         * so, length of the interval is 2*xlim */
+        /* Formula is:
+         * kx = 2.0 * PI / (length of interval) * [0:Nx/2-1 -Nx/2:-1]
+         */
         i0 = n_x/2; 
         for ( unsigned int i = 0; i < n_x; i++ ) {
             kx.push_back( 0.0 );
             kxx.push_back( 0.0 );
             k = (i0%n_x) - n_x/2;
-            kx[i] = 2.0 * PI / xlim * k;
+            kx[i] = PI / xlim * k;
             kxx[i] = - kx[i] * kx[i];
             i0++;
         }
@@ -133,7 +138,7 @@
             ky.push_back( 0.0 );
             kyy.push_back( 0.0 );
             k = (i0%n_y) - n_y/2;
-            ky[j] = 2.0 * PI / ylim * k;
+            ky[j] = PI / ylim * k;
             kyy[j] = - ky[j] * ky[j];
             i0++;
         }
@@ -155,7 +160,7 @@
 
     } /* End of Solver::getAdvFactor */
 
-    void Solver::UpdateTimeStep( double T )
+    void Solver::UpdateTimeStep( RealDouble T )
     {
 
         dt = T;

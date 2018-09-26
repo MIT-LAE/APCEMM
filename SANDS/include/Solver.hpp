@@ -72,13 +72,13 @@
 //            RealDouble MassCheck( Real_2DVector &v );
 
             /* Update time step */
-            void UpdateTimeStep( double T );
+            void UpdateTimeStep( RealDouble T );
 
             /* Update diffusion field */
-            void UpdateDiff( double dH, double dV );
+            void UpdateDiff( RealDouble dH, RealDouble dV );
 
             /* Update advection field */
-            void UpdateAdv( double vH, double vV );
+            void UpdateAdv( RealDouble vH, RealDouble vV );
            
             void Solve( Real_2DVector &V, const bool realInput );
 
