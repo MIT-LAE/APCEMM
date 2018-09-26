@@ -142,6 +142,4 @@
 #define DO_SAVE_CO                      1 /* Save CO       */
 #define DO_SAVE_MO2                     0 /* Save MO2      */
 
-#define DOSAVEPL                        1 /* Save chemical rates? */
-
 #endif /* OUTPUT_H_INCLUDED */

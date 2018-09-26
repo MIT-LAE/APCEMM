@@ -40,7 +40,7 @@ const char* const AMBFILE     = "data/Ambient.txt";
 #define SAVE_OUTPUT             1    /* Save output? */
 const char* const OUTPUT_FILE = "data/output.nc";
 #define SAVE_TO_DOUBLE          1    /* Save output as double? otherwise float */
-#include "Output.hpp"
+#define DOSAVEPL                1    /* Save chemical rates */ 
 
 /* TIME */
 #define TIME_IT                 1    /* Time simulation? */

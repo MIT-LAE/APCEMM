@@ -18,6 +18,7 @@
 
 #include "Parameters.hpp"
 #include "Interface.hpp"
+#include "Output.hpp"
 #include "Species.hpp"
 #include "Ambient.hpp"
 #include "Cluster.hpp"
