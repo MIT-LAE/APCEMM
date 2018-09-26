@@ -106,17 +106,17 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     double relHumidity_i = relHumidity_w * pSat_H2Ol( temperature_K )\
                                          / pSat_H2Os( temperature_K );
 
-    /* If ICE_MICROPHYSICS is turned on and the domain is supersaturated, break the x-symmetry */
-#if ( ICE_MICROPHYSICS && X_SYMMETRY )
-
-    /* Is supersaturated? */
-    if ( relHumidity_i > 100.0 ) {
-
-#undef X_SYMMETRY
-#define X_SYMMETRY                  0     /* Set x-symmetry to 0 */
-
-    }
-#endif /* ICE_MICROPHYSICS && X_SYMMETRY */
+//    /* If ICE_MICROPHYSICS is turned on and the domain is supersaturated, break the x-symmetry */
+//#if ( ICE_MICROPHYSICS && X_SYMMETRY )
+//
+//    /* Is supersaturated? */
+//    if ( relHumidity_i > 100.0 ) {
+//
+//#undef X_SYMMETRY
+//#define X_SYMMETRY                  0     /* Set x-symmetry to 0 */
+//
+//    }
+//#endif /* ICE_MICROPHYSICS && X_SYMMETRY */
 
 
     unsigned int dayGMT(81);
@@ -249,7 +249,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     const Aircraft aircraft( aircraftName, temperature_K, pressure_Pa, relHumidity_w );
 
     /* Print AC Debug? */
-    if ( DEBUG_AC_INPUT ) {}
+    if ( DEBUG_AC_INPUT )
         aircraft.Debug();
 
     /* Aggregate emissions from engine and fuel characteristics */
@@ -316,10 +316,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     /* Add emission into the grid */
     Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing() ); 
-    
+   
     /* Fill in variables species for initial time */
     ringSpecies.FillIn( Data, m, nTime );
-
 
     /* Allocate an additional array for KPP */
     double tempArray[N_VAR];
@@ -335,6 +334,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 #endif /* RINGS */
    
 
+    std::cout << "\n\n *** Time loop starts now *** \n\n";
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /**         Time Loop          **/

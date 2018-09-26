@@ -857,7 +857,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
         /* Full rings */
         innerRing = 0;
         nCell = map[innerRing].size();
-        for ( unsigned int iList = 0; iList < nCell; iList++ ) {
+        for ( unsigned int iList = 0; iList < map[innerRing].size(); iList++ ) {
             i = map[innerRing][iList].first;
             j = map[innerRing][iList].second;
 
@@ -884,7 +884,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
         /* Half rings */
         nCell = map[0].size() + map[1].size();
         for ( innerRing = 0; innerRing <= 1; innerRing++ ) {
-            for ( unsigned int iList = 0; iList < nCell; iList++ ) {
+            for ( unsigned int iList = 0; iList < map[innerRing].size(); iList++ ) {
                 i = map[innerRing][iList].first;
                 j = map[innerRing][iList].second;
 
