@@ -14,6 +14,8 @@
 #ifndef OUTPUT_H_INCLUDED
 #define OUTPUT_H_INCLUDED
 
+#define DO_SAVE_NOx                     1 /* Save NOx      */
+#define DO_SAVE_NOy                     1 /* Save NOy      */
 #define DO_SAVE_CO2                     1 /* Save CO2      */
 #define DO_SAVE_PPN                     0 /* Save PPN      */
 #define DO_SAVE_BrNO2                   0 /* Save BrNO2    */

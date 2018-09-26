@@ -29,7 +29,7 @@ namespace output
         int didSaveSucceed = 1;
         time_t rawtime;
         char buffer[80];
-        
+
         FileHandler fileHandler( currFileName, doWrite, doRead, overWrite );
         NcFile currFile = fileHandler.openFile();
         if ( !fileHandler.isFileOpen() ) {
@@ -3016,7 +3016,56 @@ namespace output
 
 #endif /* DO_SAVE_MO2 */
 
+#if ( DO_SAVE_NOx )
+
+                strncpy( charSpc, "NOx", sizeof(charSpc) );
+                strncpy( charName, "NOx mixing ratio", sizeof(charName) );
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+                std::vector<std::vector<double>> NOx = util::add2D( ringSpecies.NO, ringSpecies.NO2 );
+                std::vector<double> NOx_a = util::add1D( ambientData.NO, ambientData.NO2 );
+        #if ( SAVE_TO_DOUBLE )
+                spcArray = util::vect2double( NOx, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2double( NOx_a, timeArray.size(), scalingFactor );
+        #else
+                spcArray = util::vect2float( NOx, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2float( NOx_a, timeArray.size(), scalingFactor );
+        #endif /* SAVE_TO_DOUBLE */
+                
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
+
+                strncpy( charSpc, "NOx_a", sizeof(charSpc) );
+                strncpy( charName, "NOx ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
             
+#endif /* DO_SAVE_NOx */
+
+#if ( DO_SAVE_NOy )
+
+                strncpy( charSpc, "NOy", sizeof(charSpc) );
+                strncpy( charName, "NOy mixing ratio", sizeof(charName) );
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+                std::vector<std::vector<double>> NOy = util::add2D( util::add2D( util::add2D( util::add2D( util::add2D( util::add2D( util::add2D( util::add2D( util::add2D( util::add2D( util::add2D( util::add2D( util::add2D( util::add2D( util::add2D( util::add2D(util::add2D( util::add2D( util::add2D( util::add2D( ringSpecies.NO, ringSpecies.NO2 ), ringSpecies.NO3 ), ringSpecies.HNO2 ), ringSpecies.HNO3 ), ringSpecies.HNO4 ), ringSpecies.N2O5 ), ringSpecies.N2O5 ), ringSpecies.PAN ), ringSpecies.BrNO2 ), ringSpecies.BrNO3 ), ringSpecies.ClNO2 ), ringSpecies.ClNO3 ), ringSpecies.PPN ), ringSpecies.N ), ringSpecies.MPN ), ringSpecies.PROPNN ), ringSpecies.PRPN ), ringSpecies.R4N1 ), ringSpecies.PRN1 ), ringSpecies.R4N2 );
+                std::vector<double> NOy_a = util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( ambientData.NO, ambientData.NO2 ), ambientData.NO3 ), ambientData.HNO2 ), ambientData.HNO3 ), ambientData.HNO4 ), ambientData.N2O5 ), ambientData.N2O5 ), ambientData.PAN ), ambientData. BrNO2 ), ambientData.BrNO3 ), ambientData.ClNO2 ), ambientData.ClNO3 ), ambientData.PPN ), ambientData.N ), ambientData.MPN ), ambientData.PROPNN ), ambientData.PRPN ), ambientData.R4N1 ), ambientData.PRN1 ), ambientData.R4N2 );
+        #if ( SAVE_TO_DOUBLE )
+                spcArray = util::vect2double( NOy, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2double( NOy_a, timeArray.size(), scalingFactor );
+        #else
+                spcArray = util::vect2float( NOy, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2float( NOy_a, timeArray.size(), scalingFactor );
+        #endif /* SAVE_TO_DOUBLE */
+                
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
+
+                strncpy( charSpc, "NOy_a", sizeof(charSpc) );
+                strncpy( charName, "NOy ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
+            
+#endif /* DO_SAVE_NOy */
+
             util::delete1D( spcArray );
             util::delete1D( ambArray );
 
