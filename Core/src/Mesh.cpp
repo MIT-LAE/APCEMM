@@ -144,6 +144,14 @@ void Mesh::Ring2Mesh( Cluster &c )
 
     std::vector<Ring> RingV;
     RingV = c.getRings();
+    if ( RingV[nRing - 1].getHAxis() > x[NX - 1] ) {
+        std::cout << "The largest ring's horizontal axis is larger than the grid's dimensions!\n";
+        std::cout << "Horizontal axis: " << RingV[nRing-1].getHAxis() << " >= " << x[NX - 1] << "\n";
+    }
+    if ( RingV[nRing - 1].getVAxis() > y[NY - 1] ) {
+        std::cout << "The largest ring's vertical axis is larger than the grid's dimensions!\n";
+        std::cout << "Vertical axis: " << RingV[nRing-1].getVAxis() << " >= " << y[NY - 1] << "\n";
+    }
     double hAxis, vAxis, hAxis_in, vAxis_in;
     double xRatio, xRatio_in;
     unsigned int val;
