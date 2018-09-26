@@ -151,8 +151,53 @@ namespace util
         }
     }
 
+    template <typename T>
+    std::vector<T> add1D(const std::vector<T>&a, const std::vector<T>& b) 
+    {
+    
+        std::vector<T> result;
+
+        if ( a.size() != b.size() )
+        {
+            std::cout << "In Util.cpp: operator+ couldn't be performed because vectors don't have the same size\n";
+            return result;
+        }
+
+        std::transform(a.begin(), a.end(), b.begin(), std::back_inserter(result), std::plus<T>());
+
+        return result;
+
+    }
+
+    template <typename T>
+    std::vector<std::vector<T>> add2D(const std::vector<std::vector<T>>&a, const std::vector<std::vector<T>>& b) 
+    {
+    
+        std::vector<std::vector<T>> result;
+
+        if ( ( a.size() != b.size() ) )
+        {
+            std::cout << "In Util.cpp: operator+ couldn't be performed because vectors don't have the same size\n";
+            return result;
+        }
+
+        for ( unsigned int i = 0; i < a.size(); i++ ) {
+            result.push_back( std::vector<T> ( a[i].size() ) );
+            for ( unsigned int j = 0; j < a[i].size(); j++ ) {
+                result[i][j] = a[i][j] + b[i][j];
+            }
+        }
+
+        return result;
+
+    }
+
 template void delete1D<double>( double* temp );
 template void delete1D<float>( float* temp );
+template std::vector<double> add1D(const std::vector<double>&a, const std::vector<double>& b);
+template std::vector<float> add1D(const std::vector<float>&a, const std::vector<float>& b);
+template std::vector<std::vector<double>> add2D(const std::vector<std::vector<double>>&a, const std::vector<std::vector<double>>& b);
+template std::vector<std::vector<float>> add2D(const std::vector<std::vector<float>>&a, const std::vector<std::vector<float>>& b);
 
 }
 

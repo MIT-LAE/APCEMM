@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 namespace util
 {
@@ -30,6 +31,10 @@ namespace util
     void delete1D( T* temp );
     template <class T>
     void delete2D( T** temp, unsigned int N );
+    template <typename T>
+    std::vector<T> add1D(const std::vector<T>&a, const std::vector<T>& b);
+    template <typename T>
+    std::vector<std::vector<T>> add2D(const std::vector<std::vector<T>>&a, const std::vector<std::vector<T>>& b);
 
 }
 
