@@ -20,7 +20,8 @@
 #include <ctime>
 
 #include "Parameters.hpp"
-#include "PhysConstant.hpp"
+#include "../../Headers/PhysConstant.hpp"
+#include "../../Headers/PhysFunction.hpp"
 #include "Interface.hpp"
 #include "Monitor.hpp"
 #include "SANDS_Solver.hpp"
@@ -57,8 +58,6 @@ std::vector<double> BuildTime( double tStart, double tFinal, \
                double sunRise, double sunSet );
 double UpdateTime( double time, double tStart, \
                    double sunRise, double sunSet );
-double pSat_H2Ol( double T );
-double pSat_H2Os( double T );
 void CallSolver( Solution& Data, Solver& SANDS );
 
 #ifdef __cplusplus
@@ -77,6 +76,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 double relHumidity_w, double longitude_deg, \
                 double latitude_deg )
 {
+
+    physFunc physF;
 
 #if ( TIME_IT )
 
@@ -113,10 +114,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* CO2_MASS_CHECK */
 
-
+    
     /* Compute relative humidity w.r.t ice */
-    double relHumidity_i = relHumidity_w * pSat_H2Ol( temperature_K )\
-                                         / pSat_H2Os( temperature_K );
+    double relHumidity_i = relHumidity_w * physF.pSat_H2Ol( temperature_K )\
+                                         / physF.pSat_H2Os( temperature_K );
 
 //    /* If ICE_MICROPHYSICS is turned on and the domain is supersaturated, break the x-symmetry */
 //#if ( ICE_MICROPHYSICS && X_SYMMETRY )
@@ -280,9 +281,18 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Allocate arrays for KPP */
     /* varArray stores all the concentrations of variable species */
     double varArray[N_VAR];
+    
     /* fixArray stores all the concentrations of fixed species */
     double fixArray[N_FIX];
+    
+    /* Ambient chemistry */
+    ambientData.getData( varArray, fixArray, nTime );
 
+    
+    
+    /** ~~~~~~~~~~~~~~~~~~~~~~~ **/
+    /**    Early Microphysics   **/
+    /** ~~~~~~~~~~~~~~~~~~~~~~~ **/
 
 
     /** ~~~~~~~~~~~~~~~~~ **/

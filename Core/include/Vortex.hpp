@@ -17,7 +17,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "PhysConstant.hpp"
+#include "../../Headers/PhysConstant.hpp"
 
 class Vortex
 {

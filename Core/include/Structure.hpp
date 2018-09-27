@@ -9,7 +9,8 @@
 #include <sstream>
 
 #include "Parameters.hpp"
-#include "PhysConstant.hpp"
+#include "../../Headers/PhysConstant.hpp"
+#include "../../Headers/PhysFunction.hpp"
 #include "Emission.hpp"
 #include "Aircraft.hpp"
 #include "Engine.hpp"

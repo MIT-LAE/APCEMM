@@ -34,6 +34,7 @@
 
 #define PRES_SL   101325.0        /* Pressure at sea level, Unit : [ Pa ] */
 #define TEMP_SL   288.15          /* Temperature at sea level, Unit : [ K ] */
+#define ATM       PRES_SL         /* 1 Atmosphere, Unit : [ Pa ] */
 
 #define GAMMA_AD  -g/CP_Air       /* Adiabatic temperature lapse rate, Unit : [ K / km ] */
 
