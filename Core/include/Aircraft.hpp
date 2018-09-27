@@ -42,6 +42,8 @@ class Aircraft
         Engine getEngine() const;
         double getFuelFlow() const;
         unsigned int getEngNumber() const;
+        double getVortexdeltaz1() const;
+        double getVortexdeltazw() const;
 
     protected:
 

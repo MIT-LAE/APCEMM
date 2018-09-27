@@ -30,7 +30,7 @@ Aircraft::Aircraft( const char *aircraftName, double temperature_K, double press
     if ( Name.compare( "B747" ) >= 0 ) {
         /* Flight characteristics */
         vFlight_ms = 250.0;
-        machNumber = vFlight_ms / sqrt( gamma_Air * R_Air * temperature_K );
+        machNumber = vFlight_ms / sqrt( GAMMA_Air * R_Air * temperature_K );
 
         /* Engine characteristics */
         const char *engineName = "GEnx-2B67B";
@@ -150,6 +150,19 @@ unsigned int Aircraft::getEngNumber() const
 
 } /* End of Aircraft::getEngNumber */
 
+double Aircraft::getVortexdeltaz1() const
+{
+
+    return vortex.getdeltaz1();
+
+} /* End of Aircraft::getVortexDeltaz1 */
+
+double Aircraft::getVortexdeltazw() const
+{
+
+    return vortex.getdeltazw();
+
+} /* End of Aircraft::getVortexDeltazw */
 
 void Aircraft::Debug( ) const
 {

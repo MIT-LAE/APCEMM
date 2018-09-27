@@ -27,12 +27,15 @@
 #define R         8.314459848E+00 /* Ideal gas constant, Unit : [ J / ( K.mol ) ] */
 #define R_Air     R/MW_Air        /* Specific gas constant, Unit : [ J / (K.kg) ] */
 
-#define gamma_Air 1.4             /* Heat capacity ratio of air, Unit : [ - ] */
+#define CP_Air    1.005           /* Specific heat capacity of air at 300K, Unit : [ kJ / ( kg K ) ] */
+#define GAMMA_Air 1.4             /* Heat capacity ratio of air, Unit : [ - ] */
 
 #define g         9.80665E+00     /* Acceleration due to gravity, Unit : [ m / s^2 ] */
 
 #define PRES_SL   101325.0        /* Pressure at sea level, Unit : [ Pa ] */
-#define TEMP_SL   288.15          /* Temperature at sea leve, Unit : [ K ] */
+#define TEMP_SL   288.15          /* Temperature at sea level, Unit : [ K ] */
+
+#define GAMMA_AD  -g/CP_Air       /* Adiabatic temperature lapse rate, Unit : [ K / km ] */
 
 #define EPSILON   1.00E-05        /* Turbulent dissipation rate, 
                                    * Range : ( 1.0E-08 - 1.0E-02 ), 

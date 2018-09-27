@@ -7,8 +7,7 @@
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 7/26/2018                                 */
-/* File                 : Parameters.h                              */
-/* Working directory    : /home/fritzt/APCEMM-SourceCode            */
+/* File                 : Parameters.hpp                            */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -30,6 +29,9 @@
 #define TSTART            0.0E+00     /* Initial time [hrs] (after emission) */
 #define TSIMUL            2.4E+01     /* Simulation time [hrs] */
 #define DT                9.0E+02     /* Default time step [s] */
+
+/* Atmospheric parameters */
+#define GAMMA            -3.0E+00     /* Ambient temperature lapse rate [K/km] */
 
 /* Diffusion */
 #define DH                1.5E+01     /* Steady-state horizontal diffusion parameter [m2/s] */
@@ -62,5 +64,6 @@
 #define N_REACT               475         /* Number of reactions */
 #define RTOLS                 1.00E-03    /* Relative tolerances in KPP */
 #define ATOLS                 1.00E-03    /* Absolute tolerances in KPP */
+
 
 #endif /* PARAMETERS_H_INCLUDED */
