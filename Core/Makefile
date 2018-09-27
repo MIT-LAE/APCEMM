@@ -144,7 +144,7 @@ release: CFLAGS += $(OPT)
 release: all
 
 clean:
-	@echo "---> Making clean in Core <---"
+	@echo "---> Making clean in $(CURR_DIR) <---"
 	-@rm -rvf $(OBJ_DIR)/*
 	-@rm -rvf $(APP_DIR)/*
 
