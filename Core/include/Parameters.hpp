@@ -32,6 +32,8 @@
 
 /* Atmospheric parameters */
 #define GAMMA            -3.0E+00     /* Ambient temperature lapse rate [K/km] */
+#define HOMOGENEOUS_NAT   1           /* Allow homogeneous NAT? */
+#define T_NAT_SUPERCOOL   3.0         /* NAT supercooling requirement [K] */
 
 /* Diffusion */
 #define DH                1.5E+01     /* Steady-state horizontal diffusion parameter [m2/s] */
@@ -65,5 +67,10 @@
 #define RTOLS                 1.00E-03    /* Relative tolerances in KPP */
 #define ATOLS                 1.00E-03    /* Absolute tolerances in KPP */
 
+
+/* Microphysics parameters */
+#define SO4_R_LOW             1.00E-10    /* Sulfates' lower bin radius [m] */
+#define SO4_R_HIG             5.00E-07    /* Sulfates' larger bin radius [m] */
+#define SO4_VRAT              1.50E+00    /* Size ratio between two consecutives bins */
 
 #endif /* PARAMETERS_H_INCLUDED */

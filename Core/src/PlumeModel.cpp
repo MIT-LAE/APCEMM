@@ -25,6 +25,7 @@
 #include "Interface.hpp"
 #include "Monitor.hpp"
 #include "SANDS_Solver.hpp"
+#include "EPM_Solver.hpp"
 #if ( RINGS )
     #include "Cluster.hpp"
     #include "Species.hpp"
@@ -294,6 +295,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /**    Early Microphysics   **/
     /** ~~~~~~~~~~~~~~~~~~~~~~~ **/
 
+    EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aircraft, EI );
+    //Integrate( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aircraft, EI );
 
     /** ~~~~~~~~~~~~~~~~~ **/
     /**      Rings?       **/

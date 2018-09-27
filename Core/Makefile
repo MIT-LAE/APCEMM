@@ -83,7 +83,7 @@ LDFLAGS := $(LDFLAGS)
 LDFLAGS := $(LDFLAGS) -lstdc++ -lm
 
 # Add custom libraries
-LDFLAGS := $(LDFLAGS) -lSands -lfftw3 -lKpp -lHeaders -lnetcdf_c++
+LDFLAGS := $(LDFLAGS) -lSands -lfftw3 -lKpp -lHeaders -lEpm -lnetcdf_c++
 
 ifndef BUILD
 	BUILD := $(ROOT)/build
