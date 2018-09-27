@@ -47,7 +47,7 @@ const char* const OUTPUT_FILE = "data/output.nc";
 
 /* MASS CHECK */
 #define NOy_MASS_CHECK          1    /* NOy mass check? */
-#define CO2_MASS_CHECK          0    /* CO2 mass check? */
+#define CO2_MASS_CHECK          1    /* CO2 mass check? */
 
 /* DEBUG */
 #define DEBUG_AC_INPUT          0    /* Debug AC Input? */

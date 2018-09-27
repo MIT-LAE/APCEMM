@@ -313,6 +313,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     
     /* Compute ring areas */
     ringCluster.ComputeRingAreas( cellAreas, mapRing2Mesh );
+    std::vector<double> ringArea = ringCluster.getRingArea();
 
     /* Add emission into the grid */
     Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing() ); 
@@ -334,7 +335,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 #endif /* RINGS */
    
 
-    std::cout << "\n\n *** Time loop starts now *** \n\n";
+    std::cout << "\n\n *** Time loop starts now *** \n";
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /**         Time Loop          **/
@@ -411,7 +412,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             vGlob_y = 0;
 
         }
-    
+   
         /* Update diffusion and advection arrays */
         SANDS_Solver.UpdateDiff( d_x, d_y );
         SANDS_Solver.UpdateAdv ( v_x, v_y );
@@ -541,10 +542,12 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 #if ( NOy_MASS_CHECK )
 
         /* Compute ambient concentrations */
-        mass_Ambient_NOy = ambientData.NO[nTime] + ambientData.NO2[nTime] + ambientData.HNO2[nTime] + ambientData.HNO3[nTime] + ambientData.HNO4[nTime] \
-                         + 2*ambientData.N2O5[nTime] + ambientData.PAN[nTime] + ambientData.MPN[nTime] + ambientData.N[nTime] + ambientData.PROPNN[nTime] \
-                         + ambientData.BrNO2[nTime] + ambientData.BrNO3[nTime] + ambientData.ClNO2[nTime] + ambientData.ClNO3[nTime] + ambientData.PPN[nTime] \
-                         + ambientData.PRPN[nTime] + ambientData.R4N1[nTime] + ambientData.PRN1[nTime] + ambientData.R4N2[nTime] + 2*ambientData.N2O[nTime];
+        mass_Ambient_NOy = ambientData.NO[nTime+1] + ambientData.NO2[nTime+1] + ambientData.NO3[nTime+1] +  ambientData.HNO2[nTime+1] \
+                         + ambientData.HNO3[nTime+1] + ambientData.HNO4[nTime+1] + 2*ambientData.N2O5[nTime+1] + ambientData.PAN[nTime+1] \
+                         + ambientData.MPN[nTime+1] + ambientData.N[nTime+1] + ambientData.PROPNN[nTime+1] + ambientData.BrNO2[nTime+1] \
+                         + ambientData.BrNO3[nTime+1] + ambientData.ClNO2[nTime+1] + ambientData.ClNO3[nTime+1] + ambientData.PPN[nTime+1] \
+                         + ambientData.PRPN[nTime+1] + ambientData.R4N1[nTime+1] + ambientData.PRN1[nTime+1] + ambientData.R4N2[nTime+1] \
+                         + 2*ambientData.N2O[nTime+1];
 
         /* Compute emitted */
         mass_Emitted_NOy = 0;
@@ -556,17 +559,15 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                                     + Data.BrNO3[jNy][iNx] + Data.ClNO2[jNy][iNx] + Data.ClNO3[jNy][iNx]  + Data.PPN[jNy][iNx] \
                                     + Data.PRPN[jNy][iNx] + Data.R4N1[jNy][iNx] + Data.PRN1[jNy][iNx] + Data.R4N2[jNy][iNx] \
                                     + 2*Data.N2O[jNy][iNx] \
-                                   - mass_Ambient_NOy ) * cellAreas[jNy][iNx];
+                                    - mass_Ambient_NOy ) * cellAreas[jNy][iNx];
             }
         }
-        mass_Emitted_NOy /= m.getTotArea();
 
         /* Print to console */
         std::cout << "\n";
         std::cout << " ** NOy mass check: " << "\n";
-        std::cout << " Ambient NOy (including N2O): " << std::setw(6) << mass_Ambient_NOy / airDens*1E9 << " [ppb], " << std::setw(6) << ( mass_Ambient_NOy - 2*ambientData.N2O[nTime] ) / airDens*1E12 << " [ppt] (without N2O)" << "\n";
-        std::cout << " Emitted NOy: " << std::setw(6) << mass_Emitted_NOy / airDens*1E12 << " [ppt], " << "\n";;
-        std::cout << "\n";
+        std::cout << " Emitted NOy: " << std::setw(6) << mass_Emitted_NOy * 1.0E+06 / Na * MW_N * 1.0E+06 << " [g(N)/km] " << "\n";
+        /*                                               [molec/cm3 * m2] * [m3/cm3]/[molec/mole]*[kg/mole]*[g/kg*m/km] = [g/km] */
         
 #endif /* NOy_MASS_CHECK */
 
@@ -574,23 +575,29 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
         /* CO2 is not an exactly conserved quantity because of the oxidation CO and other compounds (unless chemistry is turned off) */
 
-        mass_Ambient_CO2 = ambientData.CO2[nTime];
+        mass_Ambient_CO2 = ambientData.CO2[nTime+1];
         
         /* Compute emitted */
         mass_Emitted_CO2 = 0;
         for ( unsigned int iNx = 0; iNx < NX; iNx++ ) {
             for ( unsigned int jNy = 0; jNy < NY; jNy++ ) {
-                mass_Emitted_CO2 += ( Data.CO2[jNy][iNx] - Data.CO2[0][0] ) * cellAreas[jNy][iNx];
+                mass_Emitted_CO2 += ( Data.CO2[jNy][iNx] - mass_Ambient_CO2 ) * cellAreas[jNy][iNx];
             }
         }
-        mass_Emitted_CO2 /= m.getTotArea();
 
         std::cout << "\n";
         std::cout << " ** CO2 mass check: " << "\n";
-        std::cout << " Ambient CO2: " << std::setw(6) << mass_Ambient_CO2 / airDens*1E6 << " [ppm]\n";
-        std::cout << " Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 / airDens*1E9 << " [ppb]\n";;
-        std::cout << "\n";
+        std::cout << " Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / Na * MW_CO2 * 1.0E+03 << " [kg/km]\n";
+        /*                                               [molec/cm3 * m2] * [m3/cm3]/[molec/mole]*[kg/mole]*[m/km] = [kg/km] */
 
+        /* This aims to check for mass in rings, will be removed in the future... */
+        mass_Emitted_CO2 = 0;
+        for ( iRing = 0; iRing < nRing; iRing++ ) {
+            mass_Emitted_CO2 += ( ringSpecies.CO2[nTime+1][iRing] - mass_Ambient_CO2 ) * ringArea[iRing]; 
+        }
+        std::cout << " Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / Na * MW_CO2 * 1.0E+03 << " [kg/km]\n";
+        std::cout << "\n";
+       
 #endif /* CO2_MASS_CHECK */
 
 #if ( TIME_IT )

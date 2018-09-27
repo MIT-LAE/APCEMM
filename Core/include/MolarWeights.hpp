@@ -20,6 +20,7 @@
 #define MW_Air    28.5766E-03
 #define MW_O2     31.9988E-03
 #define MW_N2     28.0134E-03
+#define MW_N      14.0067E-03
 #define MW_CO2    44.0095E-03
 #define MW_CO     28.0101E-03
 #define MW_CH4    16.0425E-03
