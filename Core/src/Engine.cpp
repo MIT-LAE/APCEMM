@@ -3,7 +3,7 @@
 /*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
-/* Engine Header File                                               */
+/* Engine Program File                                              */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 7/26/2018                                 */
