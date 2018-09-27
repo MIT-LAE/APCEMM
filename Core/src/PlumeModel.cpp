@@ -93,11 +93,23 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     double mass_Ambient_NOy, mass_Emitted_NOy;
 
+    #if ( RINGS )
+
+    double mass_Emitted_NOy_Rings;
+
+    #endif /* RINGS */
+
 #endif /* NOy_MASS_CHECK */
 
 #if ( CO2_MASS_CHECK )
 
     double mass_Ambient_CO2, mass_Emitted_CO2;
+
+    #if ( RINGS )
+
+    double mass_Emitted_CO2_Rings;
+
+    #endif /* RINGS */
 
 #endif /* CO2_MASS_CHECK */
 
@@ -335,7 +347,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 #endif /* RINGS */
    
 
-    std::cout << "\n\n *** Time loop starts now *** \n";
+    std::cout << "\n\n *** Time loop starts now ***";
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /**         Time Loop          **/
@@ -351,8 +363,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
         /* Print message */
         std::cout << "\n";
-        std::cout << " - Time step: " << nTime << " out of " << timeArray.size() << "\n";
-        std::cout << " -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]" << "\n";
+        std::cout << "\n - Time step: " << nTime << " out of " << timeArray.size();
+        std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]";
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /**      Update Time Step      **/
@@ -564,11 +576,28 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         }
 
         /* Print to console */
-        std::cout << "\n";
-        std::cout << " ** NOy mass check: " << "\n";
-        std::cout << " Emitted NOy: " << std::setw(6) << mass_Emitted_NOy * 1.0E+06 / Na * MW_N * 1.0E+06 << " [g(N)/km] " << "\n";
-        /*                                               [molec/cm3 * m2] * [m3/cm3]/[molec/mole]*[kg/mole]*[g/kg*m/km] = [g/km] */
+        std::cout << "\n\n    " << " *** NOy mass check: ";
+        std::cout << "\n    " << " ~~> Emitted NOy: " << std::setw(6) << mass_Emitted_NOy * 1.0E+06 / Na * MW_N * 1.0E+06 << " [g(N)/km] ";
+        /*                                                           [molec/cm3 * m2] * [m3/cm3]/[molec/mole]*[kg/mole]*[g/kg*m/km] = [g/km] */
+    
+    #if ( RINGS ) 
         
+        mass_Emitted_NOy_Rings = 0;
+        for ( iRing = 0; iRing < nRing; iRing++ ) {
+            mass_Emitted_NOy_Rings += ( ringSpecies.NO[nTime+1][iRing] + ringSpecies.NO2[nTime+1][iRing] + ringSpecies.NO3[nTime+1][iRing] \
+                                      + ringSpecies.HNO2[nTime+1][iRing] + ringSpecies.HNO3[nTime+1][iRing] + ringSpecies.HNO4[nTime+1][iRing] \
+                                      + 2*ringSpecies.N2O5[nTime+1][iRing] + ringSpecies.PAN[nTime+1][iRing] + ringSpecies.MPN[nTime+1][iRing] \
+                                      + ringSpecies.N[nTime+1][iRing] + ringSpecies.PROPNN[nTime+1][iRing] + ringSpecies.BrNO2[nTime+1][iRing] \
+                                      + ringSpecies.BrNO3[nTime+1][iRing] + ringSpecies.ClNO2[nTime+1][iRing] + ringSpecies.ClNO3[nTime+1][iRing] \
+                                      + ringSpecies.PPN[nTime+1][iRing] + ringSpecies.PRPN[nTime+1][iRing] + ringSpecies.R4N1[nTime+1][iRing] \
+                                      + ringSpecies.PRN1[nTime+1][iRing] + ringSpecies.R4N2[nTime+1][iRing] + 2*ringSpecies.N2O[nTime+1][iRing] \
+                                      - mass_Ambient_NOy ) * ringArea[iRing]; 
+        }
+        /* How much of this emitted mass is still in the rings? FR = Fraction in rings */
+        std::cout << "(FR: " << 100 * mass_Emitted_NOy_Rings / mass_Emitted_NOy << " %)";
+
+    #endif /* RINGS */
+
 #endif /* NOy_MASS_CHECK */
 
 #if ( CO2_MASS_CHECK )
@@ -585,29 +614,32 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             }
         }
 
-        std::cout << "\n";
-        std::cout << " ** CO2 mass check: " << "\n";
-        std::cout << " Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / Na * MW_CO2 * 1.0E+03 << " [kg/km]\n";
-        /*                                               [molec/cm3 * m2] * [m3/cm3]/[molec/mole]*[kg/mole]*[m/km] = [kg/km] */
+        std::cout << "\n\n    " << " *** CO2 mass check: ";
 
-        /* This aims to check for mass in rings, will be removed in the future... */
-        mass_Emitted_CO2 = 0;
+        std::cout << "\n    " << " ~~> Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / Na * MW_CO2 * 1.0E+03 << " [kg/km]   ";
+        /*                                                           [molec/cm3 * m2] * [m3/cm3]/[molec/mole]*[kg/mole]*[m/km] = [kg/km] */
+
+    #if ( RINGS ) 
+        
+        mass_Emitted_CO2_Rings = 0;
         for ( iRing = 0; iRing < nRing; iRing++ ) {
-            mass_Emitted_CO2 += ( ringSpecies.CO2[nTime+1][iRing] - mass_Ambient_CO2 ) * ringArea[iRing]; 
+            mass_Emitted_CO2_Rings += ( ringSpecies.CO2[nTime+1][iRing] - mass_Ambient_CO2 ) * ringArea[iRing]; 
         }
-        std::cout << " Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / Na * MW_CO2 * 1.0E+03 << " [kg/km]\n";
-        std::cout << "\n";
-       
+        /* How much of this emitted mass is still in the rings? FR = Fraction in rings */
+        std::cout << "(FR: " << 100 * mass_Emitted_CO2_Rings / mass_Emitted_CO2 << " %)\n";
+
+    #endif /* RINGS */
+
 #endif /* CO2_MASS_CHECK */
 
 #if ( TIME_IT )
 
         SANDS_clock_cumul += SANDS_clock;
         KPP_clock_cumul   += KPP_clock;
-        std::cout << " ** Clock breakdown: " << "\n";
-        std::cout << " ** ----------------- " << "\n";
-        std::cout << " ** Total: " << SANDS_clock + KPP_clock << " [ms]";
-        std::cout << " ( SANDS: " << 100 * ( SANDS_clock / double( SANDS_clock + KPP_clock ) ) << "% , KPP: " << 100 * ( KPP_clock / double( SANDS_clock + KPP_clock ) ) << "% )" << "\n";
+        std::cout << "\n    " << " *** Clock breakdown: ";
+        std::cout << "\n    " << " *** ----------------- ";
+        std::cout << "\n    " << " *** Total: " << SANDS_clock + KPP_clock << " [ms]";
+        std::cout << " ( SANDS: " << 100 * ( SANDS_clock / double( SANDS_clock + KPP_clock ) ) << "% , KPP: " << 100 * ( KPP_clock / double( SANDS_clock + KPP_clock ) ) << "% )";
 
 #endif /* TIME_IT */
 
