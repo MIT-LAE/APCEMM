@@ -66,7 +66,7 @@ build:
 	@mkdir -p $(LIB_DIR)
 
 clean:
-	@echo "---> Making clean in SANDS <---"
+	@echo "---> Making clean in $(CURR_DIR) <---"
 	-@rm -rv $(OBJ_DIR)/*
 	-@rm -rv $(LIB_DIR)/$(LIB)
 
