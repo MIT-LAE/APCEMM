@@ -13,6 +13,8 @@
 
 #include "PhysFunction.hpp"
 
+static const double PI = 3.141592653589793238460; /* \pi */
+
 physFunc::physFunc()
 {
 
@@ -76,6 +78,82 @@ double physFunc::pSat_HNO3( double T , double PPH2O )
     return ( ATM / 760.0 ) * pow( 10.0, ( ( ( - 2.7836 - 0.00088 * T ) * log10( PPH2O * ( 760.0 / ATM ) ) ) + ( 38.9855 - 11397.0 / T + 0.009179 * T ) ) );  
 
 } /* End of physFunc::pSat_HNO3 */
+
+double physFunc::rhoAir( double T, double P )
+{
+
+    /* Returns the density of air in kg/m^3 */
+
+    return P / ( R_Air * T);
+
+} /* End of physFunc::airDens */ 
+
+double physFunc::dynVisc( double T )
+{
+
+    /* Returns the dynamic viscosity of air in kg/m/s */
+
+    return 1.8325E-05 * ( 416.16 / ( T + 120.0) ) * pow( T / 296.16, 1.5 );
+
+} /* End of physFunc::dynVisc */
+
+double physFunc::kinVisc( double T, double P )
+{
+
+    /* Returns the kinematic viscosity of air in m^2/s */
+
+    return dynVisc( T ) / rhoAir( T, P );
+
+}
+
+double physFunc::thermalSpeed( double T )
+{
+
+    /* Returns the thermal speed of an air molecule in m/s */
+
+    return sqrt( 8.0 * kB * T / ( PI * M_Air ) );
+
+}
+
+double physFunc::lambda( double T, double P )
+{
+
+    /* Returns the mean free path of an air molecule in m */
+
+    return 2.0 * kinVisc( T, P ) / thermalSpeed( T );
+
+} /* End of physFunc::lambda */
+
+double physFunc::Kn( double r, double T, double P )
+{
+
+    /* Returns the Knudsen number of air in - */
+
+    return lambda( T, P ) / r;
+
+} /* End of physFunc::Kn */
+
+double physFunc::partDiffCoef( double r, double T, double P )
+{
+
+    /* Returns the particle diffusion coefficient in m^2/s */
+
+    return kB * T / ( 6.0 * PI * dynVisc( T ) * r ) * slip_flowCorrection( Kn ( r, T, P ) );
+
+} /* End of physFunc::partDiffCoef */
+
+double physFunc::slip_flowCorrection( double Kn )
+{
+
+    /* Returns the Cunningham slip-flow correction */
+
+    static const double A = 1.249;
+    static const double B = 0.42;
+    static const double C = 0.87;
+
+    return 1 + Kn * ( A + B * exp( - C / Kn ) );
+
+} /* End of physFunc::slip_flowCorrection */
 
 /* End of PhysFunction.cpp */
 

@@ -29,6 +29,7 @@
 
 #define CP_Air    1.005           /* Specific heat capacity of air at 300K, Unit : [ kJ / ( kg K ) ] */
 #define GAMMA_Air 1.4             /* Heat capacity ratio of air, Unit : [ - ] */
+#define M_Air     MW_Air/Na       /* Mass of one air molecule, Unit : [ kg ] */
 
 #define g         9.80665E+00     /* Acceleration due to gravity, Unit : [ m / s^2 ] */
 
