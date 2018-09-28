@@ -22,8 +22,8 @@ namespace EPM
         double delta_z = ac.getVortexdeltaz1(); 
 
         /* Compute adiabatic and real temperature changes */
-        double delta_T_ad = - GAMMA_AD * delta_z * 1.0E-03;
-        double delta_T    = - GAMMA    * delta_z * 1.0E-03;
+        double delta_T_ad = - physConst::GAMMA_AD * delta_z * 1.0E-03;
+        double delta_T    = -            GAMMA    * delta_z * 1.0E-03;
         /*        [ K ]   = [ K/km ] *  [ m ]  * [ km/m ] 
          * The minus sign is because delta_z is the distance pointing down */
         std::cout << "Temperature lapse rate: " << GAMMA << " [K/km] \n";
@@ -39,16 +39,14 @@ namespace EPM
     int RunMicrophysics( double temperature_K, double pressure_Pa, double relHumidity_w, double varArray[], double fixArray[], const Aircraft &ac, const Emission &EI, double delta_T_ad, double delta_T )
     {
     
-        physFunc physF;
-
         double relHumidity_i_Amb, relHumidity_i_postVortex, relHumidity_i_Final;
         /* relHumidity_w is in % */
-        relHumidity_i_Amb        = relHumidity_w * physF.pSat_H2Ol( temperature_K ) \
-                                                 / physF.pSat_H2Os( temperature_K ) / 100.0;
-        relHumidity_i_postVortex = relHumidity_w * physF.pSat_H2Ol( temperature_K + delta_T_ad ) \
-                                                 / physF.pSat_H2Os( temperature_K + delta_T_ad ) / 100.0;
-        relHumidity_i_Final      = relHumidity_w * physF.pSat_H2Ol( temperature_K + delta_T ) \
-                                                 / physF.pSat_H2Os( temperature_K + delta_T ) / 100.0;
+        relHumidity_i_Amb        = relHumidity_w * physFunc::pSat_H2Ol( temperature_K ) \
+                                                 / physFunc::pSat_H2Os( temperature_K ) / 100.0;
+        relHumidity_i_postVortex = relHumidity_w * physFunc::pSat_H2Ol( temperature_K + delta_T_ad ) \
+                                                 / physFunc::pSat_H2Os( temperature_K + delta_T_ad ) / 100.0;
+        relHumidity_i_Final      = relHumidity_w * physFunc::pSat_H2Ol( temperature_K + delta_T ) \
+                                                 / physFunc::pSat_H2Os( temperature_K + delta_T ) / 100.0;
 
         std::cout << "\nInitial ambient relative humidity w.r.t ice: " << 100.0 * relHumidity_i_Amb << " %" ;
         std::cout << "\nPost vortex relative humidity w.r.t ice    : " << 100.0 * relHumidity_i_postVortex << " %";
@@ -62,15 +60,15 @@ namespace EPM
 
         /* Homogeneous NAT, using supercooling requirement *
          * Heterogeneous NAT, no supercooling requirement */
-        partPHNO3_Hom = varArray[ind_HNO3] * kB * offset_Temp * 1.00E+06;
-        partPHNO3_Het = varArray[ind_HNO3] * kB * final_Temp  * 1.00E+06;
+        partPHNO3_Hom = varArray[ind_HNO3] * physConst::kB * offset_Temp * 1.00E+06;
+        partPHNO3_Het = varArray[ind_HNO3] * physConst::kB * final_Temp  * 1.00E+06;
         if ( relHumidity_i_Amb > 1.0 ) {
             /* partPH2O = pSat_H2Os( temperature_K ) */
-            satHNO3_Hom = partPHNO3_Hom / physF.pSat_HNO3( offset_Temp, physF.pSat_H2Os( final_Temp ));
-            satHNO3_Het = partPHNO3_Het / physF.pSat_HNO3( final_Temp , physF.pSat_H2Os( final_Temp ));
+            satHNO3_Hom = partPHNO3_Hom / physFunc::pSat_HNO3( offset_Temp, physFunc::pSat_H2Os( final_Temp ));
+            satHNO3_Het = partPHNO3_Het / physFunc::pSat_HNO3( final_Temp , physFunc::pSat_H2Os( final_Temp ));
         } else {
-            satHNO3_Hom = partPHNO3_Hom / physF.pSat_HNO3( offset_Temp, relHumidity_i_Final * physF.pSat_H2Os( final_Temp ) );
-            satHNO3_Het = partPHNO3_Het / physF.pSat_HNO3( final_Temp , relHumidity_i_Final * physF.pSat_H2Os( final_Temp ) );
+            satHNO3_Hom = partPHNO3_Hom / physFunc::pSat_HNO3( offset_Temp, relHumidity_i_Final * physFunc::pSat_H2Os( final_Temp ) );
+            satHNO3_Het = partPHNO3_Het / physFunc::pSat_HNO3( final_Temp , relHumidity_i_Final * physFunc::pSat_H2Os( final_Temp ) );
         }
         std::cout << "\nHomogeneous HNO3 saturation  : " << 100.0 * satHNO3_Hom << " % (Supercooling: " << T_NAT_SUPERCOOL << " [K])";
         std::cout << "\nHeterogeneous HNO3 saturation: " << 100.0 * satHNO3_Het << " %";
