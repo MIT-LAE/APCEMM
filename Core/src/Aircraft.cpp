@@ -30,7 +30,7 @@ Aircraft::Aircraft( const char *aircraftName, double temperature_K, double press
     if ( Name.compare( "B747" ) >= 0 ) {
         /* Flight characteristics */
         vFlight_ms = 250.0;
-        machNumber = vFlight_ms / sqrt( GAMMA_Air * R_Air * temperature_K );
+        machNumber = vFlight_ms / sqrt( physConst::GAMMA_Air * physConst::R_Air * temperature_K );
 
         /* Engine characteristics */
         const char *engineName = "GEnx-2B67B";

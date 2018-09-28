@@ -238,13 +238,11 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
     SetShape( O2       , size_x , size_y, amb_Value[133] * airDens );
     SetShape( RCOOH    , size_x , size_y, amb_Value[134] * airDens );
 
-    physFunc physF;
-
     /* Setting up ambient water vapor */
     for ( unsigned int i = 0; i < size_x; i++ ) {
         for ( unsigned int j = 0; j < size_y; j++ ) {
             H2O[j][i] = (relHum/((double) 100.0) * \
-                             physF.pSat_H2Ol( temperature ) / ( kB * temperature )) / 1.00E+06;
+                             physFunc::pSat_H2Ol( temperature ) / ( physConst::kB * temperature )) / 1.00E+06;
             /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
 
         }
@@ -833,24 +831,24 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
     unsigned int i, j;
 
     double E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
-    E_CO2  = EI.getCO2()  / ( MW_CO2 * 1.0E+03 ) * AC.getFuelFlow()  / AC.getVFlight() * Na;
+    E_CO2  = EI.getCO2()  / ( MW_CO2 * 1.0E+03 ) * AC.getFuelFlow()  / AC.getVFlight() * physConst::Na;
     /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg] ) * [kg fuel/s]       / [m/s]           * [molec/mol]
      *     = [molec/m] 
      */
-    E_H2O  = EI.getH2O()  / ( MW_H2O  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_NO   = EI.getNO()   / ( MW_NO   * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_NO2  = EI.getNO2()  / ( MW_NO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_HNO2 = EI.getHNO2() / ( MW_HNO2 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_SO2  = EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_CO   = EI.getCO()   / ( MW_CO   * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_CH4  = EI.getCH4()  / ( MW_CH4  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_C2H6 = EI.getC2H6() / ( MW_C2H6 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_PRPE = EI.getPRPE() / ( MW_PRPE * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_ALK4 = EI.getALK4() / ( MW_ALK4 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_CH2O = EI.getCH2O() / ( MW_CH2O * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_ALD2 = EI.getALD2() / ( MW_ALD2 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_GLYX = EI.getGLYX() / ( MW_GLYX * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
-    E_MGLY = EI.getMGLY() / ( MW_MGLY * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * Na;
+    E_H2O  = EI.getH2O()  / ( MW_H2O  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_NO   = EI.getNO()   / ( MW_NO   * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_NO2  = EI.getNO2()  / ( MW_NO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_HNO2 = EI.getHNO2() / ( MW_HNO2 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_SO2  = EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_CO   = EI.getCO()   / ( MW_CO   * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_CH4  = EI.getCH4()  / ( MW_CH4  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_C2H6 = EI.getC2H6() / ( MW_C2H6 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_PRPE = EI.getPRPE() / ( MW_PRPE * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_ALK4 = EI.getALK4() / ( MW_ALK4 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_CH2O = EI.getCH2O() / ( MW_CH2O * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_ALD2 = EI.getALD2() / ( MW_ALD2 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_GLYX = EI.getGLYX() / ( MW_GLYX * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_MGLY = EI.getMGLY() / ( MW_MGLY * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
 
     if ( !halfRing ) {
         /* Full rings */

@@ -195,8 +195,8 @@ Engine::Engine( const char *engineName, double tempe_K, double pres_Pa, double r
             p[i] += invVV[i][k] * vect[k];
     }
 
-    delta = pres_Pa / PRES_SL;
-    theta = tempe_K / TEMP_SL;
+    delta = pres_Pa / physConst::PRES_SL;
+    theta = tempe_K / physConst::TEMP_SL;
 
     double mach  = machNumber;
     double fuelflow_factor;

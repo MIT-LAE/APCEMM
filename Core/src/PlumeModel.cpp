@@ -78,8 +78,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 double latitude_deg )
 {
 
-    physFunc physF;
-
 #if ( TIME_IT )
 
     Timer Stopwatch, Stopwatch_cumul;
@@ -117,8 +115,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     
     /* Compute relative humidity w.r.t ice */
-    double relHumidity_i = relHumidity_w * physF.pSat_H2Ol( temperature_K )\
-                                         / physF.pSat_H2Os( temperature_K );
+    double relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
+                                         / physFunc::pSat_H2Os( temperature_K );
 
 //    /* If ICE_MICROPHYSICS is turned on and the domain is supersaturated, break the x-symmetry */
 //#if ( ICE_MICROPHYSICS && X_SYMMETRY )
@@ -199,8 +197,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     Solution Data(N_SPC, NX, NY);
 
     /* Compute airDens from pressure and temperature */
-    double airDens = pressure_Pa / ( kB   * temperature_K ) * 1.00E-06;
-    /* [molec/cm3] = [Pa = J/m3] / ([J/K] * [K])            * [m3/cm3] */
+    double airDens = pressure_Pa / ( physConst::kB   * temperature_K ) * 1.00E-06;
+    /* [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K])            * [m3/cm3] */
 
     /* Set solution arrays to ambient data */
     Data.Initialize( AMBFILE, temperature_K, airDens, relHumidity_w );
@@ -590,8 +588,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
         /* Print to console */
         std::cout << "\n\n    " << " *** NOy mass check: ";
-        std::cout << "\n    " << " ~~> Emitted NOy: " << std::setw(6) << mass_Emitted_NOy * 1.0E+06 / Na * MW_N * 1.0E+06 << " [g(N)/km] ";
-        /*                                                           [molec/cm3 * m2] * [m3/cm3]/[molec/mole]*[kg/mole]*[g/kg*m/km] = [g/km] */
+        std::cout << "\n    " << " ~~> Emitted NOy: " << std::setw(6) << mass_Emitted_NOy * 1.0E+06 / physConst::Na * MW_N * 1.0E+06 << " [g(N)/km] ";
+        /*                                                               [molec/cm3 * m2] * [m3/cm3]/ [molec/mole]  * [kg/mole]*[g/kg*m/km] = [g/km] */
     
     #if ( RINGS ) 
         
@@ -629,8 +627,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
         std::cout << "\n\n    " << " *** CO2 mass check: ";
 
-        std::cout << "\n    " << " ~~> Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / Na * MW_CO2 * 1.0E+03 << " [kg/km]   ";
-        /*                                                           [molec/cm3 * m2] * [m3/cm3]/[molec/mole]*[kg/mole]*[m/km] = [kg/km] */
+        std::cout << "\n    " << " ~~> Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / physConst::Na * MW_CO2 * 1.0E+03 << " [kg/km]   ";
+        /*                                                               [molec/cm3 * m2] * [m3/cm3]/ [molec/mole]  *[kg/mole]*[m/km] = [kg/km] */
 
     #if ( RINGS ) 
         

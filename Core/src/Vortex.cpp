@@ -13,8 +13,6 @@
 
 #include "Vortex.hpp"
 
-static const double PI = 3.141592653589793238460; /* \pi */
-
 Vortex::Vortex( ) 
 {
 
@@ -27,18 +25,18 @@ Vortex::Vortex( double temperature_K, double pressure_Pa, double n_BV, double sp
 
     /* Constructor */
 
-    double rho = pressure_Pa / ( temperature_K * R_Air );
+    double rho = pressure_Pa / ( temperature_K * physConst::R_Air );
 
     /* Wake vortex separation, [ m ] */
-    b = PI * span / 4;
+    b = physConst::PI * span / 4;
     /* Initial circulation, [ m ^ 2 / s ] */
-    gamma = 4 * mass * g / ( PI * span * rho * vFlight );
+    gamma = 4 * mass * physConst::g / ( physConst::PI * span * rho * vFlight );
     /* Effective time scale, [ s ] */
-    t = 2 * PI * b * b / gamma;
+    t = 2 * physConst::PI * b * b / gamma;
     /* Initial velocity scale, [ m / s ] */
-    w = gamma / ( 2 * PI * b );
+    w = gamma / ( 2 * physConst::PI * b );
     /* Normalized dissipation rate, [ - ] */
-    eps_star = pow( EPSILON * b, double(1.0/3.0) ) / w;
+    eps_star = pow( physConst::EPSILON * b, double(1.0/3.0) ) / w;
 
     if ( n_BV <= 0 ) {
         std::cout << "In Vortex::Vortex: Brunt-Vaisala frequency takes negative value, n_BV = " << n_BV << " [s^-1]\n";
