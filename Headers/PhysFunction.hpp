@@ -67,6 +67,15 @@ namespace physFunc
     
     /* Particle Reynolds number [-] */
     double Reynolds_p( double r, double rho, double T, double P );
+    
+    /* Particle Schmidt number [-] */
+    double Schmidt_p( double r, double T, double P );
+
+    /* Particle Stokes number [-] */
+    double Stokes_p( double r_1, double rho_1, double r_2, double rho_2, double T, double P );
+    
+    /* Aggregation efficiency for liquid particles [-] */
+    double E_agg( double r_1, double rho_1, double r_2, double rho_2, double T, double P );
 
 }
 

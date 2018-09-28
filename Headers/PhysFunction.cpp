@@ -19,8 +19,15 @@ namespace physFunc
     double pSat_H2Ol( double T )
     {
         
-        /* Returns water liquid saturation pressure in Pascal. */
-        
+        /* DESCRIPTION:
+         * Returns water liquid saturation pressure in Pascal. */
+
+        /* INPUT PARAMETERS:
+         * - double T :: temperature expressed in K 
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: H2O liquid saturation pressure in Pascal */
+
         return 100.0 * exp( - 6096.9385 / T \
                             + 16.635794 \
                             - 0.02711193 * T \
@@ -32,7 +39,14 @@ namespace physFunc
     double pSat_H2Os( double T )
     {
         
-        /* Returns water solid saturation pressure in Pascal. */
+        /* DESCRIPTION:
+         * Returns water solid saturation pressure in Pascal. */
+
+        /* INPUT PARAMETERS:
+         * - double T :: temperature expressed in K 
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: H2O solid saturation pressure in Pascal */
         
         return 100.0 * exp( - 6024.5282 / T \
                             + 24.7219 \
@@ -45,7 +59,14 @@ namespace physFunc
     double pSat_H2SO4( double T )
     {
         
-        /* Returns sulfuric acid saturation pressure in Pascal. */
+        /* DESCRIPTION:
+         * Returns sulfate liquid saturation pressure in Pascal. */
+
+        /* INPUT PARAMETERS:
+         * - double T :: temperature expressed in K 
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: H2SO4 liquid saturation pressure in Pascal */
         
         return 100.0 * exp( + 23.1885 \
                             + 10156.0 * ( \
@@ -60,7 +81,15 @@ namespace physFunc
     double pSat_HNO3( double T , double PPH2O ) 
     {
         
-        /* Returns nitric acid saturation pressure in Pascal. */
+        /* DESCRIPTION:
+         * Returns nitric acid saturation pressure in Pascal. */
+
+        /* INPUT PARAMETERS:
+         * - double T     :: temperature expressed in K 
+         * - double PPH2O :: H2O partial pressure in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: HNO3 saturation pressure in Pascal */
         
         return ( physConst::ATM / 760.0 ) * pow( 10.0, ( ( ( - 2.7836 - 0.00088 * T ) * log10( PPH2O * ( 760.0 / physConst::ATM ) ) ) + ( 38.9855 - 11397.0 / T + 0.009179 * T ) ) );  
 
@@ -69,7 +98,15 @@ namespace physFunc
     double rhoAir( double T, double P )
     {
 
-        /* Returns the density of air in kg/m^3 */
+        /* DESCRIPTION:
+         * Returns the density of air in kg/m^3 */
+
+        /* INPUT PARAMETERS:
+         * - double T :: temperature in K
+         * - double P :: pressure in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Air density in kg/m^3 */
 
         return P / ( physConst::R_Air * T);
 
@@ -78,7 +115,14 @@ namespace physFunc
     double dynVisc( double T )
     {
 
-        /* Returns the dynamic viscosity of air in kg/m/s */
+        /* DESCRIPTION:
+         * Returns the dynamic viscosity of air in kg/m/s */
+
+        /* INPUT PARAMETERS:
+         * - double T :: temperature in K
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Dynamic viscosity in kg/m^3 */
 
         return 1.8325E-05 * ( 416.16 / ( T + 120.0) ) * pow( T / 296.16, 1.5 );
 
@@ -87,7 +131,15 @@ namespace physFunc
     double kinVisc( double T, double P )
     {
 
-        /* Returns the kinematic viscosity of air in m^2/s */
+        /* DESCRIPTION:
+         * Returns the kinematic viscosity of air in m^2/s */
+
+        /* INPUT PARAMETERS:
+         * - double T :: temperature in K
+         * - double P :: pressure in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Kinematic viscosity in m^2/s */
 
         return dynVisc( T ) / rhoAir( T, P );
 
@@ -96,7 +148,16 @@ namespace physFunc
     double thermalSpeed( double T, double m )
     {
 
-        /* Returns the thermal speed of an air molecule/particle in m/s */
+        /* DESCRIPTION:
+         * Returns the thermal speed of an air molecule/particle in m/s */
+
+        /* INPUT PARAMETERS:
+         * - double T :: temperature in K
+         * - double m :: mass of the molecule/particle in kg ( set to the mass
+         *               of an air molecule by default )
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Thermal speed in m/s */
 
         return sqrt( 8.0 * physConst::kB * T / ( physConst::PI * m ) );
 
@@ -105,7 +166,15 @@ namespace physFunc
     double lambda( double T, double P )
     {
 
-        /* Returns the mean free path of an air molecule in m */
+        /* DESCRIPTION:
+         * Returns the mean free path of an air molecule in m */
+
+        /* INPUT PARAMETERS:
+         * - double T :: temperature in K
+         * - double P :: pressure in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Mean free path in m */
 
         return 2.0 * kinVisc( T, P ) / thermalSpeed( T );
 
@@ -114,7 +183,15 @@ namespace physFunc
     double mass_sphere( double r, double rho )
     {
     
-        /* Returns the mass of a sphere in kg */
+        /* DESCRIPTION:
+         * Returns the mass of a sphere in kg */
+
+        /* INPUT PARAMETERS:
+         * - double r   :: radius of the spherical particle in m
+         * - double rho :: density of the particle in kg/m^3
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Mass in kg */
 
         return 4.0 / double(3.0) * physConst::PI * rho * r * r * r;
 
@@ -123,7 +200,17 @@ namespace physFunc
     double vFall( double r, double rho, double T, double P )
     {
 
-        /* Returns the terminal fall speed of a spherical particle in m/s */
+        /* DESCRIPTION:
+         * Returns the terminal fall speed of a spherical particle in m/s */
+
+        /* INPUT PARAMETERS:
+         * - double r   :: radius of the spherical particle in m
+         * - double rho :: density of the particle in kg/m^3
+         * - double T   :: temperature in K
+         * - double P   :: pressure in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Terminal fall speed in m/s */
 
         return 2.0 * rho * physConst::g * r * r / ( 9.0 * dynVisc( T ) ) * slip_flowCorrection( Kn( r, T, P ) ); 
 
@@ -132,7 +219,16 @@ namespace physFunc
     double Kn( double r, double T, double P )
     {
 
-        /* Returns the Knudsen number of air in - */
+        /* DESCRIPTION:
+         * Returns the dimensionless particle Knudsen number */
+
+        /* INPUT PARAMETERS:
+         * - double r :: radius of the spherical particle in m
+         * - double T :: temperature expressed in K
+         * - double P :: pressure expressed in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Particle Knudsen number */
 
         return lambda( T, P ) / r;
 
@@ -141,7 +237,16 @@ namespace physFunc
     double partDiffCoef( double r, double T, double P )
     {
 
-        /* Returns the particle diffusion coefficient in m^2/s */
+        /* DESCRIPTION:
+         * Returns the particle diffusion coefficient in m^2/s */
+
+        /* INPUT PARAMETERS:
+         * - double r :: radius of the spherical particle in m
+         * - double T :: temperature expressed in K
+         * - double P :: pressure expressed in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Particle diffusion coefficient in m^2/s */
 
         return physConst::kB * T / ( 6.0 * physConst::PI * dynVisc( T ) * r ) * slip_flowCorrection( Kn ( r, T, P ) );
 
@@ -150,7 +255,14 @@ namespace physFunc
     double slip_flowCorrection( double Kn )
     {
 
-        /* Returns the Cunningham slip-flow correction */
+        /* DESCRIPTION:
+         * Returns the dimensionless Cunningham slip-flow correction */
+
+        /* INPUT PARAMETERS:
+         * - double Kn :: particle Knudsen number
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: slip-flow correction factor */
 
         static const double A = 1.249;
         static const double B = 0.42;
@@ -163,7 +275,17 @@ namespace physFunc
     double lambda_p( double r, double m, double T, double P )
     {
 
-        /* Returns the particle mean path in air in m */
+        /* DESCRIPTION:
+         * Returns the mean free path of a particle in air in m */
+
+        /* INPUT PARAMETERS:
+         * - double r :: particle radius in m
+         * - double m :: particle mass in kg
+         * - double T :: temperature in K
+         * - double P :: pressure in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Particle mean free path in m */
 
         return 8.0 * partDiffCoef( r, T, P ) / ( physConst::PI * thermalSpeed( T, m ) );
 
@@ -172,9 +294,19 @@ namespace physFunc
     double delta_p( double r, double m, double T, double P )
     {
 
-        /* Returns the mean distance in m from the center of a sphere reached by particles 
+        /* DESCRIPTION:
+         * Returns the mean distance in m from the center of a sphere reached by particles 
          * leaving the sphere's surface and traveling a distance of particle mean free 
          * path lambda_p */
+
+        /* INPUT PARAMETERS:
+         * - double r :: particle radius in m
+         * - double m :: particle mass in kg
+         * - double T :: temperature in K
+         * - double P :: pressure in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Mean distance from the center reached by particles leaving the surface in m */
 
         double l = lambda_p( r, m, T, P );
 
@@ -185,15 +317,136 @@ namespace physFunc
     double Reynolds_p( double r, double rho, double T, double P )
     {
         
-        /* Returns the particle Reynolds number 
+        /* DESCRIPTION:
+         * Returns the particle Reynolds number 
          * Ratio of the inertial force exerted by a particle to the viscous force 
          * exerted by the air.
+         * Returns the mean free path of an air molecule in m
+         *
          * If the inertial force is due to the particles's fall speed, the dimensionless Reynolds number is:
          * Re = 2 * r * V_t( r, rho ) / kinVisc( T, P ); */
+
+        /* INPUT PARAMETERS:
+         * - double r   :: particle radius in m
+         * - double rho :: particle density in kg/m^3
+         * - double T   :: temperature in K
+         * - double P   :: pressure in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Particle Reynolds number */
 
         return 2 * r * vFall( r, rho, T, P ) / kinVisc( T, P );
 
     } /* End of Reynolds_p */
+
+    double Schmidt_p( double r, double T, double P )
+    {
+
+        /* DESCRIPTION:
+         * Returns the particle Schmidt number
+         * Ratio of viscous to diffusive forces
+         * 
+         * The dimensionless Schmidt number is defined as:
+         * Sc = kinVisc( T, P ) / partDiffCoef( r, T, P ); */
+
+        /* INPUT PARAMETERS:
+         * - double r   :: particle radius in m
+         * - double T   :: temperature in K
+         * - double P   :: pressure in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Particle Schmidt number */
+
+        return kinVisc( T, P )/ partDiffCoef( r, T, P );
+
+    } /* End of Schmidt_p */
+
+    double Stokes_p( double r_1, double rho_1, double r_2, double rho_2, double T, double P )
+    {
+
+        /* DESCRIPTION:
+         * Returns the dimensionless particle Stokes number 
+         * 
+         * The particle Stokes number is defined as:
+         * St = vFall( r_m, rho_m, T, P ) * | vFall( r_M, rho_M, T, P ) - vFall( r_m, rho_m, T, P ) | / ( r_M * g )
+         * where r_M = max( r_1, r_2 ) and r_m = min( r_1, r_2 ); 
+         *
+         * INPUT PARAMETERS:
+         * - double r_1   :: particle 1 radius in m
+         * - double rho_1 :: particle 1 density in kg/m^3
+         * - double r_2   :: particle 2 radius in m
+         * - double rho_2 :: particle 2 density in kg/m^3
+         * - double T     :: temperature in K
+         * - double P     :: pressure in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Particle Stokes number */
+
+        if ( r_1 >= r_2 ) {
+            return vFall( r_2, rho_2, T, P ) * std::abs( vFall( r_1, rho_1, T, P ) - vFall( r_2, rho_2, T, P ) ) / ( r_1 * physConst::g );
+        } else {
+            return vFall( r_1, rho_1, T, P ) * std::abs( vFall( r_2, rho_2, T, P ) - vFall( r_1, rho_1, T, P ) ) / ( r_2 * physConst::g );
+        }
+
+    } /* End of Stokes_p */
+
+    double E_agg( double r_1, double rho_1, double r_2, double rho_2, double T, double P )
+    {
+
+        /* DESCRIPTION:
+         * Returns the aggregation efficiency for liquid particles
+         * Data for aggregation efficiency under cirrus-like conditions are
+         * not yet available in the literature (Sölch and Kärcher, 2010) 
+         *
+         * The aggregation efficiency for liquid particles is:
+         * E_agg = ( 60.0 * E_V(r_m, rho_m, r_M, rho_M, T, P) + E_A(r_m, rho_m, r_M, rho_M, T, P) * Re(r_M, rho_M, T, P)) /\
+         *         ( 60.0 + Re(r_M, rho_M, T, P));
+         *
+         * where r_M = max(r_1,r_2) and r_m = min(r_1,r_2) and:
+         * E_V(r_1, rho_1, r_2, rho_2, T, P) = \
+         *              0; ( if Stokes_p(r_1, r_2) <= 1.214 )
+         *              pow( 1.0 + 0.75 * log( 2 * Stokes_p(r_1, rho_1, r_2, rho_2, T, P)) / \
+         *                                (Stokes_p(r_1, rho_1, r_2, rho_2, T, P) - 1.214), -2.0 );  (else)
+         * E_A(r_1, rho_1, r_2, rho_2, T, P) = pow( Stokes_p(r_1, rho_1, r_2, rho_2, T, P), 2.0 ) /\
+         *              pow( Stokes_p(r_1, rho_1, r_2, rho_2, T, P) + 0.5, 2.0 );
+         * (M.Z. Jacobson, Fundamentals of Atmospheric Modeling, 2005)
+         *
+         * INPUT PARAMETERS:
+         * - double r_1   :: particle 1 radius in m
+         * - double rho_1 :: particle 1 density in kg/m^3
+         * - double r_2   :: particle 2 radius in m
+         * - double rho_2 :: particle 2 density in kg/m^3
+         * - double T     :: temperature in K
+         * - double P     :: pressure in Pa
+         *
+         * OUTPUT PARAMETERS:
+         * - double :: Liquid particles aggregation efficiency */
+
+        double s;
+        double E_V, E_A;
+        if ( r_1 >= r_2 ) {
+            /* r_M = r_1 and r_m = r_2 */
+            s = Stokes_p( r_2, rho_2, r_1, rho_1, T, P );
+            if ( s > 1.214 ) {
+                E_V = 1.0 / ( ( 1.0 + 0.75 * log( 2.0 * s ) / ( s - 1.214 ) ) * ( 1.0 + 0.75 * log( 2.0 * s ) / ( s - 1.214 ) ) );
+            } else {
+                E_V = 0.0;
+            }
+            E_A = s * s / ( ( s + 0.5 ) * ( s + 0.5 ) );
+            return ( 60.0 * E_V + E_A * Reynolds_p( r_1, rho_1, T, P ) )/( 60.0 + Reynolds_p( r_1, rho_1, T, P ) );
+        } else {
+            /* r_M = r_2 and r_m = r_1 */
+            s = Stokes_p( r_1, rho_1, r_2, rho_2, T, P );
+            if ( s > 1.214 ) {
+                E_V = 1.0 / ( ( 1.0 + 0.75 * log( 2.0 * s ) / ( s - 1.214 ) ) * ( 1.0 + 0.75 * log( 2.0 * s ) / ( s - 1.214 ) ) );
+            } else {
+                E_V = 0.0;
+            }
+            E_A = s * s / ( ( s + 0.5 ) * ( s + 0.5 ) );
+            return ( 60.0 * E_V + E_A * Reynolds_p( r_2, rho_2, T, P ) )/( 60.0 + Reynolds_p( r_2, rho_2, T, P ) );
+        }
+
+    } /* End of E_agg */
 
 }
 
