@@ -182,6 +182,19 @@ namespace physFunc
 
     } /* End of delta_p */
 
+    double Reynolds_p( double r, double rho, double T, double P )
+    {
+        
+        /* Returns the particle Reynolds number 
+         * Ratio of the inertial force exerted by a particle to the viscous force 
+         * exerted by the air.
+         * If the inertial force is due to the particles's fall speed, the dimensionless Reynolds number is:
+         * Re = 2 * r * V_t( r, rho ) / kinVisc( T, P ); */
+
+        return 2 * r * vFall( r, rho, T, P ) / kinVisc( T, P );
+
+    } /* End of Reynolds_p */
+
 }
 
 /* End of PhysFunction.cpp */

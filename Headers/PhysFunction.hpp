@@ -64,6 +64,9 @@ namespace physFunc
     
     /* Mean distance [m] from the center of a sphere reach by particles leaving */
     double delta_p( double r, double m, double T, double P );
+    
+    /* Particle Reynolds number [-] */
+    double Reynolds_p( double r, double rho, double T, double P );
 
 }
 
