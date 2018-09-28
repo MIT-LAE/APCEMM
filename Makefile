@@ -19,14 +19,16 @@
 # KPPDIR      Specifies the directory where the KPP routines are found
 #
 # !REVISION HISTORY:
-# 4 Sep 2018 - T. Fritz - Initial version
-
+# 04 Sep 2018 - T. Fritz - Initial version
+# 27 Sep 2018 - T. Fritz - Added MAKE for all modules
 #------------------------------------------------------------------------------
 
 # Directories
 APCEMMDIR := Core
-KPPDIR    := KPP
-SANDSDIR  := SANDS
+KPPDIR    := KPP    # (Kinetics Pre-Processor                  -> Chemistry)
+SANDSDIR  := SANDS  # (Spectral Advection aNd Diffusion Solver -> Atmospheric Advection/Diffusion)
+AIMDIR    := AIM    # (AIrcraft Microphysics                   -> Microphysics)
+EPMDIR    := EPM    # (Early Plume Microphysics                -> Early Plume Microphysics)
 
 ###############################################################################
 ###																			###
@@ -38,9 +40,13 @@ SANDSDIR  := SANDS
 all: 
 	@$(MAKE) -C $(KPPDIR)
 	@$(MAKE) -C $(SANDSDIR)
+	@$(MAKE) -C $(AIM)
+	@$(MAKE) -C $(EPM)
 	@$(MAKE) -C $(APCEMMDIR) all
 
 clean:
 	@$(MAKE) -C $(KPPDIR) clean
 	@$(MAKE) -C $(SANDSDIR) clean
+	@$(MAKE) -C $(AIM) clean
+	@$(MAKE) -C $(EPM) clean
 	@$(MAKE) -C $(APCEMMDIR) clean
