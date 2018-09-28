@@ -22,7 +22,7 @@
 
 #include "../../Core/include/Parameters.hpp"
 #include "../../Core/include/Interface.hpp"
-
+#include "../../Headers/PhysConstant.hpp"
 
     typedef double RealDouble;
     typedef fftw_complex FFTW_ComplexDouble;
@@ -33,7 +33,6 @@
     typedef std::vector<Complex_1DVector> Complex_2DVector;
 
     const ComplexDouble _1j ( 0.0, 1.0 );          /* j^2 = -1 */
-    const RealDouble PI = 3.141592653589793238460; /* \pi */
 
     void SANDS( Real_2DVector &V, Real_2DVector &diff, Complex_2DVector &adv, \
                 const char* fileName_FFTW, const bool realInput );
@@ -68,8 +67,6 @@
             ~Solver( );
 
             void AssignFreq( );
-
-//            RealDouble MassCheck( Real_2DVector &v );
 
             /* Update time step */
             void UpdateTimeStep( RealDouble T );

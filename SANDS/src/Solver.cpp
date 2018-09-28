@@ -126,7 +126,7 @@
             kx.push_back( 0.0 );
             kxx.push_back( 0.0 );
             k = (i0%n_x) - n_x/2;
-            kx[i] = PI / xlim * k;
+            kx[i] = physConst::PI / xlim * k;
             kxx[i] = - kx[i] * kx[i];
             i0++;
         }
@@ -138,7 +138,7 @@
             ky.push_back( 0.0 );
             kyy.push_back( 0.0 );
             k = (i0%n_y) - n_y/2;
-            ky[j] = PI / ylim * k;
+            ky[j] = physConst::PI / ylim * k;
             kyy[j] = - ky[j] * ky[j];
             i0++;
         }
