@@ -13,147 +13,176 @@
 
 #include "PhysFunction.hpp"
 
-static const double PI = 3.141592653589793238460; /* \pi */
-
-physFunc::physFunc()
+namespace physFunc
 {
 
-    /* Default Constructor */
+    double pSat_H2Ol( double T )
+    {
+        
+        /* Returns water liquid saturation pressure in Pascal. */
+        
+        return 100.0 * exp( - 6096.9385 / T \
+                            + 16.635794 \
+                            - 0.02711193 * T \
+                            + 1.673952E-5 * T * T \
+                            + 2.433502 * log( T ) );
 
-} /* End of physFunc::physFunc */
+    } /* End of pSat_H2Ol */
 
-physFunc::~physFunc()
-{
+    double pSat_H2Os( double T )
+    {
+        
+        /* Returns water solid saturation pressure in Pascal. */
+        
+        return 100.0 * exp( - 6024.5282 / T \
+                            + 24.7219 \
+                            + 0.010613868 * T \
+                            - 1.3198825E-5 * T * T \
+                            - 0.49382577 * log( T ) );
 
-    /* Destructor */
+    } /* End of pSat_H2Os */
 
-} /* End of physFunc::~physFunc */
+    double pSat_H2SO4( double T )
+    {
+        
+        /* Returns sulfuric acid saturation pressure in Pascal. */
+        
+        return 100.0 * exp( + 23.1885 \
+                            + 10156.0 * ( \
+                                          - 1.0 / T\
+                                          + 0.38/(545.0)*( \
+                                                           + 1.0 \
+                                                           + log( 360.0 * 1.0 / T ) \
+                                                           - 360.0 * 1.0 / T ) ) );
 
-double physFunc::pSat_H2Ol( double T )
-{
+    } /* End of pSat_H2SO4 */
+
+    double pSat_HNO3( double T , double PPH2O ) 
+    {
+        
+        /* Returns nitric acid saturation pressure in Pascal. */
+        
+        return ( physConst::ATM / 760.0 ) * pow( 10.0, ( ( ( - 2.7836 - 0.00088 * T ) * log10( PPH2O * ( 760.0 / physConst::ATM ) ) ) + ( 38.9855 - 11397.0 / T + 0.009179 * T ) ) );  
+
+    } /* End of pSat_HNO3 */
+
+    double rhoAir( double T, double P )
+    {
+
+        /* Returns the density of air in kg/m^3 */
+
+        return P / ( physConst::R_Air * T);
+
+    } /* End of airDens */ 
+
+    double dynVisc( double T )
+    {
+
+        /* Returns the dynamic viscosity of air in kg/m/s */
+
+        return 1.8325E-05 * ( 416.16 / ( T + 120.0) ) * pow( T / 296.16, 1.5 );
+
+    } /* End of dynVisc */
+
+    double kinVisc( double T, double P )
+    {
+
+        /* Returns the kinematic viscosity of air in m^2/s */
+
+        return dynVisc( T ) / rhoAir( T, P );
+
+    } /* End of kinVisc */
+
+    double thermalSpeed( double T, double m )
+    {
+
+        /* Returns the thermal speed of an air molecule/particle in m/s */
+
+        return sqrt( 8.0 * physConst::kB * T / ( physConst::PI * m ) );
+
+    } /* End of thermalSpeed */
+
+    double lambda( double T, double P )
+    {
+
+        /* Returns the mean free path of an air molecule in m */
+
+        return 2.0 * kinVisc( T, P ) / thermalSpeed( T );
+
+    } /* End of lambda */
+
+    double mass_sphere( double r, double rho )
+    {
     
-    /* Returns water liquid saturation pressure in Pascal. */
+        /* Returns the mass of a sphere in kg */
+
+        return 4.0 / double(3.0) * physConst::PI * rho * r * r * r;
+
+    } /* End of mass_sphere */
+
+    double vFall( double r, double rho, double T, double P )
+    {
+
+        /* Returns the terminal fall speed of a spherical particle in m/s */
+
+        return 2.0 * rho * physConst::g * r * r / ( 9.0 * dynVisc( T ) ) * slip_flowCorrection( Kn( r, T, P ) ); 
+
+    } /* End of vFall */
     
-    return 100.0 * exp( - 6096.9385 / T \
-                        + 16.635794 \
-                        - 0.02711193 * T \
-                        + 1.673952E-5 * T * T \
-                        + 2.433502 * log( T ) );
+    double Kn( double r, double T, double P )
+    {
 
-} /* End of physFunc::pSat_H2Ol */
+        /* Returns the Knudsen number of air in - */
 
-double physFunc::pSat_H2Os( double T )
-{
+        return lambda( T, P ) / r;
+
+    } /* End of Kn */
+
+    double partDiffCoef( double r, double T, double P )
+    {
+
+        /* Returns the particle diffusion coefficient in m^2/s */
+
+        return physConst::kB * T / ( 6.0 * physConst::PI * dynVisc( T ) * r ) * slip_flowCorrection( Kn ( r, T, P ) );
+
+    } /* End of partDiffCoef */
+
+    double slip_flowCorrection( double Kn )
+    {
+
+        /* Returns the Cunningham slip-flow correction */
+
+        static const double A = 1.249;
+        static const double B = 0.42;
+        static const double C = 0.87;
+
+        return 1 + Kn * ( A + B * exp( - C / Kn ) );
+
+    } /* End of slip_flowCorrection */
     
-    /* Returns water solid saturation pressure in Pascal. */
-    
-    return 100.0 * exp( - 6024.5282 / T \
-                        + 24.7219 \
-                        + 0.010613868 * T \
-                        - 1.3198825E-5 * T * T \
-                        - 0.49382577 * log( T ) );
+    double lambda_p( double r, double m, double T, double P )
+    {
 
-} /* End of physFunc::pSat_H2Os */
+        /* Returns the particle mean path in air in m */
 
-double physFunc::pSat_H2SO4( double T )
-{
-    
-    /* Returns sulfuric acid saturation pressure in Pascal. */
-    
-    return 100.0 * exp( + 23.1885 \
-                        + 10156.0 * ( \
-                                      - 1.0 / T\
-                                      + 0.38/(545.0)*( \
-                                                       + 1.0 \
-                                                       + log( 360.0 * 1.0 / T ) \
-                                                       - 360.0 * 1.0 / T ) ) );
+        return 8.0 * partDiffCoef( r, T, P ) / ( physConst::PI * thermalSpeed( T, m ) );
 
-} /* End of physFunc::pSat_H2SO4 */
+    } /* End of lambda_p */
 
-double physFunc::pSat_HNO3( double T , double PPH2O ) 
-{
-    
-    /* Returns nitric acid saturation pressure in Pascal. */
-    
-    return ( ATM / 760.0 ) * pow( 10.0, ( ( ( - 2.7836 - 0.00088 * T ) * log10( PPH2O * ( 760.0 / ATM ) ) ) + ( 38.9855 - 11397.0 / T + 0.009179 * T ) ) );  
+    double delta_p( double r, double m, double T, double P )
+    {
 
-} /* End of physFunc::pSat_HNO3 */
+        /* Returns the mean distance in m from the center of a sphere reached by particles 
+         * leaving the sphere's surface and traveling a distance of particle mean free 
+         * path lambda_p */
 
-double physFunc::rhoAir( double T, double P )
-{
+        double l = lambda_p( r, m, T, P );
 
-    /* Returns the density of air in kg/m^3 */
+        return ( pow( 2.0 * r + l , 3.0 ) - pow( 4.0 * r * r + l * l , 1.5 ) ) / ( 6.0 * r * l ) - 2.0 * r;
 
-    return P / ( R_Air * T);
-
-} /* End of physFunc::airDens */ 
-
-double physFunc::dynVisc( double T )
-{
-
-    /* Returns the dynamic viscosity of air in kg/m/s */
-
-    return 1.8325E-05 * ( 416.16 / ( T + 120.0) ) * pow( T / 296.16, 1.5 );
-
-} /* End of physFunc::dynVisc */
-
-double physFunc::kinVisc( double T, double P )
-{
-
-    /* Returns the kinematic viscosity of air in m^2/s */
-
-    return dynVisc( T ) / rhoAir( T, P );
+    } /* End of delta_p */
 
 }
-
-double physFunc::thermalSpeed( double T )
-{
-
-    /* Returns the thermal speed of an air molecule in m/s */
-
-    return sqrt( 8.0 * kB * T / ( PI * M_Air ) );
-
-}
-
-double physFunc::lambda( double T, double P )
-{
-
-    /* Returns the mean free path of an air molecule in m */
-
-    return 2.0 * kinVisc( T, P ) / thermalSpeed( T );
-
-} /* End of physFunc::lambda */
-
-double physFunc::Kn( double r, double T, double P )
-{
-
-    /* Returns the Knudsen number of air in - */
-
-    return lambda( T, P ) / r;
-
-} /* End of physFunc::Kn */
-
-double physFunc::partDiffCoef( double r, double T, double P )
-{
-
-    /* Returns the particle diffusion coefficient in m^2/s */
-
-    return kB * T / ( 6.0 * PI * dynVisc( T ) * r ) * slip_flowCorrection( Kn ( r, T, P ) );
-
-} /* End of physFunc::partDiffCoef */
-
-double physFunc::slip_flowCorrection( double Kn )
-{
-
-    /* Returns the Cunningham slip-flow correction */
-
-    static const double A = 1.249;
-    static const double B = 0.42;
-    static const double C = 0.87;
-
-    return 1 + Kn * ( A + B * exp( - C / Kn ) );
-
-} /* End of physFunc::slip_flowCorrection */
 
 /* End of PhysFunction.cpp */
 
