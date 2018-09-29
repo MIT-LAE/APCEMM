@@ -18,6 +18,7 @@
 #include <vector>
 #include <cstring>
 
+#include "buildKernel.hpp"
 #include "../../Headers/PhysConstant.hpp"
 #include "../../Headers/PhysFunction.hpp"
 
@@ -28,27 +29,35 @@ typedef std::vector<Vector_1D> Vector_2D;
 namespace AIM
 {
 
-    class Coagulation
-    {
-
-        public:
-
-            Coagulation( );
-            Coagulation( const char* phase, Vector_1D binCenters, RealDouble temperature_K = 220.0, RealDouble pressure_Pa = 220.0E+02 );
-            ~Coagulation( );
-            Coagulation( const Coagulation& k );
-            Coagulation& operator=( const Coagulation& k );
-            Vector_2D getKernel() const;
-
-        protected:
-
-            Vector_2D Kernel;
-
-        private:
-
-    };
+    class Coagulation;
 
 }
+
+class AIM::Coagulation
+{
+
+    public:
+
+        Coagulation( );
+        Coagulation( const char* phase, Vector_1D const &bin_Centers_1, RealDouble rho_1, Vector_1D const &bin_Centers_2, RealDouble rho_2, RealDouble temperature_K_, RealDouble pressure_Pa_ );
+        Coagulation( const char* phase, Vector_1D const &bin_Centers_1, RealDouble rho_1, RealDouble bin_Centers_2, RealDouble rho_2, RealDouble temperature_K_, RealDouble pressure_Pa_ );
+            
+        ~Coagulation( );
+        Coagulation( const Coagulation& k );
+        Coagulation& operator=( const Coagulation& k );
+        Vector_2D getKernel() const;
+        Vector_1D getKernel_1D() const;
+        void printKernel_1D( const char* fileName ) const;
+        void printKernel_2D( const char* fileName ) const;
+
+    protected:
+
+        Vector_2D Kernel;
+        Vector_1D Kernel_1D;
+
+    private:
+
+};
 
 #endif /* COAGULATION_H_INCLUDED */
 
