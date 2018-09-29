@@ -13,7 +13,7 @@ SRC_DIR := ./src
 CURR_DIR := AIM
 
 # Define any libraries to link into executable
-LDFLAGS := -lm -lstdc++
+LDFLAGS := -lm -lstdc++# -lHeaders
 
 ifndef BUILD
 	BUILD := $(ROOT)/build
