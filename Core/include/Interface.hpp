@@ -55,5 +55,6 @@ const char* const OUTPUT_FILE = "data/output.nc";
 #define DEBUG_EI_INPUT          0    /* Debug Emission Input? */
 #define DEBUG_RINGS             0    /* Debug Rings? */
 #define DEBUG_MAPPING           0    /* Debug Mesh to ring mapping? */
+#define DEBUG_COAGKERNEL        0    /* Debug Coagulation Kernel? */
 
 #endif /* INTERFACE_H_INCLUDED */

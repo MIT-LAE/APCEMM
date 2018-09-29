@@ -20,11 +20,10 @@
 #include <ctime>
 
 #include "Parameters.hpp"
-#include "../../Headers/PhysConstant.hpp"
-#include "../../Headers/PhysFunction.hpp"
 #include "Interface.hpp"
 #include "Monitor.hpp"
 #include "SANDS_Solver.hpp"
+#include "AIM.hpp"
 #include "EPM_Solver.hpp"
 #if ( RINGS )
     #include "Cluster.hpp"
