@@ -54,7 +54,7 @@ endif
 ifeq ($(COMP),g++)
 
 	# Base set of compiler flags
-	CFLAGS := -Wall -Wextra -pedantic-errors #-DUSE_NETCDF4 #-Werror
+	CFLAGS := -Wall -Wextra -pedantic-errors# -DUSE_NETCDF4# -Werror
 
 	# Default optimization level for all routines (-O3)
 	ifndef OPT
@@ -83,7 +83,7 @@ LDFLAGS := $(LDFLAGS)
 LDFLAGS := $(LDFLAGS) -lstdc++ -lm
 
 # Add custom libraries
-LDFLAGS := $(LDFLAGS) -lSands -lfftw3 -lKpp -lHeaders -lEpm -lnetcdf_c++
+LDFLAGS := $(LDFLAGS) -Wl,--start-group -lSands -lfftw3 -lKpp -lHeaders -lEpm -lAim -lnetcdf_c++ -Wl,--end-group
 
 ifndef BUILD
 	BUILD := $(ROOT)/build
