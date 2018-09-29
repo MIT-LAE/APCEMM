@@ -20,10 +20,13 @@
 
 #include "../../Headers/PhysConstant.hpp"
 #include "../../Headers/PhysFunction.hpp"
+#include "../../Core/include/Interface.hpp"
 #include "../../Core/include/Parameters.hpp"
 #include "../../Core/include/Monitor.hpp"
 #include "../../Core/include/Aircraft.hpp"
 #include "../../Core/include/Emission.hpp"
+#include "../../AIM/include/Coagulation.hpp"
+#include "../../AIM/include/Aerosol.hpp"
 
 namespace EPM
 {

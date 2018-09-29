@@ -24,7 +24,7 @@ namespace EPM
         /* Compute adiabatic and real temperature changes */
         double delta_T_ad = - physConst::GAMMA_AD * delta_z * 1.0E-03;
         double delta_T    = -            GAMMA    * delta_z * 1.0E-03;
-        /*        [ K ]   = [ K/km ] *  [ m ]  * [ km/m ] 
+        /*        [ K ]   =              [ K/km ] *  [ m ]  * [ km/m ] 
          * The minus sign is because delta_z is the distance pointing down */
         std::cout << "Temperature lapse rate: " << GAMMA << " [K/km] \n";
         std::cout << "Vortex sinking: " << delta_z << " [m] \n";
@@ -78,14 +78,45 @@ namespace EPM
         std::cout << "\nSulfate's distribution has " << SO4_NBIN << " bins";
 
 
+        if ( SO4_VRAT <= 1.0 ) {
+            std::cout << "\nVolume ratio of consecutive bins for SO4 has to be greater than 1.0 ( SO4_VRAT = " << SO4_VRAT << " )";
+        }
+
+        const double SO4_RHO = 1.600E+03;
+
         /* SO4 bin radius and volume centers */
         std::vector<double> SO4_rJ( SO4_NBIN, 0.0 );
+        std::vector<double> SO4_rE( SO4_NBIN+1, 0.0 );
         std::vector<double> SO4_vJ( SO4_NBIN, 0.0 );
 
-        for ( unsigned int iBin = 0; iBin < SO4_NBIN; iBin++ ) {
-            SO4_rJ[iBin] = SO4_R_LOW * pow( SO4_VRAT, iBin / double(3.0) ); /* [m] */
-            SO4_vJ[iBin] = SO4_R_LOW * pow( SO4_VRAT, iBin );               /* [m^3] */
+        for ( unsigned int iBin = 0; iBin < SO4_NBIN+1; iBin++ ) {
+            SO4_rE[iBin] = SO4_R_LOW * pow( SO4_VRAT, iBin / double(3.0) );                                /* [m] */
         }
+
+        for ( unsigned int iBin = 0; iBin < SO4_NBIN; iBin++ ) {
+            SO4_rJ[iBin] = 0.5 * ( SO4_rE[iBin] + SO4_rE[iBin+1] );                                        /* [m] */
+            SO4_vJ[iBin] = 4.0 / double(3.0) * physConst::PI * SO4_rJ[iBin] * SO4_rJ[iBin] * SO4_rJ[iBin]; /* [m^3] */
+        }
+
+        const AIM::Coagulation Kernel( "liquid", SO4_rJ, SO4_RHO, 1.0E-05, 1.0E+03, temperature_K, pressure_Pa );
+
+        /* For debug purposes */
+        if ( DEBUG_COAGKERNEL )
+            Kernel.printKernel_1D( "Kernel_Debug_File.out" );
+
+        /* The following data was taken from:
+         * B. Kärcher, "A trajectory box model for aircraft exhaust plumes", Journal of Geophysical Research, 1995 */
+
+        /* Engine exit core area im m^2 */
+        double Ac0 = 0.604;
+        /* Engine exit core velocity in m/s */
+        double uc0 = 475.7;
+        /* Engine exit core temperature in K */
+        double Tc0 = 547.3;
+        /* Engine exit bypass area in m^2 */
+        double Ab0 = 1.804;
+
+        //AIM::Aerosol nPDF_SO4( SO4_rJ, SO4_rE, 1.0, 1.00E-09, 1.4, "gamma", 2.0, 1.0, 1.00E+09 );
 
         return EPM_SUCCESS;
 
