@@ -16,6 +16,7 @@
 
 #include <cmath>
 
+#include "ForwardsDecl.hpp"
 #include "PhysConstant.hpp"
 
 namespace physFunc
@@ -24,58 +25,58 @@ namespace physFunc
     /* Defined physical functions */
 
     /* Saturation pressures [Pa] */
-    double pSat_H2Ol( double T );
-    double pSat_H2Os( double T );
-    double pSat_H2SO4( double T );
-    double pSat_HNO3( double T , double PPH2O );
+    RealDouble pSat_H2Ol( RealDouble T );
+    RealDouble pSat_H2Os( RealDouble T );
+    RealDouble pSat_H2SO4( RealDouble T );
+    RealDouble pSat_HNO3( RealDouble T , RealDouble PPH2O );
 
     /* Density of air [kg/m^3] */
-    double rhoAir( double T, double P );
+    RealDouble rhoAir( RealDouble T, RealDouble P );
 
     /* Dynamic viscosity [kg/(m s)] */
-    double dynVisc( double T );
+    RealDouble dynVisc( RealDouble T );
 
     /* Kinematic viscosity [m^2/s] */
-    double kinVisc( double T, double P );
+    RealDouble kinVisc( RealDouble T, RealDouble P );
 
     /* Thermal speed of an air molecule/particle [m/s] */
-    double thermalSpeed( double T, double m = physConst::M_Air );
+    RealDouble thermalSpeed( RealDouble T, RealDouble m = physConst::M_Air );
 
     /* Mean free path in air [m] */
-    double lambda( double T, double P );
+    RealDouble lambda( RealDouble T, RealDouble P );
 
     /* Mass of spherical particle [kg] */
-    double mass_sphere( double r, double rho );
+    RealDouble mass_sphere( RealDouble r, RealDouble rho );
     
     /* Terminal fall speed of a spherical particle [m/s] */
-    double vFall( double r, double rho, double T, double P );
+    RealDouble vFall( RealDouble r, RealDouble rho, RealDouble T, RealDouble P );
 
     /* Knudsen number [-] */
-    double Kn( double r, double T, double P );
+    RealDouble Kn( RealDouble r, RealDouble T, RealDouble P );
 
     /* Particle diffusion coefficient [m^2/s] */
-    double partDiffCoef( double r, double T, double P );
+    RealDouble partDiffCoef( RealDouble r, RealDouble T, RealDouble P );
 
     /* Cunningham slip-flow correction factor [-] */
-    double slip_flowCorrection( double Kn );
+    RealDouble slip_flowCorrection( RealDouble Kn );
     
     /* Mean free path of particles in air [m] */
-    double lambda_p( double r, double m, double T, double P );
+    RealDouble lambda_p( RealDouble r, RealDouble m, RealDouble T, RealDouble P );
     
     /* Mean distance [m] from the center of a sphere reach by particles leaving */
-    double delta_p( double r, double m, double T, double P );
+    RealDouble delta_p( RealDouble r, RealDouble m, RealDouble T, RealDouble P );
     
     /* Particle Reynolds number [-] */
-    double Reynolds_p( double r, double rho, double T, double P );
+    RealDouble Reynolds_p( RealDouble r, RealDouble rho, RealDouble T, RealDouble P );
     
     /* Particle Schmidt number [-] */
-    double Schmidt_p( double r, double T, double P );
+    RealDouble Schmidt_p( RealDouble r, RealDouble T, RealDouble P );
 
     /* Particle Stokes number [-] */
-    double Stokes_p( double r_1, double rho_1, double r_2, double rho_2, double T, double P );
+    RealDouble Stokes_p( RealDouble r_1, RealDouble rho_1, RealDouble r_2, RealDouble rho_2, RealDouble T, RealDouble P );
     
     /* Aggregation efficiency for liquid particles [-] */
-    double E_agg( double r_1, double rho_1, double r_2, double rho_2, double T, double P );
+    RealDouble E_agg( RealDouble r_1, RealDouble rho_1, RealDouble r_2, RealDouble rho_2, RealDouble T, RealDouble P );
 
 }
 
