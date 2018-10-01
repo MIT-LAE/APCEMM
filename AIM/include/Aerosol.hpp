@@ -11,8 +11,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef DISTRIBUTION_H_INCLUDED
-#define DISTRIBUTION_H_INCLUDED
+#ifndef AEROSOL_H_INCLUDED
+#define AEROSOL_H_INCLUDED
 
 #include <iostream>
 #include <cmath>
@@ -73,4 +73,4 @@ class AIM::Aerosol
 
 };
 
-#endif /* DISTRIBUTION_H_INCLUDED */
+#endif /* AEROSOL_H_INCLUDED */
