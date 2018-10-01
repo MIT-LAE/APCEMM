@@ -19,12 +19,9 @@
 #include <iostream>
 #include <fstream>
 
+#include "../../Headers/ForwardsDecl.hpp"
 #include "../../Headers/PhysConstant.hpp"
 #include "../../Headers/PhysFunction.hpp"
-
-typedef double RealDouble;
-typedef std::vector<RealDouble> Vector_1D;
-typedef std::vector<Vector_1D> Vector_2D;
 
 namespace AIM
 {

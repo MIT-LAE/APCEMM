@@ -17,8 +17,8 @@ namespace AIM
 {
     
     Aerosol::Aerosol( Vector_1D bin_Centers_, Vector_1D bin_Edges_, RealDouble nPart_, RealDouble mu_, RealDouble sigma_, const char* distType, RealDouble alpha_, RealDouble gamma_, RealDouble b_ ): 
-        type( distType ),
         bin_Sizes( bin_Centers_.size() ),
+        type( distType ),
         pdf( bin_Centers_.size() )
     {
 
