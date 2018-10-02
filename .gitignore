@@ -19,6 +19,7 @@
 ########
 *.log
 *.sql
+*.out
 
 # OS generated files #
 ######################
