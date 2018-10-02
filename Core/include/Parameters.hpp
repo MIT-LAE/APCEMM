@@ -64,13 +64,18 @@
 #define N_VAR                 127         /* Number of Variable species */
 #define N_FIX                 8           /* Number of Fixed species */
 #define N_REACT               475         /* Number of reactions */
-#define RTOLS                 1.00E-03    /* Relative tolerances in KPP */
-#define ATOLS                 1.00E-03    /* Absolute tolerances in KPP */
+#define KPP_RTOLS             1.00E-03    /* Relative tolerances in KPP */
+#define KPP_ATOLS             1.00E-03    /* Absolute tolerances in KPP */
 
 
 /* Microphysics parameters */
 #define SO4_R_LOW             1.00E-10    /* Sulfates' lower bin radius [m] */
 #define SO4_R_HIG             5.00E-07    /* Sulfates' larger bin radius [m] */
 #define SO4_VRAT              1.50E+00    /* Size ratio between two consecutives bins */
+
+/* Early plume integration */
+#define N_MICROVAR            13          /* Number of variables in early integration process */
+#define EPM_RTOLS             1.00E-05    /* Relative tolerances in EPM */
+#define EPM_ATOLS             1.00E-07    /* Absolute tolerances in EPM */
 
 #endif /* PARAMETERS_H_INCLUDED */
