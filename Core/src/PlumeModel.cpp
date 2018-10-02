@@ -293,7 +293,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /** ~~~~~~~~~~~~~~~~~~~~~~~ **/
 
     EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aircraft, EI );
-    //Integrate( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aircraft, EI );
 
     /** ~~~~~~~~~~~~~~~~~ **/
     /**      Rings?       **/
@@ -501,7 +500,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 KPP_Main( varArray, fixArray, curr_Time_s, dt, \
                       airDens, temperature_K, pressure_Pa, \
                       SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC, \
-                      RTOLS, ATOLS );
+                      KPP_RTOLS, KPP_ATOLS );
                 
                 ringSpecies.FillIn( varArray, nTime + 1, iRing );
    
@@ -516,7 +515,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             KPP_Main( varArray, fixArray, curr_Time_s, dt, \
                   airDens, temperature_K, pressure_Pa, \
                   SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC, \
-                  RTOLS, ATOLS );
+                  KPP_RTOLS, KPP_ATOLS );
 
             ambientData.FillIn( varArray, nTime + 1 );
                 
@@ -542,7 +541,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                     KPP_Main( varArray, fixArray, curr_Time_s, dt, \
                           airDens, temperature_K, pressure_Pa, \
                           SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC, \
-                          RTOLS, ATOLS );
+                          KPP_RTOLS, KPP_ATOLS );
 
                     /* Convert KPP output back to data structure */
                     Data.applyData( varArray, iNx, jNy );
