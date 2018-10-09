@@ -15,6 +15,7 @@
 #define ODESOLVER_H_INCLUDED
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <cmath>
 #include <vector>
@@ -26,10 +27,10 @@
 
 #include "Util/ForwardsDecl.hpp"
 #include "Core/Parameters.hpp"
+#include "Util/PhysConstant.hpp"
+#include "Util/PhysFunction.hpp"
 
-using namespace boost::numeric::odeint;
-
-typedef boost::numeric::odeint::runge_kutta_cash_karp54< Vector_1D > error_stepper_type;
+typedef boost::numeric::odeint::runge_kutta_fehlberg78< Vector_1D > error_stepper_type;
 typedef boost::numeric::odeint::controlled_runge_kutta< error_stepper_type > controlled_stepper_type;
 
 namespace EPM
@@ -50,7 +51,7 @@ template<class System> class EPM::odeSolver
             odeSolver( system, x, 0, stop, threshold );
         }
         ~odeSolver();
-//        odeSolver( const odeSolver &solver );
+        odeSolver( const odeSolver &solver );
         odeSolver& operator=( const odeSolver &solver );
         void updateTime( RealDouble t );
         void updateStep( RealDouble dt );

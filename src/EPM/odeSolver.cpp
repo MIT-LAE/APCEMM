@@ -38,17 +38,17 @@ namespace EPM
 
     } /* End of odeSolver::~odeSolver */
 
-//    template<class System> odeSolver<System>::odeSolver( const odeSolver &solver )
-//    {
+    template<class System> odeSolver<System>::odeSolver( const odeSolver &solver )
+    {
 
         /* Copy */
 
-//        system = solver.system;
-//        vars = solver.vars;
-//        currentTime = solver.currentTime;
-//        timeStep = solver.timeStep;
+        system = solver.system;
+        vars = solver.vars;
+        currentTime = solver.currentTime;
+        timeStep = solver.timeStep;
 
-//    } /* End of odeSolver::odeSolver */
+    } /* End of odeSolver::odeSolver */
     
     template<class System> odeSolver<System>& odeSolver<System>::operator=( const odeSolver &solver )
     {
@@ -206,8 +206,6 @@ namespace EPM
 
         std::ofstream file (fileName);
 
-        unsigned int iIndex, counter;
-
         if ( file.is_open() == 0 ) {
 
             std::cout << "\nIn streamingObserver::streamingObserver: Couldn't open " << fileName << "!\n";
@@ -215,19 +213,91 @@ namespace EPM
         }
         else {
 
-            file << " Time [s], ";
-            for ( iIndex = 0; iIndex < m_states[0].size() - 1; iIndex++ ) {
-                file << "x[" << iIndex << "], ";
-            }
-            iIndex = m_states[0].size() - 1;
-            file << "x[" << iIndex;
+            unsigned int counter;
+            const char* sep = ", ";
+            const unsigned int prec = 6;
+
+            /* Variable list: 
+             * - Temperature [K]
+             * - Water molecular concentration [molecules/cm^3] 
+             * - Saturation with respect to ice [-]
+             * - Saturation with respect to liquid water [-]
+             * - */
+
+            file << std::setw(prec+8) << "Time [s], ";
+            file << std::setw(prec+8) << "Temp. [K], ";
+            file << std::setw(prec+8) << "Pres. [Pa], ";
+            file << std::setw(prec+8) << "H2O [/cm3], ";
+            file << std::setw(prec+8) << "RH_i [-], ";
+            file << std::setw(prec+8) << "RH_w [-], ";
+            file << std::setw(prec+8) << "SO4 [/cm3], ";
+            file << std::setw(prec+8) << "SO4Sat [-], ";
+            file << std::setw(prec+8) << "HNO3 [/cm3], ";
+            file << std::setw(prec+8) << "HNO3Sat[-], ";
+            file << std::setw(prec+8) << "Part[/cm3], ";
+            file << std::setw(prec+8) << "Rad[mum], ";
+
+            /* New line */
+            file << "\n";
+            file << std::setfill('-') << std::setw(12*(prec+8)) << "-";
+
+            file << std::setfill(' ');
+
             for ( counter = 0; counter < m_states.size(); counter++ ) {
-                file << "\n " << m_times[counter] << ", ";
-                for ( iIndex = 0; iIndex < m_states[counter].size() - 1; iIndex++ ) {
-                    file << m_states[counter][iIndex] << ", ";
-                }
-                iIndex = m_states[counter].size() - 1;
-                file << m_states[counter][iIndex];
+                /* New line */
+                file << "\n";
+
+                file << std::scientific << std::setprecision(prec) << std::setfill(' ');
+
+                /* Output data */
+
+                /* Print time [s] */
+                file << m_times[counter];
+                file << sep;
+
+                /* Print temperature [K] */
+                file << m_states[counter][0];
+                file << sep;
+                
+                /* Print pressure [K] */
+                file << m_states[counter][1];
+                file << sep;
+                
+                /* Print gaseous water molecular concentration [molec/cm^3] */
+                file << m_states[counter][2];
+                file << sep;
+
+                /* Print rel. humidities [-] */
+                file << m_states[counter][2] * physConst::kB * m_states[counter][0] * 1.0E+06 / physFunc::pSat_H2Os( m_states[counter][0] );
+                file << sep;
+                file << m_states[counter][2] * physConst::kB * m_states[counter][0] * 1.0E+06 / physFunc::pSat_H2Ol( m_states[counter][0] );
+                file << sep;
+                
+                /* Print gaseous SO4 molecular concentration [molec/cm^3] */
+                file << m_states[counter][3];
+                file << sep;
+                
+                /* Print SO4 saturation [-] */
+                file << m_states[counter][3] * physConst::kB * m_states[counter][0] * 1.0E+06 / physFunc::pSat_H2SO4( m_states[counter][0] );
+                file << sep;
+                
+                /* Print gaseous HNO3 molecular concentration [molec/cm^3] */
+                file << m_states[counter][4];
+                file << sep;
+                
+                /* Print HNO3 saturation [-] */
+                file << m_states[counter][4] * physConst::kB * m_states[counter][0] * 1.0E+06 / physFunc::pSat_HNO3( m_states[counter][0], \
+                        m_states[counter][2] * physConst::kB * m_states[counter][0] * 1.0E+06 );
+                file << sep;
+                
+                /* Print particle concentration [#/cm^3] */
+                file << m_states[counter][5];
+                file << sep;
+                
+                /* Print particle concentration [mum] */
+                file << m_states[counter][6] * 1.0E+06;
+                file << sep;
+
             }
 
             file << "\n";
