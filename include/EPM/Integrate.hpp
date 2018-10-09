@@ -67,10 +67,12 @@ namespace EPM
 
     int Integrate( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], const Aircraft &ac, const Emission &EI );
     int RunMicrophysics( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], const Aircraft &ac, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T );
-    RealDouble temp_Vortex( const RealDouble time, const RealDouble delta_T );
+    RealDouble dT_Vortex( const RealDouble time, const RealDouble delta_T, bool deriv = 0 );
     RealDouble dilutionRatio( const RealDouble time );
     RealDouble depositionRate( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O );
     void odeRHS( const Vector_1D &x, Vector_1D &dxdt, const RealDouble t = 0.0 );
+    bool isFreezable( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O, const RealDouble r0 );
+    RealDouble condensationRate( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O, const RealDouble theta );
 
 
 }
