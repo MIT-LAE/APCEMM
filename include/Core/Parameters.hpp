@@ -75,6 +75,7 @@
 
 /* Early plume integration */
 #define N_MICROVAR            13          /* Number of variables in early integration process */
+#define VORTEX_SINKING        1           /* Consider vortex sinking? */
 #define EPM_RTOLS             1.00E-05    /* Relative tolerances in EPM */
 #define EPM_ATOLS             1.00E-07    /* Absolute tolerances in EPM */
 
