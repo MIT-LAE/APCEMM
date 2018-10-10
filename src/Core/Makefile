@@ -29,6 +29,7 @@
 #
 # !REVISION HISTORY: 
 # 04 Oct 2018 - T. Fritz - Initial version
+# 09 Oct 2018 - T. Fritz - Added Make flags
 #------------------------------------------------------------------------------
 
 ###############################################################################
@@ -83,9 +84,9 @@ TARGET     := APCEMM.sh
 .PHONY: libUtil libKpp libSands libAim libEpm libCore
 
 all:
-	@$(MAKE) build
-	@$(MAKE) lib
-	@$(MAKE) exe
+	@$(MAKE) $(MAKEFLAGS) build
+	@$(MAKE) $(MAKEFLAGS) lib
+	@$(MAKE) $(MAKEFLAGS) exe
 
 build:
 	@mkdir -p $(LIB_DIR)

@@ -15,6 +15,7 @@
 #
 # !REVISION HISTORY:
 # 03 Oct 2018 - T. Fritz - Initial version
+# 10 Oct 2018 - T. Fritz - Added Makefile flags
 #------------------------------------------------------------------------------
 
 ###############################################################################
@@ -212,6 +213,17 @@ LD   := $(COMPILE_CMD) $(CFLAGS)
 %.o : %.c
 	$(GCC) -o $@ -c $<
 
+
+###############################################################################
+###                                                                         ###
+###  Set Makefile flags representing user options                           ###
+###                                                                         ###
+###############################################################################
+
+ifndef VERBOSE
+  MAKEFLAGS += --no-print-directory
+endif
+
 ###############################################################################
 ###                                                                         ###
 ###  Export global variables so that the main Makefile will see these       ###
@@ -223,6 +235,7 @@ export LD
 export INCLUDE
 export LINK
 export SHELL
+export MAKEFLAGS
 
 ###############################################################################
 ###                                                                         ###
