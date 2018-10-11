@@ -35,9 +35,9 @@ namespace EPM
         std::cout << "\nTemperature increase: " << delta_T << " [K]\n";
 
         /************************************************************************************/
-        temperature_K = 210.0;
-        relHumidity_w = 60.0;
-        varArray[ind_H2O] *= 2;
+//        temperature_K = 210.0;
+//        relHumidity_w = 60.0;
+//        varArray[ind_H2O] *= 2;
         /************************************************************************************/
 
         RunMicrophysics( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, AC, EI, delta_T_ad, delta_T );
@@ -91,11 +91,11 @@ namespace EPM
         }
 
         /* SO4 bin radius and volume centers */
-        Vector_1D SO4_rJ( SO4_NBIN, 0.0 );
-        Vector_1D SO4_rE( SO4_NBIN+1, 0.0 );
-        Vector_1D SO4_vJ( SO4_NBIN, 0.0 );
+        Vector_1D SO4_rJ( SO4_NBIN    , 0.0 );
+        Vector_1D SO4_rE( SO4_NBIN + 1, 0.0 );
+        Vector_1D SO4_vJ( SO4_NBIN    , 0.0 );
 
-        for ( UInt iBin = 0; iBin < SO4_NBIN+1; iBin++ ) {
+        for ( UInt iBin = 0; iBin < SO4_NBIN + 1; iBin++ ) {
             SO4_rE[iBin] = SO4_R_LOW * pow( SO4_VRAT, iBin / RealDouble(3.0) );                                /* [m] */
         }
 
@@ -131,10 +131,11 @@ namespace EPM
        
 
         /* Store ambient concentrations */
-        RealDouble H2O_amb  = varArray[ind_H2O]; /* [molec/cm^3] */
-        RealDouble SO4_amb  = varArray[ind_SO4]; /* [molec/cm^3] */
+        RealDouble H2O_amb  = varArray[ind_H2O];  /* [molec/cm^3] */
+        RealDouble SO4_amb  = varArray[ind_SO4];  /* [molec/cm^3] */
+        RealDouble SO4l_amb, SO4g_amb;            /* [molec/cm^3] */
         RealDouble HNO3_amb = varArray[ind_HNO3]; /* [molec/cm^3] */
-        RealDouble Soot_amb = 0.05; /* [#/cm^3] */
+        RealDouble Soot_amb = 0.05;               /* [#/cm^3] */
 
         /* Add emissions of one engine to concentration arrays */
         varArray[ind_H2O] += EI.getH2O() / ( MW_H2O  * 1.0E+03 ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() * physConst::Na / Ac0     * 1.00E-06;
@@ -145,22 +146,36 @@ namespace EPM
 
         RealDouble varSoot = Soot_amb + EI.getSoot() / ( 4.0 / RealDouble(3.0) * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() * 1.00E-06; /* [ #/cm^3 ] */
 
-        /* Array storing the current value of the variable */
-        RealDouble vars[N_MICROVAR];
+        /* Compute ambient share of liquid, gaseous sulfates */
+        if ( SO4_amb * physConst::kB * temperature_K * 1.0E+06 / physFunc::pSat_H2SO4( temperature_K ) >= 1 ) {
+            SO4l_amb  = ( SO4_amb * physConst::kB * temperature_K * 1.0E+06 - physFunc::pSat_H2SO4( temperature_K ) / pressure_Pa );
+            SO4g_amb  = 1.0 - SO4l_amb;
+            /* Convert from mixing ratio to molecules/cm^3 */
+            SO4l_amb *= pressure_Pa / ( physConst::kB * temperature_K ) * 1.0E+06;
+            SO4g_amb *= pressure_Pa / ( physConst::kB * temperature_K ) * 1.0E+06;
+        } else {
+            SO4l_amb = 0.0;
+            SO4g_amb = SO4_amb;
+        }
+        std::cout << "Ambient SO4: " << SO4_amb << " = " << SO4g_amb << " + " << SO4l_amb << "\n";
         
         /* Adaptive time stepping? */
         bool adaptiveStep = 1;
         
-        UInt nTime = 201;
+        UInt nTime = 101;
         UInt iTime;
         Vector_1D timeArray(nTime);
         RealDouble timeInitial = 1.0E-04;
         RealDouble log10_timeInitial = log10(timeInitial);
-        RealDouble timeFinal   = 5.0E+03;
+        RealDouble timeFinal   = 1.0E+03;
         RealDouble log10_timeFinal = log10(timeFinal);
         for ( iTime = 0; iTime < nTime; iTime++ ) {
             timeArray[iTime] = pow( 10.0, log10_timeInitial + iTime * ( log10_timeFinal - log10_timeInitial ) / RealDouble( nTime - 1.0 ) );
         }
+        
+        UInt iTime_3mins;
+        auto const it = std::lower_bound(timeArray.begin(), timeArray.end(), 3.0 * 60.0);
+        iTime_3mins = *it;
 
         /* vars[0] : Temperature,                   Unit K 
          * vars[1] : Water molecular concentration, Unit molecules/cm^3 
@@ -172,13 +187,21 @@ namespace EPM
          * vars[7] : Ice particle radius,           Unit m
          */
             
-        static const UInt EPM_ind_T    = 0;
-        static const UInt EPM_ind_P    = 1;
-        static const UInt EPM_ind_H2O  = 2;
-        static const UInt EPM_ind_SO4  = 3;
-        static const UInt EPM_ind_HNO3 = 4;
-        static const UInt EPM_ind_Part = 5;
-        static const UInt EPM_ind_ParR = 6;
+        static const UInt EPM_ind_Trac = 0;
+        static const UInt EPM_ind_T    = 1;
+        static const UInt EPM_ind_P    = 2;
+        static const UInt EPM_ind_H2O  = 3;
+        static const UInt EPM_ind_SO4  = 4;
+        static const UInt EPM_ind_SO4l = 5;
+        static const UInt EPM_ind_SO4g = 6;
+        static const UInt EPM_ind_SO4s = 7;
+        static const UInt EPM_ind_HNO3 = 8;
+        static const UInt EPM_ind_Part = 9;
+        static const UInt EPM_ind_ParR = 10;
+        static const UInt EPM_ind_the1 = 11;
+        static const UInt EPM_ind_the2 = 12;
+
+        const std::vector<UInt> EPM_ind = {EPM_ind_Trac, EPM_ind_T, EPM_ind_P, EPM_ind_H2O, EPM_ind_SO4, EPM_ind_SO4l, EPM_ind_SO4g, EPM_ind_SO4s, EPM_ind_HNO3, EPM_ind_Part, EPM_ind_ParR, EPM_ind_the1, EPM_ind_the2};
 
         struct gas_aerosol_rhs
         {
@@ -188,6 +211,8 @@ namespace EPM
             const RealDouble m_delta_T;
             const RealDouble m_H2O_molcm3;
             const RealDouble m_SO4_molcm3;
+            const RealDouble m_SO4l_molcm3;
+            const RealDouble m_SO4g_molcm3;
             const RealDouble m_HNO3_molcm3;
             const RealDouble m_part_cm3;
             const RealDouble m_part_r0;
@@ -197,25 +222,19 @@ namespace EPM
 
             private:
 
-//                const UInt EPM_ind_T    = 0;
-//                const UInt EPM_ind_P    = 1;
-//                const UInt EPM_ind_H2O  = 2;
-//                const UInt EPM_ind_SO4  = 3;
-//                const UInt EPM_ind_HNO3 = 4;
-//                const UInt EPM_ind_Part = 5;
-//                const UInt EPM_ind_ParR = 6;
-
-
             public:
             
                 gas_aerosol_rhs( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble delta_T, \
-                                 RealDouble H2O_molcm3, RealDouble SO4_molcm3, RealDouble HNO3_molcm3, \
-                                 RealDouble part_cm3, RealDouble part_r0 ):
+                                 RealDouble H2O_molcm3, RealDouble SO4_molcm3, RealDouble SO4l_molcm3, \
+                                 RealDouble SO4g_molcm3, RealDouble HNO3_molcm3, RealDouble part_cm3, \
+                                 RealDouble part_r0 ):
                     m_temperature_K( temperature_K ),
                     m_pressure_Pa( pressure_Pa ),
                     m_delta_T( delta_T ),
                     m_H2O_molcm3 ( H2O_molcm3 ),
                     m_SO4_molcm3 ( SO4_molcm3 ),
+                    m_SO4l_molcm3 ( SO4l_molcm3 ),
+                    m_SO4g_molcm3 ( SO4g_molcm3 ),
                     m_HNO3_molcm3( HNO3_molcm3 ),
                     m_part_cm3( part_cm3 ),
                     m_part_r0( part_r0 ),
@@ -249,9 +268,47 @@ namespace EPM
 
                     RealDouble dilRatio = dilutionRatio( t );
 
-                    /* Ensure that particle radius is larger than bare soot radius */
-                    RealDouble m_part_r = x[EPM_ind_ParR] > m_part_r0 ? x[EPM_ind_ParR] : m_part_r0;
-                        // std::max( x[EPM_ind_ParR], m_part_r0 );
+                    /* Ensure that particle radius is larger than bare soot radius and smaller than some threshold */
+                    RealDouble m_part_r;
+                    m_part_r = (x[EPM_ind_ParR] > m_part_r0) ? x[EPM_ind_ParR] : m_part_r0;
+                    m_part_r = (m_part_r        > 1.00E-04 ) ? 1.00E-04        : m_part_r;
+               
+                    /* Parameters for binary homogeneous nucleation */
+                    RealDouble nucRate, x_SO4, nMolec;
+
+                    /* Compute SO4 mixing ratios */
+                    
+                    /* Liquid and gaseous sulfate concentration */
+                    RealDouble SO4_rl, SO4_g;
+                    
+                    /* SO4_g represents the gaseous molecular concentration of SO4
+                     * SO4_rl is the "ready to be liquid" molecular concentration of SO4. This is still gaseous SO4 because it is limited by kinetics.
+                     * Gaseous SO4 is in phase equilibrium. Ensure limitations! */
+                    SO4_g  = ( physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) > x[EPM_ind_SO4g] ) ? x[EPM_ind_SO4g] : physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 );
+                    SO4_rl = x[EPM_ind_SO4g] - SO4_g;
+                    SO4_g  = ( SO4_g > 0.0 ) ? SO4_g : 0.0;
+                    SO4_rl = ( SO4_rl > 0.0 ) ? SO4_rl : 0.0;
+
+                    if ( ( SO4_rl >= AIM::nThresh( x[EPM_ind_T], x[EPM_ind_H2O] * physConst::kB * x[EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( x[EPM_ind_T] ) ) ) ) {
+                       
+                        /* Mole fraction of sulfuric acid */
+                        x_SO4 = AIM::x_star(     x[EPM_ind_T], x[EPM_ind_H2O] * physConst::kB * x[EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( x[EPM_ind_T] ), SO4_rl );
+                        /* Number of molecules per cluster */
+                        nMolec = AIM::nTot(      x[EPM_ind_T], x_SO4, x[EPM_ind_H2O] * physConst::kB * x[EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( x[EPM_ind_T] ), SO4_rl );
+                        /* Nucleation rate */
+                        nucRate = AIM::nuclRate( x[EPM_ind_T], x_SO4, x[EPM_ind_H2O] * physConst::kB * x[EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( x[EPM_ind_T] ), SO4_rl );
+
+                    } else {
+
+                        x_SO4 = 0.0;
+                        nMolec = 0.0;
+                        nucRate = 0.0;
+
+                    }
+        
+                    /* Tracer differential equation
+                     * \frac{d[.]}{dt} = - w_T(t) * [.] */
+                    dxdt[EPM_ind_Trac] = - dilRatio * x[EPM_ind_Trac];
 
                     /* Temperature differential equation
                      * \frac{dT}{dt} = v_z(t) * \frac{dT}{dz} - w_T(t) * ( T - T_amb(t) ) */
@@ -269,19 +326,37 @@ namespace EPM
                     /* Gaseous water differential equation 
                      * \frac{d[H2O]}{dt} = - w_T(t) * ( [H2O] - [H2O]_amb ) */
                     dxdt[EPM_ind_H2O] = - dilRatio * ( x[EPM_ind_H2O] - m_H2O_molcm3 ) \
-                                      - ( isFreezable( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], m_part_r0 ) \
-                                        * depositionRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O] ) \
-                                        + condensationRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], x[9] + x[10] ) ) \
-                                        * m_part_r * physConst::Na / MW_H2O;
+                                        - ( isFreezable( m_part_r, x[EPM_ind_T], x[EPM_ind_H2O], m_part_r0 ) \
+                                          * depositionRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], m_part_r0, x[EPM_ind_the1] + x[EPM_ind_the2] ) \
+                                          + condensationRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], x[EPM_ind_the1] + x[EPM_ind_the2] ) ) \
+                                          * m_part_r * physConst::Na / MW_H2O
+                                        - nucRate * ( 1.0 - x_SO4 ) * nMolec;
                     /* Unit check:
                      * [1/s] * ( [molec/cm3] - [molec/cm^3] ) = [molec/cm^3/s]
                      * ([-] * [kg/s] + [kg/s]) * [#/cm^3] * [molec/kg] = [molec/cm^3/s]
                      * */
 
-                    /* Gaseous SO4 differential equation 
-                     * \frac{d[SO4]}{dt} = - w_T(t) * ( [SO4] - [SO4]_amb ) */
-                    dxdt[EPM_ind_SO4] = - dilRatio * ( x[EPM_ind_SO4] - m_SO4_molcm3 );
+                    /* Liquid SO4 differential equation */
+                    dxdt[EPM_ind_SO4l] = - dilRatio * ( x[EPM_ind_SO4l] - m_SO4l_molcm3 ) \
+                                         + nucRate * x_SO4 * nMolec;
                     
+                    /* Gaseous SO4 differential equation */
+                    dxdt[EPM_ind_SO4g] = - dilRatio * ( SO4_g + SO4_rl - m_SO4g_molcm3 ) \
+                                         - sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_SO4 / physConst::Na ) \
+                                           * x[EPM_ind_Part] * 1.0E+06 * physConst::PI * m_part_r * m_part_r \
+                                           * x[EPM_ind_SO4g] * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] ) \
+                                         - nucRate * x_SO4 * nMolec;
+                    
+                    /* On soot SO4 differential equation 
+                     * \frac{d[SO4_s]}{dt} = alpha * v_th / 4.0 * n_part * 4.0 * \pi * r^2 * ( 1.0 - \theta ) * [SO4] */ 
+                    dxdt[EPM_ind_SO4s] = sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_SO4 / physConst::Na ) \
+                                         * x[EPM_ind_Part] * 1.0E+06 * physConst::PI * m_part_r * m_part_r \
+                                         * x[EPM_ind_SO4g] * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] );
+
+                    /* Total SO4 differential equation
+                     * \frac{d[SO4]}{dt} = - w_T(t) * ( [SO4] - [SO4]_amb ) */
+                    dxdt[EPM_ind_SO4]  = dxdt[EPM_ind_SO4g] + dxdt[EPM_ind_SO4l] + dxdt[EPM_ind_SO4s];
+
                     /* Gaseous HNO3 differential equation 
                      * \frac{d[HNO3]}{dt} = - w_T(t) * ( [HNO3] - [HNO3]_amb ) */
                     dxdt[EPM_ind_HNO3] = - dilRatio * ( x[EPM_ind_HNO3] - m_HNO3_molcm3 );
@@ -291,70 +366,125 @@ namespace EPM
                     dxdt[EPM_ind_Part] = - dilRatio * ( x[EPM_ind_Part] - m_part_cm3 );
 
                     /* Particle radius differential equation
-                     * \frac{dr}{dt} = \frac{dm}{dt}/(\rho*4*PI*r^2) */
-                    dxdt[EPM_ind_ParR] = ( m_part_r >= 0.99 * m_part_r0 ) \
-                                         * ( isFreezable( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], m_part_r0 ) \
-                                           * depositionRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O] ) \
-                                           + condensationRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], x[9] + x[10] ) ) \
+                     * \frac{dr}{dt} = \frac{dm}{dt}/(\rho * 4 * \pi * r^2) */
+                    dxdt[EPM_ind_ParR] = ( isFreezable( m_part_r, x[EPM_ind_T], x[EPM_ind_H2O], m_part_r0 ) \
+                                           * depositionRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], m_part_r0, x[EPM_ind_the1] + x[EPM_ind_the2] ) \
+                                           + condensationRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], x[EPM_ind_the1] + x[EPM_ind_the2] ) ) \
                                          / ( physConst::RHO_ICE * 4.0 * physConst::PI * m_part_r * m_part_r );
                     /* Unit check: 
                      * [kg/s] / ( [kg/m^3] * [m^2]) = [m/s] */
 
-                    dxdt[7] = 0.0;
-
-                    dxdt[8] = 0.0;
-
                     /* */
-                    dxdt[9] = sticking_SO4 * physFunc::thermalSpeed( x[0], MW_SO4 / physConst::Na ) * 1.0E+02 / 4 * x[3] / sigma_SO4 * ( 1.0 - x[9] - x[10] );
+                    dxdt[EPM_ind_the1] = sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_SO4 / physConst::Na ) * 1.0E+02 * 0.25 * ( SO4_g + SO4_rl ) / sigma_SO4 * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] );
 
-                    dxdt[10] = 0.0;
-
-//                    std::cout << std::scientific << std::setprecision(6);
-//                    std::cout << t << ", ";
-//                    std::cout << x[2] * physConst::kB * x[0] * 1.0E+06 / physFunc::pSat_H2Os( x[0] ) << ", ";
-//                    std::cout << dxdt[6] << ", ";
-//                    std::cout << m_H2O_molcm3 * physConst::kB * m_temperature_K * 1.0E+06 / physFunc::pSat_H2Os( m_temperature_K ) << "\n";
+                    dxdt[EPM_ind_the2] = 0.0;
 
                 } /* End of gas_aerosol_rhs::operator() */
 
         };
 
 
-        Vector_1D x(11);
+        Vector_1D x(14, 0.0);
+
+        /* Initial conditions */
+        x[EPM_ind_Trac] = 1.0;
         x[EPM_ind_T]    = Tc0;
         x[EPM_ind_P]    = pressure_Pa;
         x[EPM_ind_H2O]  = varArray[ind_H2O];
         x[EPM_ind_SO4]  = varArray[ind_SO4];
+        /* Assume that emitted SO4 is purely gaseous as temperature is high */
+        x[EPM_ind_SO4l] = 0.0;
+        x[EPM_ind_SO4g] = varArray[ind_SO4];
+        x[EPM_ind_SO4s] = 0.0;
         x[EPM_ind_HNO3] = varArray[ind_HNO3];
         x[EPM_ind_Part] = varSoot;
         x[EPM_ind_ParR] = EI.getSootRad();
-        x[9] = 0.0;
+        x[11] = 0.0;
+        x[12] = 0.0;
 
         Vector_2D obs_Var;
         Vector_1D obs_Time;
-        EPM::streamingObserver observer( obs_Var, obs_Time, "/home/fritzt/CAPCEMM/data/Micro.out", 1 );
+        EPM::streamingObserver observer( obs_Var, obs_Time, EPM_ind, "/home/fritzt/CAPCEMM/data/Micro.out", 1 );
 
         /* Creating ode's right hand side */
-        gas_aerosol_rhs rhs( temperature_K, pressure_Pa, delta_T, H2O_amb, SO4_amb, HNO3_amb, Soot_amb, EI.getSootRad() );
-        
+        gas_aerosol_rhs rhs( temperature_K, pressure_Pa, delta_T, H2O_amb, SO4_amb, SO4l_amb, SO4g_amb, HNO3_amb, Soot_amb, EI.getSootRad() );
+
         /* Total number of steps */
         UInt totSteps = 0;
 
-        RealDouble attempt_dt;
+        /* Current time step in s */
+        RealDouble currTimeStep;
+
+        /* Dilution factor */
+        RealDouble dilFactor, dilFactor_b;
+
+        /* Freshly nucleated aerosol characteristics */
+        RealDouble SO4l, SO4l_b;
+        RealDouble nPDF_new, x_star, nTot, radSO4;
+
+        /* Aerosol PDF @ 3mins */
+        Vector_1D pdf_3mins;
 
         iTime = 0;
         while ( iTime + 1 < nTime ) {
-                
-            attempt_dt = ( timeArray[iTime+1] - timeArray[iTime] ) / 100.0;
-            if ( adaptiveStep == 1 ) {
-                totSteps += boost::numeric::odeint::integrate_adaptive( boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS ), rhs, x, timeArray[iTime], timeArray[iTime+1], attempt_dt, observer );
+            
+            /* Update current time step */
+            currTimeStep = timeArray[iTime+1] - timeArray[iTime];
+            
+            /* Coagulation of sulfate aerosols */
+            nPDF_SO4.Coagulate( currTimeStep, Kernel );
+
+            /* Get dilution factor */
+            if ( iTime == 0 ) {
+                dilFactor_b = 1.0;
+                SO4l_b = 0.0;
             }
             else {
-                totSteps += boost::numeric::odeint::integrate( rhs, x, timeArray[iTime], timeArray[iTime+1], attempt_dt, observer );
+                dilFactor_b = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
+                SO4l_b = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l];
             }
 
+            /* Diffusion + Water uptake */
+            if ( adaptiveStep == 1 ) {
+                totSteps += boost::numeric::odeint::integrate_adaptive( boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS ), rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0, observer );
+            }
+            else {
+                totSteps += boost::numeric::odeint::integrate( rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0, observer );
+            }
+            
+            dilFactor = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac] / dilFactor_b;
+            SO4l = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l];
+
+            nPDF_new = ( SO4l - SO4l_amb - dilFactor * ( SO4l_b - SO4l_amb ) );
+            nPDF_new = ( SO4l - SO4l_amb - dilFactor * ( SO4l_b - SO4l_amb ) );
+
+            if ( nPDF_new >= 1.0E-20 ) {
+                x_star   = AIM::x_star( observer.m_states[observer.m_states.size()-1][EPM_ind_T], observer.m_states[observer.m_states.size()-1][EPM_ind_H2O] * physConst::kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( observer.m_states[observer.m_states.size()-1][EPM_ind_T] ), std::max(x[EPM_ind_SO4g], 0.0) );
+                nTot     = AIM::nTot( observer.m_states[observer.m_states.size()-1][EPM_ind_T], x_star, observer.m_states[observer.m_states.size()-1][EPM_ind_H2O] * physConst::kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( observer.m_states[observer.m_states.size()-1][EPM_ind_T] ), std::max(x[EPM_ind_SO4g], 0.0) );
+                nTot     = ( nTot <= 1.0E-20 ) ? 1.0E-20 : nTot;
+                radSO4   = AIM::radCluster( x_star, nTot );
+//                rho_Sulf = AIM::rho( x_star, observer.m_states[observer.m_states.size()-1][EPM_ind_T]);
+
+                if ( radSO4 >= 1.0E-10 ) {
+                    AIM::Aerosol nPDF_SO4_new( SO4_rJ, SO4_rE, nPDF_new, radSO4, sSO4, "lognormal" );
+
+                    nPDF_SO4 += nPDF_SO4_new;
+                }
+            }
+           
+            /* Scale pdf by diffusion factor */
+            nPDF_SO4.scalePdf( dilFactor );
+            
+            if ( 0 ) {
+                std::cout << "Time: " << timeArray[iTime+1] << ", Number: " << nPDF_SO4.Moment() << ", Radius: " << nPDF_SO4.getRadius() << "\n";
+            }
+       
             totSteps += 1;
             iTime++;
+
+            if ( iTime == iTime_3mins )
+                pdf_3mins = nPDF_SO4.getPDF();
+
         }
         
         std::cout << "\nTotal number of steps: " << totSteps << "\n";
@@ -429,33 +559,50 @@ namespace EPM
 
     } /* End of dilutionRatio */
 
-    RealDouble depositionRate( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O )
+    RealDouble depositionRate( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O, const RealDouble r_0,  const RealDouble theta )
     {
 
         /* DESCRIPTION:
          * Returns the water deposition rate in kg/s on a single spherical particle */
 
         /* INPUT:
-         * - RealDouble r   :: radius in m
-         * - RealDouble T   :: temperature in K
-         * - RealDouble P   :: pressure in Pa
-         * - RealDouble H2O :: gaseous water concentration in molec/cm^3
+         * - RealDouble r     :: radius in m
+         * - RealDouble T     :: temperature in K
+         * - RealDouble P     :: pressure in Pa
+         * - RealDouble H2O   :: gaseous water concentration in molec/cm^3
+         * - RealDouble r_0   :: bare soot radius in m
+         * - RealDouble theta :: particle surface coverage in [-]
          *
          * OUTPUT:
          * - RealDouble :: deposition rate */
 
         /* Capacitance factor for spherical particles is C = r; */
 
-        return 4.0 * physConst::PI * r * physFunc::CorrDiffCoef_H2O( r, T, P ) * \
-               ( H2O * physConst::kB * T * 1.0E+06 - physFunc::pSat_H2Os( T ) * physFunc::Kelvin( r ) ) / \
-               ( physConst::R / MW_H2O * T + physFunc::LHeatSubl_H2O( T ) * physFunc::CorrDiffCoef_H2O( r, T, P ) * \
-                 physFunc::pSat_H2Os( T ) * ( physFunc::LHeatSubl_H2O( T ) * MW_H2O / ( physConst::R * T ) - 1.0 ) / \
-                   ( physFunc::ThermalCond( r, T, P ) * T ) );
-
+        if ( ( H2O * physConst::kB * T * 1.0E+06 / physFunc::pSat_H2Ol( T ) >= 1.0 ) && ( H2O * physConst::kB * T * 1.0E+06 / physFunc::pSat_H2Ol( T ) < 1.5 ) ) {
+            if ( ( r * r - r_0 * r_0 ) / ( r_0 * r_0 ) <= 0.5) {
+                return 4.0 * physConst::PI * r * theta * physFunc::CorrDiffCoef_H2O( r, T, P ) * \
+                       ( H2O * physConst::kB * T * 1.0E+06 - physFunc::pSat_H2Os( T ) * physFunc::Kelvin( r ) ) / \
+                       ( physConst::R / MW_H2O * T + physFunc::LHeatSubl_H2O( T ) * physFunc::CorrDiffCoef_H2O( r, T, P ) * \
+                         physFunc::pSat_H2Os( T ) * ( physFunc::LHeatSubl_H2O( T ) * MW_H2O / ( physConst::R * T ) - 1.0 ) / \
+                           ( physFunc::ThermalCond( r, T, P ) * T ) );
+            } else {
+                return 4.0 * physConst::PI * r * physFunc::CorrDiffCoef_H2O( r, T, P ) * \
+                       ( H2O * physConst::kB * T * 1.0E+06 - physFunc::pSat_H2Os( T ) * physFunc::Kelvin( r ) ) / \
+                       ( physConst::R / MW_H2O * T + physFunc::LHeatSubl_H2O( T ) * physFunc::CorrDiffCoef_H2O( r, T, P ) * \
+                         physFunc::pSat_H2Os( T ) * ( physFunc::LHeatSubl_H2O( T ) * MW_H2O / ( physConst::R * T ) - 1.0 ) / \
+                           ( physFunc::ThermalCond( r, T, P ) * T ) );
+            }
+        } else {
+            return 4.0 * physConst::PI * r * physFunc::CorrDiffCoef_H2O( r, T, P ) * \
+                   ( H2O * physConst::kB * T * 1.0E+06 - physFunc::pSat_H2Os( T ) * physFunc::Kelvin( r ) ) / \
+                   ( physConst::R / MW_H2O * T + physFunc::LHeatSubl_H2O( T ) * physFunc::CorrDiffCoef_H2O( r, T, P ) * \
+                     physFunc::pSat_H2Os( T ) * ( physFunc::LHeatSubl_H2O( T ) * MW_H2O / ( physConst::R * T ) - 1.0 ) / \
+                       ( physFunc::ThermalCond( r, T, P ) * T ) );
+        }
 
     } /* End of depositionRate */
 
-    bool isFreezable( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O, const RealDouble r0 )
+    bool isFreezable( const RealDouble r, const RealDouble T, const RealDouble H2O, const RealDouble r0 )
     {
 
         /* DESCRIPTION:
