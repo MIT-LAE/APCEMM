@@ -136,7 +136,7 @@ namespace AIM
         const RealDouble b = - 2.66379E-03 + 5.04022E-05 * lognSulf + logRH * ( - 1.83289E-04 \
                              + logRH * ( - 1.79059E-05 + logRH * ( - 1.50345E-06 ) ) );
 
-        return a + T * b;
+        return std::min( std::max( a + T * b, 0.0 ), 1.0 );
 
     } /* End of x_star */
 
