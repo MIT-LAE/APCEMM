@@ -237,7 +237,7 @@ namespace AIM
         
         return exp( a + logRH * ( b + logRH * ( c + logRH * d ) ) \
                    + lognSulf * ( ( e + logRH * ( f + logRH * g ) ) \
-                   + lognSulf * ( h + logRH * i ) + lognSulf * j ) );
+                   + lognSulf * ( h + logRH * i  + lognSulf * j ) ) );
 
     } /* End of nTot */
 
