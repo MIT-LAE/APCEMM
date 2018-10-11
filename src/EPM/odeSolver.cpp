@@ -152,12 +152,12 @@ namespace EPM
 
     } /* End of odeSolver::getState */
 
-    streamingObserver::streamingObserver( Vector_2D &states, Vector_1D &times, const char* filename, UInt write_every ):
+    streamingObserver::streamingObserver( Vector_2D &states, Vector_1D &times, std::vector<UInt> indices, const char* filename, UInt write_every ):
         m_write_every( write_every ),
-        m_count( 0 ),
         fileName( filename ),
         m_states( states ),
-        m_times( times )
+        m_times( times ),
+        m_indices( indices )
 
     {
 
@@ -191,7 +191,7 @@ namespace EPM
     {
 
         if ( ( m_count % m_write_every ) == 0 ) {
-         
+        
             m_states.push_back( x );
             m_times.push_back( t );
 
@@ -200,6 +200,13 @@ namespace EPM
         }
 
     } /* End of streamingObserver::operator() */
+
+    RealDouble streamingObserver::getLastElement( ) const
+    {
+
+        return m_states[m_count][0];
+
+    } /* End of streamingObserver::getLastElement */
 
     void streamingObserver::print2File( ) const
     {
@@ -222,24 +229,31 @@ namespace EPM
              * - Water molecular concentration [molecules/cm^3] 
              * - Saturation with respect to ice [-]
              * - Saturation with respect to liquid water [-]
+             * - TBC ...
              * - */
 
             file << std::setw(prec+8) << "Time [s], ";
+            file << std::setw(prec+8) << "Tracer [-], ";
             file << std::setw(prec+8) << "Temp. [K], ";
             file << std::setw(prec+8) << "Pres. [Pa], ";
             file << std::setw(prec+8) << "H2O [/cm3], ";
             file << std::setw(prec+8) << "RH_i [-], ";
             file << std::setw(prec+8) << "RH_w [-], ";
             file << std::setw(prec+8) << "SO4 [/cm3], ";
+            file << std::setw(prec+8) << "SO4g [/cm3], ";
+            file << std::setw(prec+8) << "SO4l [/cm3], ";
+            file << std::setw(prec+8) << "SO4s [/cm3], ";
             file << std::setw(prec+8) << "SO4Sat [-], ";
             file << std::setw(prec+8) << "HNO3 [/cm3], ";
             file << std::setw(prec+8) << "HNO3Sat[-], ";
             file << std::setw(prec+8) << "Part[/cm3], ";
             file << std::setw(prec+8) << "Rad[mum], ";
+            file << std::setw(prec+8) << "Theta1[-], ";
+            file << std::setw(prec+8) << "Theta2[-], ";
 
             /* New line */
             file << "\n";
-            file << std::setfill('-') << std::setw(12*(prec+8)) << "-";
+            file << std::setfill('-') << std::setw(18*(prec+8)) << "-";
 
             file << std::setfill(' ');
 
@@ -255,47 +269,71 @@ namespace EPM
                 file << m_times[counter];
                 file << sep;
 
+                /* Print tracer dilution ratio [-] */
+                file << m_states[counter][m_indices[0]];
+                file << sep;
+
                 /* Print temperature [K] */
-                file << m_states[counter][0];
+                file << m_states[counter][m_indices[1]];
                 file << sep;
                 
-                /* Print pressure [K] */
-                file << m_states[counter][1];
+                /* Print pressure [Pa] */
+                file << m_states[counter][m_indices[2]];
                 file << sep;
                 
                 /* Print gaseous water molecular concentration [molec/cm^3] */
-                file << m_states[counter][2];
+                file << m_states[counter][m_indices[3]];
                 file << sep;
 
                 /* Print rel. humidities [-] */
-                file << m_states[counter][2] * physConst::kB * m_states[counter][0] * 1.0E+06 / physFunc::pSat_H2Os( m_states[counter][0] );
+                file << m_states[counter][m_indices[3]] * physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 / physFunc::pSat_H2Os( m_states[counter][m_indices[1]] );
                 file << sep;
-                file << m_states[counter][2] * physConst::kB * m_states[counter][0] * 1.0E+06 / physFunc::pSat_H2Ol( m_states[counter][0] );
+                file << m_states[counter][m_indices[3]] * physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 / physFunc::pSat_H2Ol( m_states[counter][m_indices[1]] );
                 file << sep;
                 
                 /* Print gaseous SO4 molecular concentration [molec/cm^3] */
-                file << m_states[counter][3];
+                file << m_states[counter][m_indices[4]];
                 file << sep;
                 
+                /* Print gaseous SO4 gaseous molecular concentration [molec/cm^3] */
+                file << m_states[counter][m_indices[6]];
+                file << sep;
+
+                /* Print gaseous SO4 liquid molecular concentration [molec/cm^3] */
+                file << m_states[counter][m_indices[5]];
+                file << sep;
+                
+                /* Print gaseous SO4 on part [molec/cm^3] */
+                file << m_states[counter][m_indices[7]];
+                file << sep;
+
                 /* Print SO4 saturation [-] */
-                file << m_states[counter][3] * physConst::kB * m_states[counter][0] * 1.0E+06 / physFunc::pSat_H2SO4( m_states[counter][0] );
+                file << ( m_states[counter][m_indices[5]] + m_states[counter][m_indices[6]] ) * physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 / physFunc::pSat_H2SO4( m_states[counter][m_indices[1]] );
                 file << sep;
                 
                 /* Print gaseous HNO3 molecular concentration [molec/cm^3] */
-                file << m_states[counter][4];
+                file << m_states[counter][m_indices[8]];
                 file << sep;
                 
                 /* Print HNO3 saturation [-] */
-                file << m_states[counter][4] * physConst::kB * m_states[counter][0] * 1.0E+06 / physFunc::pSat_HNO3( m_states[counter][0], \
-                        m_states[counter][2] * physConst::kB * m_states[counter][0] * 1.0E+06 );
+                file << m_states[counter][m_indices[8]] * physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 / physFunc::pSat_HNO3( m_states[counter][m_indices[1]], \
+                        m_states[counter][m_indices[2]] * physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 );
                 file << sep;
                 
                 /* Print particle concentration [#/cm^3] */
-                file << m_states[counter][5];
+                file << m_states[counter][m_indices[9]];
                 file << sep;
                 
                 /* Print particle concentration [mum] */
-                file << m_states[counter][6] * 1.0E+06;
+                file << m_states[counter][m_indices[10]] * 1.0E+06;
+                file << sep;
+                
+                /* Print soot coverage [-] */
+                file << m_states[counter][m_indices[11]];
+                file << sep;
+                
+                /* Print soot coverage [-] */
+                file << m_states[counter][m_indices[12]];
                 file << sep;
 
             }

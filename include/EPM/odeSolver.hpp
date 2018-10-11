@@ -88,14 +88,15 @@ class EPM::streamingObserver
 
     public:
 
-        streamingObserver( Vector_2D &states, Vector_1D &times, const char* fileName, UInt write_every = 100 );
+        streamingObserver( Vector_2D &states, Vector_1D &times, std::vector<UInt> indices, const char* fileName = "", UInt write_every = 100 );
         ~streamingObserver( );
         streamingObserver& operator=( const streamingObserver &obs );
         void operator()( const Vector_1D &x, double t );
+        RealDouble getLastElement() const;
         void print2File( ) const;
 
         UInt m_write_every;
-        UInt m_count;
+        UInt m_count = 0;
         const char* fileName;
 
         Vector_2D &m_states;
@@ -104,6 +105,8 @@ class EPM::streamingObserver
     protected:
 
     private:
+        
+        const std::vector<UInt> m_indices;
 
 };
 
