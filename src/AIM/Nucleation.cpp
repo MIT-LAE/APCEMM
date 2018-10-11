@@ -24,7 +24,8 @@ namespace AIM
      * Acid-Water Nucleation Rates for Tropospheric and Stratospheric Conditions." 
      * Journal of Geophysical Research-Atmospheres 107, no. D22 (2002). */
 
-    /* Fit is valid in the temperature range 233 - 323 K */
+    /* Fit is valid in the temperature range 230.15 - 320.15 K but can be extended
+     * down to 190K (Vehkamaki, 2002) */
 
     /* If f(x) = a_0 + a_1 * x + a_2 * x^2 + a_3 * x^3 + a_4 * x_4 + ...
      * Data is computed as:
@@ -48,8 +49,8 @@ namespace AIM
         if ( T > 305.15 )
             T = 305.15;
 
-        if ( T < 230.15 )
-            T = 230.15;
+        if ( T < 190.0 )
+            T = 190.0;
 
         const RealDouble a = + 1.1864E-01 + x_m * ( - 1.1651E-01 + x_m * ( + 7.6852E-01 \
                              + x_m * ( - 2.40909E-00 + x_m * ( + 2.95434E-00 + x_m * ( - 1.25852E-00 ) ) ) ) );
@@ -80,8 +81,8 @@ namespace AIM
         if ( T > 305.15 )
             T = 305.15;
 
-        if ( T < 230.15 )
-            T = 230.15;
+        if ( T < 190.0 )
+            T = 190.0;
 
         const RealDouble a = + 7.681724E+02 + x_m * ( + 2.1847140E+03 + x_m * ( + 7.163002E+03 \
                              + x_m * ( - 4.431447E+04 + x_m * ( + 8.875606E+04 + x_m * ( - 7.573729E+04 \
@@ -116,7 +117,7 @@ namespace AIM
             nSulf = 1.0E+11;
 
         if ( RH > 1.0E+00 )
-            RH = 1;
+            RH = 1.0E+00;
 
         if ( RH < 1.0E-04 )
             RH = 1.0E-04;
@@ -124,8 +125,8 @@ namespace AIM
         if ( T > 305.15 )
             T = 305.15;
 
-        if ( T < 230.15 )
-            T = 230.15;
+        if ( T < 190.0 )
+            T = 190.0;
 
         const double logRH    = log(RH);
         const double lognSulf = log(nSulf);
@@ -167,8 +168,8 @@ namespace AIM
         if ( T > 305.15 )
             T = 305.15;
 
-        if ( T < 230.15 )
-            T = 230.15;
+        if ( T < 190.0 )
+            T = 190.0;
 
         const RealDouble a = + 1.43090E-01 + T * ( + 2.21956E-00 + T * ( - 2.73911E-02 + T * 7.22811E-05 ) ) + 5.91822E-00 / x_m;
         const RealDouble b = + 1.17489E-01 + T * ( + 4.62532E-01 + T * ( - 1.18059E-02 + T * 4.04196E-05 ) ) + 1.57963E+01 / x_m;
@@ -218,8 +219,8 @@ namespace AIM
         if ( T > 305.15 )
             T = 305.15;
 
-        if ( T < 230.15 )
-            T = 230.15;
+        if ( T < 190.0 )
+            T = 190.0;
 
         const RealDouble a = - 2.95413E-03 + T * ( - 9.76834E-02 + T * ( + 1.02485E-03 - T * 2.18646E-06 ) ) - 1.01717E-01 / x_m;
         const RealDouble b = - 2.05064E-03 + T * ( - 7.58504E-03 + T * ( + 1.92654E-04 - T * 6.70430E-07 ) ) - 2.55774E-01 / x_m;
