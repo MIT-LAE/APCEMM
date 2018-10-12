@@ -1,3 +1,27 @@
+# BOF
+#
+# Lines starting with the "#" symbol are not read! Use it for writting comments.
+#
+# This file includes ambient conditions which are read by APCEMM.
+#
+# Ambient gaseous mixing ratios are formatted in the following way:
+# ----------
+#   # SPC
+#   Value
+# ----------
+# where SPC is the species name and Value is the species' mixing ratio.
+#
+# Aerosol background conditions are formatted in the following way:
+#
+# ----------
+#   # Aer
+#   Value
+# ----------
+# where Aer is the aerosol name and Value is the aerosol's background concentration in [#/cm^3].
+#
+#
+# Gaseous species:
+#
 # CO2
 3.600E-04
 # PPN
@@ -55,7 +79,7 @@
 # PRPN
 1.230E-21
 # SO4
-1.000E-70
+1.000E-15
 # Br2
 1.230E-21
 # ETHLN
@@ -268,3 +292,12 @@
 2.095E-01
 # RCOOH
 1.230E-21
+#
+#
+# Aerosols:
+#
+# Soot
+0.05
+#
+#
+# EOF
