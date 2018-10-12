@@ -157,7 +157,7 @@
 #define ind_O2               133        
 #define ind_RCOOH            134        
 
-/* Index declaration for fixed species in FIX */
+/* Index declaration for fixed species */
 
 #define indf_ACTA            0          
 #define indf_EOH             1          
@@ -167,5 +167,9 @@
 #define indf_N2              5          
 #define indf_O2              6          
 #define indf_RCOOH           7          
+
+/* Index declaration for aerosol */
+
+#define ind_SOOT             0
 
 #endif /* MONITOR_H_INCLUDED */

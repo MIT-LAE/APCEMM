@@ -45,6 +45,7 @@ class Solution
         void applyAmbient( double varArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int ambIndex );
         void addEmission( const Emission &EI, const Aircraft &ac, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing );
         std::vector<double> getAmbient( ) const;
+        std::vector<double> getAerosol( ) const;
         unsigned int getNx() const;
         unsigned int getNy() const;
         void Debug( double airDens );
@@ -80,6 +81,7 @@ class Solution
     private:
 
         const unsigned int nVariables;
+        const unsigned int nAer;
         const unsigned int size_x;
         const unsigned int size_y;
 

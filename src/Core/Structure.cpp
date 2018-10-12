@@ -14,7 +14,7 @@
 #include "Core/Structure.hpp"
 
 Solution::Solution( const unsigned int nVar, const unsigned int n_x, const unsigned int n_y ) : \
-        nVariables( nVar ), size_x( n_x ), size_y( n_y )
+        nVariables( nVar ), nAer( 1 ), size_x( n_x ), size_y( n_y )
 {
     /* Constructor */
 
@@ -74,7 +74,8 @@ void Solution::Print( std::vector<std::vector<double> >& vector_2D, unsigned int
 void Solution::Initialize( char const *fileName, double temperature, double airDens, double relHum )
 {
 
-    std::vector<double> amb_Value(nVariables);
+    std::vector<double> amb_Value(nVariables, 0.0);
+    std::vector<double> aer_Value(nAer, 0.0);
     std::ifstream file;
 
     file.open( fileName );
@@ -85,10 +86,15 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
         std::string line;
         unsigned int i = 0;
 
-        while ( std::getline( file, line ) ) {
+        while ( ( std::getline( file, line ) ) && ( i < nVariables + nAer ) ) {
             if ( line[0] != '#' ) {
                 std::istringstream iss(line);
-                iss >> amb_Value[i];
+                if ( i < nVariables ) {
+                    iss >> amb_Value[i];
+                }
+                else if ( ( i >= nVariables ) && ( i < nVariables + nAer ) ) {
+                    iss >> aer_Value[i - nVariables];
+                }
                 i++;
             }
         }
@@ -259,7 +265,7 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
     SetShape( HOBrL, size_x, size_y, (double) 0.0 );
 
     /* Aerosols */
-    SetShape( Soot, size_x, size_y, (double) 0.0 );
+    SetShape( Soot, size_x, size_y, (double) aer_Value[  0] );
     SetShape( SLA , size_x, size_y, (double) 0.0 );
     SetShape( SPA , size_x, size_y, (double) 0.0 );
 
@@ -1052,6 +1058,16 @@ std::vector<double> Solution::getAmbient() const
     return ambVector;
 
 } /* End of Solution::getAmbient */
+
+std::vector<double> Solution::getAerosol( ) const
+{
+
+    std::vector<double> aerVector( nAer, 0.0 );
+    aerVector[  0] = Soot[0][0];
+
+    return aerVector;
+
+} /* End of Solution::getAerosol */
 
 unsigned int Solution::getNx() const
 {

@@ -20,7 +20,7 @@ Ambient::Ambient( )
 
 } /* End of Ambient::Ambient */
 
-Ambient::Ambient( unsigned int nTime_, std::vector<double> ambientVector )
+Ambient::Ambient( unsigned int nTime_, std::vector<double> ambientVector, std::vector<double> aerVector )
 {
 
     /* Constructor */
@@ -163,6 +163,8 @@ Ambient::Ambient( unsigned int nTime_, std::vector<double> ambientVector )
     N2       = ambientVector[132];
     O2       = ambientVector[133];
     RCOOH    = ambientVector[134];
+
+    soot.assign     ( nTime, aerVector[  0] );
 
 } /* End of Ambient::Ambient */
 
@@ -468,7 +470,7 @@ Ambient& Ambient::operator=( const Ambient &a )
 
 } /* End of Ambient::operator= */
 
-void Ambient::getData( double varArray[], double fixArray[], unsigned int iTime ) const
+void Ambient::getData( double varArray[], double fixArray[], double aerArray[], unsigned int iTime ) const
 {
 
     varArray[  0] = CO2[iTime];
@@ -606,7 +608,9 @@ void Ambient::getData( double varArray[], double fixArray[], unsigned int iTime 
     fixArray[  5] = N2;
     fixArray[  6] = O2;
     fixArray[  7] = RCOOH;
-    
+   
+    aerArray[  0] = soot[iTime];
+
     /* Ensure positiveness */
     for ( unsigned int i = 0; i < N_VAR; i++ ) {
         if ( varArray[i] <= 0.0 ) {
