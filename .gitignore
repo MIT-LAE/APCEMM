@@ -6,6 +6,11 @@
 *.o
 *.so
 
+# KPP files #
+#############
+*.kpp
+*.map
+
 # Packages #
 ############
 *.7z
