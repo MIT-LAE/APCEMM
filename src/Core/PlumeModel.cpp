@@ -193,7 +193,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /** ~~~~~~~~~~~~~~~~~ **/
     
     /* Assign solution structure */
-    Solution Data(N_SPC, NX, NY);
+    Solution Data;
 
     /* Compute airDens from pressure and temperature */
     double airDens = pressure_Pa / ( physConst::kB   * temperature_K ) * 1.00E-06;
@@ -284,7 +284,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     double fixArray[N_FIX];
    
     /* aerArray stores all the number concentrations of aerosols */
-    double aerArray[1];
+    double aerArray[N_AER][2];
 
     /* Ambient chemistry */
     ambientData.getData( varArray, fixArray, aerArray, nTime );

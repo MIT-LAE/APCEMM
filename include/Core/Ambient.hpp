@@ -24,11 +24,11 @@ class Ambient
     public:
 
         Ambient( );
-        Ambient( unsigned int nTime, std::vector<double> ambientVector, std::vector<double> aerVector );
+        Ambient( unsigned int nTime, std::vector<double> ambientVector, std::vector<std::vector<double> > aerVector );
         ~Ambient( );
         Ambient( const Ambient &a );
         Ambient& operator=( const Ambient &a );
-        void getData( double varArray[], double fixArray[], double aerArray[], unsigned int iTime ) const;
+        void getData( double varArray[], double fixArray[], double aerArray[][2], unsigned int iTime ) const;
         void FillIn( double varArray[], unsigned int iTime );
         unsigned int getnTime() const;
 
@@ -39,7 +39,9 @@ class Ambient
         double ACTA, EOH, H2, HCOOH, MOH, N2, O2, RCOOH;
 
         /* Aerosols */
-        std::vector<double> soot;
+        std::vector<double> sootDens, sootRadi, sootArea, \
+                            iceDens , iceRadi , iceArea , \
+                            sulfDens, sulfRadi, sulfArea;
 
     protected:
 

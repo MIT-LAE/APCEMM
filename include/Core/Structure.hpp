@@ -32,7 +32,7 @@ class Solution
 {
     public:
 
-        Solution( const unsigned int nVar, const unsigned int n_x, const unsigned int n_y );
+        Solution();
         ~Solution();
         void Clear( std::vector<std::vector<double> >& vector_2D );
         void SetShape( std::vector<std::vector<double> >& vector_2D, unsigned int n_x, unsigned int n_y, double value = 0.0 );
@@ -45,7 +45,10 @@ class Solution
         void applyAmbient( double varArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int ambIndex );
         void addEmission( const Emission &EI, const Aircraft &ac, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing );
         std::vector<double> getAmbient( ) const;
-        std::vector<double> getAerosol( ) const;
+        std::vector<std::vector<double> > getAerosol( ) const;
+        std::vector<double> getAerosolDens( ) const;
+        std::vector<double> getAerosolRadi( ) const;
+        std::vector<double> getAerosolArea( ) const;
         unsigned int getNx() const;
         unsigned int getNy() const;
         void Debug( double airDens );
@@ -76,7 +79,9 @@ class Solution
         std::vector<std::vector<double> > H2OS, HNO3S;
 
         /* Aerosols */
-        std::vector<std::vector<double> > Soot, SLA, SPA;
+        std::vector<std::vector<double> > sootDens, sootRadi, sootArea, \
+                                          iceDens , iceRadi , iceArea , \
+                                          sulfDens, sulfRadi, sulfArea;
 
     private:
 

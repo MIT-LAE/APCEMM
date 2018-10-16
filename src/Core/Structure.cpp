@@ -13,8 +13,8 @@
 
 #include "Core/Structure.hpp"
 
-Solution::Solution( const unsigned int nVar, const unsigned int n_x, const unsigned int n_y ) : \
-        nVariables( nVar ), nAer( 1 ), size_x( n_x ), size_y( n_y )
+Solution::Solution( ) : \
+        nVariables( N_SPC ), nAer( N_AER ), size_x( NX ), size_y( NY )
 {
     /* Constructor */
 
@@ -75,7 +75,7 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
 {
 
     std::vector<double> amb_Value(nVariables, 0.0);
-    std::vector<double> aer_Value(nAer, 0.0);
+    std::vector<std::vector<double> > aer_Value(nAer, std::vector<double>(2, 0.0));
     std::ifstream file;
 
     file.open( fileName );
@@ -87,13 +87,16 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
         unsigned int i = 0;
 
         while ( ( std::getline( file, line ) ) && ( i < nVariables + nAer ) ) {
-            if ( line[0] != '#' ) {
+            if ( ( line != "\r" ) && ( line != "\n" ) && ( line[0] != '#' ) ) {
                 std::istringstream iss(line);
                 if ( i < nVariables ) {
                     iss >> amb_Value[i];
                 }
                 else if ( ( i >= nVariables ) && ( i < nVariables + nAer ) ) {
-                    iss >> aer_Value[i - nVariables];
+                    iss >> aer_Value[i - nVariables][0];
+                    std::getline( file, line );
+                    std::istringstream iss(line);
+                    iss >> aer_Value[i - nVariables][1];
                 }
                 i++;
             }
@@ -104,6 +107,11 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
     {
         std::string const currFunc("Structure::Initialize");
         std::cout << "ERROR: In " << currFunc << ": Can't read (" << fileName << ")" << std::endl;
+    }
+
+    for ( int i = 0; i < N_AER; i++ ) {
+        std::cout << "Index: " << i << " , amb_Value = " << aer_Value[i][0] << "\n";
+        std::cout << "Index: " << i << " , amb_Value = " << aer_Value[i][1] << "\n";
     }
 
     /* Gaseous species */
@@ -265,9 +273,16 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
     SetShape( HOBrL, size_x, size_y, (double) 0.0 );
 
     /* Aerosols */
-    SetShape( Soot, size_x, size_y, (double) aer_Value[  0] );
-    SetShape( SLA , size_x, size_y, (double) 0.0 );
-    SetShape( SPA , size_x, size_y, (double) 0.0 );
+    /* Assume that soot particles are monodisperse */
+    SetShape( sootDens , size_x, size_y, (double) aer_Value[  0][0] );
+    SetShape( sootRadi , size_x, size_y, (double) aer_Value[  0][1] );
+    SetShape( sootArea , size_x, size_y, (double) 4.0 / double(3.0) * physConst::PI * aer_Value[  0][0] * aer_Value[  0][1] * aer_Value[  0][1] * aer_Value[  0][1] );
+    SetShape( iceDens  , size_x, size_y, (double) aer_Value[  1][0] );
+    SetShape( iceRadi  , size_x, size_y, (double) aer_Value[  1][0] );
+    SetShape( iceArea  , size_x, size_y, (double) 0.0 );
+    SetShape( sulfDens , size_x, size_y, (double) aer_Value[  2][0] );
+    SetShape( sulfRadi , size_x, size_y, (double) aer_Value[  2][0] );
+    SetShape( sulfArea , size_x, size_y, (double) 0.0 );
 
 } /* End of Solution::Initialize */
 
@@ -1059,15 +1074,56 @@ std::vector<double> Solution::getAmbient() const
 
 } /* End of Solution::getAmbient */
 
-std::vector<double> Solution::getAerosol( ) const
+std::vector<std::vector<double> > Solution::getAerosol( ) const
 {
 
-    std::vector<double> aerVector( nAer, 0.0 );
-    aerVector[  0] = Soot[0][0];
+    std::vector<std::vector<double> > aerVector( nAer, std::vector<double>( 2, 0.0 ) );
+    aerVector[  0][0] = sootDens[0][0];
+    aerVector[  0][1] = sootRadi[0][0];
+    aerVector[  1][0] = iceDens[0][0];
+    aerVector[  1][1] = iceRadi[0][0];
+    aerVector[  2][0] = sulfDens[0][0];
+    aerVector[  2][1] = sulfRadi[0][0];
 
     return aerVector;
 
 } /* End of Solution::getAerosol */
+
+std::vector<double> Solution::getAerosolDens( ) const
+{
+
+    std::vector<double> aerVector( nAer, 0.0 );
+    aerVector[  0] = sootDens[0][0];
+    aerVector[  1] = iceDens[0][0];
+    aerVector[  2] = sulfDens[0][0];
+
+    return aerVector;
+
+} /* End of Solution::getAerosolDens */
+
+std::vector<double> Solution::getAerosolRadi( ) const
+{
+
+    std::vector<double> aerVector( nAer, 0.0 );
+    aerVector[  0] = sootRadi[0][0];
+    aerVector[  1] = iceRadi[0][0];
+    aerVector[  2] = sulfRadi[0][0];
+
+    return aerVector;
+
+} /* End of Solution::getAerosolRadi */
+
+std::vector<double> Solution::getAerosolArea( ) const
+{
+
+    std::vector<double> aerVector( nAer, 0.0 );
+    aerVector[  0] = sootArea[0][0];
+    aerVector[  1] = iceArea[0][0];
+    aerVector[  2] = sulfArea[0][0];
+
+    return aerVector;
+
+} /* End of Solution::getAerosolArea */
 
 unsigned int Solution::getNx() const
 {

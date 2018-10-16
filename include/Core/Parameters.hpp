@@ -67,6 +67,8 @@
 #define KPP_RTOLS             1.00E-03    /* Relative tolerances in KPP */
 #define KPP_ATOLS             1.00E-03    /* Absolute tolerances in KPP */
 
+/* Aerosol parameters */
+#define N_AER                 3           /* Number of aerosols considered */
 
 /* Microphysics parameters */
 #define SO4_R_LOW             1.00E-10    /* Sulfates' lower bin radius [m] */
