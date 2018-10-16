@@ -15,7 +15,42 @@
 
 namespace AIM
 {
-    
+
+    Aerosol::Aerosol( ):
+        bin_Centers( 24 ),
+        bin_VCenters( 24 ),
+        bin_Edges( 25 ),
+        bin_Sizes( 24 ),
+        nBin( 24 ),
+        pdf( 24 )
+    {
+
+        /* Default constructor */
+
+        for ( UInt iBin = 0; iBin < nBin + 1; iBin++ ) {
+            bin_Edges[iBin] = 0.1E-07 * pow( 1.2, iBin / RealDouble(3.0) );
+        }
+
+        for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+            bin_Centers[iBin] = 0.5 * ( bin_Edges[iBin] + bin_Edges[iBin+1] );
+            bin_VCenters[iBin] = 4.0 / RealDouble(3.0) * physConst::PI * bin_Centers[iBin] * bin_Centers[iBin] * bin_Centers[iBin];
+            bin_Sizes[iBin] = bin_Edges[iBin+1] - bin_Edges[iBin];
+        }
+
+        nPart = 1.0;
+
+        type = "lognormal";
+
+        mu = 0;
+        sigma = 0;
+        alpha = 0;
+
+        for ( UInt iBin = 0; iBin < nBin; iBin++ )
+            pdf[iBin] = 0.0;
+        
+
+    } /* End of Aerosol::Aerosol */
+
     Aerosol::Aerosol( Vector_1D bin_Centers_, Vector_1D bin_Edges_, RealDouble nPart_, RealDouble mu_, RealDouble sigma_, const char* distType, RealDouble alpha_, RealDouble gamma_, RealDouble b_ ): 
         bin_VCenters( bin_Centers_.size() ),
         bin_Sizes( bin_Centers_.size() ),
@@ -163,7 +198,7 @@ namespace AIM
 
     } /* End of Aerosol::~Aerosol */
 
-    Aerosol Aerosol::operator=( const Aerosol &rhs )
+    Aerosol& Aerosol::operator=( const Aerosol &rhs )
     {
 
         if ( &rhs == this )
@@ -501,6 +536,18 @@ namespace AIM
         }
 
     } /* End of Aerosol::scalePdf */
+
+    void Aerosol::updatePdf( Vector_1D pdf_ )
+    {
+
+        if ( pdf_.size() != pdf.size() ) {
+            std::cout << "\nIn Aerosol::updatePdf:: sizes differ ( " << pdf_.size() << " != " << pdf.size() << " )\n";
+        }
+        else {
+            pdf = pdf_;
+        }
+
+    } /* End of Aerosol::updatePdf */
 
     Vector_1D Aerosol::getBinCenters() const
     {

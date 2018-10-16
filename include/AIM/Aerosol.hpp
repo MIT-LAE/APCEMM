@@ -36,6 +36,9 @@ class AIM::Aerosol
 
     public:
 
+        /* Default constructor */
+        Aerosol( );
+
         /* Constructor */
         Aerosol( Vector_1D bin_Centers, Vector_1D bin_Edges, RealDouble nPart, RealDouble mu, RealDouble sigma, const char* distType = "lognormal", RealDouble alpha_ = -1.0, RealDouble gamma_ = -1.0, RealDouble b_ = 0.0 );
 
@@ -46,7 +49,7 @@ class AIM::Aerosol
         ~Aerosol();
 
         /* Operators */
-        Aerosol operator=( const Aerosol &rhs );
+        Aerosol& operator=( const Aerosol &rhs );
         Aerosol operator+=( const Aerosol &rhs );
         Aerosol operator-=( const Aerosol &rhs );
         Aerosol operator+( const Aerosol &rhs ) const;
@@ -64,6 +67,7 @@ class AIM::Aerosol
 
         /* utils */
         void scalePdf( RealDouble factor );
+        void updatePdf( Vector_1D pdf_ );
 
         /* gets */
         Vector_1D getBinCenters() const;
