@@ -300,6 +300,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aerArray, aircraft, EI, \
                     Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, SO4Aer, Area );
 
+    std::cout << SO4Aer.Moment() << "\n";
+
+    std::cout << Area << "\n";
+
     /** ~~~~~~~~~~~~~~~~~ **/
     /**      Rings?       **/
     /** ~~~~~~~~~~~~~~~~~ **/
