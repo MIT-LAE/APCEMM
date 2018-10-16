@@ -207,7 +207,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         Data.Debug( airDens );
 
     /* Create ambient struture */
-    Ambient ambientData( timeArray.size(), Data.getAmbient() );
+    Ambient ambientData( timeArray.size(), Data.getAmbient(), Data.getAerosol() );
     
     
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -282,9 +282,12 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     
     /* fixArray stores all the concentrations of fixed species */
     double fixArray[N_FIX];
-    
+   
+    /* aerArray stores all the number concentrations of aerosols */
+    double aerArray[1];
+
     /* Ambient chemistry */
-    ambientData.getData( varArray, fixArray, nTime );
+    ambientData.getData( varArray, fixArray, aerArray, nTime );
 
     
     
@@ -292,7 +295,14 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /**    Early Microphysics   **/
     /** ~~~~~~~~~~~~~~~~~~~~~~~ **/
 
-    EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aircraft, EI );
+    double Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, Area; 
+    AIM::Aerosol SO4Aer;
+    EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aerArray, aircraft, EI, \
+                    Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, SO4Aer, Area );
+
+    std::cout << SO4Aer.Moment() << "\n";
+
+    std::cout << Area << "\n";
 
     /** ~~~~~~~~~~~~~~~~~ **/
     /**      Rings?       **/
@@ -509,7 +519,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             }
 
             /* Ambient chemistry */
-            ambientData.getData( varArray, fixArray, nTime );
+            ambientData.getData( varArray, fixArray, aerArray, nTime );
 
             /* Call KPP */
             KPP_Main( varArray, fixArray, curr_Time_s, dt, \

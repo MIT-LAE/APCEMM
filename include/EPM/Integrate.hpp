@@ -40,8 +40,8 @@ namespace EPM
     static const int EPM_FAILURE = 0;
 
     /* Vortex sinking timescales, taken from Unterstrasser et al., 2008 */
-    const RealDouble t_Vortex_0 = 8.0;
-    const RealDouble t_Vortex_1 = 110.0;
+    const RealDouble t_Vortex_0 = 8.00E+00;
+    const RealDouble t_Vortex_1 = 1.10E+02;
 
     /* Dilution timescales for a B747, taken from:
      * B. Kärcher, "A trajectory box model for aircraft exhaust plumes", Journal of Geophysical Research, 1995 */
@@ -66,8 +66,10 @@ namespace EPM
     const RealDouble Ab0 = 1.804;
 
 
-    int Integrate( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], const Aircraft &ac, const Emission &EI );
-    int RunMicrophysics( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], const Aircraft &ac, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T );
+    int Integrate( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[], const Aircraft &AC, const Emission &EI, \
+                   RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area );
+    int RunMicrophysics( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[], const Aircraft &AC, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T, \
+                         RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area );
     RealDouble dT_Vortex( const RealDouble time, const RealDouble delta_T, bool deriv = 0 );
     RealDouble dilutionRatio( const RealDouble time );
     RealDouble depositionRate( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O, const RealDouble r_0,  const RealDouble theta );
