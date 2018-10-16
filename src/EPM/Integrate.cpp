@@ -16,7 +16,7 @@
 namespace EPM
 {
 
-    int Integrate( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[], const Aircraft &AC, const Emission &EI, \
+    int Integrate( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
                    RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area )
     {
 
@@ -44,7 +44,7 @@ namespace EPM
 
     } /* End of Integrate */
 
-    int RunMicrophysics( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[], const Aircraft &AC, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T, \
+    int RunMicrophysics( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T, \
                          RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area )
     {
     
@@ -131,11 +131,11 @@ namespace EPM
        
 
         /* Store ambient concentrations */
-        RealDouble H2O_amb  = varArray[ind_H2O];  /* [molec/cm^3] */
-        RealDouble SO4_amb  = varArray[ind_SO4];  /* [molec/cm^3] */
-        RealDouble SO4l_amb, SO4g_amb;            /* [molec/cm^3] */
-        RealDouble HNO3_amb = varArray[ind_HNO3]; /* [molec/cm^3] */
-        RealDouble Soot_amb = aerArray[ind_SOOT]; /* [#/cm^3] */
+        RealDouble H2O_amb  = varArray[ind_H2O];     /* [molec/cm^3] */
+        RealDouble SO4_amb  = varArray[ind_SO4];     /* [molec/cm^3] */
+        RealDouble SO4l_amb, SO4g_amb;               /* [molec/cm^3] */
+        RealDouble HNO3_amb = varArray[ind_HNO3];    /* [molec/cm^3] */
+        RealDouble Soot_amb = aerArray[ind_SOOT][0]; /* [#/cm^3] */
 
         /* Add emissions of one engine to concentration arrays */
         varArray[ind_H2O] += EI.getH2O() / ( MW_H2O  * 1.0E+03 ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() * physConst::Na / Ac0     * 1.00E-06;
@@ -337,7 +337,7 @@ namespace EPM
                                         - ( isFreezable( m_part_r, x[EPM_ind_T], x[EPM_ind_H2O], m_part_r0 ) \
                                           * depositionRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], m_part_r0, x[EPM_ind_the1] + x[EPM_ind_the2] ) \
                                           + condensationRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], x[EPM_ind_the1] + x[EPM_ind_the2] ) ) \
-                                          * m_part_r * physConst::Na / MW_H2O
+                                          * x[EPM_ind_Part] * physConst::Na / MW_H2O
                                         - nucRate * ( 1.0 - x_SO4 ) * nMolec;
                     /* Unit check:
                      * [1/s] * ( [molec/cm3] - [molec/cm^3] ) = [molec/cm^3/s]
