@@ -1,5 +1,7 @@
 #------------------------------------------------------------------------------
-#      							C++ - APCEMM                                  #
+#                 MIT Laboratory for Aviation and the Environment
+#------------------------------------------------------------------------------
+#                               C++ - APCEMM                                  #
 #      A(ircraft) P(lume) C(hemistry) E(mission) M(icrophysics) M(odel)       #
 #------------------------------------------------------------------------------
 #
@@ -15,32 +17,72 @@
 
 # Variable    Descripton
 # --------    ----------
-# APCEMMDIR	  Specifies the directory where APCEMM's core routines are found
-# KPPDIR      Specifies the directory where the KPP routines are found
 #
 # !REVISION HISTORY:
-# 4 Sep 2018 - T. Fritz - Initial version
-
+# 04 Sep 2018 - T. Fritz - Initial version
+# 27 Sep 2018 - T. Fritz - Added MAKE for all modules
+# 03 Oct 2018 - T. Fritz - Architecture change
 #------------------------------------------------------------------------------
 
 # Directories
-APCEMMDIR := Core
-KPPDIR    := KPP
-SANDSDIR  := SANDS
-
+SRC_DIR    :=src
+APCEMM_DIR :=$(SRC_DIR)/Core
+LIB_DIR    :=lib
+APP_DIR    :=object
 ###############################################################################
-###																			###
-###							Makefile targets								###
-###																			###
+###                                                                         ###
+###                         Makefile targets                                ###
+###                                                                         ###
 ###############################################################################
 
+.PHONY: all build exe clean realclean debug wipeout help headerinfo
+.PHONY: lib libCore libUtil libKpp libSands libAim libEpm
 
-all: 
-	@$(MAKE) -C $(KPPDIR)
-	@$(MAKE) -C $(SANDSDIR)
-	@$(MAKE) -C $(APCEMMDIR) all
+all:
+	@$(MAKE) -C $(APCEMM_DIR) all
+
+build:
+	@$(MAKE) -C $(APCEMM_DIR) build
+
+lib:
+	@$(MAKE) -C $(APCEMM_DIR) lib
+
+libCore:
+	@$(MAKE) -C $(APCEMM_DIR) libCore
+
+libUtil:
+	@$(MAKE) -C $(APCEMM_DIR) libUtil
+
+libKpp:
+	@$(MAKE) -C $(APCEMM_DIR) libKpp
+	
+libSands:
+	@$(MAKE) -C $(APCEMM_DIR) libSands
+
+libAim:
+	@$(MAKE) -C $(APCEMM_DIR) libAim
+
+libEpm:
+	@$(MAKE) -C $(APCEMM_DIR) libEpm
+
+exe:
+	@$(MAKE) -C $(APCEMM_DIR) exe
 
 clean:
-	@$(MAKE) -C $(KPPDIR) clean
-	@$(MAKE) -C $(SANDSDIR) clean
-	@$(MAKE) -C $(APCEMMDIR) clean
+	@$(MAKE) -C $(APCEMM_DIR) clean
+
+realclean:
+	@$(MAKE) -C $(APCEMM_DIR) realclean
+
+debug:
+	@$(MAKE) -C $(APCEMM_DIR) debug
+
+wipeout:
+	@$(MAKE) -C $(APCEMM_DIR) wipeout
+
+help:
+	@$(MAKE) -C $(APCEMM_DIR) help
+
+headerinfo:
+	@$(MAKE) -C $(APCEMM_DIR) headerinfo
+

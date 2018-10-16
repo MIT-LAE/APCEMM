@@ -6,6 +6,11 @@
 *.o
 *.so
 
+# KPP files #
+#############
+*.kpp
+*.map
+
 # Packages #
 ############
 *.7z
@@ -19,6 +24,7 @@
 ########
 *.log
 *.sql
+*.out
 
 # OS generated files #
 ######################
