@@ -50,9 +50,11 @@ extern const char * SPC_NAMES[NSPEC];           /* Names of chemical species */
 extern char * SMASS[NMASS];                     /* Names of atoms for mass balance */
 extern const char * EQN_NAMES[NREACT];          /* Equation names */
 extern char * EQN_TAGS[NREACT];                 /* Equation tags */
-extern double PHOTOL[NPHOTOL];                  /* Photolysis rates */
 
 /* INLINED global variable declarations                             */
+
+extern double PHOTOL[NPHOTOL];                  /* Photolysis rates */
+extern double HET[NSPEC][3];                    /* Heterogeneous reaction rates */
 
 /* INLINED global variable declarations                             */
 

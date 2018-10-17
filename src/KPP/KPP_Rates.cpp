@@ -26,6 +26,7 @@
 #include "KPP/KPP_Parameters.h"
 #include "KPP/KPP_Global.h"
 #include "KPP/KPP_Sparse.h"
+#include "Util/ErrorWrapper.h"
 
 #define MAX(a,b) ( ((a) >= (b)) ? (a):(b)  )
 #define MIN(b,c) ( ((b) < (c))  ? (b):(c)  )
@@ -38,226 +39,302 @@
          but all the internal calculations are performed in double precision
 */
 
-/* Arrhenius */
-double GCARR( float A0, float B0, float C0, float TEMP )
-      {
-      double ARR_RES;
-
-      ARR_RES = (double)A0 * pow( (300.0/TEMP), (double)B0 ) * exp( (double)C0 / TEMP );
-
-      return ARR_RES;
-      }
-
-double GCJPLPR( float A0, float B0, float C0, float A1, float B1, float C1, float A2, float B2, float C2, float CFACTOR, float TEMP )
-      {
-      double JPLPR_RES;
-      double K0, KINF;
-      double FCT, XYRAT, BLOG, FEXP;
-
-      K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP ) * (double)CFACTOR;
-      KINF = GCARR( (double)A1, (double)B1, (double)C1, TEMP );
-
-      if ( C2 != 0 ) {
-          FCT = exp( -TEMP / (double)B2 ) + exp( -(double)C2 / TEMP );
-          XYRAT = K0 / KINF;
-          BLOG = log10(XYRAT);
-          FEXP = 1.0E+00 / (1.0E+00 + pow( BLOG, 2 ));
-          JPLPR_RES = K0 * pow( FCT, FEXP ) / (1.0E+00 + XYRAT);
-      }
-      else if ( B2 != 0 ) {
-          FCT = exp( -TEMP / (double)B2 );
-          XYRAT = K0 / KINF;
-          BLOG = log10(XYRAT);
-          FEXP = 1.0E+00 / (1.0E+00 + pow( BLOG, 2 ));
-          JPLPR_RES = K0 * pow( FCT, FEXP ) / (1.0E+00 + XYRAT);
-      }
-      else {
-          XYRAT = K0 / KINF;
-          BLOG = log10(XYRAT);
-          FEXP = 1.0E+00 / (1.0E+00 + pow( BLOG, 2 ));
-          JPLPR_RES = K0 * pow( (double)A2, FEXP) / (1.0E+00 + XYRAT);
-      }
-
-      return JPLPR_RES;
-      }
+/* End Rate Law Functions from KPP_HOME/util/UserRateLaws           */
 
 
-double GCJPLEQ( float A0, float B0, float C0, float A1, float B1, float C1, float A2, float B2, float C2, float A3, float B3, float C3, float CFACTOR, float TEMP )
-    {
+/* Begin INLINED Rate Law Functions                                 */
+
+
+double GCARR( float A0, float B0, float C0, double TEMP )
+{
+
+    /* Arrhenius reaction rate */
+
+    double ARR_RES;
+
+    ARR_RES = (double)A0 * pow( (300.0/TEMP), (double)B0 ) * exp( (double)C0/TEMP );
+
+    return ARR_RES;
+}
+
+double GCJPLPR( float A0, float B0, float C0, float A1, float B1, float C1, float FV, float FCT1, float FCT2, double AIRDENS, double TEMP )
+{
+
+    /* Pressure-dependent effects
+     * Coefficients A0, B0, C0 are the Arrhenius parameters for the lower-limit rate
+     * A1, B1, C1 are the upper-limit parameters. 
+     * FV is the falloff curve parameter (Atkinson et al., 1992) */
+
+    double JPLPR_RES;
+    double K0, KINF;
+    double FCT, XYRAT, BLOG, FEXP;
+
+    K0   = GCARR( (double)A0, (double)B0, (double)C0, TEMP ) * AIRDENS;
+    KINF = GCARR( (double)A1, (double)B1, (double)C1, TEMP );
+
+    if ( FCT2 != 0 ) {
+        FCT = exp( -TEMP / (double)FCT1 ) + exp( -(double)FCT2 / TEMP );
+        XYRAT = K0/KINF;
+        BLOG = log10(XYRAT);
+        FEXP = 1.0E+00 / (1.0E+00 + BLOG * BLOG );
+        JPLPR_RES = K0*pow( FCT, FEXP )/(1.0E+00+XYRAT);
+    } else if ( FCT1 != 0 ) {
+        FCT = exp( -TEMP / (double)FCT1 );
+        XYRAT = K0/KINF;
+        BLOG = log10(XYRAT);
+        FEXP = 1.0E+00 / (1.0E+00 + BLOG * BLOG );
+        JPLPR_RES = K0*pow( FCT, FEXP )/(1.0E+00 + XYRAT);
+    } else {
+        XYRAT = K0/KINF;
+        BLOG = log10(XYRAT);
+        FEXP = 1.0E+00 / (1.0E+00 + BLOG * BLOG );
+        JPLPR_RES = K0*pow( (double)FV, FEXP)/(1.0E+00 + XYRAT);
+    }
+
+    return JPLPR_RES;
+}
+
+
+double GCJPLEQ( float A0, float B0, float C0, float A1, float B1, float C1, float A2, float B2, float C2, float FV, float FCT1, float FCT2, double AIRDENS, double TEMP )
+{
+
+    /* Function calculates the rate constant of the forward reaction
+     * calculates the equilibrium constant
+     * Find the backwards reaction by K = k_f/k_b */
+
     double JPLEQ_RES;
     double K0, K1;
 
-    K0 = GCARR( (double)A0, (double)B0, (double)C0,TEMP );
-    K1 = GCJPLPR( (double)A1, (double)B1, (double)C1, (double)A2, (double)B2, (double)C2, (double)A3, (double)B3, (double)C3, CFACTOR, TEMP );
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
+    K1 = GCJPLPR( (double)A1, (double)B1, (double)C1, (double)A2, (double)B2, (double)C2, (double)FV, (double)FCT1, (double)FCT2, AIRDENS, TEMP );
     JPLEQ_RES = K1 / K0;
+
     return JPLEQ_RES;
-    }
+}
 
 
-double GC_TBRANCH( float A0, float B0, float C0, float A1, float B1, float C1, float TEMP )
-    {
+double GC_TBRANCH( float A0, float B0, float C0, float A1, float B1, float C1, double TEMP )
+{
+
+    /* Temperature dependent branching ratio */
+
     double TBRANCH_RES;
     double K0, K1;
 
     K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
     K1 = GCARR( (double)A1, (double)B1, (double)C1, TEMP );
-    TBRANCH_RES = K0 / (1.0 + K1);
+    
+    TBRANCH_RES = K0/(1.0 + K1);
+    
     return TBRANCH_RES;
-    }
+}
 
 
-double GC_HO2NO3( float A0, float B0, float C0, float A1, float B1, float C1, float CFACTOR, float TEMP )
-    {
+double GC_HO2NO3( float A0, float B0, float C0, float A1, float B1, float C1, double AIRDENS, double TEMP, double H2O )
+{
+
+    /* */
+
     double HO2NO3_RES;
-    double H2O;
     double K0, K1;
 
-    H2O = 4.4202E+14;
-    K0 = GCARR( (double)A0, (double)B0, (double)C0, (double)TEMP );
-    K1 = GCARR( (double)A1, (double)B1, (double)C1, (double)TEMP );
-    HO2NO3_RES = (K0 + K1*CFACTOR)*(1.0E+00 + 1.4E-21*H2O*exp(2200.0/TEMP));
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
+    K1 = GCARR( (double)A1, (double)B1, (double)C1, TEMP );
+    
+    HO2NO3_RES = (K0 + K1*AIRDENS)*(1.0E+00 + 1.4E-21*H2O*exp(2200.0/TEMP));
+    
     return HO2NO3_RES;
-    }
+}
 
 
-double GC_DMSOH( float A0, float B0, float C0, float A1, float B1, float C1, float CFACTOR, float TEMP )
-    {
+double GC_DMSOH( float A0, float B0, float C0, float A1, float B1, float C1, double AIRDENS, double TEMP )
+{
+
+    /* DMS + OH + HO2 */
+
     double DMSOH_RES;
     double K0, K1;
 
-    K0 = GCARR( (double)A0, (double)B0, (double)C0, (double)TEMP );
-    K1 = GCARR( (double)A1, (double)B1, (double)C1, (double)TEMP );
-    DMSOH_RES = (K0*CFACTOR*0.2095E+00) / (1.00E+00 + K1*0.2095E+00);
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
+    K1 = GCARR( (double)A1, (double)B1, (double)C1, TEMP );
+    
+    DMSOH_RES = (K0*AIRDENS*0.2095E+00)/(1.00E+00 + K1*0.2095E+00);
+    
     return DMSOH_RES;
-    }
+}
 
 
-double GC_RO2HO2( float A0, float B0, float C0, float A1, float B1, float C1, float TEMP )
-    {
+double GC_RO2HO2( float A0, float B0, float C0, float A1, float B1, float C1, double TEMP )
+{
+
+    /* Carbon dependence of RO2 + HO2 */
+
     double RO2HO2_RES;
     double K0, K1;
 
-    K0 = GCARR( (double)A0, (double)B0, (double)C0, (double)TEMP );
-    K1 = GCARR( (double)A1, (double)B1, (double)C1, (double)TEMP );
-    RO2HO2_RES = K0 * (1.00E+00 - exp(-0.245E+00*K1));
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
+    K1 = GCARR( (double)A1, (double)B1, (double)C1, TEMP );
+
+    RO2HO2_RES = K0*(1.00E+00 - exp(-0.245E+00*K1));
+
     return RO2HO2_RES;
-    }
+}
 
 
-double GC_GLYXNO3( float A0, float B0, float C0, float CFACTOR, float TEMP )
-    {
+double GC_GLYXNO3( float A0, float B0, float C0, double AIRDENS, double TEMP )
+{
+
+    /*  */
+
     double GLYXNO3_RES;
     double K0;
     double OXY;
 
-    OXY = 0.2095E+00 * CFACTOR;
-    K0 = GCARR( (double)A0, (double)B0, (double)C0, (double)TEMP );
-    GLYXNO3_RES = K0 * (OXY + 3.5E+18) / (2.0E+00 * OXY + 3.5E+18);
+    OXY = 0.2095E+00*AIRDENS;
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
+    GLYXNO3_RES = K0*(OXY + 3.5E+18)/(2.0E+00*OXY + 3.5E+18);
+
     return GLYXNO3_RES;
-    }
+}
 
 
-double GC_OHHNO3( float A0, float B0, float C0, float A1, float B1, float C1, float A2, float B2, float C2, float CFACTOR, float TEMP )
-    {
+double GC_OHHNO3( float A0, float B0, float C0, float A1, float B1, float C1, float A2, float B2, float C2, double AIRDENS, double TEMP )
+{
+
+    /*  OH + HNO3:   K = K0 + K3[M] / (1 + K3[M]/K2) */
+
     double OHHNO3_RES;
     double K0, K1, K2;
 
-    K0 = GCARR( (double)A0, (double)B0, (double)C0, (double)TEMP );
-    K1 = GCARR( (double)A1, (double)B1, (double)C1, (double)TEMP );
-    K2 = CFACTOR * GCARR( (double)A2, (double)B2, (double)C2, (double)TEMP );
-    OHHNO3_RES = K0 + K2 / (1.0E+00 + K2 / K1);
-    return OHHNO3_RES;
-    }
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
+    K1 = GCARR( (double)A1, (double)B1, (double)C1, TEMP );
+    K2 = AIRDENS * GCARR( (double)A2, (double)B2, (double)C2, TEMP );
 
-double GC_GLYCOHA( float A0, float B0, float C0, float TEMP )
-    {
+    OHHNO3_RES = K0 + K2/(1.0E+00 + K2/K1);
+
+    return OHHNO3_RES;
+}
+
+double GC_GLYCOHA( float A0, float B0, float C0, double TEMP )
+{
+
+    /* */
+
     double GLYCOHA_RES;
     double K0;
     double GLYC_FRAC;
 
-    K0 = GCARR( (double)A0, (double)B0, (double)C0, (double)TEMP );
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
     GLYC_FRAC = 1.0E+00 - 11.0729E+00*exp(-(1.0E+00/7.3E+01)*TEMP);
+
     if ( GLYC_FRAC < 0.0E+00 ) {
         GLYC_FRAC = 0.0E+00;
     }
-    GLYCOHA_RES = K0 * GLYC_FRAC;
-    return GLYCOHA_RES;
-    }
 
-double GC_GLYCOHB( float A0, float B0, float C0, float TEMP )
-    {
+    GLYCOHA_RES = K0 * GLYC_FRAC;
+
+    return GLYCOHA_RES;
+}
+
+double GC_GLYCOHB( float A0, float B0, float C0, double TEMP )
+{
+    
+    /* */
+
     double GLYCOHB_RES;
     double K0;
     double GLYC_FRAC;
 
-    K0 = GCARR( (double)A0, (double)B0, (double)C0, (double)TEMP );
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
     GLYC_FRAC = 1.0E+00 - 11.0729E+00*exp(-(1.0E+00/7.3E+01)*TEMP);
+
     if ( GLYC_FRAC < 0.0E+00 ) {
         GLYC_FRAC = 0.0E+00;
     }
-    GLYCOHB_RES = K0 * (1.0E+00 - GLYC_FRAC);
-    return GLYCOHB_RES;
-    }
 
-double GC_HACOHA( float A0, float B0, float C0, float TEMP )
-    {
+    GLYCOHB_RES = K0 * (1.0E+00 - GLYC_FRAC);
+
+    return GLYCOHB_RES;
+}
+
+double GC_HACOHA( float A0, float B0, float C0, double TEMP )
+{
+
+    /* */
+
     double HACOHA_RES;
     double K0;
     double HAC_FRAC;
 
-    K0 = GCARR( (double)A0, (double)B0, (double)C0, (double)TEMP );
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
     HAC_FRAC = 1.0E+00 - 23.7E+00 * exp(-(1.0E+00/6.0E+01)*TEMP);
+
     if ( HAC_FRAC < 0.0E+00 ) {
         HAC_FRAC = 0.0E+00;
     }
-    HACOHA_RES = K0*HAC_FRAC;
-    return HACOHA_RES;
-    }
 
-double GC_HACOHB( float A0, float B0, float C0, float TEMP )
-    {
+    HACOHA_RES = K0*HAC_FRAC;
+    
+    return HACOHA_RES;
+}
+
+double GC_HACOHB( float A0, float B0, float C0, double TEMP )
+{
+
+    /* */
+
     double HACOHB_RES;
     double K0;
     double HAC_FRAC;
 
-    K0 = GCARR( (double)A0, (double)B0, (double)C0, (double)TEMP );
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
     HAC_FRAC = 1.0E+00 - 23.7E+00 * exp(-(1.0E+00/6.0E+01)*TEMP);
+
     if ( HAC_FRAC < 0.0E+00 ) {
         HAC_FRAC = 0.0E+00;
     }
-    HACOHB_RES = K0*(1.0E+00 - HAC_FRAC);
-    return HACOHB_RES;
-    }
 
-double GC_OHCO( float A0, float B0, float C0, float Patm, float CFACTOR, float TEMP )
-    {
+    HACOHB_RES = K0*(1.0E+00 - HAC_FRAC);
+
+    return HACOHB_RES;
+}
+
+double GC_OHCO( float A0, float B0, float C0, double PATM, double AIRDENS, double TEMP )
+{
+
+    /* */
+
     double OHCO_RES;
     double K0;
     double KLO1, KHI1, KCO1, KLO2, KHI2, KCO2;
     double XYRAT1, BLOG1, XYRAT2, BLOG2;
     double FEXP1, FEXP2;
 
-    K0 = GCARR( (double)A0, (double)B0, (double)C0, (double)TEMP );
-    K0 = K0 * (1.0E+00 + 0.6E+00*9.871E+07*Patm);
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
+    K0 = K0 * (1.0E+00 + 0.6E+00*9.871E+07*PATM);
 
-    KLO1 = 5.9E-33 * pow( (300.0/TEMP), (1.4E+00) );
-    KHI1 = 1.1E-12 * pow( (300.0/TEMP), (-1.3E+00) );
-    XYRAT1 = KLO1 * CFACTOR / KHI1;
+    KLO1 = 5.9E-33*pow( (300.0/TEMP), (1.4E+00) );
+    KHI1 = 1.1E-12*pow( (300.0/TEMP), (-1.3E+00) );
+    XYRAT1 = KLO1*AIRDENS/KHI1;
     BLOG1 = log10(XYRAT1);
-    FEXP1 = 1.0E+00 / (1.0E+00 + BLOG1*BLOG1);
-    KCO1 = KLO1 * CFACTOR * pow( 0.6, (FEXP1) ) / (1.0E+00 + XYRAT1);
-    KLO2 = 1.5E-13 * pow( (300.0/TEMP), (-0.6E+00) );
-    KHI2 = 2.1E+09 * pow( (300.0/TEMP), (-6.1E+00) );
-    XYRAT2 = KLO2 * CFACTOR / KHI2;
+    FEXP1 = 1.0E+00/(1.0E+00 + BLOG1 * BLOG1);
+    KCO1 = KLO1 * AIRDENS * pow( 0.6, (FEXP1) ) / (1.0E+00 + XYRAT1);
+    KLO2 = 1.5E-13*pow( (300.0/TEMP), (-0.6E+00) );
+    KHI2 = 2.1E+09*pow( (300.0/TEMP), (-6.1E+00) );
+    XYRAT2 = KLO2*AIRDENS / KHI2;
     BLOG2 = log10(XYRAT2);
     FEXP2 = 1.0E+00 / (1.0E+00 + BLOG2*BLOG2);
-    KCO2 = KLO2 * pow( 0.6, (FEXP2)) / (1.0E+00 + XYRAT2);
+    KCO2 = KLO2*pow( 0.6, (FEXP2)) / (1.0E+00 + XYRAT2);
     OHCO_RES = KCO1 + KCO2;
-    return OHCO_RES;
-    }
 
-double GC_RO2NO( const char *B, float A0, float B0, float C0, float A1, float B1, float C1, float TEMP, float CFACTOR )
-    {
+    return OHCO_RES;
+}
+
+double GC_RO2NO( const char *B, float A0, float B0, float C0, float A1, float B1, float C1, double TEMP, double AIRDENS )
+{
+
+    /* */
+
     double RO2NO_RES = 0.0;
     double Y300;
     double ALPHA, BETA;
@@ -274,30 +351,1013 @@ double GC_RO2NO( const char *B, float A0, float B0, float C0, float A1, float B1
     XMINF = 8.1E+00;
     XF = 0.411E+00;
 
-    K0 = GCARR( (double)A0, (double)B0, (double)C0, (double)TEMP );
-    K1 = GCARR( (double)A1, (double)B1, (double)C1, (double)TEMP );
+    K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
+    K1 = GCARR( (double)A1, (double)B1, (double)C1, TEMP );
 
-    XXYN = ALPHA * exp(BETA*K1) * CFACTOR * pow( (300.0/TEMP), (XM0) );
+    XXYN = ALPHA * exp(BETA*K1) * AIRDENS * pow( (300.0/TEMP), (XM0) );
     YYYN = Y300 * pow( (300.0/TEMP), (XMINF) );
     AAA = log10(XXYN/YYYN);
     ZZYN = 1.0E+00 / (1.0E+00 + AAA*AAA);
     RARB = (XXYN / (1.0E+00 + (XXYN/YYYN))) * pow( XF, (ZZYN) );
     FYRNO3 = RARB / (1.0E+00 + RARB);
+    
     if ( strcmp( B, STRA ) ) {
         RO2NO_RES = K0 * FYRNO3;
-    }
-    else if ( strcmp( B, STRB ) ) {
+    } else if ( strcmp( B, STRB ) ) {
         RO2NO_RES = K0 * (1.0E+00 - FYRNO3);
     }
+
     return RO2NO_RES;
+}
+
+void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, const double RELHUM, \
+                const double SPC[], const double AREA[4], const double RADI[4], const double KHETI_SLA[11] )
+{
+
+    /* Sets up the array of heterogeneous chemistry rates for the KPP chemistry solver */
+
+    /* INPUT PARAMETERS:
+     *
+     * const double TEMP          : Temperature in K 
+     * const double PATM          : Pressure in Pa 
+     * const double AIRDENS       : Air density in molec/cm^3 
+     * const double RELHUM        : Relative humidity [0-1] 
+     * const double SPC[]         : Species array in molec/cm^3 
+     * const double AREA[4]       : Aerosol area in m^2/cm^3
+     * const double RADI[4]       : Aerosol radius in m 
+     * const double KHETI_SLA[11] : Sticking coefficients */
+     
+    /* Aerosol list:
+     * 0 : NAT/ice 
+     * 1 : liquid stratospheric aerosol
+     * 2 : sulfate aerosols (near surface)
+     * 3 : soot */
+
+    /* Scalars */
+    double ADJUSTEDRATE, CONSEXP,      DUMMY,    HBr_RTEMP, \
+           HOBr_RTEMP,   QICE,         QLIQ,     SPC_BrNO3, \
+           SPC_ClNO3,    SPC_H2O,      SPC_HBr,  SPC_HCl,   \
+           SPC_HOBr,     SPC_HOCl,     SPC_N2O5, SPC_SO4,   \
+           SPC_NIT,      CLD_BrNO3_RC, KI_HBr,   KI_HOBr,   \
+           QLIQ,         QICE;
+
+    /* UCX-based mechanisms */
+    unsigned int PSCIDX;
+    double EDUCTCONC, LIMITCONC;
+    double PSCEDUCTCONC[11][2];
+   
+    /* Integers */
+    unsigned int NAERO;
+
+    /* Logicals */
+    bool SAFEDIV, PSCBOX, STRATBOX, NATSURFACE;
+
+    static const double XTEMP     = sqrt(TEMP);
+    static const double GAMMA_HO2 = 0.2; 
+
+    /* Arrays */
+    double SCF2[3];
+
+    const double PSCMINLIFE = 1.0E-03;
+    
+    /* GC_SETHET begins here! */
+
+    /* Zero scalars and arrays */
+    ADJUSTEDRATE = 0.0E+00;
+    CONSEXP      = 0.0E+00;
+    DUMMY        = 0.0E+00;
+    HBr_RTEMP    = 0.0E+00;
+    HOBr_RTEMP   = 0.0E+00;
+    KHETI_SLA    = 0.0E+00;
+    NAERO        = 4;
+    QICE         = 0.0E+00;
+    QLIQ         = 0.0E+00;
+    SPC_BrNO3    = 0.0E+00;
+    SPC_ClNO3    = 0.0E+00;
+    SPC_H2O      = 0.0E+00;
+    SPC_HBr      = 0.0E+00;
+    SPC_HCl      = 0.0E+00;
+    SPC_HOBr     = 0.0E+00;
+    SPC_HOCl     = 0.0E+00;
+    SPC_N2O5     = 0.0E+00;
+    VPRESH2O     = 0.0E+00;
+   
+    /* Zero variables for UCX */
+    EDUCTCONC    = 0.0E+00;
+    LIMITCONC    = 0.0E+00;
+    for ( PSCIDX = 0; PSCIDX < 11; PSCIDX++ ) {
+        PSCEDUCTCONC[PSCIDX][0] = 0.0E+00;
+        PSCEDUCTCONC[PSCIDX][1] = 0.0E+00;
+    }
+    
+    /* Initialize logicals */
+    SAFEDIV    = 0;
+    PSCBOX     = 0;
+    STRATBOX   = 0;
+    NATSURFACE = 0;
+
+    /* Get species concentrations [molec/cm^3] */
+#ifndef ind_NIT
+    SPC_NIT = 0.0E+00;
+#else
+    SPC_NIT = SPC[ind_NIT];
+#endif
+
+#ifndef ind_SO4
+    SPC_SO4 = 0.0E+00;
+#else
+    SPC_SO4 = SPC[ind_SO4];
+#endif
+
+#ifndef ind_HBr
+    SPC_HBr = 0.0E+00;
+#else
+    SPC_HBr = SPC[ind_HBr];
+#endif
+
+#ifndef ind_HOBr
+    SPC_HOBr = 0.0E+00;
+#else
+    SPC_HOBr = SPC[ind_HOBr];
+#endif
+
+#ifndef ind_N2O5
+    SPC_N2O5 = 0.0E+00;
+#else
+    SPC_N2O5 = SPC[ind_N2O5];
+#endif
+
+#ifndef ind_H2O
+    SPC_H2O = 0.0E+00;
+#else
+    SPC_H2O = SPC[ind_H2O];
+#endif
+
+#ifndef ind_HCl
+    SPC_HCl = 0.0E+00;
+#else
+    SPC_HCl = SPC[ind_HCl];
+#endif
+
+#ifndef ind_ClNO3
+    SPC_ClNO3 = 0.0E+00;
+#else
+    SPC_ClNO3 = SPC[ind_ClNO3];
+#endif
+
+#ifndef ind_BrNO3
+    SPC_BrNO3 = 0.0E+00;
+#else
+    SPC_BrNO3 = SPC[ind_BrNO3];
+#endif
+
+#ifndef ind_HOCl
+    SPC_HOCl = 0.0E+00;
+#else
+    SPC_HOCl = SPC[ind_HOCl];
+#endif
+
+    PSCEDUCTCONC[ 0][0] = SPC_N2O5;
+    PSCEDUCTCONC[ 0][1] = SPC_H2O;
+
+    PSCEDUCTCONC[ 1][0] = SPC_N2O5;
+    PSCEDUCTCONC[ 1][1] = SPC_HCl;
+
+    PSCEDUCTCONC[ 2][0] = SPC_ClNO3;
+    PSCEDUCTCONC[ 2][1] = SPC_H2O;
+
+    PSCEDUCTCONC[ 3][0] = SPC_ClNO3;
+    PSCEDUCTCONC[ 3][1] = SPC_HCl;
+
+    PSCEDUCTCONC[ 4][0] = SPC_ClNO3;
+    PSCEDUCTCONC[ 4][1] = SPC_HBr;
+
+    PSCEDUCTCONC[ 5][0] = SPC_BrNO3;
+    PSCEDUCTCONC[ 5][1] = SPC_H2O;
+
+    PSCEDUCTCONC[ 6][0] = SPC_BrNO3;
+    PSCEDUCTCONC[ 6][1] = SPC_HCl;
+
+    PSCEDUCTCONC[ 7][0] = SPC_HOCl;
+    PSCEDUCTCONC[ 7][1] = SPC_HCl;
+
+    PSCEDUCTCONC[ 8][0] = SPC_HOCl;
+    PSCEDUCTCONC[ 8][1] = SPC_HBr;
+
+    PSCEDUCTCONC[ 9][0] = SPC_HOBr;
+    PSCEDUCTCONC[ 9][1] = SPC_HCl;
+
+    /* This is still pseudo-first order - ignore */
+    (SCEDUCTCONC[10][0] = SPC_HOBr;
+    PSCEDUCTCONC[10][1] = SPC_HBr;
+
+
+    if ( TEMP <= 248.0 ) 
+        QLIQ = 0.0E+00;
+    else if ( TEMP >= 268.0 )
+        QLIQ = 1.0E-06;
+    else 
+        QLIQ = 1.0E-06 * ( TEMP - 248.0 ) / double(20.0);
+
+    QICE = 1.0E-06 - QLIQ;
+
+
+    /* Check surface type of PSCs */
+    CHECK_NAT( NATSURFACE, PSCBOX, STRATBOX, 0, PATM, 200.0E+02 );
+
+    /* !@#$ $#@! */
+    if ( !PSCBOX )
+        CLD_BrNO3_RC = 0;
+
+    if ( !PSCBOX ) {
+        DUMMY = 0.0E+00;
+//        CLDICE_HBrHOBr_rxn();
+    } else {
+        KI_HBr  = 0.0E+00;
+        KI_HOBr = 0.0E+00;
+    }
+
+    for ( PSCIDX = 0; PSCIDX < 11; PSCIDX++ ) {
+        HET[PSCIDX][0] = 0.0E+00;
+        HET[PSCIDX][1] = 0.0E+00;
+        HET[PSCIDX][2] = 0.0E+00;
+    }
+
+    /* Calculate and pass het rates to the KPP rate array */
+    HET[ind_HO2][0]   = HETHO2(        3.30E+01, 2.00E-01,NAERO,AREA,RADI,AIRDENS);
+    HET[ind_NO2][0]   = HETNO2(        4.60E+01, 1.00E-04,NAERO,AREA,RADI,AIRDENS); 
+    HET[ind_NO3][0]   = HETNO3(        6.20E+01, 1.00E-01,NAERO,AREA,RADI,AIRDENS);
+    HET[ind_N2O5][0]  = HETN2O5(       1.08E+02, 1.00E-01,NAERO,KHETI_SLA,AREA,RADI,AIRDENS,SPC_SO4,SPC_NIT,NATSURFACE);
+    HET[ind_BrNO3][0] = HETBrNO3(      1.42E+02, 3.00E-01,NAERO,KHETI_SLA,AREA,RADI,AIRDENS,NATSURFACE); 
+    HET[ind_HOBr][0]  = HETHOBr(       0.97E+02, 2.00E-01,NAERO,KHETI_SLA,AREA,RADI,AIRDENS); 
+    HET[ind_HBr][0]   = HETHBr(        0.81E+02, 2.00E-01,NAERO,KHETI_SLA,AREA,RADI,AIRDENS,STRATBOX); 
+    HET[ind_HOBr][1]  = HETHOBr_ice(   0.97E+02, 1.00E-01); 
+    HET[ind_HBr][1]   = HETHBr_ice(    0.81E+02, 1.00E-01); 
+    HET[ind_N2O5][0]  = HETN2O5_PSC(   1.08E+02, 0.00E+00,NAERO,KHETI_SLA,AREA,RADI,AIRDENS,NATSURFACE); 
+    HET[ind_ClNO3][0] = HETClNO3_PSC1( 0.97E+02, 0.00E+00,NAERO,KHETI_SLA,AREA,RADI,AIRDENS,NATSURFACE);
+    HET[ind_ClNO3][1] = HETClNO3_PSC2( 0.97E+02, 0.00E+00,NAERO,KHETI_SLA,AREA,RADI,AIRDENS,NATSURFACE); 
+    HET[ind_ClNO3][2] = HETClNO3_PSC3( 0.97E+02, 0.00E+00,NAERO,KHETI_SLA,AREA,RADI,AIRDENS,NATSURFACE); 
+    HET[ind_BrNO3][1] = HETBrNO3_PSC(  1.42E+02, 0.00E+00,NAERO,KHETI_SLA,AREA,RADI,AIRDENS,NATSURFACE); 
+    HET[ind_HOCl][0]  = HETHOCl_PSC1(  0.52E+02, 0.00E+00,NAERO,KHETI_SLA,AREA,RADI,AIRDENS,NATSURFACE); 
+    HET[ind_HOCl][1]  = HETHOCl_PSC2(  0.52E+02, 0.00E+00,NAERO,KHETI_SLA,AREA,RADI,AIRDENS,NATSURFACE); 
+    HET[ind_HOBr][2]  = HETHOBr_PSC(   0.97E+02, 0.00E+00,NAERO,KHETI_SLA,AREA,RADI,AIRDENS,NATSURFACE); 
+
+    /* Kludging the rates to be equal to one another to avoid having
+     * to keep setting equality in solver */
+    if ( ( HET[ind_HBr][0] > 0 ) && ( HET[ind_HOBr][0] > 0 ) ) {
+
+        /* Select the minimum of the two rates */
+        HBr_RTEMP  = HET[ind_HBr][0]  * SPC_HBr;
+        HOBr_RTEMP = HET[ind_HOBr][0] * SPC_HOBr;
+
+        /* If HBr rate is the largest */
+        if ( HBr_RTEMP > HOBr_RTEMP ) {
+
+            SAFEDIV = SafeDiv( HET[ind_HOBr][0] * SPC_HOBr, SPC_HBr );
+
+            if ( SAFEDIV ) {
+                HET[ind_HBr][0] = HET[ind_HOBr][0] * SPC_HOBr / SPC_HBr;
+            } else {
+                /* If division is not possible, set the rates to really small values */
+                HET[ind_HBr][0]  = 1.0E-40;
+                HET[ind_HOBr][0] = 1.0E-40;
+            }
+
+        } else {
+
+            SAFEDIV = SafeDiv( HET[ind_HBr][0] * SPC_HBr, SPC_HOBr );
+            
+            if ( SAFEDIV ) {
+                HET[ind_HOBr][0] = HET[ind_HBr][0] * SPC_HBr / SPC_HOBr;
+            } else {
+                /* If division is not possible, set the rates to really small values */
+                HET[ind_HBr][0]  = 1.0E-40;
+                HET[ind_HOBr][0] = 1.0E-40;
+            }
+
+        }
+
+    }
+
+    /* Limit rates to prevent solver failure for PSC heterogeneous chemistry */
+
+    for ( PSCIDX = 0; PSCIDX < 10; PSCIDX++ ) {
+
+        /* Pseudo-first-order reactions - divide by number concentrations
+         * of aerosol-phase educt to yield 2nd-order constant */
+        EDUCTCONC = PSCEDUCTCONC[PSCIDX][1];
+        LIMITCONC = PSCEDUCTCONC[PSCIDX][0];
+
+        /* Initialize adjusted rates */
+        if ( PSCIDX == 0 ) {
+            /* N2O5 + H2O */
+            ADJUSTEDRATE = HET[ind_N2O5][0];
+        } else if ( PSCIDX == 1 ) {
+            /* N2O5 + HCl */
+            ADJUSTEDRATE = HET[ind_N2O5][1];
+        } else if ( PSCIDX == 2 ) {
+            /* ClNO3 + H2O */
+            ADJUSTEDRATE = HET[ind_ClNO3][0];
+        } else if ( PSCIDX == 3 ) {
+            /* ClNO3 + HCl */
+            ADJUSTEDRATE = HET[ind_ClNO3][1];
+        } else if ( PSCIDX == 4 ) {
+            /* ClNO3 + HBr */
+            ADJUSTEDRATE = HET[ind_ClNO3][2];
+        } else if ( PSCIDX == 5 ) {
+            /* BrNO3 + H2O */
+            ADJUSTEDRATE = HET[ind_BrNO3][0];
+        } else if ( PSCIDX == 6 ) {
+            /* BrNO3 + HCl */
+            ADJUSTEDRATE = HET[ind_BrNO3][1];
+        } else if ( PSCIDX == 7 ) {
+            /* HOCl + HCl */
+            ADJUSTEDRATE = HET[ind_HOCl][0];
+        } else if ( PSCIDX == 8 ) {
+            /* HOCl + HBr */
+            ADJUSTEDRATE = HET[ind_HOCl][1];
+        } else if ( PSCIDX == 9 ) {
+            /* HOBr + HCl */
+            ADJUSTEDRATE = HET[ind_HOBr][2];
+        }
+
+        /* ---SAFETY-CHECK REACTION---
+         * Definition of 2nd order reaction rate:
+         * k[A][B] = -d[A]/dt = -d[B]/dt
+         *
+         * However, here we are using a pseudo-first order
+         * reaction rate, ki, and assuming that [B] is
+         * abundant. To get k, we will therefore perform:
+         * k = ki/[B]
+         *
+         * This will yield the following when solved:
+         * -d[A]/dt = ki[A] = -d[B]/dt
+         *
+         * This has some problems, especially for small [B]*
+         * To get around this, we run the following checks:
+         *
+         * 1. The lifetime of [A] is 1/ki. If this is below
+         *    PSCMINLIFE, limit reaction rate to yield the
+         *    specified lifetimedepletion (ki = 1/60)
+         * 2. The depletion time of [B] is [B]/(ki[A]). If
+         *    this is below PSCMINLIFE, limit reaction rate
+         *    (ki = [B]/(T*[A])
+         * 3. If [B] is < 100 molec/cm3, or ki/[B] yields
+         *    a Nan, force k = 0.
+         *
+         * If all these checks are passed, we set k = ki/[B].
+         * Rxn 11 is first-order - ignore */
+        
+        if ( PSCIDX == 0 ) {
+            /* Convert from 1st-order to 2nd-order */
+            SAFEDIV = SafeDiv( EDUCTCONC, LIMITCONC );
+
+            if ( SAFEDIV ) {
+                /* Temporarily store [B]/(T*[A]) */
+                LIMITCONC = EDUCTCONC/(PSCMINLIFE*LIMITCONC);
+
+                if ( ADJUSTEDRATE > LIMITCONC )
+                    ADJUSTEDRATE = LIMITCONC;
+
+            } else {
+                ADJUSTEDRATE = 0.0E+00;
+            }
+
+            SAFEDIV = SafeDiv( ADJUSTEDRATE, EDUCTCONC );
+
+            if ( ( EDUCTCONC > 1.0E+02 ) && ( SAFEDIV ) ) {
+                ADJUSTEDRATE /= EDUCTCONC;
+            } else {
+                ADJUSTEDRATE = 0.0E+00;
+            }
+
+        } else if ( PSCIDX != 10 ) {
+            if ( ADJUSTEDRATE > ( 1.0E+00/PSCMINLIFE ) )
+                ADJUSTEDRATE = 1.0E+00/PSCMINLIFE;
+
+            /* Convert from 1st-order to 2nd-order */
+            SAFEDIV = SafeDiv( EDUCTCONC, LIMITCONC );
+
+            if ( SAFEDIV ) {
+                /* Temporarily store [B]/(T*[A]) */
+                LIMITCONC = EDUCTCONC/(PSCMINLIFE*LIMITCONC);
+
+                if ( ADJUSTEDRATE > LIMITCONC )
+                    ADJUSTERATE = LIMITCONC;
+
+            } else {
+                ADJUSTEDRATE = 0.0E+00;
+            }
+            
+            SAFEDIV = SafeDiv( ADJUSTEDRATE, EDUCTCONC );
+            
+            if ( ( EDUCTCONC > 1.0E+02 ) && ( SAFEDIV ) ) {
+                ADJUSTEDRATE /= EDUCTCONC;
+            } else {
+                ADJUSTEDRATE = 0.0E+00;
+            }
+
+        }
+
+        /* Copy adjusted rates to HET */
+        /* Initialize adjusted rates */
+        if ( PSCIDX == 0 ) {
+            /* N2O5 + H2O */
+            HET[ind_N2O5][0] = ADJUSTEDRATE;
+        } else if ( PSCIDX == 1 ) {
+            /* N2O5 + HCl */
+            HET[ind_N2O5][1] = ADJUSTEDRATE;
+        } else if ( PSCIDX == 2 ) {
+            /* ClNO3 + H2O */
+            HET[ind_ClNO3][0] = ADJUSTEDRATE;
+        } else if ( PSCIDX == 3 ) {
+            /* ClNO3 + HCl */
+            HET[ind_ClNO3][1] = ADJUSTEDRATE;
+        } else if ( PSCIDX == 4 ) {
+            /* ClNO3 + HBr */
+            HET[ind_ClNO3][2] = ADJUSTEDRATE;
+        } else if ( PSCIDX == 5 ) {
+            /* BrNO3 + H2O */
+            HET[ind_BrNO3][0] = ADJUSTEDRATE;
+        } else if ( PSCIDX == 6 ) {
+            /* BrNO3 + HCl */
+            HET[ind_BrNO3][1] = ADJUSTEDRATE;
+        } else if ( PSCIDX == 7 ) {
+            /* HOCl + HCl */
+            HET[ind_HOCl][0] = ADJUSTEDRATE;
+        } else if ( PSCIDX == 8 ) {
+            /* HOCl + HBr */
+            HET[ind_HOCl][1] = ADJUSTEDRATE;
+        } else if ( PSCIDX == 9 ) {
+            /* HOBr + HCl */
+            HET[ind_HOBr][2] = ADJUSTEDRATE;
+        }
+
     }
 
 
-/* End Rate Law Functions from KPP_HOME/util/UserRateLaws           */
+} /* End of GC_SETHET */
+
+double HETNO3( double A, double B, unsigned int NAERO, double AREA[4], double RADI[4], double AIRDENS )
+{
+
+    /* DESCRIPTION: Set the heterogeneous chemistry rate for NO3 */
+
+    /* INPUTS:
+     * double A           : Molar weight in g/mol
+     * double B           : 
+     * unsigned int NAERO : Number of aerosol species considered
+     * double AREA[4]     : Aerosol surface area in m^2/cm^3 
+     * double RADI[4]     : Aerosol radius in m 
+     * double AIRDENS     : Air density in molec/cm^3 */
+    
+    bool DO_EDUCT;
+    unsigned int N;
+    double XSTKCF, ADJUSTEDRATE;
+    double HET_NO3;
+
+    /* Initialize */
+    HET_NO3 = 0.0E+00;
+    ADJUSTEDRATE = 0.0E+00;
+    XSTKCF = 0.0E+00;
+
+    /* Don't do PSC rate adjustment */
+    DO_EDUCT = 0;
+
+    /* Loop over aerosol types */
+    for ( N = 0; N < NAERO; N++ ) {
+
+        XSTKCF = B;
+
+        if ( N == 1 ) {
+            /* Calculate for stratospheric liquid aerosol */
+            ADJUSTEDRATE = AREA[N] * XSTKCF;
+        } else {
+            /* Reaction rate for surface of aerosol */
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, XTEMP, sqrt(A) );
+        }
+
+        if ( ( DO_EDUCT ) && ( N < 2 ) ) {
+            /* PSC reaction - prevent excessive reaction rate */
+            if ( ADJUSTEDRATE > 1.0E+00 / PSCMINLIFE )
+                ADJUSTEDRATE = 1.0E+00 / PSCMINLIFE;
+
+        }
+
+        /* Add to overall reaction rate */
+        HET_NO3 += ADJUSTEDRATE;
+
+    }
+
+    return HET_NO3;
+
+} /* End of HETNO3 */
+
+double HETNO2( double A, double B, unsigned int NAERO, double AREA[4], double RADI[4], double AIRDENS )
+{
+
+    /* DESCRIPTION: Set the heterogeneous chemistry rate for NO2 */
+
+    /* INPUTS:
+     * double A           : Molar weight in g/mol
+     * double B           : 
+     * unsigned int NAERO : Number of aerosol species considered
+     * double AREA[4]     : Aerosol surface area in m^2/cm^3 
+     * double RADI[4]     : Aerosol radius in m 
+     * double AIRDENS     : Air density in molec/cm^3 */
+    
+    bool DO_EDUCT;
+    unsigned int N;
+    double XSTKCF, ADJUSTEDRATE;
+    double HET_NO2;
+
+    /* Initialize */
+    HET_NO2 = 0.0E+00;
+    ADJUSTEDRATE = 0.0E+00;
+    XSTKCF = 0.0E+00;
+
+    /* Don't do PSC rate adjustment */
+    DO_EDUCT = 0;
+
+    /* Loop over aerosol types */
+    for ( N = 0; N < NAERO; N++ ) {
+
+        XSTKCF = B;
+
+        if ( N == 1 ) {
+            /* Calculate for stratospheric liquid aerosol */
+            ADJUSTEDRATE = AREA[N] * XSTKCF;
+        } else {
+            /* Reaction rate for surface of aerosol */
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, XTEMP, sqrt(A) );
+        }
+
+        if ( ( DO_EDUCT ) && ( N < 2 ) ) {
+            /* PSC reaction - prevent excessive reaction rate */
+            if ( ADJUSTEDRATE > 1.0E+00 / PSCMINLIFE )
+                ADJUSTEDRATE = 1.0E+00 / PSCMINLIFE;
+
+        }
+
+        /* Add to overall reaction rate */
+        HET_NO2 += ADJUSTEDRATE;
+
+    }
+
+    return HET_NO2;
+
+} /* End of HETNO2 */
+
+double HETHO2( double A, double B, unsigned int NAERO, double AREA[4], double RADI[4], double AIRDENS )
+{
+
+    /* DESCRIPTION: Set the heterogeneous chemistry rate for HO2 */
+
+    /* INPUTS:
+     * double A           : Molar weight in g/mol
+     * double B           : 
+     * unsigned int NAERO : Number of aerosol species considered
+     * double AREA[4]     : Aerosol surface area in m^2/cm^3 
+     * double RADI[4]     : Aerosol radius in m 
+     * double AIRDENS     : Air density in molec/cm^3 */
+    
+    bool DO_EDUCT;
+    unsigned int N;
+    double XSTKCF, ADJUSTEDRATE;
+    double HET_HO2;
+
+    /* Initialize */
+    HET_HO2 = 0.0E+00;
+    ADJUSTEDRATE = 0.0E+00;
+    XSTKCF = 0.0E+00;
+
+    /* Don't do PSC rate adjustment */
+    DO_EDUCT = 0;
+
+    /* Loop over aerosol types */
+    for ( N = 0; N < NAERO; N++ ) {
+
+        if ( N < 2 ) 
+            XSTKCF = 1.0E-30;
+        else
+            XSTKCF = GAMMA_HO2;
+
+        if ( N == 1 ) {
+            /* Calculate for stratospheric liquid aerosol */
+            ADJUSTEDRATE = AREA[N] * XSTKCF;
+        } else {
+            /* Reaction rate for surface of aerosol */
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, XTEMP, sqrt(A) );
+        }
+
+        if ( ( DO_EDUCT ) && ( N < 2 ) ) {
+            /* PSC reaction - prevent excessive reaction rate */
+            if ( ADJUSTEDRATE > 1.0E+00 / PSCMINLIFE )
+                ADJUSTEDRATE = 1.0E+00 / PSCMINLIFE;
+
+        }
+
+        /* Add to overall reaction rate */
+        HET_HO2 += ADJUSTEDRATE;
+
+    }
+
+    return HET_HO2;
+
+} /* End of HETHO2 */
+
+double HETHBr( double A, double B, unsigned int NAERO, double KHETI_SLA[11], double AREA[4], double RADI[4], double AIRDENS, bool IS_STRAT )
+{
+
+    /* DESCRIPTION: Set the heterogeneous chemistry rate for HBr */
+
+    /* INPUTS:
+     * double A             : Molar weight in g/mol
+     * double B             : 
+     * unsigned int NAERO   : Number of aerosol species considered
+     * double KHETI_SLA[11] : Sticking coefficients 
+     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
+     * double RADI[4]       : Aerosol radius in m 
+     * double AIRDENS       : Air density in molec/cm^3 
+     * bool IS_STRAT        : In stratosphere? */
+    
+    bool DO_EDUCT;
+    unsigned int N;
+    double XSTKCF, ADJUSTEDRATE;
+    double HET_HBr;
+
+    /* Initialize */
+    HET_HBr = 0.0E+00;
+    ADJUSTEDRATE = 0.0E+00;
+    XSTKCF = 0.0E+00;
+
+    /* Only apply PSC rate adjustment if at high altitude */
+    DO_EDUCT = IS_STRAT;
+
+    /* Loop over aerosol types */
+    for ( N = 0; N < NAERO; N++ ) {
+
+        if ( N == 2 ) 
+            XSTKCF = B;
+        else if ( N == 1 )
+            XSTKCF = KHETI_SLA[10];
+        else
+            XSTKCF = 1.00E-01;
+
+        if ( N == 1 ) {
+            /* Calculate for stratospheric liquid aerosol */
+            ADJUSTEDRATE = AREA[N] * XSTKCF;
+        } else {
+            /* Reaction rate for surface of aerosol */
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, XTEMP, sqrt(A) );
+        }
+
+        if ( ( DO_EDUCT ) && ( N < 2 ) ) {
+            /* PSC reaction - prevent excessive reaction rate */
+            if ( ADJUSTEDRATE > 1.0E+00 / PSCMINLIFE )
+                ADJUSTEDRATE = 1.0E+00 / PSCMINLIFE;
+
+        }
+
+        /* Add to overall reaction rate */
+        HET_HBr += ADJUSTEDRATE;
+
+    }
+
+    return HET_HBr;
+
+} /* End of HETHBr */
+
+double HETN2O5( double A, double B, unsigned int NAERO, double KHETI_SLA[11], double AREA[4], double RADI[4], double AIRDENS, \
+                double SPC_SO4, double SPC_NIT, bool NATSURFACE )
+{
+
+    /* DESCRIPTION: Set the heterogeneous chemistry rate for N2O5 */
+
+    /* INPUTS:
+     * double A             : Molar weight in g/mol
+     * double B             : 
+     * unsigned int NAERO   : Number of aerosol species considered
+     * double KHETI_SLA[11] : Sticking coefficients 
+     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
+     * double RADI[4]       : Aerosol radius in m 
+     * double AIRDENS       : Air density in molec/cm^3 
+     * double SPC_SO4       : SO4 concentration molec/cm^3
+     * double SPC_NIT       : NIT concentration molec/cm^3
+     * bool NATSURFACE      : Frozen HNO3? */
+    
+    bool DO_EDUCT;
+    unsigned int N;
+    double XSTKCF, ADJUSTEDRATE;
+    double TMP1, TMP2;
+    double HET_N2O5;
+
+    /* Initialize */
+    HET_N2O5 = 0.0E+00;
+    ADJUSTEDRATE = 0.0E+00;
+    XSTKCF = 0.0E+00;
+    TMP1 = 0.0E+00;
+    TMP2 = 0.0E+00;
+
+    /* Always apply PSC rate adjustment*/
+    DO_EDUCT = 1;
+
+    /* Loop over aerosol types */
+    for ( N = 0; N < NAERO; N++ ) {
+
+        /* Get gamma for N2O5 hydrolysis, whic is a function of
+         * aerosol type, temperature, and relative humidity */
+        if ( N == 0 ) {
+            if ( NATSURFACE ) 
+                XSTKCF = 4.00E-04;
+            else
+                XSTKCF = 2.00E-02;
+        } else if ( N == 1 ) {
+            XSTKCF = KHETI_SLA[0];
+        } else {
+            XSTKCF = N2O5( N, TEMP, RH );
+        }
+
+        if ( N == 2 ) {
+            TMP1 = SPC_NIT + SPC_SO4;
+            TMP2 = SPC_NIT;
+            if ( TMP1 > 0.0 )
+                XSTKCF *= ( 1.0E+00 - 9.0E-01 * TMP2 / TMP1 );
+        }
+        if ( N == 1 ) {
+            ADJUSTEDRATE = AREA[N] * XSTKCF;
+        } else {
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, XTEMP, sqrt(A) );
+        }
+
+        if ( ( DO_EDUCT ) && ( N < 2 ) ) {
+            /* PSC Reaction - prevent excessive reaction rate */
+            if ( ADJUSTEDRATE > 1.0E+00/PSCMINLIFE )
+                ADJUSTEDRATE = 1.0E+00/PSCMINLIFE;
+        }
+
+        HET_N2O5 += ADJUSTEDRATE;
+
+    }
+
+} /* End of HETN2O5 */
+
+double HETBrNO3( double A, double B, unsigned int NAERO, double KHETI_SLA[11], double AREA[4], double RADI[4], double AIRDENS, bool IS_STRAT, bool IS_PSC, bool NATSURFACE )
+{
+
+    /* DESCRIPTION: Set the heterogeneous chemistry rate for BrNO3 */
+
+    /* INPUTS:
+     * double A             : Molar weight in g/mol
+     * double B             : 
+     * unsigned int NAERO   : Number of aerosol species considered
+     * double KHETI_SLA[11] : Sticking coefficients 
+     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
+     * double RADI[4]       : Aerosol radius in m 
+     * double AIRDENS       : Air density in molec/cm^3 
+     * bool IS_STRAT        : In stratosphere? 
+     * bool IS_PSC          : Polic stratospheric clouds? 
+     * bool NATSURFACE      : Frozen HNO3? */
+    
+    bool DO_EDUCT;
+    unsigned int N;
+    double XSTKCF, ADJUSTEDRATE;
+    double HET_BrNO3;
+
+    /* Initialize */
+    HET_HBr = 0.0E+00;
+    ADJUSTEDRATE = 0.0E+00;
+    XSTKCF = 0.0E+00;
+
+    /* Only apply PSC rate adjustment if at high altitude */
+    DO_EDUCT = IS_STRAT;
+
+    /* Loop over aerosol types */
+    for ( N = 0; N < NAERO; N++ ) {
+
+        if ( N == 2 ) {
+            XSTKCF = 8.0E-01;
+        } else if ( N == 1 ) {
+            XSTKCF = KHETI_SLA[ 5];
+        } else if ( N == 0 ) {
+            if ( NATSURFACE )
+                XSTKCF = 1.00E-03;
+            else
+                XSTKCF = 3.00E-01;
+        } else {
+            XSTKCF = 0.0E+00;
+        }
+
+        if ( N == 1 ) {
+            /* Calculate for stratospheric liquid aerosol */
+            ADJUSTEDRATE = AREA[N] * XSTKCF;
+        } else {
+            /* Reaction rate for surface of aerosol */
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, XTEMP, sqrt(A) );
+        }
+
+        if ( ( DO_EDUCT ) && ( N < 2 ) ) {
+            /* PSC reaction - prevent excessive reaction rate */
+            if ( ADJUSTEDRATE > 1.0E+00 / PSCMINLIFE )
+                ADJUSTEDRATE = 1.0E+00 / PSCMINLIFE;
+
+        }
+
+        /* Add to overall reaction rate */
+        HET_BrNO3 += ADJUSTEDRATE;
+
+    }
+
+    if ( !IS_PSC ) 
+        HET_BrNO3 += CLD_BrNO3_RC;
+
+    return HET_BrNO3;
+
+} /* End of HETBrNO3 */
+
+double HETHOBr( double A, double B, unsigned int NAERO, double KHETI_SLA[11], double AREA[4], double RADI[4], double AIRDENS, bool IS_STRAT )
+{
+
+    /* DESCRIPTION: Set the heterogeneous chemistry rate for HOBr */
+
+    /* INPUTS:
+     * double A             : Molar weight in g/mol
+     * double B             : 
+     * unsigned int NAERO   : Number of aerosol species considered
+     * double KHETI_SLA[11] : Sticking coefficients 
+     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
+     * double RADI[4]       : Aerosol radius in m 
+     * double AIRDENS       : Air density in molec/cm^3 
+     * bool IS_STRAT        : In stratosphere? */
+    
+    bool DO_EDUCT;
+    unsigned int N;
+    double XSTKCF, ADJUSTEDRATE;
+    double HET_HOBr;
+
+    /* Initialize */
+    HET_HOBr = 0.0E+00;
+    ADJUSTEDRATE = 0.0E+00;
+    XSTKCF = 0.0E+00;
+
+    /* Only apply PSC rate adjustment if at high altitude */
+    DO_EDUCT = IS_STRAT;
+
+    /* Loop over aerosol types */
+    for ( N = 0; N < NAERO; N++ ) {
+
+        if ( N == 2 ) {
+            XSTKCF = B;
+        } else if ( N == 1 ) {
+            XSTKCF = KHETI_SLA[10];
+        } else if ( N == 0 ) {
+            XSTKCF = 1.00E-01;
+        } else {
+            XSTKCF = 0.0E+00;
+        }
+
+        if ( N == 1 ) {
+            /* Calculate for stratospheric liquid aerosol */
+            ADJUSTEDRATE = AREA[N] * XSTKCF;
+        } else {
+            /* Reaction rate for surface of aerosol */
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, XTEMP, sqrt(A) );
+        }
+
+        if ( ( DO_EDUCT ) && ( N < 2 ) ) {
+            /* PSC reaction - prevent excessive reaction rate */
+            if ( ADJUSTEDRATE > 1.0E+00 / PSCMINLIFE )
+                ADJUSTEDRATE = 1.0E+00 / PSCMINLIFE;
+
+        }
+
+        /* Add to overall reaction rate */
+        HET_HOBr += ADJUSTEDRATE;
+
+    }
+
+    return HET_HOBr;
+
+} /* End of HETHOBr */
+
+double HETHOBr_ice( double A, double B )
+{
+
+    /* DESCRIPTION: Set the heterogeneous chemistry rate for HOBr_ice */
+
+    /* INPUTS:
+     * double A             : Molar weight in g/mol
+     * double B             : */
+
+    double HET_HOBr_ice;
+
+    /* Initialize */
+    HET_HOBr_ice = 0.0E+00;
+
+    HET_HOBr_ice = KI_HOBr;
+
+    return HET_HOBr_ice;
+
+} /* End of HETHOBr_ice */
+
+double HETHBr_ice( double A, double B )
+{
+
+    /* DESCRIPTION: Set the heterogeneous chemistry rate for HBr_ice */
+
+    /* INPUTS:
+     * double A             : Molar weight in g/mol
+     * double B             : */
+
+    double HET_HBr_ice;
+
+    /* Initialize */
+    HET_HBr_ice = 0.0E+00;
+
+    HET_HBr_ice = KI_HBr;
+
+    return HET_HBr_ice;
+
+} /* End of HETHBr_ice */
 
 
-/* Begin INLINED Rate Law Functions                                 */
 
+double ARSL1K( double AREA, double RADI, double AIRDENS, double STKCF, double XTEMP, double SQM )
+{
+
+    /* DESCRIPTION: Returns the 1st-order loss rate of species on wet aerosol surface */
+
+    /* INPUTS:
+     * double AREA    : Aerosol surface area in m^2/cm^3 
+     * double RADI    : Aerosol radius in m 
+     * double AIRDENS : Air density in molec/cm^3
+     * double STKCF   : Sticking coefficient 
+     * double XTEMP   : Square root of the temperature in K 
+     * double SQM     : Square root of the molecular weight in g/mole */
+
+    /* The 1st-order loss rate on wet aerosol is computed as:
+     *
+     *  ARSL1K [1/s] = AREA / [ RADI / DFKG + 4.0 / ( STKCF * XMMS ) ]
+     *
+     *  where XMMS = Mean molecular speed [m/s] = sqrt(8R*T/PI/M)
+     *        DFKG = Gas phase diffusion coeff [m^2/s] (order of 0.1) */
+
+    double ARS_L1K;
+
+    double DFKG;
+
+    /* ARSL1K begins here! */
+
+    if ( ( AREA < 0.0E+00 ) || ( AIRDENS < 1.0E-30 ) || ( RADI  < 1.0E-30 ) || \
+         ( SQM  < 1.0E-30 ) || ( XTEMP   < 1.0E-30 ) || ( STKCF < 1.0E-30 ) ) {
+
+        /* Use default value if any of the above values are zero. This will prevent
+         * division by 0 in the equation below */
+
+        ARS_L1K = 1.0E-30;
+
+    } else {
+
+        /* DFKG = Gas phase diffusion coeff in m^2/s. ~ 0.1 */
+        DFKG = 9.45E+13 / AIRDENS * XTEMP * sqrt( 3.472E-02 + 1.0E+00 / ( SQM * SQM ) );
+
+        /* [m^2/cm^3]*[cm^3/m^3] / ( [m]/[m^2/s] + [s/m]) = [m^2/m^3] / ([s/m]) = [1/s] */
+        ARS_L1K = AREA * 1.0E+06 / ( RADI / DFKG + 2.749064E-02 * SQM / ( STKCF * STK ));
+
+    }
+
+    return ARS_L1K;
+
+} /* End of ARSL1K */
+
+
+void CHECK_NAT( bool &IS_NAT, bool &IS_PSC, bool &IS_STRAT, \
+                const unsigned int STATE_PSC, const double PATM, const double TROPP )
+{
+
+    /* This function determines whether the solid PSC is composed of ice
+     * or NAT (nitric acid trihydrate) (needed for heterogeneous chemistry),
+     * or indeed if there is any direct PSC calculation at all */
+
+    bool IS_NAT;   /* Is surface NAT? */
+    bool IS_PSC;   /* Are there solid PSCs? */
+    bool IS_STRAT; /* Are we in the stratosphere? */
+
+    bool IS_TROP;
+
+    /* Check if box is in the troposphere */
+    IS_TROP  = ( PATM > TROPP );
+
+    /* Check if box is in the stratosphere */
+    IS_STRAT = ( !IS_TROP );
+
+    /* Check if there are solid PSCs */
+    IS_PSC   = ( ( PSC ) && ( IS_STRAT ) && ( STATE_PSC >= 2.0 ) );
+
+    /* Check if there is surface NAT */
+    IS_NAT   = ( ( IS_PSC ) && ( SPC_NIT > 0 ) );
+
+}
 
 /* End INLINED Rate Law Functions                                   */
 
@@ -311,7 +1371,7 @@ double GC_RO2NO( const char *B, float A0, float B0, float C0, float A1, float B1
 void Update_SUN( )
 {
 
-const double PI = 3.14159265358979;
+  const double PI = 3.14159265358979;
 
   SUN = MAX( SINLAT * SINDEC + COSLAT * COSDEC * cos( ABS( ( TIME/3600.0 - 12.0 ) ) * 15.0 * PI / 180.0 ), 0.0);
 
@@ -342,12 +1402,12 @@ void Update_RCONST()
   RCONST[3] = (GCARR(1.20E-13,0.0E+00,-2450.0,TEMP));
   RCONST[4] = (GCARR(2.90E-16,0.0E+00,-1000.0,TEMP));
   RCONST[5] = (GCARR(1.80E-12,0.0E+00,0.0,TEMP));
-  RCONST[6] = (GCJPLPR(6.90E-31,1.0E+00,0.0,2.6E-11,0.0,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
+  RCONST[6] = (GCJPLPR(6.90E-31,1.0E+00,0.0,2.6E-11,0.0,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
   RCONST[7] = (GCARR(4.80E-11,0.0E+00,250.0,TEMP));
   RCONST[8] = (GCARR(1.80E-12,0.0E+00,0.0,TEMP));
   RCONST[9] = (GCARR(3.30E-12,0.0E+00,270.0,TEMP));
-  RCONST[10] = (GC_HO2NO3(3.00E-13,0.0E+00,460.0,2.1E-33,0.0,920.0,CFACTOR,TEMP));
-  RCONST[11] = (GC_OHCO(1.50E-13,0.0E+00,0.0,Patm,CFACTOR,TEMP));
+  RCONST[10] = (GC_HO2NO3(3.00E-13,0.0E+00,460.0,2.1E-33,0.0,920.0,AIRDENS,TEMP,H2O));
+  RCONST[11] = (GC_OHCO(1.50E-13,0.0E+00,0.0,PATM,AIRDENS,TEMP));
   RCONST[12] = (GCARR(2.45E-12,0.0E+00,-1775.0,TEMP));
   RCONST[13] = (GCARR(2.80E-12,0.0E+00,300.0,TEMP));
   RCONST[14] = (GCARR(4.10E-13,0.0E+00,750.0,TEMP));
@@ -358,26 +1418,26 @@ void Update_RCONST()
   RCONST[19] = (GCARR(2.66E-12,0.0E+00,200.0,TEMP));
   RCONST[20] = (GCARR(1.14E-12,0.0E+00,200.0,TEMP));
   RCONST[21] = (GCARR(5.50E-12,0.0E+00,125.0,TEMP));
-  RCONST[22] = (GCJPLPR(1.80E-30,3.0E+00,0.0,2.8E-11,0.0,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
-  RCONST[23] = (GC_OHHNO3(2.41E-14,0.0E+00,460.0,2.69E-17,0.E0,2199.,6.51E-34,0.E0,1335.0,CFACTOR,TEMP));
-  RCONST[24] = (GCJPLPR(7.00E-31,2.6E+00,0.0,3.60E-11,0.1,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
+  RCONST[22] = (GCJPLPR(1.80E-30,3.0E+00,0.0,2.8E-11,0.0,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
+  RCONST[23] = (GC_OHHNO3(2.41E-14,0.0E+00,460.0,2.69E-17,0.E0,2199.,6.51E-34,0.E0,1335.0,AIRDENS,TEMP));
+  RCONST[24] = (GCJPLPR(7.00E-31,2.6E+00,0.0,3.60E-11,0.1,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
   RCONST[25] = (GCARR(1.80E-11,0.0E+00,-390.0,TEMP));
-  RCONST[26] = (GCJPLPR(2.00E-31,3.4E+00,0.0,2.9e-12,1.1E0,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
-  RCONST[27] = (GCJPLPR(9.52E-05,3.4E+00,-10900.0,1.38E15,1.1E0,-10900.0,0.6,0.0,0.0,CFACTOR,TEMP));
+  RCONST[26] = (GCJPLPR(2.00E-31,3.4E+00,0.0,2.9e-12,1.1E0,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
+  RCONST[27] = (GCJPLPR(9.52E-05,3.4E+00,-10900.0,1.38E15,1.1E0,-10900.0,0.6,0.0,0.0,AIRDENS,TEMP));
   RCONST[28] = (GCARR(1.30E-12,0.0E+00,380.0,TEMP));
   RCONST[29] = (GCARR(3.50E-12,0.0E+00,0.0,TEMP));
   RCONST[30] = (GCARR(1.50E-11,0.0E+00,170.0,TEMP));
   RCONST[31] = (GCARR(2.20E-11,0.0E+00,0.0,TEMP));
-  RCONST[32] = (GCJPLPR(2.00E-30,4.4E+00,0.0,1.4E-12,0.7,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
-  RCONST[33] = (GCJPLPR(7.40E-04,4.4E+00,-11000.0,5.18E14,0.7,-11000.0,0.6,0.0,0.0,CFACTOR,TEMP));
+  RCONST[32] = (GCJPLPR(2.00E-30,4.4E+00,0.0,1.4E-12,0.7,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
+  RCONST[33] = (GCJPLPR(7.40E-04,4.4E+00,-11000.0,5.18E14,0.7,-11000.0,0.6,0.0,0.0,AIRDENS,TEMP));
   RCONST[34] = (GCARR(4.00E-13,0.0E+00,0.0,TEMP));
   RCONST[35] = (GCARR(2.90E-12,0.0E+00,-345.0,TEMP));
   RCONST[36] = (GCARR(4.50E-14,0.0E+00,-1260.0,TEMP));
   RCONST[37] = (GCARR(5.80E-16,0.0E+00,0.0,TEMP));
   RCONST[38] = (GCARR(4.63E-12,0.0E+00,350.0,TEMP));
   RCONST[39] = (GCARR(1.40E-12,0.0E+00,-1900.0,TEMP));
-  RCONST[40] = (GCJPLPR(9.70E-29,5.6E+00,0.0,9.3E-12,1.5E0,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
-  RCONST[41] = (GCJPLEQ(9.30E-29,0.0E+00,14000.0,9.7E-29,5.6E0,0.0,9.3E-12,1.5E0,0.,0.6,0.,0.,CFACTOR,TEMP));
+  RCONST[40] = (GCJPLPR(9.70E-29,5.6E+00,0.0,9.3E-12,1.5E0,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
+  RCONST[41] = (GCJPLEQ(9.30E-29,0.0E+00,14000.0,9.7E-29,5.6E0,0.0,9.3E-12,1.5E0,0.,0.6,0.,0.,AIRDENS,TEMP));
   RCONST[42] = (GCARR(8.10E-12,0.0E+00,270.0,TEMP));
   RCONST[43] = (GCARR(7.66E-12,0.0E+00,-1020.0,TEMP));
   RCONST[44] = (GCARR(2.60E-12,0.0E+00,365.0,TEMP));
@@ -386,8 +1446,8 @@ void Update_RCONST()
   RCONST[47] = (GCARR(2.90E-12,0.0E+00,350.0,TEMP));
   RCONST[48] = (GCARR(2.70E-12,0.0E+00,350.0,TEMP));
   RCONST[49] = (GCARR(9.10E-12,0.0E+00,-405.0,TEMP));
-  RCONST[50] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,4.5E0,0.0,0.0,CFACTOR,TEMP));
-  RCONST[51] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,4.5E0,0.0,0.0,CFACTOR,TEMP));
+  RCONST[50] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,4.5E0,0.0,0.0,AIRDENS,TEMP));
+  RCONST[51] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,4.5E0,0.0,0.0,AIRDENS,TEMP));
   RCONST[52] = (GCARR(2.70E-12,0.0E+00,350.0,TEMP));
   RCONST[53] = (GCARR(2.80E-12,0.0E+00,300.0,TEMP));
   RCONST[54] = (GCARR(2.70E-12,0.0E+00,350.0,TEMP));
@@ -403,7 +1463,7 @@ void Update_RCONST()
   RCONST[64] = (GCARR(3.15E-13,0.0E+00,-448.0,TEMP));
   RCONST[65] = (GCARR(4.00E-12,0.0E+00,0.0,TEMP));
   RCONST[66] = (GCARR(6.70E-12,0.0E+00,340.0,TEMP));
-  RCONST[67] = (GCJPLPR(9.00E-28,8.9E+00,0.0,7.7E-12,0.2,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
+  RCONST[67] = (GCJPLPR(9.00E-28,8.9E+00,0.0,7.7E-12,0.2,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
   RCONST[68] = (GCARR(5.20E-13,0.0E+00,980.0,TEMP));
   RCONST[69] = (GCARR(2.30E-12,0.0E+00,0.0,TEMP));
   RCONST[70] = (GCARR(2.60E-12,0.0E+00,380.0,TEMP));
@@ -420,10 +1480,10 @@ void Update_RCONST()
   RCONST[81] = (GCARR(1.60E-12,0.0E+00,0.0,TEMP));
   RCONST[82] = (GCARR(3.15E-14,0.0E+00,920.0,TEMP));
   RCONST[83] = (GCARR(6.00E-12,0.0E+00,410.0,TEMP));
-  RCONST[84] = (GCJPLPR(9.00E-28,8.9E+00,0.0,7.7E-12,0.2,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
-  RCONST[85] = (GCJPLEQ(9.00E-29,0.0E+00,14000.0,9.00E-28,8.9E0,0.0,7.7E-12,0.2,0.,0.6,0.,0.,CFACTOR,TEMP));
-  RCONST[86] = (GCJPLPR(9.00E-28,8.9E+00,0.0,7.7E-12,0.2,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
-  RCONST[87] = (GCJPLEQ(9.00E-29,0.0E+00,14000.0,9.00E-28,8.9E0,0.0,7.7E-12,0.2,0.,0.6,0.,0.,CFACTOR,TEMP));
+  RCONST[84] = (GCJPLPR(9.00E-28,8.9E+00,0.0,7.7E-12,0.2,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
+  RCONST[85] = (GCJPLEQ(9.00E-29,0.0E+00,14000.0,9.00E-28,8.9E0,0.0,7.7E-12,0.2,0.,0.6,0.,0.,AIRDENS,TEMP));
+  RCONST[86] = (GCJPLPR(9.00E-28,8.9E+00,0.0,7.7E-12,0.2,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
+  RCONST[87] = (GCJPLEQ(9.00E-29,0.0E+00,14000.0,9.00E-28,8.9E0,0.0,7.7E-12,0.2,0.,0.6,0.,0.,AIRDENS,TEMP));
   RCONST[88] = (GCARR(6.70E-12,0.0E+00,340.0,TEMP));
   RCONST[89] = (GCARR(6.70E-12,0.0E+00,340.0,TEMP));
   RCONST[90] = (GCARR(6.50E-15,0.0E+00,0.0,TEMP));
@@ -467,7 +1527,7 @@ void Update_RCONST()
   RCONST[128] = (GCARR(5.20E-13,0.0E+00,980.0,TEMP));
   RCONST[129] = (GCARR(4.30E-13,0.0E+00,1040.0,TEMP));
   RCONST[130] = (GCARR(4.30E-13,0.0E+00,1040.0,TEMP));
-  RCONST[131] = (GCJPLPR(8.00E-27,3.5E+00,0.0,3E-11,1E0,0.0,0.5,0.0,0.0,CFACTOR,TEMP));
+  RCONST[131] = (GCJPLPR(8.00E-27,3.5E+00,0.0,3E-11,1E0,0.0,0.5,0.0,0.0,AIRDENS,TEMP));
   RCONST[132] = (GCARR(5.50E-15,0.0E+00,-1880.0,TEMP));
   RCONST[133] = (GCARR(2.90E-11,0.0E+00,0.0,TEMP));
   RCONST[134] = (GCARR(8.20E-18,0.0E+00,0.0,TEMP));
@@ -476,7 +1536,7 @@ void Update_RCONST()
   RCONST[137] = (GCARR(4.59E-13,0.0E+00,-1156.0,TEMP));
   RCONST[138] = (GCARR(3.10E-12,0.0E+00,340.0,TEMP));
   RCONST[139] = (GCARR(1.50E-11,0.0E+00,0.0,TEMP));
-  RCONST[140] = (GC_GLYXNO3(1.40E-12,0.0E+00,-1860.0,CFACTOR,TEMP));
+  RCONST[140] = (GC_GLYXNO3(1.40E-12,0.0E+00,-1860.0,AIRDENS,TEMP));
   RCONST[141] = (GCARR(3.36E-12,0.0E+00,-1860.0,TEMP));
   RCONST[142] = (GCARR(2.60E-12,0.0E+00,610.0,TEMP));
   RCONST[143] = (GCARR(8.00E-12,0.0E+00,380.0,TEMP));
@@ -520,8 +1580,8 @@ void Update_RCONST()
   RCONST[181] = (GCARR(8.37E-14,0.0E+00,0.0,TEMP));
   RCONST[182] = (GCARR(8.37E-14,0.0E+00,0.0,TEMP));
   RCONST[183] = (GC_RO2HO2(2.91E-13,0.0E+00,1300.0,4.0,0.0,0.0,TEMP));
-  RCONST[184] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,4.0,0.0,0.0,CFACTOR,TEMP));
-  RCONST[185] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,4.0,0.0,0.0,CFACTOR,TEMP));
+  RCONST[184] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,4.0,0.0,0.0,AIRDENS,TEMP));
+  RCONST[185] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,4.0,0.0,0.0,AIRDENS,TEMP));
   RCONST[186] = (GCARR(6.13E-13,0.0E+00,200.0,TEMP));
   RCONST[187] = (GCARR(1.40E-18,0.0E+00,0.0,TEMP));
   RCONST[188] = (GCARR(6.16E-15,0.0E+00,-1814.0,TEMP));
@@ -558,9 +1618,9 @@ void Update_RCONST()
   RCONST[219] = (GCARR(2.50E-12,0.0E+00,500.0,TEMP));
   RCONST[220] = (GCARR(8.50E-13,0.0E+00,-2450.0,TEMP));
   RCONST[221] = (GCJPLPR(1.00E-30,4.8E+00,0.0,7.2E-12,2.1E0,0.0,0.6,0.0,
-               0.0,CFACTOR,TEMP));
+               0.0,AIRDENS,TEMP));
   RCONST[222] = (GCJPLPR(1.05E-02,4.8E+00,-11234.0,7.58E16,2.1E0,
-               -11234.0,0.6,0.0,0.0,CFACTOR,TEMP));
+               -11234.0,0.6,0.0,0.0,AIRDENS,TEMP));
   RCONST[223] = (GCARR(1.06E-16,0.0E+00,0.0,TEMP));
   RCONST[224] = (GCARR(5.30E-17,0.0E+00,0.0,TEMP));
   RCONST[225] = 0; // (HET(ind_HO2,1));
@@ -568,7 +1628,7 @@ void Update_RCONST()
   RCONST[227] = 0; // (HET(ind_NO3,1));
   RCONST[228] = 0; // (HET(ind_N2O5,1));
   RCONST[229] = (GCJPLPR(3.30E-31,4.3E+00,0.0,1.6E-12,0.0,0.0,0.6,0.0,
-               0.0,CFACTOR,TEMP));
+               0.0,AIRDENS,TEMP));
   RCONST[230] = (GCARR(1.60E-11,0.0E+00,-780.0,TEMP));
   RCONST[231] = (GCARR(4.50E-12,0.0E+00,460.0,TEMP));
   RCONST[232] = (GCARR(4.80E-12,0.0E+00,-310.0,TEMP));
@@ -587,38 +1647,38 @@ void Update_RCONST()
   RCONST[245] = (GCARR(1.66E-10,0.0E+00,-7000.0,TEMP));
   RCONST[246] = (GCARR(2.36E-10,0.0E+00,-6411.0,TEMP));
   RCONST[247] = (GCARR(8.77E-11,0.0E+00,-4330.0,TEMP));
-  RCONST[248] = (GCJPLPR(4.20E-31,2.4E+00,0.0,2.7E-11,0.0,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
-  RCONST[249] = (GCJPLPR(5.20E-31,3.2E+00,0.0,6.9E-12,2.9E0,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
+  RCONST[248] = (GCJPLPR(4.20E-31,2.4E+00,0.0,2.7E-11,0.0,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
+  RCONST[249] = (GCJPLPR(5.20E-31,3.2E+00,0.0,6.9E-12,2.9E0,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
   RCONST[250] = 0; // (HET(ind_BrNO3,1));
   RCONST[251] = 0; // (HET(ind_HOBr,1));
   RCONST[252] = 0; // (HET(ind_HBr,1));
   RCONST[253] = 0; // (HET(ind_HOBr,2));
   RCONST[254] = 0; // (HET(ind_HBr,2));
   RCONST[255] = (GCARR(3.35E-11,0.0E+00,380.0,TEMP));
-  RCONST[256] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,CFACTOR,TEMP));
-  RCONST[257] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,CFACTOR,TEMP));
+  RCONST[256] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,AIRDENS,TEMP));
+  RCONST[257] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,AIRDENS,TEMP));
   RCONST[258] = (GC_RO2HO2(2.91E-13,0.0E+00,1300.0,5.0,0.0,0.0,TEMP));
   RCONST[259] = (GCARR(2.64E-11,0.0E+00,380.0,TEMP));
   RCONST[260] = (GCARR(3.61E-12,0.0E+00,380.0,TEMP));
-  RCONST[261] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,CFACTOR,TEMP));
-  RCONST[262] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,CFACTOR,TEMP));
+  RCONST[261] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,AIRDENS,TEMP));
+  RCONST[262] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,AIRDENS,TEMP));
   RCONST[263] = (GC_RO2HO2(2.91E-13,0.0E+00,1300.0,5.0,0.0,0.0,TEMP));
-  RCONST[264] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,CFACTOR,TEMP));
-  RCONST[265] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,CFACTOR,TEMP));
+  RCONST[264] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,AIRDENS,TEMP));
+  RCONST[265] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,AIRDENS,TEMP));
   RCONST[266] = (GC_RO2HO2(2.91E-13,0.0E+00,1300.0,5.0,0.0,0.0,TEMP));
   RCONST[267] = (GCARR(4.75E-12,0.0E+00,200.0,TEMP));
   RCONST[268] = (GCARR(1.39E-11,0.0E+00,380.0,TEMP));
   RCONST[269] = (GCARR(2.70E-12,0.0E+00,350.0,TEMP));
   RCONST[270] = (GC_RO2HO2(2.91E-13,0.0E+00,1300.0,4.0,0.0,0.0,TEMP));
-  RCONST[271] = (GCJPLPR(9.00E-28,8.9E+00,0.0,7.7E-12,0.2,0.0,0.6,0.0,0.0,CFACTOR,TEMP));
-  RCONST[272] = (GCJPLEQ(9.00E-29,0.0E+00,14000.0,9.00E-28,8.9E0,0.0,7.7E-12,0.2,0.,0.6,0.,0.,CFACTOR,TEMP));
+  RCONST[271] = (GCJPLPR(9.00E-28,8.9E+00,0.0,7.7E-12,0.2,0.0,0.6,0.0,0.0,AIRDENS,TEMP));
+  RCONST[272] = (GCJPLEQ(9.00E-29,0.0E+00,14000.0,9.00E-28,8.9E0,0.0,7.7E-12,0.2,0.,0.6,0.,0.,AIRDENS,TEMP));
   RCONST[273] = (GCARR(2.52E-12,0.0E+00,410.0,TEMP));
-  RCONST[274] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,CFACTOR,TEMP));
-  RCONST[275] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,CFACTOR,TEMP));
+  RCONST[274] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,AIRDENS,TEMP));
+  RCONST[275] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,AIRDENS,TEMP));
   RCONST[276] = (GC_RO2HO2(2.91E-13,0.0E+00,1300.0,5.0,0.0,0.0,TEMP));
   RCONST[277] = (GCARR(2.79E-11,0.0E+00,380.0,TEMP));
-  RCONST[278] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,CFACTOR,TEMP));
-  RCONST[279] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,CFACTOR,TEMP));
+  RCONST[278] = (GC_RO2NO("B",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,AIRDENS,TEMP));
+  RCONST[279] = (GC_RO2NO("A",2.70E-12,0.0E+00,350.0,5.0,0.0,0.0,AIRDENS,TEMP));
   RCONST[280] = (GC_RO2HO2(2.91E-13,0.0E+00,1300.0,5.0,0.0,0.0,TEMP));
   RCONST[281] = (GCARR(2.00E-17,0.0E+00,0.0,TEMP));
   RCONST[282] = (GCARR(1.00E-11,0.0E+00,0.0,TEMP));
@@ -671,7 +1731,7 @@ void Update_RCONST()
   RCONST[329] = (GCARR(1.31E-10,0.0E+00,0.0,TEMP));
   RCONST[330] = (GCARR(0.09E-10,0.0E+00,0.0,TEMP));
   RCONST[331] = (GCARR(0.35E-10,0.0E+00,0.0,TEMP));
-  RCONST[332] = (GCARR(6.00E-34,2.4E+00,0.0,TEMP)*CFACTOR);
+  RCONST[332] = (GCARR(6.00E-34,2.4E+00,0.0,TEMP)*AIRDENS);
   RCONST[333] = (GCARR(8.00E-12,0.0E+00,-2060.0,TEMP));
   RCONST[334] = (GCARR(2.80E-12,0.0E+00,-1800.0,TEMP));
   RCONST[335] = (GCARR(1.80E-11,0.0E+00,180.0,TEMP));
@@ -681,12 +1741,12 @@ void Update_RCONST()
   RCONST[339] = (GCARR(5.10E-12,0.0E+00,210.0,TEMP));
   RCONST[340] = (GCARR(1.00E-11,0.0E+00,0.0,TEMP));
   RCONST[341] = (GCJPLPR(9.00E-32,1.5E+00,0.0,3.0E-11,0.0E0,0.0,0.6,0.0,
-               0.0,CFACTOR,TEMP));
+               0.0,AIRDENS,TEMP));
   RCONST[342] = (GCJPLPR(2.50E-31,1.8E+00,0.0,2.2E-11,0.7E0,0.0,0.6,0.0,
-               0.0,CFACTOR,TEMP));
+               0.0,AIRDENS,TEMP));
   RCONST[343] = (GCARR(1.40E-12,0.0E+00,-2000.0,TEMP));
   RCONST[344] = (GCJPLPR(4.40E-32,1.3E+00,0.0,7.5E-11,-0.2E0,0.0,0.6,
-               0.0,0.0,CFACTOR,TEMP));
+               0.0,0.0,AIRDENS,TEMP));
   RCONST[345] = (GCARR(1.40E-10,0.0E+00,-470.0,TEMP));
   RCONST[346] = (GCARR(7.20E-11,0.0E+00,0.0,TEMP));
   RCONST[347] = (GCARR(1.60E-12,0.0E+00,0.0,TEMP));
@@ -720,18 +1780,18 @@ void Update_RCONST()
   RCONST[375] = (GCARR(2.60E-12,0.0E+00,290.0,TEMP));
   RCONST[376] = (GCARR(6.40E-12,0.0E+00,290.0,TEMP));
   RCONST[377] = (GCJPLPR(1.80E-31,3.4E+00,0.0,1.50E-11,1.9E0,0.0,0.6,
-               0.0,0.0,CFACTOR,TEMP));
+               0.0,0.0,AIRDENS,TEMP));
   RCONST[378] = (GCARR(1.00E-12,0.0E+00,-1590.0,TEMP));
   RCONST[379] = (GCARR(3.00E-11,0.0E+00,-2450.0,TEMP));
   RCONST[380] = (GCARR(3.50E-13,0.0E+00,-1370.0,TEMP));
   RCONST[381] = (GCJPLPR(2.20E-33,3.1E+00,0.0,1.8E-10,0.0,0.0,0.6,0.0,
-               0.0,CFACTOR,TEMP));
+               0.0,AIRDENS,TEMP));
   RCONST[382] = (GCJPLPR(3.33E-09,3.1E+00,-2502.0,2.73E+14,0.0,-2502.0,
-               0.6,0.0,0.0,CFACTOR,TEMP));
+               0.6,0.0,0.0,AIRDENS,TEMP));
   RCONST[383] = (GCJPLPR(1.60E-32,4.5E+00,0.0,3.0E-12,2.0E0,0.0,0.6,0.0,
-               0.0,CFACTOR,TEMP));
+               0.0,AIRDENS,TEMP));
   RCONST[384] = (GCJPLPR(9.30E-06,4.5E+00,-8649.0,1.74E+15,2.0E0,
-               -8649.0,0.6,0.0,0.0,CFACTOR,TEMP));
+               -8649.0,0.6,0.0,0.0,AIRDENS,TEMP));
   RCONST[385] = (GCARR(2.30E-10,0.0E+00,0.0,TEMP));
   RCONST[386] = (GCARR(1.20E-11,0.0E+00,0.0,TEMP));
   RCONST[387] = (GCARR(9.50E-13,0.0E+00,550.0,TEMP));
