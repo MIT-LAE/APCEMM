@@ -37,6 +37,8 @@
 #define NMONITOR             0           /* Number of species to monitor */
 #define NMASS                1           /* Number of atoms to check mass balance */
 #define NPHOTOL              105         /* Number of photolysis reactions */
+#define NAERO                4           /* Number of aerosol types considered for heterogeneous chemistry */
+#define PSC                  1           /* Consider PSCs? */
 
 /* Index declaration for variable species in C and VAR              */
 /*   VAR(ind_spc) = C(ind_spc)                                      */
