@@ -13,44 +13,98 @@
 #include "KPP/KPP_Parameters.h"
 #include "KPP/KPP_Global.h"
 #include "KPP/KPP_Sparse.h"
+#include "KPP/KPP.hpp"
+#include "Core/Parameters.hpp"
 #include "Util/ErrorWrapper.h"
 
 #define MAX(a,b) ( ((a) >= (b)) ? (a):(b)  )
 #define MIN(b,c) ( ((b) < (c))  ? (b):(c)  )
-#define ABS(x)	 ( ((x) >= 0 )  ? (x):(-x) )
-    
+ 
 static const double PSCMINLIFE = 1.0E-03;
 static const double GAMMA_HO2 = 0.2; 
 
-double ARSL1K( const double AREA, const double RADI, const double AIRDENS, const double STKCF, const double XTEMP, const double SQM );
-void CHECK_NAT( bool &IS_NAT, bool &IS_PSC, bool &IS_STRAT, \
-                const unsigned int STATE_PSC, const double PATM, const double TROPP );
+double ARSL1K( const double AREA,  const double RADI,  const double AIRDENS, \
+               const double STKCF, const double XTEMP, const double SQM );
+void CHECK_NAT( bool &IS_NAT, bool &IS_PSC,   bool &IS_STRAT,    \
+                const unsigned int STATE_PSC, const double PATM );
 double N2O5( unsigned int N, const double TEMP, const double RH );
-double CLD1K_BrNO3( const double AIRDENS, const double TEMP, const double QL, const double CLDF, bool IS_LAND, bool IS_ICE );
-double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI, const double CLDF, const double HBr, const double HOBr, double &K_HBr, double &K_HOBr, const double AREA_ICE, const double EFFRADI_ICE, const double IWC_ICE );
-double HETNO3( const double A, const double B, const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS );
-double HETNO2( const double A, const double B, const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS );
-double HETHO2( const double A, const double B, const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS );
-double HETHBr( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT );
-double HETN2O5( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, \
-                const double RH, double SPC_SO4, double SPC_NIT, bool NATSURFACE );
-double HETBrNO3( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool IS_PSC, double CLD_BrNO3_RC, bool NATSURFACE );
-double HETHOBr( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT );
+double CLD1K_BrNO3( const double AIRDENS, const double TEMP, \
+                    const double QL,      const double CLDF, \
+                    bool IS_LAND,         bool IS_ICE );
+double CLDICE_HBrHOBr( const double AIRDENS,  const double TEMP,        \
+                       const double QI,       const double CLDF,        \
+                       const double HBr,      const double HOBr,        \
+                       double &K_HBr,         double &K_HOBr,           \
+                       const double AREA_ICE, const double EFFRADI_ICE, \
+                       const double IWC_ICE );
+double HETNO3( const double A, const double B, const double AREA[NAERO], \
+               const double RADI[NAERO],       const double TEMP,        \
+               const double AIRDENS );
+double HETNO2( const double A, const double B, const double AREA[NAERO], \
+               const double RADI[NAERO],       const double TEMP,        \
+               const double AIRDENS );
+double HETHO2( const double A, const double B, const double AREA[NAERO], \
+               const double RADI[NAERO],       const double TEMP,        \
+               const double AIRDENS );
+double HETHBr( const double A, const double B, const double KHETI_SLA[11], \
+               const double AREA[NAERO],       const double RADI[NAERO],   \
+               const double TEMP,              const double AIRDENS,       \
+               bool IS_STRAT );
+double HETN2O5( const double A, const double B,  const double KHETI_SLA[11], \
+                const double AREA[NAERO],        const double RADI[NAERO],   \
+                const double TEMP,               const double AIRDENS,       \
+                const double RH, double SPC_SO4, double SPC_NIT,             \
+                bool NATSURFACE );
+double HETBrNO3( const double A, const double B, const double KHETI_SLA[11], \
+                 const double AREA[NAERO],       const double RADI[NAERO],   \
+                 const double TEMP,              const double AIRDENS,       \
+                 bool IS_STRAT, bool IS_PSC,     double CLD_BrNO3_RC,        \
+                 bool NATSURFACE );
+double HETHOBr( const double A, const double B, const double KHETI_SLA[11], \
+                const double AREA[NAERO],       const double RADI[NAERO],   \
+                const double TEMP,              const double AIRDENS,       \
+                bool IS_STRAT );
 double HETHOBr_ice( );
 double HETHBr_ice( );
-double HETN2O5_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETClNO3_PSC1( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETClNO3_PSC2( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETClNO3_PSC3( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETBrNO3_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETHOCl_PSC1( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETHOCl_PSC2( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETHOBr_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
+double HETN2O5_PSC( const double A, const double B, const double KHETI_SLA[11], \
+                    const double AREA[NAERO],       const double RADI[NAERO],   \
+                    const double TEMP,              const double AIRDENS,       \
+                    bool IS_STRAT,                  bool NATSURFACE );
+double HETClNO3_PSC1( const double A, const double B, const double KHETI_SLA[11], \
+                      const double AREA[NAERO],       const double RADI[NAERO],   \
+                      const double TEMP,              const double AIRDENS,       \
+                      bool IS_STRAT,                  bool NATSURFACE );
+double HETClNO3_PSC2( const double A, const double B, const double KHETI_SLA[11], \
+                      const double AREA[NAERO],       const double RADI[NAERO],   \
+                      const double TEMP,              const double AIRDENS,       \
+                      bool IS_STRAT,                  bool NATSURFACE );
+double HETClNO3_PSC3( const double A, const double B, const double KHETI_SLA[11], \
+                      const double AREA[NAERO],       const double RADI[NAERO],   \
+                      const double TEMP,              const double AIRDENS,       \
+                      bool IS_STRAT,                  bool NATSURFACE );
+double HETBrNO3_PSC( const double A, const double B, const double KHETI_SLA[11], \
+                     const double AREA[NAERO],       const double RADI[NAERO],   \
+                     const double TEMP,              const double AIRDENS,       \
+                     bool IS_STRAT,                  bool NATSURFACE );
+double HETHOCl_PSC1( const double A, const double B, const double KHETI_SLA[11], \
+                     const double AREA[NAERO],       const double RADI[NAERO],   \
+                     const double TEMP,              const double AIRDENS,       \
+                     bool IS_STRAT,                  bool NATSURFACE );
+double HETHOCl_PSC2( const double A, const double B, const double KHETI_SLA[11], \
+                     const double AREA[NAERO],       const double RADI[NAERO],   \
+                     const double TEMP,              const double AIRDENS,       \
+                     bool IS_STRAT,                  bool NATSURFACE );
+double HETHOBr_PSC( const double A, const double B, const double KHETI_SLA[11], \
+                    const double AREA[NAERO],       const double RADI[NAERO],   \
+                    const double TEMP,              const double AIRDENS,       \
+                    bool IS_STRAT,                  bool NATSURFACE );
 
 
-void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, const double RELHUM, const unsigned int STATE_PSC, \
-                const double SPC[], const double AREA[NAERO], const double RADI[NAERO], const double IWC, const double KHETI_SLA[11], \
-                const double TROPP )
+void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
+                const double RELHUM, const unsigned int STATE_PSC,          \
+                const double SPC[], const double AREA[NAERO],               \
+                const double RADI[NAERO], const double IWC,                 \
+                const double KHETI_SLA[11] )
 {
 
     /* Sets up the array of heterogeneous chemistry rates for the KPP chemistry solver */
@@ -231,7 +285,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, cons
 
 
     /* Check surface type of PSCs */
-    CHECK_NAT( NATSURFACE, PSCBOX, STRATBOX, STATE_PSC, PATM, TROPP );
+    CHECK_NAT( NATSURFACE, PSCBOX, STRATBOX, STATE_PSC, PATM );
 
     if ( !PSCBOX )
         CLD_BrNO3_RC = CLD1K_BrNO3( AIRDENS, TEMP, QLIQ, CLDF, IS_LAND, IS_ICE );
@@ -465,7 +519,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, cons
 } /* End of GC_SETHET */
 
 void CHECK_NAT( bool &IS_NAT, bool &IS_PSC, bool &IS_STRAT, \
-                const unsigned int STATE_PSC, const double PATM, const double TROPP )
+                const unsigned int STATE_PSC, const double PATM )
 {
 
     /* This function determines whether the solid PSC is composed of ice
@@ -1041,7 +1095,7 @@ double N2O5( unsigned int N, const double TEMP, const double RH )
     RH_P = MIN( RH * 100.0E+00, 100.0E+00 );
 
     /* Default value */
-    double GAMMA = 1.00E-02;
+    double GAMMA_N2O5 = 1.00E-02;
 
     switch (N) {
         
@@ -1057,9 +1111,9 @@ double N2O5( unsigned int N, const double TEMP, const double RH )
             /* No RH dependence above 50.05% */
             RH_P = MIN( RH_P, 5.00E+01 );
 
-            GAMMA = 2.79E-04 + RH_P * (  1.30E-04 + \
-                               RH_P * ( -3.43E-06 + \
-                               RH_P * (  7.52E-08 ) ) );
+            GAMMA_N2O5 = 2.79E-04 + RH_P * (  1.30E-04 + \
+                                    RH_P * ( -3.43E-06 + \
+                                    RH_P * (  7.52E-08 ) ) );
 
             /******************************************************/
             /* Temperature dependence factor 
@@ -1076,12 +1130,12 @@ double N2O5( unsigned int N, const double TEMP, const double RH )
                     1.00E-02;
 
             /* Apply temperature dependence */
-            GAMMA *= FACT;
+            GAMMA_N2O5 *= FACT;
 
         /* Black carbon */
         case 3:
 
-            GAMMA = 5.00E-03;
+            GAMMA_N2O5 = 5.00E-03;
 
         default:
             printf("Not a suitable aerosol surface for N2O5 hydrolysis\n");
@@ -1089,7 +1143,7 @@ double N2O5( unsigned int N, const double TEMP, const double RH )
 
     } 
 
-    return GAMMA;
+    return GAMMA_N2O5;
 
 } /* End of N2O5 */
 
@@ -1201,7 +1255,7 @@ double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI,
     double RADI, AREA, IWC;
     double STK, DFKG, SQM_HBr, SQM_HOBr;
     double B_PARAM;
-    double GAMMA;
+    double GAMMA_ICE;
     // double GAMMA_HBr, GAMMA_HOBr;
     double HBr_RTEMP, HOBr_RTEMP;
     double CLD1K_HBr, CLD1K_HOBr;
@@ -1214,7 +1268,7 @@ double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI,
     SQM_HBr    = 0.00E+00;
     SQM_HOBr   = 0.00E+00;
     B_PARAM    = 0.00E+00;
-    GAMMA      = 0.00E+00;
+    GAMMA_ICE  = 0.00E+00;
     //GAMMA_HBr  = 0.00E+00;
     //GAMMA_HOBr = 0.00E+00;
     HBr_RTEMP  = 0.00E+00;
@@ -1230,10 +1284,10 @@ double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI,
     }
 
     if ( IWC <= 0.0E+00 ) {
-        GAMMA  = 0.00E+00;
-        K_HBr  = 0.00E+00;
-        K_HOBr = 0.00E+00;
-        return GAMMA;
+        GAMMA_ICE  = 0.00E+00;
+        K_HBr      = 0.00E+00;
+        K_HOBr     = 0.00E+00;
+        return GAMMA_ICE;
     }
 
 
@@ -1241,12 +1295,12 @@ double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI,
      * for HBr + HOBr + ice */
 
     if ( ( TEMP >= 180.0 ) && ( TEMP <= 268.0 ) ) {
-        GAMMA = 1.00E-01;
+        GAMMA_ICE = 1.00E-01;
     } else {
-        GAMMA  = 0.00E+00;
-        K_HBr  = 0.00E+00;
-        K_HOBr = 0.00E+00;
-        return GAMMA;
+        GAMMA_ICE  = 0.00E+00;
+        K_HBr      = 0.00E+00;
+        K_HOBr     = 0.00E+00;
+        return GAMMA_ICE;
     }
 
     /* Set the sticking coefficients for HBr and HOBr independently */
@@ -1271,10 +1325,10 @@ double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI,
     }
 
     if ( ( RADI <= 0.0E+00 ) ) {
-        GAMMA = 0.00E+00;
-        K_HBr  = 0.00E+00;
-        K_HOBr = 0.00E+00;
-        return GAMMA;
+        GAMMA_ICE = 0.00E+00;
+        K_HBr     = 0.00E+00;
+        K_HOBr    = 0.00E+00;
+        return GAMMA_ICE;
     }
 
     if ( AREA_ICE > 0.00E+00 ) {
@@ -1300,7 +1354,7 @@ double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI,
     DFKG = 9.45E+13 / AIRDENS * STK * pow( 3.472E-02 + 1.0E+00 / ( SQM_HBr * SQM_HBr ), 0.5 );
 
     /* [m^2/cm^3]*[cm^3/m^3] / ( [m]/[m^2/s] + [s/m]) = [m^2/m^3] / ([s/m]) = [1/s] */
-    CLD1K_HBr = AREA * 1.0E+06 / ( RADI / DFKG + 2.749064E-02 * SQM_HBr / ( GAMMA * STK ));
+    CLD1K_HBr = AREA * 1.0E+06 / ( RADI / DFKG + 2.749064E-02 * SQM_HBr / ( GAMMA_ICE * STK ));
 
     /* Deal with HOBr */
 
@@ -1308,7 +1362,7 @@ double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI,
     DFKG = 9.45E+13 / AIRDENS * STK * pow( 3.472E-02 + 1.0E+00 / ( SQM_HOBr * SQM_HOBr ), 0.5 );
 
     /* [m^2/cm^3]*[cm^3/m^3] / ( [m]/[m^2/s] + [s/m]) = [m^2/m^3] / ([s/m]) = [1/s] */
-    CLD1K_HOBr = AREA * 1.0E+06 / ( RADI / DFKG + 2.749064E-02 * SQM_HOBr / ( GAMMA * STK ));
+    CLD1K_HOBr = AREA * 1.0E+06 / ( RADI / DFKG + 2.749064E-02 * SQM_HOBr / ( GAMMA_ICE * STK ));
 
     /* Test which loss rate (HOBr or HBr) is limiting */
     HBr_RTEMP  = CLD1K_HBr  * HBr;
@@ -1340,7 +1394,7 @@ double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI,
     K_HBr  = CLD1K_HBr;
     K_HOBr = CLD1K_HOBr;
 
-    return GAMMA;
+    return GAMMA_ICE;
 
 
 } /* End of CLDICE_HBrHOBr */
