@@ -95,6 +95,8 @@ KPP_Hessian.o       : KPP_Hessian.cpp
 
 KPP_HessianSP.o     : KPP_HessianSP.cpp
 
+KPP_HetRates.o      : KPP_HetRates.cpp
+
 KPP_Integrator.o    : KPP_Integrator.cpp
 
 KPP_Jacobian.o      : KPP_Jacobian.cpp
