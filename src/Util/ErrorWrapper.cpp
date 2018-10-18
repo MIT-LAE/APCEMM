@@ -23,15 +23,14 @@ extern "C" {
      
         return Error::SafeDiv( num, denom );
 
-    } /* End of SafeDiv */
+    } /* End of SafeDiv_f */
 
     bool SafeDiv_d( double num, double denom )
     {
      
         return Error::SafeDiv( num, denom );
 
-    } /* End of SafeDiv */
-
+    } /* End of SafeDiv_d */
 
 }
 
