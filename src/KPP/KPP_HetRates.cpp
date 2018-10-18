@@ -26,28 +26,31 @@ double ARSL1K( const double AREA, const double RADI, const double AIRDENS, const
 void CHECK_NAT( bool &IS_NAT, bool &IS_PSC, bool &IS_STRAT, \
                 const unsigned int STATE_PSC, const double PATM, const double TROPP );
 double N2O5( unsigned int N, const double TEMP, const double RH );
-double HETNO3( const double A, const double B, const double AREA[4], const double RADI[4], const double AIRDENS );
-double HETNO2( const double A, const double B, const double AREA[4], const double RADI[4], const double AIRDENS );
-double HETHO2( const double A, const double B, const double AREA[4], const double RADI[4], const double AIRDENS );
-double HETHBr( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT );
-double HETN2O5( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, \
+double CLD1K_BrNO3( const double AIRDENS, const double TEMP, const double QL, const double CLDF, bool IS_LAND, bool IS_ICE );
+double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI, const double CLDF, const double HBr, const double HOBr, double &K_HBr, double &K_HOBr, const double AREA_ICE, const double EFFRADI_ICE, const double IWC_ICE );
+double HETNO3( const double A, const double B, const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS );
+double HETNO2( const double A, const double B, const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS );
+double HETHO2( const double A, const double B, const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS );
+double HETHBr( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT );
+double HETN2O5( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, \
                 const double RH, double SPC_SO4, double SPC_NIT, bool NATSURFACE );
-double HETBrNO3( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool IS_PSC, bool NATSURFACE );
-double HETHOBr( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT );
+double HETBrNO3( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool IS_PSC, double CLD_BrNO3_RC, bool NATSURFACE );
+double HETHOBr( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT );
 double HETHOBr_ice( );
 double HETHBr_ice( );
-double HETN2O5_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETClNO3_PSC1( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETClNO3_PSC2( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETClNO3_PSC3( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETBrNO3_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETHOCl_PSC1( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETHOCl_PSC2( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
-double HETHOBr_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
+double HETN2O5_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
+double HETClNO3_PSC1( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
+double HETClNO3_PSC2( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
+double HETClNO3_PSC3( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
+double HETBrNO3_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
+double HETHOCl_PSC1( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
+double HETHOCl_PSC2( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
+double HETHOBr_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE );
 
 
-void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, const double RELHUM, \
-                const double SPC[], const double AREA[4], const double RADI[4], const double KHETI_SLA[11] )
+void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, const double RELHUM, const unsigned int STATE_PSC, \
+                const double SPC[], const double AREA[NAERO], const double RADI[NAERO], const double IWC, const double KHETI_SLA[11], \
+                const double TROPP )
 {
 
     /* Sets up the array of heterogeneous chemistry rates for the KPP chemistry solver */
@@ -59,8 +62,8 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, cons
      * const double AIRDENS       : Air density in molec/cm^3 
      * const double RELHUM        : Relative humidity [0-1] 
      * const double SPC[]         : Species array in molec/cm^3 
-     * const double AREA[4]       : Aerosol area in m^2/cm^3
-     * const double RADI[4]       : Aerosol radius in m 
+     * const double AREA[NAERO]   : Aerosol area in m^2/cm^3
+     * const double RADI[NAERO]   : Aerosol radius in m 
      * const double KHETI_SLA[11] : Sticking coefficients */
      
     /* Aerosol list:
@@ -70,12 +73,12 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, cons
      * 3 : soot */
 
     /* Scalars */
-    double ADJUSTEDRATE, DUMMY,    HBr_RTEMP, HOBr_RTEMP, \
-           QICE,         QLIQ,                            \
-           SPC_BrNO3,    SPC_ClNO3, SPC_H2O,  SPC_HBr,    \
-           SPC_HCl,      SPC_HOBr,  SPC_HOCl, SPC_N2O5,   \
-           SPC_SO4,      SPC_NIT,   CLD_BrNO3_RC,         \
-           KI_HBr,   KI_HOBr;
+    double ADJUSTEDRATE, HBr_RTEMP, HOBr_RTEMP, \
+           QICE,         QLIQ,      CLDF,                  \
+           SPC_BrNO3,    SPC_ClNO3, SPC_H2O,   SPC_HBr,    \
+           SPC_HCl,      SPC_HOBr,  SPC_HOCl,  SPC_N2O5,   \
+           SPC_SO4,      SPC_NIT,   CLD_BrNO3_RC,          \
+           KI_HBr,       KI_HOBr;
 
     /* UCX-based mechanisms */
     unsigned int PSCIDX;
@@ -84,19 +87,17 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, cons
    
     /* Logicals */
     bool SAFEDIV, PSCBOX, STRATBOX, NATSURFACE;
-
-    /* Arrays */
-//    double SCF2[3];
+    bool IS_LAND, IS_ICE;
 
     /* GC_SETHET begins here! */
 
     /* Zero scalars and arrays */
     ADJUSTEDRATE = 0.0E+00;
-    DUMMY        = 0.0E+00;
     HBr_RTEMP    = 0.0E+00;
     HOBr_RTEMP   = 0.0E+00;
     QICE         = 0.0E+00;
     QLIQ         = 0.0E+00;
+    CLDF         = 0.0E+00;
     SPC_BrNO3    = 0.0E+00;
     SPC_ClNO3    = 0.0E+00;
     SPC_H2O      = 0.0E+00;
@@ -119,6 +120,9 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, cons
     PSCBOX     = 0;
     STRATBOX   = 0;
     NATSURFACE = 0;
+
+    IS_LAND    = 0;
+    IS_ICE     = 0;
 
     /* Get species concentrations [molec/cm^3] */
 #ifndef ind_NIT
@@ -227,17 +231,14 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, cons
 
 
     /* Check surface type of PSCs */
-    CHECK_NAT( NATSURFACE, PSCBOX, STRATBOX, 0, PATM, 200.0E+02 );
+    CHECK_NAT( NATSURFACE, PSCBOX, STRATBOX, STATE_PSC, PATM, TROPP );
 
-    /* !@#$ $#@! */
     if ( !PSCBOX )
-        CLD_BrNO3_RC = 0;
+        CLD_BrNO3_RC = CLD1K_BrNO3( AIRDENS, TEMP, QLIQ, CLDF, IS_LAND, IS_ICE );
 
-    /* !@#$ $#@! */
-    if ( !PSCBOX ) {
-        DUMMY = 0.0E+00;
-//        CLDICE_HBrHOBr_rxn();
-    } else {
+    if ( !PSCBOX )
+        CLDICE_HBrHOBr( AIRDENS, TEMP, QICE, CLDF, SPC_HBr, SPC_HOBr, KI_HBr, KI_HOBr, AREA[0], RADI[0], IWC );
+    else {
         KI_HBr  = 0.0E+00;
         KI_HOBr = 0.0E+00;
     }
@@ -249,23 +250,23 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, cons
     }
 
     /* Calculate and pass het rates to the KPP rate array */
-    HET[ind_HO2][0]   = HETHO2(        3.30E+01, 2.00E-01, AREA, RADI, AIRDENS);
-    HET[ind_NO2][0]   = HETNO2(        4.60E+01, 1.00E-04, AREA, RADI, AIRDENS); 
-    HET[ind_NO3][0]   = HETNO3(        6.20E+01, 1.00E-01, AREA, RADI, AIRDENS);
-    HET[ind_N2O5][0]  = HETN2O5(       1.08E+02, 1.00E-01, KHETI_SLA, AREA, RADI, AIRDENS, RELHUM, SPC_SO4, SPC_NIT, NATSURFACE);
-    HET[ind_BrNO3][0] = HETBrNO3(      1.42E+02, 3.00E-01, KHETI_SLA, AREA, RADI, AIRDENS, STRATBOX, PSCBOX, NATSURFACE); 
-    HET[ind_HOBr][0]  = HETHOBr(       0.97E+02, 2.00E-01, KHETI_SLA, AREA, RADI, AIRDENS, STRATBOX); 
-    HET[ind_HBr][0]   = HETHBr(        0.81E+02, 2.00E-01, KHETI_SLA, AREA, RADI, AIRDENS, STRATBOX); 
+    HET[ind_HO2][0]   = HETHO2(        3.30E+01, 2.00E-01, AREA, RADI, TEMP, AIRDENS);
+    HET[ind_NO2][0]   = HETNO2(        4.60E+01, 1.00E-04, AREA, RADI, TEMP, AIRDENS); 
+    HET[ind_NO3][0]   = HETNO3(        6.20E+01, 1.00E-01, AREA, RADI, TEMP, AIRDENS);
+    HET[ind_N2O5][0]  = HETN2O5(       1.08E+02, 1.00E-01, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, RELHUM, SPC_SO4, SPC_NIT, NATSURFACE);
+    HET[ind_BrNO3][0] = HETBrNO3(      1.42E+02, 3.00E-01, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, PSCBOX, CLD_BrNO3_RC, NATSURFACE); 
+    HET[ind_HOBr][0]  = HETHOBr(       0.97E+02, 2.00E-01, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX); 
+    HET[ind_HBr][0]   = HETHBr(        0.81E+02, 2.00E-01, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX); 
     HET[ind_HOBr][1]  = HETHOBr_ice( ); 
     HET[ind_HBr][1]   = HETHBr_ice( ); 
-    HET[ind_N2O5][0]  = HETN2O5_PSC(   1.08E+02, 0.00E+00, KHETI_SLA, AREA, RADI, AIRDENS, STRATBOX, NATSURFACE); 
-    HET[ind_ClNO3][0] = HETClNO3_PSC1( 0.97E+02, 0.00E+00, KHETI_SLA, AREA, RADI, AIRDENS, STRATBOX, NATSURFACE);
-    HET[ind_ClNO3][1] = HETClNO3_PSC2( 0.97E+02, 0.00E+00, KHETI_SLA, AREA, RADI, AIRDENS, STRATBOX, NATSURFACE); 
-    HET[ind_ClNO3][2] = HETClNO3_PSC3( 0.97E+02, 0.00E+00, KHETI_SLA, AREA, RADI, AIRDENS, STRATBOX, NATSURFACE); 
-    HET[ind_BrNO3][1] = HETBrNO3_PSC(  1.42E+02, 0.00E+00, KHETI_SLA, AREA, RADI, AIRDENS, STRATBOX, NATSURFACE); 
-    HET[ind_HOCl][0]  = HETHOCl_PSC1(  0.52E+02, 0.00E+00, KHETI_SLA, AREA, RADI, AIRDENS, STRATBOX, NATSURFACE); 
-    HET[ind_HOCl][1]  = HETHOCl_PSC2(  0.52E+02, 0.00E+00, KHETI_SLA, AREA, RADI, AIRDENS, STRATBOX, NATSURFACE); 
-    HET[ind_HOBr][2]  = HETHOBr_PSC(   0.97E+02, 0.00E+00, KHETI_SLA, AREA, RADI, AIRDENS, STRATBOX, NATSURFACE); 
+    HET[ind_N2O5][0]  = HETN2O5_PSC(   1.08E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE); 
+    HET[ind_ClNO3][0] = HETClNO3_PSC1( 0.97E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE);
+    HET[ind_ClNO3][1] = HETClNO3_PSC2( 0.97E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE); 
+    HET[ind_ClNO3][2] = HETClNO3_PSC3( 0.97E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE); 
+    HET[ind_BrNO3][1] = HETBrNO3_PSC(  1.42E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE); 
+    HET[ind_HOCl][0]  = HETHOCl_PSC1(  0.52E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE); 
+    HET[ind_HOCl][1]  = HETHOCl_PSC2(  0.52E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE); 
+    HET[ind_HOBr][2]  = HETHOBr_PSC(   0.97E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE); 
 
     /* Kludging the rates to be equal to one another to avoid having
      * to keep setting equality in solver */
@@ -492,7 +493,7 @@ void CHECK_NAT( bool &IS_NAT, bool &IS_PSC, bool &IS_STRAT, \
 } /* End of CHECK_NAT */
 
 
-double HETNO3( const double A, const double B, const double AREA[4], const double RADI[4], const double AIRDENS )
+double HETNO3( const double A, const double B, const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for NO3 */
@@ -500,8 +501,8 @@ double HETNO3( const double A, const double B, const double AREA[4], const doubl
     /* INPUTS:
      * double A           : Molar weight in g/mol
      * double B           : 
-     * double AREA[4]     : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]     : Aerosol radius in m 
+     * double AREA[NAERO] : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO] : Aerosol radius in m 
      * double AIRDENS     : Air density in molec/cm^3 */
     
     bool DO_EDUCT;
@@ -546,7 +547,7 @@ double HETNO3( const double A, const double B, const double AREA[4], const doubl
 
 } /* End of HETNO3 */
 
-double HETNO2( const double A, const double B, const double AREA[4], const double RADI[4], const double AIRDENS )
+double HETNO2( const double A, const double B, const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for NO2 */
@@ -554,8 +555,8 @@ double HETNO2( const double A, const double B, const double AREA[4], const doubl
     /* INPUTS:
      * double A           : Molar weight in g/mol
      * double B           : 
-     * double AREA[4]     : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]     : Aerosol radius in m 
+     * double AREA[NAERO] : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO] : Aerosol radius in m 
      * double AIRDENS     : Air density in molec/cm^3 */
     
     bool DO_EDUCT;
@@ -600,7 +601,7 @@ double HETNO2( const double A, const double B, const double AREA[4], const doubl
 
 } /* End of HETNO2 */
 
-double HETHO2( const double A, const double B, const double AREA[4], const double RADI[4], const double AIRDENS )
+double HETHO2( const double A, const double B, const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for HO2 */
@@ -608,8 +609,8 @@ double HETHO2( const double A, const double B, const double AREA[4], const doubl
     /* INPUTS:
      * double A           : Molar weight in g/mol
      * double B           : 
-     * double AREA[4]     : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]     : Aerosol radius in m 
+     * double AREA[NAERO] : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO] : Aerosol radius in m 
      * double AIRDENS     : Air density in molec/cm^3 */
     
     bool DO_EDUCT;
@@ -657,7 +658,7 @@ double HETHO2( const double A, const double B, const double AREA[4], const doubl
 
 } /* End of HETHO2 */
 
-double HETHBr( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT )
+double HETHBr( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for HBr */
@@ -666,8 +667,8 @@ double HETHBr( const double A, const double B, const double KHETI_SLA[11], const
      * double A             : Molar weight in g/mol
      * double B             : 
      * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO]   : Aerosol radius in m 
      * double AIRDENS       : Air density in molec/cm^3 
      * bool IS_STRAT        : In stratosphere? */
     
@@ -718,7 +719,7 @@ double HETHBr( const double A, const double B, const double KHETI_SLA[11], const
 
 } /* End of HETHBr */
 
-double HETN2O5( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, \
+double HETN2O5( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, \
                 const double RH, double SPC_SO4, double SPC_NIT, bool NATSURFACE )
 {
 
@@ -728,8 +729,8 @@ double HETN2O5( const double A, const double B, const double KHETI_SLA[11], cons
      * double A             : Molar weight in g/mol
      * double B             : 
      * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO]   : Aerosol radius in m 
      * double AIRDENS       : Air density in molec/cm^3 
      * double SPC_SO4       : SO4 concentration molec/cm^3
      * double SPC_NIT       : NIT concentration molec/cm^3
@@ -793,7 +794,7 @@ double HETN2O5( const double A, const double B, const double KHETI_SLA[11], cons
 
 } /* End of HETN2O5 */
 
-double HETBrNO3( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool IS_PSC, bool NATSURFACE )
+double HETBrNO3( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP,  const double AIRDENS, bool IS_STRAT, bool IS_PSC, double CLD_BrNO3_RC, bool NATSURFACE )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for BrNO3 */
@@ -802,11 +803,12 @@ double HETBrNO3( const double A, const double B, const double KHETI_SLA[11], con
      * double A             : Molar weight in g/mol
      * double B             : 
      * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO]   : Aerosol radius in m 
      * double AIRDENS       : Air density in molec/cm^3 
      * bool IS_STRAT        : In stratosphere? 
      * bool IS_PSC          : Polic stratospheric clouds? 
+     * double CLD_BrNO3_RC  : Cloud BrNO3 hydrolysis 
      * bool NATSURFACE      : Frozen HNO3? */
     
     bool DO_EDUCT;
@@ -858,15 +860,14 @@ double HETBrNO3( const double A, const double B, const double KHETI_SLA[11], con
 
     }
 
-    // !@#$
     if ( !IS_PSC ) 
-        HET_BrNO3 += 0; //CLD_BrNO3_RC;
+        HET_BrNO3 += CLD_BrNO3_RC;
 
     return HET_BrNO3;
 
 } /* End of HETBrNO3 */
 
-double HETHOBr( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT )
+double HETHOBr( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for HOBr */
@@ -875,8 +876,8 @@ double HETHOBr( const double A, const double B, const double KHETI_SLA[11], cons
      * double A             : Molar weight in g/mol
      * double B             : 
      * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO]   : Aerosol radius in m 
      * double AIRDENS       : Air density in molec/cm^3 
      * bool IS_STRAT        : In stratosphere? */
     
@@ -1092,13 +1093,265 @@ double N2O5( unsigned int N, const double TEMP, const double RH )
 
 } /* End of N2O5 */
 
+double CLD1K_BrNO3( const double AIRDENS, const double TEMP, const double QL, const double CLDF, bool IS_LAND, bool IS_ICE )
+{
+
+    /* DESCRIPTION: Calculates the rate constant for heterogeneous cycling of BrNO3 off of cloud particles */
+
+    /* INPUTS:
+     * double AIRDENS : Air density in molec/cm^3 
+     * double TEMP    : Temperature in K
+     * double QL      : Cloud water mixing ratio
+     * double CLDF    : Cloud fraction in box 
+     * double IS_LAND : Is land?
+     * double IS_ICE  : Is ice? */
+
+    // !@#$ Contrail ice particles?
+
+    /* Cloud droplet radius in continental warm clouds [cm] */
+    const double XCLDR_CONT = 6.0E-04;
+
+    /* Cloud droplet radius in marine warm clouds [cm] */
+    const double XCLDR_MARI = 1.0E-03;
+
+    const double MW_BrNO3 = 1.42E-03;               /* [kg/mol]  */
+    const double ALPHA    = 3.0E-01;                /* Sticking coefficient */
+
+    double CLD1K;
+    double RADIUS, AIRVOL, XAIRM3, Vc, AREA;
+    double SQM, STK, DFKG;
+
+    CLD1K  = 0.0E+00;
+    RADIUS = 0.0E+00;
+    AIRVOL = 0.0E+00;
+    XAIRM3 = 0.0E+00;
+    Vc     = 0.0E+00;
+    AREA   = 0.0E+00;
+    SQM    = 0.0E+00;
+    STK    = 0.0E+00;
+    DFKG   = 0.0E+00;
+
+    if ( ( IS_LAND ) || ( !IS_ICE ) ) {
+        // !@#$
+        if ( ( CLDF > 0 ) && ( TEMP > 258.0 ) ) {
+
+            /* Calculate the surface area of cloud droplets in the grid box, assuming
+             * a. marine warm cloud 
+             * or 
+             * b. continental warm cloud */
+
+            if ( IS_LAND )
+                RADIUS = XCLDR_CONT;
+            else
+                RADIUS = XCLDR_MARI;
+
+            /* Convert the volume of air to cm^3 */
+            XAIRM3 = AIRVOL * 1.0E+06;
+
+            /* Get cloud volume */
+            Vc     = CLDF * QL * XAIRM3;
+
+            /* Calculate the cloud droplet surface area */
+            AREA   = 3.0E+00 * (Vc/XAIRM3) / (RADIUS);
+
+            /* Calculate the 1st-order rate constant for BrNO3 hydrolysis 
+             * a. Calculate the gas phase diffusion coefficient
+             * b. Calculate the hydrolysis reaction rate*/
+
+            SQM = sqrt( MW_BrNO3 * 1.0E+03 );
+            STK = sqrt( TEMP );
+            
+            /* Gas diffusion coefficient in [cm^2/s] */
+            DFKG = 9.45E+17 / AIRDENS * STK * sqrt( 3.472E-02 + 1.0E+00 / ( SQM * SQM ) );
+
+            /* Compute ARSL1K */
+            CLD1K = AREA / ( RADIUS/DFKG + 2.749064E-04 * SQM / ( ALPHA * STK ) );
+
+        } else {
+            CLD1K = 0.0E+00;
+        }
+    } else {
+        CLD1K = 0.0E+00;
+    }
+
+    return CLD1K;
+
+} /* End of CLD1K_BrNO3 */
+
+double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI, const double CLDF, const double HBr, const double HOBr, double &K_HBr, double &K_HOBr, const double AREA_ICE, const double EFFRADI_ICE, const double IWC_ICE )
+{
+
+    /* DESCRIPTION: Calculates the rate constants for HBr and HOBr pseudo-reactions with ice */
+
+    /* INPUTS:
+     * double AIRDENS  : Air density in molec/cm^3 
+     * double TEMP     : Temperature in K
+     * double IWC      : Ice water content in kg/cm^3
+     * double HBr      : HBr concentration in molec/cm^3
+     * double HOBr     : HOBr concentration in molec/cm^3
+     * double K_HBr    : 
+     * double K_HOBr   : 
+     * double AREA_ICE : Ice area in m^2/cm^3
+     * double RAD_ICE  : Ice radius in m^2/cm^3 */
+
+    const double DENS_ICE = 0.9167E-03; /* [kg/cm^3] */
+    const double MW_HBr   = 81.0E-03;   /* [kg/mol] */
+    const double MW_HOBr  = 97.0E-03;   /* [kg/mol] */
+
+    double RADI, AREA, IWC;
+    double STK, DFKG, SQM_HBr, SQM_HOBr;
+    double B_PARAM;
+    double GAMMA;
+    // double GAMMA_HBr, GAMMA_HOBr;
+    double HBr_RTEMP, HOBr_RTEMP;
+    double CLD1K_HBr, CLD1K_HOBr;
+
+    RADI       = 0.00E+00;
+    AREA       = 0.00E+00;
+    IWC        = 0.00E+00;
+    STK        = 0.00E+00;
+    DFKG       = 0.00E+00;
+    SQM_HBr    = 0.00E+00;
+    SQM_HOBr   = 0.00E+00;
+    B_PARAM    = 0.00E+00;
+    GAMMA      = 0.00E+00;
+    //GAMMA_HBr  = 0.00E+00;
+    //GAMMA_HOBr = 0.00E+00;
+    HBr_RTEMP  = 0.00E+00;
+    HOBr_RTEMP = 0.00E+00;
+    CLD1K_HBr  = 0.00E+00;
+    CLD1K_HOBr = 0.00E+00;
+
+    if ( IWC_ICE > 0.0E+00 ) {
+        IWC = IWC_ICE;
+    } else {
+        /* Compute our own ICE */
+        IWC = CLDF * QI * DENS_ICE;
+    }
+
+    if ( IWC <= 0.0E+00 ) {
+        GAMMA  = 0.00E+00;
+        K_HBr  = 0.00E+00;
+        K_HOBr = 0.00E+00;
+        return GAMMA;
+    }
+
+
+    /* Calculate the temperature dependent reactive uptake coefficient 
+     * for HBr + HOBr + ice */
+
+    if ( ( TEMP >= 180.0 ) && ( TEMP <= 268.0 ) ) {
+        GAMMA = 1.00E-01;
+    } else {
+        GAMMA  = 0.00E+00;
+        K_HBr  = 0.00E+00;
+        K_HOBr = 0.00E+00;
+        return GAMMA;
+    }
+
+    /* Set the sticking coefficients for HBr and HOBr independently */
+    // GAMMA_HOBr = 3.00E-03;
+    // GAMMA_HBr  = 3.00E-02;
+
+    /* Calculate the surface area of cloud droplets in the given grid box */
+    if ( EFFRADI_ICE > 0.00E+00 ) {
+        RADI = EFFRADI_ICE;
+    } else {
+        /* Calculate our own RADI */
+        B_PARAM = -2.0E+00 + 1.0E-03 * pow( 273.0 - TEMP, 1.5 ) * log10( IWC/50.0E+00 );
+
+        /* In mum */
+        RADI    =  3.774E+02 + B_PARAM * ( 2.033E+02 + \
+                               B_PARAM * ( 3.791E+01 + \
+                               B_PARAM * ( 2.3696E+00 ) ) );
+
+        /* Convert from mum to m */
+        RADI   /= 1.00E+06;
+
+    }
+
+    if ( ( RADI <= 0.0E+00 ) ) {
+        GAMMA = 0.00E+00;
+        K_HBr  = 0.00E+00;
+        K_HOBr = 0.00E+00;
+        return GAMMA;
+    }
+
+    if ( AREA_ICE > 0.00E+00 ) {
+        AREA = AREA_ICE;
+    } else {
+        /* Calculate our own AREA */
+
+        /* Convert IWC from kg/cm^3 to g/m^3 */
+        AREA  = 1.00E-04 * pow( IWC * 1.00E+03 * 1.00E+06, 0.9 );
+
+        /* Convert to m^2/cm^3 */
+        AREA *= 2.00E-04;
+
+    }
+
+    SQM_HBr  = sqrt( MW_HBr  * 1.00E+03 );
+    SQM_HOBr = sqrt( MW_HOBr * 1.00E+03 );
+    STK      = sqrt( TEMP );
+
+    /* Deal with HBr */
+    
+    /* DFKG = Gas phase diffusion coeff in m^2/s. ~ 0.1 */
+    DFKG = 9.45E+13 / AIRDENS * STK * pow( 3.472E-02 + 1.0E+00 / ( SQM_HBr * SQM_HBr ), 0.5 );
+
+    /* [m^2/cm^3]*[cm^3/m^3] / ( [m]/[m^2/s] + [s/m]) = [m^2/m^3] / ([s/m]) = [1/s] */
+    CLD1K_HBr = AREA * 1.0E+06 / ( RADI / DFKG + 2.749064E-02 * SQM_HBr / ( GAMMA * STK ));
+
+    /* Deal with HOBr */
+
+    /* DFKG = Gas phase diffusion coeff in m^2/s. ~ 0.1 */
+    DFKG = 9.45E+13 / AIRDENS * STK * pow( 3.472E-02 + 1.0E+00 / ( SQM_HOBr * SQM_HOBr ), 0.5 );
+
+    /* [m^2/cm^3]*[cm^3/m^3] / ( [m]/[m^2/s] + [s/m]) = [m^2/m^3] / ([s/m]) = [1/s] */
+    CLD1K_HOBr = AREA * 1.0E+06 / ( RADI / DFKG + 2.749064E-02 * SQM_HOBr / ( GAMMA * STK ));
+
+    /* Test which loss rate (HOBr or HBr) is limiting */
+    HBr_RTEMP  = CLD1K_HBr  * HBr;
+    HOBr_RTEMP = CLD1K_HOBr * HOBr;
+
+    if ( HBr_RTEMP > HOBr_RTEMP ) {
+
+        /* Is it safe to divide */
+        if ( SafeDiv_d( CLD1K_HOBr * HOBr, HBr ) ) {
+            CLD1K_HBr = HOBr_RTEMP / HBr;
+        } else {
+            CLD1K_HOBr = 1.00E-30;
+            CLD1K_HBr  = 1.00E-30;
+        }
+
+    } else {
+
+        /* Is it safe to divide */
+        if ( SafeDiv_d( CLD1K_HBr * HBr, HOBr ) ) {
+            CLD1K_HBr = HBr_RTEMP / HOBr;
+        } else {
+            CLD1K_HOBr = 1.00E-30;
+            CLD1K_HBr  = 1.00E-30;
+        }
+
+    }
+
+    /* Store rates */
+    K_HBr  = CLD1K_HBr;
+    K_HOBr = CLD1K_HOBr;
+
+    return GAMMA;
+
+
+} /* End of CLDICE_HBrHOBr */
+
 /********************************************************************/
 /***                                                              ***/
 /*** The following functions are defined for UCX-based mechanisms ***/
 /***                                                              ***/
 /********************************************************************/
 
-double HETN2O5_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
+double HETN2O5_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for N2O5(g) + HCl(l,s) in PSCs */
@@ -1107,8 +1360,8 @@ double HETN2O5_PSC( const double A, const double B, const double KHETI_SLA[11], 
      * double A             : Molar weight in g/mol
      * double B             : 
      * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO]   : Aerosol radius in m 
      * double AIRDENS       : Air density in molec/cm^3 
      * bool IS_STRAT        : In the stratosphere?
      * bool NATSURFACE      : Frozen HNO3? */
@@ -1171,7 +1424,7 @@ double HETN2O5_PSC( const double A, const double B, const double KHETI_SLA[11], 
 
 } /* End of HETN2O5_PSC */
 
-double HETClNO3_PSC1( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
+double HETClNO3_PSC1( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for ClNO3(g) + H2O(l,s) in PSCs */
@@ -1180,8 +1433,8 @@ double HETClNO3_PSC1( const double A, const double B, const double KHETI_SLA[11]
      * double A             : Molar weight in g/mol
      * double B             : 
      * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO]   : Aerosol radius in m 
      * double AIRDENS       : Air density in molec/cm^3 
      * bool IS_STRAT        : In the stratosphere?
      * bool NATSURFACE      : Frozen HNO3? */
@@ -1244,7 +1497,7 @@ double HETClNO3_PSC1( const double A, const double B, const double KHETI_SLA[11]
 
 } /* End of HETClNO3_PSC1 */
 
-double HETClNO3_PSC2( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
+double HETClNO3_PSC2( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for ClNO3(g) + HCl(l,s) in PSCs */
@@ -1253,8 +1506,8 @@ double HETClNO3_PSC2( const double A, const double B, const double KHETI_SLA[11]
      * double A             : Molar weight in g/mol
      * double B             : 
      * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO]   : Aerosol radius in m 
      * double AIRDENS       : Air density in molec/cm^3 
      * bool IS_STRAT        : In the stratosphere?
      * bool NATSURFACE      : Frozen HNO3? */
@@ -1317,7 +1570,7 @@ double HETClNO3_PSC2( const double A, const double B, const double KHETI_SLA[11]
     
 } /* End of HETClNO3_PSC2 */
 
-double HETClNO3_PSC3( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
+double HETClNO3_PSC3( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for ClNO3(g) + HBr(l,s) in PSCs */
@@ -1326,8 +1579,8 @@ double HETClNO3_PSC3( const double A, const double B, const double KHETI_SLA[11]
      * double A             : Molar weight in g/mol
      * double B             : 
      * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO]   : Aerosol radius in m 
      * double AIRDENS       : Air density in molec/cm^3 
      * bool IS_STRAT        : In the stratosphere?
      * bool NATSURFACE      : Frozen HNO3? */
@@ -1390,7 +1643,7 @@ double HETClNO3_PSC3( const double A, const double B, const double KHETI_SLA[11]
 
 } /* End of HETClNO3_PSC3 */
 
-double HETBrNO3_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
+double HETBrNO3_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for BrNO3(g) + HCl(l,s) in PSCs */
@@ -1399,8 +1652,8 @@ double HETBrNO3_PSC( const double A, const double B, const double KHETI_SLA[11],
      * double A             : Molar weight in g/mol
      * double B             : 
      * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO]   : Aerosol radius in m 
      * double AIRDENS       : Air density in molec/cm^3 
      * bool IS_STRAT        : In the stratosphere?
      * bool NATSURFACE      : Frozen HNO3? */
@@ -1463,18 +1716,18 @@ double HETBrNO3_PSC( const double A, const double B, const double KHETI_SLA[11],
 
 } /* End of HETBrNO3_PSC */
 
-double HETHOCl_PSC1( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
+double HETHOCl_PSC1( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for HOCl(g) + HCl(l,s) in PSCs */
 
     /* INPUTS:
      * double A             : Molar weight in g/mol
-     * double B             : 
-     * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
-     * double AIRDENS       : Air density in molec/cm^3 
+     * double B             :
+     * double KHETI_SLA[11] : Sticking coefficients
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3
+     * double RADI[NAERO]   : Aerosol radius in m
+     * double AIRDENS       : Air density in molec/cm^3
      * bool IS_STRAT        : In the stratosphere?
      * bool NATSURFACE      : Frozen HNO3? */
 
@@ -1536,7 +1789,7 @@ double HETHOCl_PSC1( const double A, const double B, const double KHETI_SLA[11],
 
 } /* End of HETHOCl_PSC1 */
 
-double HETHOCl_PSC2( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
+double HETHOCl_PSC2( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for HOCl(g) + HBr(l,s) in PSCs */
@@ -1545,8 +1798,8 @@ double HETHOCl_PSC2( const double A, const double B, const double KHETI_SLA[11],
      * double A             : Molar weight in g/mol
      * double B             : 
      * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO]   : Aerosol radius in m 
      * double AIRDENS       : Air density in molec/cm^3 
      * bool IS_STRAT        : In the stratosphere?
      * bool NATSURFACE      : Frozen HNO3? */
@@ -1609,7 +1862,7 @@ double HETHOCl_PSC2( const double A, const double B, const double KHETI_SLA[11],
 
 } /* End of HETHOCl_PSC2 */
 
-double HETHOBr_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[4], const double RADI[4], const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
+double HETHOBr_PSC( const double A, const double B, const double KHETI_SLA[11], const double AREA[NAERO], const double RADI[NAERO], const double TEMP, const double AIRDENS, bool IS_STRAT, bool NATSURFACE )
 {
 
     /* DESCRIPTION: Set the heterogeneous chemistry rate for HOBr(g) + HCl(l,s) in PSCs */
@@ -1618,8 +1871,8 @@ double HETHOBr_PSC( const double A, const double B, const double KHETI_SLA[11], 
      * double A             : Molar weight in g/mol
      * double B             : 
      * double KHETI_SLA[11] : Sticking coefficients 
-     * double AREA[4]       : Aerosol surface area in m^2/cm^3 
-     * double RADI[4]       : Aerosol radius in m 
+     * double AREA[NAERO]   : Aerosol surface area in m^2/cm^3 
+     * double RADI[NAERO]   : Aerosol radius in m 
      * double AIRDENS       : Air density in molec/cm^3 
      * bool IS_STRAT        : In the stratosphere?
      * bool NATSURFACE      : Frozen HNO3? */
