@@ -18,8 +18,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-    bool SafeDiv( float num, float denom );
-    bool SafeDiv( double num, double denom );
+    bool SafeDiv_f( float num, float denom );
+    bool SafeDiv_d( double num, double denom );
 
 #ifdef __cplusplus
 }

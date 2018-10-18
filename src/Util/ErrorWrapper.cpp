@@ -18,14 +18,14 @@ using namespace Error;
 
 extern "C" {
 
-    bool SafeDiv( float num, float denom )
+    bool SafeDiv_f( float num, float denom )
     {
      
         return Error::SafeDiv( num, denom );
 
     } /* End of SafeDiv */
 
-    bool SafeDiv( double num, double denom )
+    bool SafeDiv_d( double num, double denom )
     {
      
         return Error::SafeDiv( num, denom );
