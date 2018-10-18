@@ -25,10 +25,13 @@
 #include "AIM/Coagulation.hpp"
 #include "EPM/Integrate.hpp"
 #include "KPP/KPP.hpp"
+#include "KPP/KPP_Parameters.h"
+#include "KPP/KPP_Global.h"
 #if ( RINGS )
     #include "Core/Cluster.hpp"
     #include "Core/Species.hpp"
 #endif /* RINGS */
+#include "Core/SZA.hpp"
 #include "Core/Mesh.hpp"
 #include "Core/Structure.hpp"
 #include "Core/Ambient.hpp"
@@ -47,10 +50,6 @@ typedef std::complex<double> Complex;
 typedef std::vector<double> Real_1DVector;
 typedef std::vector<Real_1DVector> Real_2DVector;
 
-void SZA( double latitude_deg, int dayGMT,\
-          double &sunRise, double &sunSet,\
-          double &SZASINLAT, double &SZACOSLAT,\
-          double &SZASINDEC, double &SZACOSDEC );
 void DiffParam( double time, double &d_x, double &d_y );
 void AdvParam( double time, double &v_x, double &v_y );
 void AdvGlobal( double time, double &v_x, double &v_y, double &dTrav_x, double &dTrav_y );
@@ -59,17 +58,6 @@ std::vector<double> BuildTime( double tStart, double tFinal, \
 double UpdateTime( double time, double tStart, \
                    double sunRise, double sunSet );
 void CallSolver( Solution& Data, Solver& SANDS );
-
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, \
-              double airDens, double temperature, double pressure, \
-              double sinLAT, double cosLAT, double sinDEC, double cosDEC, \
-              double rtols, double atols );
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
 
 
 int PlumeModel( double temperature_K, double pressure_Pa, \
@@ -131,13 +119,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 
     unsigned int dayGMT(81);
-    double sunRise, sunSet; /* sun rise and sun set in hours */
-    double SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC;
 
     /* Define sun parameters */
-    SZA( latitude_deg, dayGMT,\
-         sunRise, sunSet,\
-         SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC );
+    SZA sun( latitude_deg, dayGMT );
     
 
 
@@ -159,8 +143,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /*  
      *  - tEmission is the local emission time expressed in hours 
      *  (between 0.0 and 24.0)
-     *  - TSTART corresponds to the time at which the simulation starts
-     *  after emission (set to 0). It is expressed in hours
      *  - tInitial is the local time at which the simulation starts in hours
      *  - TSIMUL represents the simulation time (in hours)
      *  - tFinal corresponds to the final time of the simulation expressed in hours
@@ -168,7 +150,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     /* Define emission and simulation time */
     double tEmission_h = std::fmod(8.0,24.0);  /* [hr] */
-    double tInitial_h  = tEmission_h + TSTART; /* [hr] */
+    double tInitial_h  = tEmission_h;          /* [hr] */
     double tFinal_h    = tInitial_h + TSIMUL;  /* [hr] */
     double tInitial_s  = tInitial_h * 3600.0;  /* [s] */
     double tFinal_s    = tFinal_h   * 3600.0;  /* [s] */
@@ -182,7 +164,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     /* Vector of time in [s] */
     std::vector<double> timeArray;
-    timeArray = BuildTime ( tInitial_s, tFinal_s, 3600.0*sunRise, 3600.0*sunSet );
+    timeArray = BuildTime ( tInitial_s, tFinal_s, 3600.0*sun.sunRise, 3600.0*sun.sunSet );
     /* Time counter [-] */
     unsigned int nTime = 0;
     
@@ -278,10 +260,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     /* Allocate arrays for KPP */
     /* varArray stores all the concentrations of variable species */
-    double varArray[N_VAR];
+    double varArray[NVAR];
     
     /* fixArray stores all the concentrations of fixed species */
-    double fixArray[N_FIX];
+    double fixArray[NFIX];
    
     /* aerArray stores all the number concentrations of aerosols */
     double aerArray[N_AER][2];
@@ -299,10 +281,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     AIM::Aerosol SO4Aer;
     EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aerArray, aircraft, EI, \
                     Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, SO4Aer, Area );
-
-    std::cout << SO4Aer.Moment() << "\n";
-
-    std::cout << Area << "\n";
 
     /** ~~~~~~~~~~~~~~~~~ **/
     /**      Rings?       **/
@@ -353,8 +331,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     ringSpecies.FillIn( Data, m, nTime );
 
     /* Allocate an additional array for KPP */
-    double tempArray[N_VAR];
+    double tempArray[NVAR];
 
+    /* Allocate a ring's relative humidity */
+    double relHumidity_Ring;
  
     /* Otherwise we do not have a ring structure and chemistry is solved on the grid */
 #else
@@ -364,7 +344,13 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     unsigned int jNy = 0;
 
 #endif /* RINGS */
-   
+
+
+    bool IS_PSC = 0;
+    double areaHET[NAERO];
+    double radiHET[NAERO];
+    double iwcHET;
+    double kheti_sla[11];
 
     std::cout << "\n\n *** Time loop starts now ***";
 
@@ -390,7 +376,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         
         /* Compute time step */
-        dt = UpdateTime( curr_Time_s, tInitial_s, 3600.0*sunRise, 3600.0*sunSet );
+        dt = UpdateTime( curr_Time_s, tInitial_s, 3600.0*sun.sunRise, 3600.0*sun.sunSet );
         SANDS_Solver.UpdateTimeStep( dt );
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
@@ -477,6 +463,22 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
          * Use dTrav_x and dTrav_y to update the temperature and pressure
          */
 
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~ Update cosine of solar zenight angle ~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+        /* Compute SUN */
+        sun.Update( curr_Time_s );
+
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~ Update photolysis rates ~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+        for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
+            PHOTOL[iPhotol] = 0.0E+00;
+
+        if ( sun.CSZA > 0.0E+00 )
+            Read_JRates( PHOTOL, sun.CSZA );
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~~~~~~ KPP ~~~~~~~~~~~~~~~~~~~~~~ **/
@@ -488,7 +490,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         Stopwatch.Start( reset );
 
 #endif /* TIME_IT */
-
+        
         /* Are we solving the chemistry in a ring structure? */
 #if ( RINGS )
        
@@ -504,12 +506,39 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 /* Convert ring structure to KPP inputs (varArray and fixArray) */
                 ringSpecies.getData( varArray, fixArray, nTime + 1, iRing );
 
-                std::copy( varArray, varArray + N_VAR, tempArray );
+                std::copy( varArray, varArray + NVAR, tempArray );
 
-                /* Call KPP */
+                /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+                /* ~~~~ Chemical rates ~~~~ */
+                /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+                /* Update heterogeneous chemistry reaction rates */
+                for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+                    HET[iSpec][0] = 0.0E+00;
+                    HET[iSpec][1] = 0.0E+00;
+                    HET[iSpec][2] = 0.0E+00;
+                }
+
+                if ( HETCHEMISTRY ) {
+                    relHumidity_Ring = varArray[ind_H2O] * \
+                                       physConst::kB * temperature_K * 1.00E+06 / \
+                                       physFunc::pSat_H2Ol( temperature_K );
+                    GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
+                               IS_PSC, varArray, areaHET, radiHET, iwcHET, kheti_sla );
+                }
+
+                /* Update reaction rates */
+                for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                    RCONST[iReact] = 0.0E+00;
+                }
+
+                Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O] );
+
+                /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+                /* ~~~~~ Integration ~~~~~~ */
+                /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+                
                 KPP_Main( varArray, fixArray, curr_Time_s, dt, \
-                      airDens, temperature_K, pressure_Pa, \
-                      SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC, \
                       KPP_RTOLS, KPP_ATOLS );
                 
                 ringSpecies.FillIn( varArray, nTime + 1, iRing );
@@ -521,10 +550,36 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             /* Ambient chemistry */
             ambientData.getData( varArray, fixArray, aerArray, nTime );
 
-            /* Call KPP */
+            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+            /* ~~~~ Chemical rates ~~~~ */
+            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+            /* Update heterogeneous chemistry reaction rates */
+            for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+                HET[iSpec][0] = 0.0E+00;
+                HET[iSpec][1] = 0.0E+00;
+                HET[iSpec][2] = 0.0E+00;
+            }
+
+            if ( HETCHEMISTRY ) {
+                relHumidity_Ring = varArray[ind_H2O] * \
+                                   physConst::kB * temperature_K * 1.00E+06 / \
+                                   physFunc::pSat_H2Ol( temperature_K );
+                GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
+                           IS_PSC, varArray, areaHET, radiHET, iwcHET, kheti_sla );
+            }
+
+            /* Update reaction rates */
+            for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                RCONST[iReact] = 0.0E+00;
+            }
+
+            Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O] );
+
+            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+            /* ~~~~~ Integration ~~~~~~ */
+            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
             KPP_Main( varArray, fixArray, curr_Time_s, dt, \
-                  airDens, temperature_K, pressure_Pa, \
-                  SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC, \
                   KPP_RTOLS, KPP_ATOLS );
 
             ambientData.FillIn( varArray, nTime + 1 );
@@ -546,17 +601,55 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                     /* Convert data structure to KPP inputs (varArray and fixArray) */
                     Data.getData( varArray, fixArray, iNx, jNy );
 
+                    /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+                    /* ~~~~ Chemical rates ~~~~ */
+                    /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-                    /* Call KPP */
+                    /* Update heterogeneous chemistry reaction rates */
+                    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+                        HET[iSpec][0] = 0.0E+00;
+                        HET[iSpec][1] = 0.0E+00;
+                        HET[iSpec][2] = 0.0E+00;
+                    }
+
+                    if ( HETCHEMISTRY ) {
+                        relHumidity_Ring = varArray[ind_H2O] * \
+                                           physConst::kB * temperature_K * 1.00E+06 / \
+                                           physFunc::pSat_H2Ol( temperature_K );
+                        GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
+                                   IS_PSC, varArray, areaHET, radiHET, iwcHET, kheti_sla );
+                    }
+
+                    /* Update reaction rates */
+                    for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                        RCONST[iReact] = 0.0E+00;
+                    }
+
+                    Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O] );
+
+                    /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+                    /* ~~~~~ Integration ~~~~~~ */
+                    /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+
                     KPP_Main( varArray, fixArray, curr_Time_s, dt, \
-                          airDens, temperature_K, pressure_Pa, \
-                          SZASINLAT, SZACOSLAT, SZASINDEC, SZACOSDEC, \
                           KPP_RTOLS, KPP_ATOLS );
 
                     /* Convert KPP output back to data structure */
                     Data.applyData( varArray, iNx, jNy );
                 }
             }
+            
+            /* Ambient chemistry */
+            ambientData.getData( varArray, fixArray, aerArray, nTime );
+
+            /* Update reaction rates */
+            Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O], sun.CSZA );
+
+            /* Call KPP */
+            KPP_Main( varArray, fixArray, curr_Time_s, dt, \
+                  KPP_RTOLS, KPP_ATOLS );
+
+            ambientData.FillIn( varArray, nTime + 1 );
 
         }
 
@@ -693,7 +786,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     
 #if ( SAVE_OUTPUT )
 
-    int isSaved = output::Write( ringSpecies, ambientData, ringCluster, timeArray, temperature_K, pressure_Pa, airDens, relHumidity_w, relHumidity_i, longitude_deg, latitude_deg, sunRise, sunSet );
+    int isSaved = output::Write( ringSpecies, ambientData, ringCluster, timeArray, temperature_K, pressure_Pa, airDens, relHumidity_w, relHumidity_i, longitude_deg, latitude_deg, sun.sunRise, sun.sunSet );
     if ( isSaved == output::SAVE_FAILURE ) {
         std::cout << "Saving file failed...\n";
         return -2;

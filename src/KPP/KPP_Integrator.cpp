@@ -122,7 +122,6 @@
 	     char ros_NewF[], double *ros_ELO, char* ros_Name );
  int  KppDecomp( double A[] );
  void KppSolve ( double A[], double b[] );
- void Update_SUN();
  void Update_RCONST();
  
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1219,8 +1218,12 @@ void FunTemplate( double T, double Y[], double Ydot[] )
 
    Told = TIME;
    TIME = T;
-   Update_SUN();
-   Update_RCONST();
+   /* 10/18/2018 - T.Fritz: Calls to Update_SUN and Update_RCONST have been removed.
+    * SUN is now computed before calling KPP and incorporated in the photolysis rates
+    * RCONST is also computed before calling KPP as the rates don't change during the integration.
+    * see: http://wiki.seas.harvard.edu/geos-chem/index.php/FlexChem#Remove_calls_to_UPDATE_SUN.2C_UPDATE_RCONST_from_gckpp_Integrator.F90 */
+   //Update_SUN();
+   //Update_RCONST();
    Fun( Y, FIX, RCONST, Ydot );
    TIME = Told;
      
@@ -1241,8 +1244,12 @@ void JacTemplate( double T, double Y[], double Jcb[] )
 
    Told = TIME;
    TIME = T ; 
-   Update_SUN();
-   Update_RCONST();
+   /* 10/18/2018 - T.Fritz: Calls to Update_SUN and Update_RCONST have been removed.
+    * SUN is now computed before calling KPP and incorporated in the photolysis rates
+    * RCONST is also computed before calling KPP as the rates don't change during the integration.
+    * see: http://wiki.seas.harvard.edu/geos-chem/index.php/FlexChem#Remove_calls_to_UPDATE_SUN.2C_UPDATE_RCONST_from_gckpp_Integrator.F90 */
+   //Update_SUN();
+   //Update_RCONST();
    Jac_SP( Y, FIX, RCONST, Jcb );
    TIME = Told;
      
