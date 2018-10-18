@@ -400,7 +400,7 @@ void Update_SUN( )
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-void Update_RCONST()
+void Update_RCONST( const double TEMP, const double PATM, const double AIRDENS, const double H2O )
 {
 
 
