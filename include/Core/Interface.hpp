@@ -24,6 +24,7 @@ const char* const WISDOMFILE = "data/FFTW_Wisdom.out";
 
 /* CHEMISTRY */
 #define CHEMISTRY               1    /* Is chemistry turned on? */
+#define HETCHEMISTRY            1    /* Is heterogeneous chemistry turned on? */
 
 /* MICROPHYSICS */
 #define ICE_MICROPHYSICS        1    /* Is ice microphysics turned on? */
