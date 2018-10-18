@@ -26,12 +26,12 @@
 #define NRING             15          /* Number of rings */
 
 /* Time */
-#define TSTART            0.0E+00     /* Initial time [hrs] (after emission) */
 #define TSIMUL            2.4E+01     /* Simulation time [hrs] */
-#define DT                9.0E+02     /* Default time step [s] */
+#define DT                6.0E+02     /* Default time step [s] = 10 min */
 
 /* Atmospheric parameters */
 #define GAMMA            -3.0E+00     /* Ambient temperature lapse rate [K/km] */
+#define TROPP             2.0E+04     /* Pressure at the tropopause [Pa] */
 #define HOMOGENEOUS_NAT   1           /* Allow homogeneous NAT? */
 #define T_NAT_SUPERCOOL   3.0         /* NAT supercooling requirement [K] */
 
@@ -60,10 +60,6 @@
                                        */
 
 /* Chemistry parameters */
-#define N_SPC                 135         /* Number of chemical species */
-#define N_VAR                 127         /* Number of Variable species */
-#define N_FIX                 8           /* Number of Fixed species */
-#define N_REACT               475         /* Number of reactions */
 #define KPP_RTOLS             1.00E-03    /* Relative tolerances in KPP */
 #define KPP_ATOLS             1.00E-03    /* Absolute tolerances in KPP */
 
