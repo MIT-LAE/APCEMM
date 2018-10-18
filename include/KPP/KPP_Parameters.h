@@ -18,8 +18,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-
+#ifndef KPP_PARAMETERS_H_INCLUDED
+#define KPP_PARAMETERS_H_INCLUDED
 
 #define NSPEC                135         /* Number of chemical species */
 #define NVAR                 127         /* Number of Variable species */
@@ -198,3 +198,6 @@
 #define NJVRP                825         /* Length of sparse Jacobian JVRP */
 
 #define NSTOICM              2070        /* Length of Sparse Stoichiometric Matrix */
+
+#endif /* KPP_PARAMETERS_H_INCLUDED */
+
