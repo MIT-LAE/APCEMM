@@ -46,6 +46,11 @@ class SpeciesArray
         /* Fixed species */
         double ACTA, EOH, H2, HCOOH, MOH, N2, O2, RCOOH;
 
+        /* Aerosols */
+        std::vector<std::vector<double> > sootDens, sootRadi, sootArea, \
+                                          iceDens , iceRadi , iceArea, \
+                                          sulfDens, sulfRadi, sulfArea;
+
     protected:
 
         unsigned int nRing;

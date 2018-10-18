@@ -20,7 +20,7 @@ Ambient::Ambient( )
 
 } /* End of Ambient::Ambient */
 
-Ambient::Ambient( unsigned int nTime_, std::vector<double> ambientVector, std::vector<double> aerVector )
+Ambient::Ambient( unsigned int nTime_, std::vector<double> ambientVector, std::vector<std::vector<double> > aerVector )
 {
 
     /* Constructor */
@@ -164,7 +164,12 @@ Ambient::Ambient( unsigned int nTime_, std::vector<double> ambientVector, std::v
     O2       = ambientVector[133];
     RCOOH    = ambientVector[134];
 
-    soot.assign     ( nTime, aerVector[  0] );
+    sootDens.assign( nTime, aerVector[  0][0] );
+    sootRadi.assign( nTime, aerVector[  0][1] );
+    iceDens.assign ( nTime, aerVector[  1][0] );
+    iceRadi.assign ( nTime, aerVector[  1][1] );
+    sulfDens.assign( nTime, aerVector[  2][0] );
+    sulfRadi.assign( nTime, aerVector[  2][1] );
 
 } /* End of Ambient::Ambient */
 
@@ -470,7 +475,7 @@ Ambient& Ambient::operator=( const Ambient &a )
 
 } /* End of Ambient::operator= */
 
-void Ambient::getData( double varArray[], double fixArray[], double aerArray[], unsigned int iTime ) const
+void Ambient::getData( double varArray[], double fixArray[], double aerArray[][2], unsigned int iTime ) const
 {
 
     varArray[  0] = CO2[iTime];
@@ -609,7 +614,12 @@ void Ambient::getData( double varArray[], double fixArray[], double aerArray[], 
     fixArray[  6] = O2;
     fixArray[  7] = RCOOH;
    
-    aerArray[  0] = soot[iTime];
+    aerArray[  0][0] = sootDens[iTime];
+    aerArray[  0][1] = sootRadi[iTime];
+    aerArray[  1][0] = iceDens[iTime];
+    aerArray[  1][1] = iceRadi[iTime];
+    aerArray[  2][0] = sulfDens[iTime];
+    aerArray[  2][1] = sulfRadi[iTime];
 
     /* Ensure positiveness */
     for ( unsigned int i = 0; i < N_VAR; i++ ) {
