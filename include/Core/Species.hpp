@@ -17,6 +17,7 @@
 #include <iostream> 
 #include <vector>
 
+#include "KPP/KPP_Parameters.h"
 #include "Core/Interface.hpp"
 #include "Core/Structure.hpp"
 #include "Core/Mesh.hpp"

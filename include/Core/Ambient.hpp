@@ -17,6 +17,7 @@
 #include <iostream>
 #include <vector>
 
+#include "KPP/KPP_Parameters.h"
 #include "Core/Parameters.hpp"
 
 class Ambient

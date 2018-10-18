@@ -1148,7 +1148,7 @@ void SpeciesArray::FillIn( double varArray[], unsigned int iTime, unsigned int i
 {
 
     /* Ensure positiveness */
-    for ( unsigned int i = 0; i < N_VAR; i++ ) {
+    for ( unsigned int i = 0; i < NVAR; i++ ) {
         if ( varArray[i] <= 0.0 ) {
             varArray[i] = ZERO;
         }
@@ -1425,7 +1425,7 @@ void SpeciesArray::getData( double varArray[], double fixArray[], unsigned int i
     fixArray[  7] = RCOOH;
 
     /* Ensure positiveness */
-    for ( unsigned int i = 0; i < N_VAR; i++ ) {
+    for ( unsigned int i = 0; i < NVAR; i++ ) {
         if ( varArray[i] <= 0.0 ) {
             varArray[i] = ZERO;
         }

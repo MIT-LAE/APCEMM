@@ -622,7 +622,7 @@ void Ambient::getData( double varArray[], double fixArray[], double aerArray[][2
     aerArray[  2][1] = sulfRadi[iTime];
 
     /* Ensure positiveness */
-    for ( unsigned int i = 0; i < N_VAR; i++ ) {
+    for ( unsigned int i = 0; i < NVAR; i++ ) {
         if ( varArray[i] <= 0.0 ) {
             varArray[i] = 1.0E-50;
         }
@@ -634,7 +634,7 @@ void Ambient::FillIn( double varArray[], unsigned int iTime )
 {
 
     /* Ensure positiveness */
-    for ( unsigned int i = 0; i < N_VAR; i++ ) {
+    for ( unsigned int i = 0; i < NVAR; i++ ) {
         if ( varArray[i] <= 0.0 ) {
             varArray[i] = 1.0E-50;
         }

@@ -14,7 +14,7 @@
 #include "Core/Structure.hpp"
 
 Solution::Solution( ) : \
-        nVariables( N_SPC ), nAer( N_AER ), size_x( NX ), size_y( NY )
+        nVariables( NSPEC ), nAer( N_AER ), size_x( NX ), size_y( NY )
 {
     /* Constructor */
 
@@ -932,7 +932,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
 std::vector<double> Solution::getAmbient() const
 {
 
-    std::vector<double> ambVector( N_SPC, 0.0 );
+    std::vector<double> ambVector( NSPEC, 0.0 );
     
     ambVector[  0] = CO2[0][0]      ;
     ambVector[  1] = PPN[0][0]      ;

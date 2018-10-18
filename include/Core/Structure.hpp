@@ -22,6 +22,7 @@
 #include <sstream>
 
 #include "Core/Parameters.hpp"
+#include "KPP/KPP_Parameters.h"
 #include "Util/PhysConstant.hpp"
 #include "Util/PhysFunction.hpp"
 #include "Core/Emission.hpp"
