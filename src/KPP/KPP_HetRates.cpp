@@ -15,7 +15,7 @@
 #include "KPP/KPP_Sparse.h"
 #include "KPP/KPP.hpp"
 #include "Core/Parameters.hpp"
-#include "Util/ErrorWrapper.h"
+#include "Util/Error.hpp"
 
 #define MAX(a,b) ( ((a) >= (b)) ? (a):(b)  )
 #define MIN(b,c) ( ((b) < (c))  ? (b):(c)  )
@@ -333,7 +333,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
         /* If HBr rate is the largest */
         if ( HBr_RTEMP > HOBr_RTEMP ) {
 
-            SAFEDIV = SafeDiv_d( HET[ind_HOBr][0] * SPC_HOBr, SPC_HBr );
+            SAFEDIV = SafeDiv( HET[ind_HOBr][0] * SPC_HOBr, SPC_HBr );
 
             if ( SAFEDIV ) {
                 HET[ind_HBr][0] = HET[ind_HOBr][0] * SPC_HOBr / SPC_HBr;
@@ -345,7 +345,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
 
         } else {
 
-            SAFEDIV = SafeDiv_d( HET[ind_HBr][0] * SPC_HBr, SPC_HOBr );
+            SAFEDIV = SafeDiv( HET[ind_HBr][0] * SPC_HBr, SPC_HOBr );
             
             if ( SAFEDIV ) {
                 HET[ind_HOBr][0] = HET[ind_HBr][0] * SPC_HBr / SPC_HOBr;
@@ -430,7 +430,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
         
         if ( PSCIDX == 0 ) {
             /* Convert from 1st-order to 2nd-order */
-            SAFEDIV = SafeDiv_d( EDUCTCONC, LIMITCONC );
+            SAFEDIV = SafeDiv( EDUCTCONC, LIMITCONC );
 
             if ( SAFEDIV ) {
                 /* Temporarily store [B]/(T*[A]) */
@@ -443,7 +443,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
                 ADJUSTEDRATE = 0.0E+00;
             }
 
-            SAFEDIV = SafeDiv_d( ADJUSTEDRATE, EDUCTCONC );
+            SAFEDIV = SafeDiv( ADJUSTEDRATE, EDUCTCONC );
 
             if ( ( EDUCTCONC > 1.0E+02 ) && ( SAFEDIV ) ) {
                 ADJUSTEDRATE /= EDUCTCONC;
@@ -456,7 +456,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
                 ADJUSTEDRATE = 1.0E+00/PSCMINLIFE;
 
             /* Convert from 1st-order to 2nd-order */
-            SAFEDIV = SafeDiv_d( EDUCTCONC, LIMITCONC );
+            SAFEDIV = SafeDiv( EDUCTCONC, LIMITCONC );
 
             if ( SAFEDIV ) {
                 /* Temporarily store [B]/(T*[A]) */
@@ -469,7 +469,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
                 ADJUSTEDRATE = 0.0E+00;
             }
             
-            SAFEDIV = SafeDiv_d( ADJUSTEDRATE, EDUCTCONC );
+            SAFEDIV = SafeDiv( ADJUSTEDRATE, EDUCTCONC );
             
             if ( ( EDUCTCONC > 1.0E+02 ) && ( SAFEDIV ) ) {
                 ADJUSTEDRATE /= EDUCTCONC;
@@ -1132,14 +1132,20 @@ double N2O5( unsigned int N, const double TEMP, const double RH )
             /* Apply temperature dependence */
             GAMMA_N2O5 *= FACT;
 
+            break;
+
         /* Black carbon */
         case 3:
 
             GAMMA_N2O5 = 5.00E-03;
 
+            break;
+
         default:
             printf("Not a suitable aerosol surface for N2O5 hydrolysis\n");
             printf("AEROSOL TYPE = %d\n", N);
+
+            break;
 
     } 
 
@@ -1371,7 +1377,7 @@ double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI,
     if ( HBr_RTEMP > HOBr_RTEMP ) {
 
         /* Is it safe to divide */
-        if ( SafeDiv_d( CLD1K_HOBr * HOBr, HBr ) ) {
+        if ( SafeDiv( CLD1K_HOBr * HOBr, HBr ) ) {
             CLD1K_HBr = HOBr_RTEMP / HBr;
         } else {
             CLD1K_HOBr = 1.00E-30;
@@ -1381,7 +1387,7 @@ double CLDICE_HBrHOBr( const double AIRDENS, const double TEMP, const double QI,
     } else {
 
         /* Is it safe to divide */
-        if ( SafeDiv_d( CLD1K_HBr * HBr, HOBr ) ) {
+        if ( SafeDiv( CLD1K_HBr * HBr, HOBr ) ) {
             CLD1K_HBr = HBr_RTEMP / HOBr;
         } else {
             CLD1K_HOBr = 1.00E-30;
