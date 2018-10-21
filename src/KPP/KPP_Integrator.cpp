@@ -125,7 +125,7 @@
  void Update_RCONST();
  
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void INTEGRATE( double TIN, double TOUT )
+int INTEGRATE( double TIN, double TOUT )
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 {
    static double  RPAR[20];
@@ -155,13 +155,15 @@ void INTEGRATE( double TIN, double TOUT )
    Ng=Ng+IPAR[17];
 //   printf("\n Step=%d  Acc=%d  Rej=%d  Singular=%d\n",Ns,Na,Nr,Ng);
 
-   if (IERR < 0)
-     printf("\n Rosenbrock: Unsucessful step at T=%g: IERR=%d\n",
-         TIN,IERR);
+//   if (IERR < 0)
+//     printf("\n Rosenbrock: Unsucessful step at T=%g: IERR=%d\n",
+//         TIN,IERR);
    
    TIN = RPAR[10];      /* Exit time */
    STEPMIN = RPAR[11];  /* Last step */
-   
+  
+   return IERR;
+
 } /* INTEGRATE */
 
 

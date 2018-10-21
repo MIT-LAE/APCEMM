@@ -51,15 +51,14 @@ double STEPMAX;                          /* Upper bound for integration step */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-void Read_JRates( double JRates[] );
-void GetMass( double CL[], double Mass[] );
-void INTEGRATE( double TIN, double TOUT );
+int INTEGRATE( double TIN, double TOUT );
 
 int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, \
               double RTOLS, double ATOLS )
 {
     
     int i;
+    int IERR;
  
     /* ---- TIME VARIABLES ------------------ */
 
@@ -84,7 +83,7 @@ int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, 
     /* ********** TIME LOOP **************************** */
 
     TIME = TSTART;
-    INTEGRATE( TIME, TIME+dt );
+    IERR = INTEGRATE( TIME, TIME+dt );
 
     /* *********** END TIME LOOP *********************** */
 
@@ -92,7 +91,7 @@ int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, 
         varArray[i] = VAR[i];
     }
 
-    return 0; /*didnt return anything initially */
+    return IERR; /*didnt return anything initially */
 
 }
 /* End of MAIN function                                             */
