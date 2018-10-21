@@ -46,6 +46,10 @@
     #include "Core/Save.hpp"
 #endif /* SAVE_OUTPUT */
 
+static int SUCCESS   =  1;
+static int KPP_FAIL  = -1;
+static int SAVE_FAIL = -2;
+
 typedef std::complex<double> Complex;
 typedef std::vector<double> Real_1DVector;
 typedef std::vector<Real_1DVector> Real_2DVector;
@@ -100,7 +104,12 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* CO2_MASS_CHECK */
 
-    
+#if ( CHEMISTRY )
+
+    int IERR;
+
+#endif 
+
     /* Compute relative humidity w.r.t ice */
     double relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
                                          / physFunc::pSat_H2Os( temperature_K );
@@ -470,6 +479,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /* Compute SUN */
         sun.Update( curr_Time_s );
 
+        /* Store cosine of solar zenith angle */
+        ambientData.cosSZA[nTime] = sun.CSZA;
+
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~ Update photolysis rates ~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
@@ -513,13 +525,14 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
                 /* Update heterogeneous chemistry reaction rates */
-                for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
-                    HET[iSpec][0] = 0.0E+00;
-                    HET[iSpec][1] = 0.0E+00;
-                    HET[iSpec][2] = 0.0E+00;
-                }
-
                 if ( HETCHEMISTRY ) {
+                    
+                    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+                        HET[iSpec][0] = 0.0E+00;
+                        HET[iSpec][1] = 0.0E+00;
+                        HET[iSpec][2] = 0.0E+00;
+                    }
+
                     relHumidity_Ring = varArray[ind_H2O] * \
                                        physConst::kB * temperature_K * 1.00E+06 / \
                                        physFunc::pSat_H2Ol( temperature_K );
@@ -538,8 +551,24 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 /* ~~~~~ Integration ~~~~~~ */
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
                 
-                KPP_Main( varArray, fixArray, curr_Time_s, dt, \
-                      KPP_RTOLS, KPP_ATOLS );
+                IERR = KPP_Main( varArray, fixArray, curr_Time_s, dt, \
+                                 KPP_RTOLS, KPP_ATOLS );
+
+                if ( IERR < 0 ) {
+                    /* Integration failed */
+
+                    std::cout << "Integration failed for ring = " << iRing << " at time t = " << curr_Time_s << "( nTime = " << nTime << " )\n";
+                    std::cout << " ~~~ Printing reaction rates:\n";
+                    for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                        std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                    }
+                    std::cout << " ~~~ Printing concentrations:\n";
+                    for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
+                        std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                    }
+
+                    return KPP_FAIL;
+                }
                 
                 ringSpecies.FillIn( varArray, nTime + 1, iRing );
    
@@ -555,13 +584,14 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
             /* Update heterogeneous chemistry reaction rates */
-            for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
-                HET[iSpec][0] = 0.0E+00;
-                HET[iSpec][1] = 0.0E+00;
-                HET[iSpec][2] = 0.0E+00;
-            }
-
             if ( HETCHEMISTRY ) {
+
+                for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+                    HET[iSpec][0] = 0.0E+00;
+                    HET[iSpec][1] = 0.0E+00;
+                    HET[iSpec][2] = 0.0E+00;
+                }
+
                 relHumidity_Ring = varArray[ind_H2O] * \
                                    physConst::kB * temperature_K * 1.00E+06 / \
                                    physFunc::pSat_H2Ol( temperature_K );
@@ -579,8 +609,24 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
             /* ~~~~~ Integration ~~~~~~ */
             /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
-            KPP_Main( varArray, fixArray, curr_Time_s, dt, \
-                  KPP_RTOLS, KPP_ATOLS );
+            IERR = KPP_Main( varArray, fixArray, curr_Time_s, dt, \
+                             KPP_RTOLS, KPP_ATOLS );
+
+            if ( IERR < 0 ) {
+                /* Integration failed */
+
+                std::cout << "Integration failed for ring = " << iRing << " at time t = " << curr_Time_s << "( nTime = " << nTime << " )\n";
+                std::cout << " ~~~ Printing reaction rates:\n";
+                for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                    std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                }
+                std::cout << " ~~~ Printing concentrations:\n";
+                for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
+                    std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                }
+
+                return KPP_FAIL;
+            }
 
             ambientData.FillIn( varArray, nTime + 1 );
                 
@@ -606,13 +652,14 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
                     /* Update heterogeneous chemistry reaction rates */
-                    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
-                        HET[iSpec][0] = 0.0E+00;
-                        HET[iSpec][1] = 0.0E+00;
-                        HET[iSpec][2] = 0.0E+00;
-                    }
-
                     if ( HETCHEMISTRY ) {
+                        
+                        for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+                            HET[iSpec][0] = 0.0E+00;
+                            HET[iSpec][1] = 0.0E+00;
+                            HET[iSpec][2] = 0.0E+00;
+                        }
+
                         relHumidity_Ring = varArray[ind_H2O] * \
                                            physConst::kB * temperature_K * 1.00E+06 / \
                                            physFunc::pSat_H2Ol( temperature_K );
@@ -631,8 +678,24 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                     /* ~~~~~ Integration ~~~~~~ */
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-                    KPP_Main( varArray, fixArray, curr_Time_s, dt, \
-                          KPP_RTOLS, KPP_ATOLS );
+                    IERR = KPP_Main( varArray, fixArray, curr_Time_s, dt, \
+                                     KPP_RTOLS, KPP_ATOLS );
+                    
+                    if ( IERR < 0 ) {
+                        /* Integration failed */
+
+                        std::cout << "Integration failed for ring = " << iRing << " at time t = " << curr_Time_s << "( nTime = " << nTime << " )\n";
+                        std::cout << " ~~~ Printing reaction rates:\n";
+                        for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                            std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                        }
+                        std::cout << " ~~~ Printing concentrations:\n";
+                        for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
+                            std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                        }
+
+                        return KPP_FAIL;
+                    }
 
                     /* Convert KPP output back to data structure */
                     Data.applyData( varArray, iNx, jNy );
@@ -643,11 +706,31 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             ambientData.getData( varArray, fixArray, aerArray, nTime );
 
             /* Update reaction rates */
+            for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                RCONST[iReact] = 0.0E+00;
+            }
+            
             Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O], sun.CSZA );
 
             /* Call KPP */
-            KPP_Main( varArray, fixArray, curr_Time_s, dt, \
-                  KPP_RTOLS, KPP_ATOLS );
+            IERR = KPP_Main( varArray, fixArray, curr_Time_s, dt, \
+                             KPP_RTOLS, KPP_ATOLS );
+
+            if ( IERR < 0 ) {
+                /* Integration failed */
+
+                std::cout << "Integration failed for ring = " << iRing << " at time t = " << curr_Time_s << "( nTime = " << nTime << " )\n";
+                std::cout << " ~~~ Printing reaction rates:\n";
+                for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                    std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                }
+                std::cout << " ~~~ Printing concentrations:\n";
+                for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
+                    std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                }
+
+                return KPP_FAIL;
+            }
 
             ambientData.FillIn( varArray, nTime + 1 );
 
@@ -789,13 +872,13 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     int isSaved = output::Write( ringSpecies, ambientData, ringCluster, timeArray, temperature_K, pressure_Pa, airDens, relHumidity_w, relHumidity_i, longitude_deg, latitude_deg, sun.sunRise, sun.sunSet );
     if ( isSaved == output::SAVE_FAILURE ) {
         std::cout << "Saving file failed...\n";
-        return -2;
+        return SAVE_FAIL;
     }
 
 #endif /* SAVE_OUTPUT */
 
 
-    return 1;
+    return SUCCESS;
 
 } /* End of PlumeModel */
 
