@@ -65,6 +65,8 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &sunRise      , "Sun Rise"   , 1, "float", "hrs", "Local sun rise" );
             didSaveSucceed *= fileHandler.addConst( currFile, &sunSet       , "Sun Set"    , 1, "float", "hrs", "Local sun set" );
 
+            didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim, "float", "-", "Cosine of the solar zenith angle" );
+
 #if ( RINGS )
 
             didSaveSucceed *= fileHandler.addVar( currFile, &(ringCluster.getRingArea())[0], "Ring Area", ringDim, "float", "m^2", "Ring Area" );
