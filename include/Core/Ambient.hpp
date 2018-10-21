@@ -44,6 +44,9 @@ class Ambient
                             iceDens , iceRadi , iceArea , \
                             sulfDens, sulfRadi, sulfArea;
 
+        /* Cosigne solar zenight angle */
+        std::vector<double> cosSZA;
+
     protected:
 
         unsigned int nTime;

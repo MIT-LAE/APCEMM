@@ -171,6 +171,8 @@ Ambient::Ambient( unsigned int nTime_, std::vector<double> ambientVector, std::v
     sulfDens.assign( nTime, aerVector[  2][0] );
     sulfRadi.assign( nTime, aerVector[  2][1] );
 
+    cosSZA.assign( nTime, 0.0 );
+
 } /* End of Ambient::Ambient */
 
 Ambient::~Ambient( )
