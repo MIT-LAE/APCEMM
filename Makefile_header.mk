@@ -46,7 +46,7 @@ ERR_OSCOMP           :="Makefile_header.mk not set up for this compiler/OS combi
 
 # %%%%% OpenMP parallelization (on by default) %%%%%
 ifndef OMP
-  OMP                :=no
+  OMP                :=0
 endif
 
 # Option to turn off OpenMP for testing
@@ -190,7 +190,7 @@ ifeq ($(COMPILER),g++)
 
 #  CFLAGS              := CXXFLAGS
 
-  CFLAGS := -Wall -Wextra -O3 -std=c++11
+  CFLAGS := -Wall -Wextra -O3 -fopenmp -std=c++11 $(USER_DEFS)
 
   # Include options (i.e. for finding *.h* files)
   INCLUDE := -I$(ROOT_DIR)/include
@@ -230,6 +230,7 @@ endif
 ###                                                                         ###
 ###############################################################################
 
+export OMP
 export GCC
 export LD
 export INCLUDE
