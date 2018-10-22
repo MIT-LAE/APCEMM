@@ -109,11 +109,6 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
         std::cout << "ERROR: In " << currFunc << ": Can't read (" << fileName << ")" << std::endl;
     }
 
-    for ( int i = 0; i < N_AER; i++ ) {
-        std::cout << "Index: " << i << " , amb_Value = " << aer_Value[i][0] << "\n";
-        std::cout << "Index: " << i << " , amb_Value = " << aer_Value[i][1] << "\n";
-    }
-
     /* Gaseous species */
     SetShape( CO2      , size_x , size_y, amb_Value[  0] * airDens );
     SetShape( PPN      , size_x , size_y, amb_Value[  1] * airDens );
