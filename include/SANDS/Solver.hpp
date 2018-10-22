@@ -23,14 +23,9 @@
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
 #include "Util/PhysConstant.hpp"
+#include "Util/ForwardsDecl.hpp"
 
-    typedef double RealDouble;
     typedef fftw_complex FFTW_ComplexDouble;
-    typedef std::complex<RealDouble> ComplexDouble;
-    typedef std::vector<RealDouble> Real_1DVector;
-    typedef std::vector<ComplexDouble> Complex_1DVector;
-    typedef std::vector<Real_1DVector> Real_2DVector;
-    typedef std::vector<Complex_1DVector> Complex_2DVector;
 
     const ComplexDouble _1j ( 0.0, 1.0 );          /* j^2 = -1 */
 
