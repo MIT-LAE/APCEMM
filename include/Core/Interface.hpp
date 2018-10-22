@@ -14,6 +14,9 @@
 #ifndef INTERFACE_H_INCLUDED
 #define INTERFACE_H_INCLUDED
 
+/* APCEMM LUT */
+#define APCEMM_LUT              1    /* Build look-up table? */
+
 /* TRANSPORT */
 #define DIFFUSION               1    /* Is diffusion turned on? */
 #define ADVECTION               1    /* Is advection turned on? */
@@ -57,5 +60,12 @@ const char* const OUTPUT_FILE = "data/output.nc";
 #define DEBUG_RINGS             0    /* Debug Rings? */
 #define DEBUG_MAPPING           0    /* Debug Mesh to ring mapping? */
 #define DEBUG_COAGKERNEL        0    /* Debug Coagulation Kernel? */
+#define PRINT_DEBUG             0    /* Debug? */
+
+#if ( PRINT_DEBUG )
+#define DEBUG(X)         std::cout << x
+#else
+#define DEBUG(X)
+#endif
 
 #endif /* INTERFACE_H_INCLUDED */
