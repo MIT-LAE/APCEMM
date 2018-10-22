@@ -361,6 +361,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     double iwcHET;
     double kheti_sla[11];
 
+
     std::cout << "\n\n *** Time loop starts now ***";
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
@@ -457,7 +458,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* TIME_IT */
 
-        CallSolver( Data, SANDS_Solver );
+#pragma omp critical /* Not sure why omp critical is needed here, otherwise leads to segmentation faults... */
+        {
+            CallSolver( Data, SANDS_Solver );
+        }
 
 #if ( TIME_IT )
     
