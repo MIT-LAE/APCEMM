@@ -71,8 +71,10 @@ void Solution::Print( std::vector<std::vector<double> >& vector_2D, unsigned int
 
 } /* End of Solution::Print */
 
-void Solution::Initialize( char const *fileName, double temperature, double airDens, double relHum )
+void Solution::Initialize( char const *fileName, const double temperature, const double pressure, const double airDens, const double relHum, const double lat )
 {
+
+    const bool DBG = 0;
 
     std::vector<double> amb_Value(nVariables, 0.0);
     std::vector<std::vector<double> > aer_Value(nAer, std::vector<double>(2, 0.0));
@@ -255,36 +257,176 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
         }
     }
 
-    /* Liquid/solid species */
-    SetShape( SO4L , size_x, size_y, (double) 0.0 );
-    SetShape( H2OL , size_x, size_y, (double) 0.0 );
-    SetShape( H2OS , size_x, size_y, (double) 0.0 );
-    SetShape( HNO3L, size_x, size_y, (double) 0.0 );
-    SetShape( HNO3S, size_x, size_y, (double) 0.0 );
-    SetShape( HClL , size_x, size_y, (double) 0.0 );
-    SetShape( HOClL, size_x, size_y, (double) 0.0 );
-    SetShape( HBrL , size_x, size_y, (double) 0.0 );
-    SetShape( HOBrL, size_x, size_y, (double) 0.0 );
+    SetShape( NIT  , size_x, size_y, (double) 0.0 );
+    SetShape( NAT  , size_x, size_y, (double) 0.0 );
+    
+    std::vector<double> stratData{ SO4[0][0], HNO3[0][0], HCl[0][0], HOCl[0][0], HBr[0][0], HOBr[0][0],
+                                   H2O[0][0], ClNO3[0][0], BrNO3[0][0], NIT[0][0], NAT[0][0] };
+   
+    KHETI_SLA.assign( 11, 0.0 );
+    AERFRAC.assign( 7, 0.0 );
+    SOLIDFRAC.assign( 7, 0.0 );
+    
+    std::vector<double> RAD, RHO, KG, NDENS, SAD;
+    RAD.assign( 2, 0.0 );
+    RHO.assign( 2, 0.0 );
+    KG.assign( 2, 0.0 );
+    NDENS.assign( 2, 0.0 );
+    SAD.assign( 2, 0.0 );
 
+    STATE_PSC = STRAT_AER( temperature, pressure, airDens, lat, stratData, (2.0*XLIM)*(2.0*YLIM), KHETI_SLA, SOLIDFRAC, AERFRAC, RAD, RHO, KG, NDENS, SAD );
+  
+    /* Liquid/solid species */
+    SetShape( SO4L , size_x, size_y, (double) AERFRAC[0]                          * stratData[0] );
+    SetShape( SO4  , size_x, size_y, (double) ( 1.0 - AERFRAC[0] )                * stratData[0] );
+    
+    SetShape( H2OL , size_x, size_y, (double) AERFRAC[6]                          * stratData[6] );
+    SetShape( H2OS , size_x, size_y, (double) SOLIDFRAC[6]                        * stratData[6] );
+    SetShape( H2O  , size_x, size_y, (double) ( 1.0 - AERFRAC[6] - SOLIDFRAC[6] ) * stratData[6] );
+    
+    SetShape( HNO3L, size_x, size_y, (double) AERFRAC[1]                          * stratData[1] );
+    SetShape( HNO3S, size_x, size_y, (double) SOLIDFRAC[1]                        * stratData[1] );
+    SetShape( HNO3 , size_x, size_y, (double) ( 1.0 - AERFRAC[1] - SOLIDFRAC[1] ) * stratData[1] );
+    
+    SetShape( HClL , size_x, size_y, (double) AERFRAC[2]                          * stratData[2] );
+    SetShape( HCl  , size_x, size_y, (double) ( 1.0 - AERFRAC[2] )                * stratData[2] );
+    
+    SetShape( HOClL, size_x, size_y, (double) AERFRAC[3]                          * stratData[3] );
+    SetShape( HOCl , size_x, size_y, (double) ( 1.0 - AERFRAC[3] )                * stratData[3] );
+    
+    SetShape( HBrL , size_x, size_y, (double) AERFRAC[4]                          * stratData[4] );
+    SetShape( HBr  , size_x, size_y, (double) ( 1.0 - AERFRAC[4] )                * stratData[4] );
+    
+    SetShape( HOBrL, size_x, size_y, (double) AERFRAC[5]                          * stratData[5] );
+    SetShape( HOBr , size_x, size_y, (double) ( 1.0 - AERFRAC[5] )                * stratData[5] );
+    
+    SetShape( NIT  , size_x, size_y, (double) stratData[ 9] );
+    SetShape( NAT  , size_x, size_y, (double) stratData[10] );
+
+    
     /* Aerosols */
     /* Assume that soot particles are monodisperse */
     SetShape( sootDens , size_x, size_y, (double) aer_Value[  0][0] );
     SetShape( sootRadi , size_x, size_y, (double) aer_Value[  0][1] );
     SetShape( sootArea , size_x, size_y, (double) 4.0 / double(3.0) * physConst::PI * aer_Value[  0][0] * aer_Value[  0][1] * aer_Value[  0][1] * aer_Value[  0][1] );
-    SetShape( iceDens  , size_x, size_y, (double) aer_Value[  1][0] );
-    SetShape( iceRadi  , size_x, size_y, (double) aer_Value[  1][0] );
-    SetShape( iceArea  , size_x, size_y, (double) 0.0 );
-    SetShape( sulfDens , size_x, size_y, (double) aer_Value[  2][0] );
-    SetShape( sulfRadi , size_x, size_y, (double) aer_Value[  2][0] );
-    SetShape( sulfArea , size_x, size_y, (double) 0.0 );
+
+
+    nBin_LA = std::floor( 1 + log( pow( (LA_R_HIG/LA_R_LOW), 3.0 ) ) / log( LA_VRAT ) );
+
+    if ( DBG ) {
+        std::cout << "\n DEBUG : LA_R_LOW  = " << LA_R_LOW * 1.00E+09 << " [nm]\n";
+        std::cout << " DEBUG : LA_R_HIG  = " << LA_R_HIG * 1.00E+09 << " [nm]\n";
+        std::cout << " DEBUG : LA_VRAT   = " << LA_VRAT             << " [-]\n";
+        std::cout << " DEBUG : nBin_LA   = " << nBin_LA             << "\n";
+        std::cout << " DEBUG : NDENS     = " << NDENS[1] * 1.00E-06 << " [#/cm^3]\n";
+        std::cout << " DEBUG : REFF      = " << RAD[1] * 1.00E+06   << " [mum]\n";
+    }
+    
+
+    LA_rE.assign( nBin_LA + 1, 0.0 ); /* Bin edges in m */
+    LA_rJ.assign( nBin_LA    , 0.0 ); /* Bin center radius in m */
+    LA_vJ.assign( nBin_LA    , 0.0 ); /* Bin center volume in m^3*/
+    
+    for ( unsigned int iBin_LA = 0; iBin_LA < nBin_LA + 1; iBin_LA++ ) {
+        LA_rE[iBin_LA] = LA_R_LOW * pow( LA_VRAT, iBin_LA / RealDouble(3.0) );              /* [m] */
+    }
+    for ( unsigned int iBin_LA = 0; iBin_LA < nBin_LA; iBin_LA++ ) {
+        LA_rJ[iBin_LA] = 0.5 * ( LA_rE[iBin_LA] + LA_rE[iBin_LA+1] );                       /* [m] */
+        LA_vJ[iBin_LA] = 4.0 / 3.0 * physConst::PI * \
+                       LA_rJ[iBin_LA]*LA_rJ[iBin_LA]*LA_rJ[iBin_LA]*0.5*( 1.0 + LA_VRAT );  /* [m^3] */
+    }
+
+    LA_nDens = NDENS[1] * 1.00E-06; /* [#/cm^3]      */
+    LA_rEff  = RAD[1]   * 1.00E+09; /* [nm]          */
+    LA_SAD   = SAD[1]   * 1.00E+06; /* [\mum^2/cm^3] */
+
+    PDF_LA.resize( size_x, std::vector<std::vector<double>>( size_y, std::vector<double>( nBin_LA, 0.0)));
+
+    if ( NDENS[1] > 1.00E-05 ) {
+    
+        /* For a lognormal distribution:
+         * r_eff = r_m * exp( 5/2 * ln(S)^2 ) 
+         * A     = 4\pi N0 r_m^2 * exp ( 2 * ln(S)^2 ) 
+         * A/r_eff^2 = 4\pi N0 * exp( - 1/2 * ln(S)^2 )
+         *
+         * ln(S) = sqrt(-2*ln(A/(4\pi r_eff^2 * N0)));
+         * r_m = r_eff * exp( -5/2 * ln(S)^2 ); */
+        
+        const double sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * physConst::PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
+        const double rLA = RAD[1] * exp( - 2.5 * sLA * sLA ); 
+        AIM::Aerosol pdfLA( LA_rJ, LA_rE, NDENS[1] * 1.00E-06, rLA, exp(sLA), "lognormal" );
+
+        if ( DBG ) {
+
+            std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
+            std::cout << "        " << pdfLA.Moment() << " v " << NDENS[1] * 1.00E-06 << " [#/cm^3]\n";
+            std::cout << " DEBUG : Comparing PDF's surface area to Grainger's surface area:\n";
+            std::cout << "        " << 4.0 * physConst::PI * pdfLA.Moment(2) * 1.00E+12 << " v " << SAD[1] * 1.00E+06 << " [mum^2/cm^3]\n";
+            std::cout << " DEBUG : Comparing PDF's effective radius to Grainger's effective radius:\n";
+            std::cout << "        " << pdfLA.Moment(3)/pdfLA.Moment(2) * 1.00E+09 << " v " << RAD[1] * 1.00E+09 << " [nm]\n";
+
+        }
+        std::vector<double> PDF = pdfLA.getPDF();
+        for ( unsigned int jNy = 0; jNy < size_y; jNy++ ) {
+            for ( unsigned int iNx = 0; iNx < size_x; iNx++ ) {
+                for ( unsigned int iBin = 0; iBin < nBin_LA; iBin++ )
+                  PDF_LA[jNy][iNx][iBin] = PDF[iBin];
+            }
+        }
+    }
+
+    nBin_PA = std::floor( 1 + log( pow( (PA_R_HIG/PA_R_LOW), 3.0 ) ) / log( PA_VRAT ) );
+    
+    if ( DBG ) {
+        std::cout << "\n DEBUG : PA_R_LOW  = " << PA_R_LOW * 1.00E+06 << " [mum]\n";
+        std::cout << " DEBUG : PA_R_HIG  = " << PA_R_HIG * 1.00E+06 << " [mum]\n";
+        std::cout << " DEBUG : PA_VRAT   = " << PA_VRAT             << " [-]\n";
+        std::cout << " DEBUG : nBin_PA   = " << nBin_PA             << "\n";
+        std::cout << " DEBUG : NDENS     = " << NDENS[0] * 1.00E-06 << " [#/cm^3]\n";
+        std::cout << " DEBUG : REFF      = " << RAD[0] * 1.00E+06   << " [mum]\n";
+    }
+
+    PA_rE.assign( nBin_PA + 1, 0.0 ); /* Bin edges in m */
+    PA_rJ.assign( nBin_PA    , 0.0 ); /* Bin center radius in m */
+    PA_vJ.assign( nBin_PA    , 0.0 ); /* Bin center volume in m^3*/
+    
+    for ( unsigned int iBin_PA = 0; iBin_PA < nBin_PA + 1; iBin_PA++ ) {
+        PA_rE[iBin_PA] = PA_R_LOW * pow( PA_VRAT, iBin_PA / RealDouble(3.0) );              /* [m] */
+    }
+    for ( unsigned int iBin_PA = 0; iBin_PA < nBin_PA; iBin_PA++ ) {
+        PA_rJ[iBin_PA] = 0.5 * ( PA_rE[iBin_PA] + PA_rE[iBin_PA+1] );                       /* [m] */
+        PA_vJ[iBin_PA] = 4.0 / 3.0 * physConst::PI * \
+                       PA_rJ[iBin_PA]*PA_rJ[iBin_PA]*PA_rJ[iBin_PA]*0.5*( 1.0 + PA_VRAT );  /* [m^3] */
+    }
+
+    PA_nDens = NDENS[0] * 1.00E-06; /* [#/cm^3]      */
+    PA_rEff  = RAD[0]   * 1.00E+09; /* [nm]          */
+    PA_SAD   = SAD[0]   * 1.00E+06; /* [\mum^2/cm^3] */
+
+    PDF_PA.resize( size_x, std::vector<std::vector<double>>( size_y, std::vector<double>( nBin_PA, 0.0) ) );
+
+    if ( NDENS[0] > 1.00E-05 ) {
+        
+        const double expsPA = 1.05;
+        const double rPA = RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ); 
+        AIM::Aerosol pdfPA( PA_rJ, PA_rE, NDENS[0] * 1.00E-06, rPA, expsPA, "lognormal" );
+
+        std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
+        std::cout << "        " << pdfPA.Moment() << " v " << NDENS[0] * 1.00E-06 << " [#/cm^3]\n";
+        std::cout << " DEBUG : Comparing PDF's effective radius to actual effective radius:\n";
+        std::cout << "        " << pdfPA.Moment(3)/pdfPA.Moment(2) * 1.00E+09 << " v " << RAD[0] * 1.00E+09 << " [nm]\n";
+
+        std::vector<double> PDF = pdfPA.getPDF();
+        for ( unsigned int jNy = 0; jNy < size_y; jNy++ ) {
+            for ( unsigned int iNx = 0; iNx < size_x; iNx++ ) {
+                for ( unsigned int iBin = 0; iBin < nBin_PA; iBin++ )
+                  PDF_PA[jNy][iNx][iBin] = PDF[iBin];
+            }
+        }
+    }
 
     /* Tracers */
     SetShape( SO4T , size_x, size_y, (double) amb_Value[ 28] * airDens );
-    SetShape( HNO3T, size_x, size_y, (double) amb_Value[ 90] * airDens );
-    SetShape( HClT , size_x, size_y, (double) amb_Value[124] * airDens );
-    SetShape( HOClT, size_x, size_y, (double) amb_Value[ 88] * airDens );
-    SetShape( HBrT , size_x, size_y, (double) amb_Value[123] * airDens );
-    SetShape( HOBrT, size_x, size_y, (double) amb_Value[ 59] * airDens );
 
 } /* End of Solution::Initialize */
 
@@ -1108,13 +1250,16 @@ std::vector<double> Solution::getLiqAerosol( ) const
 std::vector<std::vector<double> > Solution::getAerosol( ) const
 {
 
-    std::vector<std::vector<double> > aerVector( nAer, std::vector<double>( 2, 0.0 ) );
+    std::vector<std::vector<double> > aerVector( nAer, std::vector<double>( 3, 0.0 ) );
     aerVector[  0][0] = sootDens[0][0];
     aerVector[  0][1] = sootRadi[0][0];
-    aerVector[  1][0] = iceDens[0][0];
-    aerVector[  1][1] = iceRadi[0][0];
-    aerVector[  2][0] = sulfDens[0][0];
-    aerVector[  2][1] = sulfRadi[0][0];
+    aerVector[  0][2] = sootArea[0][0];
+    aerVector[  1][0] = PA_nDens;
+    aerVector[  1][1] = PA_rEff;
+    aerVector[  1][2] = PA_SAD;
+    aerVector[  2][0] = LA_nDens;
+    aerVector[  2][1] = LA_rEff;
+    aerVector[  2][2] = LA_SAD;
 
     return aerVector;
 
@@ -1125,8 +1270,8 @@ std::vector<double> Solution::getAerosolDens( ) const
 
     std::vector<double> aerVector( nAer, 0.0 );
     aerVector[  0] = sootDens[0][0];
-    aerVector[  1] = iceDens[0][0];
-    aerVector[  2] = sulfDens[0][0];
+    aerVector[  1] = PA_nDens;
+    aerVector[  2] = LA_nDens;
 
     return aerVector;
 
@@ -1137,8 +1282,8 @@ std::vector<double> Solution::getAerosolRadi( ) const
 
     std::vector<double> aerVector( nAer, 0.0 );
     aerVector[  0] = sootRadi[0][0];
-    aerVector[  1] = iceRadi[0][0];
-    aerVector[  2] = sulfRadi[0][0];
+    aerVector[  1] = PA_rEff;
+    aerVector[  2] = LA_rEff;
 
     return aerVector;
 
@@ -1149,8 +1294,8 @@ std::vector<double> Solution::getAerosolArea( ) const
 
     std::vector<double> aerVector( nAer, 0.0 );
     aerVector[  0] = sootArea[0][0];
-    aerVector[  1] = iceArea[0][0];
-    aerVector[  2] = sulfArea[0][0];
+    aerVector[  1] = PA_SAD;
+    aerVector[  2] = LA_SAD;
 
     return aerVector;
 
@@ -1170,7 +1315,7 @@ unsigned int Solution::getNy() const
 
 } /* End of Solution::getNy */
 
-void Solution::Debug( double airDens )
+void Solution::Debug( const double airDens )
 {
     unsigned int iNx, jNy;
     iNx = 0;

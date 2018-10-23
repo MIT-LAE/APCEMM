@@ -29,6 +29,7 @@
 #include "Core/Aircraft.hpp"
 #include "Core/Engine.hpp"
 #include "Core/LiquidAer.hpp"
+#include "AIM/Aerosol.hpp"
 
 class Solution
 {
@@ -40,7 +41,7 @@ class Solution
         void SetShape( std::vector<std::vector<double> >& vector_2D, unsigned int n_x, unsigned int n_y, double value = 0.0 );
         void SetToValue( std::vector<std::vector<double> >& vector_2D, double value = 0.0 );
         void Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max = 1, unsigned int j_max = 1 );
-        void Initialize( char const *fileName, double temperature, double airDens, double relHum );
+        void Initialize( char const *fileName, const double temperature, const double pressure, const double airDens, const double relHum, const double lat );
         void getData( double varArray[], double fixArray[], unsigned int i = 0, unsigned int j = 0 );
         void applyData( double varArray[], unsigned int i = 0, unsigned int j = 0 );
         void applyRing( double varArray[], double tempArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int iRing );
@@ -54,7 +55,7 @@ class Solution
         std::vector<double> getAerosolArea( ) const;
         unsigned int getNx() const;
         unsigned int getNy() const;
-        void Debug( double airDens );
+        void Debug( const double airDens );
 
         /* Gaseous species */
         std::vector<std::vector<double> > CO2, PPN, BrNO2, IEPOX, PMNN, N2O, N, PAN,\
@@ -81,13 +82,32 @@ class Solution
         /* Solid species */
         std::vector<std::vector<double> > H2OS, HNO3S;
 
-        /* Aerosols */
-        std::vector<std::vector<double> > sootDens, sootRadi, sootArea, \
-                                          iceDens , iceRadi , iceArea , \
-                                          sulfDens, sulfRadi, sulfArea;
+        std::vector<std::vector<double> > NIT, NAT;
 
         /* Tracers */
-        std::vector<std::vector<double> > SO4T, HNO3T, HClT, HOClT, HBrT, HOBrT;
+        std::vector<std::vector<double> > SO4T;
+
+        /* Aerosols */
+        std::vector<std::vector<double> > sootDens, sootRadi, sootArea;
+
+        unsigned int nBin_PA;
+        unsigned int nBin_LA;
+        std::vector<double> LA_rE;
+        std::vector<double> LA_rJ;
+        std::vector<double> LA_vJ;
+
+        std::vector<double> PA_rE;
+        std::vector<double> PA_rJ;
+        std::vector<double> PA_vJ;
+
+        std::vector<std::vector<std::vector<double> > > PDF_LA, PDF_PA;
+
+        double LA_nDens, LA_rEff, LA_SAD;
+        double PA_nDens, PA_rEff, PA_SAD;
+        
+        std::vector<double> KHETI_SLA;
+        std::vector<double> AERFRAC, SOLIDFRAC;
+        unsigned int STATE_PSC; 
 
     private:
 
