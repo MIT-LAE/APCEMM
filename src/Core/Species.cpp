@@ -886,9 +886,20 @@ void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
     std::vector<unsigned int> nMap = m.getnMap();
     std::vector<std::vector<std::pair<unsigned int, unsigned int>>> indList = m.getList();
 
+    double Moment = 0;
+    std::vector<double> LA_PDF( Data.nBin_LA, 0.0 );
+    std::vector<double> PA_PDF( Data.nBin_PA, 0.0 );
     unsigned int i, j;
     unsigned int nCell;
     for ( unsigned int iRing = 0; iRing < nRing; iRing++ ) {
+        
+        /* (Re)-initialize aerosol PDF's */
+        for ( unsigned int iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ )
+            LA_PDF[iBin_LA] = 0.0E+00;
+
+        for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ )
+            PA_PDF[iBin_PA] = 0.0E+00;
+
         for ( unsigned int iList = 0; iList < indList[iRing].size(); iList++ ) {
             i = indList[iRing][iList].first;
             j = indList[iRing][iList].second;
@@ -1036,12 +1047,13 @@ void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
             sootDens[nCounter][iRing] += Data.sootDens[j][i];
             sootRadi[nCounter][iRing] += Data.sootRadi[j][i];
             sootArea[nCounter][iRing] += Data.sootArea[j][i];
-            iceDens[nCounter][iRing]  += Data.iceDens[j][i];
-            iceRadi[nCounter][iRing]  += Data.iceRadi[j][i];
-            iceArea[nCounter][iRing]  += Data.iceArea[j][i];
-            sulfDens[nCounter][iRing] += Data.sulfDens[j][i];
-            sulfRadi[nCounter][iRing] += Data.sulfRadi[j][i];
-            sulfArea[nCounter][iRing] += Data.sulfArea[j][i];
+
+            for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) { 
+                PA_PDF[iBin_PA] += Data.PDF_PA[j][i][iBin_PA];
+            }
+            for ( unsigned int iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ ) { 
+                LA_PDF[iBin_LA] += Data.PDF_LA[j][i][iBin_LA];
+            }
 
         }
         
@@ -1189,12 +1201,56 @@ void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
         sootDens[nCounter][iRing] /= nCell;
         sootRadi[nCounter][iRing] /= nCell;
         sootArea[nCounter][iRing] /= nCell;
-        iceDens[nCounter][iRing]  /= nCell;
-        iceRadi[nCounter][iRing]  /= nCell;
-        iceArea[nCounter][iRing]  /= nCell;
-        sulfDens[nCounter][iRing] /= nCell;
-        sulfRadi[nCounter][iRing] /= nCell;
-        sulfArea[nCounter][iRing] /= nCell;
+
+        Moment = 0;
+        /* Compute 0th moment in #/cm^3 */
+        for ( unsigned int iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ ) {
+            Moment += ( log( Data.LA_rE[iBin_LA+1] ) - log( Data.LA_rE[iBin_LA] ) ) * LA_PDF[iBin_LA];
+        }
+        Moment /= nCell;
+        sulfDens[nCounter][iRing] = Moment;
+        Moment = 0;
+        /* Compute 2nd moment in m^2/cm^3 */
+        for ( unsigned int iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ ) {
+            Moment += ( log( Data.LA_rE[iBin_LA+1] ) - log( Data.LA_rE[iBin_LA] ) ) * Data.LA_rJ[iBin_LA] * Data.LA_rJ[iBin_LA] * LA_PDF[iBin_LA];
+        }
+        Moment /= nCell;
+        sulfArea[nCounter][iRing] = Moment;
+        Moment = 0;
+        /* Compute 3rd moment in m^3/cm^3 */
+        for ( unsigned int iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ ) {
+            Moment += ( log( Data.LA_rE[iBin_LA+1] ) - log( Data.LA_rE[iBin_LA] ) ) * Data.LA_rJ[iBin_LA] * Data.LA_rJ[iBin_LA] * Data.LA_rJ[iBin_LA] * LA_PDF[iBin_LA];
+        }
+        Moment /= nCell;
+        if ( sulfArea[nCounter][iRing] > 1.00E-80 )
+            sulfRadi[nCounter][iRing] = Moment / sulfArea[nCounter][iRing];
+        else
+            sulfRadi[nCounter][iRing] = 1.00E-07;
+
+        Moment = 0;
+        /* Compute 0th moment in #/cm^3 */
+        for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+            Moment += ( log( Data.PA_rE[iBin_PA+1] ) - log( Data.PA_rE[iBin_PA] ) ) * PA_PDF[iBin_PA];
+        }
+        Moment /= nCell;
+        iceDens[nCounter][iRing] = Moment;
+        Moment = 0;
+        /* Compute 2nd moment in m^2/cm^3 */
+        for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+            Moment += ( log( Data.PA_rE[iBin_PA+1] ) - log( Data.PA_rE[iBin_PA] ) ) * Data.PA_rJ[iBin_PA] * Data.PA_rJ[iBin_PA] * PA_PDF[iBin_PA];
+        }
+        Moment /= nCell;
+        iceArea[nCounter][iRing] = Moment;
+        Moment = 0;
+        /* Compute 3rd moment in m^3/cm^3 */
+        for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+            Moment += ( log( Data.PA_rE[iBin_PA+1] ) - log( Data.PA_rE[iBin_PA] ) ) * Data.PA_rJ[iBin_PA] * Data.PA_rJ[iBin_PA] * Data.PA_rJ[iBin_PA] * PA_PDF[iBin_PA];
+        }
+        Moment /= nCell;
+        if ( iceArea[nCounter][iRing] > 1.00E-80 )
+            iceRadi[nCounter][iRing] = Moment / iceArea[nCounter][iRing];
+        else
+            iceRadi[nCounter][iRing] = 1.00E-07;
 
     } 
 
