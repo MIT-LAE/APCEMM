@@ -69,9 +69,12 @@
 #define LSOLIDPSC             1           /* Online solid PSCs? */
 
 /* Microphysics parameters */
-#define SO4_R_LOW             1.00E-10    /* Sulfates' lower bin radius [m] */
-#define SO4_R_HIG             5.00E-07    /* Sulfates' larger bin radius [m] */
-#define SO4_VRAT              1.50E+00    /* Size ratio between two consecutives bins */
+#define LA_R_LOW              1.00E-10    /* Sulfates' lower bin radius [m] */
+#define LA_R_HIG              5.00E-07    /* Sulfates' larger bin radius [m] */
+#define LA_VRAT               1.50E+00    /* Size ratio between two consecutive bins */
+#define PA_R_LOW              5.00E-08    /* Ice/NAT lower bin radius [m] */
+#define PA_R_HIG              8.00E-05    /* Ice/NAT larger bin radius [m] */
+#define PA_VRAT               1.70E+00    /* Size ratio between two consecutive bins */
 
 /* Early plume integration */
 #define VORTEX_SINKING        1           /* Consider vortex sinking? */

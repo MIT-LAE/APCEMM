@@ -78,11 +78,11 @@ namespace EPM
         //std::cout << "\nHomogeneous HNO3 saturation  : " << 100.0 * satHNO3_Hom << " % (Supercooling: " << T_NAT_SUPERCOOL << " [K])";
         //std::cout << "\nHeterogeneous HNO3 saturation: " << 100.0 * satHNO3_Het << " %\n";
 
-        const RealDouble SO4_NBIN = std::floor( 1 + log( pow( (SO4_R_HIG/SO4_R_LOW), 3.0 ) ) / log( SO4_VRAT ) );
+        const UInt SO4_NBIN = std::floor( 1 + log( pow( (LA_R_HIG/LA_R_LOW), 3.0 ) ) / log( LA_VRAT ) );
 
 
-        if ( SO4_VRAT <= 1.0 ) {
-            std::cout << "\nVolume ratio of consecutive bins for SO4 has to be greater than 1.0 ( SO4_VRAT = " << SO4_VRAT << " )";
+        if ( LA_VRAT <= 1.0 ) {
+            std::cout << "\nVolume ratio of consecutive bins for SO4 has to be greater than 1.0 ( LA_VRAT = " << LA_VRAT << " )";
         }
 
         /* SO4 bin radius and volume centers */
@@ -91,7 +91,7 @@ namespace EPM
         Vector_1D SO4_vJ( SO4_NBIN    , 0.0 );
 
         for ( UInt iBin = 0; iBin < SO4_NBIN + 1; iBin++ ) {
-            SO4_rE[iBin] = SO4_R_LOW * pow( SO4_VRAT, iBin / RealDouble(3.0) );                                /* [m] */
+            SO4_rE[iBin] = LA_R_LOW * pow( LA_VRAT, iBin / RealDouble(3.0) );                                  /* [m] */
         }
 
         for ( UInt iBin = 0; iBin < SO4_NBIN; iBin++ ) {
