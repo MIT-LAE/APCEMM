@@ -23,14 +23,12 @@
 #include "Core/Ambient.hpp"
 
 double H2SO4_GASFRAC( const double temperature_K, const double SO4 );
-
 unsigned int STRAT_AER( const double temperature_K     , const double pressure_Pa       , const double airDens ,               \
-                        const double latitude_deg      , Ambient &Data                  , unsigned int index   , double Area , \
-                        std::vector<double> &KHETI_SLA , std::vector<double> &GAMMA_BOX ,                                      \
+                        const double latitude_deg      , std::vector<double> &Data      , double Area ,                        \
+                        std::vector<double> &KHETI_SLA , std::vector<double> &SOLIDFRAC ,                                      \
                         std::vector<double> &AERFRAC   , std::vector<double> &RAD_AER   ,                                      \
                         std::vector<double> &RHO_AER   , std::vector<double> &KG_AER    ,                                      \
                         std::vector<double> &NDENS_AER , std::vector<double> &SAD_AER);
-
 std::vector<double> SLA_GAMMA( const double T_K         , const double P_Pa     , \
                                const double WT_FRC      ,                         \
                                const double H2OSUM      , const double HClSUM   , \
