@@ -66,9 +66,9 @@ namespace EPM
     const RealDouble Ab0 = 1.804;
 
 
-    int Integrate( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
+    int Integrate( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
                    RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area );
-    int RunMicrophysics( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T, \
+    int RunMicrophysics( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T, \
                          RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area );
     RealDouble dT_Vortex( const RealDouble time, const RealDouble delta_T, bool deriv = 0 );
     RealDouble dilutionRatio( const RealDouble time );

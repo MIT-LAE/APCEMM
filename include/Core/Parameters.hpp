@@ -32,8 +32,6 @@
 /* Atmospheric parameters */
 #define GAMMA            -3.0E+00     /* Ambient temperature lapse rate [K/km] */
 #define TROPP             2.0E+04     /* Pressure at the tropopause [Pa] */
-#define HOMOGENEOUS_NAT   1           /* Allow homogeneous NAT? */
-#define T_NAT_SUPERCOOL   3.0         /* NAT supercooling requirement [K] */
 
 /* Diffusion */
 #define DH                1.5E+01     /* Steady-state horizontal diffusion parameter [m2/s] */
@@ -65,6 +63,10 @@
 
 /* Aerosol parameters */
 #define N_AER                 3           /* Number of aerosols considered */
+#define PSC_FULL              1           /* Allow PSC formaiton outsize of Kirner limits? */
+#define LHOMNUCNAT            1           /* Allow homogeneous NAT? */
+#define T_NAT_SUPERCOOL       3.0         /* NAT supercooling requirement [K] */
+#define LSOLIDPSC             1           /* Online solid PSCs? */
 
 /* Microphysics parameters */
 #define SO4_R_LOW             1.00E-10    /* Sulfates' lower bin radius [m] */
@@ -75,6 +77,6 @@
 #define VORTEX_SINKING        1           /* Consider vortex sinking? */
 #define EPM_RTOLS             1.00E-05    /* Relative tolerances in EPM */
 #define EPM_ATOLS             1.00E-07    /* Absolute tolerances in EPM */
-#define SO2TOSO4CONVERSION    0.005       /* Percent conversion from SO2 to SO4 */
+#define SO2TOSO4              0.005       /* Percent conversion from SO2 to SO4 */
 
 #endif /* PARAMETERS_H_INCLUDED */

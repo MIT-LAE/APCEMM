@@ -16,7 +16,7 @@
 namespace EPM
 {
 
-    int Integrate( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
+    int Integrate( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
                    RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area )
     {
 
@@ -33,10 +33,6 @@ namespace EPM
         /*          [ K ]     =              [ K/km ] *  [ m ]  * [ km/m ] 
          * The minus sign is because delta_z is the distance pointing down */
 
-        std::cout << "\nTemperature lapse rate: " << GAMMA << " [K/km]";
-        std::cout << "\nVortex sinking: " << delta_z << " [m]";
-        std::cout << "\nTemperature increase: " << delta_T << " [K]\n";
-
         RunMicrophysics( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aerArray, AC, EI, delta_T_ad, delta_T, \
                          Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, SO4Aer, Area );
 
@@ -44,7 +40,7 @@ namespace EPM
 
     } /* End of Integrate */
 
-    int RunMicrophysics( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T, \
+    int RunMicrophysics( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T, \
                          RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area )
     {
     
@@ -79,8 +75,8 @@ namespace EPM
             satHNO3_Hom = partPHNO3_Hom / physFunc::pSat_HNO3( offset_Temp, relHumidity_i_Final * physFunc::pSat_H2Os( final_Temp ) );
             satHNO3_Het = partPHNO3_Het / physFunc::pSat_HNO3( final_Temp , relHumidity_i_Final * physFunc::pSat_H2Os( final_Temp ) );
         }
-        std::cout << "\nHomogeneous HNO3 saturation  : " << 100.0 * satHNO3_Hom << " % (Supercooling: " << T_NAT_SUPERCOOL << " [K])";
-        std::cout << "\nHeterogeneous HNO3 saturation: " << 100.0 * satHNO3_Het << " %\n";
+        //std::cout << "\nHomogeneous HNO3 saturation  : " << 100.0 * satHNO3_Hom << " % (Supercooling: " << T_NAT_SUPERCOOL << " [K])";
+        //std::cout << "\nHeterogeneous HNO3 saturation: " << 100.0 * satHNO3_Het << " %\n";
 
         const RealDouble SO4_NBIN = std::floor( 1 + log( pow( (SO4_R_HIG/SO4_R_LOW), 3.0 ) ) / log( SO4_VRAT ) );
 
@@ -142,7 +138,7 @@ namespace EPM
         /* [ molec/cm^3 ] += [ g/kgf ]   / [ kg/mol ] * [ g/kg ] * [ kgf/s ]                                        / [ m/s ]         * [ molec/mol ] / [ m^2 ] * [ m^3/cm^3 ]
          *                += [ molec/cm^3 ] */
 
-        varArray[ind_SO4] += SO2TOSO4CONVERSION * EI.getSO2() / ( MW_SO4  * 1.0E+03 ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() * physConst::Na / Ac0 * 1.00E-06;
+        varArray[ind_SO4] += SO2TOSO4 * EI.getSO2() / ( MW_H2SO4  * 1.0E+03 ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() * physConst::Na / Ac0 * 1.00E-06;
 
 
         RealDouble varSoot = Soot_amb + EI.getSoot() / ( 4.0 / RealDouble(3.0) * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() * 1.00E-06; /* [ #/cm^3 ] */
@@ -157,9 +153,9 @@ namespace EPM
         SO4l_amb = ( SO4l_amb > 0.0 ) ? SO4l_amb : 0.0; 
 
         /* Adaptive time stepping? */
-        bool adaptiveStep = 1;
+        const bool adaptiveStep = 1;
         
-        UInt nTime = 201;
+        UInt nTime = 301;
         UInt iTime;
         Vector_1D timeArray(nTime);
         RealDouble timeInitial = 1.0E-04;
@@ -172,7 +168,7 @@ namespace EPM
         
         UInt iTime_3mins;
         auto const it = std::lower_bound(timeArray.begin(), timeArray.end(), 3.0 * 60.0);
-        iTime_3mins = *it;
+        iTime_3mins = it - timeArray.begin();
 
         /* vars[0] : Temperature,                   Unit K 
          * vars[1] : Water molecular concentration, Unit molecules/cm^3 
@@ -350,7 +346,7 @@ namespace EPM
                     
                     /* Gaseous SO4 differential equation */
                     dxdt[EPM_ind_SO4g] = - dilRatio * ( x[EPM_ind_SO4g] - m_SO4g_molcm3 ) \
-                                         - sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_SO4 / physConst::Na ) \
+                                         - sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_H2SO4 / physConst::Na ) \
                                            * x[EPM_ind_Part] * 1.0E+06 * physConst::PI * m_part_r * m_part_r \
                                            * x[EPM_ind_SO4g] * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] ) \
                                          - nucRate * x_SO4 * nMolec;
@@ -358,7 +354,7 @@ namespace EPM
                     /* On soot SO4 differential equation 
                      * \frac{d[SO4_s]}{dt} = alpha * v_th / 4.0 * n_part * 4.0 * \pi * r^2 * ( 1.0 - \theta ) * [SO4] */ 
                     dxdt[EPM_ind_SO4s] = - dilRatio * ( x[EPM_ind_SO4s] - 0.0 ) \
-                                         + sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_SO4 / physConst::Na ) \
+                                         + sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_H2SO4 / physConst::Na ) \
                                            * x[EPM_ind_Part] * 1.0E+06 * physConst::PI * m_part_r * m_part_r \
                                            * x[EPM_ind_SO4g] * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] );
 
@@ -384,7 +380,7 @@ namespace EPM
                      * [kg/s] / ( [kg/m^3] * [m^2]) = [m/s] */
 
                     /* */
-                    dxdt[EPM_ind_the1] = sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_SO4 / physConst::Na ) * 1.0E+02 * 0.25 * ( SO4_g + SO4_rl ) / sigma_SO4 * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] );
+                    dxdt[EPM_ind_the1] = sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_H2SO4 / physConst::Na ) * 1.0E+02 * 0.25 * ( SO4_g + SO4_rl ) / sigma_SO4 * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] );
 
                     dxdt[EPM_ind_the2] = CoagRate / ( 4.0 * physConst::PI * m_part_r0 * m_part_r0 );
                 
@@ -513,11 +509,13 @@ namespace EPM
             }
 
         }
-        
-        std::cout << "\nTotal number of steps: " << totSteps << "\n";
+       
+        //std::cout << "\nTotal number of steps: " << totSteps << "\n";
 
-        observer.print2File();
-
+#pragma omp critical
+        {
+            observer.print2File();
+        }
         /* Output variables */
 
         /* Persistent contrail */
@@ -545,6 +543,9 @@ namespace EPM
 
         /* Compute plume area */
         Area = Ab0 / Tracer_3mins; 
+       
+        /* Update temperature after vortex sinking */
+        temperature_K = final_Temp;
 
         return EPM_SUCCESS;
 
