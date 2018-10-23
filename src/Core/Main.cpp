@@ -40,20 +40,14 @@ int main( int , char* [] )
     /* Number of cases */
     nCases  = parameters[0].size();
 
-    std::cout << "Running model for " << nCases << " cases on " << omp_get_num_procs() << " procs\n";
+    std::cout << "\nRunning model for " << nCases << " cases on " << omp_get_num_procs() << " procs\n";
 
-//    double temperature_K;
-//    double pressure_Pa;
-//    double relHumidity_w; 
-//    double longitude_deg;
-//    double latitude_deg;
-
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic, 1)
     for ( unsigned int i = 0; i < nCases; i++ ) {
 
 #pragma omp critical
         {
-            std::cout << "Running case " << i << " on thread " << omp_get_thread_num() << "\n";
+            std::cout << "-> Running case " << i << " on thread " << omp_get_thread_num() << "\n";
         }
 
         double temperature_K = parameters[0][i];
