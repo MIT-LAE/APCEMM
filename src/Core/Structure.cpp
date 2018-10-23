@@ -82,7 +82,6 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
 
     if ( file.is_open() )
     {
-        std::cout << "Reading ambient data from file: " << fileName << std::endl;
         std::string line;
         unsigned int i = 0;
 
@@ -278,6 +277,14 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
     SetShape( sulfDens , size_x, size_y, (double) aer_Value[  2][0] );
     SetShape( sulfRadi , size_x, size_y, (double) aer_Value[  2][0] );
     SetShape( sulfArea , size_x, size_y, (double) 0.0 );
+
+    /* Tracers */
+    SetShape( SO4T , size_x, size_y, (double) amb_Value[ 28] * airDens );
+    SetShape( HNO3T, size_x, size_y, (double) amb_Value[ 90] * airDens );
+    SetShape( HClT , size_x, size_y, (double) amb_Value[124] * airDens );
+    SetShape( HOClT, size_x, size_y, (double) amb_Value[ 88] * airDens );
+    SetShape( HBrT , size_x, size_y, (double) amb_Value[123] * airDens );
+    SetShape( HOBrT, size_x, size_y, (double) amb_Value[ 59] * airDens );
 
 } /* End of Solution::Initialize */
 
@@ -839,22 +846,20 @@ void Solution::applyAmbient( double varArray[], std::vector<std::vector<std::pai
 } /* End of Solution::applyAmbient */
 
 
-void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing )
+void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing, const double temperature, bool set2Saturation )
 {
 
     unsigned int innerRing, nCell;
     unsigned int i, j;
 
     double E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
-    E_CO2  = EI.getCO2()  / ( MW_CO2 * 1.0E+03 ) * AC.getFuelFlow()  / AC.getVFlight() * physConst::Na;
-    /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg] ) * [kg fuel/s]       / [m/s]           * [molec/mol]
+    E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * AC.getFuelFlow()  / AC.getVFlight() * physConst::Na;
+    /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg]  ) * [kg fuel/s]       / [m/s]           * [molec/mol]
      *     = [molec/m] 
      */
-    E_H2O  = EI.getH2O()  / ( MW_H2O  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_NO   = EI.getNO()   / ( MW_NO   * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_NO2  = EI.getNO2()  / ( MW_NO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_HNO2 = EI.getHNO2() / ( MW_HNO2 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_SO2  = EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_CO   = EI.getCO()   / ( MW_CO   * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_CH4  = EI.getCH4()  / ( MW_CH4  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_C2H6 = EI.getC2H6() / ( MW_C2H6 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
@@ -864,6 +869,11 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
     E_ALD2 = EI.getALD2() / ( MW_ALD2 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_GLYX = EI.getGLYX() / ( MW_GLYX * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_MGLY = EI.getMGLY() / ( MW_MGLY * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    if ( !set2Saturation ) {
+        E_H2O  = EI.getH2O()  / ( MW_H2O  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    }
+    E_SO2  = ( 1.0 - SO2TOSO4 ) * \
+             EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
 
     if ( !halfRing ) {
         /* Full rings */
@@ -874,11 +884,9 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
             j = map[innerRing][iList].second;
 
             CO2[j][i]  += ( E_CO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
-            H2O[j][i]  += ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             NO[j][i]   += ( E_NO   / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             NO2[j][i]  += ( E_NO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             HNO2[j][i] += ( E_HNO2 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
-            SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             CO[j][i]   += ( E_CO   / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             CH4[j][i]  += ( E_CH4  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             C2H6[j][i] += ( E_C2H6 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
@@ -888,6 +896,12 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
             ALD2[j][i] += ( E_ALD2 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             GLYX[j][i] += ( E_GLYX / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             MGLY[j][i] += ( E_MGLY / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+            if ( set2Saturation ) {
+                H2O[j][i] = physFunc::pSat_H2Os( temperature ) / ( physConst::kB * temperature * 1.00E+06 ); /* [molec / cm^3] */
+            } else {
+                H2O[j][i]+= ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+            }
+            SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
 
         }
 
@@ -901,11 +915,9 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
                 j = map[innerRing][iList].second;
 
                 CO2[j][i]  += ( E_CO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
-                H2O[j][i]  += ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 NO[j][i]   += ( E_NO   / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 NO2[j][i]  += ( E_NO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 HNO2[j][i] += ( E_HNO2 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
-                SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 CO[j][i]   += ( E_CO   / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 CH4[j][i]  += ( E_CH4  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 C2H6[j][i] += ( E_C2H6 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
@@ -915,6 +927,12 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
                 ALD2[j][i] += ( E_ALD2 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 GLYX[j][i] += ( E_GLYX / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 MGLY[j][i] += ( E_MGLY / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+                if ( set2Saturation ) {
+                    H2O[j][i] = physFunc::pSat_H2Os( temperature ) / ( physConst::kB * temperature * 1.00E+06 ); /* [molec / cm^3] */
+                } else {
+                    H2O[j][i]+= ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+                }
+                SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
 
             }
 
@@ -1068,6 +1086,24 @@ std::vector<double> Solution::getAmbient() const
     return ambVector;
 
 } /* End of Solution::getAmbient */
+
+std::vector<double> Solution::getLiqAerosol( ) const
+{
+
+    std::vector<double> liqAerVector( 9, 0.0 );
+    liqAerVector[0] = SO4L[0][0];
+    liqAerVector[1] = H2OL[0][0];
+    liqAerVector[2] = HNO3L[0][0];
+    liqAerVector[3] = HClL[0][0];
+    liqAerVector[4] = HOClL[0][0];
+    liqAerVector[5] = HBrL[0][0];
+    liqAerVector[6] = HOBrL[0][0];
+    liqAerVector[7] = H2OS[0][0];
+    liqAerVector[8] = HNO3S[0][0];
+
+    return liqAerVector;
+
+} /* End of Solution::getLiqAerosol */
 
 std::vector<std::vector<double> > Solution::getAerosol( ) const
 {

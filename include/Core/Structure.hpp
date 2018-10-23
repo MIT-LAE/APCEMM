@@ -28,6 +28,7 @@
 #include "Core/Emission.hpp"
 #include "Core/Aircraft.hpp"
 #include "Core/Engine.hpp"
+#include "Core/LiquidAer.hpp"
 
 class Solution
 {
@@ -44,8 +45,9 @@ class Solution
         void applyData( double varArray[], unsigned int i = 0, unsigned int j = 0 );
         void applyRing( double varArray[], double tempArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int iRing );
         void applyAmbient( double varArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int ambIndex );
-        void addEmission( const Emission &EI, const Aircraft &ac, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing );
+        void addEmission( const Emission &EI, const Aircraft &ac, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing, double temperature, bool set2Saturation );
         std::vector<double> getAmbient( ) const;
+        std::vector<double> getLiqAerosol() const;
         std::vector<std::vector<double> > getAerosol( ) const;
         std::vector<double> getAerosolDens( ) const;
         std::vector<double> getAerosolRadi( ) const;
@@ -83,6 +85,9 @@ class Solution
         std::vector<std::vector<double> > sootDens, sootRadi, sootArea, \
                                           iceDens , iceRadi , iceArea , \
                                           sulfDens, sulfRadi, sulfArea;
+
+        /* Tracers */
+        std::vector<std::vector<double> > SO4T, HNO3T, HClT, HOClT, HBrT, HOBrT;
 
     private:
 

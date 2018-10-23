@@ -25,7 +25,7 @@ class Ambient
     public:
 
         Ambient( );
-        Ambient( unsigned int nTime, std::vector<double> ambientVector, std::vector<std::vector<double> > aerVector );
+        Ambient( unsigned int nTime, std::vector<double> ambientVector, std::vector<std::vector<double> > aerVector, std::vector<double> liqVector );
         ~Ambient( );
         Ambient( const Ambient &a );
         Ambient& operator=( const Ambient &a );
@@ -38,6 +38,18 @@ class Ambient
 
         /* Fixed species */
         double ACTA, EOH, H2, HCOOH, MOH, N2, O2, RCOOH;
+
+        /* Liquid species */
+        std::vector<double> SO4L, H2OL, HNO3L, HClL, HOClL, HBrL, HOBrL;
+
+        /* Solid species */
+        std::vector<double> H2OS, HNO3S;
+
+        /* */
+        std::vector<double> NIT;
+
+        /* Tracers */
+        std::vector<double> SO4T;
 
         /* Aerosols */
         std::vector<double> sootDens, sootRadi, sootArea, \
