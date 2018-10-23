@@ -151,13 +151,13 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     /* Calculate conversion factors for SLA */
     /* Factor to convert volume (m^3/m^3 air) to
      * surface area density (cm^2/cm^3 air) */
-    const double SLA_VA = 8.406E-08 * pow( 10.0E+00, 12.0 * 0.751E+00 );
+    const double SLA_VA = 8.406E-08 * pow( 10.0, 12.0 * 0.751E+00 );
 
     /* Factor to convert effective radius to liquid radius (unitless) */
     const double SLA_RR = exp( -0.173E+00 );
 
     /* Factor to convert volume (m^3/m^3) to effective radius (m) */
-    const double SLA_VR = 0.357E-06 * pow( 10.0E+00, 12.0 * 0.249E+00 );
+    const double SLA_VR = 0.357E-06 * pow( 10.0, 12.0 * 0.249E+00 );
 
     /* Reaction prefactors */
     double KHET_COMMON;
@@ -235,7 +235,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     /* Code begins here ! */
     IS_POLAR = ( ( latitude_deg <= PSC_MINLAT ) || ( latitude_deg >= PSC_MAXLAT ) );
 
-    IS_STRAT = ( pressure_Pa < TROPP );
+    IS_STRAT = ( pressure_Pa < 300.0E+02 ) ; //TROPP );
 
     IS_VALID = ( ( IS_POLAR ) && ( IS_STRAT ) && ( pressure_Pa > PSC_PMIN ) && ( pressure_Pa < PSC_PMAX) );
     IS_VALID = ( IS_VALID || PSC_FULL );
@@ -370,9 +370,9 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
             RHO_AER_BOX   = physConst::RHO_ICE;
             NDENS_AER_BOX = 0.0E+00;
         } else {
-            VOL_TOT = VOL_NAT + VOL_ICE;
-            KG_AER_BOX = KG_NAT + KG_ICE;
-            RAD_AER_BOX = MIN_RAD;
+            VOL_TOT       = VOL_NAT + VOL_ICE;
+            KG_AER_BOX    = KG_NAT + KG_ICE;
+            RAD_AER_BOX   = MIN_RAD;
             NDENS_AER_BOX = pow( ( 3.0E+00 * VOL_TOT / ( 4.0E+00 * physConst::PI * MAX_NDENS )), 1.0E+00 / 3.0E+00 );
         }
 
@@ -408,7 +408,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     if ( LSOLIDPSC && IS_STRAT ) {
 
         /* Convert NAT from kg NAT to kg NO3 */
-        Data[id_NAT] = KG_NAT * MW_NIT / MW_NAT; /* [kg/m] */
+        Data[id_NAT]  = KG_NAT * MW_NIT / MW_NAT; /* [kg/m] */
 
         /* Remove ( kg NO2 as NAT ) from total kg NO3
          * then convert to kg HNO3 */
@@ -475,7 +475,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     H2SO4_gFRAC = H2SO4_GASFRAC( temperature_K, Data[id_SO4] );
     H2SO4_BOX_L = H2SO4SUM * ( 1.0 - H2SO4_gFRAC );
     H2SO4_BOX_G = H2SO4SUM - H2SO4_BOX_L;
-    AERFRAC[0] = 1.0 - H2SO4_gFRAC;
+    AERFRAC[0]  = 1.0 - H2SO4_gFRAC;
 
     if ( DBG ) {
         std::cout << "H2SO4_GASFRAC : " << H2SO4_gFRAC << "\n";
@@ -510,6 +510,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
         GAMMA_BOX[ 8] = 0.0E+00;
         GAMMA_BOX[ 9] = 2.0E-01;
         GAMMA_BOX[10] = 0.0E+00;
+
     } else if ( H2SO4_BOX_L < 1.0E-15 ) {
         /* No aerosol */
 
@@ -526,11 +527,11 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
 
         if ( STATE_LOCAL == 0 ) {
             /* Allow binary H2SO4.nH2O only */
-            TERNARY( temperature_K, pressure_Pa, H2OSUM, H2SO4_BOX_L, \
-                     0.0E+00, HClSUM, HOClSUM, HBrSUM, HOBrSUM,       \
-                     W_H2SO4, W_H2O, W_HNO3, W_HCl, W_HOCl, W_HBr, W_HOBr, \
-                     HNO3_GASFRAC, HCl_GASFRAC, HOCl_GASFRAC, HBr_GASFRAC, \
-                     HOBr_GASFRAC, VOL_SLA, RHO_AER_BOX );
+            TERNARY( temperature_K , pressure_Pa , H2OSUM         , H2SO4_BOX_L , \
+                     0.0E+00       , HClSUM      , HOClSUM        , HBrSUM      , HOBrSUM , \
+                     W_H2SO4       , W_H2O       , W_HNO3         , W_HCl       , W_HOCl  , W_HBr , W_HOBr , \
+                     HNO3_GASFRAC  , HCl_GASFRAC , HOCl_GASFRAC   , HBr_GASFRAC , \
+                     HOBr_GASFRAC  , VOL_SLA     , RHO_AER_BOX );
 
             /* For safety's safe, zero out HNO3 uptake */
             HNO3_GASFRAC = 1.0E+00;
@@ -542,11 +543,11 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
         } else {
             /* Use only non-NAT HNO3 for STS */
             HNO3_BOX_G = HNO3SUM - HNO3_BOX_S;
-            TERNARY( temperature_K, pressure_Pa, H2OSUM, H2SO4_BOX_L, \
-                     HNO3_BOX_G, HClSUM, HOClSUM, HBrSUM, HOBrSUM,    \
-                     W_H2SO4, W_H2O, W_HNO3, W_HCl, W_HOCl, W_HBr, W_HOBr, \
-                     HNO3_GASFRAC, HCl_GASFRAC, HOCl_GASFRAC, HBr_GASFRAC, \
-                     HOBr_GASFRAC, VOL_SLA, RHO_AER_BOX );
+            TERNARY( temperature_K , pressure_Pa , H2OSUM         , H2SO4_BOX_L , \
+                     HNO3_BOX_G    , HClSUM      , HOClSUM        , HBrSUM      , HOBrSUM , \
+                     W_H2SO4       , W_H2O       , W_HNO3         , W_HCl       , W_HOCl  , W_HBr , W_HOBr , \
+                     HNO3_GASFRAC  , HCl_GASFRAC , HOCl_GASFRAC   , HBr_GASFRAC , \
+                     HOBr_GASFRAC  , VOL_SLA     , RHO_AER_BOX );
 
             /* Partition HNO3 here for safety */
             HNO3_BOX_G = HNO3_BOX_S * HNO3_GASFRAC;
@@ -575,10 +576,17 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
 
         /* Calculate SLA parameters (Grainger 1995) */
         SAD_AER_BOX = 1.0E+02 * SLA_VA * pow( VOL_SLA, 7.51E-01 ); /* [m^2/m^3] */
+        /* Effective radius */
         RAD_AER_BOX = SLA_VR * SLA_RR * pow( VOL_SLA, 2.49E-01 );  /* [m]       */
         KG_AER_BOX  = RHO_AER_BOX * VOL_SLA * Area;                /* [kg/m]    */
         /* Unit check:
          *         = kg/m^3      * m^3/m^3 air * m^2 air */
+
+        if ( DBG ) {
+            std::cout << "VOL_SLA : " << VOL_SLA     << " [m^3/m^3]\n";
+            std::cout << "RAD_SLA : " << RAD_AER_BOX << " [m]\n";
+            std::cout << "SAD_SLA : " << SAD_AER_BOX << " [m^2/m^3]\n";
+        }
 
         if ( VOL_SLA > 1.0E-30 ) {
             /* Approximate particles as spherical for calculation of aerosol 
@@ -586,11 +594,11 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
             NDENS_AER_BOX = VOL_SLA * 3.0E+00 / (4.0E+00 * physConst::PI * RAD_AER_BOX * \
                                                             RAD_AER_BOX * RAD_AER_BOX );
 
-            GAMMA_BOX = SLA_GAMMA( temperature_K, pressure_Pa, \
-                                   W_H2SO4,                    \
-                                   H2OSUM, HClSUM, HBrSUM,     \
-                                   HOBrSUM, ClNO3SUM, BrNO3SUM,
-                                   RHO_AER_BOX * 1.0E-03,
+            GAMMA_BOX = SLA_GAMMA( temperature_K         , pressure_Pa , \
+                                   W_H2SO4               , \
+                                   H2OSUM                , HClSUM      , HBrSUM   , \
+                                   HOBrSUM               , ClNO3SUM    , BrNO3SUM ,
+                                   RHO_AER_BOX * 1.0E-03 ,
                                    RAD_AER_BOX * 1.0E+02 );
         } else {
             /* Ignore SLA */
