@@ -161,6 +161,16 @@ SpeciesArray::SpeciesArray( unsigned int nRing_, unsigned int nTime_, bool halfR
         CO.push_back( v1d );
         MO2.push_back( v1d );
 
+        SO4L.push_back( v1d );
+        H2OL.push_back( v1d );
+        HNO3L.push_back( v1d );
+        HClL.push_back( v1d );
+        HOClL.push_back( v1d );
+        HBrL.push_back( v1d );
+        HOBrL.push_back( v1d );
+        H2OS.push_back( v1d );
+        HNO3S.push_back( v1d );
+
         sootDens.push_back( v1d );
         sootRadi.push_back( v1d );
         sootArea.push_back( v1d );
@@ -319,12 +329,20 @@ SpeciesArray::SpeciesArray( const SpeciesArray &sp )
     O2       = sp.O2;
     RCOOH    = sp.RCOOH;
 
+    SO4L  = sp.SO4L;
+    H2OL  = sp.H2OL;
+    HNO3L = sp.HNO3L;
+    HClL  = sp.HClL;
+    HOClL = sp.HOClL;
+    HBrL  = sp.HBrL;
+    HOBrL = sp.HOBrL;
+
     sootDens = sp.sootDens;
     sootRadi = sp.sootRadi;
     sootArea = sp.sootArea;
-    iceDens = sp.iceDens;
-    iceRadi = sp.iceRadi;
-    iceArea = sp.iceArea;
+    iceDens  = sp.iceDens;
+    iceRadi  = sp.iceRadi;
+    iceArea  = sp.iceArea;
     sulfDens = sp.sulfDens;
     sulfRadi = sp.sulfRadi;
     sulfArea = sp.sulfArea;
@@ -478,12 +496,20 @@ SpeciesArray& SpeciesArray::operator=( const SpeciesArray &sp )
     O2       = sp.O2;
     RCOOH    = sp.RCOOH;
     
+    SO4L  = sp.SO4L;
+    H2OL  = sp.H2OL;
+    HNO3L = sp.HNO3L;
+    HClL  = sp.HClL;
+    HOClL = sp.HOClL;
+    HBrL  = sp.HBrL;
+    HOBrL = sp.HOBrL;
+
     sootDens = sp.sootDens;
     sootRadi = sp.sootRadi;
     sootArea = sp.sootArea;
-    iceDens = sp.iceDens;
-    iceRadi = sp.iceRadi;
-    iceArea = sp.iceArea;
+    iceDens  = sp.iceDens;
+    iceRadi  = sp.iceRadi;
+    iceArea  = sp.iceArea;
     sulfDens = sp.sulfDens;
     sulfRadi = sp.sulfRadi;
     sulfArea = sp.sulfArea;
@@ -642,7 +668,17 @@ SpeciesArray& SpeciesArray::operator+( const SpeciesArray &sp )
             N2       += sp.N2;
             O2       += sp.O2;
             RCOOH    += sp.RCOOH;
-    
+   
+            SO4L[iTime][iRing]  += sp.SO4L[iTime][iRing];
+            H2OL[iTime][iRing]  += sp.H2OL[iTime][iRing];
+            HNO3L[iTime][iRing] += sp.HNO3L[iTime][iRing];
+            HClL[iTime][iRing]  += sp.HClL[iTime][iRing];
+            HOClL[iTime][iRing] += sp.HOClL[iTime][iRing];
+            HBrL[iTime][iRing]  += sp.HBrL[iTime][iRing];
+            HOBrL[iTime][iRing] += sp.HOBrL[iTime][iRing];
+            H2OS[iTime][iRing]  += sp.H2OS[iTime][iRing];
+            HNO3S[iTime][iRing] += sp.HNO3S[iTime][iRing];
+
             sootDens[iTime][iRing] += sp.sootDens[iTime][iRing];
             sootRadi[iTime][iRing] += sp.sootRadi[iTime][iRing];
             sootArea[iTime][iRing] += sp.sootArea[iTime][iRing];
@@ -811,6 +847,16 @@ SpeciesArray& SpeciesArray::operator-( const SpeciesArray &sp )
             O2                     -= sp.O2;
             RCOOH                  -= sp.RCOOH;
             
+            SO4L[iTime][iRing]     -= sp.SO4L[iTime][iRing];
+            H2OL[iTime][iRing]     -= sp.H2OL[iTime][iRing];
+            HNO3L[iTime][iRing]    -= sp.HNO3L[iTime][iRing];
+            HClL[iTime][iRing]     -= sp.HClL[iTime][iRing];
+            HOClL[iTime][iRing]    -= sp.HOClL[iTime][iRing];
+            HBrL[iTime][iRing]     -= sp.HBrL[iTime][iRing];
+            HOBrL[iTime][iRing]    -= sp.HOBrL[iTime][iRing];
+            H2OS[iTime][iRing]     -= sp.H2OS[iTime][iRing];
+            HNO3S[iTime][iRing]    -= sp.HNO3S[iTime][iRing];
+            
             sootDens[iTime][iRing] -= sp.sootDens[iTime][iRing];
             sootRadi[iTime][iRing] -= sp.sootRadi[iTime][iRing];
             sootArea[iTime][iRing] -= sp.sootArea[iTime][iRing];
@@ -977,6 +1023,16 @@ void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
             CO[nCounter][iRing]       += Data.CO[j][i];
             MO2[nCounter][iRing]      += Data.MO2[j][i];
 
+            SO4L[nCounter][iRing]     += Data.SO4L[j][i];
+            H2OL[nCounter][iRing]     += Data.H2OL[j][i];
+            HNO3L[nCounter][iRing]    += Data.HNO3L[j][i];
+            HClL[nCounter][iRing]     += Data.HClL[j][i];
+            HOClL[nCounter][iRing]    += Data.HOClL[j][i];
+            HBrL[nCounter][iRing]     += Data.HBrL[j][i];
+            HOBrL[nCounter][iRing]    += Data.HOBrL[j][i];
+            H2OS[nCounter][iRing]     += Data.H2OS[j][i];
+            HNO3S[nCounter][iRing]    += Data.HNO3S[j][i];
+
             sootDens[nCounter][iRing] += Data.sootDens[j][i];
             sootRadi[nCounter][iRing] += Data.sootRadi[j][i];
             sootArea[nCounter][iRing] += Data.sootArea[j][i];
@@ -1120,6 +1176,16 @@ void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
         CO[nCounter][iRing]       /= nCell;
         MO2[nCounter][iRing]      /= nCell;
             
+        SO4L[nCounter][iRing]     /= nCell;
+        H2OL[nCounter][iRing]     /= nCell;
+        HNO3L[nCounter][iRing]    /= nCell;
+        HClL[nCounter][iRing]     /= nCell;
+        HOClL[nCounter][iRing]    /= nCell;
+        HBrL[nCounter][iRing]     /= nCell;
+        HOBrL[nCounter][iRing]    /= nCell;
+        H2OS[nCounter][iRing]     /= nCell;
+        HNO3S[nCounter][iRing]    /= nCell;
+
         sootDens[nCounter][iRing] /= nCell;
         sootRadi[nCounter][iRing] /= nCell;
         sootArea[nCounter][iRing] /= nCell;
