@@ -180,10 +180,13 @@ Ambient::Ambient( unsigned int nTime_, std::vector<double> ambientVector, std::v
     
     sootDens.assign( nTime, aerVector[  0][0] );
     sootRadi.assign( nTime, aerVector[  0][1] );
+    sootArea.assign( nTime, aerVector[  0][2] );
     iceDens.assign ( nTime, aerVector[  1][0] );
     iceRadi.assign ( nTime, aerVector[  1][1] );
+    iceArea.assign ( nTime, aerVector[  1][2] );
     sulfDens.assign( nTime, aerVector[  2][0] );
     sulfRadi.assign( nTime, aerVector[  2][1] );
+    sulfArea.assign( nTime, aerVector[  1][2] );
 
     cosSZA.assign( nTime, 0.0 );
 
