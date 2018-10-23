@@ -185,6 +185,8 @@ FileHandler.o       : FileHandler.cpp
 
 Fuel.o              : Fuel.cpp
 
+LiquidAer.o         : LiquidAer.cpp
+
 Main.o              : Main.cpp
 
 Mesh.o              : Mesh.cpp
