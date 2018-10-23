@@ -35,6 +35,7 @@ class SZA
         double sunRise;
         double sunSet;
 
+        double CSZA_max;
         double CSZA;
 
     private:
@@ -48,10 +49,10 @@ class SZA
         double const B3 = 0.000148;
 
         double DEC;
-        double SINLAT;
-        double COSLAT;
-        double SINDEC;
-        double COSDEC;
+        double sinLAT;
+        double cosLAT;
+        double sinDEC;
+        double cosDEC;
 
 };
 

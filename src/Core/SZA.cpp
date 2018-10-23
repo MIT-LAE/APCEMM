@@ -26,16 +26,17 @@ SZA::SZA( const double lat_, const unsigned int day_ ):
              - A2*cos(2.0*r_SZA) + B2*sin(2.0*r_SZA)\
              - A3*cos(3.0*r_SZA) + B3*sin(3.0*r_SZA);
 
-    SINLAT = std::sin(lat_ * physConst::PI/180.0);
-    COSLAT = std::cos(lat_ * physConst::PI/180.0);
-    SINDEC = std::sin(DEC);
-    COSDEC = std::cos(DEC);
+    sinLAT = std::sin(lat_ * physConst::PI/180.0);
+    cosLAT = std::cos(lat_ * physConst::PI/180.0);
+    sinDEC = std::sin(DEC);
+    cosDEC = std::cos(DEC);
 
-    sunRise = std::max((12.0 - 180.0/(physConst::PI*15.0)*acos(-(SINLAT * SINDEC)\
-                                                        / (COSLAT * COSDEC))), 0.0);
-    sunSet  = std::min((12.0 + 180.0/(physConst::PI*15.0)*acos(-(SINLAT * SINDEC)\
-                                              / (COSLAT * COSDEC))), 24.0);
+    sunRise = std::max((12.0 - 180.0/(physConst::PI*15.0)*acos(-(sinLAT * sinDEC)\
+                                                        / (cosLAT * cosDEC))), 0.0);
+    sunSet  = std::min((12.0 + 180.0/(physConst::PI*15.0)*acos(-(sinLAT * sinDEC)\
+                                              / (cosLAT * cosDEC))), 24.0);
 
+    CSZA_max = std::max( sinLAT * sinDEC + cosLAT * cosDEC, 0.0 );
     CSZA = 0.0;
 
 } /* End of SZA::SZA */
@@ -50,7 +51,7 @@ SZA::~SZA( )
 void SZA::Update( const double solarTime )
 {
 
-    CSZA = std::max( SINLAT * SINDEC + COSLAT * COSDEC * std::cos( std::abs( ( solarTime/3600.0 - 12.0 ) ) * 15.0 * physConst::PI / 180.0 ), 0.0 ); 
+    CSZA = std::max( sinLAT * sinDEC + cosLAT * cosDEC * std::cos( std::abs( ( solarTime/3600.0 - 12.0 ) ) * 15.0 * physConst::PI / 180.0 ), 0.0 ); 
 
 } /* End of SZA::Update_SUN */
 
