@@ -66,6 +66,9 @@ namespace physConst
 
     /* Density of ice, Unit : [ kg / m ^ 3 ] */
     static const RealDouble RHO_ICE = 9.167E+02;
+    
+    /* Density of ice, Unit : [ kg / m ^ 3 ] */
+    static const RealDouble RHO_NAT = 1.626E+03;
 
     /* Density of sulfuric acid, Unit : [ kg / m ^ 3 ] */
     static const RealDouble RHO_SO4 = 1.600E+03;
