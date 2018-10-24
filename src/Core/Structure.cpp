@@ -14,6 +14,7 @@
 #include "Core/Structure.hpp"
 
 Solution::Solution( ) : \
+        liquidAerosol( ), solidAerosol( ),
         nVariables( NSPEC ), nAer( N_AER ), size_x( NX ), size_y( NY )
 {
     /* Constructor */
@@ -322,57 +323,43 @@ void Solution::Initialize( char const *fileName, const double temperature, const
         std::cout << " DEBUG : REFF      = " << RAD[1] * 1.00E+06   << " [mum]\n";
     }
     
-
-    LA_rE.assign( nBin_LA + 1, 0.0 ); /* Bin edges in m */
-    LA_rJ.assign( nBin_LA    , 0.0 ); /* Bin center radius in m */
-    LA_vJ.assign( nBin_LA    , 0.0 ); /* Bin center volume in m^3*/
+    std::vector<double> LA_rE( nBin_LA + 1, 0.0 ); /* Bin edges in m */
+    std::vector<double> LA_rJ( nBin_LA    , 0.0 ); /* Bin center radius in m */
     
     for ( unsigned int iBin_LA = 0; iBin_LA < nBin_LA + 1; iBin_LA++ ) {
         LA_rE[iBin_LA] = LA_R_LOW * pow( LA_VRAT, iBin_LA / RealDouble(3.0) );              /* [m] */
     }
     for ( unsigned int iBin_LA = 0; iBin_LA < nBin_LA; iBin_LA++ ) {
         LA_rJ[iBin_LA] = 0.5 * ( LA_rE[iBin_LA] + LA_rE[iBin_LA+1] );                       /* [m] */
-        LA_vJ[iBin_LA] = 4.0 / 3.0 * physConst::PI * \
-                       LA_rJ[iBin_LA]*LA_rJ[iBin_LA]*LA_rJ[iBin_LA]*0.5*( 1.0 + LA_VRAT );  /* [m^3] */
     }
 
     LA_nDens = NDENS[1] * 1.00E-06; /* [#/cm^3]      */
     LA_rEff  = RAD[1]   * 1.00E+09; /* [nm]          */
     LA_SAD   = SAD[1]   * 1.00E+06; /* [\mum^2/cm^3] */
 
-    PDF_LA.resize( size_x, std::vector<std::vector<double>>( size_y, std::vector<double>( nBin_LA, 0.0)));
-
-    if ( NDENS[1] > 1.00E-05 ) {
+    /* For a lognormal distribution:
+     * r_eff = r_m * exp( 5/2 * ln(S)^2 ) 
+     * A     = 4\pi N0 r_m^2 * exp ( 2 * ln(S)^2 ) 
+     * A/r_eff^2 = 4\pi N0 * exp( - 1/2 * ln(S)^2 )
+     *
+     * ln(S) = sqrt(-2*ln(A/(4\pi r_eff^2 * N0)));
+     * r_m = r_eff * exp( -5/2 * ln(S)^2 ); */
     
-        /* For a lognormal distribution:
-         * r_eff = r_m * exp( 5/2 * ln(S)^2 ) 
-         * A     = 4\pi N0 r_m^2 * exp ( 2 * ln(S)^2 ) 
-         * A/r_eff^2 = 4\pi N0 * exp( - 1/2 * ln(S)^2 )
-         *
-         * ln(S) = sqrt(-2*ln(A/(4\pi r_eff^2 * N0)));
-         * r_m = r_eff * exp( -5/2 * ln(S)^2 ); */
-        
-        const double sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * physConst::PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
-        const double rLA = RAD[1] * exp( - 2.5 * sLA * sLA ); 
-        AIM::Aerosol pdfLA( LA_rJ, LA_rE, NDENS[1] * 1.00E-06, rLA, exp(sLA), "lognormal" );
+    const double sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * physConst::PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
+    const double rLA = std::max( RAD[1] * exp( - 2.5 * sLA * sLA ), 1.5 * LA_R_LOW ); 
+    AIM::Grid_Aerosol LAAerosol( size_x, size_y, LA_rJ, LA_rE, LA_nDens, rLA, exp(sLA), "lognormal" );
 
-        if ( DBG ) {
+    liquidAerosol = LAAerosol;
 
-            std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
-            std::cout << "        " << pdfLA.Moment() << " v " << NDENS[1] * 1.00E-06 << " [#/cm^3]\n";
-            std::cout << " DEBUG : Comparing PDF's surface area to Grainger's surface area:\n";
-            std::cout << "        " << 4.0 * physConst::PI * pdfLA.Moment(2) * 1.00E+12 << " v " << SAD[1] * 1.00E+06 << " [mum^2/cm^3]\n";
-            std::cout << " DEBUG : Comparing PDF's effective radius to Grainger's effective radius:\n";
-            std::cout << "        " << pdfLA.Moment(3)/pdfLA.Moment(2) * 1.00E+09 << " v " << RAD[1] * 1.00E+09 << " [nm]\n";
+    if ( DBG ) {
 
-        }
-        std::vector<double> PDF = pdfLA.getPDF();
-        for ( unsigned int jNy = 0; jNy < size_y; jNy++ ) {
-            for ( unsigned int iNx = 0; iNx < size_x; iNx++ ) {
-                for ( unsigned int iBin = 0; iBin < nBin_LA; iBin++ )
-                  PDF_LA[jNy][iNx][iBin] = PDF[iBin];
-            }
-        }
+        std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
+        std::cout << "         " << liquidAerosol.Moment( 0, 0, 0 ) << " v " << LA_nDens << " [#/cm^3]\n";
+        std::cout << " DEBUG : Comparing PDF's surface area to Grainger's surface area:\n";
+        std::cout << "         " << 4.0 * physConst::PI * liquidAerosol.Moment( 2, 0, 0 ) * 1.00E+12 << " v " << LA_SAD << " [mum^2/cm^3]\n";
+        std::cout << " DEBUG : Comparing PDF's effective radius to Grainger's effective radius:\n";
+        std::cout << "         " << liquidAerosol.getEffRadius( 0, 0 ) * 1.00E+09 << " v " << LA_rEff << " [nm]\n";
+
     }
 
     nBin_PA = std::floor( 1 + log( pow( (PA_R_HIG/PA_R_LOW), 3.0 ) ) / log( PA_VRAT ) );
@@ -386,43 +373,31 @@ void Solution::Initialize( char const *fileName, const double temperature, const
         std::cout << " DEBUG : REFF      = " << RAD[0] * 1.00E+06   << " [mum]\n";
     }
 
-    PA_rE.assign( nBin_PA + 1, 0.0 ); /* Bin edges in m */
-    PA_rJ.assign( nBin_PA    , 0.0 ); /* Bin center radius in m */
-    PA_vJ.assign( nBin_PA    , 0.0 ); /* Bin center volume in m^3*/
+    std::vector<double> PA_rE( nBin_PA + 1, 0.0 ); /* Bin edges in m */
+    std::vector<double> PA_rJ( nBin_PA    , 0.0 ); /* Bin center radius in m */
     
     for ( unsigned int iBin_PA = 0; iBin_PA < nBin_PA + 1; iBin_PA++ ) {
         PA_rE[iBin_PA] = PA_R_LOW * pow( PA_VRAT, iBin_PA / RealDouble(3.0) );              /* [m] */
     }
     for ( unsigned int iBin_PA = 0; iBin_PA < nBin_PA; iBin_PA++ ) {
         PA_rJ[iBin_PA] = 0.5 * ( PA_rE[iBin_PA] + PA_rE[iBin_PA+1] );                       /* [m] */
-        PA_vJ[iBin_PA] = 4.0 / 3.0 * physConst::PI * \
-                       PA_rJ[iBin_PA]*PA_rJ[iBin_PA]*PA_rJ[iBin_PA]*0.5*( 1.0 + PA_VRAT );  /* [m^3] */
     }
 
     PA_nDens = NDENS[0] * 1.00E-06; /* [#/cm^3]      */
     PA_rEff  = RAD[0]   * 1.00E+09; /* [nm]          */
     PA_SAD   = SAD[0]   * 1.00E+06; /* [\mum^2/cm^3] */
 
-    PDF_PA.resize( size_x, std::vector<std::vector<double>>( size_y, std::vector<double>( nBin_PA, 0.0) ) );
+    const double expsPA = 1.05;
+    const double rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW ); 
+    AIM::Grid_Aerosol PAAerosol( size_x, size_y, PA_rJ, PA_rE, PA_nDens, rPA, expsPA, "lognormal" );
 
-    if ( NDENS[0] > 1.00E-05 ) {
-        
-        const double expsPA = 1.05;
-        const double rPA = RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ); 
-        AIM::Aerosol pdfPA( PA_rJ, PA_rE, NDENS[0] * 1.00E-06, rPA, expsPA, "lognormal" );
+    solidAerosol = PAAerosol;
 
+    if ( DBG ) {
         std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
-        std::cout << "        " << pdfPA.Moment() << " v " << NDENS[0] * 1.00E-06 << " [#/cm^3]\n";
+        std::cout << "         " << solidAerosol.Moment( 0, 0, 0 ) << " v " << PA_nDens << " [#/cm^3]\n";
         std::cout << " DEBUG : Comparing PDF's effective radius to actual effective radius:\n";
-        std::cout << "        " << pdfPA.Moment(3)/pdfPA.Moment(2) * 1.00E+09 << " v " << RAD[0] * 1.00E+09 << " [nm]\n";
-
-        std::vector<double> PDF = pdfPA.getPDF();
-        for ( unsigned int jNy = 0; jNy < size_y; jNy++ ) {
-            for ( unsigned int iNx = 0; iNx < size_x; iNx++ ) {
-                for ( unsigned int iBin = 0; iBin < nBin_PA; iBin++ )
-                  PDF_PA[jNy][iNx][iBin] = PDF[iBin];
-            }
-        }
+        std::cout << "         " << solidAerosol.getEffRadius( 0, 0 ) * 1.00E+09 << " v " << PA_rEff << " [nm]\n";
     }
 
     /* Tracers */
@@ -988,7 +963,7 @@ void Solution::applyAmbient( double varArray[], std::vector<std::vector<std::pai
 } /* End of Solution::applyAmbient */
 
 
-void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing, const double temperature, bool set2Saturation )
+void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing, const double temperature, bool set2Saturation, AIM::Aerosol &liqAer )
 {
 
     unsigned int innerRing, nCell;
@@ -1047,6 +1022,8 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
 
         }
 
+        liquidAerosol.addPDF( liqAer, map[innerRing] );
+
     }
     else {
         /* Half rings */
@@ -1077,6 +1054,8 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
                 SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
 
             }
+        
+            liquidAerosol.addPDF( liqAer, map[innerRing] );
 
         }
 
@@ -1229,7 +1208,7 @@ std::vector<double> Solution::getAmbient() const
 
 } /* End of Solution::getAmbient */
 
-std::vector<double> Solution::getLiqAerosol( ) const
+std::vector<double> Solution::getLiqSpecies( ) const
 {
 
     std::vector<double> liqAerVector( 9, 0.0 );
@@ -1245,7 +1224,7 @@ std::vector<double> Solution::getLiqAerosol( ) const
 
     return liqAerVector;
 
-} /* End of Solution::getLiqAerosol */
+} /* End of Solution::getLiqSpecies */
 
 std::vector<std::vector<double> > Solution::getAerosol( ) const
 {
