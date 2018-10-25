@@ -72,10 +72,8 @@ void Solution::Print( std::vector<std::vector<double> >& vector_2D, unsigned int
 
 } /* End of Solution::Print */
 
-void Solution::Initialize( char const *fileName, const double temperature, const double pressure, const double airDens, const double relHum, const double lat )
+void Solution::Initialize( char const *fileName, const double temperature, const double pressure, const double airDens, const double relHum, const double lat, const bool DBG )
 {
-
-    const bool DBG = 0;
 
     std::vector<double> amb_Value(nVariables, 0.0);
     std::vector<std::vector<double> > aer_Value(nAer, std::vector<double>(2, 0.0));
@@ -275,7 +273,7 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     NDENS.assign( 2, 0.0 );
     SAD.assign( 2, 0.0 );
 
-    STATE_PSC = STRAT_AER( temperature, pressure, airDens, lat, stratData, (2.0*XLIM)*(2.0*YLIM), KHETI_SLA, SOLIDFRAC, AERFRAC, RAD, RHO, KG, NDENS, SAD );
+    STATE_PSC = STRAT_AER( temperature, pressure, airDens, lat, stratData, (2.0*XLIM)*(2.0*YLIM), KHETI_SLA, SOLIDFRAC, AERFRAC, RAD, RHO, KG, NDENS, SAD, DBG );
   
     /* Liquid/solid species */
     SetShape( SO4L , size_x, size_y, (double) AERFRAC[0]                          * stratData[0] );
@@ -963,7 +961,7 @@ void Solution::applyAmbient( double varArray[], std::vector<std::vector<std::pai
 } /* End of Solution::applyAmbient */
 
 
-void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing, const double temperature, bool set2Saturation, AIM::Aerosol &liqAer )
+void Solution::addEmission( const Emission &EI, const Aircraft &AC, const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, const std::vector<std::vector<double>> cellAreas, bool halfRing, const double temperature, bool set2Saturation, AIM::Aerosol &liqAer )
 {
 
     unsigned int innerRing, nCell;
