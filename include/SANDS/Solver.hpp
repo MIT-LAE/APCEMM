@@ -44,7 +44,7 @@
             Solver( );
 
             /* Constructor */
-            Solver( bool fill = 0, RealDouble fillValue = 0.0, unsigned flag = FFTW_ESTIMATE );
+            Solver( const bool fill = 0, const RealDouble fillValue = 0.0, const unsigned flag = FFTW_ESTIMATE );
 
             /* Copy constructor */
             /*
@@ -52,30 +52,24 @@
              */
             Solver( const Solver &s );
 
-            /* Assignment operator */
-            /*
-             * Parameter s reference to the solver to be copied
-             */
-            Solver& operator=( const Solver &s );
-
             /* Destructor */
             ~Solver( );
 
             void AssignFreq( );
 
             /* Update time step */
-            void UpdateTimeStep( RealDouble T );
+            void UpdateTimeStep( const RealDouble T );
 
             /* Update diffusion field */
-            void UpdateDiff( RealDouble dH, RealDouble dV );
+            void UpdateDiff( const RealDouble dH, const RealDouble dV );
 
             /* Update advection field */
-            void UpdateAdv( RealDouble vH, RealDouble vV );
+            void UpdateAdv( const RealDouble vH, const RealDouble vV );
            
             void Solve( Real_2DVector &V, const bool realInput );
 
             /* Fill value between threshold with val */
-            void Fill( Real_2DVector &V, RealDouble val, RealDouble threshold = 0.0 );
+            void Fill( Real_2DVector &V, const RealDouble val, const RealDouble threshold = 0.0 );
 
             void Wisdom( Real_2DVector &V );
 
@@ -93,8 +87,8 @@
 
             unsigned int n_x, n_y;
             RealDouble xlim, ylim;
-            bool doFill;
-            RealDouble fillVal;
+            const bool doFill;
+            const RealDouble fillVal;
             unsigned FFTW_flag;
             double dt;
 

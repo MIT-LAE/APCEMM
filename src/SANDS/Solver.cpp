@@ -15,19 +15,27 @@
 
     const char *Solver::wisdomFile = WISDOMFILE;
 
-    Solver::Solver( )
+    Solver::Solver( ):
+        n_x( NX ),
+        n_y( NY ),
+        xlim( XLIM ),
+        ylim( YLIM ),
+        doFill( 0 ), 
+        fillVal( 0.0 ),
+        FFTW_flag( FFTW_ESTIMATE )
     {
         /* Base Constructor */
 
-        bool fill = 0;
-        RealDouble fillValue = 0.0;
-        unsigned flag = FFTW_ESTIMATE;
-
-        Solver( fill, fillValue, flag );
-
     } /* End of Solver::Solver */
 
-    Solver::Solver( bool fill, RealDouble fillValue, unsigned flag )
+    Solver::Solver( const bool fill, const RealDouble fillValue, const unsigned flag ):
+        n_x( NX ),
+        n_y( NY ),
+        xlim( XLIM ),
+        ylim( YLIM ),
+        doFill( fill ), 
+        fillVal( fillValue ),
+        FFTW_flag( flag )
     {
         /* Constructor */
 
@@ -36,10 +44,6 @@
 
         xlim = XLIM;
         ylim = YLIM;
-
-        doFill = fill;
-        fillVal = fillValue;
-        FFTW_flag = flag; 
 
         AssignFreq();
 
@@ -50,19 +54,16 @@
 
     } /* End of Solver::Solver */
 
-    Solver::Solver( const Solver &s )
+    Solver::Solver( const Solver &s ):
+        n_x( s.n_x ),
+        n_y( s.n_y ),
+        xlim( s.xlim ),
+        ylim( s.ylim ),
+        doFill( s.doFill ),
+        fillVal( s.fillVal ),
+        FFTW_flag( s.FFTW_flag )
     {
 
-        n_x = s.n_x;
-        n_y = s.n_y;
-
-        xlim = s.xlim;
-        ylim = s.ylim;
-
-        doFill = s.doFill;
-        fillVal = s.fillVal;
-        
-        FFTW_flag = s.FFTW_flag;
         dt = s.dt;
 
         DiffFactor = s.DiffFactor;
@@ -74,35 +75,6 @@
         kyy = s.kyy;
 
     } /* End of Solver::Solver */
-
-    Solver& Solver::operator=( const Solver &s )
-    {
-
-        if ( &s == this )
-            return *this;
-
-        n_x = s.n_x;
-        n_y = s.n_y;
-
-        xlim = s.xlim;
-        ylim = s.ylim;
-
-        doFill = s.doFill;
-        fillVal = s.fillVal;
-        
-        FFTW_flag = s.FFTW_flag;
-        dt = s.dt;
-
-        DiffFactor = s.DiffFactor;
-        AdvFactor = s.AdvFactor;
-
-        kx = s.kx;
-        ky = s.ky;
-        kxx = s.kxx;
-        kyy = s.kyy;
-        return *this;
-
-    } /* End of Solver::operator= */
 
     Solver::~Solver( )
     {
@@ -160,14 +132,14 @@
 
     } /* End of Solver::getAdvFactor */
 
-    void Solver::UpdateTimeStep( RealDouble T )
+    void Solver::UpdateTimeStep( const RealDouble T )
     {
 
         dt = T;
 
     } /* End of Solver::UpdateStep */
 
-    void Solver::UpdateDiff( RealDouble dH, RealDouble dV )
+    void Solver::UpdateDiff( const RealDouble dH, const RealDouble dV )
     {
 
         // dH horizontal diffusion factor >= 0.0
@@ -190,7 +162,7 @@
 
     } /* End of Solver::UpdateDiff */
 
-    void Solver::UpdateAdv( double vH, double vV )
+    void Solver::UpdateAdv( const double vH, const double vV )
     {
 
         // vH > 0 means left, < 0 means right
@@ -213,7 +185,7 @@
 
     } /* End of Solver::SANDS */
 
-    void Solver::Fill( Real_2DVector &V, RealDouble val, RealDouble threshold )
+    void Solver::Fill( Real_2DVector &V, const RealDouble val, const RealDouble threshold )
     {
 
         for ( unsigned int iNx = 0; iNx < n_x; iNx++ ) {
