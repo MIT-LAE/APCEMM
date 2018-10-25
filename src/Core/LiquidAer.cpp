@@ -550,7 +550,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
                      HOBr_GASFRAC  , VOL_SLA     , RHO_AER_BOX );
 
             /* Partition HNO3 here for safety */
-            HNO3_BOX_G = HNO3_BOX_S * HNO3_GASFRAC;
+            HNO3_BOX_G = HNO3_BOX_G * HNO3_GASFRAC;
             HNO3_BOX_L = HNO3SUM - ( HNO3_BOX_G + HNO3_BOX_S );
         }
     
