@@ -393,7 +393,7 @@ namespace AIM
         }
 
         /* For debug purposes */
-        bool checkMass = 0;
+        const bool checkMass = 0;
         if ( checkMass ) {
             std::cout << "Coagulation is a volume-conserving process. The two following quantities should be identical\n";
             std::cout << "At t     : " << Moment(3) << "\n";
@@ -485,7 +485,7 @@ namespace AIM
     RealDouble Aerosol::getRadius( ) const
     {
 
-        RealDouble N = Moment( 0 );
+        const RealDouble N = Moment( 0 );
 
         if ( N > 0 ) {
             return Moment( 1 ) / N;
@@ -499,7 +499,7 @@ namespace AIM
     RealDouble Aerosol::getEffRadius( ) const
     {
 
-        RealDouble m2 = Moment( 2 );
+        const RealDouble m2 = Moment( 2 );
 
         if ( m2 > 0 ) {
             return Moment(3) / m2;
@@ -513,7 +513,7 @@ namespace AIM
     RealDouble Aerosol::getStdDev( ) const
     {
 
-        RealDouble N = Moment( 0 );
+        const RealDouble N = Moment( 0 );
 
         if ( N > 0 ) {
             return sqrt( Moment( 2 ) / N - pow( Moment( 1 ) / N, 2.0 ) );
@@ -1067,7 +1067,7 @@ namespace AIM
         }
 
         /* For debug purposes */
-        bool checkMass = 0;
+        const bool checkMass = 0;
         if ( checkMass ) {
             std::cout << "Coagulation is a volume-conserving process. The two following quantities should be identical\n";
             std::cout << "At t     : " << Moment( 3, Nx/2, Ny/2 ) << "\n";
@@ -1184,8 +1184,8 @@ namespace AIM
 
         Vector_2D r( Ny, Vector_1D( Nx, 0.0E+00 ) );
 
-        Vector_2D m0 = Moment( 0 );
-        Vector_2D m1 = Moment( 1 );
+        const Vector_2D m0 = Moment( 0 );
+        const Vector_2D m1 = Moment( 1 );
 
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
             for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
@@ -1205,8 +1205,8 @@ namespace AIM
 
         Vector_2D r_eff( Ny, Vector_1D( Nx, 0.0E+00 ) );
 
-        Vector_2D m2 = Moment( 2 );
-        Vector_2D m3 = Moment( 3 );
+        const Vector_2D m2 = Moment( 2 );
+        const Vector_2D m3 = Moment( 3 );
 
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
             for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
@@ -1226,9 +1226,9 @@ namespace AIM
 
         Vector_2D sigma( Ny, Vector_1D( Nx, 0.0E+00 ) );
 
-        Vector_2D m0 = Moment( 0 );
-        Vector_2D m1 = Moment( 1 ); 
-        Vector_2D m2 = Moment( 2 ); 
+        const Vector_2D m0 = Moment( 0 );
+        const Vector_2D m1 = Moment( 1 ); 
+        const Vector_2D m2 = Moment( 2 ); 
 
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
             for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
@@ -1272,7 +1272,7 @@ namespace AIM
     RealDouble Grid_Aerosol::getRadius( UInt jNy, UInt iNx ) const
     {
 
-        RealDouble N = Moment( 0, jNy, iNx );
+        const RealDouble N = Moment( 0, jNy, iNx );
 
         if ( N > 0 ) {
             return Moment( 1, jNy, iNx ) / N;
@@ -1286,7 +1286,7 @@ namespace AIM
     RealDouble Grid_Aerosol::getEffRadius( UInt jNy, UInt iNx ) const
     {
 
-        RealDouble m2 = Moment( 2, jNy, iNx );
+        const RealDouble m2 = Moment( 2, jNy, iNx );
 
         if ( m2 > 0 ) {
             return Moment( 3, jNy, iNx ) / m2;
@@ -1300,7 +1300,7 @@ namespace AIM
     RealDouble Grid_Aerosol::getStdDev( UInt jNy, UInt iNx ) const
     {
 
-        RealDouble N = Moment( 0, jNy, iNx );
+        const RealDouble N = Moment( 0, jNy, iNx );
 
         if ( N > 0 ) {
             return sqrt( Moment( 2, jNy, iNx ) / N - pow( Moment( 1, jNy, iNx ) / N, 2.0 ) );
