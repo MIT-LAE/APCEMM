@@ -28,7 +28,7 @@ class SpeciesArray
     public:
 
         SpeciesArray( );
-        SpeciesArray( unsigned int nRing, unsigned int nTime, bool halfRing = 0 );
+        SpeciesArray( const unsigned int nRing, const unsigned int nTime, const bool halfRing = 0 );
         SpeciesArray( const SpeciesArray &sp );
         SpeciesArray& operator=( const SpeciesArray &sp );
         SpeciesArray& operator+( const SpeciesArray &sp );

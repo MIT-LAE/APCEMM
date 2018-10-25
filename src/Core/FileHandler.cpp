@@ -429,5 +429,14 @@ template int FileHandler::addConst<float>( NcFile &dataFile, float *inputVar, co
 template int FileHandler::addVar2D<double>( NcFile &dataFile, double *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
 template int FileHandler::addVar2D<int>( NcFile &dataFile, int *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
 template int FileHandler::addVar2D<float>( NcFile &dataFile, float *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar<const double>( NcFile &dataFile, const double *inputVar, const char* varName, const NcDim *varDim, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar<const int>( NcFile &dataFile, const int *inputVar, const char* varName, const NcDim *varDim, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar<const float>( NcFile &dataFile, const float *inputVar, const char* varName, const NcDim *varDim, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addConst<const double>( NcFile &dataFile, const double *inputVar, const char* varName, long size, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addConst<const int>( NcFile &dataFile, const int *inputVar, const char* varName, long size, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addConst<const float>( NcFile &dataFile, const float *inputVar, const char* varName, long size, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar2D<const double>( NcFile &dataFile, const double *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar2D<const int>( NcFile &dataFile, const int *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar2D<const float>( NcFile &dataFile, const float *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
 
 /* End of FileHandler.cpp */

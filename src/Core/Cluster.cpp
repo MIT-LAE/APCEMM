@@ -130,7 +130,7 @@ Cluster::~Cluster( )
 
 } /* End of Cluster::~Cluster */
         
-void Cluster::ComputeRingAreas( std::vector<std::vector<double>> cellAreas, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> map ) 
+void Cluster::ComputeRingAreas( const std::vector<std::vector<double>> cellAreas, const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> map ) 
 {
 
     double currRingArea;

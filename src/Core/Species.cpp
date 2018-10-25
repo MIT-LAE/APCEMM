@@ -21,7 +21,7 @@ SpeciesArray::SpeciesArray( )
 
 } /* End of SpeciesArray::SpeciesArray */
 
-SpeciesArray::SpeciesArray( unsigned int nRing_, unsigned int nTime_, bool halfRing_ )
+SpeciesArray::SpeciesArray( const unsigned int nRing_, const unsigned int nTime_, const bool halfRing_ )
 {
 
     /* Constructor */
