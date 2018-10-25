@@ -13,14 +13,14 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
+#include "Core/Parameters.hpp"
 
-#define ABS(x)	 ( ((x) >= 0 )  ? (x):(-x) )
-#define MIN(a,b) ( ((a) <= b )  ? (a):(b)  )
+double UpdateTime( double time, const double tStart, \
+                   const double sunRise, const double sunSet );
 
-double UpdateTime( double time, double tStart, double sunRise, double sunSet );
-
-std::vector<double> BuildTime( double tStart, double tEnd, \
-                               double sunRise, double sunSet )
+std::vector<double> BuildTime( const double tStart, const double tEnd, \
+                               const double sunRise, const double sunSet )
 {
 
     unsigned int nT = 0;
@@ -34,7 +34,7 @@ std::vector<double> BuildTime( double tStart, double tEnd, \
         timeArray[nT] = time;
         timeStep = UpdateTime( time, tStart, sunRise, sunSet );
         //std::cout << time/3600 << ", " << timeStep << std::endl;
-        time += MIN( timeStep, ABS( ( tEnd - time ) ) );
+        time += std::min( timeStep, std::abs( ( tEnd - time ) ) );
         nT++;
     }
 
@@ -44,3 +44,36 @@ std::vector<double> BuildTime( double tStart, double tEnd, \
     return timeArray;
 
 } /* End of BuildTime */
+
+double UpdateTime( double time, const double tStart, \
+                   const double sunRise, const double sunSet )
+{
+
+    const double default_TimeStep = DT;
+    double timeStep;
+
+    if (( time - tStart ) < 3600.0 && ( time - tStart ) >= 0.0) {
+        if (( time - tStart ) < 800.0)
+            timeStep = (double) 50.0;
+        else if (( time - tStart ) >= 800.0 && ( time - tStart) < 1200.0)
+            timeStep = (double) 100.0;
+        else if (( time - tStart ) >= 1200.0 && ( time - tStart) < 3600.0)
+            timeStep = (double) 300.0;
+        else
+            timeStep = default_TimeStep;
+    }
+    else
+        timeStep = default_TimeStep;
+
+    if ( (std::fmod((time),(24.0*3600.0)) < (sunSet)) \
+      && (std::fmod((time + timeStep),(24.0*3600.0)) > sunSet) )
+        timeStep = std::max( sunSet - std::fmod((time),(24.0*3600.0)), 1.0 );
+    if ( (std::fmod((time),(24.0*3600.0)) < (sunRise)) \
+      && (std::fmod((time + timeStep),(24.0*3600.0)) > sunRise) )
+        timeStep = std::max( sunRise - std::fmod((time),(24.0*3600.0)), 1.0 );
+
+    return timeStep;
+
+} /* End of Updatetime */
+
+/* End of BuildTime.cpp */
