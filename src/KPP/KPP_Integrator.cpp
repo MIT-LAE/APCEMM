@@ -122,7 +122,6 @@
 	     char ros_NewF[], double *ros_ELO, char* ros_Name );
  int  KppDecomp( double A[] );
  void KppSolve ( double A[], double b[] );
- void Update_RCONST();
  
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 int INTEGRATE( double TIN, double TOUT )
