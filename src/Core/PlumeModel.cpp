@@ -130,7 +130,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 //#endif /* ICE_MICROPHYSICS && X_SYMMETRY */
 
 
-    unsigned int dayGMT(81);
+    const unsigned int dayGMT(81);
 
     /* Define sun parameters */
     SZA sun( latitude_deg, dayGMT );
@@ -144,9 +144,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     Mesh m;
 
     /* Get cell areas */
-    std::vector<std::vector<double>> cellAreas;
-    cellAreas = m.getAreas();
-
+    const std::vector<std::vector<double>> cellAreas = m.getAreas();
 
     /** ~~~~~~~~~~~~~~~~~ **/
     /**        Time       **/
@@ -175,8 +173,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Create time array */
 
     /* Vector of time in [s] */
-    std::vector<double> timeArray;
-    timeArray = BuildTime ( tInitial_s, tFinal_s, 3600.0*sun.sunRise, 3600.0*sun.sunSet );
+    const std::vector<double> timeArray = BuildTime ( tInitial_s, tFinal_s, 3600.0*sun.sunRise, 3600.0*sun.sunSet );
+
     /* Time counter [-] */
     unsigned int nTime = 0;
     
@@ -194,10 +192,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K]           ) * [m3/cm3] */
 
     /* Set solution arrays to ambient data */
-    Data.Initialize( AMBFILE, temperature_K, pressure_Pa, airDens, relHumidity_w, latitude_deg );
+    Data.Initialize( AMBFILE, temperature_K, pressure_Pa, airDens, relHumidity_w, latitude_deg, DBG );
 
     /* Print Background Debug? */
-    if ( DEBUG_BG_INPUT )
+    if ( DEBUG_BG_INPUT || DBG )
         Data.Debug( airDens );
 
     /* Create ambient struture */
@@ -253,14 +251,14 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     const Aircraft aircraft( aircraftName, temperature_K, pressure_Pa, relHumidity_w );
 
     /* Print AC Debug? */
-    if ( DEBUG_AC_INPUT )
+    if ( DEBUG_AC_INPUT || DBG )
         aircraft.Debug();
 
     /* Aggregate emissions from engine and fuel characteristics */
     const Emission EI( aircraft.getEngine(), JetA );
 
     /* Print Emission Debug? */
-    if ( DEBUG_EI_INPUT )
+    if ( DEBUG_EI_INPUT || DBG )
         EI.Debug(); 
 
     
@@ -316,34 +314,32 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Ring index */
     unsigned int iRing = 0;
 
-    /* Number of rings */
-    unsigned int nRing;
-
     /* Create cluster of rings */
     Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), semiXaxis, semiYaxis, 0.0, 0.0 );
-    nRing = ringCluster.getnRing();
+    
+    /* Number of rings */
+    const unsigned int nRing = ringCluster.getnRing();
 
     /* Print Ring Debug? */
-    if ( DEBUG_RINGS )
+    if ( DEBUG_RINGS | DBG )
         ringCluster.Debug();
 
     /* Allocate species-ring vector */
-    SpeciesArray ringSpecies( ringCluster.getnRing(), timeArray.size(), ringCluster.halfRing() );
+    SpeciesArray ringSpecies( nRing, timeArray.size(), ringCluster.halfRing() );
 
     /* Compute Grid to Ring mapping */        
     m.Ring2Mesh( ringCluster );
    
     /* Get mapping */
-    std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh;
-    mapRing2Mesh = m.getList();
+    const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh = m.getList();
     
     /* Print ring to mesh mapping? */
-    if ( DEBUG_MAPPING )
+    if ( DEBUG_MAPPING || DBG )
         m.Debug();
     
     /* Compute ring areas */
     ringCluster.ComputeRingAreas( cellAreas, mapRing2Mesh );
-    std::vector<double> ringArea = ringCluster.getRingArea();
+    const std::vector<double> ringArea = ringCluster.getRingArea();
 
     /* Add emission into the grid */
     Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing(), temperature_K, ( relHumidity_i > 100.0 ), liquidAer ); 
@@ -362,6 +358,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 #endif /* RINGS */
 
     bool IS_PSC = 0;
+    double frac_gSO4 = 0.0E+00;
     double areaHET[NAERO];
     double radiHET[NAERO];
     double iwcHET = 0;
@@ -539,7 +536,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
         /* Compute SO4_l fraction */
-        double frac_gSO4 = 0.0E+00;
         for ( iNx = 0; iNx < NX; iNx++ ) {
             for ( jNy = 0; jNy < NY; jNy++ ) {
                 frac_gSO4 = H2SO4_GASFRAC( temperature_K, Data.SO4[jNy][iNx] );
