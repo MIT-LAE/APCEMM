@@ -38,15 +38,34 @@ class Solution
         Solution();
         ~Solution();
         void Clear( std::vector<std::vector<double> >& vector_2D );
-        void SetShape( std::vector<std::vector<double> >& vector_2D, unsigned int n_x, unsigned int n_y, double value = 0.0 );
-        void SetToValue( std::vector<std::vector<double> >& vector_2D, double value = 0.0 );
-        void Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max = 1, unsigned int j_max = 1 );
-        void Initialize( char const *fileName, const double temperature, const double pressure, const double airDens, const double relHum, const double lat, const bool DBG );
-        void getData( double varArray[], double fixArray[], unsigned int i = 0, unsigned int j = 0 );
-        void applyData( double varArray[], unsigned int i = 0, unsigned int j = 0 );
-        void applyRing( double varArray[], double tempArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int iRing );
-        void applyAmbient( double varArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int ambIndex );
-        void addEmission( const Emission &EI, const Aircraft &ac, const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, const std::vector<std::vector<double>> cellAreas, bool halfRing, double temperature, bool set2Saturation, AIM::Aerosol &liqAer );
+        void SetShape( std::vector<std::vector<double> >& vector_2D, \
+                       const unsigned int n_x, \
+                       const unsigned int n_y, \
+                       const double value = 0.0 );
+        void SetToValue( std::vector<std::vector<double> >& vector_2D, \
+                         const double value = 0.0 );
+        void Print( const std::vector<std::vector<double> >& vector_2D, \
+                    const unsigned int i_max = 1, \
+                    const unsigned int j_max = 1 ) const;
+        void Initialize( char const *fileName, const double temperature, const double pressure, \
+                         const double airDens, const double relHum, const double lat, const bool DBG );
+        void getData( double varArray[], double fixArray[], \
+                      const unsigned int i = 0, \
+                      const unsigned int j = 0 );
+        void applyData( double varArray[], \
+                        const unsigned int i = 0, \
+                        const unsigned int j = 0 );
+        void applyRing( double varArray[], double tempArray[], \
+                        const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, \
+                        const unsigned int iRing );
+        void applyAmbient( double varArray[], \
+                           const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, \
+                           const unsigned int ambIndex );
+        void addEmission( const Emission &EI, const Aircraft &ac, \
+                          const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, \
+                          const std::vector<std::vector<double>> cellAreas, bool halfRing, \
+                          double temperature, bool set2Saturation, \
+                          AIM::Aerosol &liqAer, AIM::Aerosol &iceAer );
         std::vector<double> getAmbient( ) const;
         std::vector<double> getLiqSpecies() const;
         std::vector<std::vector<double> > getAerosol( ) const;

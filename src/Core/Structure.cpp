@@ -37,7 +37,10 @@ void Solution::Clear( std::vector<std::vector<double> >& vector_2D )
 
 } /* End of Solution::Clear */
 
-void Solution::SetShape( std::vector<std::vector<double> >& vector_2D, unsigned int n_x, unsigned int n_y, double value )
+void Solution::SetShape( std::vector<std::vector<double> >& vector_2D, \
+                         const unsigned int n_x, \
+                         const unsigned int n_y, 
+                         const double value )
 {
     
     Clear( vector_2D );
@@ -49,18 +52,21 @@ void Solution::SetShape( std::vector<std::vector<double> >& vector_2D, unsigned 
 
 } /* End of Solution::SetShape */
 
-void Solution::SetToValue( std::vector<std::vector<double> >& vector_2D, double value )
+void Solution::SetToValue( std::vector<std::vector<double> >& vector_2D, \
+                           const double value )
 {
     
     for ( unsigned int i = 0; i < vector_2D.size(); i++ ) {
         for ( unsigned int j = 0; j < vector_2D[0].size(); j++ ) {
-            vector_2D[i][j] = (double) value;
+            vector_2D[i][j] = value;
         }
     }
 
 } /* End of Solution::SetToValue */
 
-void Solution::Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max, unsigned int j_max )
+void Solution::Print( const std::vector<std::vector<double> >& vector_2D, \
+                      const unsigned int i_max, \
+                      const unsigned int j_max ) const
 {
     
     for ( unsigned int i = 0; i < i_max; i++ ) {
@@ -72,7 +78,8 @@ void Solution::Print( std::vector<std::vector<double> >& vector_2D, unsigned int
 
 } /* End of Solution::Print */
 
-void Solution::Initialize( char const *fileName, const double temperature, const double pressure, const double airDens, const double relHum, const double lat, const bool DBG )
+void Solution::Initialize( char const *fileName, const double temperature, const double pressure, \
+                           const double airDens, const double relHum, const double lat, const bool DBG )
 {
 
     std::vector<double> amb_Value(nVariables, 0.0);
@@ -314,22 +321,23 @@ void Solution::Initialize( char const *fileName, const double temperature, const
 
     if ( DBG ) {
         std::cout << "\n DEBUG : LA_R_LOW  = " << LA_R_LOW * 1.00E+09 << " [nm]\n";
-        std::cout << " DEBUG : LA_R_HIG  = " << LA_R_HIG * 1.00E+09 << " [nm]\n";
-        std::cout << " DEBUG : LA_VRAT   = " << LA_VRAT             << " [-]\n";
-        std::cout << " DEBUG : nBin_LA   = " << nBin_LA             << "\n";
-        std::cout << " DEBUG : NDENS     = " << NDENS[1] * 1.00E-06 << " [#/cm^3]\n";
-        std::cout << " DEBUG : REFF      = " << RAD[1] * 1.00E+06   << " [mum]\n";
+        std::cout << " DEBUG : LA_R_HIG  = "   << LA_R_HIG * 1.00E+09 << " [nm]\n";
+        std::cout << " DEBUG : LA_VRAT   = "   << LA_VRAT             << " [-]\n";
+        std::cout << " DEBUG : nBin_LA   = "   << nBin_LA             << "\n";
+        std::cout << " DEBUG : NDENS     = "   << NDENS[1] * 1.00E-06 << " [#/cm^3]\n";
+        std::cout << " DEBUG : REFF      = "   << RAD[1] * 1.00E+06   << " [mum]\n";
     }
     
     std::vector<double> LA_rE( nBin_LA + 1, 0.0 ); /* Bin edges in m */
     std::vector<double> LA_rJ( nBin_LA    , 0.0 ); /* Bin center radius in m */
-    
-    for ( unsigned int iBin_LA = 0; iBin_LA < nBin_LA + 1; iBin_LA++ ) {
-        LA_rE[iBin_LA] = LA_R_LOW * pow( LA_VRAT, iBin_LA / RealDouble(3.0) );              /* [m] */
-    }
-    for ( unsigned int iBin_LA = 0; iBin_LA < nBin_LA; iBin_LA++ ) {
+   
+    const double LA_RRAT = pow( LA_VRAT, 1.0 / RealDouble(3.0) );
+    LA_rE[0] = LA_R_LOW;
+    for ( unsigned int iBin_LA = 1; iBin_LA < nBin_LA + 1; iBin_LA++ )                      /* [m] */
+        LA_rE[iBin_LA] = LA_rE[iBin_LA-1] * LA_RRAT;
+
+    for ( unsigned int iBin_LA = 0; iBin_LA < nBin_LA; iBin_LA++ )
         LA_rJ[iBin_LA] = 0.5 * ( LA_rE[iBin_LA] + LA_rE[iBin_LA+1] );                       /* [m] */
-    }
 
     LA_nDens = NDENS[1] * 1.00E-06; /* [#/cm^3]      */
     LA_rEff  = RAD[1]   * 1.00E+09; /* [nm]          */
@@ -338,9 +346,9 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     /* For a lognormal distribution:
      * r_eff = r_m * exp( 5/2 * ln(S)^2 ) 
      * A     = 4\pi N0 r_m^2 * exp ( 2 * ln(S)^2 ) 
-     * A/r_eff^2 = 4\pi N0 * exp( - 1/2 * ln(S)^2 )
+     * A/r_eff^2 = 4\pi N0 * exp( - 3 * ln(S)^2 )
      *
-     * ln(S) = sqrt(-2*ln(A/(4\pi r_eff^2 * N0)));
+     * ln(S) = sqrt(-1/3*ln(A/(4\pi r_eff^2 * N0)));
      * r_m = r_eff * exp( -5/2 * ln(S)^2 ); */
     
     const double sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * physConst::PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
@@ -364,28 +372,29 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     
     if ( DBG ) {
         std::cout << "\n DEBUG : PA_R_LOW  = " << PA_R_LOW * 1.00E+06 << " [mum]\n";
-        std::cout << " DEBUG : PA_R_HIG  = " << PA_R_HIG * 1.00E+06 << " [mum]\n";
-        std::cout << " DEBUG : PA_VRAT   = " << PA_VRAT             << " [-]\n";
-        std::cout << " DEBUG : nBin_PA   = " << nBin_PA             << "\n";
-        std::cout << " DEBUG : NDENS     = " << NDENS[0] * 1.00E-06 << " [#/cm^3]\n";
-        std::cout << " DEBUG : REFF      = " << RAD[0] * 1.00E+06   << " [mum]\n";
+        std::cout << " DEBUG : PA_R_HIG  = "   << PA_R_HIG * 1.00E+06 << " [mum]\n";
+        std::cout << " DEBUG : PA_VRAT   = "   << PA_VRAT             << " [-]\n";
+        std::cout << " DEBUG : nBin_PA   = "   << nBin_PA             << "\n";
+        std::cout << " DEBUG : NDENS     = "   << NDENS[0] * 1.00E-06 << " [#/cm^3]\n";
+        std::cout << " DEBUG : REFF      = "   << RAD[0] * 1.00E+06   << " [mum]\n";
     }
 
     std::vector<double> PA_rE( nBin_PA + 1, 0.0 ); /* Bin edges in m */
     std::vector<double> PA_rJ( nBin_PA    , 0.0 ); /* Bin center radius in m */
     
-    for ( unsigned int iBin_PA = 0; iBin_PA < nBin_PA + 1; iBin_PA++ ) {
-        PA_rE[iBin_PA] = PA_R_LOW * pow( PA_VRAT, iBin_PA / RealDouble(3.0) );              /* [m] */
-    }
-    for ( unsigned int iBin_PA = 0; iBin_PA < nBin_PA; iBin_PA++ ) {
+    const double PA_RRAT = pow( PA_VRAT, 1.0 / RealDouble(3.0) );
+    PA_rE[0] = PA_R_LOW;
+    for ( unsigned int iBin_PA = 1; iBin_PA < nBin_PA + 1; iBin_PA++ ) 
+        PA_rE[iBin_PA] = PA_rE[iBin_PA-1] * PA_RRAT;                                        /* [m] */
+    
+    for ( unsigned int iBin_PA = 0; iBin_PA < nBin_PA; iBin_PA++ )
         PA_rJ[iBin_PA] = 0.5 * ( PA_rE[iBin_PA] + PA_rE[iBin_PA+1] );                       /* [m] */
-    }
 
     PA_nDens = NDENS[0] * 1.00E-06; /* [#/cm^3]      */
     PA_rEff  = RAD[0]   * 1.00E+09; /* [nm]          */
     PA_SAD   = SAD[0]   * 1.00E+06; /* [\mum^2/cm^3] */
 
-    const double expsPA = 1.05;
+    const double expsPA = 1.15;
     const double rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW ); 
     AIM::Grid_Aerosol PAAerosol( size_x, size_y, PA_rJ, PA_rE, PA_nDens, rPA, expsPA, "lognormal" );
 
@@ -403,7 +412,9 @@ void Solution::Initialize( char const *fileName, const double temperature, const
 
 } /* End of Solution::Initialize */
 
-void Solution::getData( double varArray[], double fixArray[], unsigned int i, unsigned int j )
+void Solution::getData( double varArray[], double fixArray[], \
+                        const unsigned int i, \
+                        const unsigned int j )
 {
 
     varArray[  0] = CO2[j][i];
@@ -544,7 +555,9 @@ void Solution::getData( double varArray[], double fixArray[], unsigned int i, un
 
 } /* End of Solution::getData */
 
-void Solution::applyData( double varArray[], unsigned int i, unsigned int j )
+void Solution::applyData( double varArray[], \
+                          const unsigned int i, \
+                          const unsigned int j )
 {
 
     CO2[j][i]      = varArray[  0];
@@ -678,7 +691,9 @@ void Solution::applyData( double varArray[], unsigned int i, unsigned int j )
 
 } /* End of Solution::applyData */
 
-void Solution::applyRing( double varArray[], double tempArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int iRing )
+void Solution::applyRing( double varArray[], double tempArray[], \
+                          const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, \
+                          const unsigned int iRing )
 {
 
     unsigned int i, j;
@@ -819,7 +834,9 @@ void Solution::applyRing( double varArray[], double tempArray[], std::vector<std
 
 } /* End of Solution::applyRing */
 
-void Solution::applyAmbient( double varArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int ambIndex )
+void Solution::applyAmbient( double varArray[], \
+                             const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, \
+                             const unsigned int ambIndex )
 {
 
     unsigned int i, j;
@@ -961,7 +978,11 @@ void Solution::applyAmbient( double varArray[], std::vector<std::vector<std::pai
 } /* End of Solution::applyAmbient */
 
 
-void Solution::addEmission( const Emission &EI, const Aircraft &AC, const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, const std::vector<std::vector<double>> cellAreas, bool halfRing, const double temperature, bool set2Saturation, AIM::Aerosol &liqAer )
+void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
+                            const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, \
+                            const std::vector<std::vector<double>> cellAreas, bool halfRing, \
+                            const double temperature, bool set2Saturation, \
+                            AIM::Aerosol &liqAer, AIM::Aerosol &iceAer )
 {
 
     unsigned int innerRing, nCell;
@@ -1020,6 +1041,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, const std::v
 
         }
 
+        solidAerosol.addPDF( iceAer, map[innerRing] );
         liquidAerosol.addPDF( liqAer, map[innerRing] );
 
     }
@@ -1053,6 +1075,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, const std::v
 
             }
         
+            solidAerosol.addPDF( iceAer, map[innerRing] );
             liquidAerosol.addPDF( liqAer, map[innerRing] );
 
         }
