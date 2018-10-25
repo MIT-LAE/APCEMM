@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <complex>
 #include <ctime>
+#include "omp.h"
 
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
@@ -69,6 +70,12 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 double latitude_deg )
 {
 
+    const bool DBG = 0;
+
+    /* Grid indices */
+    unsigned int iNx = 0;
+    unsigned int jNy = 0;
+
 #if ( TIME_IT )
 
     Timer Stopwatch, Stopwatch_cumul;
@@ -104,11 +111,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* CO2_MASS_CHECK */
 
-#if ( CHEMISTRY )
-
     int IERR;
-
-#endif 
 
     /* Compute relative humidity w.r.t ice */
     double relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
@@ -182,25 +185,24 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /** ~~~~~~~~~~~~~~~~~ **/
     /**     Background    **/
     /** ~~~~~~~~~~~~~~~~~ **/
-    
-    /* Assign solution structure */
+
+    /* Declare solution structure */
     Solution Data;
 
     /* Compute airDens from pressure and temperature */
     double airDens = pressure_Pa / ( physConst::kB   * temperature_K ) * 1.00E-06;
-    /* [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K])            * [m3/cm3] */
+    /* [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K]           ) * [m3/cm3] */
 
     /* Set solution arrays to ambient data */
-    Data.Initialize( AMBFILE, temperature_K, airDens, relHumidity_w );
+    Data.Initialize( AMBFILE, temperature_K, pressure_Pa, airDens, relHumidity_w, latitude_deg );
 
     /* Print Background Debug? */
     if ( DEBUG_BG_INPUT )
         Data.Debug( airDens );
 
     /* Create ambient struture */
-    Ambient ambientData( timeArray.size(), Data.getAmbient(), Data.getAerosol() );
-    
-    
+    Ambient ambientData( timeArray.size(), Data.getAmbient(), Data.getAerosol(), Data.getLiqSpecies() );
+   
     /** ~~~~~~~~~~~~~~~~~ **/
     /**      Solver       **/
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -286,11 +288,21 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /**    Early Microphysics   **/
     /** ~~~~~~~~~~~~~~~~~~~~~~~ **/
 
-    double Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, Area; 
-    AIM::Aerosol SO4Aer;
+    double Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol;
+    double areaPlume; 
+    AIM::Aerosol liquidAer;
     EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aerArray, aircraft, EI, \
-                    Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, SO4Aer, Area );
+                    Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, liquidAer, areaPlume );
 
+    /* Compute initial plume area.
+     * If 2 engines, we assume that after 3 mins, the two plume haven't fully mixed yet and result in a total
+     * area of 2 * the area computed for one engine
+     * If 3 or more engines, we assume that the plumes originating from the same wing have mixed. */
+
+    areaPlume *= 2;
+    double semiYaxis = 0.5*aircraft.getVortexdeltaz1();
+    double semiXaxis = areaPlume/(physConst::PI*0.5*aircraft.getVortexdeltaz1());
+    
     /** ~~~~~~~~~~~~~~~~~ **/
     /**      Rings?       **/
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -308,7 +320,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     unsigned int nRing;
 
     /* Create cluster of rings */
-    Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), 0.0, 0.0, 0.0, 0.0 );
+    Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), semiXaxis, semiYaxis, 0.0, 0.0 );
     nRing = ringCluster.getnRing();
 
     /* Print Ring Debug? */
@@ -334,7 +346,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     std::vector<double> ringArea = ringCluster.getRingArea();
 
     /* Add emission into the grid */
-    Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing() ); 
+    Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing(), temperature_K, ( relHumidity_i > 100.0 ), liquidAer ); 
    
     /* Fill in variables species for initial time */
     ringSpecies.FillIn( Data, m, nTime );
@@ -346,23 +358,69 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     double relHumidity_Ring;
  
     /* Otherwise we do not have a ring structure and chemistry is solved on the grid */
-#else
-    
-    /* Grid indices */
-    unsigned int iNx = 0;
-    unsigned int jNy = 0;
 
 #endif /* RINGS */
-
 
     bool IS_PSC = 0;
     double areaHET[NAERO];
     double radiHET[NAERO];
-    double iwcHET;
+    double iwcHET = 0;
     double kheti_sla[11];
 
+#pragma omp critical
+    {
+        std::cout << "\n\n ## ON THREAD: " << omp_get_thread_num() << "\n ##";
 
-    std::cout << "\n\n *** Time loop starts now ***";
+        const unsigned int coutPrecision = 5;
+        const unsigned int txtWidth      = coutPrecision + 2;
+        std::cout << std::setprecision(coutPrecision);
+        std::cout << "\n ## ATMOSPHERIC COND.:";
+        std::cout << "\n ##\n";
+        std::cout << " ## - Temperature: " << std::setw(txtWidth) << temperature_K          << " [  K]\n";
+        std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [hPa]\n";
+        std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [  %]\n";
+        std::cout << " ## - Latitude   : " << std::setw(txtWidth) << latitude_deg           << " [deg]\n";
+        std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun.CSZA_max           << " [ - ]\n";
+
+        std::cout << "\n ## EMISSIONS:";
+        std::cout << "\n ##\n";
+        std::cout << " ## - E_CO2 = " << std::setw(txtWidth) << EI.getCO2() * aircraft.getFuelFlow() / aircraft.getVFlight()           << " [kg(CO2)/km]"\
+            " ( EI = " << std::setw(txtWidth) << EI.getCO2() * 1.00E-03 << " [kg/kg_fuel] )\n";
+        std::cout << " ## - E_CO  = " << std::setw(txtWidth) << EI.getCO()  * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(CO) /km]"\
+            " ( EI = " << std::setw(txtWidth) << EI.getCO()             << " [ g/kg_fuel] )\n";
+        std::cout << " ## - E_CH4 = " << std::setw(txtWidth) << EI.getCH4() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+06 << " [mg(CH4)/km]"\
+            " ( EI = " << std::setw(txtWidth) << EI.getCH4() * 1.00E+03 << " [mg/kg_fuel] )\n";
+        std::cout << " ## - E_NOx = " << std::setw(txtWidth) << ( EI.getNO() / MW_NO + EI.getNO2() / MW_NO2 + EI.getHNO2() / MW_HNO2 ) * MW_N \
+                                                  * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(N)  /km]"\
+            " ( EI = " << std::setw(txtWidth) << EI.getNOx()            << " [ g/kg_fuel] )\n";
+        std::cout << " ## - E_SO2 = " << std::setw(txtWidth) << EI.getSO2() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(SO2)/km]"\
+            " ( EI = " << std::setw(txtWidth) << EI.getSO2()            << " [ g/kg_fuel], \n";
+        std::cout << " ##                                 FSC = " << std::setw(txtWidth) << JetA.getFSC() << " [-]          )\n";
+        std::cout << " ## - E_Soo = " << std::setw(txtWidth) << EI.getSoot()* aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(Soo)/km]"\
+            " ( EI = " << std::setw(txtWidth) << EI.getSoot()* 1.00E+03 << " [mg/kg_fuel] )\n";
+        std::cout << " ## - rSoot = " << std::setw(txtWidth) << EI.getSootRad() * 1.0E+09 << " [nm] \n";
+
+        std::cout << "\n ## AEROSOLS:";
+        std::cout << "\n ##\n";
+        std::cout << " ## - LA : " << std::setw(txtWidth+3) << liquidAer.Moment() << " [#/cm^3], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.getEffRadius() * 1.0E+09 << " [nm], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";
+
+        std::cout << "\n ## BACKG COND.:";
+        std::cout << "\n ##\n";
+        std::cout << " ## - NOx = " << std::setw(txtWidth) << ( varArray[ind_NO] + varArray[ind_NO2] ) / airDens * 1.0E+12 << " [ppt]\n";
+        std::cout << " ## - O3  = " << std::setw(txtWidth) << ( varArray[ind_O3] ) / airDens * 1.0E+09 << " [ppb]\n";
+        std::cout << " ## - CO  = " << std::setw(txtWidth) << ( varArray[ind_CO] ) / airDens * 1.0E+09 << " [ppb]\n";
+        std::cout << " ##\n";
+        std::cout << " ## - LA : " << std::setw(txtWidth+3) << Data.LA_nDens << " [#/cm^3], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << Data.LA_rEff  << " [nm], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << Data.LA_SAD   << " [mum^2/cm^3] \n";
+        std::cout << " ##\n";
+        std::cout << " ## - PA : " << std::setw(txtWidth+3) << Data.PA_nDens << " [#/cm^3], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_rEff  << " [nm], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_SAD   << " [mum^2/cm^3] \n";
+
+    }
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /**         Time Loop          **/
@@ -477,6 +535,20 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
          */
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~ SO4 partitioning ~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+        /* Compute SO4_l fraction */
+        double frac_gSO4 = 0.0E+00;
+        for ( iNx = 0; iNx < NX; iNx++ ) {
+            for ( jNy = 0; jNy < NY; jNy++ ) {
+                frac_gSO4 = H2SO4_GASFRAC( temperature_K, Data.SO4[jNy][iNx] );
+                Data.SO4L[jNy][iNx] = ( 1.0 - frac_gSO4 ) * Data.SO4T[jNy][iNx];
+                Data.SO4[jNy][iNx]  = Data.SO4T[jNy][iNx] - Data.SO4L[jNy][iNx];
+            }
+        }
+
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~ Update cosine of solar zenight angle ~~~~~ **/
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
@@ -485,6 +557,12 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
         /* Store cosine of solar zenith angle */
         ambientData.cosSZA[nTime] = sun.CSZA;
+
+        if ( DBG ) {
+            std::cout << "\n DEBUG : \n";
+            std::cout << "         CSZA = " << sun.CSZA << "\n";
+        }
+
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~ Update photolysis rates ~~~~~~~~~~~ **/
@@ -496,10 +574,18 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         if ( sun.CSZA > 0.0E+00 )
             Read_JRates( PHOTOL, sun.CSZA );
 
+        if ( DBG ) {
+            std::cout << "\n DEBUG : \n";
+            for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
+                std::cout << "         PHOTOL[" << iPhotol << "] = " << PHOTOL[iPhotol] << "\n";
+        }
+
+
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~~~~~~ KPP ~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~ The Kinetics Pre-Processor ~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        
 
 #if ( TIME_IT )
        
@@ -522,7 +608,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 /* Convert ring structure to KPP inputs (varArray and fixArray) */
                 ringSpecies.getData( varArray, fixArray, nTime + 1, iRing );
 
-                std::copy( varArray, varArray + NVAR, tempArray );
+                for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ )
+                    tempArray[iSpec] = varArray[iSpec];
 
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
                 /* ~~~~ Chemical rates ~~~~ */
@@ -543,18 +630,17 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                     GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
                                IS_PSC, varArray, areaHET, radiHET, iwcHET, kheti_sla );
                 }
-
+             
                 /* Update reaction rates */
-                for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
                     RCONST[iReact] = 0.0E+00;
-                }
 
                 Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O] );
 
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
                 /* ~~~~~ Integration ~~~~~~ */
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
-                
+
                 IERR = KPP_Main( varArray, fixArray, curr_Time_s, dt, \
                                  KPP_RTOLS, KPP_ATOLS );
 
@@ -575,9 +661,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 }
                 
                 ringSpecies.FillIn( varArray, nTime + 1, iRing );
-   
+            
                 Data.applyRing( varArray, tempArray, mapRing2Mesh, iRing );
-                
+
             }
 
             /* Ambient chemistry */
@@ -604,15 +690,15 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             }
 
             /* Update reaction rates */
-            for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+            for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
                 RCONST[iReact] = 0.0E+00;
-            }
 
             Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O] );
 
             /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
             /* ~~~~~ Integration ~~~~~~ */
             /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+
             IERR = KPP_Main( varArray, fixArray, curr_Time_s, dt, \
                              KPP_RTOLS, KPP_ATOLS );
 
@@ -635,7 +721,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             ambientData.FillIn( varArray, nTime + 1 );
                 
             Data.applyAmbient( varArray, mapRing2Mesh, nRing );
-            
+
         }
 
 
@@ -672,9 +758,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                     }
 
                     /* Update reaction rates */
-                    for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                    for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
                         RCONST[iReact] = 0.0E+00;
-                    }
 
                     Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O] );
 
@@ -708,15 +793,21 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             
             /* Ambient chemistry */
             ambientData.getData( varArray, fixArray, aerArray, nTime );
+            
+            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+            /* ~~~~ Chemical rates ~~~~ */
+            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
             /* Update reaction rates */
-            for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+            for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
                 RCONST[iReact] = 0.0E+00;
-            }
             
             Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O], sun.CSZA );
 
-            /* Call KPP */
+            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+            /* ~~~~~~ Integration ~~~~~ */
+            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+
             IERR = KPP_Main( varArray, fixArray, curr_Time_s, dt, \
                              KPP_RTOLS, KPP_ATOLS );
 
@@ -762,8 +853,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
         /* Compute emitted */
         mass_Emitted_NOy = 0;
-        for ( unsigned int iNx = 0; iNx < NX; iNx++ ) {
-            for ( unsigned int jNy = 0; jNy < NY; jNy++ ) {
+        for ( iNx = 0; iNx < NX; iNx++ ) {
+            for ( jNy = 0; jNy < NY; jNy++ ) {
                 mass_Emitted_NOy += ( Data.NO[jNy][iNx] + Data.NO2[jNy][iNx] + Data.NO3[jNy][iNx] + Data.HNO2[jNy][iNx] \
                                     + Data.HNO3[jNy][iNx] + Data.HNO4[jNy][iNx] + 2*Data.N2O5[jNy][iNx] + Data.PAN[jNy][iNx] \
                                     + Data.MPN[jNy][iNx] + Data.N[jNy][iNx] + Data.PROPNN[jNy][iNx] + Data.BrNO2[jNy][iNx] \
@@ -807,8 +898,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         
         /* Compute emitted */
         mass_Emitted_CO2 = 0;
-        for ( unsigned int iNx = 0; iNx < NX; iNx++ ) {
-            for ( unsigned int jNy = 0; jNy < NY; jNy++ ) {
+        for ( iNx = 0; iNx < NX; iNx++ ) {
+            for ( jNy = 0; jNy < NY; jNy++ ) {
                 mass_Emitted_CO2 += ( Data.CO2[jNy][iNx] - mass_Ambient_CO2 ) * cellAreas[jNy][iNx];
             }
         }
