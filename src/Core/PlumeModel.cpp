@@ -159,11 +159,11 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
      */ 
 
     /* Define emission and simulation time */
-    double tEmission_h = std::fmod(8.0,24.0);  /* [hr] */
-    double tInitial_h  = tEmission_h;          /* [hr] */
-    double tFinal_h    = tInitial_h + TSIMUL;  /* [hr] */
-    double tInitial_s  = tInitial_h * 3600.0;  /* [s] */
-    double tFinal_s    = tFinal_h   * 3600.0;  /* [s] */
+    const double tEmission_h = std::fmod(8.0, 24.0); /* [hr] */
+    const double tInitial_h  = tEmission_h;          /* [hr] */
+    const double tFinal_h    = tInitial_h + TSIMUL;  /* [hr] */
+    const double tInitial_s  = tInitial_h * 3600.0;  /* [s] */
+    const double tFinal_s    = tFinal_h   * 3600.0;  /* [s] */
 
     /* Current time in [s] */
     double curr_Time_s = tInitial_s; /* [s] */
@@ -216,9 +216,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     double dTrav_x, dTrav_y;
 
     /* Fill negative values? */
-    bool fillNegValues = 1;
+    const bool fillNegValues = 1;
     /* Fill with? */
-    double fillWith = 0.0;
+    const double fillWith = 0.0;
 
     /* Allocate Solver */
     Solver SANDS_Solver( fillNegValues, fillWith );
@@ -288,9 +288,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     double Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol;
     double areaPlume; 
-    AIM::Aerosol liquidAer;
+    AIM::Aerosol liquidAer, iceAer;
     EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aerArray, aircraft, EI, \
-                    Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, liquidAer, areaPlume );
+                    Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, liquidAer, iceAer, areaPlume );
 
     /* Compute initial plume area.
      * If 2 engines, we assume that after 3 mins, the two plume haven't fully mixed yet and result in a total
@@ -300,7 +300,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     areaPlume *= 2;
     double semiYaxis = 0.5*aircraft.getVortexdeltaz1();
     double semiXaxis = areaPlume/(physConst::PI*0.5*aircraft.getVortexdeltaz1());
-    
+   
+
     /** ~~~~~~~~~~~~~~~~~ **/
     /**      Rings?       **/
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -342,7 +343,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     const std::vector<double> ringArea = ringCluster.getRingArea();
 
     /* Add emission into the grid */
-    Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing(), temperature_K, ( relHumidity_i > 100.0 ), liquidAer ); 
+    Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing(), temperature_K, ( relHumidity_i > 100.0 ), \
+                      liquidAer, iceAer ); 
    
     /* Fill in variables species for initial time */
     ringSpecies.FillIn( Data, m, nTime );
