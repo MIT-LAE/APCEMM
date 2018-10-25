@@ -40,7 +40,7 @@ int main( int , char* [] )
     /* Number of cases */
     nCases  = parameters[0].size();
 
-    std::cout << "\nRunning model for " << nCases << " cases on " << omp_get_num_procs() << " procs\n";
+    std::cout << "\nRunning model for " << nCases << " case(s) on " << omp_get_num_procs() << " procs\n";
 
 #pragma omp parallel for schedule(dynamic, 1)
     for ( unsigned int i = 0; i < nCases; i++ ) {
