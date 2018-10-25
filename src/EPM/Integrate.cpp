@@ -16,8 +16,11 @@
 namespace EPM
 {
 
-    int Integrate( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
-                   RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area )
+    int Integrate( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], \
+                   RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
+                   RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, \
+                   RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, \
+                   RealDouble &Area )
     {
 
         /* Get mean vortex displacement in [m] */
@@ -34,14 +37,17 @@ namespace EPM
          * The minus sign is because delta_z is the distance pointing down */
 
         RunMicrophysics( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aerArray, AC, EI, delta_T_ad, delta_T, \
-                         Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, SO4Aer, Area );
+                         Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, SO4Aer, IceAer, Area );
 
         return EPM_SUCCESS;
 
     } /* End of Integrate */
 
-    int RunMicrophysics( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T, \
-                         RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area )
+    int RunMicrophysics( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], \
+                         RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
+                         RealDouble delta_T_ad, RealDouble delta_T, RealDouble &Ice_rad, RealDouble &Ice_den, \
+                         RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, \
+                         AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, RealDouble &Area )
     {
     
         RealDouble relHumidity_i_Amb, relHumidity_i_postVortex, relHumidity_i_Final;
@@ -53,9 +59,9 @@ namespace EPM
         relHumidity_i_Final      = relHumidity_w * physFunc::pSat_H2Ol( temperature_K + delta_T ) \
                                                  / physFunc::pSat_H2Os( temperature_K + delta_T ) / 100.0;
 
-        std::cout << "\nInitial ambient relative humidity w.r.t ice: " << 100.0 * relHumidity_i_Amb << " %" ;
-        std::cout << "\nPost vortex relative humidity w.r.t ice    : " << 100.0 * relHumidity_i_postVortex << " %";
-        std::cout << "\nFinal relative humidity w.r.t ice          : " << 100.0 * relHumidity_i_Final << " %";
+        //std::cout << "\nInitial ambient relative humidity w.r.t ice: " << 100.0 * relHumidity_i_Amb << " %" ;
+        //std::cout << "\nPost vortex relative humidity w.r.t ice    : " << 100.0 * relHumidity_i_postVortex << " %";
+        //std::cout << "\nFinal relative humidity w.r.t ice          : " << 100.0 * relHumidity_i_Final << " %";
 
         RealDouble partPHNO3_Hom, partPHNO3_Het, satHNO3_Hom, satHNO3_Het;
         RealDouble final_Temp = temperature_K + delta_T;
@@ -90,14 +96,27 @@ namespace EPM
         Vector_1D SO4_rE( SO4_NBIN + 1, 0.0 );
         Vector_1D SO4_vJ( SO4_NBIN    , 0.0 );
 
-        for ( UInt iBin = 0; iBin < SO4_NBIN + 1; iBin++ ) {
-            SO4_rE[iBin] = LA_R_LOW * pow( LA_VRAT, iBin / RealDouble(3.0) );                                  /* [m] */
-        }
+        const RealDouble LA_RRAT = pow( LA_VRAT, 1.0 / RealDouble(3.0) );
+        SO4_rE[0] = LA_R_LOW;
+        for ( UInt iBin = 1; iBin < SO4_NBIN + 1; iBin++ )
+            SO4_rE[iBin] = SO4_rE[iBin-1] * LA_RRAT;                                                           /* [m] */
 
         for ( UInt iBin = 0; iBin < SO4_NBIN; iBin++ ) {
             SO4_rJ[iBin] = 0.5 * ( SO4_rE[iBin] + SO4_rE[iBin+1] );                                            /* [m] */
             SO4_vJ[iBin] = 4.0 / RealDouble(3.0) * physConst::PI * SO4_rJ[iBin] * SO4_rJ[iBin] * SO4_rJ[iBin]; /* [m^3] */
         }
+        
+        const UInt Ice_NBIN = std::floor( 1 + log( pow( (PA_R_HIG/PA_R_LOW), 3.0 ) ) / log( PA_VRAT ) );
+        
+        const RealDouble PA_RRAT = pow( PA_VRAT, 1.0 / RealDouble(3.0) );
+        Vector_1D Ice_rJ( Ice_NBIN    , 0.0 );
+        Vector_1D Ice_rE( Ice_NBIN + 1, 0.0 );
+        Ice_rE[0] = PA_R_LOW;
+        for ( UInt iBin = 1; iBin < Ice_NBIN + 1; iBin++ )
+            Ice_rE[iBin] = Ice_rE[iBin-1] * PA_RRAT;                                                           /* [m] */
+
+        for ( UInt iBin = 0; iBin < Ice_NBIN; iBin++ )
+            Ice_rJ[iBin] = 0.5 * ( Ice_rE[iBin] + Ice_rE[iBin+1] );                                            /* [m] */
 
         const AIM::Coagulation Kernel( "liquid", SO4_rJ, SO4_vJ, physConst::RHO_SO4, temperature_K, pressure_Pa );
         const AIM::Coagulation Kernel_SO4_Soot( "liquid", SO4_rJ, physConst::RHO_SO4, EI.getSootRad(), physConst::RHO_SOOT, temperature_K, pressure_Pa );
@@ -540,6 +559,10 @@ namespace EPM
         SO4l_mol = SO4l_3mins;
         SO4g_mol = SO4g_3mins;
         SO4Aer = pSO4pdf_3mins;
+
+        const RealDouble expsIce = 1.15;
+        AIM::Aerosol solidAer( Ice_rJ, Ice_rE, Ice_den, std::max(Ice_rad * exp ( -2.5 * log(expsIce) * log(expsIce) ), 1.5 * PA_R_LOW ), expsIce, "lognormal" );
+        IceAer = solidAer;
 
         /* Compute plume area */
         Area = Ab0 / Tracer_3mins; 
