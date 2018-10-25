@@ -71,7 +71,7 @@ namespace physConst
     static const RealDouble RHO_NAT = 1.626E+03;
 
     /* Density of sulfuric acid, Unit : [ kg / m ^ 3 ] */
-    static const RealDouble RHO_SO4 = 1.600E+03;
+    static const RealDouble RHO_SULF = 1.600E+03;
     
     /* Density of soot, Unit : [ kg / m ^ 3 ] */
     static const RealDouble RHO_SOOT = 2.000E+03;

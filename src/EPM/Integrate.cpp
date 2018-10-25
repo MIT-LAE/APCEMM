@@ -118,8 +118,8 @@ namespace EPM
         for ( UInt iBin = 0; iBin < Ice_NBIN; iBin++ )
             Ice_rJ[iBin] = 0.5 * ( Ice_rE[iBin] + Ice_rE[iBin+1] );                                            /* [m] */
 
-        const AIM::Coagulation Kernel( "liquid", SO4_rJ, SO4_vJ, physConst::RHO_SO4, temperature_K, pressure_Pa );
-        const AIM::Coagulation Kernel_SO4_Soot( "liquid", SO4_rJ, physConst::RHO_SO4, EI.getSootRad(), physConst::RHO_SOOT, temperature_K, pressure_Pa );
+        const AIM::Coagulation Kernel( "liquid", SO4_rJ, SO4_vJ, physConst::RHO_SULF, temperature_K, pressure_Pa );
+        const AIM::Coagulation Kernel_SO4_Soot( "liquid", SO4_rJ, physConst::RHO_SULF, EI.getSootRad(), physConst::RHO_SOOT, temperature_K, pressure_Pa );
         static const Vector_1D KernelSO4Soot = Kernel_SO4_Soot.getKernel_1D();
 
         /* For debug purposes */
