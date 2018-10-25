@@ -29,7 +29,7 @@ namespace util
         return C;
     }
 
-    double* vect2double( std::vector<std::vector<double> > &vals, unsigned int N, unsigned int M, double scalingFactor )
+    double* vect2double( const std::vector<std::vector<double> > &vals, unsigned int N, unsigned int M, double scalingFactor )
     {
         double* temp;
         temp = new double[N*M];
@@ -42,7 +42,7 @@ namespace util
         return temp;
     }
     
-    double* vect2double( std::vector<double> &vals, unsigned int N, double scalingFactor )
+    double* vect2double( const std::vector<double> &vals, unsigned int N, double scalingFactor )
     {
         double* temp;
         temp = new double[N];
@@ -68,7 +68,7 @@ namespace util
 //        return temp;
 //    }
     
-    float* vect2float( std::vector<std::vector<double> > &vals, unsigned int N, unsigned int M, double scalingFactor )
+    float* vect2float( const std::vector<std::vector<double> > &vals, unsigned int N, unsigned int M, double scalingFactor )
     {
         float* temp;
         temp = new float[N*M];
@@ -81,7 +81,7 @@ namespace util
         return temp;
     }
     
-    float* vect2float( std::vector<double> &vals, unsigned int N, double scalingFactor )
+    float* vect2float( const std::vector<double> &vals, unsigned int N, double scalingFactor )
     {
         float* temp;
         temp = new float[N];
@@ -127,7 +127,7 @@ namespace util
 
     }
 
-    std::vector<std::vector<double> > Array2Vect( double** A, unsigned int N, unsigned int M, double scalingFactor )
+    std::vector<std::vector<double> > Array2Vect( const double** A, unsigned int N, unsigned int M, double scalingFactor )
     {
         std::vector<std::vector<double> > vect;
 
