@@ -159,9 +159,7 @@ debug:
 ###                                                                         ###
 ###############################################################################
 
-Adv_Global.o        : Adv_Global.cpp
-
-AdvParam.o          : AdvParam.cpp
+Advection.o         : Advection.cpp
 
 Aircraft.o          : Aircraft.cpp
 
@@ -175,7 +173,7 @@ Cluster.o           : Cluster.cpp
 
 Combvec.o           : Combvec.cpp
 
-DiffParam.o         : DiffParam.cpp
+Diffusion.o         : Diffusion.cpp
 
 Emission.o          : Emission.cpp
 
