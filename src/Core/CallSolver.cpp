@@ -16,7 +16,7 @@
 #include "Core/Structure.hpp"
 #include "SANDS/Solver.hpp"
 
-void CallSolver( Solution& data, Solver& solv )
+void CallSolver( Solution& data, Solver& solv, const bool TRANSPORT_LA, const bool TRANSPORT_PA )
 {
         
     const bool isInputReal = 1;
@@ -149,6 +149,20 @@ void CallSolver( Solution& data, Solver& solv )
     solv.Solve( data.HCl      , isInputReal );
     solv.Solve( data.CO       , isInputReal );
     solv.Solve( data.MO2      , isInputReal );
+
+    solv.Solve( data.sootDens, isInputReal );
+
+    if ( TRANSPORT_LA ) {
+        /* Transport of liquid aerosols */
+        for ( unsigned int iBin_LA = 0; iBin_LA < data.nBin_LA; iBin_LA++ )
+            solv.Solve( data.liquidAerosol.pdf[iBin_LA], isInputReal );
+    }
+
+    if ( TRANSPORT_PA ) {
+        /* Transport of solid aerosols */
+        for ( unsigned int iBin_PA = 0; iBin_PA < data.nBin_PA; iBin_PA++ )
+            solv.Solve( data.solidAerosol.pdf[iBin_PA], isInputReal );
+    }
 
 } /* End of CallSolver */
 
