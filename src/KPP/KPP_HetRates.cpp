@@ -118,6 +118,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
      * const double SPC[]         : Species array in molec/cm^3 
      * const double AREA[NAERO]   : Aerosol area in m^2/cm^3
      * const double RADI[NAERO]   : Aerosol radius in m 
+     * const double IWC           : Ice water content in kg/cm^3
      * const double KHETI_SLA[11] : Sticking coefficients */
      
     /* Aerosol list:
@@ -313,7 +314,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
     HET[ind_HBr][0]   = HETHBr(        0.81E+02, 2.00E-01, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX); 
     HET[ind_HOBr][1]  = HETHOBr_ice( ); 
     HET[ind_HBr][1]   = HETHBr_ice( ); 
-    HET[ind_N2O5][0]  = HETN2O5_PSC(   1.08E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE); 
+    HET[ind_N2O5][1]  = HETN2O5_PSC(   1.08E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE);
     HET[ind_ClNO3][0] = HETClNO3_PSC1( 0.97E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE);
     HET[ind_ClNO3][1] = HETClNO3_PSC2( 0.97E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE); 
     HET[ind_ClNO3][2] = HETClNO3_PSC3( 0.97E+02, 0.00E+00, KHETI_SLA, AREA, RADI, TEMP, AIRDENS, STRATBOX, NATSURFACE); 
