@@ -238,6 +238,8 @@ namespace AIM
 
         Kernel = k.Kernel;
         Kernel_1D = k.Kernel_1D;
+        beta = k.beta;
+        f = k.f;
 
     } /* End of Coagulation::Coagulation */
 
@@ -249,6 +251,8 @@ namespace AIM
 
         Kernel = k.Kernel;
         Kernel_1D = k.Kernel_1D;
+        beta = k.beta;
+        f = k.f;
         return *this;
 
     } /* End of Coagulation::operator= */
