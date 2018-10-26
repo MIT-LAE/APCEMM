@@ -153,20 +153,26 @@ namespace EPM
         RealDouble Soot_amb = aerArray[ind_SOOT][0]; /* [#/cm^3] */
 
         /* Add emissions of one engine to concentration arrays */
-        varArray[ind_H2O] += EI.getH2O() / ( MW_H2O  * 1.0E+03 ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() * physConst::Na / Ac0     * 1.00E-06;
+        varArray[ind_H2O] += EI.getH2O() / ( MW_H2O  * 1.0E+03 ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() * physConst::Na / Ab0     * 1.00E-06;
         /* [ molec/cm^3 ] += [ g/kgf ]   / [ kg/mol ] * [ g/kg ] * [ kgf/s ]                                        / [ m/s ]         * [ molec/mol ] / [ m^2 ] * [ m^3/cm^3 ]
          *                += [ molec/cm^3 ] */
 
-        varArray[ind_SO4] += SO2TOSO4 * EI.getSO2() / ( MW_H2SO4  * 1.0E+03 ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() * physConst::Na / Ac0 * 1.00E-06;
+        varArray[ind_SO4] += SO2TOSO4 * EI.getSO2() / ( MW_H2SO4  * 1.0E+03 ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() * physConst::Na / Ab0 * 1.00E-06;
 
 
-        RealDouble varSoot = Soot_amb + EI.getSoot() / ( 4.0 / RealDouble(3.0) * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() * 1.00E-06; /* [ #/cm^3 ] */
+        RealDouble varSoot = Soot_amb + EI.getSoot() / ( 4.0 / RealDouble(3.0) * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) * AC.getFuelFlow() / RealDouble(AC.getEngNumber()) / AC.getVFlight() / Ab0 * 1.00E-06; /* [ #/cm^3 ] */
+        /* Unit check: 
+         *                 = [#/cm^3] + [g/kg_f]     / (                                         [kg/m^3]            * [g/kg]   * [m^3]                                               ) * [kg_f/s]                                         / [m/s]            / [m^2] * [m^3/cm^3]
+         *                 = [#/cm^3] */
 
         /* Compute ambient share of liquid, gaseous sulfates
          * assuming that SO4 is in phase equilibrium */
 
-        SO4g_amb = ( physFunc::pSat_H2SO4( temperature_K ) / ( physConst::kB * temperature_K * 1.0E+06 ) > SO4_amb ) ? SO4_amb : physFunc::pSat_H2SO4( temperature_K ) / ( physConst::kB * temperature_K * 1.0E+06 );
-        SO4l_amb = SO4_amb - SO4g_amb;
+        SO4g_amb = SO4_amb;
+        SO4l_amb = 0.0E+00;
+
+        //SO4g_amb = ( physFunc::pSat_H2SO4( temperature_K ) / ( physConst::kB * temperature_K * 1.0E+06 ) > SO4_amb ) ? SO4_amb : physFunc::pSat_H2SO4( temperature_K ) / ( physConst::kB * temperature_K * 1.0E+06 );
+        //SO4l_amb = SO4_amb - SO4g_amb;
 
         SO4g_amb = ( SO4g_amb > 0.0 ) ? SO4g_amb : 0.0; 
         SO4l_amb = ( SO4l_amb > 0.0 ) ? SO4l_amb : 0.0; 
@@ -566,7 +572,10 @@ namespace EPM
 
         /* Compute plume area */
         Area = Ab0 / Tracer_3mins; 
-       
+    
+//        std::cout << " Soot end: " << ( varSoot - Soot_amb  ) * 1E6 * Ab0 << " [#/m]\n";
+//        std::cout << " Soot end: " << ( Soot_den - Soot_amb ) * 1E6 * Ab0 / Tracer_3mins << "[#/m]\n";
+
         /* Update temperature after vortex sinking */
         temperature_K = final_Temp;
 
