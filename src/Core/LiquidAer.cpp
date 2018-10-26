@@ -23,18 +23,15 @@ double H2SO4_GASFRAC( const double temperature_K, const double SO4 )
      * - temperature_K : temperature in K
      * - SO4           : total sulfate (l + g) concentration in molec/cm^3 */
 
-    if ( SO4 <= 0.0E+00 ) {
+    if ( SO4 < 0.0E+00 ) {
         std::cout << "In LiquidAer.cpp: SO4 is negative: SO4 = " << SO4 << "\n";
         return 0;
     }
 
     double frac = 0.0E+00;
-    bool isSS;
-    double nSat;
 
-    nSat = physFunc::pSat_H2SO4( temperature_K ) / ( physConst::kB * temperature_K * 1.0E+06 );
-
-    isSS = ( SO4 > nSat );
+    const double nSat = physFunc::pSat_H2SO4( temperature_K ) / ( physConst::kB * temperature_K * 1.0E+06 );
+    const bool   isSS = ( SO4 > nSat );
 
     if ( isSS )
         frac = nSat/SO4;
