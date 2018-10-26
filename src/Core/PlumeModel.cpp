@@ -62,7 +62,7 @@ std::vector<double> BuildTime( double tStart, double tFinal, \
                double sunRise, double sunSet );
 double UpdateTime( double time, double tStart, \
                    double sunRise, double sunSet );
-void CallSolver( Solution& Data, Solver& SANDS );
+void CallSolver( Solution& Data, Solver& SANDS, const bool TRANSPORT_LA, const bool TRANSPORT_PA );
 
 
 int PlumeModel( double temperature_K, double pressure_Pa, \
@@ -112,23 +112,14 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 #endif /* CO2_MASS_CHECK */
 
     int IERR;
+    bool ITS_TIME_FOR_LIQ_COAGULATION = 0;
+    double lastTimeLiqCoag, dtLiqCoag;
+    bool ITS_TIME_FOR_ICE_COAGULATION = 0;
+    double lastTimeIceCoag, dtIceCoag;
 
     /* Compute relative humidity w.r.t ice */
     double relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
                                          / physFunc::pSat_H2Os( temperature_K );
-
-//    /* If ICE_MICROPHYSICS is turned on and the domain is supersaturated, break the x-symmetry */
-//#if ( ICE_MICROPHYSICS && X_SYMMETRY )
-//
-//    /* Is supersaturated? */
-//    if ( relHumidity_i > 100.0 ) {
-//
-//#undef X_SYMMETRY
-//#define X_SYMMETRY                  0     /* Set x-symmetry to 0 */
-//
-//    }
-//#endif /* ICE_MICROPHYSICS && X_SYMMETRY */
-
 
     const unsigned int dayGMT(81);
 
@@ -401,12 +392,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* RINGS */
 
-    bool IS_PSC = 0;
-    double frac_gSO4 = 0.0E+00;
-    double areaHET[NAERO];
-    double radiHET[NAERO];
-    double iwcHET = 0;
-    double kheti_sla[11];
+    /* Output run characteristics to log file/console */
 
 #pragma omp critical
     {
@@ -471,6 +457,16 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_SAD   << " [mum^2/cm^3] \n";
 
     }
+
+    double frac_gSO4 = 0.0E+00;
+    std::vector<double> aerosolProp( 3, 0.0E+00 );
+    double AerosolArea[NAERO];
+    double AerosolRadi[NAERO];
+    double IWC = 0;
+    double kheti_sla[11];
+
+    lastTimeLiqCoag = curr_Time_s;
+    lastTimeIceCoag = curr_Time_s;
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /**         Time Loop          **/
@@ -568,7 +564,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #pragma omp critical /* Not sure why omp critical is needed here, otherwise leads to segmentation faults... */
         {
-            CallSolver( Data, SANDS_Solver );
+            CallSolver( Data, SANDS_Solver, ( LA_MICROPHYSICS == 2 ), ( PA_MICROPHYSICS == 2 ) );
         }
 
 #if ( TIME_IT )
@@ -631,8 +627,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~~~~~~ KPP ~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~ The Kinetics Pre-Processor ~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         
 
@@ -673,13 +671,45 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                         HET[iSpec][2] = 0.0E+00;
                     }
 
+                    Data.getAerosolProp( AerosolRadi, AerosolArea, IWC, mapRing2Mesh[iRing] );
+
                     relHumidity_Ring = varArray[ind_H2O] * \
                                        physConst::kB * temperature_K * 1.00E+06 / \
                                        physFunc::pSat_H2Ol( temperature_K );
                     GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
-                               IS_PSC, varArray, areaHET, radiHET, iwcHET, kheti_sla );
+                               Data.STATE_PSC, varArray, AerosolArea, AerosolRadi, IWC, kheti_sla );
+
+                    if ( DBG ) {
+                        std::cout << "\n DEBUG :  Heterogeneous chemistry rates (Ring:  " << iRing << ")\n";
+                        std::cout << "       :  Aerosol properties\n";
+                        std::cout << "       :  Radius ice/NAT    = " << AerosolRadi[0] * 1.0E+06 << " [mum]\n";
+                        std::cout << "       :  Radius strat. liq = " << AerosolRadi[1] * 1.0E+09 << " [nm]\n";
+                        std::cout << "       :  Radius trop. sulf = " << AerosolRadi[2] * 1.0E+09 << " [nm]\n";
+                        std::cout << "       :  Radius soot part. = " << AerosolRadi[3] * 1.0E+09 << " [nm]\n";
+                        std::cout << "       :  Area ice/NAT      = " << AerosolArea[0] * 1.0E+12 << " [mum^2/cm^3]\n";
+                        std::cout << "       :  Area strat. liq   = " << AerosolArea[1] * 1.0E+12 << " [mum^2/cm^3]\n";
+                        std::cout << "       :  Area trop. sulf   = " << AerosolArea[2] * 1.0E+12 << " [mum^2/cm^3]\n";
+                        std::cout << "       :  Area soot part.   = " << AerosolArea[3] * 1.0E+12 << " [mum^2/cm^3]\n";
+                        std::cout << "       :  HET[ind_HO2][0]   = " << HET[ind_HO2][0]          << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_NO2][0]   = " << HET[ind_NO2][0]          << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_NO3][0]   = " << HET[ind_NO3][0]          << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_N2O5][0]  = " << HET[ind_N2O5][0]         << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_BrNO3][0] = " << HET[ind_BrNO3][0]        << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_HOBr][0]  = " << HET[ind_HOBr][0]         << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_HBr][0]   = " << HET[ind_HBr][0]          << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_HOBr][1]  = " << HET[ind_HOBr][1]         << " [molec/cm^3/s]\n";
+                        std::cout << "       :  PSC Rates:\n";
+                        std::cout << "       :  HET[ind_N2O5][1]  = " << HET[ind_N2O5][1]         << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_ClNO3][0] = " << HET[ind_ClNO3][0]        << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_ClNO3][1] = " << HET[ind_ClNO3][1]        << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_ClNO3][2] = " << HET[ind_ClNO3][2]        << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_BrNO3][1] = " << HET[ind_BrNO3][1]        << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_HOCl][0]  = " << HET[ind_HOCl][0]         << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_HOCl][1]  = " << HET[ind_HOCl][1]         << " [molec/cm^3/s]\n";
+                        std::cout << "       :  HET[ind_HOBr][2]  = " << HET[ind_HOBr][2]         << " [molec/cm^3/s]\n";
+                    }
                 }
-             
+
                 /* Update reaction rates */
                 for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
                     RCONST[iReact] = 0.0E+00;
@@ -735,7 +765,37 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                                    physConst::kB * temperature_K * 1.00E+06 / \
                                    physFunc::pSat_H2Ol( temperature_K );
                 GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
-                           IS_PSC, varArray, areaHET, radiHET, iwcHET, kheti_sla );
+                           Data.STATE_PSC, varArray, AerosolArea, AerosolRadi, IWC, kheti_sla );
+
+                if ( DBG ) {
+                    std::cout << "\n DEBUG :   Heterogeneous chemistry rates (Ambient)\n";
+                    std::cout << "       :   Aerosol properties\n";
+                    std::cout << "       :   Radius ice/NAT    = " << AerosolRadi[0] * 1.0E+06 << " [mum]\n";
+                    std::cout << "       :   Radius strat. liq = " << AerosolRadi[1] * 1.0E+09 << " [nm]\n";
+                    std::cout << "       :   Radius trop. sulf = " << AerosolRadi[2] * 1.0E+09 << " [nm]\n";
+                    std::cout << "       :   Radius soot part. = " << AerosolRadi[3] * 1.0E+09 << " [nm]\n";
+                    std::cout << "       :   Area ice/NAT      = " << AerosolArea[0] * 1.0E+12 << " [mum^2/cm^3]\n";
+                    std::cout << "       :   Area strat. liq   = " << AerosolArea[1] * 1.0E+12 << " [mum^2/cm^3]\n";
+                    std::cout << "       :   Area trop. sulf   = " << AerosolArea[2] * 1.0E+12 << " [mum^2/cm^3]\n";
+                    std::cout << "       :   Area soot part.   = " << AerosolArea[3] * 1.0E+12 << " [mum^2/cm^3]\n";
+                    std::cout << "       :   HET[ind_HO2][0]   = " << HET[ind_HO2][0]          << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_NO2][0]   = " << HET[ind_NO2][0]          << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_NO3][0]   = " << HET[ind_NO3][0]          << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_N2O5][0]  = " << HET[ind_N2O5][0]         << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_BrNO3][0] = " << HET[ind_BrNO3][0]        << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_HOBr][0]  = " << HET[ind_HOBr][0]         << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_HBr][0]   = " << HET[ind_HBr][0]          << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_HOBr][1]  = " << HET[ind_HOBr][1]         << " [molec/cm^3/s]\n";
+                    std::cout << "       :   PSC Rates:\n";
+                    std::cout << "       :   HET[ind_N2O5][1]  = " << HET[ind_N2O5][1]         << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_ClNO3][0] = " << HET[ind_ClNO3][0]        << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_ClNO3][1] = " << HET[ind_ClNO3][1]        << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_ClNO3][2] = " << HET[ind_ClNO3][2]        << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_BrNO3][1] = " << HET[ind_BrNO3][1]        << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_HOCl][0]  = " << HET[ind_HOCl][0]         << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_HOCl][1]  = " << HET[ind_HOCl][1]         << " [molec/cm^3/s]\n";
+                    std::cout << "       :   HET[ind_HOBr][2]  = " << HET[ind_HOBr][2]         << " [molec/cm^3/s]\n";
+                }
             }
 
             /* Update reaction rates */
@@ -803,7 +863,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                                            physConst::kB * temperature_K * 1.00E+06 / \
                                            physFunc::pSat_H2Ol( temperature_K );
                         GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
-                                   IS_PSC, varArray, areaHET, radiHET, iwcHET, kheti_sla );
+                                   Data.STATE_PSC, varArray, AerosolArea, AerosolRadi, IWC, kheti_sla );
                     }
 
                     /* Update reaction rates */
@@ -847,6 +907,23 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             /* ~~~~ Chemical rates ~~~~ */
             /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+            /* Update heterogeneous chemistry reaction rates */
+            if ( HETCHEMISTRY ) {
+
+                for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+                    HET[iSpec][0] = 0.0E+00;
+                    HET[iSpec][1] = 0.0E+00;
+                    HET[iSpec][2] = 0.0E+00;
+                }
+
+                relHumidity_Ring = varArray[ind_H2O] * \
+                                   physConst::kB * temperature_K * 1.00E+06 / \
+                                   physFunc::pSat_H2Ol( temperature_K );
+                GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
+                           Data.STATE_PSC, varArray, AerosolArea, AerosolRadi, IWC, kheti_sla );
+            }
+
+
             /* Update reaction rates */
             for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
                 RCONST[iReact] = 0.0E+00;
@@ -882,13 +959,47 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* RINGS */
 
-        
+
 #if ( TIME_IT )
         
         Stopwatch.Stop( );
         KPP_clock = Stopwatch.Elapsed( );
 
 #endif /* TIME_IT */
+
+
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~ Aerosol Microphysics ~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~ Coagulation ~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+        ITS_TIME_FOR_LIQ_COAGULATION = ( ( curr_Time_s - lastTimeLiqCoag ) >= LIQCOAG_TSTEP );
+        /* Liquid aerosol coagulation */
+        if ( ITS_TIME_FOR_LIQ_COAGULATION && LIQ_MICROPHYSICS ) {
+            dtLiqCoag = ( curr_Time_s - lastTimeLiqCoag );
+            if ( DBG )
+                std::cout << "\n DEBUG (LiqCoag): Current time: " << (curr_Time_s - tInitial_s) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeLiqCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtLiqCoag << " s\n";
+
+            lastTimeLiqCoag = curr_Time_s;
+            /* Here we assume that the sulfate aerosol fields are symmetric around the X and Y axis */
+            Data.liquidAerosol.Coagulate( dtLiqCoag, Data.LA_Kernel, LA_MICROPHYSICS, (unsigned int) 2 );
+        }
+
+        ITS_TIME_FOR_ICE_COAGULATION = ( ( curr_Time_s - lastTimeIceCoag ) >= ICECOAG_TSTEP );
+        /* Solid aerosol coagulation */
+        if ( ITS_TIME_FOR_ICE_COAGULATION && ICE_MICROPHYSICS ) {
+            dtIceCoag = ( curr_Time_s - lastTimeIceCoag );
+            if ( DBG )
+                std::cout << "\n DEBUG (IceCoag): Current time: " << (curr_Time_s - tInitial_s) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeIceCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceCoag << " s\n";
+
+            lastTimeIceCoag = curr_Time_s;
+            /* Here we assume that the solid aerosol fields are symmetric around the X axis */
+            Data.solidAerosol.Coagulate ( dtIceCoag, Data.PA_Kernel, PA_MICROPHYSICS, (unsigned int) ( 2 - ( relHumidity_i > 100.0 ) ) );
+        }
+
 
 #if ( NOy_MASS_CHECK )
 
