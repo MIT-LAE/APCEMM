@@ -124,8 +124,8 @@ class AIM::Grid_Aerosol
         Grid_Aerosol operator-( const Grid_Aerosol &rhs ) const;
 
         /* Coagulation */
-        void Coagulate( const RealDouble dt, const Coagulation &kernel );
-        void Coagulate( const RealDouble dt, const Vector_2D &beta, const Vector_3D &f );
+        void Coagulate( const RealDouble dt, const Coagulation &kernel, const UInt N = 2, const UInt SYM = 2 );
+        void Coagulate( const RealDouble dt, const Vector_2D &beta, const Vector_3D &f, const UInt N = 2, const UInt SYM = 2 );
         
         /* Moments */
         Vector_2D Moment( UInt n ) const;
@@ -140,7 +140,7 @@ class AIM::Grid_Aerosol
 
         /* utils */
         void updatePdf( Vector_3D pdf_ );
-        Vector_1D Average( const std::vector<std::pair<unsigned int, unsigned int>> &indexList );
+        Vector_1D Average( const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) const;
         void addPDF( const Aerosol PDF, const std::vector<std::pair<unsigned int, unsigned int>> &indexList );
         void addPDF( const Vector_1D PDF, const std::vector<std::pair<unsigned int, unsigned int>> &indexList );
 

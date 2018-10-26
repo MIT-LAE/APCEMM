@@ -983,7 +983,7 @@ namespace AIM
 
     } /* End of Grid_Aerosol::operator- */
        
-    void Grid_Aerosol::Coagulate( const RealDouble dt, const Coagulation &kernel )
+    void Grid_Aerosol::Coagulate( const RealDouble dt, const Coagulation &kernel, const UInt N, const UInt SYM )
     {
 
         /* DESCRIPTION:
@@ -994,21 +994,58 @@ namespace AIM
         /* INPUT:
          * - RealDouble dt      :: Timestep in s
          * - Coagulation kernel :: Coagulation structure containing the coagulation kernels
+         * - UInt N             :: Coagulation scenarios ( 0, 1 or 2 )
+         * - UInt SYM           :: Symmetry?
          *
          * OUTPUT:
          *
          */
 
+        UInt Nx_max, Ny_max;
+
+        if ( N == 0 ) {
+            /* No coagulation is performed */
+            return;
+        } else if ( N == 1 ) {
+            /* No emitted aerosols -> Aerosol is a uniform field */
+            /* Perform coagulation only once */
+            Nx_max = 1;
+            Ny_max = 1;
+        } else if ( N == 2 ) {
+            /* Perform coagulation for all */
+            if ( SYM == 2 ) {
+                /* Both X and Y symmetry */
+                Nx_max = Nx/2;
+                Ny_max = Ny/2;
+            } else if ( SYM == 1 ) {
+                /* Only symmetry around the Y axis */
+                Nx_max = Nx/2;
+                Ny_max = Ny;
+            } else if ( SYM == 0 ) {
+                /* No symmetry */
+                Nx_max = Nx;
+                Ny_max = Ny;
+            } else {
+                std::cout << " In Grid_Aerosol::Coagulate: Wrong input for SYM\n";
+                std::cout << " SYM = " << SYM << "\n";
+                return;
+            }
+        } else {
+            std::cout << " In Grid_Aerosol::Coagulate: Wrong input for N\n";
+            std::cout << " N = " << N << "\n";
+            return;
+        }
+
         /* Allocate variables */
         Vector_1D P( nBin, 0.0E+00 );
         Vector_1D L( nBin, 0.0E+00 );
-        Vector_3D v( nBin, Vector_2D( Ny, Vector_1D( Nx, 0.0E+00 ) ) );
+        Vector_3D v( nBin, Vector_2D( Ny_max, Vector_1D( Nx_max, 0.0E+00 ) ) );
         UInt iBin, jBin, kBin;
         UInt jNy, iNx; /* Grid indices */
 
         for ( iBin = 0; iBin < nBin; iBin++ ) {
-            for ( jNy = 0; jNy < Ny; jNy++ ) {
-                for ( iNx = 0; iNx < Nx; iNx++ ) {
+            for ( jNy = 0; jNy < Ny_max; jNy++ ) {
+                for ( iNx = 0; iNx < Nx_max; iNx++ ) {
                     v[iBin][jNy][iNx] = pdf[iBin][jNy][iNx] * bin_VCenters[iBin][jNy][iNx] * 1.0E+06;
                     /* Unit check:
                      * [#/cm^3] * [m^3] * [cm^3/m^3] = [cm^3/cm^3] */
@@ -1032,8 +1069,8 @@ namespace AIM
 
         /* Can this be improved? 
          * Can for loops be removed? */
-        for ( jNy = 0; jNy < Ny; jNy++ ) {
-            for ( iNx = 0; iNx < Nx; Nx++ ) {
+        for ( jNy = 0; jNy < Ny_max; jNy++ ) {
+            for ( iNx = 0; iNx < Nx_max; iNx++ ) {
                 for ( iBin = 0; iBin < nBin; iBin++ ) {
 
                     /* Reset P and L values */
@@ -1043,17 +1080,18 @@ namespace AIM
                     /* Build production and loss terms */
                     for ( jBin = 0; jBin < nBin; jBin++ ) {
                         if ( jBin <= iBin ) {
-            
+
                             for ( kBin = 0; kBin < iBin ; kBin++ ) {
                                 /* k coagulating with j to form i */
-                                if ( kernel.f[kBin][jBin][iBin] != 0.0 )
+                                if ( kernel.f[kBin][jBin][iBin] != 0.0 ) /* f is a sparse 3D tensor */
                                     P[iBin] += kernel.f[kBin][jBin][iBin] * kernel.beta[kBin][jBin] * v_new[kBin][jNy][iNx] * pdf[jBin][jNy][iNx];
                             }
 
                         }
                         /* i coagulating with j to deplete i */
-                        if ( kernel.f[iBin][jBin][iBin] != 1.0 ) 
+                        if ( kernel.f[iBin][jBin][iBin] != 1.0 ) {
                             L[iBin] += ( 1.0 - kernel.f[iBin][jBin][iBin] ) * kernel.beta[iBin][jBin] * pdf[jBin][jNy][iNx];
+                        }
                     }
 
                     /* Non-mass conserving scheme: */
@@ -1073,8 +1111,8 @@ namespace AIM
             std::cout << "At t     : " << Moment( 3, Nx/2, Ny/2 ) << "\n";
         }
 
-        for ( jNy = 0; jNy < Ny; jNy++ ) {
-            for ( iNx = 0; iNx < Nx; Nx++ ) {
+        for ( jNy = 0; jNy < Ny_max; jNy++ ) {
+            for ( iNx = 0; iNx < Nx_max; iNx++ ) {
                 for ( iBin = 0; iBin < nBin; iBin++ ) {
                     pdf[iBin][jNy][iNx] *= v_new[iBin][jNy][iNx] / v[iBin][jNy][iNx];
                 }
@@ -1084,10 +1122,45 @@ namespace AIM
         if ( checkMass )
             std::cout << "At t + dt: " << Moment( 3, Nx/2, Ny/2 ) << "\n";
 
+        if ( N == 1 ) {
+            /* Allocate uniform results to the grid */
+            for ( jNy = 0; jNy < Ny; jNy++ ) {
+                for ( iNx = 0; iNx < Nx; iNx++ ) {
+                    for ( iBin = 0; iBin < nBin; iBin++ ) {
+                        pdf[iBin][jNy][iNx] = pdf[iBin][0][0];
+                    }
+                }
+            }
+        } else if ( N == 2 ) {
+            /* Apply symmetry */
+            if ( SYM == 2 ) {
+                for ( iBin = 0; iBin < nBin; iBin++ ) {
+                    for ( jNy = 0; jNy < Ny; jNy++ ) {
+                        for ( iNx = Nx_max; iNx < Nx; iNx++ )
+                            pdf[iBin][jNy][iNx] = pdf[iBin][jNy][Nx-1-iNx];
+                    }
+                    for ( jNy = Ny_max; jNy < Ny; jNy++ ) {
+                        for ( iNx = 0; iNx < Nx; iNx++ )
+                            pdf[iBin][jNy][iNx] = pdf[iBin][Ny-1-jNy][iNx];
+                    }
+                    for ( jNy = Ny_max; jNy < Ny; jNy++ ) {
+                        for ( iNx = Nx_max; iNx < Nx; iNx++ )
+                            pdf[iBin][jNy][iNx] = pdf[iBin][Ny-1-jNy][Nx-1-iNx];
+                    }
+                }
+            } else if ( SYM == 1 ) {
+                for ( iBin = 0; iBin < nBin; iBin++ ) {
+                    for ( jNy = 0; jNy < Ny; jNy++ ) {
+                        for ( iNx = Nx_max; iNx < Nx; iNx++ )
+                            pdf[iBin][jNy][iNx] = pdf[iBin][jNy][Nx-1-iNx];
+                    }
+                }
+            }
+        }
 
     } /* End of Grid_Aerosol::Coagulate */
     
-    void Grid_Aerosol::Coagulate( const RealDouble dt, const Vector_2D &beta, const Vector_3D &f )
+    void Grid_Aerosol::Coagulate( const RealDouble dt, const Vector_2D &beta, const Vector_3D &f, const UInt N, const UInt SYM )
     {
 
         /* DESCRIPTION:
@@ -1099,21 +1172,58 @@ namespace AIM
          * - RealDouble dt   :: Timestep in s
          * - Vector_2D  beta :: Coagulation kernel
          * - Vector_3D  f    :: Coagulation vector: "In which bin does the result of the coagulation of two other bins end up?"
+         * - UInt N          :: Coagulation scenarios ( 0, 1 or 2 )
+         * - UInt SYM        :: Symmetry?
          *
          * OUTPUT:
          *
          */
 
+        UInt Nx_max, Ny_max;
+
+        if ( N == 0 ) {
+            /* No coagulation is performed */
+            return;
+        } else if ( N == 1 ) {
+            /* No emitted aerosols -> Aerosol is a uniform field */
+            /* Perform coagulation only once */
+            Nx_max = 1;
+            Ny_max = 1;
+        } else if ( N == 2 ) {
+            /* Perform coagulation for all */
+            if ( SYM == 2 ) {
+                /* Both X and Y symmetry */
+                Nx_max = Nx/2;
+                Ny_max = Ny/2;
+            } else if ( SYM == 1 ) {
+                /* Only symmetry around the Y axis */
+                Nx_max = Nx/2;
+                Ny_max = Ny;
+            } else if ( SYM == 0 ) {
+                /* No symmetry */
+                Nx_max = Nx;
+                Ny_max = Ny;
+            } else {
+                std::cout << " In Grid_Aerosol::Coagulate: Wrong input for SYM\n";
+                std::cout << " SYM = " << SYM << "\n";
+                return;
+            }
+        } else {
+            std::cout << " In Grid_Aerosol::Coagulate: Wrong input for N\n";
+            std::cout << " N = " << N << "\n";
+            return;
+        }
+
         /* Allocate variables */
         Vector_1D P( nBin, 0.0E+00 );
         Vector_1D L( nBin, 0.0E+00 );
-        Vector_3D v( nBin, Vector_2D( Ny, Vector_1D( Nx, 0.0E+00 ) ) );
+        Vector_3D v( nBin, Vector_2D( Ny_max, Vector_1D( Nx_max, 0.0E+00 ) ) );
         UInt iBin, jBin, kBin;
         UInt jNy, iNx; /* Grid indices */
         
         for ( iBin = 0; iBin < nBin; iBin++ ) {
-            for ( jNy = 0; jNy < Ny; jNy++ ) {
-                for ( iNx = 0; iNx < Nx; iNx++ ) {
+            for ( jNy = 0; jNy < Ny_max; jNy++ ) {
+                for ( iNx = 0; iNx < Nx_max; iNx++ ) {
                     v[iBin][jNy][iNx] = pdf[iBin][jNy][iNx] * bin_VCenters[iBin][jNy][iNx] * 1.0E+06;
                     /* Unit check:
                      * [#/cm^3] * [m^3] * [cm^3/m^3] = [cm^3/cm^3] */
@@ -1137,8 +1247,8 @@ namespace AIM
 
         /* Can this be improved? 
          * Can for loops be removed? */
-        for ( jNy = 0; jNy < Ny; jNy++ ) {
-            for ( iNx = 0; iNx < Nx; iNx++ ) {
+        for ( jNy = 0; jNy < Ny_max; jNy++ ) {
+            for ( iNx = 0; iNx < Nx_max; iNx++ ) {
                 for ( iBin = 0; iBin < nBin; iBin++ ) {
                 
                     /* Reset P and L */
@@ -1156,6 +1266,42 @@ namespace AIM
                     v_new[iBin][jNy][iNx] = ( v[iBin][jNy][iNx] + dt * P[iBin] ) / ( 1.0 + dt * L[iBin] );
                     pdf[iBin][jNy][iNx] *= v_new[iBin][jNy][iNx] / v[iBin][jNy][iNx]; 
 
+                }
+            }
+        }
+
+        if ( N == 1 ) {
+            /* Allocate uniform results to the grid */
+            for ( jNy = 0; jNy < Ny; jNy++ ) {
+                for ( iNx = 0; iNx < Nx; iNx++ ) {
+                    for ( iBin = 0; iBin < nBin; iBin++ ) {
+                        pdf[iBin][jNy][iNx] = pdf[iBin][0][0];
+                    }
+                }
+            }
+        } else if ( N == 2 ) {
+            /* Apply symmetry */
+            if ( SYM == 2 ) {
+                for ( iBin = 0; iBin < nBin; iBin++ ) {
+                    for ( jNy = 0; jNy < Ny; jNy++ ) {
+                        for ( iNx = Nx_max; iNx < Nx; iNx++ )
+                            pdf[iBin][jNy][iNx] = pdf[iBin][jNy][Nx-1-iNx];
+                    }
+                    for ( jNy = Ny_max; jNy < Ny; jNy++ ) {
+                        for ( iNx = 0; iNx < Nx; iNx++ )
+                            pdf[iBin][jNy][iNx] = pdf[iBin][Ny-1-jNy][iNx];
+                    }
+                    for ( jNy = Ny_max; jNy < Ny; jNy++ ) {
+                        for ( iNx = Nx_max; iNx < Nx; iNx++ )
+                            pdf[iBin][jNy][iNx] = pdf[iBin][Ny-1-jNy][Nx-1-iNx];
+                    }
+                }
+            } else if ( SYM == 1 ) {
+                for ( iBin = 0; iBin < nBin; iBin++ ) {
+                    for ( jNy = 0; jNy < Ny; jNy++ ) {
+                        for ( iNx = Nx_max; iNx < Nx; iNx++ )
+                            pdf[iBin][jNy][iNx] = pdf[iBin][jNy][Nx-1-iNx];
+                    }
                 }
             }
         }
@@ -1323,10 +1469,10 @@ namespace AIM
 
     } /* End of Grid_Aerosol::updatePdf */
 
-    Vector_1D Grid_Aerosol::Average( const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) 
+    Vector_1D Grid_Aerosol::Average( const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) const
     {
 
-        Vector_1D out( 3, 0.0E+00 );
+        Vector_1D out( 4, 0.0E+00 );
 
         Vector_1D PDF( nBin, 0.0E+00 );
 
@@ -1344,7 +1490,8 @@ namespace AIM
         out[0] = Moment( 0, PDF );
         if ( out[0] > 1.00E-50 ) {
             out[2] = 4.0 * physConst::PI * Moment( 2, PDF );
-            out[1] = Moment( 3, PDF ) / out[2];
+            out[3] = 4.0 / 3.0 * physConst::PI * Moment( 3, PDF );
+            out[1] = 3.0 * out[3] / out[2];
         }
 
         return out;
