@@ -28,10 +28,13 @@ const char* const WISDOMFILE = "data/FFTW_Wisdom.out";
 /* CHEMISTRY */
 #define CHEMISTRY               1    /* Is chemistry turned on? */
 #define HETCHEMISTRY            1    /* Is heterogeneous chemistry turned on? */
+#define PSC_SIM                 0    /* Polar Stratospheric Clouds? */
 
 /* MICROPHYSICS */
 #define ICE_MICROPHYSICS        1    /* Is ice microphysics turned on? */
-#define SUL_MICROPHYSICS        1    /* Is sulfate microphysics turned on? */
+#define ICECOAG_TSTEP           300  /* Minimal coagulation time step for ice in s */
+#define LIQ_MICROPHYSICS        1    /* Is sulfate microphysics turned on? */
+#define LIQCOAG_TSTEP           1200 /* Minimal coagulation time step for liquid aerosols in s */
 
 /* SYMMETRIES */
 #define X_SYMMETRY              1    /* Is the problem symmetric around the x-axis? */
@@ -47,11 +50,12 @@ const char* const OUTPUT_FILE = "data/output.nc";
 #define DOSAVEPL                1    /* Save chemical rates */ 
 
 /* TIME */
-#define TIME_IT                 1    /* Time simulation? */
+#define TIME_IT                 0    /* Time simulation? */
 
 /* MASS CHECK */
 #define NOy_MASS_CHECK          1    /* NOy mass check? */
-#define CO2_MASS_CHECK          1    /* CO2 mass check? */
+#define CO2_MASS_CHECK          0    /* CO2 mass check? */
+#define H2O_MASS_CHECK          1    /* H2O mass check? */
 
 /* DEBUG */
 #define DEBUG_AC_INPUT          0    /* Debug AC Input? */
