@@ -886,8 +886,8 @@ void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
     std::vector<unsigned int> nMap = m.getnMap();
     std::vector<std::vector<std::pair<unsigned int, unsigned int>>> indList = m.getList();
 
-    std::vector<double> properties_LA( 3, 0.0E+00 );
-    std::vector<double> properties_PA( 3, 0.0E+00 );
+    std::vector<double> properties_LA( 4, 0.0E+00 );
+    std::vector<double> properties_PA( 4, 0.0E+00 );
 
     unsigned int i, j;
     unsigned int nCell;
