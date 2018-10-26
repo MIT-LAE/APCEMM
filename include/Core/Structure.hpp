@@ -65,7 +65,8 @@ class Solution
                           const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, \
                           const std::vector<std::vector<double>> cellAreas, bool halfRing, \
                           double temperature, bool set2Saturation, \
-                          AIM::Aerosol &liqAer, AIM::Aerosol &iceAer );
+                          AIM::Aerosol &liqAer, AIM::Aerosol &iceAer, \
+                          const double Soot_Den );
         std::vector<double> getAmbient( ) const;
         std::vector<double> getLiqSpecies() const;
         std::vector<std::vector<double> > getAerosol( ) const;
@@ -126,7 +127,9 @@ class Solution
 
         double LA_nDens, LA_rEff, LA_SAD;
         double PA_nDens, PA_rEff, PA_SAD;
-        
+
+        AIM::Coagulation LA_Kernel, PA_Kernel;
+
         std::vector<double> KHETI_SLA;
         std::vector<double> AERFRAC, SOLIDFRAC;
         unsigned int STATE_PSC; 

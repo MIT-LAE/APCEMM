@@ -15,6 +15,7 @@
 
 Solution::Solution( ) : \
         liquidAerosol( ), solidAerosol( ),
+        LA_Kernel( ), PA_Kernel( ),
         nVariables( NSPEC ), nAer( N_AER ), size_x( NX ), size_y( NY )
 {
     /* Constructor */
@@ -330,14 +331,19 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     
     std::vector<double> LA_rE( nBin_LA + 1, 0.0 ); /* Bin edges in m */
     std::vector<double> LA_rJ( nBin_LA    , 0.0 ); /* Bin center radius in m */
-   
+    std::vector<double> LA_vJ( nBin_LA    , 0.0 ); /* Bin volume centers in m^3 */
+
     const double LA_RRAT = pow( LA_VRAT, 1.0 / RealDouble(3.0) );
     LA_rE[0] = LA_R_LOW;
     for ( unsigned int iBin_LA = 1; iBin_LA < nBin_LA + 1; iBin_LA++ )                      /* [m] */
         LA_rE[iBin_LA] = LA_rE[iBin_LA-1] * LA_RRAT;
 
-    for ( unsigned int iBin_LA = 0; iBin_LA < nBin_LA; iBin_LA++ )
+    for ( unsigned int iBin_LA = 0; iBin_LA < nBin_LA; iBin_LA++ ) {
         LA_rJ[iBin_LA] = 0.5 * ( LA_rE[iBin_LA] + LA_rE[iBin_LA+1] );                       /* [m] */
+        LA_vJ[iBin_LA] = 4.0 / RealDouble(3.0) * physConst::PI * \
+                         ( LA_rE[iBin_LA] * LA_rE[iBin_LA] * LA_rE[iBin_LA] \
+                         + LA_rE[iBin_LA+1] * LA_rE[iBin_LA+1] * LA_rE[iBin_LA+1] ) * 0.5;  /* [m^3] */
+    }
 
     LA_nDens = NDENS[1] * 1.00E-06; /* [#/cm^3]      */
     LA_rEff  = RAD[1]   * 1.00E+09; /* [nm]          */
@@ -353,9 +359,13 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     
     const double sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * physConst::PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
     const double rLA = std::max( RAD[1] * exp( - 2.5 * sLA * sLA ), 1.5 * LA_R_LOW ); 
-    AIM::Grid_Aerosol LAAerosol( size_x, size_y, LA_rJ, LA_rE, LA_nDens, rLA, exp(sLA), "lognormal" );
+    const AIM::Grid_Aerosol LAAerosol( size_x, size_y, LA_rJ, LA_rE, LA_nDens, rLA, exp(sLA), "lognormal" );
 
     liquidAerosol = LAAerosol;
+
+    const AIM::Coagulation kernel1( "liquid", LA_rJ, LA_vJ, physConst::RHO_SULF, temperature, pressure );
+
+    LA_Kernel = kernel1;
 
     if ( DBG ) {
 
@@ -381,14 +391,19 @@ void Solution::Initialize( char const *fileName, const double temperature, const
 
     std::vector<double> PA_rE( nBin_PA + 1, 0.0 ); /* Bin edges in m */
     std::vector<double> PA_rJ( nBin_PA    , 0.0 ); /* Bin center radius in m */
-    
+    std::vector<double> PA_vJ( nBin_PA    , 0.0 ); /* Bin volume centers in m^3 */
+
     const double PA_RRAT = pow( PA_VRAT, 1.0 / RealDouble(3.0) );
     PA_rE[0] = PA_R_LOW;
     for ( unsigned int iBin_PA = 1; iBin_PA < nBin_PA + 1; iBin_PA++ ) 
-        PA_rE[iBin_PA] = PA_rE[iBin_PA-1] * PA_RRAT;                                        /* [m] */
+        PA_rE[iBin_PA] = PA_rE[iBin_PA-1] * PA_RRAT;                                        /* [m]   */
     
-    for ( unsigned int iBin_PA = 0; iBin_PA < nBin_PA; iBin_PA++ )
-        PA_rJ[iBin_PA] = 0.5 * ( PA_rE[iBin_PA] + PA_rE[iBin_PA+1] );                       /* [m] */
+    for ( unsigned int iBin_PA = 0; iBin_PA < nBin_PA; iBin_PA++ ) {
+        PA_rJ[iBin_PA] = 0.5 * ( PA_rE[iBin_PA] + PA_rE[iBin_PA+1] );                       /* [m]   */
+        PA_vJ[iBin_PA] = 4.0 / RealDouble(3.0) * physConst::PI * \
+                         ( PA_rE[iBin_PA] * PA_rE[iBin_PA] * PA_rE[iBin_PA] \
+                         + PA_rE[iBin_PA+1] * PA_rE[iBin_PA+1] * PA_rE[iBin_PA+1] ) * 0.5;  /* [m^3] */
+    }
 
     PA_nDens = NDENS[0] * 1.00E-06; /* [#/cm^3]      */
     PA_rEff  = RAD[0]   * 1.00E+09; /* [nm]          */
@@ -399,6 +414,10 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     AIM::Grid_Aerosol PAAerosol( size_x, size_y, PA_rJ, PA_rE, PA_nDens, rPA, expsPA, "lognormal" );
 
     solidAerosol = PAAerosol;
+    
+    const AIM::Coagulation kernel2( "ice", PA_rJ, PA_vJ, physConst::RHO_ICE, temperature, pressure );
+
+    PA_Kernel = kernel2;
 
     if ( DBG ) {
         std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
@@ -982,13 +1001,15 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
                             const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, \
                             const std::vector<std::vector<double>> cellAreas, bool halfRing, \
                             const double temperature, bool set2Saturation, \
-                            AIM::Aerosol &liqAer, AIM::Aerosol &iceAer )
+                            AIM::Aerosol &liqAer, AIM::Aerosol &iceAer, \
+                            const double Soot_Den )
 {
 
     unsigned int innerRing, nCell;
     unsigned int i, j;
 
     double E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
+    double E_Soot;
     E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * AC.getFuelFlow()  / AC.getVFlight() * physConst::Na;
     /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg]  ) * [kg fuel/s]       / [m/s]           * [molec/mol]
      *     = [molec/m] 
@@ -1010,6 +1031,12 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
     }
     E_SO2  = ( 1.0 - SO2TOSO4 ) * \
              EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+
+    const double rad = EI.getSootRad();
+    E_Soot = EI.getSoot() / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * rad * rad * rad ) * AC.getFuelFlow() / AC.getVFlight();
+    /*     = [g_soot/kg_fuel]/ (                        * [kg_soot/m^3]       * [g/kg]   * [m^3]           ) * [kg_fuel/s]      / [m/s]
+     *     = [part/m]
+     */
 
     if ( !halfRing ) {
         /* Full rings */
@@ -1033,11 +1060,18 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
             GLYX[j][i] += ( E_GLYX / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             MGLY[j][i] += ( E_MGLY / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             if ( set2Saturation ) {
+                /* If supersaturated, then set water vapor to saturation and no bare soot particles
+                 * as they are all covered with ice */
                 H2O[j][i] = physFunc::pSat_H2Os( temperature ) / ( physConst::kB * temperature * 1.00E+06 ); /* [molec / cm^3] */
             } else {
+                /* If subsaturated, then emit water and soot */
                 H2O[j][i]+= ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+                sootDens[j][i] = Soot_Den / cellAreas[j][i]; //( E_Soot / cellAreas[j][i] * 1.0E-06 / nCell ); /* [part / cm^3] */
+                sootRadi[j][i] = rad;
+                sootArea[j][i] = 4.0 * physConst::PI * rad * rad * sootDens[j][i];
             }
             SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+
 
         }
 
@@ -1067,9 +1101,15 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
                 GLYX[j][i] += ( E_GLYX / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 MGLY[j][i] += ( E_MGLY / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 if ( set2Saturation ) {
+                    /* If supersaturated, then set water vapor to saturation and no bare soot particles
+                     * as they are all covered with ice */
                     H2O[j][i] = physFunc::pSat_H2Os( temperature ) / ( physConst::kB * temperature * 1.00E+06 ); /* [molec / cm^3] */
                 } else {
+                    /* If subsaturated, then emit water and soot */
                     H2O[j][i]+= ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+                    sootDens[j][i] = Soot_Den; //( E_Soot / cellAreas[j][i] * 1.0E-06 / nCell ); /* [part / cm^3] */
+                    sootRadi[j][i] = rad;
+                    sootArea[j][i] = 4.0 * physConst::PI * rad * rad * sootDens[j][i];
                 }
                 SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
 
