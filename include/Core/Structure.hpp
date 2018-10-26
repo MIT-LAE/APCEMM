@@ -73,6 +73,8 @@ class Solution
         std::vector<double> getAerosolDens( ) const;
         std::vector<double> getAerosolRadi( ) const;
         std::vector<double> getAerosolArea( ) const;
+        void getAerosolProp( double ( &radi )[4], double ( &area )[4], double &IWC, \
+                             const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) const;
         unsigned int getNx() const;
         unsigned int getNy() const;
         void Debug( const double airDens );

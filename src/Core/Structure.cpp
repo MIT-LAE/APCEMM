@@ -1341,6 +1341,48 @@ std::vector<double> Solution::getAerosolArea( ) const
 
 } /* End of Solution::getAerosolArea */
 
+void Solution::getAerosolProp( double ( &radi )[4], double ( &area )[4], double &IWC, \
+                               const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) const
+{
+
+    std::vector<double> aerosolProp( 4, 0.0E+00 );
+
+    /* Compute aerosol microphysical properties for ice/NAT */
+    aerosolProp = solidAerosol.Average( indexList );
+
+    radi[0] = aerosolProp[1];                      /* [m]        */
+    area[0] = aerosolProp[2];                      /* [m^2/cm^3] */
+    IWC     = physConst::RHO_ICE * aerosolProp[3]; /* [kg/cm^3] */
+
+    /* Compute aerosol microphysical properties for stratospheric liquid aerosols */
+    aerosolProp = liquidAerosol.Average( indexList );
+
+    radi[1] = aerosolProp[1]; /* [m]        */
+    area[1] = aerosolProp[2]; /* [m^2/cm^3] */
+
+    /* Compute aerosol microphysical properties for tropospheric sulfates (near ground) */
+
+    radi[2] = 0.0E+00;
+    area[2] = 0.0E+00;
+
+    /* Compute aerosol microphysical properties for BC particles */
+
+    unsigned int jNy, iNx;
+
+    radi[3] = 0.0E+00;
+    area[3] = 0.0E+00;
+    for ( unsigned int iList = 0; iList < indexList.size(); iList++ ) {
+        iNx = indexList[iList].first;
+        jNy = indexList[iList].second;
+        area[3] += sootDens[jNy][iNx] * 4.0 * physConst::PI * sootRadi[jNy][iNx] * sootRadi[jNy][iNx];
+        radi[3] += sootRadi[jNy][iNx];
+    }
+    area[3] /= indexList.size();
+    radi[3] /= indexList.size();
+
+
+} /* End of Solution::getAerosolProp */
+
 unsigned int Solution::getNx() const
 {
 
