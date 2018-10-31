@@ -24,6 +24,7 @@
 #include "Core/Monitor.hpp"
 #include "SANDS/Solver.hpp"
 #include "AIM/Coagulation.hpp"
+#include "AIM/Settling.hpp"
 #include "EPM/Integrate.hpp"
 #include "KPP/KPP.hpp"
 #include "KPP/KPP_Parameters.h"
@@ -56,13 +57,12 @@ typedef std::vector<double> Real_1DVector;
 typedef std::vector<Real_1DVector> Real_2DVector;
 
 void DiffParam( double time, double &d_x, double &d_y );
-void AdvParam( double time, double &v_x, double &v_y );
 void AdvGlobal( double time, double &v_x, double &v_y, double &dTrav_x, double &dTrav_y );
 std::vector<double> BuildTime( double tStart, double tFinal, \
                double sunRise, double sunSet );
 double UpdateTime( double time, double tStart, \
                    double sunRise, double sunSet );
-void CallSolver( Solution& Data, Solver& SANDS, const bool TRANSPORT_LA, const bool TRANSPORT_PA );
+void Transport( Solution& Data, Solver& SANDS );
 
 
 int PlumeModel( double temperature_K, double pressure_Pa, \
@@ -200,7 +200,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     double d_x, d_y;
 
     /* Allocate horizontal and vertical advection parameters */
-    double v_x, v_y; /* These can vary from one species/particle to another */
     double vGlob_x, vGlob_y; /* These correspond to domain-wide advection velocities (updraft, downdraft) */
 
     /* Allocate horizontal and vertical distance traveled */
@@ -211,13 +210,14 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Fill with? */
     const double fillWith = 0.0;
 
-    /* Allocate Solver */
-    Solver SANDS_Solver( fillNegValues, fillWith );
+    /* Allocate Solvers */
+    Solver SANDS_GasPhase( fillNegValues, fillWith );
+    Solver SANDS_MicroPhys( fillNegValues, fillWith );
     
     /* Run FFTW_Wisdom? */
     if ( FFTW_WISDOM ) {
         std::cout << "FFTW_Wisdom..." << "\n";
-        SANDS_Solver.Wisdom( Data.CO2 );
+        SANDS_GasPhase.Wisdom( Data.CO2 );
     }
 
 
@@ -316,7 +316,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             /* If no, then we have no liquid particles */
             LA_MICROPHYSICS = 0;
     }
-    
+    /* Transport for liquid aerosols? */
+    const bool TRANSPORT_LA = ( LA_MICROPHYSICS == 2 );
+
     /* Solid aerosol considerations */
     unsigned int PA_MICROPHYSICS;
 
@@ -332,6 +334,15 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         else
             /* If no, then we have no solid particles */
             PA_MICROPHYSICS = 0;
+    }
+    /* Transport for solid aerosols? */
+    const bool TRANSPORT_PA = ( PA_MICROPHYSICS == 2 );
+
+    std::vector<double> vFall( Data.nBin_PA, 0.0E+00 );
+    if ( TRANSPORT_PA ) {
+        /* Compute settling velocities */
+        vFall = AIM::SettlingVelocity( Data.solidAerosol.getBinCenters(), \
+                                       temperature_K, pressure_Pa );
     }
 
 
@@ -491,7 +502,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         
         /* Compute time step */
         dt = UpdateTime( curr_Time_s, tInitial_s, 3600.0*sun.sunRise, 3600.0*sun.sunSet );
-        SANDS_Solver.UpdateTimeStep( dt );
+        SANDS_GasPhase.UpdateTimeStep( dt );
+        SANDS_MicroPhys.UpdateTimeStep( dt );
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /**     Advection & Diffusion    **/
@@ -531,9 +543,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             
             AdvGlobal( curr_Time_s - tInitial_s, vGlob_x, vGlob_y, dTrav_x, dTrav_y ); 
             
-
-            AdvParam( curr_Time_s - tInitial_s, v_x, v_y ); 
-
         }
         else {
 
@@ -545,8 +554,11 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         }
    
         /* Update diffusion and advection arrays */
-        SANDS_Solver.UpdateDiff( d_x, d_y );
-        SANDS_Solver.UpdateAdv ( v_x, v_y );
+        SANDS_GasPhase.UpdateDiff( d_x, d_y );
+        SANDS_MicroPhys.UpdateDiff( d_x, d_y );
+        /* Assume no plume advection */
+        SANDS_GasPhase.UpdateAdv ( 0.0E+00, 0.0E+00 );
+        /* Microphysics settling is considered for each bin independently */
 
         
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
@@ -564,7 +576,31 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #pragma omp critical /* Not sure why omp critical is needed here, otherwise leads to segmentation faults... */
         {
-            CallSolver( Data, SANDS_Solver, ( LA_MICROPHYSICS == 2 ), ( PA_MICROPHYSICS == 2 ) );
+            /* Advection and diffusion for gas phase species */
+            Transport( Data, SANDS_GasPhase );
+            
+            /* Advection and diffusion for aerosol particles */
+            SANDS_MicroPhys.UpdateAdv ( 0.0E+00, 0.0E+00 );
+            SANDS_MicroPhys.Solve( Data.sootDens );
+            /* Monodisperse assumption for soot particles */
+            SANDS_MicroPhys.Solve( Data.sootRadi );
+            SANDS_MicroPhys.Solve( Data.sootArea );
+            
+            /* We assume that sulfate aerosols do not settle */
+            if ( TRANSPORT_LA ) {
+                /* Transport of liquid aerosols */
+                for ( unsigned int iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ )
+                    SANDS_MicroPhys.Solve( Data.liquidAerosol.pdf[iBin_LA] );
+            }
+
+            if ( TRANSPORT_PA ) {
+                /* Transport of solid aerosols */
+                for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                    SANDS_MicroPhys.UpdateAdv ( 0.0E+00, vFall[iBin_PA] );
+                    SANDS_MicroPhys.Solve( Data.solidAerosol.pdf[iBin_PA] );
+                }
+            }
+            
         }
 
 #if ( TIME_IT )
