@@ -66,7 +66,7 @@
             /* Update advection field */
             void UpdateAdv( const RealDouble vH, const RealDouble vV );
            
-            void Solve( Real_2DVector &V, const bool realInput );
+            void Solve( Real_2DVector &V, const bool realInput = 1 );
 
             /* Fill value between threshold with val */
             void Fill( Real_2DVector &V, const RealDouble val, const RealDouble threshold = 0.0 );
