@@ -21,10 +21,23 @@
 namespace util
 {
     double** EW_Multiply( double** A, double** B, unsigned int N, unsigned int M );
-    double* vect2double ( const std::vector<std::vector<double> > &vals, unsigned int N, unsigned int M, double scalingFactor = 1.0 );
-    double* vect2double ( const std::vector<double> &vals, unsigned int N, double scalingFactor = 1.0 );
-    float* vect2float ( const std::vector<std::vector<double> > &vals, unsigned int N, unsigned int M, double scalingFactor = 1.0 );
-    float* vect2float ( const std::vector<double> &vals, unsigned int N, double scalingFactor = 1.0 );
+    
+    double* vect2double( const std::vector<std::vector<std::vector<std::vector<double>>>> &vals, unsigned int N, unsigned int M, \
+                         unsigned int L, unsigned int K, double scalingFactor = 1.0 );
+    double* vect2double( const std::vector<std::vector<std::vector<double>>> &vals, unsigned int N, unsigned int M, \
+                         unsigned int L, double scalingFactor = 1.0 );
+    double* vect2double( const std::vector<std::vector<double>> &vals, unsigned int N, unsigned int M, \
+                         double scalingFactor = 1.0 );
+    double* vect2double( const std::vector<double> &vals, unsigned int N, double scalingFactor = 1.0 );
+
+    float* vect2float( const std::vector<std::vector<std::vector<std::vector<double>>>> &vals, unsigned int N, unsigned int M, \
+                       unsigned int L, unsigned int K, double scalingFactor = 1.0 );
+    float* vect2float( const std::vector<std::vector<std::vector<double>>> &vals, unsigned int N, unsigned int M, \
+                       unsigned int L, double scalingFactor = 1.0 );
+    float* vect2float( const std::vector<std::vector<double>> &vals, unsigned int N, unsigned int M, \
+                       double scalingFactor = 1.0 );
+    float* vect2float( const std::vector<double> &vals, unsigned int N, double scalingFactor = 1.0 );
+
     std::vector<std::vector<double> > Array2Vect( const double** A, unsigned int N, unsigned int M, double scalingFactor = 1.0 );
     void PrintVector( std::vector<std::vector<double> > Array );
     template <class T>

@@ -25,7 +25,7 @@ namespace output
         const bool doWrite = 1;
         const bool doRead = 1;
         const bool overWrite = 1;
-        const char* currFileName( OUTPUT_FILE );
+        const char* currFileName( OUT_FILE );
 
         int didSaveSucceed = 1;
         time_t rawtime;
@@ -35,6 +35,7 @@ namespace output
         NcFile currFile = fileHandler.openFile();
         if ( !fileHandler.isFileOpen() ) {
             std::cout << "File " << currFileName << " didn't open!" << "\n";
+            return SAVE_FAILURE;
         } else {
             std::cout << "\nStarting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
             time( &rawtime );
@@ -3297,7 +3298,97 @@ namespace output
 
         return SAVE_SUCCESS;
 
-    } /* End of Save */
+    } /* End of Write */
+
+    int Write_MicroPhys( const std::vector<std::vector<std::vector<std::vector<double>>>> &output_MicroPhys, \
+                         const std::vector<double> &timeArray, const std::vector<double> &binCenters, \
+                         const std::vector<double> &horizDim, const std::vector<double> &verticDim, \
+                         const double temperature_K, const double pressure_Pa, const double lapseRate,
+                         const double relHumidity_w, const double relHumidity_i )
+    {
+        const bool doWrite = 1;
+        const bool doRead = 1;
+        const bool overWrite = 1;
+        const char* currFileName( OUT_FILE_MICROPHYS );
+
+        int didSaveSucceed = 1;
+        time_t rawtime;
+        char buffer[80];
+
+        FileHandler fileHandler( currFileName, doWrite, doRead, overWrite );
+        NcFile currFile = fileHandler.openFile();
+        if ( !fileHandler.isFileOpen() ) {
+            std::cout << "File " << currFileName << " didn't open!" << "\n";
+            return SAVE_FAILURE;
+        } else {
+            std::cout << "\nStarting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
+            time( &rawtime );
+            strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
+
+            const NcDim *timeDim = fileHandler.addDim( currFile, "time", long(timeArray.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "time", timeDim, "float", "s", "Time");
+            const NcDim *binDim = fileHandler.addDim( currFile, "Bin Centers", long(binCenters.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &binCenters[0], "bin Centers", binDim, "float", "m", "Bin Centers");
+            const NcDim *XDim = fileHandler.addDim( currFile, "Horizontal dimension", long(horizDim.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &horizDim[0], "X coordinate", XDim, "float", "m", "X coordinate of the grid cell centers");
+            const NcDim *YDim = fileHandler.addDim( currFile, "Vertical dimension", long(verticDim.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &verticDim[0], "Y coordinate", YDim, "float", "m", "Y coordinate of the grid cell centers");
+            
+            didSaveSucceed *= fileHandler.addAtt( currFile, "FileName", fileHandler.getFileName() );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Author", "Thibaud M. Fritz (fritzt@mit.edu)" );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Contact", "Thibaud M. Fritz (fritzt@mit.edu)" );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "GenerationDate", buffer );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Format", "NetCDF-4" );
+
+            didSaveSucceed *= fileHandler.addConst( currFile, &temperature_K, "Temperature", 1, "float", "K"   , "Ambient Temperature" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Pressure"   , 1, "float", "hPa" , "Ambient Pressure" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Lapse Rate" , 1, "float", "K/km", "Ambient temperature lapse rate" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_w, "RHW"        , 1, "float", "-"   , "Ambient Rel. Humidity w.r.t water" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_i, "RHI"        , 1, "float", "-"   , "Ambient Rel. Humidity w.r.t ice" );
+
+#if ( SAVE_TO_DOUBLE )
+                double* aerArray;
+                const char* outputType = "double";
+#else
+                float* aerArray;
+                const char* outputType = "float";
+#endif /* SAVE_TO_DOUBLE */
+    
+            char charSpc[30];
+            char charName[50];
+            char charUnit[20];
+                
+            strncpy( charSpc, "Aerosol", sizeof(charSpc) );
+            strncpy( charName, "Aerosol number concentration", sizeof(charName) );
+            strncpy( charUnit, "#/cm^3", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            aerArray = util::vect2double( output_MicroPhys , timeArray.size(), binCenters.size(), verticDim.size(), horizDim.size(), 1.0 );
+#else
+            aerArray = util::vect2float( output_MicroPhys, timeArray.size(), binCenters.size(), verticDim.size(), horizDim.size(), 1.0 );
+#endif /* SAVE_TO_DOUBLE */
+                
+             didSaveSucceed *= fileHandler.addVar4D( currFile, &(aerArray)[0], (const char*)charSpc, timeDim, binDim, YDim, XDim, outputType, (const char*)charUnit, (const char*)charName );
+
+            util::delete1D( aerArray );
+
+            if ( didSaveSucceed == NC_SUCCESS ) {
+                std::cout << "Done saving to netCDF!" << "\n";
+            } else if ( didSaveSucceed != NC_SUCCESS ) {
+                std::cout << "Error occured in saving data: didSaveSucceed: " << didSaveSucceed << "\n";
+                return SAVE_FAILURE;
+            }
+
+            fileHandler.closeFile( currFile );
+            if ( fileHandler.isFileOpen() ) {
+                std::cout << "File " << currFileName << " didn't close properly!" << "\n";
+                return SAVE_FAILURE;
+            }
+
+        }
+        return SAVE_SUCCESS;
+
+    } /* End of Write_MicroPhys */
 
 }
 

@@ -19,6 +19,7 @@
 #include <ctime>
 #include "omp.h"
 
+#include "Util/ForwardsDecl.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
 #include "Core/Monitor.hpp"
@@ -75,7 +76,19 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Grid indices */
     unsigned int iNx = 0;
     unsigned int jNy = 0;
+    
+    int IERR;
+    bool LAST_STEP = 0;
+    bool ITS_TIME_FOR_LIQ_COAGULATION = 0;
+    double lastTimeLiqCoag, dtLiqCoag;
+    bool ITS_TIME_FOR_ICE_COAGULATION = 0;
+    double lastTimeIceCoag, dtIceCoag;
 
+#if ( SAVE_OUTPUT || SAVE_LA_MICROPHYS || SAVE_PA_MICROPHYS )
+
+    int isSaved = 1;
+
+#endif /* SAVE_OUTPUT || SAVE_LA_MICROPHYS || SAVE_PA_MICROPHYS */
 #if ( TIME_IT )
 
     Timer Stopwatch, Stopwatch_cumul;
@@ -110,12 +123,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     #endif /* RINGS */
 
 #endif /* CO2_MASS_CHECK */
-
-    int IERR;
-    bool ITS_TIME_FOR_LIQ_COAGULATION = 0;
-    double lastTimeLiqCoag, dtLiqCoag;
-    bool ITS_TIME_FOR_ICE_COAGULATION = 0;
-    double lastTimeIceCoag, dtIceCoag;
 
     /* Compute relative humidity w.r.t ice */
     double relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
@@ -191,6 +198,23 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     /* Create ambient struture */
     Ambient ambientData( timeArray.size(), Data.getAmbient(), Data.getAerosol(), Data.getLiqSpecies() );
+
+#if ( SAVE_LA_MICROPHYS )
+    
+    bool ITS_TIME_TO_SAVE_LA_OUTPUT = 0;
+    std::vector<double> saveTime_LA;
+    std::vector<std::vector<std::vector<std::vector<double>>>> saveOutput_LA( 1, std::vector<std::vector<std::vector<double>>>( Data.nBin_LA, std::vector<std::vector<double>>( NY, std::vector<double>( NX, 0.0E+00 ))));
+
+#endif /* SAVE_LA_MICROPHYS */
+
+#if ( SAVE_PA_MICROPHYS )
+
+    bool ITS_TIME_TO_SAVE_PA_OUTPUT = 0;
+    std::vector<double> saveTime_PA;
+    std::vector<std::vector<std::vector<std::vector<double>>>> saveOutput_PA( 1, std::vector<std::vector<std::vector<double>>>( Data.nBin_PA, std::vector<std::vector<double>>( NY, std::vector<double>( NX, 0.0E+00 ))));
+
+#endif /* SAVE_PA_MICROPHYS */
+
    
     /** ~~~~~~~~~~~~~~~~~ **/
     /**      Solver       **/
@@ -479,6 +503,22 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     lastTimeLiqCoag = curr_Time_s;
     lastTimeIceCoag = curr_Time_s;
 
+#if ( SAVE_LA_MICROPHYS )
+    
+    saveOutput_LA[0] = Data.liquidAerosol.pdf;
+    saveTime_LA.push_back( curr_Time_s );
+
+#endif /* SAVE_LA_MICROPHYS */
+
+#if ( SAVE_PA_MICROPHYS )
+
+    saveOutput_PA[0] = Data.solidAerosol.pdf;
+    saveTime_PA.push_back( curr_Time_s );
+
+#endif /* SAVE_PA_MICROPHYS */
+
+
+
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
     /**         Time Loop          **/
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
@@ -502,6 +542,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         
         /* Compute time step */
         dt = UpdateTime( curr_Time_s, tInitial_s, 3600.0*sun.sunRise, 3600.0*sun.sunSet );
+        LAST_STEP = ( curr_Time_s + dt >= tFinal_s );
+
         SANDS_GasPhase.UpdateTimeStep( dt );
         SANDS_MicroPhys.UpdateTimeStep( dt );
 
@@ -1012,29 +1054,57 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
-        ITS_TIME_FOR_LIQ_COAGULATION = ( ( curr_Time_s - lastTimeLiqCoag ) >= LIQCOAG_TSTEP );
+        ITS_TIME_FOR_LIQ_COAGULATION = ( ( ( curr_Time_s - lastTimeLiqCoag ) >= LIQCOAG_TSTEP ) || LAST_STEP );
         /* Liquid aerosol coagulation */
         if ( ITS_TIME_FOR_LIQ_COAGULATION && LIQ_MICROPHYSICS ) {
             dtLiqCoag = ( curr_Time_s - lastTimeLiqCoag );
             if ( DBG )
-                std::cout << "\n DEBUG (LiqCoag): Current time: " << (curr_Time_s - tInitial_s) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeLiqCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtLiqCoag << " s\n";
+                std::cout << "\n DEBUG (Liquid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeLiqCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtLiqCoag << " s\n";
 
             lastTimeLiqCoag = curr_Time_s;
             /* Here we assume that the sulfate aerosol fields are symmetric around the X and Y axis */
             Data.liquidAerosol.Coagulate( dtLiqCoag, Data.LA_Kernel, LA_MICROPHYSICS, (unsigned int) 2 );
         }
 
-        ITS_TIME_FOR_ICE_COAGULATION = ( ( curr_Time_s - lastTimeIceCoag ) >= ICECOAG_TSTEP );
+        ITS_TIME_FOR_ICE_COAGULATION = ( ( ( curr_Time_s - lastTimeIceCoag ) >= ICECOAG_TSTEP ) || LAST_STEP );
         /* Solid aerosol coagulation */
         if ( ITS_TIME_FOR_ICE_COAGULATION && ICE_MICROPHYSICS ) {
             dtIceCoag = ( curr_Time_s - lastTimeIceCoag );
             if ( DBG )
-                std::cout << "\n DEBUG (IceCoag): Current time: " << (curr_Time_s - tInitial_s) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeIceCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceCoag << " s\n";
+                std::cout << "\n DEBUG (Solid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeIceCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceCoag << " s\n";
 
             lastTimeIceCoag = curr_Time_s;
             /* Here we assume that the solid aerosol fields are symmetric around the X axis */
             Data.solidAerosol.Coagulate ( dtIceCoag, Data.PA_Kernel, PA_MICROPHYSICS, (unsigned int) ( 2 - ( relHumidity_i > 100.0 ) ) );
         }
+
+#if ( SAVE_LA_MICROPHYS )
+    
+        ITS_TIME_TO_SAVE_LA_OUTPUT = ( ( ( curr_Time_s - saveTime_LA.back() ) >= SAVE_LA_DT ) || LAST_STEP );
+        /* Save liquid aerosol at current time */
+        if ( ITS_TIME_TO_SAVE_LA_OUTPUT ) {
+            if ( DBG )
+                std::cout << "\n DEBUG (Save Liquid Aerosols): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last time liquid aerosols were saved: " << ( saveTime_LA.back() - tInitial_s ) / 3600.0 << " hr\n";
+
+            saveTime_LA.push_back( curr_Time_s );
+            saveOutput_LA.push_back( Data.liquidAerosol.pdf );
+        }
+
+#endif /* SAVE_LA_MICROPHYS */
+
+#if ( SAVE_PA_MICROPHYS )
+    
+        ITS_TIME_TO_SAVE_PA_OUTPUT = ( ( ( curr_Time_s - saveTime_PA.back() ) >= SAVE_PA_DT ) || LAST_STEP );
+        /* Save solid aerosol at current time */
+        if ( ITS_TIME_TO_SAVE_PA_OUTPUT ) {
+            if ( DBG )
+                std::cout << "\n DEBUG (Save Solid Aerosols): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last time solid aerosols were saved: " << ( saveTime_PA.back() - tInitial_s ) / 3600.0 << " hr\n";
+
+            saveTime_PA.push_back( curr_Time_s );
+            saveOutput_PA.push_back( Data.solidAerosol.pdf );
+        }
+
+#endif /* SAVE_PA_MICROPHYS */
 
 
 #if ( NOy_MASS_CHECK )
@@ -1160,13 +1230,37 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     
 #if ( SAVE_OUTPUT )
 
-    int isSaved = output::Write( ringSpecies, ambientData, ringCluster, timeArray, temperature_K, pressure_Pa, airDens, relHumidity_w, relHumidity_i, longitude_deg, latitude_deg, sun.sunRise, sun.sunSet );
+    isSaved = output::Write( ringSpecies, ambientData, ringCluster, timeArray, temperature_K, pressure_Pa, airDens, relHumidity_w, relHumidity_i, longitude_deg, latitude_deg, sun.sunRise, sun.sunSet );
     if ( isSaved == output::SAVE_FAILURE ) {
-        std::cout << "Saving file failed...\n";
+        std::cout << "Saving to file failed...\n";
         return SAVE_FAIL;
     }
 
 #endif /* SAVE_OUTPUT */
+
+#if ( SAVE_LA_MICROPHYS )
+    
+    isSaved = output::Write_MicroPhys( saveOutput_LA, saveTime_LA, Data.liquidAerosol.getBinCenters(), \
+                                       m.getX(), m.getY(), temperature_K, pressure_Pa, 0.0, \
+                                       relHumidity_w, relHumidity_i );
+    if ( isSaved == output::SAVE_FAILURE ) {
+        std::cout << "Saving solid aerosol's properties failed...\n";
+        return SAVE_FAIL;
+    }
+
+#endif /* SAVE_LA_MICROPHYS */
+
+#if ( SAVE_PA_MICROPHYS )
+
+    isSaved = output::Write_MicroPhys( saveOutput_PA, saveTime_PA, Data.solidAerosol.getBinCenters(), \
+                                       m.getX(), m.getY(), temperature_K, pressure_Pa, 0.0, \
+                                       relHumidity_w, relHumidity_i );
+    if ( isSaved == output::SAVE_FAILURE ) {
+        std::cout << "Saving solid aerosol's properties failed...\n";
+        return SAVE_FAIL;
+    }
+
+#endif /* SAVE_PA_MICROPHYS */
 
 
     return SUCCESS;
