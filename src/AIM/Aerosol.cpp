@@ -17,12 +17,12 @@ namespace AIM
 {
 
     Aerosol::Aerosol( ):
-        bin_Centers( 24 ),
-        bin_VCenters( 24 ),
-        bin_Edges( 25 ),
-        bin_Sizes( 24 ),
-        nBin( 24 ),
-        pdf( 24 )
+        bin_Centers( 2 ),
+        bin_VCenters( 2 ),
+        bin_Edges( 3 ),
+        bin_Sizes( 2 ),
+        nBin( 2 ),
+        pdf( 2 )
     {
 
         /* Default constructor */
@@ -482,7 +482,7 @@ namespace AIM
 
     } /* End of Aerosol::Moment */
 
-    RealDouble Aerosol::getRadius( ) const
+    RealDouble Aerosol::Radius( ) const
     {
 
         const RealDouble N = Moment( 0 );
@@ -490,13 +490,13 @@ namespace AIM
         if ( N > 0 ) {
             return Moment( 1 ) / N;
         } else {
-            std::cout << "\nIn Aerosol::getRadius: Number of particles is " << N << " <= 0\n";
+            std::cout << "\nIn Aerosol::Radius: Number of particles is " << N << " <= 0\n";
             return 0;
         }
 
-    } /* End of Aerosol::getRadius */
+    } /* End of Aerosol::Radius */
     
-    RealDouble Aerosol::getEffRadius( ) const
+    RealDouble Aerosol::EffRadius( ) const
     {
 
         const RealDouble m2 = Moment( 2 );
@@ -504,13 +504,13 @@ namespace AIM
         if ( m2 > 0 ) {
             return Moment(3) / m2;
         } else {
-            std::cout << "\nIn Aerosol::getEffRadius: Second moment is " << m2 << " <= 0\n";
+            std::cout << "\nIn Aerosol::EffRadius: Second moment is " << m2 << " <= 0\n";
             return 0;
         }
 
-    } /* End of Aerosol::getEffRadius */
+    } /* End of Aerosol::EffRadius */
 
-    RealDouble Aerosol::getStdDev( ) const
+    RealDouble Aerosol::StdDev( ) const
     {
 
         const RealDouble N = Moment( 0 );
@@ -518,11 +518,11 @@ namespace AIM
         if ( N > 0 ) {
             return sqrt( Moment( 2 ) / N - pow( Moment( 1 ) / N, 2.0 ) );
         } else {
-            std::cout << "\nIn Aerosol::getStdDev: Number of particles is " << N << " <= 0\n";
+            std::cout << "\nIn Aerosol::StdDev: Number of particles is " << N << " <= 0\n";
             return 0;
         }
 
-    } /* End of Aerosol::getStdDev */
+    } /* End of Aerosol::StdDev */
 
     void Aerosol::scalePdf( RealDouble scalFactor )
     {
@@ -617,12 +617,12 @@ namespace AIM
     
     
     Grid_Aerosol::Grid_Aerosol( ):
-        Nx( 256 ),
-        Ny( 256 ),
-        bin_Centers( 24 ),
-        bin_Edges( 25 ),
-        bin_Sizes( 24 ),
-        nBin( 24 )
+        Nx( 2 ),
+        Ny( 2 ),
+        bin_Centers( 2 ),
+        bin_Edges( 3 ),
+        bin_Sizes( 2 ),
+        nBin( 2 )
     {
 
         /* Default constructor */
@@ -1325,7 +1325,7 @@ namespace AIM
 
     } /* End of Grid_Aerosol::Moment */
 
-    Vector_2D Grid_Aerosol::getRadius( ) const
+    Vector_2D Grid_Aerosol::Radius( ) const
     {
 
         Vector_2D r( Ny, Vector_1D( Nx, 0.0E+00 ) );
@@ -1344,9 +1344,9 @@ namespace AIM
 
         return r;
 
-    } /* End of Grid_Aerosol::getRadius */
+    } /* End of Grid_Aerosol::Radius */
     
-    Vector_2D Grid_Aerosol::getEffRadius( ) const
+    Vector_2D Grid_Aerosol::EffRadius( ) const
     {
 
         Vector_2D r_eff( Ny, Vector_1D( Nx, 0.0E+00 ) );
@@ -1365,9 +1365,9 @@ namespace AIM
 
         return r_eff;
 
-    } /* End of Grid_Aerosol::getEffRadius */
+    } /* End of Grid_Aerosol::EffRadius */
 
-    Vector_2D Grid_Aerosol::getStdDev( ) const
+    Vector_2D Grid_Aerosol::StdDev( ) const
     {
 
         Vector_2D sigma( Ny, Vector_1D( Nx, 0.0E+00 ) );
@@ -1387,7 +1387,7 @@ namespace AIM
 
         return sigma;
 
-    } /* End of Grid_Aerosol::getStdDev */
+    } /* End of Grid_Aerosol::StdDev */
     
     RealDouble Grid_Aerosol::Moment( UInt n, Vector_1D PDF ) const
     {
@@ -1415,7 +1415,7 @@ namespace AIM
 
     } /* End of Grid_Aerosol::Moment */
 
-    RealDouble Grid_Aerosol::getRadius( UInt jNy, UInt iNx ) const
+    RealDouble Grid_Aerosol::Radius( UInt jNy, UInt iNx ) const
     {
 
         const RealDouble N = Moment( 0, jNy, iNx );
@@ -1423,13 +1423,13 @@ namespace AIM
         if ( N > 0 ) {
             return Moment( 1, jNy, iNx ) / N;
         } else {
-            std::cout << "\nIn Grid_Aerosol::getRadius: Number of particles is " << N << " <= 0\n";
+            std::cout << "\nIn Grid_Aerosol::Radius: Number of particles is " << N << " <= 0\n";
             return 0;
         }
 
-    } /* End of Grid_Aerosol::getRadius */
+    } /* End of Grid_Aerosol::Radius */
     
-    RealDouble Grid_Aerosol::getEffRadius( UInt jNy, UInt iNx ) const
+    RealDouble Grid_Aerosol::EffRadius( UInt jNy, UInt iNx ) const
     {
 
         const RealDouble m2 = Moment( 2, jNy, iNx );
@@ -1437,13 +1437,13 @@ namespace AIM
         if ( m2 > 0 ) {
             return Moment( 3, jNy, iNx ) / m2;
         } else {
-            std::cout << "\nIn Grid_Aerosol::getEffRadius: Second moment is " << m2 << " <= 0\n";
+            std::cout << "\nIn Grid_Aerosol::EffRadius: Second moment is " << m2 << " <= 0\n";
             return 0;
         }
 
-    } /* End of Aerosol::getEffRadius */
+    } /* End of Aerosol::EffRadius */
 
-    RealDouble Grid_Aerosol::getStdDev( UInt jNy, UInt iNx ) const
+    RealDouble Grid_Aerosol::StdDev( UInt jNy, UInt iNx ) const
     {
 
         const RealDouble N = Moment( 0, jNy, iNx );
@@ -1451,11 +1451,11 @@ namespace AIM
         if ( N > 0 ) {
             return sqrt( Moment( 2, jNy, iNx ) / N - pow( Moment( 1, jNy, iNx ) / N, 2.0 ) );
         } else {
-            std::cout << "\nIn Grid_Aerosol::getStdDev: Number of particles is " << N << " <= 0\n";
+            std::cout << "\nIn Grid_Aerosol::StdDev: Number of particles is " << N << " <= 0\n";
             return 0;
         }
 
-    } /* End of Grid_Aerosol::getStdDev */
+    } /* End of Grid_Aerosol::StdDev */
 
     void Grid_Aerosol::updatePdf( Vector_3D pdf_ )
     {

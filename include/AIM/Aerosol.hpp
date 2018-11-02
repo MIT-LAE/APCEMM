@@ -62,9 +62,9 @@ class AIM::Aerosol
         
         /* Moments */
         RealDouble Moment( UInt n = 0 ) const;
-        RealDouble getRadius( ) const;
-        RealDouble getEffRadius( ) const;
-        RealDouble getStdDev( ) const;
+        RealDouble Radius( ) const;
+        RealDouble EffRadius( ) const;
+        RealDouble StdDev( ) const;
 
         /* utils */
         void scalePdf( RealDouble factor );
@@ -131,12 +131,12 @@ class AIM::Grid_Aerosol
         Vector_2D Moment( UInt n ) const;
         RealDouble Moment( UInt n, Vector_1D PDF ) const;
         RealDouble Moment( UInt n, UInt iNx, UInt jNy ) const;
-        Vector_2D getRadius( ) const;
-        RealDouble getRadius( UInt iNx, UInt jNy ) const;
-        Vector_2D getEffRadius( ) const;
-        RealDouble getEffRadius( UInt iNx, UInt jNy ) const;
-        Vector_2D getStdDev( ) const;
-        RealDouble getStdDev( UInt iNx, UInt jNy ) const;
+        Vector_2D Radius( ) const;
+        RealDouble Radius( UInt iNx, UInt jNy ) const;
+        Vector_2D EffRadius( ) const;
+        RealDouble EffRadius( UInt iNx, UInt jNy ) const;
+        Vector_2D StdDev( ) const;
+        RealDouble StdDev( UInt iNx, UInt jNy ) const;
 
         /* utils */
         void updatePdf( Vector_3D pdf_ );
