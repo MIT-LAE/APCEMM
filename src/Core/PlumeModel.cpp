@@ -36,6 +36,7 @@
 #endif /* RINGS */
 #include "Core/SZA.hpp"
 #include "Core/Mesh.hpp"
+#include "Core/Meteorology.hpp"
 #include "Core/Structure.hpp"
 #include "Core/Ambient.hpp"
 #include "Core/Fuel.hpp"
@@ -45,7 +46,7 @@
 #if ( TIME_IT )
     #include "Core/Timer.hpp"
 #endif /* TIME_IT */
-#if ( SAVE_OUTPUT )
+#if ( SAVE_OUTPUT || SAVE_PA_MICROPHYS || SAVE_LA_MICROPHYS )
     #include "Core/Save.hpp"
 #endif /* SAVE_OUTPUT */
 
@@ -177,10 +178,15 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     unsigned int nTime = 0;
     
 
+    /** ~~~~~~~~~~~~~~~~~~ **/
+    /**     Meteorology    **/
+    /** ~~~~~~~~~~~~~~~~~~ **/
+
+    Meteorology Met( LOAD_MET, m, temperature_K, 11.2E+03, -3.0E-03, DBG );
     
-    /** ~~~~~~~~~~~~~~~~~ **/
-    /**     Background    **/
-    /** ~~~~~~~~~~~~~~~~~ **/
+    /** ~~~~~~~~~~~~~~~~~~ **/
+    /**     Background     **/
+    /** ~~~~~~~~~~~~~~~~~~ **/
 
     /* Declare solution structure */
     Solution Data;
@@ -236,7 +242,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     /* Allocate Solvers */
     Solver SANDS_GasPhase( fillNegValues, fillWith );
-    Solver SANDS_MicroPhys( fillNegValues, fillWith );
+    Solver SANDS_MicroPhys( fillNegValues, 1.00E-50 );
     
     /* Run FFTW_Wisdom? */
     if ( FFTW_WISDOM ) {
@@ -368,7 +374,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         vFall = AIM::SettlingVelocity( Data.solidAerosol.getBinCenters(), \
                                        temperature_K, pressure_Pa );
     }
-
+    
 
     /** ~~~~~~~~~~~~~~~~~ **/
     /**      Rings?       **/
@@ -471,9 +477,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         std::cout << " ##\n";
         std::cout << " ## - PA : " << std::setw(txtWidth+3) << iceAer.Moment() << " [#/cm^3], \n";
         if ( iceAer.Moment(2) > 0 )
-            std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.getEffRadius() * 1.0E+09 << " [nm], \n";
+            std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.getEffRadius() * 1.0E+06 << " [mum], \n";
         else
-            std::cout << " ##        " << std::setw(txtWidth+3) << 0.0E+00 << " [nm], \n";
+            std::cout << " ##        " << std::setw(txtWidth+3) << 0.0E+00 << " [mum], \n";
         std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";
 
         std::cout << "\n ## BACKG COND.:";
@@ -488,10 +494,11 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         std::cout << " ##        " << std::setw(txtWidth+3) << Data.LA_SAD   << " [mum^2/cm^3] \n";
         std::cout << " ##\n";
         std::cout << " ## - PA : " << std::setw(txtWidth+3) << Data.PA_nDens << " [#/cm^3], \n";
-        std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_rEff  << " [nm], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_rEff * 1.00E-03  << " [mum], \n";
         std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_SAD   << " [mum^2/cm^3] \n";
 
     }
+
 
     double frac_gSO4 = 0.0E+00;
     std::vector<double> aerosolProp( 3, 0.0E+00 );
@@ -618,6 +625,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #pragma omp critical /* Not sure why omp critical is needed here, otherwise leads to segmentation faults... */
         {
+
+#if ( DIFFUSION || ADVECTION )
             /* Advection and diffusion for gas phase species */
             Transport( Data, SANDS_GasPhase );
             
@@ -642,6 +651,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                     SANDS_MicroPhys.Solve( Data.solidAerosol.pdf[iBin_PA] );
                 }
             }
+
+#endif /* ( DIFFUSION || ADVECTION ) */
             
         }
 
@@ -938,9 +949,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                         }
 
                         relHumidity_Ring = varArray[ind_H2O] * \
-                                           physConst::kB * temperature_K * 1.00E+06 / \
-                                           physFunc::pSat_H2Ol( temperature_K );
-                        GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
+                                           physConst::kB * met.temp[jNy][iNx] * 1.00E+06 / \
+                                           physFunc::pSat_H2Ol( met.temp[jNy][iNx] );
+                        GC_SETHET( met.temp[jNy][iNx], met.press[jNy], airDens, relHumidity_Ring, \
                                    Data.STATE_PSC, varArray, AerosolArea, AerosolRadi, IWC, kheti_sla );
                     }
 
@@ -948,7 +959,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                     for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
                         RCONST[iReact] = 0.0E+00;
 
-                    Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O] );
+                    Update_RCONST( met.temp[jNy][iNx], met.press[jNy], airDens, varArray[ind_H2O] );
 
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
                     /* ~~~~~ Integration ~~~~~~ */
@@ -995,9 +1006,9 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 }
 
                 relHumidity_Ring = varArray[ind_H2O] * \
-                                   physConst::kB * temperature_K * 1.00E+06 / \
-                                   physFunc::pSat_H2Ol( temperature_K );
-                GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
+                                   physConst::kB * met.temp[jNy][iNx] * 1.00E+06 / \
+                                   physFunc::pSat_H2Ol( met.temp[jNy][iNx] );
+                GC_SETHET( met.temp[jNy][iNx], met.press[jNy], airDens, relHumidity_Ring, \
                            Data.STATE_PSC, varArray, AerosolArea, AerosolRadi, IWC, kheti_sla );
             }
 
@@ -1006,7 +1017,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
                 RCONST[iReact] = 0.0E+00;
             
-            Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O], sun.CSZA );
+            Update_RCONST( met.temp[jNy][iNx], met.press[jNy], airDens, varArray[ind_H2O], sun.CSZA );
 
             /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
             /* ~~~~~~ Integration ~~~~~ */
@@ -1053,7 +1064,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /** ~~~~~~~~~~~~~~~~~ Coagulation ~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
-
+    
         ITS_TIME_FOR_LIQ_COAGULATION = ( ( ( curr_Time_s - lastTimeLiqCoag ) >= LIQCOAG_TSTEP ) || LAST_STEP );
         /* Liquid aerosol coagulation */
         if ( ITS_TIME_FOR_LIQ_COAGULATION && LIQ_MICROPHYSICS ) {
@@ -1077,6 +1088,13 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             /* Here we assume that the solid aerosol fields are symmetric around the X axis */
             Data.solidAerosol.Coagulate ( dtIceCoag, Data.PA_Kernel, PA_MICROPHYSICS, (unsigned int) ( 2 - ( relHumidity_i > 100.0 ) ) );
         }
+        
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~ Growth ~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
 
 #if ( SAVE_LA_MICROPHYS )
     
@@ -1086,7 +1104,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             if ( DBG )
                 std::cout << "\n DEBUG (Save Liquid Aerosols): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last time liquid aerosols were saved: " << ( saveTime_LA.back() - tInitial_s ) / 3600.0 << " hr\n";
 
-            saveTime_LA.push_back( curr_Time_s );
+            if ( LAST_STEP )
+                saveTime_LA.push_back( curr_Time_s + dt );
+            else
+                saveTime_LA.push_back( curr_Time_s );
             saveOutput_LA.push_back( Data.liquidAerosol.pdf );
         }
 
@@ -1100,7 +1121,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             if ( DBG )
                 std::cout << "\n DEBUG (Save Solid Aerosols): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last time solid aerosols were saved: " << ( saveTime_PA.back() - tInitial_s ) / 3600.0 << " hr\n";
 
-            saveTime_PA.push_back( curr_Time_s );
+            if ( LAST_STEP )
+                saveTime_PA.push_back( curr_Time_s + dt );
+            else
+                saveTime_PA.push_back( curr_Time_s );
             saveOutput_PA.push_back( Data.solidAerosol.pdf );
         }
 
@@ -1240,7 +1264,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #if ( SAVE_LA_MICROPHYS )
     
-    isSaved = output::Write_MicroPhys( saveOutput_LA, saveTime_LA, Data.liquidAerosol.getBinCenters(), \
+    isSaved = output::Write_MicroPhys( OUT_FILE_LA, saveOutput_LA, saveTime_LA, \
+                                       Data.liquidAerosol.getBinCenters(), \
                                        m.getX(), m.getY(), temperature_K, pressure_Pa, 0.0, \
                                        relHumidity_w, relHumidity_i );
     if ( isSaved == output::SAVE_FAILURE ) {
@@ -1252,7 +1277,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #if ( SAVE_PA_MICROPHYS )
 
-    isSaved = output::Write_MicroPhys( saveOutput_PA, saveTime_PA, Data.solidAerosol.getBinCenters(), \
+    isSaved = output::Write_MicroPhys( OUT_FILE_PA, saveOutput_PA, saveTime_PA, \
+                                       Data.solidAerosol.getBinCenters(), \
                                        m.getX(), m.getY(), temperature_K, pressure_Pa, 0.0, \
                                        relHumidity_w, relHumidity_i );
     if ( isSaved == output::SAVE_FAILURE ) {
