@@ -239,11 +239,11 @@ int FileHandler::addConst( NcFile &dataFile, T *inputVar, const char* varName, l
 
     /* Write the variable data. The arrays of data are the same size as the netCDF variables we have defined, and below we write it in one step */
     if ( !var->put(inputVar, size) ) {
-        std::cout << "In FileHandler::addConst: writing variable failed for " << varName << " in " << fileName << "\n";
+        std::cout << "In FileHandler::addConst: writing constant failed for " << varName << " in " << fileName << "\n";
         return NC_ERROR;
     }
 
-    std::cout << " -> Variable " << varName << " has been written to " << fileName << "!" << "\n";
+    std::cout << " -> Constant " << varName << " has been written to " << fileName << "!" << "\n";
     return NC_SUCCESS;
 
 } /* End of FileHandler::addConst */
@@ -289,7 +289,7 @@ int FileHandler::addVar( NcFile &dataFile, T *inputVar, const char* varName, con
 
     /* Define long name attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the long name */
     if ( !var->add_att("long_name", varFullName) ) {
-        std::cout << "In FileHandler::addConst: full name definition failed for " << varName << " ( full name: [" << varFullName << "]) in " << fileName << "\n";
+        std::cout << "In FileHandler::addVar: full name definition failed for " << varName << " ( full name: [" << varFullName << "]) in " << fileName << "\n";
         return NC_ERROR;
     }
     
@@ -462,7 +462,7 @@ int FileHandler::addVar4D( NcFile &dataFile, T *inputVar, const char* varName, c
     }
     
     /* Write the variable data. The arrays of data are the same size as the netCDF variables we have defined, and below we write it in one step */
-    if ( !var->put( inputVar, varDim1->size(), varDim2->size(), varDim3->size() ) ) {
+    if ( !var->put( inputVar, varDim1->size(), varDim2->size(), varDim3->size(), varDim4->size() ) ) {
         std::cout << "In FileHandler::addVar4D: writing variable failed for " << varName << " in " << fileName << "\n";
         return NC_ERROR;
     }
