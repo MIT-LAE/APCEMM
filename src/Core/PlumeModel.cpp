@@ -196,7 +196,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K]           ) * [m3/cm3] */
 
     /* Set solution arrays to ambient data */
-    Data.Initialize( AMBFILE, temperature_K, pressure_Pa, airDens, relHumidity_w, latitude_deg, DBG );
+    Data.Initialize( AMBFILE, temperature_K, pressure_Pa, airDens, relHumidity_w, latitude_deg, Met, DBG );
 
     /* Print Background Debug? */
     if ( DEBUG_BG_INPUT || DBG )
@@ -472,12 +472,12 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         std::cout << "\n ## AEROSOLS:";
         std::cout << "\n ##\n";
         std::cout << " ## - LA : " << std::setw(txtWidth+3) << liquidAer.Moment() << " [#/cm^3], \n";
-        std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.getEffRadius() * 1.0E+09 << " [nm], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.EffRadius() * 1.0E+09 << " [nm], \n";
         std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";
         std::cout << " ##\n";
         std::cout << " ## - PA : " << std::setw(txtWidth+3) << iceAer.Moment() << " [#/cm^3], \n";
         if ( iceAer.Moment(2) > 0 )
-            std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.getEffRadius() * 1.0E+06 << " [mum], \n";
+            std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.EffRadius() * 1.0E+06 << " [mum], \n";
         else
             std::cout << " ##        " << std::setw(txtWidth+3) << 0.0E+00 << " [mum], \n";
         std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";

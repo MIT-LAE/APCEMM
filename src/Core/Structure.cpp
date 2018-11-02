@@ -80,7 +80,8 @@ void Solution::Print( const std::vector<std::vector<double> >& vector_2D, \
 } /* End of Solution::Print */
 
 void Solution::Initialize( char const *fileName, const double temperature, const double pressure, \
-                           const double airDens, const double relHum, const double lat, const bool DBG )
+                           const double airDens, const double relHum, const double lat, \
+                           const Meteorology &met, const bool DBG )
 {
 
     std::vector<double> amb_Value(nVariables, 0.0);
@@ -260,7 +261,7 @@ void Solution::Initialize( char const *fileName, const double temperature, const
         for ( unsigned int i = 0; i < size_x; i++ ) {
             for ( unsigned int j = 0; j < size_y; j++ ) {
                 H2O[j][i] = (relHum/((double) 100.0) * \
-                                 physFunc::pSat_H2Ol( met.temp[j][i] ) / ( physConst::kB * temp[j][i] )) / 1.00E+06;
+                                 physFunc::pSat_H2Ol( met.temp[j][i] ) / ( physConst::kB * met.temp[j][i] )) / 1.00E+06;
                 /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
 
             }
@@ -352,19 +353,21 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     LA_rEff  = RAD[1]   * 1.00E+09; /* [nm]          */
     LA_SAD   = SAD[1]   * 1.00E+06; /* [\mum^2/cm^3] */
 
-    /* For a lognormal distribution:
-     * r_eff = r_m * exp( 5/2 * ln(S)^2 ) 
-     * A     = 4\pi N0 r_m^2 * exp ( 2 * ln(S)^2 ) 
-     * A/r_eff^2 = 4\pi N0 * exp( - 3 * ln(S)^2 )
-     *
-     * ln(S) = sqrt(-1/3*ln(A/(4\pi r_eff^2 * N0)));
-     * r_m = r_eff * exp( -5/2 * ln(S)^2 ); */
-    
-    const double sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * physConst::PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
-    const double rLA = std::max( RAD[1] * exp( - 2.5 * sLA * sLA ), 1.5 * LA_R_LOW ); 
-    const AIM::Grid_Aerosol LAAerosol( size_x, size_y, LA_rJ, LA_rE, LA_nDens, rLA, exp(sLA), "lognormal" );
+    if ( LA_nDens > 0.0E+00 ) {
+        /* For a lognormal distribution:
+         * r_eff = r_m * exp( 5/2 * ln(S)^2 ) 
+         * A     = 4\pi N0 r_m^2 * exp ( 2 * ln(S)^2 ) 
+         * A/r_eff^2 = 4\pi N0 * exp( - 3 * ln(S)^2 )
+         *
+         * ln(S) = sqrt(-1/3*ln(A/(4\pi r_eff^2 * N0)));
+         * r_m = r_eff * exp( -5/2 * ln(S)^2 ); */
+        
+        const double sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * physConst::PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
+        const double rLA = std::max( RAD[1] * exp( - 2.5 * sLA * sLA ), 1.5 * LA_R_LOW ); 
+        const AIM::Grid_Aerosol LAAerosol( size_x, size_y, LA_rJ, LA_rE, LA_nDens, rLA, exp(sLA), "lognormal" );
 
-    liquidAerosol = LAAerosol;
+        liquidAerosol = LAAerosol;
+    }
 
     const AIM::Coagulation kernel1( "liquid", LA_rJ, LA_vJ, physConst::RHO_SULF, temperature, pressure );
 
@@ -377,7 +380,7 @@ void Solution::Initialize( char const *fileName, const double temperature, const
         std::cout << " DEBUG : Comparing PDF's surface area to Grainger's surface area:\n";
         std::cout << "         " << 4.0 * physConst::PI * liquidAerosol.Moment( 2, 0, 0 ) * 1.00E+12 << " v " << LA_SAD << " [mum^2/cm^3]\n";
         std::cout << " DEBUG : Comparing PDF's effective radius to Grainger's effective radius:\n";
-        std::cout << "         " << liquidAerosol.getEffRadius( 0, 0 ) * 1.00E+09 << " v " << LA_rEff << " [nm]\n";
+        std::cout << "         " << liquidAerosol.EffRadius( 0, 0 ) * 1.00E+09 << " v " << LA_rEff << " [nm]\n";
 
     }
 
@@ -412,11 +415,13 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     PA_rEff  = RAD[0]   * 1.00E+09; /* [nm]          */
     PA_SAD   = SAD[0]   * 1.00E+06; /* [\mum^2/cm^3] */
 
-    const double expsPA = 1.15;
-    const double rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW ); 
-    AIM::Grid_Aerosol PAAerosol( size_x, size_y, PA_rJ, PA_rE, PA_nDens, rPA, expsPA, "lognormal" );
+    if ( PA_nDens > 0.0E+00 ) {
+        const double expsPA = 1.15;
+        const double rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW ); 
+        AIM::Grid_Aerosol PAAerosol( size_x, size_y, PA_rJ, PA_rE, PA_nDens, rPA, expsPA, "lognormal" );
 
-    solidAerosol = PAAerosol;
+        solidAerosol = PAAerosol;
+    }
     
     const AIM::Coagulation kernel2( "ice", PA_rJ, PA_vJ, physConst::RHO_ICE, temperature, pressure );
 
@@ -426,7 +431,7 @@ void Solution::Initialize( char const *fileName, const double temperature, const
         std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
         std::cout << "         " << solidAerosol.Moment( 0, 0, 0 ) << " v " << PA_nDens << " [#/cm^3]\n";
         std::cout << " DEBUG : Comparing PDF's effective radius to actual effective radius:\n";
-        std::cout << "         " << solidAerosol.getEffRadius( 0, 0 ) * 1.00E+09 << " v " << PA_rEff << " [nm]\n";
+        std::cout << "         " << solidAerosol.EffRadius( 0, 0 ) * 1.00E+09 << " v " << PA_rEff << " [nm]\n";
     }
 
     /* Tracers */

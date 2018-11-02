@@ -21,6 +21,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "Core/Interface.hpp"
 #include "Core/Parameters.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "Util/PhysConstant.hpp"
@@ -30,6 +31,7 @@
 #include "Core/Engine.hpp"
 #include "Core/LiquidAer.hpp"
 #include "AIM/Aerosol.hpp"
+#include "Core/Meteorology.hpp"
 
 class Solution
 {
@@ -48,7 +50,8 @@ class Solution
                     const unsigned int i_max = 1, \
                     const unsigned int j_max = 1 ) const;
         void Initialize( char const *fileName, const double temperature, const double pressure, \
-                         const double airDens, const double relHum, const double lat, const bool DBG );
+                         const double airDens, const double relHum, const double lat, \
+                         const Meteorology &met, const bool DBG );
         void getData( double varArray[], double fixArray[], \
                       const unsigned int i = 0, \
                       const unsigned int j = 0 );
