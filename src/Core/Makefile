@@ -187,6 +187,8 @@ Main.o              : Main.cpp
 
 Mesh.o              : Mesh.cpp
 
+Meteorology.o       : Meteorology.cpp
+
 PlumeModel.o        : PlumeModel.cpp
 
 PrintMessage.o      : PrintMessage.cpp
