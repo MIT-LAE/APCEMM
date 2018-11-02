@@ -254,13 +254,16 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     SetShape( O2       , size_x , size_y, amb_Value[133] * airDens );
     SetShape( RCOOH    , size_x , size_y, amb_Value[134] * airDens );
 
-    /* Setting up ambient water vapor */
-    for ( unsigned int i = 0; i < size_x; i++ ) {
-        for ( unsigned int j = 0; j < size_y; j++ ) {
-            H2O[j][i] = (relHum/((double) 100.0) * \
-                             physFunc::pSat_H2Ol( temperature ) / ( physConst::kB * temperature )) / 1.00E+06;
-            /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
+    if ( LOAD_MET ) {
+        H2O = met.H2O;
+    } else {
+        for ( unsigned int i = 0; i < size_x; i++ ) {
+            for ( unsigned int j = 0; j < size_y; j++ ) {
+                H2O[j][i] = (relHum/((double) 100.0) * \
+                                 physFunc::pSat_H2Ol( met.temp[j][i] ) / ( physConst::kB * temp[j][i] )) / 1.00E+06;
+                /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
 
+            }
         }
     }
 
