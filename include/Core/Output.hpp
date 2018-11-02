@@ -111,7 +111,7 @@
 #define DO_SAVE_ATO2                    0 /* Save ATO2     */
 #define DO_SAVE_HNO3                    1 /* Save HNO3     */
 #define DO_SAVE_HNO3_S                  0 /* Save HNO3_S   */
-#define DO_SAVE_HNO3_L                  1 /* Save HNO3_L   */
+#define DO_SAVE_HNO3_L                  0 /* Save HNO3_L   */
 #define DO_SAVE_ISN1                    0 /* Save ISN1     */
 #define DO_SAVE_MAO3                    0 /* Save MAO3     */
 #define DO_SAVE_MRO2                    0 /* Save MRO2     */
