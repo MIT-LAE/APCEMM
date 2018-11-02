@@ -26,15 +26,15 @@
 const char* const WISDOMFILE = "data/FFTW_Wisdom.out"; 
 
 /* CHEMISTRY */
-#define CHEMISTRY               1    /* Is chemistry turned on? */
+#define CHEMISTRY               0    /* Is chemistry turned on? */
 #define HETCHEMISTRY            1    /* Is heterogeneous chemistry turned on? */
 #define PSC_SIM                 0    /* Polar Stratospheric Clouds? */
 
 /* MICROPHYSICS */
 #define ICE_MICROPHYSICS        1    /* Is ice microphysics turned on? */
-#define ICECOAG_TSTEP           300  /* Minimal coagulation time step for ice in s */
+#define ICECOAG_TSTEP           3600  /* Minimal coagulation time step for ice in s */
 #define LIQ_MICROPHYSICS        1    /* Is sulfate microphysics turned on? */
-#define LIQCOAG_TSTEP           3600 /* Minimal coagulation time step for liquid aerosols in s */
+#define LIQCOAG_TSTEP          14400 /* Minimal coagulation time step for liquid aerosols in s */
 
 /* SYMMETRIES */
 #define X_SYMMETRY              1    /* Is the problem symmetric around the x-axis? */
@@ -43,22 +43,26 @@ const char* const WISDOMFILE = "data/FFTW_Wisdom.out";
 /* BACKGROUND MIX RATIO */
 const char* const AMBFILE     = "data/Ambient.txt";
 
+/* METEOROLOGICAL DATA */ 
+#define LOAD_MET                0    /* Load fine plume-scale met data (2D water and tempereature fields) */
+
 /* OUTPUT */
-#define SAVE_OUTPUT             1    /* Save output? */
+#define SAVE_OUTPUT             0    /* Save output? */
 const char* const OUT_FILE    = "data/output.nc";
 #define SAVE_TO_DOUBLE          1    /* Save output as double? otherwise float */
 #define SAVEPL                  1    /* Save chemical rates */
-#define SAVE_PA_MICROPHYS       0    /* Save solid aerosol gridded bins? ( Size = NX*NY*nBin_PA ) */
-#define SAVE_PA_DT              600  /* Output solid aerosol every x seconds */
-#define SAVE_LA_MICROPHYS       1    /* Save liquid aerosol gridded bins? ( Size = NX*NY*nBin_LA ) */
+#define SAVE_PA_MICROPHYS       1    /* Save solid aerosol gridded bins? ( Size = NX*NY*nBin_PA ) */
+#define SAVE_PA_DT              3600 /* Output solid aerosol every x seconds */
+const char* const OUT_FILE_PA = "data/IceAerosol.nc";
+#define SAVE_LA_MICROPHYS       0    /* Save liquid aerosol gridded bins? ( Size = NX*NY*nBin_LA ) */
 #define SAVE_LA_DT              3600 /* Output liquid aerosol every x seconds */
-const char* const OUT_FILE_MICROPHYS = "data/microphys.nc";
+const char* const OUT_FILE_LA = "data/LiqAerosol.nc";
 
 /* TIME */
 #define TIME_IT                 0    /* Time simulation? */
 
 /* MASS CHECK */
-#define NOy_MASS_CHECK          1    /* NOy mass check? */
+#define NOy_MASS_CHECK          0    /* NOy mass check? */
 #define CO2_MASS_CHECK          0    /* CO2 mass check? */
 #define H2O_MASS_CHECK          1    /* H2O mass check? */
 

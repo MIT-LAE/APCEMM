@@ -35,7 +35,8 @@ namespace output
                const std::vector<double> &timeArray, const double &temperature_K, const double &pressure_Pa, \
                const double &airDens, const double &relHumidity_w, const double &relHumidity_i, \
                const double &longitude_deg, const double &latitude_deg, const double &sunRise, const double &sunSet );
-    int Write_MicroPhys( const std::vector<std::vector<std::vector<std::vector<double>>>> &output_MicroPhys, \
+    int Write_MicroPhys( const char* outputFile, \
+                         const std::vector<std::vector<std::vector<std::vector<double>>>> &output_MicroPhys, \
                          const std::vector<double> &timeArray, const std::vector<double> &binCenters, \
                          const std::vector<double> &horizDim, const std::vector<double> &verticDim, \
                          const double temperature_K, const double pressure_Pa, const double lapseRate,

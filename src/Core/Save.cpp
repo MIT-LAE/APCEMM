@@ -41,8 +41,8 @@ namespace output
             time( &rawtime );
             strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
-            const NcDim *timeDim = fileHandler.addDim( currFile, "time", long(timeArray.size()) );
-            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "time", timeDim, "float", "s", "Time");
+            const NcDim *timeDim = fileHandler.addDim( currFile, "Time", long(timeArray.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "Time", timeDim, "float", "s", "Time");
            
 #if ( RINGS )
 
@@ -3218,7 +3218,6 @@ namespace output
                 ambArray = util::vect2float ( ambientData.MO2, timeArray.size(), scalingFactor );
         #endif /* SAVE_TO_DOUBLE */
 
-
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
 
                 strncpy( charSpc, "MO2_a", sizeof(charSpc) );
@@ -3300,7 +3299,8 @@ namespace output
 
     } /* End of Write */
 
-    int Write_MicroPhys( const std::vector<std::vector<std::vector<std::vector<double>>>> &output_MicroPhys, \
+    int Write_MicroPhys( const char* outputFile, \
+                         const std::vector<std::vector<std::vector<std::vector<double>>>> &output_MicroPhys, \
                          const std::vector<double> &timeArray, const std::vector<double> &binCenters, \
                          const std::vector<double> &horizDim, const std::vector<double> &verticDim, \
                          const double temperature_K, const double pressure_Pa, const double lapseRate,
@@ -3309,7 +3309,7 @@ namespace output
         const bool doWrite = 1;
         const bool doRead = 1;
         const bool overWrite = 1;
-        const char* currFileName( OUT_FILE_MICROPHYS );
+        const char* currFileName( outputFile );
 
         int didSaveSucceed = 1;
         time_t rawtime;
@@ -3325,8 +3325,8 @@ namespace output
             time( &rawtime );
             strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
-            const NcDim *timeDim = fileHandler.addDim( currFile, "time", long(timeArray.size()) );
-            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "time", timeDim, "float", "s", "Time");
+            const NcDim *timeDim = fileHandler.addDim( currFile, "Time", long(timeArray.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "Time", timeDim, "float", "s", "Time");
             const NcDim *binDim = fileHandler.addDim( currFile, "Bin Centers", long(binCenters.size()) );
             didSaveSucceed *= fileHandler.addVar( currFile, &binCenters[0], "bin Centers", binDim, "float", "m", "Bin Centers");
             const NcDim *XDim = fileHandler.addDim( currFile, "Horizontal dimension", long(horizDim.size()) );
@@ -3367,8 +3367,8 @@ namespace output
 #else
             aerArray = util::vect2float( output_MicroPhys, timeArray.size(), binCenters.size(), verticDim.size(), horizDim.size(), 1.0 );
 #endif /* SAVE_TO_DOUBLE */
-                
-             didSaveSucceed *= fileHandler.addVar4D( currFile, &(aerArray)[0], (const char*)charSpc, timeDim, binDim, YDim, XDim, outputType, (const char*)charUnit, (const char*)charName );
+             
+            didSaveSucceed *= fileHandler.addVar4D( currFile, &(aerArray)[0], (const char*)charSpc, timeDim, binDim, YDim, XDim, outputType, (const char*)charUnit, (const char*)charName );
 
             util::delete1D( aerArray );
 
