@@ -12,6 +12,12 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+/* 11/5/2018 : Thibaud M. Fritz
+ *             Added pragma critical statement as the only thread-safe
+ *             (re-entrant) routine in FFTW is fftw_execute. All the 
+ *             other routines should only be called from one thread at
+ *             a time. */
+
 #include "SANDS/Solver.hpp"
 
 void SANDS( Real_2DVector &vect, \
@@ -65,7 +71,10 @@ void SANDS( Real_2DVector &vect, \
         }
 
         /* Define plan FFT */
-        plan_FFT = fftw_plan_dft_r2c_2d( NX, NY, in_FFT, out_FFT, flags);
+#pragma omp critical (make_plan) 
+        {
+            plan_FFT = fftw_plan_dft_r2c_2d( NX, NY, in_FFT, out_FFT, flags);
+        }
 
         /* Execute FFT */
         fftw_execute( plan_FFT );
@@ -81,7 +90,10 @@ void SANDS( Real_2DVector &vect, \
         }
 
         /* Define plan IFFT */ 
-        plan_IFFT = fftw_plan_dft_c2r_2d( NX, NY, in_IFFT, out_IFFT, flags);
+#pragma omp critical (make_plan) 
+        {
+            plan_IFFT = fftw_plan_dft_c2r_2d( NX, NY, in_IFFT, out_IFFT, flags);
+        }
 
         /* Execute IFFT */
         fftw_execute( plan_IFFT );
@@ -124,7 +136,10 @@ void SANDS( Real_2DVector &vect, \
         }
 
         /* Define plan FFT */
-        plan_FFT  = fftw_plan_dft_2d( NX, NY, in_FFT, out_FFT, FFTW_FORWARD, flags);
+#pragma omp critical (make_plan) 
+        {
+            plan_FFT  = fftw_plan_dft_2d( NX, NY, in_FFT, out_FFT, FFTW_FORWARD, flags);
+        }
 
         /* Execute FFT */
         fftw_execute( plan_FFT );
@@ -140,7 +155,10 @@ void SANDS( Real_2DVector &vect, \
          }
 
         /* Define plan IFFT */ 
-        plan_IFFT = fftw_plan_dft_2d( NX, NY, in_IFFT, out_IFFT, FFTW_BACKWARD, flags);
+#pragma omp critical (make_plan) 
+        {
+            plan_IFFT = fftw_plan_dft_2d( NX, NY, in_IFFT, out_IFFT, FFTW_BACKWARD, flags);
+        }
 
         /* Execute IFFT */
         fftw_execute( plan_IFFT );
