@@ -621,39 +621,34 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* TIME_IT */
 
-//#pragma omp critical /* Not sure why omp critical is needed here, otherwise leads to segmentation faults... */
-        {
-
 #if ( DIFFUSION || ADVECTION )
-            /* Advection and diffusion for gas phase species */
-            Transport( Data, SANDS_GasPhase );
-            
-            /* Advection and diffusion for aerosol particles */
-            SANDS_MicroPhys.UpdateAdv ( 0.0E+00, 0.0E+00 );
-            SANDS_MicroPhys.Solve( Data.sootDens );
-            /* Monodisperse assumption for soot particles */
-            SANDS_MicroPhys.Solve( Data.sootRadi );
-            SANDS_MicroPhys.Solve( Data.sootArea );
-            
-            /* We assume that sulfate aerosols do not settle */
-            if ( TRANSPORT_LA ) {
-                /* Transport of liquid aerosols */
-                for ( unsigned int iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ )
-                    SANDS_MicroPhys.Solve( Data.liquidAerosol.pdf[iBin_LA] );
-            }
+        /* Advection and diffusion for gas phase species */
+        Transport( Data, SANDS_GasPhase );
+        
+        /* Advection and diffusion for aerosol particles */
+        SANDS_MicroPhys.UpdateAdv ( 0.0E+00, 0.0E+00 );
+        SANDS_MicroPhys.Solve( Data.sootDens );
+        /* Monodisperse assumption for soot particles */
+        SANDS_MicroPhys.Solve( Data.sootRadi );
+        SANDS_MicroPhys.Solve( Data.sootArea );
+        
+        /* We assume that sulfate aerosols do not settle */
+        if ( TRANSPORT_LA ) {
+            /* Transport of liquid aerosols */
+            for ( unsigned int iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ )
+                SANDS_MicroPhys.Solve( Data.liquidAerosol.pdf[iBin_LA] );
+        }
 
-            if ( TRANSPORT_PA ) {
-                /* Transport of solid aerosols */
-                for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
-                    SANDS_MicroPhys.UpdateAdv ( 0.0E+00, vFall[iBin_PA] );
-                    SANDS_MicroPhys.Solve( Data.solidAerosol.pdf[iBin_PA] );
-                }
+        if ( TRANSPORT_PA ) {
+            /* Transport of solid aerosols */
+            for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                SANDS_MicroPhys.UpdateAdv ( 0.0E+00, vFall[iBin_PA] );
+                SANDS_MicroPhys.Solve( Data.solidAerosol.pdf[iBin_PA] );
             }
+        }
 
 #endif /* ( DIFFUSION || ADVECTION ) */
             
-        }
-
 #if ( TIME_IT )
     
         Stopwatch.Stop( );
