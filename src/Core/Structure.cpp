@@ -353,7 +353,7 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     LA_rEff  = RAD[1]   * 1.00E+09; /* [nm]          */
     LA_SAD   = SAD[1]   * 1.00E+06; /* [\mum^2/cm^3] */
 
-    if ( LA_nDens > 0.0E+00 ) {
+    if ( LA_nDens >= 0.0E+00 ) {
         /* For a lognormal distribution:
          * r_eff = r_m * exp( 5/2 * ln(S)^2 ) 
          * A     = 4\pi N0 r_m^2 * exp ( 2 * ln(S)^2 ) 
@@ -415,7 +415,7 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     PA_rEff  = RAD[0]   * 1.00E+09; /* [nm]          */
     PA_SAD   = SAD[0]   * 1.00E+06; /* [\mum^2/cm^3] */
 
-    if ( PA_nDens > 0.0E+00 ) {
+    if ( PA_nDens >= 0.0E+00 ) {
         const double expsPA = 1.15;
         const double rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW ); 
         AIM::Grid_Aerosol PAAerosol( size_x, size_y, PA_rJ, PA_rE, PA_nDens, rPA, expsPA, "lognormal" );
@@ -1082,9 +1082,12 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
 
 
         }
+    
+        if ( iceAer.Moment() > 0.0E+00 )
+            solidAerosol.addPDF( iceAer, map[innerRing] );
+        if ( liqAer.Moment() > 0.0E+00 )
+            liquidAerosol.addPDF( liqAer, map[innerRing] );
 
-        solidAerosol.addPDF( iceAer, map[innerRing] );
-        liquidAerosol.addPDF( liqAer, map[innerRing] );
 
     }
     else {
@@ -1123,8 +1126,10 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
 
             }
         
-            solidAerosol.addPDF( iceAer, map[innerRing] );
-            liquidAerosol.addPDF( liqAer, map[innerRing] );
+            if ( iceAer.Moment() > 0.00E+00 )
+                solidAerosol.addPDF( iceAer, map[innerRing] );
+            if ( liqAer.Moment() > 0.00E+00 )
+                liquidAerosol.addPDF( liqAer, map[innerRing] );
 
         }
 
