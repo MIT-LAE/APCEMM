@@ -283,7 +283,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         EI.Debug(); 
 
     
-    
     /** ~~~~~~~~~~~~~~~~~ **/
     /**     Chemistry     **/
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -301,7 +300,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Ambient chemistry */
     ambientData.getData( varArray, fixArray, aerArray, nTime );
 
-    
     
     /** ~~~~~~~~~~~~~~~~~~~~~~~ **/
     /**    Early Microphysics   **/
@@ -623,7 +621,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* TIME_IT */
 
-#pragma omp critical /* Not sure why omp critical is needed here, otherwise leads to segmentation faults... */
+//#pragma omp critical /* Not sure why omp critical is needed here, otherwise leads to segmentation faults... */
         {
 
 #if ( DIFFUSION || ADVECTION )
