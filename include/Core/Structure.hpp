@@ -21,12 +21,17 @@
 #include <fstream>
 #include <sstream>
 
+#include "Core/Interface.hpp"
 #include "Core/Parameters.hpp"
+#include "KPP/KPP_Parameters.h"
 #include "Util/PhysConstant.hpp"
 #include "Util/PhysFunction.hpp"
 #include "Core/Emission.hpp"
 #include "Core/Aircraft.hpp"
 #include "Core/Engine.hpp"
+#include "Core/LiquidAer.hpp"
+#include "AIM/Aerosol.hpp"
+#include "Core/Meteorology.hpp"
 
 class Solution
 {
@@ -35,23 +40,47 @@ class Solution
         Solution();
         ~Solution();
         void Clear( std::vector<std::vector<double> >& vector_2D );
-        void SetShape( std::vector<std::vector<double> >& vector_2D, unsigned int n_x, unsigned int n_y, double value = 0.0 );
-        void SetToValue( std::vector<std::vector<double> >& vector_2D, double value = 0.0 );
-        void Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max = 1, unsigned int j_max = 1 );
-        void Initialize( char const *fileName, double temperature, double airDens, double relHum );
-        void getData( double varArray[], double fixArray[], unsigned int i = 0, unsigned int j = 0 );
-        void applyData( double varArray[], unsigned int i = 0, unsigned int j = 0 );
-        void applyRing( double varArray[], double tempArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int iRing );
-        void applyAmbient( double varArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int ambIndex );
-        void addEmission( const Emission &EI, const Aircraft &ac, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing );
+        void SetShape( std::vector<std::vector<double> >& vector_2D, \
+                       const unsigned int n_x, \
+                       const unsigned int n_y, \
+                       const double value = 0.0 );
+        void SetToValue( std::vector<std::vector<double> >& vector_2D, \
+                         const double value = 0.0 );
+        void Print( const std::vector<std::vector<double> >& vector_2D, \
+                    const unsigned int i_max = 1, \
+                    const unsigned int j_max = 1 ) const;
+        void Initialize( char const *fileName, const double temperature, const double pressure, \
+                         const double airDens, const double relHum, const double lat, \
+                         const Meteorology &met, const bool DBG );
+        void getData( double varArray[], double fixArray[], \
+                      const unsigned int i = 0, \
+                      const unsigned int j = 0 );
+        void applyData( double varArray[], \
+                        const unsigned int i = 0, \
+                        const unsigned int j = 0 );
+        void applyRing( double varArray[], double tempArray[], \
+                        const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, \
+                        const unsigned int iRing );
+        void applyAmbient( double varArray[], \
+                           const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, \
+                           const unsigned int ambIndex );
+        void addEmission( const Emission &EI, const Aircraft &ac, \
+                          const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, \
+                          const std::vector<std::vector<double>> cellAreas, bool halfRing, \
+                          double temperature, bool set2Saturation, \
+                          AIM::Aerosol &liqAer, AIM::Aerosol &iceAer, \
+                          const double Soot_Den );
         std::vector<double> getAmbient( ) const;
+        std::vector<double> getLiqSpecies() const;
         std::vector<std::vector<double> > getAerosol( ) const;
         std::vector<double> getAerosolDens( ) const;
         std::vector<double> getAerosolRadi( ) const;
         std::vector<double> getAerosolArea( ) const;
+        void getAerosolProp( double ( &radi )[4], double ( &area )[4], double &IWC, \
+                             const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) const;
         unsigned int getNx() const;
         unsigned int getNy() const;
-        void Debug( double airDens );
+        void Debug( const double airDens );
 
         /* Gaseous species */
         std::vector<std::vector<double> > CO2, PPN, BrNO2, IEPOX, PMNN, N2O, N, PAN,\
@@ -78,10 +107,37 @@ class Solution
         /* Solid species */
         std::vector<std::vector<double> > H2OS, HNO3S;
 
+        std::vector<std::vector<double> > NIT, NAT;
+
+        /* Tracers */
+        std::vector<std::vector<double> > SO4T;
+
         /* Aerosols */
-        std::vector<std::vector<double> > sootDens, sootRadi, sootArea, \
-                                          iceDens , iceRadi , iceArea , \
-                                          sulfDens, sulfRadi, sulfArea;
+        std::vector<std::vector<double> > sootDens, sootRadi, sootArea;
+
+        AIM::Grid_Aerosol liquidAerosol, solidAerosol;
+
+        unsigned int nBin_PA;
+        unsigned int nBin_LA;
+
+//        std::vector<double> LA_rE;
+//        std::vector<double> LA_rJ;
+//        std::vector<double> LA_vJ;
+//
+//        std::vector<double> PA_rE;
+//        std::vector<double> PA_rJ;
+//        std::vector<double> PA_vJ;
+//
+//        std::vector<std::vector<std::vector<double> > > PDF_LA, PDF_PA;
+
+        double LA_nDens, LA_rEff, LA_SAD;
+        double PA_nDens, PA_rEff, PA_SAD;
+
+        AIM::Coagulation LA_Kernel, PA_Kernel;
+
+        std::vector<double> KHETI_SLA;
+        std::vector<double> AERFRAC, SOLIDFRAC;
+        unsigned int STATE_PSC; 
 
     private:
 

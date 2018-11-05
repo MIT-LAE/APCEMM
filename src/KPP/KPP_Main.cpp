@@ -29,27 +29,16 @@
 #include "KPP/KPP_Global.h"
 #include "KPP/KPP_Sparse.h"
 
-#define MAX(a,b) ( ((a) >= (b)) ? (a):(b)  )
-#define MIN(b,c) ( ((b) < (c))  ? (b):(c)  )
-
 double C[NSPEC];                         /* Concentration of all species */
 double * VAR = & C[0];
 double * FIX = & C[127];
 double RCONST[NREACT];                   /* Rate constants (global) */
 double PHOTOL[NPHOTOL];                  /* Photolysis rates (global) */
+double HET[NSPEC][3];                    /* Heterogeneous chemistry rates (global) */
 double TIME;                             /* Current integration time */
-double SUN;                              /* Sunlight intensity between [0,1] */
-double TEMP;                             /* Temperature */
-double Patm;                             /* Pressure */
-double CFACTOR;                          /* Conversion factor for concentration units */
-double SINLAT;                           /* SZA coordinates */
-double COSLAT;                           /* SZA coordinates */
-double SINDEC;                           /* SZA coordinates */
-double COSDEC;                           /* SZA coordinates */
 double RTOLS;                            /* (scalar) Relative tolerance */
 double TSTART;                           /* Integration start time */
 double TEND;                             /* Integration end time */
-double DT;                               /* Integration step */
 double ATOL[NVAR];                       /* Absolute tolerance */
 double RTOL[NVAR];                       /* Relative tolerance */
 double STEPMIN;                          /* Lower bound for integration step */
@@ -62,32 +51,20 @@ double STEPMAX;                          /* Upper bound for integration step */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-void Read_JRates( double JRates[] );
-void GetMass( double CL[], double Mass[] );
-void INTEGRATE( double TIN, double TOUT );
+int INTEGRATE( double TIN, double TOUT );
 
 int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, \
-              double airDens, double temperature, double pressure, \
-              double SINLAT_, double COSLAT_, double SINDEC_, double COSDEC_, \
               double RTOLS, double ATOLS )
 {
+    
     int i;
+    int IERR;
  
     /* ---- TIME VARIABLES ------------------ */
 
     TSTART = currentT; // Solar time
     TEND = TSTART + dt;
-    TEMP = temperature;
-    Patm = pressure;
-    CFACTOR = airDens;
 
-    SINLAT = SINLAT_;
-    COSLAT = COSLAT_;
-    SINDEC = SINDEC_;
-    COSDEC = COSDEC_;
-
-    Read_JRates( PHOTOL );
-  
     for ( i = 0; i < NVAR; i++ ) {
         VAR[i] = varArray[i];
     }
@@ -98,7 +75,7 @@ int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, 
 
     for( i = 0; i < NVAR; i++ ) {
         RTOL[i] = RTOLS;
-        ATOL[i] = ATOLS; // 1.0
+        ATOL[i] = ATOLS;
     }
     STEPMIN = 0.01;
     STEPMAX = 900;
@@ -106,7 +83,7 @@ int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, 
     /* ********** TIME LOOP **************************** */
 
     TIME = TSTART;
-    INTEGRATE( TIME, TIME+dt );
+    IERR = INTEGRATE( TIME, TIME+dt );
 
     /* *********** END TIME LOOP *********************** */
 
@@ -114,7 +91,7 @@ int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, 
         varArray[i] = VAR[i];
     }
 
-    return 0; /*didnt return anything initially */
+    return IERR; /*didnt return anything initially */
 
 }
 /* End of MAIN function                                             */

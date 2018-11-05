@@ -29,6 +29,7 @@ namespace AIM
 
     /* We need forward declaration here */
     class Aerosol;
+    class Grid_Aerosol;
 
     class Coagulation;
 
@@ -38,6 +39,7 @@ class AIM::Coagulation
 {
 
     friend class Aerosol;
+    friend class Grid_Aerosol;
 
     public:
 

@@ -7,13 +7,13 @@
 
 # Time limit after which the job will be killed. The default time limit
 # is 60 minutes. Specified as HH:MM:SS or D-HH:MM
-#SBATCH --time=1-00:00
+#SBATCH --time=7-00:00
 
 # Prevent multithreading of the cores
 #SBATCH --hint=nomultithread
 
 # number of CPUs to utilize
-#SBATCH --ntasks=4
+#SBATCH -c 24
 
 # Memory per core. Job will crash if this limit is exceeded.  Default
 # is 1000M per allocated core. Use values that will permit multiple
@@ -21,7 +21,7 @@
 # 2000M will allow allow all 12 processors on a node with 24000M of
 # RAM to be utilized, while specifying 2G (=2048M) would only allow 11
 # of the processors to be used.
-#SBATCH --mem-per-cpu=6000M
+#SBATCH --mem-per-cpu=24000M
 
 # Number of nodes to utilize
 #SBATCH -N 1
@@ -59,22 +59,70 @@
 # in which case the variables $1 and $2 will be set to 'foo' and 'bar'
 # within the script.
 
-# Change this to point to the APCHEM binary file
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#                                                                  #
+#     Aircraft Plume Chemistry, Emission and Microphysics Model    #
+#                             (APCEMM)                             #
+#                                                                  #
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+#
+#
+# DESCRIPTION: This bash script submits an APCEMM simulation
+#
+#
+# REVISION HISTORY:
+#  15 Sep 2018 - T. Fritz - Initial version
+#  20 Oct 2018 - T. Fritz - Included OMP_NUM_THREADS in slurm
+#                           environments
+#  21 Oct 2018 - T. Fritz - Pipe output to log
+#
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-export exepath=${HOME}/CAPCEMM/build/apps/APCEMM
+# Set the proper # of threads for OpenMP
+# SLURM_CPUS_PER_TASK ensures this matches the number you set with -c above
+if [ -n "$SLURM_CPUS_PER_TASK" ]; then
+    omp_threads=$SLURM_CPUS_PER_TASK
+else
+    omp_threads=1
+fi
 
+export OMP_NUM_THREADS=$omp_threads
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Initialize
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Define version ID
+id="v2-0"
+
+# Define APCEMM log file
+log="$id.log"
+
+# Define current directory
 currDir=${PWD##*/}
 
-echo "Running APCEMM"
-echo "Directory: " $currDir
-#echo "Running on " $OMP_NUM_THREADS " cores"
-echo "Host computer: " `hostname`
-echo "Initiation date and time: " `date +%c`
+# Change this to point to the APCEMM binary file
+export exepath=${currDir}/build/apps/APCEMM
 
-## Job commands
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Start the simulation
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Run APCEMM and pipe output to log
+echo 'Running on ' $OMP_NUM_THREADS ' cores' >> $log
+echo 'Host computer: ' `hostname` >> $log
+echo 'Initiation date and time: ' `date +%c` >> $log
+srun -c $OMP_NUM_THREADS time -p $exepath >> $log
 
-time ${exepath}
-#srun --mpi=pmi2 -n 4 ./mpi_hello
+# Echo end
+echo 'Run ended at ' `date +%c` >> $log
 
 # Report additional information if job was killed because of memory limit
 oom_check $?
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Clean up
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Clear variable
+unset id
+unset log
+unset currDir

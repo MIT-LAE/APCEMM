@@ -20,7 +20,7 @@ Ambient::Ambient( )
 
 } /* End of Ambient::Ambient */
 
-Ambient::Ambient( unsigned int nTime_, std::vector<double> ambientVector, std::vector<std::vector<double> > aerVector )
+Ambient::Ambient( unsigned int nTime_, std::vector<double> ambientVector, std::vector<std::vector<double> > aerVector, std::vector<double> liqVector )
 {
 
     /* Constructor */
@@ -164,12 +164,31 @@ Ambient::Ambient( unsigned int nTime_, std::vector<double> ambientVector, std::v
     O2       = ambientVector[133];
     RCOOH    = ambientVector[134];
 
+    SO4L.assign  ( nTime, liqVector[0] );
+    H2OL.assign  ( nTime, liqVector[1] );
+    HNO3L.assign ( nTime, liqVector[2] );
+    HClL.assign  ( nTime, liqVector[3] );
+    HOClL.assign ( nTime, liqVector[4] );
+    HBrL.assign  ( nTime, liqVector[5] );
+    HOBrL.assign ( nTime, liqVector[6] );
+    H2OS.assign  ( nTime, liqVector[7] );
+    HNO3S.assign ( nTime, liqVector[8] );
+   
+    NIT.assign   ( nTime, 0.0 );
+
+    SO4T.assign  ( nTime, ambientVector[ 28] + liqVector[0] );
+    
     sootDens.assign( nTime, aerVector[  0][0] );
     sootRadi.assign( nTime, aerVector[  0][1] );
+    sootArea.assign( nTime, aerVector[  0][2] );
     iceDens.assign ( nTime, aerVector[  1][0] );
     iceRadi.assign ( nTime, aerVector[  1][1] );
+    iceArea.assign ( nTime, aerVector[  1][2] );
     sulfDens.assign( nTime, aerVector[  2][0] );
     sulfRadi.assign( nTime, aerVector[  2][1] );
+    sulfArea.assign( nTime, aerVector[  1][2] );
+
+    cosSZA.assign( nTime, 0.0 );
 
 } /* End of Ambient::Ambient */
 
@@ -324,6 +343,26 @@ Ambient::Ambient( const Ambient &a )
     O2       = a.O2       ;
     RCOOH    = a.RCOOH    ;
 
+    SO4L     = a.SO4L     ;
+    H2OL     = a.H2OL     ;
+    HNO3L    = a.HNO3L    ;
+    HClL     = a.HClL     ;
+    HOClL    = a.HOClL    ;
+    HBrL     = a.HBrL     ;
+    HOBrL    = a.HOBrL    ;
+    H2OS     = a.H2OS     ;
+    HNO3S    = a.HNO3S    ;
+    NIT      = a.NIT      ;
+    SO4T     = a.SO4T     ;
+
+    sootDens = a.sootDens ;
+    sootRadi = a.sootRadi ;
+    iceDens  = a.iceDens  ;
+    sulfDens = a.sulfDens ;
+    sulfRadi = a.sulfRadi ;
+
+    cosSZA = a.cosSZA;
+
 } /* End of Ambient::Ambient */
 
 Ambient& Ambient::operator=( const Ambient &a )
@@ -471,6 +510,27 @@ Ambient& Ambient::operator=( const Ambient &a )
     N2       = a.N2       ;
     O2       = a.O2       ;
     RCOOH    = a.RCOOH    ;
+    
+    SO4L     = a.SO4L     ;
+    H2OL     = a.H2OL     ;
+    HNO3L    = a.HNO3L    ;
+    HClL     = a.HClL     ;
+    HOClL    = a.HOClL    ;
+    HBrL     = a.HBrL     ;
+    HOBrL    = a.HOBrL    ;
+    H2OS     = a.H2OS     ;
+    HNO3S    = a.HNO3S    ;
+    NIT      = a.NIT      ;
+    SO4T     = a.SO4T     ;
+
+    sootDens = a.sootDens ;
+    sootRadi = a.sootRadi ;
+    iceDens  = a.iceDens  ;
+    sulfDens = a.sulfDens ;
+    sulfRadi = a.sulfRadi ;
+
+    cosSZA = a.cosSZA;
+
     return *this;
 
 } /* End of Ambient::operator= */
@@ -622,7 +682,7 @@ void Ambient::getData( double varArray[], double fixArray[], double aerArray[][2
     aerArray[  2][1] = sulfRadi[iTime];
 
     /* Ensure positiveness */
-    for ( unsigned int i = 0; i < N_VAR; i++ ) {
+    for ( unsigned int i = 0; i < NVAR; i++ ) {
         if ( varArray[i] <= 0.0 ) {
             varArray[i] = 1.0E-50;
         }
@@ -634,7 +694,7 @@ void Ambient::FillIn( double varArray[], unsigned int iTime )
 {
 
     /* Ensure positiveness */
-    for ( unsigned int i = 0; i < N_VAR; i++ ) {
+    for ( unsigned int i = 0; i < NVAR; i++ ) {
         if ( varArray[i] <= 0.0 ) {
             varArray[i] = 1.0E-50;
         }

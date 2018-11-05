@@ -26,14 +26,12 @@
 #define NRING             15          /* Number of rings */
 
 /* Time */
-#define TSTART            0.0E+00     /* Initial time [hrs] (after emission) */
 #define TSIMUL            2.4E+01     /* Simulation time [hrs] */
-#define DT                9.0E+02     /* Default time step [s] */
+#define DT                6.0E+02     /* Default time step [s] = 10 min */
 
 /* Atmospheric parameters */
 #define GAMMA            -3.0E+00     /* Ambient temperature lapse rate [K/km] */
-#define HOMOGENEOUS_NAT   1           /* Allow homogeneous NAT? */
-#define T_NAT_SUPERCOOL   3.0         /* NAT supercooling requirement [K] */
+#define TROPP             2.0E+04     /* Pressure at the tropopause [Pa] */
 
 /* Diffusion */
 #define DH                1.5E+01     /* Steady-state horizontal diffusion parameter [m2/s] */
@@ -60,25 +58,28 @@
                                        */
 
 /* Chemistry parameters */
-#define N_SPC                 135         /* Number of chemical species */
-#define N_VAR                 127         /* Number of Variable species */
-#define N_FIX                 8           /* Number of Fixed species */
-#define N_REACT               475         /* Number of reactions */
 #define KPP_RTOLS             1.00E-03    /* Relative tolerances in KPP */
 #define KPP_ATOLS             1.00E-03    /* Absolute tolerances in KPP */
 
 /* Aerosol parameters */
 #define N_AER                 3           /* Number of aerosols considered */
+#define PSC_FULL              1           /* Allow PSC formaiton outsize of Kirner limits? */
+#define LHOMNUCNAT            1           /* Allow homogeneous NAT? */
+#define T_NAT_SUPERCOOL       3.0         /* NAT supercooling requirement [K] */
+#define LSOLIDPSC             1           /* Online solid PSCs? */
 
 /* Microphysics parameters */
-#define SO4_R_LOW             1.00E-10    /* Sulfates' lower bin radius [m] */
-#define SO4_R_HIG             5.00E-07    /* Sulfates' larger bin radius [m] */
-#define SO4_VRAT              1.50E+00    /* Size ratio between two consecutives bins */
+#define LA_R_LOW              1.00E-10    /* Sulfates' lower bin radius [m] */
+#define LA_R_HIG              5.00E-07    /* Sulfates' larger bin radius [m] */
+#define LA_VRAT               1.50E+00    /* Size ratio between two consecutive bins */
+#define PA_R_LOW              5.00E-08    /* Ice/NAT lower bin radius [m] */
+#define PA_R_HIG              8.00E-05    /* Ice/NAT larger bin radius [m] */
+#define PA_VRAT               1.70E+00    /* Size ratio between two consecutive bins */
 
 /* Early plume integration */
 #define VORTEX_SINKING        1           /* Consider vortex sinking? */
 #define EPM_RTOLS             1.00E-05    /* Relative tolerances in EPM */
 #define EPM_ATOLS             1.00E-07    /* Absolute tolerances in EPM */
-#define SO2TOSO4CONVERSION    0.005       /* Percent conversion from SO2 to SO4 */
+#define SO2TOSO4              0.005       /* Percent conversion from SO2 to SO4 */
 
 #endif /* PARAMETERS_H_INCLUDED */

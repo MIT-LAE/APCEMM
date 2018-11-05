@@ -31,9 +31,16 @@ namespace output
     static const int SAVE_SUCCESS = 1;
     static const int SAVE_FAILURE = 0;
 
-    int Write( SpeciesArray &ringSpecies, Ambient ambientData, Cluster &ringCluster, std::vector<double> &timeArray, \
-               double &temperature_K, double &pressure_Pa, double &airDens, double &relHumidity_w, double &relHumidity_i, \
-               double &longitude_deg, double &latitude_deg, double &sunRise, double &sunSet );
+    int Write( const SpeciesArray &ringSpecies, const Ambient ambientData, const Cluster &ringCluster, \
+               const std::vector<double> &timeArray, const double &temperature_K, const double &pressure_Pa, \
+               const double &airDens, const double &relHumidity_w, const double &relHumidity_i, \
+               const double &longitude_deg, const double &latitude_deg, const double &sunRise, const double &sunSet );
+    int Write_MicroPhys( const char* outputFile, \
+                         const std::vector<std::vector<std::vector<std::vector<double>>>> &output_MicroPhys, \
+                         const std::vector<double> &timeArray, const std::vector<double> &binCenters, \
+                         const std::vector<double> &horizDim, const std::vector<double> &verticDim, \
+                         const double temperature_K, const double pressure_Pa, const double lapseRate,
+                         const double relHumidity_w, const double relHumidity_i );
 
 }
 

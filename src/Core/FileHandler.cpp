@@ -239,11 +239,11 @@ int FileHandler::addConst( NcFile &dataFile, T *inputVar, const char* varName, l
 
     /* Write the variable data. The arrays of data are the same size as the netCDF variables we have defined, and below we write it in one step */
     if ( !var->put(inputVar, size) ) {
-        std::cout << "In FileHandler::addConst: writing variable failed for " << varName << " in " << fileName << "\n";
+        std::cout << "In FileHandler::addConst: writing constant failed for " << varName << " in " << fileName << "\n";
         return NC_ERROR;
     }
 
-    std::cout << " -> Variable " << varName << " has been written to " << fileName << "!" << "\n";
+    std::cout << " -> Constant " << varName << " has been written to " << fileName << "!" << "\n";
     return NC_SUCCESS;
 
 } /* End of FileHandler::addConst */
@@ -289,7 +289,7 @@ int FileHandler::addVar( NcFile &dataFile, T *inputVar, const char* varName, con
 
     /* Define long name attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the long name */
     if ( !var->add_att("long_name", varFullName) ) {
-        std::cout << "In FileHandler::addConst: full name definition failed for " << varName << " ( full name: [" << varFullName << "]) in " << fileName << "\n";
+        std::cout << "In FileHandler::addVar: full name definition failed for " << varName << " ( full name: [" << varFullName << "]) in " << fileName << "\n";
         return NC_ERROR;
     }
     
@@ -345,7 +345,7 @@ int FileHandler::addVar2D( NcFile &dataFile, T *inputVar, const char* varName, c
 
     /* Define long name attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the long name */
     if ( !var->add_att("long_name", varFullName) ) {
-        std::cout << "In FileHandler::addConst: full name definition failed for " << varName << " ( full name: [" << varFullName << "]) in " << fileName << "\n";
+        std::cout << "In FileHandler::addVar3D: full name definition failed for " << varName << " ( full name: [" << varFullName << "]) in " << fileName << "\n";
         return NC_ERROR;
     }
     
@@ -359,6 +359,119 @@ int FileHandler::addVar2D( NcFile &dataFile, T *inputVar, const char* varName, c
     return NC_SUCCESS;
 
 } /* End of FileHandler::addVar2D */
+
+template <class T>
+int FileHandler::addVar3D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const char* type, const char* unit, const char* varFullName ) const
+{
+
+    /* Convert input type to netCDF type */
+    NcType varType;
+    if ( strcmp(type, "double") == 0 ) {
+        varType = ncDouble;
+    } else if ( strcmp(type, "float") == 0 ) {
+        varType = ncFloat;
+    } else if ( strcmp(type, "long") == 0 ) {
+        varType = ncLong;
+    } else if ( strcmp(type, "int") == 0 ) {
+        varType = ncInt;
+    } else if ( strcmp(type, "short") == 0 ) {
+        varType = ncShort;
+    } else if ( strcmp(type, "char") == 0 ) {
+        varType = ncChar;
+    } else if ( strcmp(type, "byte") == 0 ) {
+        varType = ncByte;
+    } else {
+        varType = ncNoType;
+        std::cout << "In FileHandler::addVar3D: varType takes an undefined value. varType: " << varType << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Create netCDF variables which hold the actual specified variable */
+    NcVar *var;
+    if ( !(var = dataFile.add_var( varName, varType, varDim1, varDim2, varDim3 )) ) {
+        std::cout << "In FileHandler::addVar3D: defining variable failed for " << varName << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Define unit attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the unit */
+    if ( !var->add_att("unit", unit) ) {
+        std::cout << "In FileHandler::addVar3D: unit definition failed for " << varName << " ( unit: [" << unit << "]) in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Define long name attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the long name */
+    if ( !var->add_att("long_name", varFullName) ) {
+        std::cout << "In FileHandler::addVar3D: full name definition failed for " << varName << " ( full name: [" << varFullName << "]) in " << fileName << "\n";
+        return NC_ERROR;
+    }
+    
+    /* Write the variable data. The arrays of data are the same size as the netCDF variables we have defined, and below we write it in one step */
+    if ( !var->put( inputVar, varDim1->size(), varDim2->size(), varDim3->size() ) ) {
+        std::cout << "In FileHandler::addVar3D: writing variable failed for " << varName << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    std::cout << " -> Variable " << varName << " has been written to " << fileName << "!" << "\n";
+    return NC_SUCCESS;
+
+} /* End of FileHandler::addVar3D */
+
+template <class T>
+int FileHandler::addVar4D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const NcDim *varDim4, const char* type, const char* unit, const char* varFullName ) const
+{
+
+    /* Convert input type to netCDF type */
+    NcType varType;
+    if ( strcmp(type, "double") == 0 ) {
+        varType = ncDouble;
+    } else if ( strcmp(type, "float") == 0 ) {
+        varType = ncFloat;
+    } else if ( strcmp(type, "long") == 0 ) {
+        varType = ncLong;
+    } else if ( strcmp(type, "int") == 0 ) {
+        varType = ncInt;
+    } else if ( strcmp(type, "short") == 0 ) {
+        varType = ncShort;
+    } else if ( strcmp(type, "char") == 0 ) {
+        varType = ncChar;
+    } else if ( strcmp(type, "byte") == 0 ) {
+        varType = ncByte;
+    } else {
+        varType = ncNoType;
+        std::cout << "In FileHandler::addVar4D: varType takes an undefined value. varType: " << varType << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Create netCDF variables which hold the actual specified variable */
+    NcVar *var;
+    if ( !(var = dataFile.add_var( varName, varType, varDim1, varDim2, varDim3, varDim4 )) ) {
+        std::cout << "In FileHandler::addVar4D: defining variable failed for " << varName << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Define unit attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the unit */
+    if ( !var->add_att("unit", unit) ) {
+        std::cout << "In FileHandler::addVar4D: unit definition failed for " << varName << " ( unit: [" << unit << "]) in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    /* Define long name attributes for variables. This attaches a text attribute to each of the coordinate variables, containing the long name */
+    if ( !var->add_att("long_name", varFullName) ) {
+        std::cout << "In FileHandler::addVar4D: full name definition failed for " << varName << " ( full name: [" << varFullName << "]) in " << fileName << "\n";
+        return NC_ERROR;
+    }
+    
+    /* Write the variable data. The arrays of data are the same size as the netCDF variables we have defined, and below we write it in one step */
+    if ( !var->put( inputVar, varDim1->size(), varDim2->size(), varDim3->size(), varDim4->size() ) ) {
+        std::cout << "In FileHandler::addVar4D: writing variable failed for " << varName << " in " << fileName << "\n";
+        return NC_ERROR;
+    }
+
+    std::cout << " -> Variable " << varName << " has been written to " << fileName << "!" << "\n";
+    return NC_SUCCESS;
+
+} /* End of FileHandler::addVar4D */
+
 
 int FileHandler::addAtt( NcFile &dataFile, const char* attName, const char* attValue ) const
 {
@@ -429,5 +542,26 @@ template int FileHandler::addConst<float>( NcFile &dataFile, float *inputVar, co
 template int FileHandler::addVar2D<double>( NcFile &dataFile, double *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
 template int FileHandler::addVar2D<int>( NcFile &dataFile, int *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
 template int FileHandler::addVar2D<float>( NcFile &dataFile, float *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar3D<double>( NcFile &dataFile,  double *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar3D<int>( NcFile &dataFile, int *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar3D<float>( NcFile &dataFile, float *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar4D<double>( NcFile &dataFile, double *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const NcDim *varDim4, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar4D<int>( NcFile &dataFile, int *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const NcDim *varDim4, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar4D<float>( NcFile &dataFile, float *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const NcDim *varDim4, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar<const double>( NcFile &dataFile, const double *inputVar, const char* varName, const NcDim *varDim, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar<const int>( NcFile &dataFile, const int *inputVar, const char* varName, const NcDim *varDim, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar<const float>( NcFile &dataFile, const float *inputVar, const char* varName, const NcDim *varDim, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addConst<const double>( NcFile &dataFile, const double *inputVar, const char* varName, long size, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addConst<const int>( NcFile &dataFile, const int *inputVar, const char* varName, long size, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addConst<const float>( NcFile &dataFile, const float *inputVar, const char* varName, long size, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar2D<const double>( NcFile &dataFile, const double *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar2D<const int>( NcFile &dataFile, const int *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar2D<const float>( NcFile &dataFile, const float *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar3D<const double>( NcFile &dataFile, const double *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar3D<const int>( NcFile &dataFile, const int *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar3D<const float>( NcFile &dataFile, const float *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar4D<const double>( NcFile &dataFile, const double *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const NcDim *varDim4, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar4D<const int>( NcFile &dataFile, const int *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const NcDim *varDim4, const char* type, const char* unit, const char* varFullName ) const;
+template int FileHandler::addVar4D<const float>( NcFile &dataFile, const float *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const NcDim *varDim4, const char* type, const char* unit, const char* varFullName ) const;
 
 /* End of FileHandler.cpp */

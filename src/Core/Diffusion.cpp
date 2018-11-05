@@ -3,11 +3,11 @@
 /*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
-/* DiffParam Program File                                           */
+/* Diffusion Program File                                           */
 /*                                                                  */
 /* Author               : Thibaud M. Fritz                          */
 /* Time                 : 7/26/2018                                 */
-/* File                 : DiffParam.cpp                             */
+/* File                 : Diffusion.cpp                             */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -66,3 +66,5 @@ void DiffParam( double time, double &d_x, double &d_y )
 
 
 } /* End of DiffParam */
+
+/* End of Diffusion.cpp */

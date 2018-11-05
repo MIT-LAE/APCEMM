@@ -14,7 +14,9 @@
 #include "Core/Structure.hpp"
 
 Solution::Solution( ) : \
-        nVariables( N_SPC ), nAer( N_AER ), size_x( NX ), size_y( NY )
+        liquidAerosol( ), solidAerosol( ),
+        LA_Kernel( ), PA_Kernel( ),
+        nVariables( NSPEC ), nAer( N_AER ), size_x( NX ), size_y( NY )
 {
     /* Constructor */
 
@@ -36,7 +38,10 @@ void Solution::Clear( std::vector<std::vector<double> >& vector_2D )
 
 } /* End of Solution::Clear */
 
-void Solution::SetShape( std::vector<std::vector<double> >& vector_2D, unsigned int n_x, unsigned int n_y, double value )
+void Solution::SetShape( std::vector<std::vector<double> >& vector_2D, \
+                         const unsigned int n_x, \
+                         const unsigned int n_y, 
+                         const double value )
 {
     
     Clear( vector_2D );
@@ -48,18 +53,21 @@ void Solution::SetShape( std::vector<std::vector<double> >& vector_2D, unsigned 
 
 } /* End of Solution::SetShape */
 
-void Solution::SetToValue( std::vector<std::vector<double> >& vector_2D, double value )
+void Solution::SetToValue( std::vector<std::vector<double> >& vector_2D, \
+                           const double value )
 {
     
     for ( unsigned int i = 0; i < vector_2D.size(); i++ ) {
         for ( unsigned int j = 0; j < vector_2D[0].size(); j++ ) {
-            vector_2D[i][j] = (double) value;
+            vector_2D[i][j] = value;
         }
     }
 
 } /* End of Solution::SetToValue */
 
-void Solution::Print( std::vector<std::vector<double> >& vector_2D, unsigned int i_max, unsigned int j_max )
+void Solution::Print( const std::vector<std::vector<double> >& vector_2D, \
+                      const unsigned int i_max, \
+                      const unsigned int j_max ) const
 {
     
     for ( unsigned int i = 0; i < i_max; i++ ) {
@@ -71,7 +79,9 @@ void Solution::Print( std::vector<std::vector<double> >& vector_2D, unsigned int
 
 } /* End of Solution::Print */
 
-void Solution::Initialize( char const *fileName, double temperature, double airDens, double relHum )
+void Solution::Initialize( char const *fileName, const double temperature, const double pressure, \
+                           const double airDens, const double relHum, const double lat, \
+                           const Meteorology &met, const bool DBG )
 {
 
     std::vector<double> amb_Value(nVariables, 0.0);
@@ -82,7 +92,6 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
 
     if ( file.is_open() )
     {
-        std::cout << "Reading ambient data from file: " << fileName << std::endl;
         std::string line;
         unsigned int i = 0;
 
@@ -107,11 +116,6 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
     {
         std::string const currFunc("Structure::Initialize");
         std::cout << "ERROR: In " << currFunc << ": Can't read (" << fileName << ")" << std::endl;
-    }
-
-    for ( int i = 0; i < N_AER; i++ ) {
-        std::cout << "Index: " << i << " , amb_Value = " << aer_Value[i][0] << "\n";
-        std::cout << "Index: " << i << " , amb_Value = " << aer_Value[i][1] << "\n";
     }
 
     /* Gaseous species */
@@ -251,42 +255,193 @@ void Solution::Initialize( char const *fileName, double temperature, double airD
     SetShape( O2       , size_x , size_y, amb_Value[133] * airDens );
     SetShape( RCOOH    , size_x , size_y, amb_Value[134] * airDens );
 
-    /* Setting up ambient water vapor */
-    for ( unsigned int i = 0; i < size_x; i++ ) {
-        for ( unsigned int j = 0; j < size_y; j++ ) {
-            H2O[j][i] = (relHum/((double) 100.0) * \
-                             physFunc::pSat_H2Ol( temperature ) / ( physConst::kB * temperature )) / 1.00E+06;
-            /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
+    if ( LOAD_MET ) {
+        H2O = met.H2O;
+    } else {
+        for ( unsigned int i = 0; i < size_x; i++ ) {
+            for ( unsigned int j = 0; j < size_y; j++ ) {
+                H2O[j][i] = (relHum/((double) 100.0) * \
+                                 physFunc::pSat_H2Ol( met.temp[j][i] ) / ( physConst::kB * met.temp[j][i] )) / 1.00E+06;
+                /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
 
+            }
         }
     }
 
-    /* Liquid/solid species */
-    SetShape( SO4L , size_x, size_y, (double) 0.0 );
-    SetShape( H2OL , size_x, size_y, (double) 0.0 );
-    SetShape( H2OS , size_x, size_y, (double) 0.0 );
-    SetShape( HNO3L, size_x, size_y, (double) 0.0 );
-    SetShape( HNO3S, size_x, size_y, (double) 0.0 );
-    SetShape( HClL , size_x, size_y, (double) 0.0 );
-    SetShape( HOClL, size_x, size_y, (double) 0.0 );
-    SetShape( HBrL , size_x, size_y, (double) 0.0 );
-    SetShape( HOBrL, size_x, size_y, (double) 0.0 );
+    SetShape( NIT  , size_x, size_y, (double) 0.0 );
+    SetShape( NAT  , size_x, size_y, (double) 0.0 );
+    
+    std::vector<double> stratData{ SO4[0][0], HNO3[0][0], HCl[0][0], HOCl[0][0], HBr[0][0], HOBr[0][0],
+                                   H2O[0][0], ClNO3[0][0], BrNO3[0][0], NIT[0][0], NAT[0][0] };
+   
+    KHETI_SLA.assign( 11, 0.0 );
+    AERFRAC.assign( 7, 0.0 );
+    SOLIDFRAC.assign( 7, 0.0 );
+    
+    std::vector<double> RAD, RHO, KG, NDENS, SAD;
+    RAD.assign( 2, 0.0 );
+    RHO.assign( 2, 0.0 );
+    KG.assign( 2, 0.0 );
+    NDENS.assign( 2, 0.0 );
+    SAD.assign( 2, 0.0 );
 
+    STATE_PSC = STRAT_AER( temperature, pressure, airDens, lat, stratData, (2.0*XLIM)*(2.0*YLIM), KHETI_SLA, SOLIDFRAC, AERFRAC, RAD, RHO, KG, NDENS, SAD, DBG );
+  
+    /* Liquid/solid species */
+    SetShape( SO4L , size_x, size_y, (double) AERFRAC[0]                          * stratData[0] );
+    SetShape( SO4  , size_x, size_y, (double) ( 1.0 - AERFRAC[0] )                * stratData[0] );
+    
+    SetShape( H2OL , size_x, size_y, (double) AERFRAC[6]                          * stratData[6] );
+    SetShape( H2OS , size_x, size_y, (double) SOLIDFRAC[6]                        * stratData[6] );
+    SetShape( H2O  , size_x, size_y, (double) ( 1.0 - AERFRAC[6] - SOLIDFRAC[6] ) * stratData[6] );
+    
+    SetShape( HNO3L, size_x, size_y, (double) AERFRAC[1]                          * stratData[1] );
+    SetShape( HNO3S, size_x, size_y, (double) SOLIDFRAC[1]                        * stratData[1] );
+    SetShape( HNO3 , size_x, size_y, (double) ( 1.0 - AERFRAC[1] - SOLIDFRAC[1] ) * stratData[1] );
+    
+    SetShape( HClL , size_x, size_y, (double) AERFRAC[2]                          * stratData[2] );
+    SetShape( HCl  , size_x, size_y, (double) ( 1.0 - AERFRAC[2] )                * stratData[2] );
+    
+    SetShape( HOClL, size_x, size_y, (double) AERFRAC[3]                          * stratData[3] );
+    SetShape( HOCl , size_x, size_y, (double) ( 1.0 - AERFRAC[3] )                * stratData[3] );
+    
+    SetShape( HBrL , size_x, size_y, (double) AERFRAC[4]                          * stratData[4] );
+    SetShape( HBr  , size_x, size_y, (double) ( 1.0 - AERFRAC[4] )                * stratData[4] );
+    
+    SetShape( HOBrL, size_x, size_y, (double) AERFRAC[5]                          * stratData[5] );
+    SetShape( HOBr , size_x, size_y, (double) ( 1.0 - AERFRAC[5] )                * stratData[5] );
+    
+    SetShape( NIT  , size_x, size_y, (double) stratData[ 9] );
+    SetShape( NAT  , size_x, size_y, (double) stratData[10] );
+
+    
     /* Aerosols */
     /* Assume that soot particles are monodisperse */
     SetShape( sootDens , size_x, size_y, (double) aer_Value[  0][0] );
     SetShape( sootRadi , size_x, size_y, (double) aer_Value[  0][1] );
     SetShape( sootArea , size_x, size_y, (double) 4.0 / double(3.0) * physConst::PI * aer_Value[  0][0] * aer_Value[  0][1] * aer_Value[  0][1] * aer_Value[  0][1] );
-    SetShape( iceDens  , size_x, size_y, (double) aer_Value[  1][0] );
-    SetShape( iceRadi  , size_x, size_y, (double) aer_Value[  1][0] );
-    SetShape( iceArea  , size_x, size_y, (double) 0.0 );
-    SetShape( sulfDens , size_x, size_y, (double) aer_Value[  2][0] );
-    SetShape( sulfRadi , size_x, size_y, (double) aer_Value[  2][0] );
-    SetShape( sulfArea , size_x, size_y, (double) 0.0 );
+
+
+    nBin_LA = std::floor( 1 + log( pow( (LA_R_HIG/LA_R_LOW), 3.0 ) ) / log( LA_VRAT ) );
+
+    if ( DBG ) {
+        std::cout << "\n DEBUG : LA_R_LOW  = " << LA_R_LOW * 1.00E+09 << " [nm]\n";
+        std::cout << " DEBUG : LA_R_HIG  = "   << LA_R_HIG * 1.00E+09 << " [nm]\n";
+        std::cout << " DEBUG : LA_VRAT   = "   << LA_VRAT             << " [-]\n";
+        std::cout << " DEBUG : nBin_LA   = "   << nBin_LA             << "\n";
+        std::cout << " DEBUG : NDENS     = "   << NDENS[1] * 1.00E-06 << " [#/cm^3]\n";
+        std::cout << " DEBUG : REFF      = "   << RAD[1] * 1.00E+06   << " [mum]\n";
+    }
+    
+    std::vector<double> LA_rE( nBin_LA + 1, 0.0 ); /* Bin edges in m */
+    std::vector<double> LA_rJ( nBin_LA    , 0.0 ); /* Bin center radius in m */
+    std::vector<double> LA_vJ( nBin_LA    , 0.0 ); /* Bin volume centers in m^3 */
+
+    const double LA_RRAT = pow( LA_VRAT, 1.0 / RealDouble(3.0) );
+    LA_rE[0] = LA_R_LOW;
+    for ( unsigned int iBin_LA = 1; iBin_LA < nBin_LA + 1; iBin_LA++ )                      /* [m] */
+        LA_rE[iBin_LA] = LA_rE[iBin_LA-1] * LA_RRAT;
+
+    for ( unsigned int iBin_LA = 0; iBin_LA < nBin_LA; iBin_LA++ ) {
+        LA_rJ[iBin_LA] = 0.5 * ( LA_rE[iBin_LA] + LA_rE[iBin_LA+1] );                       /* [m] */
+        LA_vJ[iBin_LA] = 4.0 / RealDouble(3.0) * physConst::PI * \
+                         ( LA_rE[iBin_LA] * LA_rE[iBin_LA] * LA_rE[iBin_LA] \
+                         + LA_rE[iBin_LA+1] * LA_rE[iBin_LA+1] * LA_rE[iBin_LA+1] ) * 0.5;  /* [m^3] */
+    }
+
+    LA_nDens = NDENS[1] * 1.00E-06; /* [#/cm^3]      */
+    LA_rEff  = RAD[1]   * 1.00E+09; /* [nm]          */
+    LA_SAD   = SAD[1]   * 1.00E+06; /* [\mum^2/cm^3] */
+
+    if ( LA_nDens >= 0.0E+00 ) {
+        /* For a lognormal distribution:
+         * r_eff = r_m * exp( 5/2 * ln(S)^2 ) 
+         * A     = 4\pi N0 r_m^2 * exp ( 2 * ln(S)^2 ) 
+         * A/r_eff^2 = 4\pi N0 * exp( - 3 * ln(S)^2 )
+         *
+         * ln(S) = sqrt(-1/3*ln(A/(4\pi r_eff^2 * N0)));
+         * r_m = r_eff * exp( -5/2 * ln(S)^2 ); */
+        
+        const double sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * physConst::PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
+        const double rLA = std::max( RAD[1] * exp( - 2.5 * sLA * sLA ), 1.5 * LA_R_LOW ); 
+        const AIM::Grid_Aerosol LAAerosol( size_x, size_y, LA_rJ, LA_rE, LA_nDens, rLA, exp(sLA), "lognormal" );
+
+        liquidAerosol = LAAerosol;
+    }
+
+    const AIM::Coagulation kernel1( "liquid", LA_rJ, LA_vJ, physConst::RHO_SULF, temperature, pressure );
+
+    LA_Kernel = kernel1;
+
+    if ( DBG ) {
+
+        std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
+        std::cout << "         " << liquidAerosol.Moment( 0, 0, 0 ) << " v " << LA_nDens << " [#/cm^3]\n";
+        std::cout << " DEBUG : Comparing PDF's surface area to Grainger's surface area:\n";
+        std::cout << "         " << 4.0 * physConst::PI * liquidAerosol.Moment( 2, 0, 0 ) * 1.00E+12 << " v " << LA_SAD << " [mum^2/cm^3]\n";
+        std::cout << " DEBUG : Comparing PDF's effective radius to Grainger's effective radius:\n";
+        std::cout << "         " << liquidAerosol.EffRadius( 0, 0 ) * 1.00E+09 << " v " << LA_rEff << " [nm]\n";
+
+    }
+
+    nBin_PA = std::floor( 1 + log( pow( (PA_R_HIG/PA_R_LOW), 3.0 ) ) / log( PA_VRAT ) );
+    
+    if ( DBG ) {
+        std::cout << "\n DEBUG : PA_R_LOW  = " << PA_R_LOW * 1.00E+06 << " [mum]\n";
+        std::cout << " DEBUG : PA_R_HIG  = "   << PA_R_HIG * 1.00E+06 << " [mum]\n";
+        std::cout << " DEBUG : PA_VRAT   = "   << PA_VRAT             << " [-]\n";
+        std::cout << " DEBUG : nBin_PA   = "   << nBin_PA             << "\n";
+        std::cout << " DEBUG : NDENS     = "   << NDENS[0] * 1.00E-06 << " [#/cm^3]\n";
+        std::cout << " DEBUG : REFF      = "   << RAD[0] * 1.00E+06   << " [mum]\n";
+    }
+
+    std::vector<double> PA_rE( nBin_PA + 1, 0.0 ); /* Bin edges in m */
+    std::vector<double> PA_rJ( nBin_PA    , 0.0 ); /* Bin center radius in m */
+    std::vector<double> PA_vJ( nBin_PA    , 0.0 ); /* Bin volume centers in m^3 */
+
+    const double PA_RRAT = pow( PA_VRAT, 1.0 / RealDouble(3.0) );
+    PA_rE[0] = PA_R_LOW;
+    for ( unsigned int iBin_PA = 1; iBin_PA < nBin_PA + 1; iBin_PA++ ) 
+        PA_rE[iBin_PA] = PA_rE[iBin_PA-1] * PA_RRAT;                                        /* [m]   */
+    
+    for ( unsigned int iBin_PA = 0; iBin_PA < nBin_PA; iBin_PA++ ) {
+        PA_rJ[iBin_PA] = 0.5 * ( PA_rE[iBin_PA] + PA_rE[iBin_PA+1] );                       /* [m]   */
+        PA_vJ[iBin_PA] = 4.0 / RealDouble(3.0) * physConst::PI * \
+                         ( PA_rE[iBin_PA] * PA_rE[iBin_PA] * PA_rE[iBin_PA] \
+                         + PA_rE[iBin_PA+1] * PA_rE[iBin_PA+1] * PA_rE[iBin_PA+1] ) * 0.5;  /* [m^3] */
+    }
+
+    PA_nDens = NDENS[0] * 1.00E-06; /* [#/cm^3]      */
+    PA_rEff  = RAD[0]   * 1.00E+09; /* [nm]          */
+    PA_SAD   = SAD[0]   * 1.00E+06; /* [\mum^2/cm^3] */
+
+    if ( PA_nDens >= 0.0E+00 ) {
+        const double expsPA = 1.15;
+        const double rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW ); 
+        AIM::Grid_Aerosol PAAerosol( size_x, size_y, PA_rJ, PA_rE, PA_nDens, rPA, expsPA, "lognormal" );
+
+        solidAerosol = PAAerosol;
+    }
+    
+    const AIM::Coagulation kernel2( "ice", PA_rJ, PA_vJ, physConst::RHO_ICE, temperature, pressure );
+
+    PA_Kernel = kernel2;
+
+    if ( DBG ) {
+        std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
+        std::cout << "         " << solidAerosol.Moment( 0, 0, 0 ) << " v " << PA_nDens << " [#/cm^3]\n";
+        std::cout << " DEBUG : Comparing PDF's effective radius to actual effective radius:\n";
+        std::cout << "         " << solidAerosol.EffRadius( 0, 0 ) * 1.00E+09 << " v " << PA_rEff << " [nm]\n";
+    }
+
+    /* Tracers */
+    SetShape( SO4T , size_x, size_y, (double) amb_Value[ 28] * airDens );
 
 } /* End of Solution::Initialize */
 
-void Solution::getData( double varArray[], double fixArray[], unsigned int i, unsigned int j )
+void Solution::getData( double varArray[], double fixArray[], \
+                        const unsigned int i, \
+                        const unsigned int j )
 {
 
     varArray[  0] = CO2[j][i];
@@ -427,7 +582,9 @@ void Solution::getData( double varArray[], double fixArray[], unsigned int i, un
 
 } /* End of Solution::getData */
 
-void Solution::applyData( double varArray[], unsigned int i, unsigned int j )
+void Solution::applyData( double varArray[], \
+                          const unsigned int i, \
+                          const unsigned int j )
 {
 
     CO2[j][i]      = varArray[  0];
@@ -561,7 +718,9 @@ void Solution::applyData( double varArray[], unsigned int i, unsigned int j )
 
 } /* End of Solution::applyData */
 
-void Solution::applyRing( double varArray[], double tempArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int iRing )
+void Solution::applyRing( double varArray[], double tempArray[], \
+                          const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, \
+                          const unsigned int iRing )
 {
 
     unsigned int i, j;
@@ -570,139 +729,141 @@ void Solution::applyRing( double varArray[], double tempArray[], std::vector<std
         i = mapRing2Mesh[iRing][iList].first;
         j = mapRing2Mesh[iRing][iList].second;
 
-        CO2[j][i]    *= varArray[  0] / tempArray[  0];
-        PPN[j][i]    *= varArray[  1] / tempArray[  1];
-        BrNO2[j][i]  *= varArray[  2] / tempArray[  2];
-        IEPOX[j][i]  *= varArray[  3] / tempArray[  3];
-        PMNN[j][i]   *= varArray[  4] / tempArray[  4];
-        N2O[j][i]    *= varArray[  5] / tempArray[  5];
-        N[j][i]      *= varArray[  6] / tempArray[  6];
-        PAN[j][i]    *= varArray[  7] / tempArray[  7];
-        ALK4[j][i]   *= varArray[  8] / tempArray[  8];
-        MAP[j][i]    *= varArray[  9] / tempArray[  9];
-        MPN[j][i]    *= varArray[ 10] / tempArray[ 10];
-        Cl2O2[j][i]  *= varArray[ 11] / tempArray[ 11];
-        ETP[j][i]    *= varArray[ 12] / tempArray[ 12];
-        HNO2[j][i]   *= varArray[ 13] / tempArray[ 13];
-        C3H8[j][i]   *= varArray[ 14] / tempArray[ 14];
-        RA3P[j][i]   *= varArray[ 15] / tempArray[ 15];
-        RB3P[j][i]   *= varArray[ 16] / tempArray[ 16];
-        OClO[j][i]   *= varArray[ 17] / tempArray[ 17];
-        ClNO2[j][i]  *= varArray[ 18] / tempArray[ 18];
-        ISOP[j][i]   *= varArray[ 19] / tempArray[ 19];
-        HNO4[j][i]   *= varArray[ 20] / tempArray[ 20];
-        MAOP[j][i]   *= varArray[ 21] / tempArray[ 21];
-        MP[j][i]     *= varArray[ 22] / tempArray[ 22];
-        ClOO[j][i]   *= varArray[ 23] / tempArray[ 23];
-        RP[j][i]     *= varArray[ 24] / tempArray[ 24];
-        BrCl[j][i]   *= varArray[ 25] / tempArray[ 25];
-        PP[j][i]     *= varArray[ 26] / tempArray[ 26];
-        PRPN[j][i]   *= varArray[ 27] / tempArray[ 27];
-        SO4[j][i]    *= varArray[ 28] / tempArray[ 28];
-        Br2[j][i]    *= varArray[ 29] / tempArray[ 29];
-        ETHLN[j][i]  *= varArray[ 30] / tempArray[ 30];
-        MVKN[j][i]   *= varArray[ 31] / tempArray[ 31];
-        R4P[j][i]    *= varArray[ 32] / tempArray[ 32];
-        C2H6[j][i]   *= varArray[ 33] / tempArray[ 33];
-        RIP[j][i]    *= varArray[ 34] / tempArray[ 34];
-        VRP[j][i]    *= varArray[ 35] / tempArray[ 35];
-        ATOOH[j][i]  *= varArray[ 36] / tempArray[ 36];
-        IAP[j][i]    *= varArray[ 37] / tempArray[ 37];
-        DHMOB[j][i]  *= varArray[ 38] / tempArray[ 38];
-        MOBA[j][i]   *= varArray[ 39] / tempArray[ 39];
-        MRP[j][i]    *= varArray[ 40] / tempArray[ 40];
-        N2O5[j][i]   *= varArray[ 41] / tempArray[ 41];
-        ISNOHOO[j][i]*= varArray[ 42] / tempArray[ 42];
-        ISNP[j][i]   *= varArray[ 43] / tempArray[ 43];
-        ISOPNB[j][i] *= varArray[ 44] / tempArray[ 44];
-        IEPOXOO[j][i]*= varArray[ 45] / tempArray[ 45];
-        MACRNO2[j][i]*= varArray[ 46] / tempArray[ 46];
-        ROH[j][i]    *= varArray[ 47] / tempArray[ 47];
-        MOBAOO[j][i] *= varArray[ 48] / tempArray[ 48];
-        DIBOO[j][i]  *= varArray[ 49] / tempArray[ 49];
-        PMN[j][i]    *= varArray[ 50] / tempArray[ 50];
-        ISNOOB[j][i] *= varArray[ 51] / tempArray[ 51];
-        INPN[j][i]   *= varArray[ 52] / tempArray[ 52];
-        H[j][i]      *= varArray[ 53] / tempArray[ 53];
-        BrNO3[j][i]  *= varArray[ 54] / tempArray[ 54];
-        PRPE[j][i]   *= varArray[ 55] / tempArray[ 55];
-        MVKOO[j][i]  *= varArray[ 56] / tempArray[ 56];
-        Cl2[j][i]    *= varArray[ 57] / tempArray[ 57];
-        ISOPND[j][i] *= varArray[ 58] / tempArray[ 58];
-        HOBr[j][i]   *= varArray[ 59] / tempArray[ 59];
-        A3O2[j][i]   *= varArray[ 60] / tempArray[ 60];
-        PROPNN[j][i] *= varArray[ 61] / tempArray[ 61];
-        GLYX[j][i]   *= varArray[ 62] / tempArray[ 62];
-        MAOPO2[j][i] *= varArray[ 63] / tempArray[ 63];
-        CH4[j][i]    *= varArray[ 64] / tempArray[ 64];
-        GAOO[j][i]   *= varArray[ 65] / tempArray[ 65];
-        B3O2[j][i]   *= varArray[ 66] / tempArray[ 66];
-        ACET[j][i]   *= varArray[ 67] / tempArray[ 67];
-        MACRN[j][i]  *= varArray[ 68] / tempArray[ 68];
-        CH2OO[j][i]  *= varArray[ 69] / tempArray[ 69];
-        MGLYOO[j][i] *= varArray[ 70] / tempArray[ 70];
-        VRO2[j][i]   *= varArray[ 71] / tempArray[ 71];
-        MGLOO[j][i]  *= varArray[ 72] / tempArray[ 72];
-        MACROO[j][i] *= varArray[ 73] / tempArray[ 73];
-        PO2[j][i]    *= varArray[ 74] / tempArray[ 74];
-        CH3CHOO[j][i]*= varArray[ 75] / tempArray[ 75];
-        MAN2[j][i]   *= varArray[ 76] / tempArray[ 76];
-        ISNOOA[j][i] *= varArray[ 77] / tempArray[ 77];
-        H2O2[j][i]   *= varArray[ 78] / tempArray[ 78];
-        PRN1[j][i]   *= varArray[ 79] / tempArray[ 79];
-        ETO2[j][i]   *= varArray[ 80] / tempArray[ 80];
-        KO2[j][i]    *= varArray[ 81] / tempArray[ 81];
-        RCO3[j][i]   *= varArray[ 82] / tempArray[ 82];
-        HC5OO[j][i]  *= varArray[ 83] / tempArray[ 83];
-        GLYC[j][i]   *= varArray[ 84] / tempArray[ 84];
-        ClNO3[j][i]  *= varArray[ 85] / tempArray[ 85];
-        RIO2[j][i]   *= varArray[ 86] / tempArray[ 86];
-        R4N1[j][i]   *= varArray[ 87] / tempArray[ 87];
-        HOCl[j][i]   *= varArray[ 88] / tempArray[ 88];
-        ATO2[j][i]   *= varArray[ 89] / tempArray[ 89];
-        HNO3[j][i]   *= varArray[ 90] / tempArray[ 90];
-        ISN1[j][i]   *= varArray[ 91] / tempArray[ 91];
-        MAO3[j][i]   *= varArray[ 92] / tempArray[ 92];
-        MRO2[j][i]   *= varArray[ 93] / tempArray[ 93];
-        INO2[j][i]   *= varArray[ 94] / tempArray[ 94];
-        HAC[j][i]    *= varArray[ 95] / tempArray[ 95];
-        HC5[j][i]    *= varArray[ 96] / tempArray[ 96];
-        MGLY[j][i]   *= varArray[ 97] / tempArray[ 97];
-        ISOPNBO2[j][i]*= varArray[ 98] / tempArray[ 98];
-        ISOPNDO2[j][i]*= varArray[ 99] / tempArray[ 99];
-        R4O2[j][i]   *= varArray[100] / tempArray[100];
-        R4N2[j][i]   *= varArray[101] / tempArray[101];
-        BrO[j][i]    *= varArray[102] / tempArray[102];
-        RCHO[j][i]   *= varArray[103] / tempArray[103];
-        MEK[j][i]    *= varArray[104] / tempArray[104];
-        ClO[j][i]    *= varArray[105] / tempArray[105];
-        MACR[j][i]   *= varArray[106] / tempArray[106];
-        SO2[j][i]    *= varArray[107] / tempArray[107];
-        MVK[j][i]    *= varArray[108] / tempArray[108];
-        ALD2[j][i]   *= varArray[109] / tempArray[109];
-        MCO3[j][i]   *= varArray[110] / tempArray[110];
-        CH2O[j][i]   *= varArray[111] / tempArray[111];
-        H2O[j][i]    *= varArray[112] / tempArray[112];
-        Br[j][i]     *= varArray[113] / tempArray[113];
-        NO[j][i]     *= varArray[114] / tempArray[114];
-        NO3[j][i]    *= varArray[115] / tempArray[115];
-        Cl[j][i]     *= varArray[116] / tempArray[116];
-        O[j][i]      *= varArray[117] / tempArray[117];
-        O1D[j][i]    *= varArray[118] / tempArray[118];
-        O3[j][i]     *= varArray[119] / tempArray[119];
-        HO2[j][i]    *= varArray[120] / tempArray[120];
-        NO2[j][i]    *= varArray[121] / tempArray[121];
-        OH[j][i]     *= varArray[122] / tempArray[122];
-        HBr[j][i]    *= varArray[123] / tempArray[123];
-        HCl[j][i]    *= varArray[124] / tempArray[124];
-        CO[j][i]     *= varArray[125] / tempArray[125];
-        MO2[j][i]    *= varArray[126] / tempArray[126];
-
+        CO2[j][i]      *= varArray[  0] / tempArray[  0];
+        PPN[j][i]      *= varArray[  1] / tempArray[  1];
+        BrNO2[j][i]    *= varArray[  2] / tempArray[  2];
+        IEPOX[j][i]    *= varArray[  3] / tempArray[  3];
+        PMNN[j][i]     *= varArray[  4] / tempArray[  4];
+        N2O[j][i]      *= varArray[  5] / tempArray[  5];
+        N[j][i]        *= varArray[  6] / tempArray[  6];
+        PAN[j][i]      *= varArray[  7] / tempArray[  7];
+        ALK4[j][i]     *= varArray[  8] / tempArray[  8];
+        MAP[j][i]      *= varArray[  9] / tempArray[  9];
+        MPN[j][i]      *= varArray[ 10] / tempArray[ 10];
+        Cl2O2[j][i]    *= varArray[ 11] / tempArray[ 11];
+        ETP[j][i]      *= varArray[ 12] / tempArray[ 12];
+        HNO2[j][i]     *= varArray[ 13] / tempArray[ 13];
+        C3H8[j][i]     *= varArray[ 14] / tempArray[ 14];
+        RA3P[j][i]     *= varArray[ 15] / tempArray[ 15];
+        RB3P[j][i]     *= varArray[ 16] / tempArray[ 16];
+        OClO[j][i]     *= varArray[ 17] / tempArray[ 17];
+        ClNO2[j][i]    *= varArray[ 18] / tempArray[ 18];
+        ISOP[j][i]     *= varArray[ 19] / tempArray[ 19];
+        HNO4[j][i]     *= varArray[ 20] / tempArray[ 20];
+        MAOP[j][i]     *= varArray[ 21] / tempArray[ 21];
+        MP[j][i]       *= varArray[ 22] / tempArray[ 22];
+        ClOO[j][i]     *= varArray[ 23] / tempArray[ 23];
+        RP[j][i]       *= varArray[ 24] / tempArray[ 24];
+        BrCl[j][i]     *= varArray[ 25] / tempArray[ 25];
+        PP[j][i]       *= varArray[ 26] / tempArray[ 26];
+        PRPN[j][i]     *= varArray[ 27] / tempArray[ 27];
+        SO4[j][i]      *= varArray[ 28] / tempArray[ 28];
+        Br2[j][i]      *= varArray[ 29] / tempArray[ 29];
+        ETHLN[j][i]    *= varArray[ 30] / tempArray[ 30];
+        MVKN[j][i]     *= varArray[ 31] / tempArray[ 31];
+        R4P[j][i]      *= varArray[ 32] / tempArray[ 32];
+        C2H6[j][i]     *= varArray[ 33] / tempArray[ 33];
+        RIP[j][i]      *= varArray[ 34] / tempArray[ 34];
+        VRP[j][i]      *= varArray[ 35] / tempArray[ 35];
+        ATOOH[j][i]    *= varArray[ 36] / tempArray[ 36];
+        IAP[j][i]      *= varArray[ 37] / tempArray[ 37];
+        DHMOB[j][i]    *= varArray[ 38] / tempArray[ 38];
+        MOBA[j][i]     *= varArray[ 39] / tempArray[ 39];
+        MRP[j][i]      *= varArray[ 40] / tempArray[ 40];
+        N2O5[j][i]     *= varArray[ 41] / tempArray[ 41];
+        ISNOHOO[j][i]  *= varArray[ 42] / tempArray[ 42];
+        ISNP[j][i]     *= varArray[ 43] / tempArray[ 43];
+        ISOPNB[j][i]   *= varArray[ 44] / tempArray[ 44];
+        IEPOXOO[j][i]  *= varArray[ 45] / tempArray[ 45];
+        MACRNO2[j][i]  *= varArray[ 46] / tempArray[ 46];
+        ROH[j][i]      *= varArray[ 47] / tempArray[ 47];
+        MOBAOO[j][i]   *= varArray[ 48] / tempArray[ 48];
+        DIBOO[j][i]    *= varArray[ 49] / tempArray[ 49];
+        PMN[j][i]      *= varArray[ 50] / tempArray[ 50];
+        ISNOOB[j][i]   *= varArray[ 51] / tempArray[ 51];
+        INPN[j][i]     *= varArray[ 52] / tempArray[ 52];
+        H[j][i]        *= varArray[ 53] / tempArray[ 53];
+        BrNO3[j][i]    *= varArray[ 54] / tempArray[ 54];
+        PRPE[j][i]     *= varArray[ 55] / tempArray[ 55];
+        MVKOO[j][i]    *= varArray[ 56] / tempArray[ 56];
+        Cl2[j][i]      *= varArray[ 57] / tempArray[ 57];
+        ISOPND[j][i]   *= varArray[ 58] / tempArray[ 58];
+        HOBr[j][i]     *= varArray[ 59] / tempArray[ 59];
+        A3O2[j][i]     *= varArray[ 60] / tempArray[ 60];
+        PROPNN[j][i]   *= varArray[ 61] / tempArray[ 61];
+        GLYX[j][i]     *= varArray[ 62] / tempArray[ 62];
+        MAOPO2[j][i]   *= varArray[ 63] / tempArray[ 63];
+        CH4[j][i]      *= varArray[ 64] / tempArray[ 64];
+        GAOO[j][i]     *= varArray[ 65] / tempArray[ 65];
+        B3O2[j][i]     *= varArray[ 66] / tempArray[ 66];
+        ACET[j][i]     *= varArray[ 67] / tempArray[ 67];
+        MACRN[j][i]    *= varArray[ 68] / tempArray[ 68];
+        CH2OO[j][i]    *= varArray[ 69] / tempArray[ 69];
+        MGLYOO[j][i]   *= varArray[ 70] / tempArray[ 70];
+        VRO2[j][i]     *= varArray[ 71] / tempArray[ 71];
+        MGLOO[j][i]    *= varArray[ 72] / tempArray[ 72];
+        MACROO[j][i]   *= varArray[ 73] / tempArray[ 73];
+        PO2[j][i]      *= varArray[ 74] / tempArray[ 74];
+        CH3CHOO[j][i]  *= varArray[ 75] / tempArray[ 75];
+        MAN2[j][i]     *= varArray[ 76] / tempArray[ 76];
+        ISNOOA[j][i]   *= varArray[ 77] / tempArray[ 77];
+        H2O2[j][i]     *= varArray[ 78] / tempArray[ 78];
+        PRN1[j][i]     *= varArray[ 79] / tempArray[ 79];
+        ETO2[j][i]     *= varArray[ 80] / tempArray[ 80];
+        KO2[j][i]      *= varArray[ 81] / tempArray[ 81];
+        RCO3[j][i]     *= varArray[ 82] / tempArray[ 82];
+        HC5OO[j][i]    *= varArray[ 83] / tempArray[ 83];
+        GLYC[j][i]     *= varArray[ 84] / tempArray[ 84];
+        ClNO3[j][i]    *= varArray[ 85] / tempArray[ 85];
+        RIO2[j][i]     *= varArray[ 86] / tempArray[ 86];
+        R4N1[j][i]     *= varArray[ 87] / tempArray[ 87];
+        HOCl[j][i]     *= varArray[ 88] / tempArray[ 88];
+        ATO2[j][i]     *= varArray[ 89] / tempArray[ 89];
+        HNO3[j][i]     *= varArray[ 90] / tempArray[ 90];
+        ISN1[j][i]     *= varArray[ 91] / tempArray[ 91];
+        MAO3[j][i]     *= varArray[ 92] / tempArray[ 92];
+        MRO2[j][i]     *= varArray[ 93] / tempArray[ 93];
+        INO2[j][i]     *= varArray[ 94] / tempArray[ 94];
+        HAC[j][i]      *= varArray[ 95] / tempArray[ 95];
+        HC5[j][i]      *= varArray[ 96] / tempArray[ 96];
+        MGLY[j][i]     *= varArray[ 97] / tempArray[ 97];
+        ISOPNBO2[j][i] *= varArray[ 98] / tempArray[ 98];
+        ISOPNDO2[j][i] *= varArray[ 99] / tempArray[ 99];
+        R4O2[j][i]     *= varArray[100] / tempArray[100];
+        R4N2[j][i]     *= varArray[101] / tempArray[101];
+        BrO[j][i]      *= varArray[102] / tempArray[102];
+        RCHO[j][i]     *= varArray[103] / tempArray[103];
+        MEK[j][i]      *= varArray[104] / tempArray[104];
+        ClO[j][i]      *= varArray[105] / tempArray[105];
+        MACR[j][i]     *= varArray[106] / tempArray[106];
+        SO2[j][i]      *= varArray[107] / tempArray[107];
+        MVK[j][i]      *= varArray[108] / tempArray[108];
+        ALD2[j][i]     *= varArray[109] / tempArray[109];
+        MCO3[j][i]     *= varArray[110] / tempArray[110];
+        CH2O[j][i]     *= varArray[111] / tempArray[111];
+        H2O[j][i]      *= varArray[112] / tempArray[112];
+        Br[j][i]       *= varArray[113] / tempArray[113];
+        NO[j][i]       *= varArray[114] / tempArray[114];
+        NO3[j][i]      *= varArray[115] / tempArray[115];
+        Cl[j][i]       *= varArray[116] / tempArray[116];
+        O[j][i]        *= varArray[117] / tempArray[117];
+        O1D[j][i]      *= varArray[118] / tempArray[118];
+        O3[j][i]       *= varArray[119] / tempArray[119];
+        HO2[j][i]      *= varArray[120] / tempArray[120];
+        NO2[j][i]      *= varArray[121] / tempArray[121];
+        OH[j][i]       *= varArray[122] / tempArray[122];
+        HBr[j][i]      *= varArray[123] / tempArray[123];
+        HCl[j][i]      *= varArray[124] / tempArray[124];
+        CO[j][i]       *= varArray[125] / tempArray[125];
+        MO2[j][i]      *= varArray[126] / tempArray[126];
+    
     }
 
 } /* End of Solution::applyRing */
 
-void Solution::applyAmbient( double varArray[], std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, unsigned int ambIndex )
+void Solution::applyAmbient( double varArray[], \
+                             const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, \
+                             const unsigned int ambIndex )
 {
 
     unsigned int i, j;
@@ -711,155 +872,159 @@ void Solution::applyAmbient( double varArray[], std::vector<std::vector<std::pai
         i = mapRing2Mesh[ambIndex][iList].first;
         j = mapRing2Mesh[ambIndex][iList].second;
 
-        CO2[j][i]    = varArray[  0];
-        PPN[j][i]    = varArray[  1];
-        BrNO2[j][i]  = varArray[  2];
-        IEPOX[j][i]  = varArray[  3];
-        PMNN[j][i]   = varArray[  4];
-        N2O[j][i]    = varArray[  5];
-        N[j][i]      = varArray[  6];
-        PAN[j][i]    = varArray[  7];
-        ALK4[j][i]   = varArray[  8];
-        MAP[j][i]    = varArray[  9];
-        MPN[j][i]    = varArray[ 10];
-        Cl2O2[j][i]  = varArray[ 11];
-        ETP[j][i]    = varArray[ 12];
-        HNO2[j][i]   = varArray[ 13];
-        C3H8[j][i]   = varArray[ 14];
-        RA3P[j][i]   = varArray[ 15];
-        RB3P[j][i]   = varArray[ 16];
-        OClO[j][i]   = varArray[ 17];
-        ClNO2[j][i]  = varArray[ 18];
-        ISOP[j][i]   = varArray[ 19];
-        HNO4[j][i]   = varArray[ 20];
-        MAOP[j][i]   = varArray[ 21];
-        MP[j][i]     = varArray[ 22];
-        ClOO[j][i]   = varArray[ 23];
-        RP[j][i]     = varArray[ 24];
-        BrCl[j][i]   = varArray[ 25];
-        PP[j][i]     = varArray[ 26];
-        PRPN[j][i]   = varArray[ 27];
-        SO4[j][i]    = varArray[ 28];
-        Br2[j][i]    = varArray[ 29];
-        ETHLN[j][i]  = varArray[ 30];
-        MVKN[j][i]   = varArray[ 31];
-        R4P[j][i]    = varArray[ 32];
-        C2H6[j][i]   = varArray[ 33];
-        RIP[j][i]    = varArray[ 34];
-        VRP[j][i]    = varArray[ 35];
-        ATOOH[j][i]  = varArray[ 36];
-        IAP[j][i]    = varArray[ 37];
-        DHMOB[j][i]  = varArray[ 38];
-        MOBA[j][i]   = varArray[ 39];
-        MRP[j][i]    = varArray[ 40];
-        N2O5[j][i]   = varArray[ 41];
-        ISNOHOO[j][i]= varArray[ 42];
-        ISNP[j][i]   = varArray[ 43];
-        ISOPNB[j][i] = varArray[ 44];
-        IEPOXOO[j][i]= varArray[ 45];
-        MACRNO2[j][i]= varArray[ 46];
-        ROH[j][i]    = varArray[ 47];
-        MOBAOO[j][i] = varArray[ 48];
-        DIBOO[j][i]  = varArray[ 49];
-        PMN[j][i]    = varArray[ 50];
-        ISNOOB[j][i] = varArray[ 51];
-        INPN[j][i]   = varArray[ 52];
-        H[j][i]      = varArray[ 53];
-        BrNO3[j][i]  = varArray[ 54];
-        PRPE[j][i]   = varArray[ 55];
-        MVKOO[j][i]  = varArray[ 56];
-        Cl2[j][i]    = varArray[ 57];
-        ISOPND[j][i] = varArray[ 58];
-        HOBr[j][i]   = varArray[ 59];
-        A3O2[j][i]   = varArray[ 60];
-        PROPNN[j][i] = varArray[ 61];
-        GLYX[j][i]   = varArray[ 62];
-        MAOPO2[j][i] = varArray[ 63];
-        CH4[j][i]    = varArray[ 64];
-        GAOO[j][i]   = varArray[ 65];
-        B3O2[j][i]   = varArray[ 66];
-        ACET[j][i]   = varArray[ 67];
-        MACRN[j][i]  = varArray[ 68];
-        CH2OO[j][i]  = varArray[ 69];
-        MGLYOO[j][i] = varArray[ 70];
-        VRO2[j][i]   = varArray[ 71];
-        MGLOO[j][i]  = varArray[ 72];
-        MACROO[j][i] = varArray[ 73];
-        PO2[j][i]    = varArray[ 74];
-        CH3CHOO[j][i]= varArray[ 75];
-        MAN2[j][i]   = varArray[ 76];
-        ISNOOA[j][i] = varArray[ 77];
-        H2O2[j][i]   = varArray[ 78];
-        PRN1[j][i]   = varArray[ 79];
-        ETO2[j][i]   = varArray[ 80];
-        KO2[j][i]    = varArray[ 81];
-        RCO3[j][i]   = varArray[ 82];
-        HC5OO[j][i]  = varArray[ 83];
-        GLYC[j][i]   = varArray[ 84];
-        ClNO3[j][i]  = varArray[ 85];
-        RIO2[j][i]   = varArray[ 86];
-        R4N1[j][i]   = varArray[ 87];
-        HOCl[j][i]   = varArray[ 88];
-        ATO2[j][i]   = varArray[ 89];
-        HNO3[j][i]   = varArray[ 90];
-        ISN1[j][i]   = varArray[ 91];
-        MAO3[j][i]   = varArray[ 92];
-        MRO2[j][i]   = varArray[ 93];
-        INO2[j][i]   = varArray[ 94];
-        HAC[j][i]    = varArray[ 95];
-        HC5[j][i]    = varArray[ 96];
-        MGLY[j][i]   = varArray[ 97];
-        ISOPNBO2[j][i]= varArray[ 98];
-        ISOPNDO2[j][i]= varArray[ 99];
-        R4O2[j][i]   = varArray[100];
-        R4N2[j][i]   = varArray[101];
-        BrO[j][i]    = varArray[102];
-        RCHO[j][i]   = varArray[103];
-        MEK[j][i]    = varArray[104];
-        ClO[j][i]    = varArray[105];
-        MACR[j][i]   = varArray[106];
-        SO2[j][i]    = varArray[107];
-        MVK[j][i]    = varArray[108];
-        ALD2[j][i]   = varArray[109];
-        MCO3[j][i]   = varArray[110];
-        CH2O[j][i]   = varArray[111];
-        H2O[j][i]    = varArray[112];
-        Br[j][i]     = varArray[113];
-        NO[j][i]     = varArray[114];
-        NO3[j][i]    = varArray[115];
-        Cl[j][i]     = varArray[116];
-        O[j][i]      = varArray[117];
-        O1D[j][i]    = varArray[118];
-        O3[j][i]     = varArray[119];
-        HO2[j][i]    = varArray[120];
-        NO2[j][i]    = varArray[121];
-        OH[j][i]     = varArray[122];
-        HBr[j][i]    = varArray[123];
-        HCl[j][i]    = varArray[124];
-        CO[j][i]     = varArray[125];
-        MO2[j][i]    = varArray[126];
+        CO2[j][i]      = varArray[  0];
+        PPN[j][i]      = varArray[  1];
+        BrNO2[j][i]    = varArray[  2];
+        IEPOX[j][i]    = varArray[  3];
+        PMNN[j][i]     = varArray[  4];
+        N2O[j][i]      = varArray[  5];
+        N[j][i]        = varArray[  6];
+        PAN[j][i]      = varArray[  7];
+        ALK4[j][i]     = varArray[  8];
+        MAP[j][i]      = varArray[  9];
+        MPN[j][i]      = varArray[ 10];
+        Cl2O2[j][i]    = varArray[ 11];
+        ETP[j][i]      = varArray[ 12];
+        HNO2[j][i]     = varArray[ 13];
+        C3H8[j][i]     = varArray[ 14];
+        RA3P[j][i]     = varArray[ 15];
+        RB3P[j][i]     = varArray[ 16];
+        OClO[j][i]     = varArray[ 17];
+        ClNO2[j][i]    = varArray[ 18];
+        ISOP[j][i]     = varArray[ 19];
+        HNO4[j][i]     = varArray[ 20];
+        MAOP[j][i]     = varArray[ 21];
+        MP[j][i]       = varArray[ 22];
+        ClOO[j][i]     = varArray[ 23];
+        RP[j][i]       = varArray[ 24];
+        BrCl[j][i]     = varArray[ 25];
+        PP[j][i]       = varArray[ 26];
+        PRPN[j][i]     = varArray[ 27];
+        SO4[j][i]      = varArray[ 28];
+        Br2[j][i]      = varArray[ 29];
+        ETHLN[j][i]    = varArray[ 30];
+        MVKN[j][i]     = varArray[ 31];
+        R4P[j][i]      = varArray[ 32];
+        C2H6[j][i]     = varArray[ 33];
+        RIP[j][i]      = varArray[ 34];
+        VRP[j][i]      = varArray[ 35];
+        ATOOH[j][i]    = varArray[ 36];
+        IAP[j][i]      = varArray[ 37];
+        DHMOB[j][i]    = varArray[ 38];
+        MOBA[j][i]     = varArray[ 39];
+        MRP[j][i]      = varArray[ 40];
+        N2O5[j][i]     = varArray[ 41];
+        ISNOHOO[j][i]  = varArray[ 42];
+        ISNP[j][i]     = varArray[ 43];
+        ISOPNB[j][i]   = varArray[ 44];
+        IEPOXOO[j][i]  = varArray[ 45];
+        MACRNO2[j][i]  = varArray[ 46];
+        ROH[j][i]      = varArray[ 47];
+        MOBAOO[j][i]   = varArray[ 48];
+        DIBOO[j][i]    = varArray[ 49];
+        PMN[j][i]      = varArray[ 50];
+        ISNOOB[j][i]   = varArray[ 51];
+        INPN[j][i]     = varArray[ 52];
+        H[j][i]        = varArray[ 53];
+        BrNO3[j][i]    = varArray[ 54];
+        PRPE[j][i]     = varArray[ 55];
+        MVKOO[j][i]    = varArray[ 56];
+        Cl2[j][i]      = varArray[ 57];
+        ISOPND[j][i]   = varArray[ 58];
+        HOBr[j][i]     = varArray[ 59];
+        A3O2[j][i]     = varArray[ 60];
+        PROPNN[j][i]   = varArray[ 61];
+        GLYX[j][i]     = varArray[ 62];
+        MAOPO2[j][i]   = varArray[ 63];
+        CH4[j][i]      = varArray[ 64];
+        GAOO[j][i]     = varArray[ 65];
+        B3O2[j][i]     = varArray[ 66];
+        ACET[j][i]     = varArray[ 67];
+        MACRN[j][i]    = varArray[ 68];
+        CH2OO[j][i]    = varArray[ 69];
+        MGLYOO[j][i]   = varArray[ 70];
+        VRO2[j][i]     = varArray[ 71];
+        MGLOO[j][i]    = varArray[ 72];
+        MACROO[j][i]   = varArray[ 73];
+        PO2[j][i]      = varArray[ 74];
+        CH3CHOO[j][i]  = varArray[ 75];
+        MAN2[j][i]     = varArray[ 76];
+        ISNOOA[j][i]   = varArray[ 77];
+        H2O2[j][i]     = varArray[ 78];
+        PRN1[j][i]     = varArray[ 79];
+        ETO2[j][i]     = varArray[ 80];
+        KO2[j][i]      = varArray[ 81];
+        RCO3[j][i]     = varArray[ 82];
+        HC5OO[j][i]    = varArray[ 83];
+        GLYC[j][i]     = varArray[ 84];
+        ClNO3[j][i]    = varArray[ 85];
+        RIO2[j][i]     = varArray[ 86];
+        R4N1[j][i]     = varArray[ 87];
+        HOCl[j][i]     = varArray[ 88];
+        ATO2[j][i]     = varArray[ 89];
+        HNO3[j][i]     = varArray[ 90];
+        ISN1[j][i]     = varArray[ 91];
+        MAO3[j][i]     = varArray[ 92];
+        MRO2[j][i]     = varArray[ 93];
+        INO2[j][i]     = varArray[ 94];
+        HAC[j][i]      = varArray[ 95];
+        HC5[j][i]      = varArray[ 96];
+        MGLY[j][i]     = varArray[ 97];
+        ISOPNBO2[j][i] = varArray[ 98];
+        ISOPNDO2[j][i] = varArray[ 99];
+        R4O2[j][i]     = varArray[100];
+        R4N2[j][i]     = varArray[101];
+        BrO[j][i]      = varArray[102];
+        RCHO[j][i]     = varArray[103];
+        MEK[j][i]      = varArray[104];
+        ClO[j][i]      = varArray[105];
+        MACR[j][i]     = varArray[106];
+        SO2[j][i]      = varArray[107];
+        MVK[j][i]      = varArray[108];
+        ALD2[j][i]     = varArray[109];
+        MCO3[j][i]     = varArray[110];
+        CH2O[j][i]     = varArray[111];
+        H2O[j][i]      = varArray[112];
+        Br[j][i]       = varArray[113];
+        NO[j][i]       = varArray[114];
+        NO3[j][i]      = varArray[115];
+        Cl[j][i]       = varArray[116];
+        O[j][i]        = varArray[117];
+        O1D[j][i]      = varArray[118];
+        O3[j][i]       = varArray[119];
+        HO2[j][i]      = varArray[120];
+        NO2[j][i]      = varArray[121];
+        OH[j][i]       = varArray[122];
+        HBr[j][i]      = varArray[123];
+        HCl[j][i]      = varArray[124];
+        CO[j][i]       = varArray[125];
+        MO2[j][i]      = varArray[126];
 
     }
 
 } /* End of Solution::applyAmbient */
 
 
-void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, std::vector<std::vector<double>> cellAreas, bool halfRing )
+void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
+                            const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, \
+                            const std::vector<std::vector<double>> cellAreas, bool halfRing, \
+                            const double temperature, bool set2Saturation, \
+                            AIM::Aerosol &liqAer, AIM::Aerosol &iceAer, \
+                            const double Soot_Den )
 {
 
     unsigned int innerRing, nCell;
     unsigned int i, j;
 
     double E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
-    E_CO2  = EI.getCO2()  / ( MW_CO2 * 1.0E+03 ) * AC.getFuelFlow()  / AC.getVFlight() * physConst::Na;
-    /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg] ) * [kg fuel/s]       / [m/s]           * [molec/mol]
+    double E_Soot;
+    E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * AC.getFuelFlow()  / AC.getVFlight() * physConst::Na;
+    /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg]  ) * [kg fuel/s]       / [m/s]           * [molec/mol]
      *     = [molec/m] 
      */
-    E_H2O  = EI.getH2O()  / ( MW_H2O  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_NO   = EI.getNO()   / ( MW_NO   * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_NO2  = EI.getNO2()  / ( MW_NO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_HNO2 = EI.getHNO2() / ( MW_HNO2 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_SO2  = EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_CO   = EI.getCO()   / ( MW_CO   * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_CH4  = EI.getCH4()  / ( MW_CH4  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_C2H6 = EI.getC2H6() / ( MW_C2H6 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
@@ -869,6 +1034,17 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
     E_ALD2 = EI.getALD2() / ( MW_ALD2 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_GLYX = EI.getGLYX() / ( MW_GLYX * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
     E_MGLY = EI.getMGLY() / ( MW_MGLY * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    if ( !set2Saturation ) {
+        E_H2O  = EI.getH2O()  / ( MW_H2O  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    }
+    E_SO2  = ( 1.0 - SO2TOSO4 ) * \
+             EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+
+    const double rad = EI.getSootRad();
+    E_Soot = EI.getSoot() / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * rad * rad * rad ) * AC.getFuelFlow() / AC.getVFlight();
+    /*     = [g_soot/kg_fuel]/ (                        * [kg_soot/m^3]       * [g/kg]   * [m^3]           ) * [kg_fuel/s]      / [m/s]
+     *     = [part/m]
+     */
 
     if ( !halfRing ) {
         /* Full rings */
@@ -879,11 +1055,9 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
             j = map[innerRing][iList].second;
 
             CO2[j][i]  += ( E_CO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
-            H2O[j][i]  += ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             NO[j][i]   += ( E_NO   / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             NO2[j][i]  += ( E_NO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             HNO2[j][i] += ( E_HNO2 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
-            SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             CO[j][i]   += ( E_CO   / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             CH4[j][i]  += ( E_CH4  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             C2H6[j][i] += ( E_C2H6 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
@@ -893,8 +1067,27 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
             ALD2[j][i] += ( E_ALD2 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             GLYX[j][i] += ( E_GLYX / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
             MGLY[j][i] += ( E_MGLY / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+            if ( set2Saturation ) {
+                /* If supersaturated, then set water vapor to saturation and no bare soot particles
+                 * as they are all covered with ice */
+                H2O[j][i] = physFunc::pSat_H2Os( temperature ) / ( physConst::kB * temperature * 1.00E+06 ); /* [molec / cm^3] */
+            } else {
+                /* If subsaturated, then emit water and soot */
+                H2O[j][i]+= ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+                sootDens[j][i] = Soot_Den / cellAreas[j][i]; //( E_Soot / cellAreas[j][i] * 1.0E-06 / nCell ); /* [part / cm^3] */
+                sootRadi[j][i] = rad;
+                sootArea[j][i] = 4.0 * physConst::PI * rad * rad * sootDens[j][i];
+            }
+            SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+
 
         }
+    
+        if ( iceAer.Moment() > 0.0E+00 )
+            solidAerosol.addPDF( iceAer, map[innerRing] );
+        if ( liqAer.Moment() > 0.0E+00 )
+            liquidAerosol.addPDF( liqAer, map[innerRing] );
+
 
     }
     else {
@@ -906,11 +1099,9 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
                 j = map[innerRing][iList].second;
 
                 CO2[j][i]  += ( E_CO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
-                H2O[j][i]  += ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 NO[j][i]   += ( E_NO   / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 NO2[j][i]  += ( E_NO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 HNO2[j][i] += ( E_HNO2 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
-                SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 CO[j][i]   += ( E_CO   / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 CH4[j][i]  += ( E_CH4  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 C2H6[j][i] += ( E_C2H6 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
@@ -920,8 +1111,25 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
                 ALD2[j][i] += ( E_ALD2 / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 GLYX[j][i] += ( E_GLYX / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 MGLY[j][i] += ( E_MGLY / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+                if ( set2Saturation ) {
+                    /* If supersaturated, then set water vapor to saturation and no bare soot particles
+                     * as they are all covered with ice */
+                    H2O[j][i] = physFunc::pSat_H2Os( temperature ) / ( physConst::kB * temperature * 1.00E+06 ); /* [molec / cm^3] */
+                } else {
+                    /* If subsaturated, then emit water and soot */
+                    H2O[j][i]+= ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
+                    sootDens[j][i] = Soot_Den; //( E_Soot / cellAreas[j][i] * 1.0E-06 / nCell ); /* [part / cm^3] */
+                    sootRadi[j][i] = rad;
+                    sootArea[j][i] = 4.0 * physConst::PI * rad * rad * sootDens[j][i];
+                }
+                SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
 
             }
+        
+            if ( iceAer.Moment() > 0.00E+00 )
+                solidAerosol.addPDF( iceAer, map[innerRing] );
+            if ( liqAer.Moment() > 0.00E+00 )
+                liquidAerosol.addPDF( liqAer, map[innerRing] );
 
         }
 
@@ -932,7 +1140,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, std::vector<
 std::vector<double> Solution::getAmbient() const
 {
 
-    std::vector<double> ambVector( N_SPC, 0.0 );
+    std::vector<double> ambVector( NSPEC, 0.0 );
     
     ambVector[  0] = CO2[0][0]      ;
     ambVector[  1] = PPN[0][0]      ;
@@ -1074,16 +1282,37 @@ std::vector<double> Solution::getAmbient() const
 
 } /* End of Solution::getAmbient */
 
+std::vector<double> Solution::getLiqSpecies( ) const
+{
+
+    std::vector<double> liqAerVector( 9, 0.0 );
+    liqAerVector[0] = SO4L[0][0];
+    liqAerVector[1] = H2OL[0][0];
+    liqAerVector[2] = HNO3L[0][0];
+    liqAerVector[3] = HClL[0][0];
+    liqAerVector[4] = HOClL[0][0];
+    liqAerVector[5] = HBrL[0][0];
+    liqAerVector[6] = HOBrL[0][0];
+    liqAerVector[7] = H2OS[0][0];
+    liqAerVector[8] = HNO3S[0][0];
+
+    return liqAerVector;
+
+} /* End of Solution::getLiqSpecies */
+
 std::vector<std::vector<double> > Solution::getAerosol( ) const
 {
 
-    std::vector<std::vector<double> > aerVector( nAer, std::vector<double>( 2, 0.0 ) );
+    std::vector<std::vector<double> > aerVector( nAer, std::vector<double>( 3, 0.0 ) );
     aerVector[  0][0] = sootDens[0][0];
     aerVector[  0][1] = sootRadi[0][0];
-    aerVector[  1][0] = iceDens[0][0];
-    aerVector[  1][1] = iceRadi[0][0];
-    aerVector[  2][0] = sulfDens[0][0];
-    aerVector[  2][1] = sulfRadi[0][0];
+    aerVector[  0][2] = sootArea[0][0];
+    aerVector[  1][0] = PA_nDens;
+    aerVector[  1][1] = PA_rEff;
+    aerVector[  1][2] = PA_SAD;
+    aerVector[  2][0] = LA_nDens;
+    aerVector[  2][1] = LA_rEff;
+    aerVector[  2][2] = LA_SAD;
 
     return aerVector;
 
@@ -1094,8 +1323,8 @@ std::vector<double> Solution::getAerosolDens( ) const
 
     std::vector<double> aerVector( nAer, 0.0 );
     aerVector[  0] = sootDens[0][0];
-    aerVector[  1] = iceDens[0][0];
-    aerVector[  2] = sulfDens[0][0];
+    aerVector[  1] = PA_nDens;
+    aerVector[  2] = LA_nDens;
 
     return aerVector;
 
@@ -1106,8 +1335,8 @@ std::vector<double> Solution::getAerosolRadi( ) const
 
     std::vector<double> aerVector( nAer, 0.0 );
     aerVector[  0] = sootRadi[0][0];
-    aerVector[  1] = iceRadi[0][0];
-    aerVector[  2] = sulfRadi[0][0];
+    aerVector[  1] = PA_rEff;
+    aerVector[  2] = LA_rEff;
 
     return aerVector;
 
@@ -1118,12 +1347,54 @@ std::vector<double> Solution::getAerosolArea( ) const
 
     std::vector<double> aerVector( nAer, 0.0 );
     aerVector[  0] = sootArea[0][0];
-    aerVector[  1] = iceArea[0][0];
-    aerVector[  2] = sulfArea[0][0];
+    aerVector[  1] = PA_SAD;
+    aerVector[  2] = LA_SAD;
 
     return aerVector;
 
 } /* End of Solution::getAerosolArea */
+
+void Solution::getAerosolProp( double ( &radi )[4], double ( &area )[4], double &IWC, \
+                               const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) const
+{
+
+    std::vector<double> aerosolProp( 4, 0.0E+00 );
+
+    /* Compute aerosol microphysical properties for ice/NAT */
+    aerosolProp = solidAerosol.Average( indexList );
+
+    radi[0] = aerosolProp[1];                      /* [m]        */
+    area[0] = aerosolProp[2];                      /* [m^2/cm^3] */
+    IWC     = physConst::RHO_ICE * aerosolProp[3]; /* [kg/cm^3] */
+
+    /* Compute aerosol microphysical properties for stratospheric liquid aerosols */
+    aerosolProp = liquidAerosol.Average( indexList );
+
+    radi[1] = aerosolProp[1]; /* [m]        */
+    area[1] = aerosolProp[2]; /* [m^2/cm^3] */
+
+    /* Compute aerosol microphysical properties for tropospheric sulfates (near ground) */
+
+    radi[2] = 0.0E+00;
+    area[2] = 0.0E+00;
+
+    /* Compute aerosol microphysical properties for BC particles */
+
+    unsigned int jNy, iNx;
+
+    radi[3] = 0.0E+00;
+    area[3] = 0.0E+00;
+    for ( unsigned int iList = 0; iList < indexList.size(); iList++ ) {
+        iNx = indexList[iList].first;
+        jNy = indexList[iList].second;
+        area[3] += sootDens[jNy][iNx] * 4.0 * physConst::PI * sootRadi[jNy][iNx] * sootRadi[jNy][iNx];
+        radi[3] += sootRadi[jNy][iNx];
+    }
+    area[3] /= indexList.size();
+    radi[3] /= indexList.size();
+
+
+} /* End of Solution::getAerosolProp */
 
 unsigned int Solution::getNx() const
 {
@@ -1139,7 +1410,7 @@ unsigned int Solution::getNy() const
 
 } /* End of Solution::getNy */
 
-void Solution::Debug( double airDens )
+void Solution::Debug( const double airDens )
 {
     unsigned int iNx, jNy;
     iNx = 0;

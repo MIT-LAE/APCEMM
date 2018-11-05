@@ -17,11 +17,6 @@
 #include <iostream>
 #include <limits>
 
-namespace Error
-{
-
-    template<typename T> bool SafeDiv( T num, T denom );
-
-}
+extern "C" bool SafeDiv( double num, double denom );
 
 #endif /* ERROR_H_INCLUDED */

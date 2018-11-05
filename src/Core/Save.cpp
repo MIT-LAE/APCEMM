@@ -16,15 +16,16 @@
 namespace output 
 {
 
-    int Write( SpeciesArray &ringSpecies, Ambient ambientData, Cluster &ringCluster, std::vector<double> &timeArray, \
-               double &temperature_K, double &pressure_Pa, double &airDens, double &relHumidity_w, double &relHumidity_i, \
-               double &longitude_deg, double &latitude_deg, double &sunRise, double &sunSet ) 
+    int Write( const SpeciesArray &ringSpecies, const Ambient ambientData, const Cluster &ringCluster, \
+               const std::vector<double> &timeArray, const double &temperature_K, const double &pressure_Pa, \
+               const double &airDens, const double &relHumidity_w, const double &relHumidity_i, \
+               const double &longitude_deg, const double &latitude_deg, const double &sunRise, const double &sunSet ) 
     {
 
-        bool doWrite = 1;
-        bool doRead = 1;
-        bool overWrite = 1;
-        const char* currFileName( OUTPUT_FILE );
+        const bool doWrite = 1;
+        const bool doRead = 1;
+        const bool overWrite = 1;
+        const char* currFileName( OUT_FILE );
 
         int didSaveSucceed = 1;
         time_t rawtime;
@@ -34,13 +35,14 @@ namespace output
         NcFile currFile = fileHandler.openFile();
         if ( !fileHandler.isFileOpen() ) {
             std::cout << "File " << currFileName << " didn't open!" << "\n";
+            return SAVE_FAILURE;
         } else {
             std::cout << "\nStarting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
             time( &rawtime );
             strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
-            const NcDim *timeDim = fileHandler.addDim( currFile, "time", long(timeArray.size()) );
-            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "time", timeDim, "float", "s", "Time");
+            const NcDim *timeDim = fileHandler.addDim( currFile, "Time", long(timeArray.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "Time", timeDim, "float", "s", "Time");
            
 #if ( RINGS )
 
@@ -64,6 +66,8 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &latitude_deg , "Latitude"   , 1, "float", "deg", "Latitude" );
             didSaveSucceed *= fileHandler.addConst( currFile, &sunRise      , "Sun Rise"   , 1, "float", "hrs", "Local sun rise" );
             didSaveSucceed *= fileHandler.addConst( currFile, &sunSet       , "Sun Set"    , 1, "float", "hrs", "Local sun set" );
+
+            didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim, "float", "-", "Cosine of the solar zenith angle" );
 
 #if ( RINGS )
 
@@ -761,6 +765,29 @@ namespace output
                 didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
 
 #endif /* DO_SAVE_SO4 */
+
+#if ( DO_SAVE_SO4_L )
+                strncpy( charSpc, "SO4_L", sizeof(charSpc) );
+                strncpy( charName, "SO4_L mixing ratio", sizeof(charName) );
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+        #if ( SAVE_TO_DOUBLE )
+                spcArray = util::vect2double( ringSpecies.SO4L, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2double( ambientData.SO4L, timeArray.size(), scalingFactor );
+        #else
+                spcArray = util::vect2float ( ringSpecies.SO4L, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2float ( ambientData.SO4L, timeArray.size(), scalingFactor );
+        #endif /* SAVE_TO_DOUBLE */
+
+
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
+
+                strncpy( charSpc, "SO4_L_a", sizeof(charSpc) );
+                strncpy( charName, "SO4_L ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
+
+#endif /* DO_SAVE_SO4_L */
 
 #if ( DO_SAVE_Br2 )
                 strncpy( charSpc, "Br2", sizeof(charSpc) );
@@ -1475,6 +1502,29 @@ namespace output
 
 #endif /* DO_SAVE_HOBr */
 
+#if ( DO_SAVE_HOBr_L )
+                strncpy( charSpc, "HOBr_L", sizeof(charSpc) );
+                strncpy( charName, "HOBr_L mixing ratio", sizeof(charName) );
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+        #if ( SAVE_TO_DOUBLE )
+                spcArray = util::vect2double( ringSpecies.HOBrL, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2double( ambientData.HOBrL, timeArray.size(), scalingFactor );
+        #else
+                spcArray = util::vect2float ( ringSpecies.HOBrL, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2float ( ambientData.HOBrL, timeArray.size(), scalingFactor );
+        #endif /* SAVE_TO_DOUBLE */
+
+
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
+
+                strncpy( charSpc, "HOBr_L_a", sizeof(charSpc) );
+                strncpy( charName, "HOBr_L ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
+
+#endif /* DO_SAVE_HOBr_L */
+
 #if ( DO_SAVE_A3O2 )
                 strncpy( charSpc, "A3O2", sizeof(charSpc) );
                 strncpy( charName, "A3O2 mixing ratio", sizeof(charName) );
@@ -2142,6 +2192,29 @@ namespace output
 
 #endif /* DO_SAVE_HOCl */
 
+#if ( DO_SAVE_HOCl_L )
+                strncpy( charSpc, "HOCl_L", sizeof(charSpc) );
+                strncpy( charName, "HOCl_L mixing ratio", sizeof(charName) );
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+        #if ( SAVE_TO_DOUBLE )
+                spcArray = util::vect2double( ringSpecies.HOClL, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2double( ambientData.HOClL, timeArray.size(), scalingFactor );
+        #else
+                spcArray = util::vect2float ( ringSpecies.HOClL, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2float ( ambientData.HOClL, timeArray.size(), scalingFactor );
+        #endif /* SAVE_TO_DOUBLE */
+
+
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
+
+                strncpy( charSpc, "HOCl_L_a", sizeof(charSpc) );
+                strncpy( charName, "HOCl_L ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
+
+#endif /* DO_SAVE_HOCl_L */
+
 #if ( DO_SAVE_ATO2 )
                 strncpy( charSpc, "ATO2", sizeof(charSpc) );
                 strncpy( charName, "ATO2 mixing ratio", sizeof(charName) );
@@ -2187,6 +2260,52 @@ namespace output
                 didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
 
 #endif /* DO_SAVE_HNO3 */
+
+#if ( DO_SAVE_HNO3_L )
+                strncpy( charSpc, "HNO3_L", sizeof(charSpc) );
+                strncpy( charName, "HNO3_L mixing ratio", sizeof(charName) );
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+        #if ( SAVE_TO_DOUBLE )
+                spcArray = util::vect2double( ringSpecies.HNO3L, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2double( ambientData.HNO3L, timeArray.size(), scalingFactor );
+        #else
+                spcArray = util::vect2float ( ringSpecies.HNO3L, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2float ( ambientData.HNO3L, timeArray.size(), scalingFactor );
+        #endif /* SAVE_TO_DOUBLE */
+
+
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
+
+                strncpy( charSpc, "HNO3_L_a", sizeof(charSpc) );
+                strncpy( charName, "HNO3_L ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
+
+#endif /* DO_SAVE_HNO3_L */
+
+#if ( DO_SAVE_HNO3_S )
+                strncpy( charSpc, "HNO3_S", sizeof(charSpc) );
+                strncpy( charName, "HNO3_S mixing ratio", sizeof(charName) );
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+        #if ( SAVE_TO_DOUBLE )
+                spcArray = util::vect2double( ringSpecies.HNO3S, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2double( ambientData.HNO3S, timeArray.size(), scalingFactor );
+        #else
+                spcArray = util::vect2float ( ringSpecies.HNO3S, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2float ( ambientData.HNO3S, timeArray.size(), scalingFactor );
+        #endif /* SAVE_TO_DOUBLE */
+
+
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
+
+                strncpy( charSpc, "HNO3_S_a", sizeof(charSpc) );
+                strncpy( charName, "HNO3_S ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
+
+#endif /* DO_SAVE_HNO3_S */
 
 #if ( DO_SAVE_ISN1 )
                 strncpy( charSpc, "ISN1", sizeof(charSpc) );
@@ -2694,6 +2813,52 @@ namespace output
 
 #endif /* DO_SAVE_H2O */
 
+#if ( DO_SAVE_H2O_L )
+                strncpy( charSpc, "H2O_L", sizeof(charSpc) );
+                strncpy( charName, "H2O_L mixing ratio", sizeof(charName) );
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+        #if ( SAVE_TO_DOUBLE )
+                spcArray = util::vect2double( ringSpecies.H2OL, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2double( ambientData.H2OL, timeArray.size(), scalingFactor );
+        #else
+                spcArray = util::vect2float ( ringSpecies.H2OL, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2float ( ambientData.H2OL, timeArray.size(), scalingFactor );
+        #endif /* SAVE_TO_DOUBLE */
+
+
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
+
+                strncpy( charSpc, "H2O_L_a", sizeof(charSpc) );
+                strncpy( charName, "H2O_L ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
+
+#endif /* DO_SAVE_H2O_L */
+
+#if ( DO_SAVE_H2O_S )
+                strncpy( charSpc, "H2O_S", sizeof(charSpc) );
+                strncpy( charName, "H2O_S mixing ratio", sizeof(charName) );
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+        #if ( SAVE_TO_DOUBLE )
+                spcArray = util::vect2double( ringSpecies.H2OS, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2double( ambientData.H2OS, timeArray.size(), scalingFactor );
+        #else
+                spcArray = util::vect2float ( ringSpecies.H2OS, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2float ( ambientData.H2OS, timeArray.size(), scalingFactor );
+        #endif /* SAVE_TO_DOUBLE */
+
+
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
+
+                strncpy( charSpc, "H2O_S_a", sizeof(charSpc) );
+                strncpy( charName, "H2O_S ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
+
+#endif /* DO_SAVE_H2O_S */
+
 #if ( DO_SAVE_Br )
                 strncpy( charSpc, "Br", sizeof(charSpc) );
                 strncpy( charName, "Br mixing ratio", sizeof(charName) );
@@ -2947,6 +3112,29 @@ namespace output
 
 #endif /* DO_SAVE_HBr */
 
+#if ( DO_SAVE_HBr_L )
+                strncpy( charSpc, "HBr_L", sizeof(charSpc) );
+                strncpy( charName, "HBr_L mixing ratio", sizeof(charName) );
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+        #if ( SAVE_TO_DOUBLE )
+                spcArray = util::vect2double( ringSpecies.HBrL, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2double( ambientData.HBrL, timeArray.size(), scalingFactor );
+        #else
+                spcArray = util::vect2float ( ringSpecies.HBrL, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2float ( ambientData.HBrL, timeArray.size(), scalingFactor );
+        #endif /* SAVE_TO_DOUBLE */
+
+
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
+
+                strncpy( charSpc, "HBr_L_a", sizeof(charSpc) );
+                strncpy( charName, "HBr_L ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
+
+#endif /* DO_SAVE_HBr_L */
+
 #if ( DO_SAVE_HCl )
                 strncpy( charSpc, "HCl", sizeof(charSpc) );
                 strncpy( charName, "HCl mixing ratio", sizeof(charName) );
@@ -2969,6 +3157,29 @@ namespace output
                 didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
 
 #endif /* DO_SAVE_HCl */
+
+#if ( DO_SAVE_HCl_L )
+                strncpy( charSpc, "HCl_L", sizeof(charSpc) );
+                strncpy( charName, "HCl_L mixing ratio", sizeof(charName) );
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+        #if ( SAVE_TO_DOUBLE )
+                spcArray = util::vect2double( ringSpecies.HClL, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2double( ambientData.HClL, timeArray.size(), scalingFactor );
+        #else
+                spcArray = util::vect2float ( ringSpecies.HClL, timeArray.size(), ringCluster.getnRing(), scalingFactor );
+                ambArray = util::vect2float ( ambientData.HClL, timeArray.size(), scalingFactor );
+        #endif /* SAVE_TO_DOUBLE */
+
+
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
+
+                strncpy( charSpc, "HCl_L_a", sizeof(charSpc) );
+                strncpy( charName, "HCl_L ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName );
+
+#endif /* DO_SAVE_HCl_L */
 
 #if ( DO_SAVE_CO )
                 strncpy( charSpc, "CO", sizeof(charSpc) );
@@ -3006,7 +3217,6 @@ namespace output
                 spcArray = util::vect2float ( ringSpecies.MO2, timeArray.size(), ringCluster.getnRing(), scalingFactor );
                 ambArray = util::vect2float ( ambientData.MO2, timeArray.size(), scalingFactor );
         #endif /* SAVE_TO_DOUBLE */
-
 
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, ringDim, outputType, (const char*)charUnit, (const char*)charName );
 
@@ -3087,7 +3297,98 @@ namespace output
 
         return SAVE_SUCCESS;
 
-    } /* End of Save */
+    } /* End of Write */
+
+    int Write_MicroPhys( const char* outputFile, \
+                         const std::vector<std::vector<std::vector<std::vector<double>>>> &output_MicroPhys, \
+                         const std::vector<double> &timeArray, const std::vector<double> &binCenters, \
+                         const std::vector<double> &horizDim, const std::vector<double> &verticDim, \
+                         const double temperature_K, const double pressure_Pa, const double lapseRate,
+                         const double relHumidity_w, const double relHumidity_i )
+    {
+        const bool doWrite = 1;
+        const bool doRead = 1;
+        const bool overWrite = 1;
+        const char* currFileName( outputFile );
+
+        int didSaveSucceed = 1;
+        time_t rawtime;
+        char buffer[80];
+
+        FileHandler fileHandler( currFileName, doWrite, doRead, overWrite );
+        NcFile currFile = fileHandler.openFile();
+        if ( !fileHandler.isFileOpen() ) {
+            std::cout << "File " << currFileName << " didn't open!" << "\n";
+            return SAVE_FAILURE;
+        } else {
+            std::cout << "\nStarting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
+            time( &rawtime );
+            strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
+
+            const NcDim *timeDim = fileHandler.addDim( currFile, "Time", long(timeArray.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "Time", timeDim, "float", "s", "Time");
+            const NcDim *binDim = fileHandler.addDim( currFile, "Bin Centers", long(binCenters.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &binCenters[0], "bin Centers", binDim, "float", "m", "Bin Centers");
+            const NcDim *XDim = fileHandler.addDim( currFile, "Horizontal dimension", long(horizDim.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &horizDim[0], "X coordinate", XDim, "float", "m", "X coordinate of the grid cell centers");
+            const NcDim *YDim = fileHandler.addDim( currFile, "Vertical dimension", long(verticDim.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &verticDim[0], "Y coordinate", YDim, "float", "m", "Y coordinate of the grid cell centers");
+            
+            didSaveSucceed *= fileHandler.addAtt( currFile, "FileName", fileHandler.getFileName() );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Author", "Thibaud M. Fritz (fritzt@mit.edu)" );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Contact", "Thibaud M. Fritz (fritzt@mit.edu)" );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "GenerationDate", buffer );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Format", "NetCDF-4" );
+
+            didSaveSucceed *= fileHandler.addConst( currFile, &temperature_K, "Temperature", 1, "float", "K"   , "Ambient Temperature" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Pressure"   , 1, "float", "hPa" , "Ambient Pressure" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Lapse Rate" , 1, "float", "K/km", "Ambient temperature lapse rate" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_w, "RHW"        , 1, "float", "-"   , "Ambient Rel. Humidity w.r.t water" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_i, "RHI"        , 1, "float", "-"   , "Ambient Rel. Humidity w.r.t ice" );
+
+#if ( SAVE_TO_DOUBLE )
+                double* aerArray;
+                const char* outputType = "double";
+#else
+                float* aerArray;
+                const char* outputType = "float";
+#endif /* SAVE_TO_DOUBLE */
+    
+            char charSpc[30];
+            char charName[50];
+            char charUnit[20];
+                
+            strncpy( charSpc, "Aerosol", sizeof(charSpc) );
+            strncpy( charName, "Aerosol number concentration", sizeof(charName) );
+            strncpy( charUnit, "#/cm^3", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            aerArray = util::vect2double( output_MicroPhys , timeArray.size(), binCenters.size(), verticDim.size(), horizDim.size(), 1.0 );
+#else
+            aerArray = util::vect2float( output_MicroPhys, timeArray.size(), binCenters.size(), verticDim.size(), horizDim.size(), 1.0 );
+#endif /* SAVE_TO_DOUBLE */
+             
+            didSaveSucceed *= fileHandler.addVar4D( currFile, &(aerArray)[0], (const char*)charSpc, timeDim, binDim, YDim, XDim, outputType, (const char*)charUnit, (const char*)charName );
+
+            util::delete1D( aerArray );
+
+            if ( didSaveSucceed == NC_SUCCESS ) {
+                std::cout << "Done saving to netCDF!" << "\n";
+            } else if ( didSaveSucceed != NC_SUCCESS ) {
+                std::cout << "Error occured in saving data: didSaveSucceed: " << didSaveSucceed << "\n";
+                return SAVE_FAILURE;
+            }
+
+            fileHandler.closeFile( currFile );
+            if ( fileHandler.isFileOpen() ) {
+                std::cout << "File " << currFileName << " didn't close properly!" << "\n";
+                return SAVE_FAILURE;
+            }
+
+        }
+        return SAVE_SUCCESS;
+
+    } /* End of Write_MicroPhys */
 
 }
 

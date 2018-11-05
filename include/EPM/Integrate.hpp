@@ -66,16 +66,25 @@ namespace EPM
     const RealDouble Ab0 = 1.804;
 
 
-    int Integrate( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
-                   RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area );
-    int RunMicrophysics( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T, \
-                         RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, RealDouble &Area );
+    int Integrate( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], \
+                   RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
+                   RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, \
+                   RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, \
+                   RealDouble &Area );
+    int RunMicrophysics( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, \
+                         RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], \
+                         const Aircraft &AC, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T, \
+                         RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, \
+                         RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, \
+                         RealDouble &Area );
     RealDouble dT_Vortex( const RealDouble time, const RealDouble delta_T, bool deriv = 0 );
     RealDouble dilutionRatio( const RealDouble time );
-    RealDouble depositionRate( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O, const RealDouble r_0,  const RealDouble theta );
+    RealDouble depositionRate( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O, \
+                               const RealDouble r_0,  const RealDouble theta );
     void odeRHS( const Vector_1D &x, Vector_1D &dxdt, const RealDouble t = 0.0 );
     bool isFreezable( const RealDouble r, const RealDouble T, const RealDouble H2O, const RealDouble r0 );
-    RealDouble condensationRate( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O, const RealDouble theta );
+    RealDouble condensationRate( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O, \
+                                 const RealDouble theta );
 
 
 }

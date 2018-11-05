@@ -30,7 +30,7 @@ class Cluster
         Cluster( const Cluster& cl );
         Cluster& operator=( const Cluster& cl );
         ~Cluster( );
-        void ComputeRingAreas( std::vector<std::vector<double>> cellAreas, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> map );
+        void ComputeRingAreas( const std::vector<std::vector<double>> cellAreas, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> map );
         unsigned int getnRing() const;
         bool halfRing() const;
         std::vector<Ring> getRings() const; 

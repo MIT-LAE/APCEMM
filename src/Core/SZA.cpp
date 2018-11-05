@@ -11,40 +11,48 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include <iostream>
-#include <cmath>
+#include "Core/SZA.hpp"
 
-void SZA( double latitude_deg, int dayGMT,\
-          double &sunRise, double &sunSet,\
-          double &SZASINLAT, double &SZACOSLAT,\
-          double &SZASINDEC, double &SZACOSDEC )
+SZA::SZA( const double lat_, const unsigned int day_ ):
+    latitude( lat_ ),
+    dayGMT( day_ )
 {
-    double const A0 = 0.006918;
-    double const A1 = 0.399912;
-    double const A2 = 0.006758;
-    double const A3 = 0.002697;
-    double const B1 = 0.070257;
-    double const B2 = 0.000907;
-    double const B3 = 0.000148;
 
-    const double PI = 3.141592653589793238460; /* \pi */
+    /* Default Constructor */
 
-    double r_SZA = 2*PI*(std::floor(dayGMT) - 1)/365.0;
+    const double r_SZA = 2*physConst::PI*(std::floor(dayGMT) - 1)/365.0;
 
-    double DEC = A0 - A1*cos(1*r_SZA) + B1*sin(1*r_SZA)\
-                    - A2*cos(2*r_SZA) + B2*sin(2*r_SZA)\
-                    - A3*cos(3*r_SZA) + B3*sin(3*r_SZA);
+    DEC = A0 - A1*cos(1.0*r_SZA) + B1*sin(1.0*r_SZA)\
+             - A2*cos(2.0*r_SZA) + B2*sin(2.0*r_SZA)\
+             - A3*cos(3.0*r_SZA) + B3*sin(3.0*r_SZA);
 
-    SZASINLAT = std::sin(latitude_deg*PI/180);
-    SZACOSLAT = std::cos(latitude_deg*PI/180);
-    SZASINDEC = std::sin(DEC);
-    SZACOSDEC = std::cos(DEC);
+    sinLAT = std::sin(lat_ * physConst::PI/180.0);
+    cosLAT = std::cos(lat_ * physConst::PI/180.0);
+    sinDEC = std::sin(DEC);
+    cosDEC = std::cos(DEC);
 
-    sunRise = std::max((12.0 - 180.0/(PI*15.0)*acos(-(SZASINLAT * SZASINDEC)\
-                                              / (SZACOSLAT * SZACOSDEC))), 0.0);
-    sunSet  = std::min((12.0 + 180.0/(PI*15.0)*acos(-(SZASINLAT * SZASINDEC)\
-                                              / (SZACOSLAT * SZACOSDEC))), 24.0);
+    sunRise = std::max((12.0 - 180.0/(physConst::PI*15.0)*acos(-(sinLAT * sinDEC)\
+                                                        / (cosLAT * cosDEC))), 0.0);
+    sunSet  = std::min((12.0 + 180.0/(physConst::PI*15.0)*acos(-(sinLAT * sinDEC)\
+                                              / (cosLAT * cosDEC))), 24.0);
 
-} /* End of SZA */
+    CSZA_max = std::max( sinLAT * sinDEC + cosLAT * cosDEC, 0.0 );
+    CSZA = 0.0;
 
+} /* End of SZA::SZA */
 
+SZA::~SZA( )
+{
+
+    /* Destructor */
+
+} /* End of SZA::~SZA */
+
+void SZA::Update( const double solarTime )
+{
+
+    CSZA = std::max( sinLAT * sinDEC + cosLAT * cosDEC * std::cos( std::abs( ( solarTime/3600.0 - 12.0 ) ) * 15.0 * physConst::PI / 180.0 ), 0.0 ); 
+
+} /* End of SZA::Update_SUN */
+
+/* End of SZA.cpp */

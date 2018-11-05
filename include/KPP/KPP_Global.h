@@ -18,8 +18,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-
+#ifndef KPP_GLOBAL_H_INCLUDED
+#define KPP_GLOBAL_H_INCLUDED
 
 /* Declaration of global variables                                  */
 
@@ -28,23 +28,13 @@ extern double * VAR;
 extern double * FIX;
 extern double RCONST[NREACT];                   /* Rate constants (global) */
 extern double TIME;                             /* Current integration time */
-extern double SUN;                              /* Sunlight intensity between [0,1] */
-extern double SINLAT;
-extern double COSLAT;
-extern double SINDEC;
-extern double COSDEC;
-extern double TEMP;                             /* Temperature */
-extern double Patm;                             /* Pressure */
 extern double RTOLS;                            /* (scalar) Relative tolerance */
 extern double TSTART;                           /* Integration start time */
-extern double TFINAL;                           /* Integration end time */
-extern double DT;                               /* Integration step */
+extern double TEND;                             /* Final integration time */
 extern double ATOL[NVAR];                       /* Absolute tolerance */
 extern double RTOL[NVAR];                       /* Relative tolerance */
 extern double STEPMIN;                          /* Lower bound for integration step */
 extern double STEPMAX;                          /* Upper bound for integration step */
-extern double CFACTOR;                          /* Conversion factor for concentration units */
-extern int DDMTYPE;                             /* DDM sensitivity w.r.t.: 0=init.val., 1=params */
 extern int LOOKAT[NLOOKAT];                     /* Indexes of species to look at */
 extern const char * SPC_NAMES[NSPEC];           /* Names of chemical species */
 extern char * SMASS[NMASS];                     /* Names of atoms for mass balance */
@@ -58,3 +48,4 @@ extern double HET[NSPEC][3];                    /* Heterogeneous reaction rates 
 
 /* INLINED global variable declarations                             */
 
+#endif /* KPP_GLOBAL_H_INCLUDED */

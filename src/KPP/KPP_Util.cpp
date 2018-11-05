@@ -73,7 +73,7 @@ int i;
 
   fprintf( fpDat, "%6.1f ", TIME/3600.0 );
   for( i = 0; i < NLOOKAT; i++ )
-    fprintf( fpDat, "%24.16e ", C[ LOOKAT[i] ]/CFACTOR );
+    fprintf( fpDat, "%24.16e ", C[ LOOKAT[i] ] );
   fprintf( fpDat, "\n");
   return 0;
 }

@@ -18,7 +18,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
+#ifndef KPP_SPARSE_H_INCLUDED
+#define KPP_SPARSE_H_INCLUDED
 
 
 /*  ----------> Sparse Jacobian Data                                */
@@ -50,3 +51,4 @@ extern int ICOL_JVRP[NJVRP];                    /* Column indices in JVRP */
 extern int IROW_JVRP[NJVRP];                    /* Row indices in JVRP */
 extern int CROW_JVRP[CNEQN];                    /* Beginning of rows in JVRP */
 
+#endif /* KPP_SPARSE_H_INCLUDED */

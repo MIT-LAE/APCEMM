@@ -29,27 +29,61 @@ namespace util
         return C;
     }
 
-    double* vect2double( std::vector<std::vector<double> > &vals, unsigned int N, unsigned int M, double scalingFactor )
+    double* vect2double( const std::vector<std::vector<std::vector<std::vector<double>>>> &vals, unsigned int N, unsigned int M, \
+                         unsigned int L, unsigned int K, double scalingFactor )
     {
         double* temp;
-        temp = new double[N*M];
+        temp = new double[N*M*L*K];
 
-        for( unsigned int i = 0; i < N; i++ ) {
-            for( unsigned int j = 0; j < M; j++ )
-                temp[j + M*i] = vals[i][j] * scalingFactor;
+        for( unsigned int n = 0; n < N; n++ ) {
+            for( unsigned int m = 0; m < M; m++ ) {
+                for ( unsigned int l = 0; l < L; l++ ) {
+                    for ( unsigned int k = 0; k < K; k++ ) 
+                        temp[k + K*l + K*L*m + K*L*M*n] = vals[n][m][l][k] * scalingFactor;
+                }
+            }
         }
 
         return temp;
     }
     
-    double* vect2double( std::vector<double> &vals, unsigned int N, double scalingFactor )
+    double* vect2double( const std::vector<std::vector<std::vector<double>>> &vals, unsigned int N, unsigned int M, \
+                         unsigned int L, double scalingFactor )
+    {
+        double* temp;
+        temp = new double[N*M*L];
+
+        for( unsigned int n = 0; n < N; n++ ) {
+            for( unsigned int m = 0; m < M; m++ ) {
+                for ( unsigned int l = 0; l < L; l++ ) 
+                    temp[l + L*m + L*M*n] = vals[n][m][l] * scalingFactor;
+            }
+        }
+
+        return temp;
+    }
+    
+    double* vect2double( const std::vector<std::vector<double>> &vals, unsigned int N, unsigned int M, \
+                         double scalingFactor )
+    {
+        double* temp;
+        temp = new double[N*M];
+
+        for( unsigned int n = 0; n < N; n++ ) {
+            for( unsigned int m = 0; m < M; m++ )
+                temp[m + M*n] = vals[n][m] * scalingFactor;
+        }
+
+        return temp;
+    }
+    
+    double* vect2double( const std::vector<double> &vals, unsigned int N, double scalingFactor )
     {
         double* temp;
         temp = new double[N];
 
-        for( unsigned int i = 0; i < N; i++ ) {
-            temp[i] = vals[i] * scalingFactor;
-        }
+        for( unsigned int n = 0; n < N; n++ )
+            temp[n] = vals[n] * scalingFactor; 
 
         return temp;
     }
@@ -68,27 +102,61 @@ namespace util
 //        return temp;
 //    }
     
-    float* vect2float( std::vector<std::vector<double> > &vals, unsigned int N, unsigned int M, double scalingFactor )
+    float* vect2float( const std::vector<std::vector<std::vector<std::vector<double>>>> &vals, unsigned int N, unsigned int M, \
+                       unsigned int L, unsigned int K, double scalingFactor )
     {
         float* temp;
-        temp = new float[N*M];
+        temp = new float[N*M*L*K];
 
-        for( unsigned int i = 0; i < N; i++ ) {
-            for( unsigned int j = 0; j < M; j++ )
-                temp[j + M*i] = (float) vals[i][j] * scalingFactor;
+        for( unsigned int n = 0; n < N; n++ ) {
+            for( unsigned int m = 0; m < M; m++ ) {
+                for ( unsigned int l = 0; l < L; l++ ) {
+                    for ( unsigned int k = 0; k < K; k++ ) 
+                        temp[k + K*l + K*L*m + K*L*M*n] = (float) vals[n][m][l][k] * scalingFactor;
+                }
+            }
         }
 
         return temp;
     }
     
-    float* vect2float( std::vector<double> &vals, unsigned int N, double scalingFactor )
+    float* vect2float( const std::vector<std::vector<std::vector<double>>> &vals, unsigned int N, unsigned int M, \
+                       unsigned int L, double scalingFactor )
+    {
+        float* temp;
+        temp = new float[N*M*L];
+
+        for( unsigned int n = 0; n < N; n++ ) {
+            for( unsigned int m = 0; m < M; m++ ) {
+                for ( unsigned int l = 0; l < L; l++ ) 
+                    temp[l + L*m + L*M*n] = vals[n][m][l] * scalingFactor;
+            }
+        }
+
+        return temp;
+    }
+    
+    float* vect2float( const std::vector<std::vector<double>> &vals, unsigned int N, unsigned int M, \
+                       double scalingFactor )
+    {
+        float* temp;
+        temp = new float[N*M];
+
+        for( unsigned int n = 0; n < N; n++ ) {
+            for( unsigned int m = 0; m < M; m++ )
+                temp[m + M*n] = (float) vals[n][m] * scalingFactor;
+        }
+
+        return temp;
+    }
+    
+    float* vect2float( const std::vector<double> &vals, unsigned int N, double scalingFactor )
     {
         float* temp;
         temp = new float[N];
 
-        for( unsigned int i = 0; i < N; i++ ) {
-            temp[i] = (float) vals[i] * scalingFactor;
-        }
+        for( unsigned int n = 0; n < N; n++ )
+            temp[n] = (float) vals[n] * scalingFactor; 
 
         return temp;
     }
@@ -127,7 +195,7 @@ namespace util
 
     }
 
-    std::vector<std::vector<double> > Array2Vect( double** A, unsigned int N, unsigned int M, double scalingFactor )
+    std::vector<std::vector<double> > Array2Vect( const double** A, unsigned int N, unsigned int M, double scalingFactor )
     {
         std::vector<std::vector<double> > vect;
 

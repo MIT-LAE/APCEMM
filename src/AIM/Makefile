@@ -97,3 +97,5 @@ Coagulation.o       : Coagulation.cpp
 
 Nucleation.o        : Nucleation.cpp
 
+Settling.o          : Settling.cpp
+

@@ -17,6 +17,7 @@
 #include <iostream> 
 #include <vector>
 
+#include "KPP/KPP_Parameters.h"
 #include "Core/Interface.hpp"
 #include "Core/Structure.hpp"
 #include "Core/Mesh.hpp"
@@ -27,7 +28,7 @@ class SpeciesArray
     public:
 
         SpeciesArray( );
-        SpeciesArray( unsigned int nRing, unsigned int nTime, bool halfRing = 0 );
+        SpeciesArray( const unsigned int nRing, const unsigned int nTime, const bool halfRing = 0 );
         SpeciesArray( const SpeciesArray &sp );
         SpeciesArray& operator=( const SpeciesArray &sp );
         SpeciesArray& operator+( const SpeciesArray &sp );
@@ -45,6 +46,12 @@ class SpeciesArray
 
         /* Fixed species */
         double ACTA, EOH, H2, HCOOH, MOH, N2, O2, RCOOH;
+        
+        /* Liquid species */
+        std::vector<std::vector<double>> SO4L, H2OL, HNO3L, HClL, HOClL, HBrL, HOBrL;
+
+        /* Solid species */
+        std::vector<std::vector<double>> H2OS, HNO3S;
 
         /* Aerosols */
         std::vector<std::vector<double> > sootDens, sootRadi, sootArea, \

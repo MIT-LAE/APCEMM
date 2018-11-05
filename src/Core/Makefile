@@ -159,9 +159,7 @@ debug:
 ###                                                                         ###
 ###############################################################################
 
-Adv_Global.o        : Adv_Global.cpp
-
-AdvParam.o          : AdvParam.cpp
+Advection.o         : Advection.cpp
 
 Aircraft.o          : Aircraft.cpp
 
@@ -169,13 +167,11 @@ Ambient.o           : Ambient.cpp
 
 BuildTime.o         : BuildTime.cpp
 
-CallSolver.o        : CallSolver.cpp
-
 Cluster.o           : Cluster.cpp
 
 Combvec.o           : Combvec.cpp
 
-DiffParam.o         : DiffParam.cpp
+Diffusion.o         : Diffusion.cpp
 
 Emission.o          : Emission.cpp
 
@@ -185,9 +181,13 @@ FileHandler.o       : FileHandler.cpp
 
 Fuel.o              : Fuel.cpp
 
+LiquidAer.o         : LiquidAer.cpp
+
 Main.o              : Main.cpp
 
 Mesh.o              : Mesh.cpp
+
+Meteorology.o       : Meteorology.cpp
 
 PlumeModel.o        : PlumeModel.cpp
 
@@ -206,6 +206,8 @@ Species.o           : Species.cpp
 Structure.o         : Structure.cpp
 
 SZA.o               : SZA.cpp
+
+Transport.o         : Transport.cpp
 
 UpdateTime.o        : UpdateTime.cpp
 
