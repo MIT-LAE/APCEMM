@@ -99,6 +99,8 @@ KPP_HetRates.o      : KPP_HetRates.cpp
 
 KPP_Integrator.o    : KPP_Integrator.cpp
 
+KPP_Integrator_ADJ.o: KPP_Integrator_ADJ.cpp
+
 KPP_Jacobian.o      : KPP_Jacobian.cpp
 
 KPP_JacobianSP.o    : KPP_JacobianSP.cpp
@@ -106,6 +108,8 @@ KPP_JacobianSP.o    : KPP_JacobianSP.cpp
 KPP_LinearAlgebra.o : KPP_LinearAlgebra.cpp
 
 KPP_Main.o          : KPP_Main.cpp
+
+KPP_Main_ADJ.o      : KPP_Main_ADJ.cpp
 
 KPP_Monitor.o       : KPP_Monitor.cpp
 
