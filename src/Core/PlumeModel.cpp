@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <vector>
+#include <numeric>
 #include <cmath>
 #include <algorithm>
 #include <complex>
@@ -50,13 +51,18 @@
     #include "Core/Save.hpp"
 #endif /* SAVE_OUTPUT */
 
-static int SUCCESS   =  1;
-static int KPP_FAIL  = -1;
-static int SAVE_FAIL = -2;
+static int SUCCESS     =  1;
+static int KPP_FAIL    = -1;
+static int SAVE_FAIL   = -2;
+static int KPPADJ_FAIL = -5;
 
 typedef std::complex<double> Complex;
 typedef std::vector<double> Real_1DVector;
 typedef std::vector<Real_1DVector> Real_2DVector;
+
+#if ( RINGS )
+double SZA_CST[3];
+#endif /* RINGS */
 
 void DiffParam( double time, double &d_x, double &d_y );
 void AdvGlobal( double time, double &v_x, double &v_y, double &dTrav_x, double &dTrav_y );
@@ -132,8 +138,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     const unsigned int dayGMT(81);
 
     /* Define sun parameters */
-    SZA sun( latitude_deg, dayGMT );
-    
+    SZA *sun = new SZA( latitude_deg, dayGMT );    
 
 
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -172,7 +177,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Create time array */
 
     /* Vector of time in [s] */
-    const std::vector<double> timeArray = BuildTime ( tInitial_s, tFinal_s, 3600.0*sun.sunRise, 3600.0*sun.sunSet );
+    const std::vector<double> timeArray = BuildTime ( tInitial_s, tFinal_s, 3600.0*sun->sunRise, 3600.0*sun->sunSet );
 
     /* Time counter [-] */
     unsigned int nTime = 0;
@@ -344,6 +349,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             /* If no, then we have no liquid particles */
             LA_MICROPHYSICS = 0;
     }
+
     /* Transport for liquid aerosols? */
     const bool TRANSPORT_LA = ( LA_MICROPHYSICS == 2 );
 
@@ -394,7 +400,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     const unsigned int nRing = ringCluster.getnRing();
 
     /* Print Ring Debug? */
-    if ( DEBUG_RINGS | DBG )
+    if ( DEBUG_RINGS || DBG )
         ringCluster.Debug();
 
     /* Allocate species-ring vector */
@@ -413,6 +419,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* Compute ring areas */
     ringCluster.ComputeRingAreas( cellAreas, mapRing2Mesh );
     const std::vector<double> ringArea = ringCluster.getRingArea();
+    const double totArea = std::accumulate( ringArea.begin(), ringArea.end(), 0 );
 
     /* Add emission into the grid */
     Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing(), temperature_K, ( relHumidity_i > 100.0 ), \
@@ -446,7 +453,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [hPa]\n";
         std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [  %]\n";
         std::cout << " ## - Latitude   : " << std::setw(txtWidth) << latitude_deg           << " [deg]\n";
-        std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun.CSZA_max           << " [ - ]\n";
+        std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [ - ]\n";
 
         std::cout << "\n ## EMISSIONS:";
         std::cout << "\n ##\n";
@@ -536,17 +543,19 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     while ( curr_Time_s < tFinal_s ) {
 
-        /* Print message */
-        std::cout << "\n";
-        std::cout << "\n - Time step: " << nTime << " out of " << timeArray.size();
-        std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]";
+        if ( 1 ) {
+            /* Print message */
+            std::cout << "\n";
+            std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size();
+            std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]";
+        }
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /**      Update Time Step      **/
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         
         /* Compute time step */
-        dt = UpdateTime( curr_Time_s, tInitial_s, 3600.0*sun.sunRise, 3600.0*sun.sunSet );
+        dt = UpdateTime( curr_Time_s, tInitial_s, 3600.0*sun->sunRise, 3600.0*sun->sunSet );
         LAST_STEP = ( curr_Time_s + dt >= tFinal_s );
 
         SANDS_GasPhase.UpdateTimeStep( dt );
@@ -680,14 +689,14 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
         /* Compute SUN */
-        sun.Update( curr_Time_s );
+        sun->Update( curr_Time_s );
 
         /* Store cosine of solar zenith angle */
-        ambientData.cosSZA[nTime] = sun.CSZA;
+        ambientData.cosSZA[nTime] = sun->CSZA;
 
         if ( DBG ) {
             std::cout << "\n DEBUG : \n";
-            std::cout << "         CSZA = " << sun.CSZA << "\n";
+            std::cout << "         CSZA = " << sun->CSZA << "\n";
         }
 
 
@@ -698,8 +707,8 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
             PHOTOL[iPhotol] = 0.0E+00;
 
-        if ( sun.CSZA > 0.0E+00 )
-            Read_JRates( PHOTOL, sun.CSZA );
+        if ( sun->CSZA > 0.0E+00 )
+            Read_JRates( PHOTOL, sun->CSZA );
 
         if ( DBG ) {
             std::cout << "\n DEBUG : \n";
@@ -1010,7 +1019,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
             for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
                 RCONST[iReact] = 0.0E+00;
             
-            Update_RCONST( met.temp[jNy][iNx], met.press[jNy], airDens, varArray[ind_H2O], sun.CSZA );
+            Update_RCONST( met.temp[jNy][iNx], met.press[jNy], airDens, varArray[ind_H2O], sun->CSZA );
 
             /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
             /* ~~~~~~ Integration ~~~~~ */
@@ -1247,7 +1256,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     
 #if ( SAVE_OUTPUT )
 
-    isSaved = output::Write( ringSpecies, ambientData, ringCluster, timeArray, temperature_K, pressure_Pa, airDens, relHumidity_w, relHumidity_i, longitude_deg, latitude_deg, sun.sunRise, sun.sunSet );
+    isSaved = output::Write( ringSpecies, ambientData, ringCluster, timeArray, temperature_K, pressure_Pa, airDens, relHumidity_w, relHumidity_i, longitude_deg, latitude_deg, sun->sunRise, sun->sunSet );
     if ( isSaved == output::SAVE_FAILURE ) {
         std::cout << "Saving to file failed...\n";
         return SAVE_FAIL;
@@ -1280,6 +1289,56 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     }
 
 #endif /* SAVE_PA_MICROPHYS */
+
+#pragma omp critical 
+    {
+        std::cout << "\n\n ## ON THREAD: " << omp_get_thread_num() << ": Starting adjoint calculation...\n";
+    }
+
+#if ( RINGS )
+
+    std::copy(sun->CSZA_Vector.begin(), sun->CSZA_Vector.end(), SZA_CST);
+    double finalPlume[NSPEC];
+    double initBackg[NSPEC];
+    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+        finalPlume[iSpec] = 0.0E+00;
+        initBackg[iSpec]  = 0.0E+00;
+    }
+
+    for ( iRing = 0; iRing < nRing; iRing++ ) {
+        ringSpecies.getData( varArray, fixArray, nTime, iRing );
+        for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+            if ( iSpec < NVAR )
+                finalPlume[iSpec] += varArray[iSpec] * ringArea[iRing];
+            else
+                finalPlume[iSpec] += fixArray[iSpec - NVAR] * ringArea[iRing];
+        }
+    }
+    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ )
+        finalPlume[iSpec] /= totArea;
+
+    ambientData.getData( varArray, fixArray, aerArray, 0 );
+    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+        if ( iSpec < NVAR )
+            initBackg[iSpec] = varArray[iSpec];
+        else
+            initBackg[iSpec] = fixArray[iSpec - NVAR];
+    }
+
+    IERR = KPP_Main_ADJ( finalPlume, initBackg,               \
+                         temperature_K, pressure_Pa, airDens, \
+                         &(timeArray)[0], timeArray.size(),   \
+                         KPPADJ_RTOLS, KPPADJ_ATOLS );
+    
+    if ( IERR < 0 ) {
+        /* Adjoint integration failed */
+        return KPPADJ_FAIL;
+    }
+
+#endif /* RINGS */
+
+    /* Clear dynamically allocated variable(s) */
+    sun->~SZA();
 
 
     return SUCCESS;
