@@ -39,6 +39,7 @@
 #define NPHOTOL              105         /* Number of photolysis reactions */
 #define NAERO                4           /* Number of aerosol types considered for heterogeneous chemistry */
 #define PSC                  1           /* Consider PSCs? */
+#define NOPT                 3           /* Number of optimization variables for KPP_Adjoint */
 
 /* Index declaration for variable species in C and VAR              */
 /*   VAR(ind_spc) = C(ind_spc)                                      */

@@ -45,6 +45,7 @@ extern char * EQN_TAGS[NREACT];                 /* Equation tags */
 
 extern double PHOTOL[NPHOTOL];                  /* Photolysis rates */
 extern double HET[NSPEC][3];                    /* Heterogeneous reaction rates */
+extern double SZA_CST[3];                       /* Constants to compute cosSZA */
 
 /* INLINED global variable declarations                             */
 

@@ -22,7 +22,12 @@ extern "C" {
 #endif /* __cplusplus */
 
 int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, \
-              double rtols, double atols );
+              double RTOLS, double ATOLS );
+int KPP_Main_ADJ( const double finalPlume[], const double initBackg[], \
+                  const double temperature_K, const double pressure_Pa,\
+                  const double airDens, const double timeArray[],      \
+                  const unsigned int NT,                               \
+                  const double RTOLS, const double ATOLS );
 void Update_RCONST( const double TEMP, const double PRESS,  \
                     const double AIRDENS, const double H2O );
 void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
@@ -31,6 +36,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
                 const double RADI[NAERO], const double IWC,                 \
                 const double KHETI_SLA[11] );
 void Read_JRates ( double JRates[], const double CSZA );
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

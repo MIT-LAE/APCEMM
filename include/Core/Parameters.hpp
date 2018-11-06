@@ -60,6 +60,8 @@
 /* Chemistry parameters */
 #define KPP_RTOLS             1.00E-03    /* Relative tolerances in KPP */
 #define KPP_ATOLS             1.00E-03    /* Absolute tolerances in KPP */
+#define KPPADJ_RTOLS          1.00E-05    /* Relative tolerances in KPP_Adjoint */
+#define KPPADJ_ATOLS          1.00E-04    /* Absolute tolerances in KPP_Adjoint */
 
 /* Aerosol parameters */
 #define N_AER                 3           /* Number of aerosols considered */
