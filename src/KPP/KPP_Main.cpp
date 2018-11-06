@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-
+#include "Core/SZA.hpp"
 #include "KPP/KPP.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "KPP/KPP_Global.h"
@@ -52,7 +52,6 @@ double STEPMAX;                          /* Upper bound for integration step */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 int INTEGRATE( double TIN, double TOUT );
-
 int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, \
               double RTOLS, double ATOLS )
 {
@@ -62,38 +61,43 @@ int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, 
  
     /* ---- TIME VARIABLES ------------------ */
 
-    TSTART = currentT; // Solar time
-    TEND = TSTART + dt;
+    TSTART = currentT;
+    TEND   = TSTART + dt;
 
-    for ( i = 0; i < NVAR; i++ ) {
+    /* ---- INITIALIZE ARRAYS --------------- */
+
+    for ( i = 0; i < NVAR; i++ )
         VAR[i] = varArray[i];
-    }
 
-    for ( i = 0; i < NFIX; i++ ) {
+    for ( i = 0; i < NFIX; i++ )
         FIX[i] = fixArray[i];
-    }
+
+    /* ---- TOLERANCES ---------------------- */
 
     for( i = 0; i < NVAR; i++ ) {
         RTOL[i] = RTOLS;
         ATOL[i] = ATOLS;
     }
+
     STEPMIN = 0.01;
     STEPMAX = 900;
       
-    /* ********** TIME LOOP **************************** */
+    /* ---- TIME LOOP STARTS HERE ----------- */
 
     TIME = TSTART;
     IERR = INTEGRATE( TIME, TIME+dt );
 
-    /* *********** END TIME LOOP *********************** */
+    /* ---- TIME LOOP END HERE -------------- */
 
-    for ( i = 0; i < NVAR; i++ ) {
+    /* ---- UPDATE ARRAYS ------------------- */
+
+    for ( i = 0; i < NVAR; i++ )
         varArray[i] = VAR[i];
-    }
 
-    return IERR; /*didnt return anything initially */
+    return IERR;
 
 }
+
 /* End of MAIN function                                             */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
