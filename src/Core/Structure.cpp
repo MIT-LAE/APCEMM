@@ -96,7 +96,7 @@ void Solution::Initialize( char const *fileName, const double temperature, const
         unsigned int i = 0;
 
         while ( ( std::getline( file, line ) ) && ( i < nVariables + nAer ) ) {
-            if ( ( line != "\r" ) && ( line != "\n" ) && ( line[0] != '#' ) ) {
+            if ( ( line.length() > 0 ) && ( line != "\r" ) && ( line != "\n" ) && ( line[0] != '#' ) ) {
                 std::istringstream iss(line);
                 if ( i < nVariables ) {
                     iss >> amb_Value[i];
