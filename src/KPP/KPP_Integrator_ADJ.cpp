@@ -207,8 +207,8 @@ int INTEGRATE_ADJ( int NADJ, double Y[], double Lambda[][NVAR],
   IERR = RosenbrockADJ( Y, NADJ, Lambda, TIN, TOUT, ATOL, RTOL, ATOL_adj,
 			RTOL_adj, RCNTRL, ICNTRL, RSTATUS, ISTATUS );
 
-  if (IERR < 0)
-    printf( "RosenbrockADJ: Unsucessful step at T=%f (IERR=%d)", TIN/3600, IERR );
+//  if (IERR < 0)
+//    printf( "RosenbrockADJ: Unsucessful step at T=%f (IERR=%d)", TIN/3600, IERR );
 
   STEPMIN = RSTATUS[Nhexit];
 
@@ -982,8 +982,7 @@ static int ros_ErrorMsg( int Code, double T, double H) {
       printf( "--> No of steps exceeds maximum buffer bound" );
       break;
     case -7:
-      printf( "--> Step size too small: T + 10*H = T or H < Roundoff" );
-      printf( "\nT, H : %7.2f, %3.2e \n", T/3600, H );
+      //printf( "--> Step size too small: T + 10*H = T or H < Roundoff" );
       break;
     case -8:
       printf( "--> Matrix is repeatedly singular" );
