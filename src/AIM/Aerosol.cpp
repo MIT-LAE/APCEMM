@@ -848,6 +848,8 @@ namespace AIM
         if ( &rhs == this )
             return *this;
 
+        Nx = rhs.Nx;
+        Ny = rhs.Ny;
         bin_Centers = rhs.bin_Centers;
         bin_VCenters = rhs.bin_VCenters;
         bin_Edges = rhs.bin_Edges;
