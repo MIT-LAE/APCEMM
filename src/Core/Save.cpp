@@ -34,10 +34,10 @@ namespace output
         FileHandler fileHandler( currFileName, doWrite, doRead, overWrite );
         NcFile currFile = fileHandler.openFile();
         if ( !fileHandler.isFileOpen() ) {
-            std::cout << "File " << currFileName << " didn't open!" << "\n";
+            std::cout << " File " << currFileName << " didn't open!" << "\n";
             return SAVE_FAILURE;
         } else {
-            std::cout << "\nStarting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
+            std::cout << "\n Starting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
             time( &rawtime );
             strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
@@ -74,13 +74,15 @@ namespace output
             didSaveSucceed *= fileHandler.addVar( currFile, &(ringCluster.getRingArea())[0], "Ring Area", ringDim, "float", "m^2", "Ring Area" );
 
 #endif /* RINGS */
-            
+
+/* Define conversion factors */
 #define TO_PPTH         1.0 / airDens * 1.0E+03 /* Conversion factor from molecule/cm^3 to PPTH */
 #define TO_PPM          1.0 / airDens * 1.0E+06 /* Conversion factor from molecule/cm^3 to PPM  */
 #define TO_PPB          1.0 / airDens * 1.0E+09 /* Conversion factor from molecule/cm^3 to PPB  */
 #define TO_PPT          1.0 / airDens * 1.0E+12 /* Conversion factor from molecule/cm^3 to PPT  */
 
 #if ( RINGS )
+
 #if ( SAVE_TO_DOUBLE )
                 double* spcArray;
                 double* ambArray;
@@ -3318,10 +3320,10 @@ namespace output
         FileHandler fileHandler( currFileName, doWrite, doRead, overWrite );
         NcFile currFile = fileHandler.openFile();
         if ( !fileHandler.isFileOpen() ) {
-            std::cout << "File " << currFileName << " didn't open!" << "\n";
+            std::cout << " File " << currFileName << " didn't open!" << "\n";
             return SAVE_FAILURE;
         } else {
-            std::cout << "\nStarting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
+            std::cout << "\n Starting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
             time( &rawtime );
             strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
@@ -3342,7 +3344,7 @@ namespace output
 
             didSaveSucceed *= fileHandler.addConst( currFile, &temperature_K, "Temperature", 1, "float", "K"   , "Ambient Temperature" );
             didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Pressure"   , 1, "float", "hPa" , "Ambient Pressure" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Lapse Rate" , 1, "float", "K/km", "Ambient temperature lapse rate" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &lapseRate    , "Lapse Rate" , 1, "float", "K/km", "Ambient temperature lapse rate" );
             didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_w, "RHW"        , 1, "float", "-"   , "Ambient Rel. Humidity w.r.t water" );
             didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_i, "RHI"        , 1, "float", "-"   , "Ambient Rel. Humidity w.r.t ice" );
 
@@ -3389,6 +3391,288 @@ namespace output
         return SAVE_SUCCESS;
 
     } /* End of Write_MicroPhys */
+
+    int Write_Adjoint( const char* outputFile,                                       \
+                       const SpeciesArray &ringSpecies, const Ambient ambientData,   \
+                       const std::vector<double> &ringArea, const double totArea,    \
+                       const std::vector<double> &timeArray, const double VAR_OUT[], \
+                       const double &temperature_K, const double &pressure_Pa,       \
+                       const double &airDens, const double &relHumidity_w,           \
+                       const double &relHumidity_i )
+    {
+
+        const bool doWrite = 1;
+        const bool doRead = 1;
+        const bool overWrite = 1;
+
+        int didSaveSucceed = 1;
+        time_t rawtime;
+        char buffer[80];
+
+        FileHandler fileHandler( outputFile, doWrite, doRead, overWrite );
+        NcFile currFile = fileHandler.openFile();
+        if ( !fileHandler.isFileOpen() ) {
+            std::cout << " File " << outputFile << " didn't open!" << "\n";
+            return SAVE_FAILURE;
+        } else {
+            std::cout << "\n Starting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
+            time( &rawtime );
+            strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
+
+            const NcDim *timeDim = fileHandler.addDim( currFile, "Time", long(timeArray.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "Time", timeDim, "float", "s", "Time");
+            
+            didSaveSucceed *= fileHandler.addAtt( currFile, "FileName", fileHandler.getFileName() );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Author", "Thibaud M. Fritz (fritzt@mit.edu)" );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Contact", "Thibaud M. Fritz (fritzt@mit.edu)" );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "GenerationDate", buffer );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Format", "NetCDF-4" );
+
+            didSaveSucceed *= fileHandler.addConst( currFile, &temperature_K, "Temperature", 1, "float", "K"  , "Ambient Temperature" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Pressure"   , 1, "float", "hPa", "Ambient Pressure" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &airDens      , "Air Density", 1, "float", "molecule / cm ^ 3", "Molecular density" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_w, "RHW"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_i, "RHI"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
+
+            didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim, "float", "-", "Cosine of the solar zenith angle" );
+
+            /* Define conversion factors */
+            #define TO_PPTH         1.0 / airDens * 1.0E+03 /* Conversion factor from molecule/cm^3 to PPTH */
+            #define TO_PPM          1.0 / airDens * 1.0E+06 /* Conversion factor from molecule/cm^3 to PPM  */
+            #define TO_PPB          1.0 / airDens * 1.0E+09 /* Conversion factor from molecule/cm^3 to PPB  */
+            #define TO_PPT          1.0 / airDens * 1.0E+12 /* Conversion factor from molecule/cm^3 to PPT  */
+
+            #if ( SAVE_TO_DOUBLE )
+                double* spcArray;
+                double* ambArray;
+                double* adjArray;
+                const char* outputType = "double";
+            #else
+                float* spcArray;
+                float* ambArray;
+                float* adjArray;
+                const char* outputType = "float";
+            #endif /* SAVE_TO_DOUBLE */
+
+            /* ringAverage contains all ring-averaged concentrations in molec/cm^3 and is indexed as:
+             * ringAverage[iTime][iSpecies] */
+            std::vector<std::vector<double>> ringAverage = ringSpecies.RingAverage( ringArea, totArea );
+
+            const unsigned int NT = timeArray.size();
+            std::vector<double> adjointData( NT, 0.0E+00 );
+            std::vector<double> plumeData( NT, 0.0E+00 );
+
+            /* Start saving species ... */
+
+            /* Define conversion factor */
+            double scalingFactor;
+            char charSpc[30];
+            char charName[50];
+            char charUnit[20];
+               
+
+            #if ( DO_SAVE_O3 )
+
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ ) {
+                    adjointData[iNt] = VAR_OUT[ iNt * NVAR + ind_O3 ];
+                    plumeData[iNt] = ringAverage[iNt][ind_O3];
+                }
+                
+                #if ( SAVE_TO_DOUBLE )
+                    spcArray = util::vect2double( plumeData      , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointData    , NT, scalingFactor );
+                    ambArray = util::vect2double( ambientData.O3 , NT, scalingFactor );
+                #else
+                    spcArray = util::vect2float ( plumeData      , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointData    , NT, scalingFactor );
+                    ambArray = util::vect2float ( ambientData.O3 , NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "O3_Plume", sizeof(charSpc) );
+                strncpy( charName, "O3 plume-averaged mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "O3_Adjoint", sizeof(charSpc) );
+                strncpy( charName, "O3 optimized mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(adjArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "O3_Ambient", sizeof(charSpc) );
+                strncpy( charName, "O3 ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+            #endif /* DO_SAVE_O3 */
+
+            #if ( DO_SAVE_NO )
+
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ ) {
+                    adjointData[iNt] = VAR_OUT[ iNt * NVAR + ind_NO ];
+                    plumeData[iNt] = ringAverage[iNt][ind_NO];
+                }
+
+
+                #if ( SAVE_TO_DOUBLE )
+                    spcArray = util::vect2double( plumeData      , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointData    , NT, scalingFactor );
+                    ambArray = util::vect2double( ambientData.NO , NT, scalingFactor );
+                #else
+                    spcArray = util::vect2float ( plumeData      , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointData    , NT, scalingFactor );
+                    ambArray = util::vect2float ( ambientData.NO , NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "NO_Plume", sizeof(charSpc) );
+                strncpy( charName, "NO plume-averaged mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "NO_Adjoint", sizeof(charSpc) );
+                strncpy( charName, "NO optimized mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(adjArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "NO_Ambient", sizeof(charSpc) );
+                strncpy( charName, "NO ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+            #endif /* DO_SAVE_NO */
+
+            #if ( DO_SAVE_NO2 )
+
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ ) {
+                    adjointData[iNt] = VAR_OUT[ iNt * NVAR + ind_NO2 ];
+                    plumeData[iNt] = ringAverage[iNt][ind_NO2];
+                }
+
+
+                #if ( SAVE_TO_DOUBLE )
+                    spcArray = util::vect2double( plumeData      , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointData    , NT, scalingFactor );
+                    ambArray = util::vect2double( ambientData.NO2, NT, scalingFactor );
+                #else
+                    spcArray = util::vect2float ( plumeData      , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointData    , NT, scalingFactor );
+                    ambArray = util::vect2float ( ambientData.NO2, NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "NO2_Plume", sizeof(charSpc) );
+                strncpy( charName, "NO2 plume-averaged mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "NO2_Adjoint", sizeof(charSpc) );
+                strncpy( charName, "NO2 optimized mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(adjArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "NO2_Ambient", sizeof(charSpc) );
+                strncpy( charName, "NO2 ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+            #endif /* DO_SAVE_NO2 */
+
+            #if ( DO_SAVE_HNO3 )
+
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ ) {
+                    adjointData[iNt] = VAR_OUT[ iNt * NVAR + ind_HNO3 ];
+                    plumeData[iNt] = ringAverage[iNt][ind_HNO3];
+                }
+
+
+                #if ( SAVE_TO_DOUBLE )
+                    spcArray = util::vect2double( plumeData       , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointData     , NT, scalingFactor );
+                    ambArray = util::vect2double( ambientData.HNO3, NT, scalingFactor );
+                #else
+                    spcArray = util::vect2float ( plumeData       , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointData     , NT, scalingFactor );
+                    ambArray = util::vect2float ( ambientData.HNO3, NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "HNO3_Plume", sizeof(charSpc) );
+                strncpy( charName, "HNO3 plume-averaged mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "HNO3_Adjoint", sizeof(charSpc) );
+                strncpy( charName, "HNO3 optimized mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(adjArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "HNO3_Ambient", sizeof(charSpc) );
+                strncpy( charName, "HNO3 ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+            #endif /* DO_SAVE_HNO3 */
+
+            #if ( DO_SAVE_NOx )
+
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ ) {
+                    adjointData[iNt] = VAR_OUT[ iNt * NVAR + ind_NO ] + VAR_OUT[ iNt * NVAR + ind_NO2 ];
+                    plumeData[iNt] = ringAverage[iNt][ind_NO] + ringAverage[iNt][ind_NO2];
+                }
+
+                std::vector<double> ambientNOx = util::add1D( ambientData.NO, ambientData.NO2 );
+                #if ( SAVE_TO_DOUBLE )
+                    spcArray = util::vect2double( plumeData   , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointData , NT, scalingFactor );
+                    ambArray = util::vect2double( ambientNOx  , NT, scalingFactor );
+                #else
+                    spcArray = util::vect2float ( plumeData   , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointData , NT, scalingFactor );
+                    ambArray = util::vect2float ( ambientNOx  , NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "NOx_Plume", sizeof(charSpc) );
+                strncpy( charName, "NOx plume-averaged mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "NOx_Adjoint", sizeof(charSpc) );
+                strncpy( charName, "NOx optimized mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(adjArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "NOx_Ambient", sizeof(charSpc) );
+                strncpy( charName, "NOx ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+            #endif /* DO_SAVE_NOx */
+            
+            util::delete1D( spcArray );
+            util::delete1D( adjArray );
+            util::delete1D( ambArray );
+
+
+            if ( didSaveSucceed == NC_SUCCESS ) {
+                std::cout << "Done saving to netCDF!" << "\n";
+            } else if ( didSaveSucceed != NC_SUCCESS ) {
+                std::cout << "Error occured in saving data: didSaveSucceed: " << didSaveSucceed << "\n";
+                return SAVE_FAILURE;
+            }
+
+            fileHandler.closeFile( currFile );
+            if ( fileHandler.isFileOpen() ) {
+                std::cout << "File " << outputFile << " didn't close properly!" << "\n";
+                return SAVE_FAILURE;
+            }
+
+        }
+
+            return SAVE_SUCCESS;
+
+    } /* End of Write_Adjoint */
 
 }
 
