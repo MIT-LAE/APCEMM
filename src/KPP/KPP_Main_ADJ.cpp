@@ -65,7 +65,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                   const double airDens, const double timeArray[],       \
                   const unsigned int NT,                                \
                   const double RTOLS, const double ATOLS,               \
-                  double VAR_OUTPUT[] )
+                  double VAR_OUTPUT[], const bool verbose )
 {
 
     int i, j;
@@ -305,17 +305,18 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 //        return IERR;
 //    }
 
-    printf("\nNOx: %e [ppt]\n",(VAR_RUN[ind_NO]+VAR_RUN[ind_NO2])/airDens*1E12);
-    printf("NO: %e [ppt]\n",(VAR_RUN[ind_NO])/airDens*1E12);
-    printf("NO2: %e [ppt]\n",(VAR_RUN[ind_NO2])/airDens*1E12);
-    printf("O3: %e [ppb]\n",(VAR_RUN[ind_O3])/airDens*1E9);
+//    printf("\nNOx: %e [ppt]\n",(VAR_RUN[ind_NO]+VAR_RUN[ind_NO2])/airDens*1E12);
+//    printf("NO: %e [ppt]\n",(VAR_RUN[ind_NO])/airDens*1E12);
+//    printf("NO2: %e [ppt]\n",(VAR_RUN[ind_NO2])/airDens*1E12);
+//    printf("O3: %e [ppb]\n",(VAR_RUN[ind_O3])/airDens*1E9);
 
     /* Optimization method:
      * (1) Conjugate gradient */
 
     static const char switchOpt[] = "Conjugate Gradient";
 
-    printf("Running KPP adjoint to compute sensitivities and effective emission indices using %s.\n", switchOpt);
+    if ( verbose )
+        printf("Running KPP adjoint to compute sensitivities and effective emission indices using %s.\n", switchOpt);
 
     if (( strcmp( switchOpt, "CG" ) == 0 ) || \
         ( strcmp( switchOpt, "Conjugate Gradient" ) == 0 ) ) {
@@ -351,7 +352,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
          *
          */
 
-        const int N_MAX = 20;
+        const int N_MAX = 10;
         int N = 0;
 
         double *wDiff, *dir, *dirold;
@@ -430,21 +431,18 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
         /* Print reduced sensitivity matrix and weighted difference
          * to console? */
-        if ( 1 ) {
-            printf("Printing reduced sensitivity matrix\n");
-            printf("J^T = ");
+        if ( verbose ) {
+            printf(" Reduced sensitivity matrix\n");
+            printf(" J^T = [");
             for ( i = 0; i < NOPT; i++ ) {
-                if ( i == 0 )
-                    printf("[");
-                else
+                if ( i > 0 )
                     printf("      \[");
                 for ( j = 0; j < NOPT; j++ )
                     printf("%.3e ",A_mat[i][j]);
                 printf("]\n");
             }
-            printf("Weighted difference\n");
-            printf("wDiff = ");
-            printf("[");
+            printf(" Weighted difference\n");
+            printf(" wDiff = [");
             for ( i = 0; i < NOPT; i++ )
                 printf("%.3e ",wDiff[i]);
             printf("]\n");
@@ -463,7 +461,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
         double METRIC_i[NOPT-1];
         double METRIC_min = 1E40;
         double METRIC_ABS_MIN = METRIC_min; 
-//        double VAR_OPT[NVAR];
+        double VAR_OPT[NVAR];
 
         double alpha[NOPT] = { 0.0 };
         double alpha_maxstep = -1.0;
@@ -504,7 +502,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
         while ( N < N_MAX ) {
 
-            printf("\nN: %d, METRIC: %6.5e\n\n", N, METRIC);
+            if ( verbose )
+                printf("\nN: %d, METRIC: %6.5e\n\n", N, METRIC);
 
             METRIC_min = 1E40;
 
@@ -567,7 +566,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             /* ---- LINE SEARCH ENDS HERE ----------- */
 
             alpha_step = alpha_maxstep/STEPARRAY[imin];
-            printf("\nBest step: %d, step: %f\n\n",imin,alpha_step);
+            if ( verbose )
+                printf("\nBest step: %d, step: %f\n\n",imin,alpha_step);
 
             for ( i = 0; i < NVAR; i++ )
                 VAR_MOD[i] = VAR_DIR[i];
@@ -624,34 +624,37 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                 }
             }
 
-            printf("\nMETRIC: %6.5e\n\n",METRIC);
+            if ( verbose ) {
+                printf("\nMETRIC: %6.5e\n\n",METRIC);
 
-            printf("%15s,  %5s,  %5s, %6s, %6s, %5s\n","SPECIES","C=0","INIT","OUTPUT","PLUME","AMBIENT");
-            printf("%15s, %2.3f, %2.3f, %2.3f, %2.3f, %2.3f, %2.3f\n","NOx", (VAR[ind_OPT[0]]+VAR[ind_OPT[1]])/airDens*TOPPT, \
-                   (VAR_DIR[ind_OPT[0]]+VAR_DIR[ind_OPT[1]] + alpha_step * (dir[0]/DIAG[0] + dir[1]/DIAG[1]))/airDens*TOPPT, \
-                   (VAR_MOD[ind_OPT[0]]+VAR_MOD[ind_OPT[1]])/airDens*TOPPT, \
-                   (finalPlume[ind_OPT[0]]+finalPlume[ind_OPT[1]])/airDens*TOPPT, \
-                   (VAR_BACKG[ind_OPT[0]]+VAR_BACKG[ind_OPT[1]])/airDens*TOPPT, \
-                   pow( (( VAR_MOD[ind_OPT[0]] + VAR_MOD[ind_OPT[1]] - finalPlume[ind_OPT[0]] - finalPlume[ind_OPT[1]] ) * DIAG[0] * WEIGHTS[ind_OPT[0]]), 2)/METRIC_min);
-            printf("%15s, %2.2f, %2.2f, %2.2f, %2.2f, %2.2f\n","NOy", (VAR[ind_OPT[0]]+VAR[ind_OPT[1]]+VAR[ind_HNO3])/airDens*TOPPT, \
-                   (VAR_DIR[ind_OPT[0]]+VAR_DIR[ind_OPT[1]]+VAR_DIR[ind_HNO3])/airDens*TOPPT, \
-                   (VAR_MOD[ind_OPT[0]]+VAR_MOD[ind_OPT[1]]+VAR_MOD[ind_HNO3])/airDens*TOPPT, \
-                   (finalPlume[ind_OPT[0]]+finalPlume[ind_OPT[1]]+finalPlume[ind_HNO3])/airDens*TOPPT, \
-                   (VAR_BACKG[ind_OPT[0]]+VAR_BACKG[ind_OPT[1]]+VAR_BACKG[ind_HNO3])/airDens*TOPPT);
-            for ( i = 2; i < NOPT; i++ )
-                printf("%15s, %2.3f, %2.3f, %2.3f, %2.3f, %2.3f, %2.3f\n",SPC_NAMES[ind_OPT[i]], VAR[ind_OPT[i]]/airDens*TOPPB, \
-                   (VAR_DIR[ind_OPT[i]] + alpha_step*dir[i]/DIAG[i])/airDens*TOPPB, \
-                   VAR_MOD[ind_OPT[i]]/airDens*TOPPB, finalPlume[ind_OPT[i]]/airDens*TOPPB, \
-                   VAR_BACKG[ind_OPT[i]]/airDens*TOPPB, \
-                   pow( (( VAR_MOD[ind_OPT[i]] - finalPlume[ind_OPT[i]] ) * DIAG[i] * WEIGHTS[ind_OPT[i]]), 2)/METRIC_min);
-            printf("\n");
+                printf("%15s,  %5s,  %5s, %6s, %6s, %5s\n","SPECIES","C=0","INIT","OUTPUT","PLUME","AMBIENT");
+                printf("%15s, %2.3f, %2.3f, %2.3f, %2.3f, %2.3f, %2.3f\n","NOx", (VAR[ind_OPT[0]]+VAR[ind_OPT[1]])/airDens*TOPPT, \
+                       (VAR_DIR[ind_OPT[0]]+VAR_DIR[ind_OPT[1]] + alpha_step * (dir[0]/DIAG[0] + dir[1]/DIAG[1]))/airDens*TOPPT, \
+                       (VAR_MOD[ind_OPT[0]]+VAR_MOD[ind_OPT[1]])/airDens*TOPPT, \
+                       (finalPlume[ind_OPT[0]]+finalPlume[ind_OPT[1]])/airDens*TOPPT, \
+                       (VAR_BACKG[ind_OPT[0]]+VAR_BACKG[ind_OPT[1]])/airDens*TOPPT, \
+                       pow( (( VAR_MOD[ind_OPT[0]] + VAR_MOD[ind_OPT[1]] - finalPlume[ind_OPT[0]] - finalPlume[ind_OPT[1]] ) * DIAG[0] * WEIGHTS[ind_OPT[0]]), 2)/METRIC_min);
+                printf("%15s, %2.2f, %2.2f, %2.2f, %2.2f, %2.2f\n","NOy", (VAR[ind_OPT[0]]+VAR[ind_OPT[1]]+VAR[ind_HNO3])/airDens*TOPPT, \
+                       (VAR_DIR[ind_OPT[0]]+VAR_DIR[ind_OPT[1]]+VAR_DIR[ind_HNO3])/airDens*TOPPT, \
+                       (VAR_MOD[ind_OPT[0]]+VAR_MOD[ind_OPT[1]]+VAR_MOD[ind_HNO3])/airDens*TOPPT, \
+                       (finalPlume[ind_OPT[0]]+finalPlume[ind_OPT[1]]+finalPlume[ind_HNO3])/airDens*TOPPT, \
+                       (VAR_BACKG[ind_OPT[0]]+VAR_BACKG[ind_OPT[1]]+VAR_BACKG[ind_HNO3])/airDens*TOPPT);
+                for ( i = 2; i < NOPT; i++ )
+                    printf("%15s, %2.3f, %2.3f, %2.3f, %2.3f, %2.3f, %2.3f\n",SPC_NAMES[ind_OPT[i]], VAR[ind_OPT[i]]/airDens*TOPPB, \
+                       (VAR_DIR[ind_OPT[i]] + alpha_step*dir[i]/DIAG[i])/airDens*TOPPB, \
+                       VAR_MOD[ind_OPT[i]]/airDens*TOPPB, finalPlume[ind_OPT[i]]/airDens*TOPPB, \
+                       VAR_BACKG[ind_OPT[i]]/airDens*TOPPB, \
+                       pow( (( VAR_MOD[ind_OPT[i]] - finalPlume[ind_OPT[i]] ) * DIAG[i] * WEIGHTS[ind_OPT[i]]), 2)/METRIC_min);
+                printf("\n");
+            }
 
             for ( i = 0; i < NVAR; i++ )
                 VAR_DIR[i] = VAR_INIT[i];
 
             // if O3 delta smaller than 0.005 ppb and NOx delta smaller than 0.01 ppt
             if ( ABS((VAR_MOD[ind_O3] - finalPlume[ind_O3])/airDens*TOPPB) < 0.005 && ABS((VAR_MOD[ind_NO] + VAR_MOD[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT) < 0.05 ) {
-                printf("Break!\n");
+                if ( verbose )
+                    printf(" Minimizer has been found!\n");
                 break;
             }
 
@@ -673,27 +676,25 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
         
             /* Print reduced sensitivity matrix and weighted difference
              * to console? */
-            if ( 1 ) {
-                printf("Printing reduced sensitivity matrix\n");
-                printf("J^T = ");
+            if ( verbose ) {
+                printf(" Printing reduced sensitivity matrix\n");
+                printf(" J^T = [");
                 for ( i = 0; i < NOPT; i++ ) {
-                    if ( i == 0 )
-                        printf("[");
-                    else
+                    if ( i > 0 )
                         printf("      [");
                     for ( j = 0; j < NOPT; j++ )
                         printf("%.3e ",A_mat[i][j]);
                     printf("]\n");
                 }
-                printf("Weighted difference\n");
-                printf("wDiff = ");
-                printf("[");
+                printf(" Weighted difference\n");
+                printf(" wDiff = [");
                 for ( i = 0; i < NOPT; i++ )
                     printf("%.3e ",wDiff[i]);
                 printf("]\n");
             }
 
             /* ---- COMPUTE NEW DIRECTION ----------------- */
+
             /* Compute the new direction */
             for ( i = 0; i < NOPT; i++ ) {
                 dirold[i] = dir[i];
@@ -712,11 +713,13 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                 beta += dir[i] * ( dir[i] - dirold[i] ) / ( dirold[i] * dirold[i] );
                 beta = MAX( 0, beta );
                 /* Hestenes-Stiefel */
+                /* ... */
             }
 
-
-            printf("O3: %2.7f, %2.7f\n",VAR_MOD[ind_O3]/airDens*1E9, finalPlume[ind_O3]/airDens*1E9);
-            printf("NOx: %2.7f, %2.7f\n",(VAR_MOD[ind_NO]+VAR_MOD[ind_NO2])/airDens*1E12, (finalPlume[ind_NO] + finalPlume[ind_NO2])/airDens*1E12);
+            if ( verbose ) {
+                printf("O3: %2.7f, %2.7f\n",VAR_MOD[ind_O3]/airDens*1E9, finalPlume[ind_O3]/airDens*1E9);
+                printf("NOx: %2.7f, %2.7f\n",(VAR_MOD[ind_NO]+VAR_MOD[ind_NO2])/airDens*1E12, (finalPlume[ind_NO] + finalPlume[ind_NO2])/airDens*1E12);
+            }
 
             /* Computing step */
             alpha_maxstep = -1.0;
@@ -737,21 +740,22 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
         /* ---- OPTIMIZATION ENDS HERE ---------------------- */
 
-        for ( i = 0; i < NOPT - 1; i++ ) {
-            if ( i < 1 )
-                printf("\n\n%4s, %6.4f, %6.4f, %6.4f\n","NOx",(VAR_DIR[ind_OPT[0]]+VAR_DIR[ind_OPT[1]])/airDens*TOPPT,\
-                                                              (VAR_MOD[ind_OPT[0]]+VAR_MOD[ind_OPT[1]])/airDens*TOPPT, \
-                                                              (finalPlume[ind_OPT[0]]+finalPlume[ind_OPT[1]])/airDens*TOPPT);
-            else
-                printf("%4s, %6.4f, %6.4f, %6.4f\n",SPC_NAMES[ind_OPT[i+1]],(VAR_DIR[ind_OPT[i+1]])/airDens*TOPPB,\
-                                                    (VAR_MOD[ind_OPT[i+1]])/airDens*TOPPB, \
-                                                    (finalPlume[ind_OPT[i+1]])/airDens*TOPPB);
+        if ( verbose ) {
+            for ( i = 0; i < NOPT - 1; i++ ) {
+                if ( i < 1 )
+                    printf("\n\n%4s, %6.4f, %6.4f, %6.4f\n","NOx",(VAR_DIR[ind_OPT[0]]+VAR_DIR[ind_OPT[1]])/airDens*TOPPT,\
+                                                                  (VAR_MOD[ind_OPT[0]]+VAR_MOD[ind_OPT[1]])/airDens*TOPPT, \
+                                                                  (finalPlume[ind_OPT[0]]+finalPlume[ind_OPT[1]])/airDens*TOPPT);
+                else
+                    printf("%4s, %6.4f, %6.4f, %6.4f\n",SPC_NAMES[ind_OPT[i+1]],(VAR_DIR[ind_OPT[i+1]])/airDens*TOPPB,\
+                                                        (VAR_MOD[ind_OPT[i+1]])/airDens*TOPPB, \
+                                                        (finalPlume[ind_OPT[i+1]])/airDens*TOPPB);
+            }
+            printf("\n");
         }
-        printf("\n");
 
         unsigned int iNT = 0;
         double VAR_BOX[NVAR];
-        double VAR_OUTPUT[NT * NVAR];
 
         for ( i = 0; i < NVAR; i++ ) {
 //            VAR_BOX[i] = VAR_INIT[i];
@@ -760,8 +764,6 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
         }
 
         ICNTRL[6] = 1; // No adjoint
-
-        printf("Performing final integration\n");
 
         /* ---- TIME LOOP BEGINS HERE --------------- */
 
@@ -778,7 +780,6 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
             Update_RCONST( temperature_K, pressure_Pa, airDens, VAR_BOX[ind_H2O] );
 
-            printf("Integrating from %f to %f\n",timeArray[iNT]/3600,timeArray[iNT+1]/3600);
             IERR = INTEGRATE_ADJ( NADJ, VAR_BOX, Y_adj, timeArray[iNT], timeArray[iNT+1] , ATOL_adj, RTOL_adj, ICNTRL, RCNTRL, ISTATUS, RSTATUS );
 
             if ( IERR < 0 ) {
@@ -793,7 +794,6 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
         /* ---- TIME LOOP ENDS HERE ----------------- */
 
   }
-
 
     return IERR;
 

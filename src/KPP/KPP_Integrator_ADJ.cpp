@@ -94,7 +94,7 @@ void ros_CPush( double T, double H, double Y[], double dY[],
 		double d2Y[] );
 void ros_CPop( double T, double H, double Y[], double dY[],
 	       double d2Y[] );
-static int ros_ErrorMsg( int Code, double T, double H);
+static int ros_ErrorMsg( int Code );
 int ros_FwdInt (double Y[], double Tstart, double Tend, double T,
 		double AbsTol[], double RelTol[], int AdjointType,
 		double Hmin, double Hstart, double Hmax,
@@ -439,7 +439,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
       break;
     default:
       printf( "Unknown Rosenbrock method: ICNTRL[2]=%d", ICNTRL[2] );
-      return ros_ErrorMsg(-2, Tstart, ZERO);
+      return ros_ErrorMsg( -2 );
   } /* End switch */
 
 /*~~~>   The maximum number of steps admitted */
@@ -449,7 +449,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
     Max_no_steps = ICNTRL[3];
   else {
     printf("User-selected max no. of steps: ICNTRL[3]=%d",ICNTRL[3] );
-    return ros_ErrorMsg(-1,Tstart,ZERO);
+    return ros_ErrorMsg( -1 );
   }
 
 /*~~~>The particular Rosenbrock method chosen for integrating the cts adjoint*/
@@ -459,7 +459,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
     CadjMethod = ICNTRL[5];
   else {
     printf( "Unknown CADJ Rosenbrock method: ICNTRL[5]=%d", CadjMethod );
-    return ros_ErrorMsg(-2,Tstart,ZERO);
+    return ros_ErrorMsg( -2 );
   }
 
 /*~~~>  Discrete or continuous adjoint formulation */
@@ -469,7 +469,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
     AdjointType = ICNTRL[6];
   else {
     printf( "User-selected adjoint type: ICNTRL[6]=%d", AdjointType );
-    return ros_ErrorMsg(-9,Tstart,ZERO);
+    return ros_ErrorMsg( -9 );
   }
 
 /*~~~> Save or not the forward LU factorization */
@@ -485,7 +485,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
     Hmin = RCNTRL[0];
   else {
     printf( "User-selected Hmin: RCNTRL[0]=%f", RCNTRL[0] );
-    return ros_ErrorMsg(-3,Tstart,ZERO);
+    return ros_ErrorMsg( -3 );
   }
 
 /*~~~>  Upper bound on the step size: (positive value) */
@@ -495,7 +495,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
     Hmax = MIN(ABS((RCNTRL[1])),ABS((Tend-Tstart)));
   else {
     printf( "User-selected Hmax: RCNTRL[1]=%f", RCNTRL[1] );
-    return ros_ErrorMsg(-3,Tstart,ZERO);
+    return ros_ErrorMsg( -3 );
   }
 
 /*~~~>  Starting step size: (positive value) */
@@ -506,7 +506,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
     Hstart = MIN(ABS(RCNTRL[2]),ABS(Tend-Tstart));
   else {
     printf( "User-selected Hstart: RCNTRL[2]=%f", RCNTRL[2] );
-    return ros_ErrorMsg(-3,Tstart,ZERO);
+    return ros_ErrorMsg( -3 );
   }
 
 /*~~~>  Step size can be changed s.t.  FacMin < Hnew/Hold < FacMax */
@@ -516,7 +516,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
     FacMin = RCNTRL[3];
   else {
     printf( "User-selected FacMin: RCNTRL[3]=%f", RCNTRL[3] );
-    return ros_ErrorMsg(-4,Tstart,ZERO);
+    return ros_ErrorMsg( -4 );
   }
   if (RCNTRL[4] == ZERO)
     FacMax = (double)6.0;
@@ -524,7 +524,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
     FacMax = RCNTRL[4];
   else {
     printf( "User-selected FacMax: RCNTRL[4]=%f", RCNTRL[4] );
-    return ros_ErrorMsg(-4,Tstart,ZERO);
+    return ros_ErrorMsg( -4 );
   }
 
 /*~~~>   FacRej: Factor to decrease step after 2 succesive rejections */
@@ -534,7 +534,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
     FacRej = RCNTRL[5];
   else {
     printf( "User-selected FacRej: RCNTRL[5]=%f", RCNTRL[5] );
-    return ros_ErrorMsg(-4,Tstart,ZERO);
+    return ros_ErrorMsg( -4 );
   }
 
 /*~~~>   FacSafe: Safety Factor in the computation of new step size */
@@ -544,7 +544,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
     FacSafe = RCNTRL[6];
   else {
     printf( "User-selected FacSafe: RCNTRL[6]=%f", RCNTRL[6] );
-    return ros_ErrorMsg(-4,Tstart,ZERO);
+    return ros_ErrorMsg( -4 );
   }
 
 /*~~~>  Check if tolerances are reasonable */
@@ -553,7 +553,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
 	 || (RelTol[i] >= (double)1.0) ) {
       printf( " AbsTol[%d] = %f", i, AbsTol[i] );
       printf( " RelTol[%d] = %f", i, RelTol[i] );
-      return ros_ErrorMsg(-5,Tstart,ZERO);
+      return ros_ErrorMsg( -5 );
     }
   }
 
@@ -603,7 +603,7 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
 	break;
       default:
 	printf( "Unknown Rosenbrock method: ICNTRL[2]=%d", ICNTRL[2] );
-	return ros_ErrorMsg(-2,Tstart,ZERO);
+	return ros_ErrorMsg( -2 );
     }
   } /* End switch */
 
@@ -954,13 +954,13 @@ void ros_CPop( double T, double H, double Y[], double dY[],
 } /* End of ros_CPop */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-static int ros_ErrorMsg( int Code, double T, double H) {
+static int ros_ErrorMsg( int Code ) {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Handles all error messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
   int IERR = Code;
-  printf( "Forced exit from RosenbrockADJ due to the following error:");
+//  printf( "\nForced exit from RosenbrockADJ due to the following error:");
 
   switch (Code) {
     case -1:
@@ -1064,10 +1064,10 @@ int ros_FwdInt ( double Y[], double Tstart, double Tend, double T,
 	  ((Direction < 0) && ((Tend-T)+Roundoff <= ZERO)) ) { /* TimeLoop */
 
     if ( ISTATUS[Nstp] > Max_no_steps )  /* Too many steps */
-      return ros_ErrorMsg(-6,T,H);
+      return ros_ErrorMsg( -6 );
 
     if ( ((T+((double)0.1)*H) == T) || (H <= Roundoff) ) /* Step size too small */
-      return ros_ErrorMsg(-7,T,H);
+      return ros_ErrorMsg( -7 );
 
 /*~~~>  Limit H if necessary to avoid going beyond Tend */
     RSTATUS[Nhexit] = H;
@@ -1092,7 +1092,7 @@ int ros_FwdInt ( double Y[], double Tstart, double Tend, double T,
 				     ISTATUS );
 
       if (Singular) /* More than 5 consecutive failed decompositions */
-	    return ros_ErrorMsg(-8,T,H);
+	    return ros_ErrorMsg( -8 );
 
 /*~~~>   Compute the stages */
       for( istage = 0; istage < ros_S; istage++ ) { /* Stage */
@@ -1441,13 +1441,13 @@ int ros_CadjInt ( int NADJ, double Y[][NVAR], double Tstart, double Tend,
 
     if ( ISTATUS[Nstp] > Max_no_steps ) { /* Too many steps */
       printf("Error -6.\n");
-      return ros_ErrorMsg(-6,T,H);
+      return ros_ErrorMsg( -6 );
     }
 
     /* Step size too small */
     if ( ((T+((double)0.1)*H) == T) || (ABS((H)) <= Roundoff) ) {
       printf("Error -7.\n");
-      return ros_ErrorMsg(-7,T,H);
+      return ros_ErrorMsg( -7 );
     }
 
 /*~~~>  Limit H if necessary to avoid going beyond Tend */
@@ -1501,7 +1501,7 @@ int ros_CadjInt ( int NADJ, double Y[][NVAR], double Tstart, double Tend,
       Singular = ros_PrepareMatrix(H,Direction,ros_Gamma[0], Jac0,Ghimj,Pivot,
 				   ISTATUS);
       if (Singular) /* More than 5 consecutive failed decompositions */
-	    return ros_ErrorMsg(-8,T,H);
+	    return ros_ErrorMsg( -8 );
 
 /*~~~>   Compute the stages */
       for ( istage = 0; istage < ros_S; istage++ ) { /* Stage loop */
@@ -1728,7 +1728,7 @@ int ros_SimpleCadjInt ( int NADJ, double Y[][NVAR], double Tstart,
 /*~~~>    Compute LU decomposition */
     ros_Decomp( Ghimj, Pivot, &j, ISTATUS );
     if (j != 0) {
-      ros_ErrorMsg(-8,T,H);
+      ros_ErrorMsg( -8 );
       printf( "The matrix is singular !");
       exit(0);
     }

@@ -28,7 +28,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                   const double airDens, const double timeArray[],       \
                   const unsigned int NT,                                \
                   const double RTOLS, const double ATOLS,               \
-                  double VAR_OUTPUT[] );
+                  double VAR_OUTPUT[], const bool verbose = 0 );
 void Update_RCONST( const double TEMP, const double PRESS,  \
                     const double AIRDENS, const double H2O );
 void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
