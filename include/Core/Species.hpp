@@ -37,6 +37,11 @@ class SpeciesArray
         void FillIn( Solution &Data, Mesh &m, unsigned int nCounter );
         void FillIn( double varArray[], unsigned int iTime, unsigned int iRing );
         void getData( double varArray[], double fixArray[], unsigned int iTime, unsigned int iRing );
+        std::vector<double> RingAverage( const std::vector<double> ringArea, \
+                                         const double totArea, \
+                                         const unsigned int iNt ) const;
+        std::vector<std::vector<double>> RingAverage( const std::vector<double> ringArea, \
+                                                      const double totArea ) const;
         unsigned int getnRing() const;
         unsigned int getnTime() const;
         bool gethalfRing() const;
