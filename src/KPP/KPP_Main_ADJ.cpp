@@ -64,7 +64,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                   const double temperature_K, const double pressure_Pa, \
                   const double airDens, const double timeArray[],       \
                   const unsigned int NT,                                \
-                  const double RTOLS, const double ATOLS )
+                  const double RTOLS, const double ATOLS,               \
+                  double VAR_OUTPUT[] )
 {
 
     int i, j;
@@ -462,7 +463,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
         double METRIC_i[NOPT-1];
         double METRIC_min = 1E40;
         double METRIC_ABS_MIN = METRIC_min; 
-        double VAR_OPT[NVAR];
+//        double VAR_OPT[NVAR];
 
         double alpha[NOPT] = { 0.0 };
         double alpha_maxstep = -1.0;
@@ -750,12 +751,12 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
         unsigned int iNT = 0;
         double VAR_BOX[NVAR];
-        double VAR_OUTPUT[NT][NVAR];
+        double VAR_OUTPUT[NT * NVAR];
 
         for ( i = 0; i < NVAR; i++ ) {
 //            VAR_BOX[i] = VAR_INIT[i];
             VAR_BOX[i] = VAR_OPT[i];
-            VAR_OUTPUT[iNT][i] = VAR_BOX[i];
+            VAR_OUTPUT[iNT * NVAR + i] = VAR_BOX[i];
         }
 
         ICNTRL[6] = 1; // No adjoint
@@ -785,42 +786,19 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             }
 
             for ( i = 0; i < NVAR; i++ )
-                VAR_OUTPUT[iNT+1][i] = VAR_BOX[i];
+                VAR_OUTPUT[(iNT + 1) * NVAR + i] = VAR_BOX[i];
 
         }
         
         /* ---- TIME LOOP ENDS HERE ----------------- */
 
-        printf( "\n\n****************************************************\n" );
-        printf( "************* Optimized Concentrations ************* \n" );
-        printf( "**** were written in the file KPP_OPT_results.m **** \n");
-        printf( "****************************************************\n");
-
-        FILE *out;
-        out = fopen("data/KPP_OPT_results.m", "w");
-        if( out == NULL ) {
-            printf("Unable to open file KPP_OPT_results.m\n");
-            exit(1);
-        }
-
-        fprintf( out, "A = [..." );
-        for( iNT = 0; iNT < NT; iNT++ ) {
-            fprintf( out, " [ " );
-            for( j = 0; j < NVAR; j++ )
-                fprintf( out, "%7.6e   ", VAR_OUTPUT[iNT][j] );
-            fprintf( out, " ] \n" );
-        }
-        fprintf( out, "];" );
-
-        fclose(out);
-
   }
 
-/*~~~> End time loop ~~~~~~~~~~*/
 
     return IERR;
 
 }
 
-/* End of MAIN function                                             */
+/* End of MAIN_ADJ function                                          */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
