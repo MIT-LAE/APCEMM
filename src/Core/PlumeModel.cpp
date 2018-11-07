@@ -1299,7 +1299,7 @@ int PlumeModel( const unsigned int iCase,                   \
 
 #pragma omp critical 
     {
-        std::cout << "\n\n ## ON THREAD: " << omp_get_thread_num() << ": Starting adjoint calculation...\n";
+        std::cout << "\n\n ## ON THREAD " << omp_get_thread_num() << ": Starting adjoint calculation...\n";
     }
 
 
@@ -1339,7 +1339,7 @@ int PlumeModel( const unsigned int iCase,                   \
                          temperature_K, pressure_Pa, airDens, \
                          &(timeArray)[0], timeArray.size(),   \
                          KPPADJ_RTOLS, KPPADJ_ATOLS,          \
-                         /* Output */ VAR_OPT );
+                         /* Output */ VAR_OPT, DEBUG_ADJOINT );
     
     if ( IERR < 0 ) {
         /* Adjoint integration failed */
@@ -1360,10 +1360,11 @@ int PlumeModel( const unsigned int iCase,                   \
 
         isSaved = output::Write_Adjoint( fullPath.c_str(),                    \
                                          ringSpecies, ambientData,            \
-                                         ringArea, totArea                    \
+                                         ringArea, totArea,                   \
                                          timeArray, VAR_OPT,                  \
                                          temperature_K, pressure_Pa, airDens, \
                                          relHumidity_w, relHumidity_i );
+
         if ( isSaved == output::SAVE_FAILURE ) {
             std::cout << " Saving to adjoint data to file failed...\n";
             std::cout << " File name: " << fullPath << "\n";
