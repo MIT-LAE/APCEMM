@@ -11,6 +11,11 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+
+
+static int SUCCESS     =  1;
+
+/* STL includes */
 #include <iostream>
 #include <vector>
 #include <numeric>
@@ -31,10 +36,6 @@
 #include "KPP/KPP.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "KPP/KPP_Global.h"
-#if ( RINGS )
-    #include "Core/Cluster.hpp"
-    #include "Core/Species.hpp"
-#endif /* RINGS */
 #include "Core/SZA.hpp"
 #include "Core/Mesh.hpp"
 #include "Core/Meteorology.hpp"
@@ -44,25 +45,30 @@
 #include "Core/Engine.hpp"
 #include "Core/Aircraft.hpp"
 #include "Core/Emission.hpp"
+
+#if ( RINGS )
+    #include "Core/Cluster.hpp"
+    #include "Core/Species.hpp"
+#endif /* RINGS */
+
 #if ( TIME_IT )
     #include "Core/Timer.hpp"
 #endif /* TIME_IT */
-#if ( SAVE_OUTPUT || SAVE_PA_MICROPHYS || SAVE_LA_MICROPHYS )
+
+#if ( SAVE_FORWARD || SAVE_ADJOINT || SAVE_PA_MICROPHYS || SAVE_LA_MICROPHYS )
     #include "Core/Save.hpp"
-#endif /* SAVE_OUTPUT */
+    int isSaved = 1;
+    static int SAVE_FAIL   = -2;
+#endif /* SAVE_FORWARD || SAVE_ADJOINT || SAVE_PA_MICROPHYS || SAVE_LA_MICROPHYS */
 
-static int SUCCESS     =  1;
-static int KPP_FAIL    = -1;
-static int SAVE_FAIL   = -2;
-static int KPPADJ_FAIL = -5;
+#if ( ADJOINT )
+    double SZA_CST[3];
+#endif /* ADJOINT */
 
-typedef std::complex<double> Complex;
-typedef std::vector<double> Real_1DVector;
-typedef std::vector<Real_1DVector> Real_2DVector;
-
-#if ( RINGS )
-double SZA_CST[3];
-#endif /* RINGS */
+#if ( CHEMISTRY )
+    static int KPP_FAIL    = -1;
+    static int KPPADJ_FAIL = -5;
+#endif /* CHEMISTRY */
 
 void DiffParam( double time, double &d_x, double &d_y );
 void AdvGlobal( double time, double &v_x, double &v_y, double &dTrav_x, double &dTrav_y );
@@ -73,12 +79,20 @@ double UpdateTime( double time, double tStart, \
 void Transport( Solution& Data, Solver& SANDS );
 
 
-int PlumeModel( double temperature_K, double pressure_Pa, \
+int PlumeModel( const unsigned int iCase,                   \
+                double temperature_K, double pressure_Pa,   \
                 double relHumidity_w, double longitude_deg, \
                 double latitude_deg )
 {
+   
+#if ( DEBUG )
 
-    const bool DBG = 0;
+    std::cout << "\n DEBUG is turned ON!\n\n";
+
+#endif /* DEBUG */
+
+    const unsigned int dayGMT(81);
+    const double EmissionTime = 8.0;
 
     /* Grid indices */
     unsigned int iNx = 0;
@@ -91,11 +105,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     bool ITS_TIME_FOR_ICE_COAGULATION = 0;
     double lastTimeIceCoag, dtIceCoag;
 
-#if ( SAVE_OUTPUT || SAVE_LA_MICROPHYS || SAVE_PA_MICROPHYS )
-
-    int isSaved = 1;
-
-#endif /* SAVE_OUTPUT || SAVE_LA_MICROPHYS || SAVE_PA_MICROPHYS */
 #if ( TIME_IT )
 
     Timer Stopwatch, Stopwatch_cumul;
@@ -135,8 +144,6 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     double relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
                                          / physFunc::pSat_H2Os( temperature_K );
 
-    const unsigned int dayGMT(81);
-
     /* Define sun parameters */
     SZA *sun = new SZA( latitude_deg, dayGMT );    
 
@@ -163,11 +170,11 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
      */ 
 
     /* Define emission and simulation time */
-    const double tEmission_h = std::fmod(8.0, 24.0); /* [hr] */
-    const double tInitial_h  = tEmission_h;          /* [hr] */
-    const double tFinal_h    = tInitial_h + TSIMUL;  /* [hr] */
-    const double tInitial_s  = tInitial_h * 3600.0;  /* [s] */
-    const double tFinal_s    = tFinal_h   * 3600.0;  /* [s] */
+    const double tEmission_h = std::fmod(EmissionTime, 24.0); /* [hr] */
+    const double tInitial_h  = tEmission_h;                   /* [hr] */
+    const double tFinal_h    = tInitial_h + TSIMUL;           /* [hr] */
+    const double tInitial_s  = tInitial_h * 3600.0;           /* [s] */
+    const double tFinal_s    = tFinal_h   * 3600.0;           /* [s] */
 
     /* Current time in [s] */
     double curr_Time_s = tInitial_s; /* [s] */
@@ -187,7 +194,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /**     Meteorology    **/
     /** ~~~~~~~~~~~~~~~~~~ **/
 
-    Meteorology Met( LOAD_MET, m, temperature_K, 11.2E+03, -3.0E-03, DBG );
+    Meteorology Met( LOAD_MET, m, temperature_K, 11.2E+03, -3.0E-03, DEBUG );
     
     /** ~~~~~~~~~~~~~~~~~~ **/
     /**     Background     **/
@@ -201,10 +208,10 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     /* [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K]           ) * [m3/cm3] */
 
     /* Set solution arrays to ambient data */
-    Data.Initialize( AMBFILE, temperature_K, pressure_Pa, airDens, relHumidity_w, latitude_deg, Met, DBG );
+    Data.Initialize( AMBFILE, temperature_K, pressure_Pa, airDens, relHumidity_w, latitude_deg, Met, DEBUG );
 
     /* Print Background Debug? */
-    if ( DEBUG_BG_INPUT || DBG )
+    if ( DEBUG_BG_INPUT )
         Data.Debug( airDens );
 
     /* Create ambient struture */
@@ -277,14 +284,14 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     const Aircraft aircraft( aircraftName, temperature_K, pressure_Pa, relHumidity_w );
 
     /* Print AC Debug? */
-    if ( DEBUG_AC_INPUT || DBG )
+    if ( DEBUG_AC_INPUT )
         aircraft.Debug();
 
     /* Aggregate emissions from engine and fuel characteristics */
     const Emission EI( aircraft.getEngine(), JetA );
 
     /* Print Emission Debug? */
-    if ( DEBUG_EI_INPUT || DBG )
+    if ( DEBUG_EI_INPUT )
         EI.Debug(); 
 
     
@@ -400,7 +407,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     const unsigned int nRing = ringCluster.getnRing();
 
     /* Print Ring Debug? */
-    if ( DEBUG_RINGS || DBG )
+    if ( DEBUG_RINGS )
         ringCluster.Debug();
 
     /* Allocate species-ring vector */
@@ -413,7 +420,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh = m.getList();
     
     /* Print ring to mesh mapping? */
-    if ( DEBUG_MAPPING || DBG )
+    if ( DEBUG_MAPPING )
         m.Debug();
     
     /* Compute ring areas */
@@ -543,7 +550,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
     while ( curr_Time_s < tFinal_s ) {
 
-        if ( 1 ) {
+        if ( DEBUG ) {
             /* Print message */
             std::cout << "\n";
             std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size();
@@ -694,7 +701,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /* Store cosine of solar zenith angle */
         ambientData.cosSZA[nTime] = sun->CSZA;
 
-        if ( DBG ) {
+        if ( DEBUG ) {
             std::cout << "\n DEBUG : \n";
             std::cout << "         CSZA = " << sun->CSZA << "\n";
         }
@@ -710,7 +717,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         if ( sun->CSZA > 0.0E+00 )
             Read_JRates( PHOTOL, sun->CSZA );
 
-        if ( DBG ) {
+        if ( DEBUG ) {
             std::cout << "\n DEBUG : \n";
             for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
                 std::cout << "         PHOTOL[" << iPhotol << "] = " << PHOTOL[iPhotol] << "\n";
@@ -770,7 +777,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                     GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
                                Data.STATE_PSC, varArray, AerosolArea, AerosolRadi, IWC, kheti_sla );
 
-                    if ( DBG ) {
+                    if ( DEBUG ) {
                         std::cout << "\n DEBUG :  Heterogeneous chemistry rates (Ring:  " << iRing << ")\n";
                         std::cout << "       :  Aerosol properties\n";
                         std::cout << "       :  Radius ice/NAT    = " << AerosolRadi[0] * 1.0E+06 << " [mum]\n";
@@ -858,7 +865,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                 GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
                            Data.STATE_PSC, varArray, AerosolArea, AerosolRadi, IWC, kheti_sla );
 
-                if ( DBG ) {
+                if ( DEBUG ) {
                     std::cout << "\n DEBUG :   Heterogeneous chemistry rates (Ambient)\n";
                     std::cout << "       :   Aerosol properties\n";
                     std::cout << "       :   Radius ice/NAT    = " << AerosolRadi[0] * 1.0E+06 << " [mum]\n";
@@ -1071,7 +1078,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /* Liquid aerosol coagulation */
         if ( ITS_TIME_FOR_LIQ_COAGULATION && LIQ_MICROPHYSICS ) {
             dtLiqCoag = ( curr_Time_s - lastTimeLiqCoag );
-            if ( DBG )
+            if ( DEBUG )
                 std::cout << "\n DEBUG (Liquid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeLiqCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtLiqCoag << " s\n";
 
             lastTimeLiqCoag = curr_Time_s;
@@ -1083,7 +1090,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         /* Solid aerosol coagulation */
         if ( ITS_TIME_FOR_ICE_COAGULATION && ICE_MICROPHYSICS ) {
             dtIceCoag = ( curr_Time_s - lastTimeIceCoag );
-            if ( DBG )
+            if ( DEBUG )
                 std::cout << "\n DEBUG (Solid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeIceCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceCoag << " s\n";
 
             lastTimeIceCoag = curr_Time_s;
@@ -1103,7 +1110,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         ITS_TIME_TO_SAVE_LA_OUTPUT = ( ( ( curr_Time_s - saveTime_LA.back() ) >= SAVE_LA_DT ) || LAST_STEP );
         /* Save liquid aerosol at current time */
         if ( ITS_TIME_TO_SAVE_LA_OUTPUT ) {
-            if ( DBG )
+            if ( DEBUG )
                 std::cout << "\n DEBUG (Save Liquid Aerosols): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last time liquid aerosols were saved: " << ( saveTime_LA.back() - tInitial_s ) / 3600.0 << " hr\n";
 
             if ( LAST_STEP )
@@ -1120,7 +1127,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         ITS_TIME_TO_SAVE_PA_OUTPUT = ( ( ( curr_Time_s - saveTime_PA.back() ) >= SAVE_PA_DT ) || LAST_STEP );
         /* Save solid aerosol at current time */
         if ( ITS_TIME_TO_SAVE_PA_OUTPUT ) {
-            if ( DBG )
+            if ( DEBUG )
                 std::cout << "\n DEBUG (Save Solid Aerosols): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last time solid aerosols were saved: " << ( saveTime_PA.back() - tInitial_s ) / 3600.0 << " hr\n";
 
             if ( LAST_STEP )
@@ -1254,15 +1261,15 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 #endif /* TIME_IT */
     
-#if ( SAVE_OUTPUT )
+#if ( SAVE_FORWARD )
 
     isSaved = output::Write( ringSpecies, ambientData, ringCluster, timeArray, temperature_K, pressure_Pa, airDens, relHumidity_w, relHumidity_i, longitude_deg, latitude_deg, sun->sunRise, sun->sunSet );
     if ( isSaved == output::SAVE_FAILURE ) {
-        std::cout << "Saving to file failed...\n";
+        std::cout << " Saving to ring-averaged concentrations to file failed...\n";
         return SAVE_FAIL;
     }
 
-#endif /* SAVE_OUTPUT */
+#endif /* SAVE_FORWARD */
 
 #if ( SAVE_LA_MICROPHYS )
     
@@ -1271,7 +1278,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                                        m.getX(), m.getY(), temperature_K, pressure_Pa, 0.0, \
                                        relHumidity_w, relHumidity_i );
     if ( isSaved == output::SAVE_FAILURE ) {
-        std::cout << "Saving solid aerosol's properties failed...\n";
+        std::cout << " Saving liquid aerosol's properties failed...\n";
         return SAVE_FAIL;
     }
 
@@ -1284,7 +1291,7 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
                                        m.getX(), m.getY(), temperature_K, pressure_Pa, 0.0, \
                                        relHumidity_w, relHumidity_i );
     if ( isSaved == output::SAVE_FAILURE ) {
-        std::cout << "Saving solid aerosol's properties failed...\n";
+        std::cout << " Saving solid aerosol's properties failed...\n";
         return SAVE_FAIL;
     }
 
@@ -1295,11 +1302,14 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
         std::cout << "\n\n ## ON THREAD: " << omp_get_thread_num() << ": Starting adjoint calculation...\n";
     }
 
-#if ( RINGS )
+
+#if ( RINGS && ADJOINT )
 
     std::copy(sun->CSZA_Vector.begin(), sun->CSZA_Vector.end(), SZA_CST);
     double finalPlume[NSPEC];
     double initBackg[NSPEC];
+    double VAR_OPT[NVAR * timeArray.size()];
+
     for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
         finalPlume[iSpec] = 0.0E+00;
         initBackg[iSpec]  = 0.0E+00;
@@ -1328,12 +1338,39 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
     IERR = KPP_Main_ADJ( finalPlume, initBackg,               \
                          temperature_K, pressure_Pa, airDens, \
                          &(timeArray)[0], timeArray.size(),   \
-                         KPPADJ_RTOLS, KPPADJ_ATOLS );
+                         KPPADJ_RTOLS, KPPADJ_ATOLS,          \
+                         /* Output */ VAR_OPT );
     
     if ( IERR < 0 ) {
         /* Adjoint integration failed */
         return KPPADJ_FAIL;
     }
+
+    #if ( SAVE_ADJOINT )
+        
+        std::stringstream ss;
+        ss << std::setw(5) << std::setfill('0') << iCase;
+        std::string file = "APCEMM_ADJ_Case_" + ss.str();
+        std::string fullPath;
+        if ( OUT_PATH.back() == '/' )
+            fullPath = OUT_PATH + file;
+        else
+            fullPath = OUT_PATH + '/' + file;
+        fullPath = fullPath + ".nc";
+
+        isSaved = output::Write_Adjoint( fullPath.c_str(),                    \
+                                         ringSpecies, ambientData,            \
+                                         ringArea, totArea                    \
+                                         timeArray, VAR_OPT,                  \
+                                         temperature_K, pressure_Pa, airDens, \
+                                         relHumidity_w, relHumidity_i );
+        if ( isSaved == output::SAVE_FAILURE ) {
+            std::cout << " Saving to adjoint data to file failed...\n";
+            std::cout << " File name: " << fullPath << "\n";
+            return SAVE_FAIL;
+        }
+
+    #endif /* SAVE_ADJOINT */
 
 #endif /* RINGS */
 
@@ -1345,3 +1382,4 @@ int PlumeModel( double temperature_K, double pressure_Pa, \
 
 } /* End of PlumeModel */
 
+/* End of PlumeModel.cpp */
