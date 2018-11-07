@@ -16,7 +16,7 @@
 
 #include <string>
 
-const std::string OUT_PATH    = "/net/data/d04/fritzt/CAPCEMM/";
+const std::string OUT_PATH    = "/net/d04/data/fritzt/CAPCEMM/";
 
 /* APCEMM Look-up table */
 #define APCEMM_LUT              1    /* Build look-up table? */
@@ -49,7 +49,8 @@ const char* const WISDOMFILE = "data/FFTW_Wisdom.out";
 #endif
 
 /* MICROPHYSICS */
-#define ICE_MICROPHYSICS        0    /* Is ice microphysics turned on? */
+#define ICE_MICROPHYSICS        0    /* Is ice microphysics turned 
+                                        on? */
 #define ICECOAG_TSTEP           3600 /* Minimal coagulation time step 
                                         for ice in s */
 #define LIQ_MICROPHYSICS        0    /* Is sulfate microphysics turned
@@ -155,6 +156,7 @@ const char* const OUT_FILE_LA = "data/LiqAerosol.nc";
 #define DEBUG_RINGS             0    /* Debug Rings? */
 #define DEBUG_MAPPING           0    /* Debug Mesh to ring mapping? */
 #define DEBUG_COAGKERNEL        0    /* Debug Coagulation Kernel? */
+#define DEBUG_ADJOINT           0    /* Debug adjoint? */
 
 #if DEBUG_ALL
 
@@ -172,8 +174,17 @@ const char* const OUT_FILE_LA = "data/LiqAerosol.nc";
     #define DEBUG_RINGS         1
     #define DEBUG_MAPPING       1
     #define DEBUG_COAGKERNEL    1
+    #define DEBUG_ADJOINT       1
 
 #endif 
+
+/* If adjoint is turned off, make sure DEBUG_ADJOINT is false */
+#if ( !ADJOINT )
+
+    #undef DEBUG_ADJOINT
+    #define DEBUG_ADJOINT       0
+
+#endif
 
 
 #endif /* INTERFACE_H_INCLUDED */
