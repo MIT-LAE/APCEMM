@@ -20,7 +20,8 @@
 
 void PrintMessage( bool doPrint );
 std::vector<std::vector<double> > ReadParameters( );
-int PlumeModel( double temperature_K, double pressure_Pa, \
+int PlumeModel( const unsigned int iCase,                   \
+                double temperature_K, double pressure_Pa,   \
                 double relHumidity_w, double longitude_deg, \
                 double latitude_deg );
 
@@ -57,12 +58,20 @@ int main( int , char* [] )
         double latitude_deg  = parameters[4][i];
 
         const unsigned int model = 1;
+
         /*
-        * model = 0 -> Box     Model
-        * model = 1 -> Plume   Model (APCEMM)
-        * model = 2 -> Adjoint Model
-        * model = 3 -> Box + Plume Model
-        */
+         * model = 0 -> Box Model
+         *
+         * model = 1 -> Plume Model
+         *                   + 
+         *              Adjoint Model
+         *
+         * model = 2 -> Adjoint Model
+         *
+         * model = 3 -> Box Model
+         *                  +
+         *              Plume Model
+         */
 
         int iERR = 0;
 
@@ -77,8 +86,8 @@ int main( int , char* [] )
             /* Plume Model (APCEMM) */
             case 1:
 
-                iERR = PlumeModel( temperature_K, pressure_Pa, \
-                                   relHumidity_w, longitude_deg, \
+                iERR = PlumeModel( i, temperature_K, pressure_Pa, \
+                                   relHumidity_w, longitude_deg,  \
                                    latitude_deg );
 
                 break;
@@ -105,7 +114,7 @@ int main( int , char* [] )
 
         if ( iERR < 0 ) {
             std::cout.precision(3);
-            std::cout << "APCEMM Case: " << i << " failed." << "\n";
+            std::cout << "\nAPCEMM Case: " << i << " failed on thread " << omp_get_thread_num() << ".\n";
             std::cout << "Error: " << iERR << "\n";
             std::cout << std::fixed;
             std::cout << std::setprecision(3);
