@@ -23,11 +23,12 @@ extern "C" {
 
 int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, \
               double RTOLS, double ATOLS );
-int KPP_Main_ADJ( const double finalPlume[], const double initBackg[], \
-                  const double temperature_K, const double pressure_Pa,\
-                  const double airDens, const double timeArray[],      \
-                  const unsigned int NT,                               \
-                  const double RTOLS, const double ATOLS );
+int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
+                  const double temperature_K, const double pressure_Pa, \
+                  const double airDens, const double timeArray[],       \
+                  const unsigned int NT,                                \
+                  const double RTOLS, const double ATOLS,               \
+                  double VAR_OUTPUT[] );
 void Update_RCONST( const double TEMP, const double PRESS,  \
                     const double AIRDENS, const double H2O );
 void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
