@@ -20,6 +20,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <cmath> 
 
 #include "Core/Interface.hpp"
 #include "Core/Parameters.hpp"

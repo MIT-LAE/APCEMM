@@ -1083,9 +1083,9 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
 
         }
     
-        if ( iceAer.Moment() > 0.0E+00 )
+        if ( ( std::isfinite(iceAer.Moment()) ) && ( iceAer.Moment() > 0.0E+00 ) )
             solidAerosol.addPDF( iceAer, map[innerRing] );
-        if ( liqAer.Moment() > 0.0E+00 )
+        if ( ( std::isfinite(liqAer.Moment()) ) && ( liqAer.Moment() > 0.0E+00 ) )
             liquidAerosol.addPDF( liqAer, map[innerRing] );
 
 
@@ -1126,9 +1126,9 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
 
             }
         
-            if ( iceAer.Moment() > 0.00E+00 )
+            if ( ( std::isfinite(iceAer.Moment()) ) && ( iceAer.Moment() > 0.0E+00 ) )
                 solidAerosol.addPDF( iceAer, map[innerRing] );
-            if ( liqAer.Moment() > 0.00E+00 )
+            if ( ( std::isfinite(liqAer.Moment()) ) && ( liqAer.Moment() > 0.0E+00 ) )
                 liquidAerosol.addPDF( liqAer, map[innerRing] );
 
         }
