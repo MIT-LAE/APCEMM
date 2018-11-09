@@ -43,8 +43,9 @@ namespace output
                          const double relHumidity_w, const double relHumidity_i );
     int Write_Adjoint( const char* outputFile,                                       \
                        const SpeciesArray &ringSpecies, const Ambient ambientData,   \
+                       const Ambient adjointData,                                    \
                        const std::vector<double> &ringArea, const double totArea,    \
-                       const std::vector<double> &timeArray, const double VAR_OUT[], \
+                       const std::vector<double> &timeArray,                         \
                        const double &temperature_K, const double &pressure_Pa,       \
                        const double &airDens, const double &relHumidity_w,           \
                        const double &relHumidity_i );

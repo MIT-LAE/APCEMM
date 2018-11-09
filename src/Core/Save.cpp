@@ -3394,8 +3394,9 @@ namespace output
 
     int Write_Adjoint( const char* outputFile,                                       \
                        const SpeciesArray &ringSpecies, const Ambient ambientData,   \
+                       const Ambient adjointData,                                    \
                        const std::vector<double> &ringArea, const double totArea,    \
-                       const std::vector<double> &timeArray, const double VAR_OUT[], \
+                       const std::vector<double> &timeArray,                         \
                        const double &temperature_K, const double &pressure_Pa,       \
                        const double &airDens, const double &relHumidity_w,           \
                        const double &relHumidity_i )
@@ -3459,7 +3460,6 @@ namespace output
             std::vector<std::vector<double>> ringAverage = ringSpecies.RingAverage( ringArea, totArea );
 
             const unsigned int NT = timeArray.size();
-            std::vector<double> adjointData( NT, 0.0E+00 );
             std::vector<double> plumeData( NT, 0.0E+00 );
 
             /* Start saving species ... */
@@ -3476,18 +3476,16 @@ namespace output
                 scalingFactor = TO_PPB;
                 strncpy( charUnit, "ppb", sizeof(charUnit) );
 
-                for ( unsigned int iNt = 0; iNt < NT; iNt++ ) {
-                    adjointData[iNt] = VAR_OUT[ iNt * NVAR + ind_O3 ];
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ )
                     plumeData[iNt] = ringAverage[iNt][ind_O3];
-                }
-                
+               
                 #if ( SAVE_TO_DOUBLE )
                     spcArray = util::vect2double( plumeData      , NT, scalingFactor );
-                    adjArray = util::vect2double( adjointData    , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointData.O3 , NT, scalingFactor );
                     ambArray = util::vect2double( ambientData.O3 , NT, scalingFactor );
                 #else
                     spcArray = util::vect2float ( plumeData      , NT, scalingFactor );
-                    adjArray = util::vect2float ( adjointData    , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointData.O3 , NT, scalingFactor );
                     ambArray = util::vect2float ( ambientData.O3 , NT, scalingFactor );
                 #endif /* SAVE_TO_DOUBLE */
 
@@ -3511,19 +3509,17 @@ namespace output
                 scalingFactor = TO_PPT;
                 strncpy( charUnit, "ppt", sizeof(charUnit) );
 
-                for ( unsigned int iNt = 0; iNt < NT; iNt++ ) {
-                    adjointData[iNt] = VAR_OUT[ iNt * NVAR + ind_NO ];
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ )
                     plumeData[iNt] = ringAverage[iNt][ind_NO];
-                }
 
 
                 #if ( SAVE_TO_DOUBLE )
                     spcArray = util::vect2double( plumeData      , NT, scalingFactor );
-                    adjArray = util::vect2double( adjointData    , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointData.NO , NT, scalingFactor );
                     ambArray = util::vect2double( ambientData.NO , NT, scalingFactor );
                 #else
                     spcArray = util::vect2float ( plumeData      , NT, scalingFactor );
-                    adjArray = util::vect2float ( adjointData    , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointData.NO , NT, scalingFactor );
                     ambArray = util::vect2float ( ambientData.NO , NT, scalingFactor );
                 #endif /* SAVE_TO_DOUBLE */
 
@@ -3547,19 +3543,17 @@ namespace output
                 scalingFactor = TO_PPT;
                 strncpy( charUnit, "ppt", sizeof(charUnit) );
 
-                for ( unsigned int iNt = 0; iNt < NT; iNt++ ) {
-                    adjointData[iNt] = VAR_OUT[ iNt * NVAR + ind_NO2 ];
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ )
                     plumeData[iNt] = ringAverage[iNt][ind_NO2];
-                }
 
 
                 #if ( SAVE_TO_DOUBLE )
                     spcArray = util::vect2double( plumeData      , NT, scalingFactor );
-                    adjArray = util::vect2double( adjointData    , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointData.NO2, NT, scalingFactor );
                     ambArray = util::vect2double( ambientData.NO2, NT, scalingFactor );
                 #else
                     spcArray = util::vect2float ( plumeData      , NT, scalingFactor );
-                    adjArray = util::vect2float ( adjointData    , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointData.NO2, NT, scalingFactor );
                     ambArray = util::vect2float ( ambientData.NO2, NT, scalingFactor );
                 #endif /* SAVE_TO_DOUBLE */
 
@@ -3583,19 +3577,17 @@ namespace output
                 scalingFactor = TO_PPT;
                 strncpy( charUnit, "ppt", sizeof(charUnit) );
 
-                for ( unsigned int iNt = 0; iNt < NT; iNt++ ) {
-                    adjointData[iNt] = VAR_OUT[ iNt * NVAR + ind_HNO3 ];
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ )
                     plumeData[iNt] = ringAverage[iNt][ind_HNO3];
-                }
 
 
                 #if ( SAVE_TO_DOUBLE )
                     spcArray = util::vect2double( plumeData       , NT, scalingFactor );
-                    adjArray = util::vect2double( adjointData     , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointData.HNO3, NT, scalingFactor );
                     ambArray = util::vect2double( ambientData.HNO3, NT, scalingFactor );
                 #else
                     spcArray = util::vect2float ( plumeData       , NT, scalingFactor );
-                    adjArray = util::vect2float ( adjointData     , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointData.HNO3, NT, scalingFactor );
                     ambArray = util::vect2float ( ambientData.HNO3, NT, scalingFactor );
                 #endif /* SAVE_TO_DOUBLE */
 
@@ -3619,20 +3611,19 @@ namespace output
                 scalingFactor = TO_PPT;
                 strncpy( charUnit, "ppt", sizeof(charUnit) );
 
-                for ( unsigned int iNt = 0; iNt < NT; iNt++ ) {
-                    adjointData[iNt] = VAR_OUT[ iNt * NVAR + ind_NO ] + VAR_OUT[ iNt * NVAR + ind_NO2 ];
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ )
                     plumeData[iNt] = ringAverage[iNt][ind_NO] + ringAverage[iNt][ind_NO2];
-                }
 
                 std::vector<double> ambientNOx = util::add1D( ambientData.NO, ambientData.NO2 );
+                std::vector<double> adjointNOx = util::add1D( adjointData.NO, adjointData.NO2 );
                 #if ( SAVE_TO_DOUBLE )
-                    spcArray = util::vect2double( plumeData   , NT, scalingFactor );
-                    adjArray = util::vect2double( adjointData , NT, scalingFactor );
-                    ambArray = util::vect2double( ambientNOx  , NT, scalingFactor );
+                    spcArray = util::vect2double( plumeData , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointNOx, NT, scalingFactor );
+                    ambArray = util::vect2double( ambientNOx, NT, scalingFactor );
                 #else
-                    spcArray = util::vect2float ( plumeData   , NT, scalingFactor );
-                    adjArray = util::vect2float ( adjointData , NT, scalingFactor );
-                    ambArray = util::vect2float ( ambientNOx  , NT, scalingFactor );
+                    spcArray = util::vect2float ( plumeData , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointNOx, NT, scalingFactor );
+                    ambArray = util::vect2float ( ambientNOx, NT, scalingFactor );
                 #endif /* SAVE_TO_DOUBLE */
 
 
