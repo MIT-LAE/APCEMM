@@ -162,9 +162,10 @@ void Hessian( double V[], double F[], double RCT[], double Hess[] );
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 int INTEGRATE_ADJ( int NADJ, double Y[], double Lambda[][NVAR],
 		    double TIN, double TOUT, double ATOL_adj[][NVAR],
-		    double RTOL_adj[][NVAR], int ICNTRL_U[],
+		    double RTOL_adj[][NVAR], double ATOL[],
+            double RTOL[], int ICNTRL_U[],
 		    double RCNTRL_U[], int ISTATUS_U[],
-		    double RSTATUS_U[] ) {
+		    double RSTATUS_U[], double STEPMIN ) {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*  Local Variables */
