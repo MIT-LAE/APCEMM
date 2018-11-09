@@ -24,6 +24,8 @@
 #include <math.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "KPP/KPP.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "KPP/KPP_Global.h"
 #include "KPP/KPP_Sparse.h"
