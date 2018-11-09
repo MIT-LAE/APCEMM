@@ -23,8 +23,9 @@ extern "C" {
 
 int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, \
               double RTOLS, double ATOLS );
+int INTEGRATE( double VAR[] , double TIN   , double TOUT, \
+               double ATOL[], double RTOL[], double STEPMIN );
 int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
-                  const double fixArray[],                              \
                   const double temperature_K, const double pressure_Pa, \
                   const double airDens, const double timeArray[],       \
                   const unsigned int NT,                                \
@@ -32,9 +33,10 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                   double VAR_OUTPUT[], const bool verbose = 0 );
 int INTEGRATE_ADJ( int NADJ, double Y[], double Lambda[][NVAR],        \
 		           double TIN, double TOUT, double ATOL_adj[][NVAR],   \
-        	       double RTOL_adj[][NVAR], int ICNTRL_U[],            \
+        	       double RTOL_adj[][NVAR], double ATOL[],             \
+                   double RTOL[], int ICNTRL_U[],                      \
 		           double RCNTRL_U[], int ISTATUS_U[],                 \
-                   double RSTATUS_U[] );
+                   double RSTATUS_U[], double STEPMIN );
 void Update_RCONST( const double TEMP, const double PRESS,  \
                     const double AIRDENS, const double H2O );
 void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
