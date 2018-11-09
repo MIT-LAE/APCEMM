@@ -1809,7 +1809,9 @@ double WLAMCH( char C )
       double Suma;
       static double Eps;
       static char First = 1;
-      
+     
+#pragma omp threadprivate( Eps, First )
+
       if (First) {
         First = 0;
         Eps = pow(HALF,16);
