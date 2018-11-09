@@ -71,10 +71,8 @@ void SANDS( Real_2DVector &vect, \
         }
 
         /* Define plan FFT */
-#pragma omp critical (make_plan) 
-        {
+        #pragma omp critical (make_plan) 
             plan_FFT = fftw_plan_dft_r2c_2d( NX, NY, in_FFT, out_FFT, flags);
-        }
 
         /* Execute FFT */
         fftw_execute( plan_FFT );
@@ -90,10 +88,8 @@ void SANDS( Real_2DVector &vect, \
         }
 
         /* Define plan IFFT */ 
-#pragma omp critical (make_plan) 
-        {
+        #pragma omp critical (make_plan) 
             plan_IFFT = fftw_plan_dft_c2r_2d( NX, NY, in_IFFT, out_IFFT, flags);
-        }
 
         /* Execute IFFT */
         fftw_execute( plan_IFFT );
@@ -105,8 +101,11 @@ void SANDS( Real_2DVector &vect, \
         }
 
         /* Destroy FFT plans */
-        fftw_destroy_plan( plan_FFT  );
-        fftw_destroy_plan( plan_IFFT );
+        #pragma omp critical (destroy_plan)
+        {
+            fftw_destroy_plan( plan_FFT  );
+            fftw_destroy_plan( plan_IFFT );
+        }
 
         /* Free */
         fftw_free( in_FFT   ); 
@@ -136,10 +135,8 @@ void SANDS( Real_2DVector &vect, \
         }
 
         /* Define plan FFT */
-#pragma omp critical (make_plan) 
-        {
+        #pragma omp critical (make_plan) 
             plan_FFT  = fftw_plan_dft_2d( NX, NY, in_FFT, out_FFT, FFTW_FORWARD, flags);
-        }
 
         /* Execute FFT */
         fftw_execute( plan_FFT );
@@ -155,10 +152,8 @@ void SANDS( Real_2DVector &vect, \
          }
 
         /* Define plan IFFT */ 
-#pragma omp critical (make_plan) 
-        {
+        #pragma omp critical (make_plan) 
             plan_IFFT = fftw_plan_dft_2d( NX, NY, in_IFFT, out_IFFT, FFTW_BACKWARD, flags);
-        }
 
         /* Execute IFFT */
         fftw_execute( plan_IFFT );
@@ -170,8 +165,11 @@ void SANDS( Real_2DVector &vect, \
         }
 
         /* Destroy FFT plans */
-        fftw_destroy_plan( plan_FFT  );
-        fftw_destroy_plan( plan_IFFT );
+        #pragma omp critical (destroy_plan)
+        {
+            fftw_destroy_plan( plan_FFT  );
+            fftw_destroy_plan( plan_IFFT );
+        }
 
         /* Free */
         fftw_free( in_FFT   ); 
