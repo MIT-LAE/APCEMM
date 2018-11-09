@@ -12,7 +12,6 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
-
 static int SUCCESS     =  1;
 
 /* STL includes */
@@ -23,6 +22,7 @@ static int SUCCESS     =  1;
 #include <algorithm>
 #include <complex>
 #include <ctime>
+#include <sys/stat.h>
 #include "omp.h"
 
 #include "Util/ForwardsDecl.hpp"
@@ -69,6 +69,8 @@ static int SUCCESS     =  1;
     static int KPP_FAIL    = -1;
     static int KPPADJ_FAIL = -5;
 #endif /* CHEMISTRY */
+
+static int DIR_FAIL = -9;
 
 void DiffParam( double time, double &d_x, double &d_y );
 void AdvGlobal( double time, double &v_x, double &v_y, double &dTrav_x, double &dTrav_y );
@@ -1319,34 +1321,7 @@ int PlumeModel( const unsigned int iCase,                   \
 #if ( RINGS && ADJOINT )
 
     std::copy(sun->CSZA_Vector.begin(), sun->CSZA_Vector.end(), SZA_CST);
-//    double finalPlume[NSPEC];
-//    double initBackg[NSPEC];
-    double VAR_OPT[NVAR]; // * timeArray.size()];
-
-//    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
-//        finalPlume[iSpec] = 0.0E+00;
-//        initBackg[iSpec]  = 0.0E+00;
-//    }
-//
-//    for ( iRing = 0; iRing < nRing; iRing++ ) {
-//        ringSpecies.getData( varArray, fixArray, nTime, iRing );
-//        for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
-//            if ( iSpec < NVAR )
-//                finalPlume[iSpec] += varArray[iSpec] * ringArea[iRing];
-//            else
-//                finalPlume[iSpec] += fixArray[iSpec - NVAR] * ringArea[iRing];
-//        }
-//    }
-//    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ )
-//        finalPlume[iSpec] /= totArea;
-//
-//    ambientData.getData( varArray, fixArray, aerArray, 0 );
-//    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
-//        if ( iSpec < NVAR )
-//            initBackg[iSpec] = varArray[iSpec];
-//        else
-//            initBackg[iSpec] = fixArray[iSpec - NVAR];
-//    }
+    double VAR_OPT[NVAR];
 
     const std::vector<double> initBackg = ringSpecies.RingAverage( ringArea, totArea, 0 );
     const std::vector<double> finalPlume = ringSpecies.RingAverage( ringArea, totArea, timeArray.size() - 1 );
@@ -1356,7 +1331,8 @@ int PlumeModel( const unsigned int iCase,                   \
                          temperature_K, pressure_Pa, airDens, \
                          &(timeArray)[0], timeArray.size(),   \
                          KPPADJ_RTOLS, KPPADJ_ATOLS,          \
-                         /* Output */ VAR_OPT, DEBUG_ADJOINT );
+                         /* Output */ VAR_OPT,                \
+                         /* Debug? */ DEBUG_ADJOINT );
 
     if ( IERR < 0 ) {
         /* Adjoint integration failed */
@@ -1540,7 +1516,6 @@ int PlumeModel( const unsigned int iCase,                   \
         /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
  
         IERR = INTEGRATE_ADJ( NADJ, varArray, Y_adj, timeArray[nTime], timeArray[nTime+1], ATOL_adj, RTOL_adj, ICNTRL, RCNTRL, ISTATUS, RSTATUS );
-//        IERR = KPP_Main( varArray, fixArray, curr_Time_s, dt, KPP_RTOLS, KPP_ATOLS );
 
         if ( IERR < 0 ) {
             /* Integration failed */
@@ -1574,6 +1549,16 @@ int PlumeModel( const unsigned int iCase,                   \
         ss << std::setw(5) << std::setfill('0') << iCase;
         std::string file = "APCEMM_ADJ_Case_" + ss.str();
         std::string fullPath;
+
+        struct stat sb;
+        if (!(stat( OUT_PATH.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
+            const int dir_err = mkdir("foo", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+            if ( dir_err == -1 ) {
+                std::cout << " Could not create directory: " << OUT_PATH << "\n";
+                return DIR_FAIL; 
+            }
+        }
+
         if ( OUT_PATH.back() == '/' )
             fullPath = OUT_PATH + file;
         else
