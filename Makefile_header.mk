@@ -172,11 +172,12 @@ ifeq ($(COMPILER),g++)
   REGEXP             := (^[Yy]|^[Yy][Ee][Ss])
   ifeq ($(shell [[ "$(DEBUG)" =~ $(REGEXP) ]] && echo true),true)
     #-fcheck=all would be more comprehensive but would force bounds checking
-    CXXLAGS          += -Wall -Wextra -Wconversion
-    CXXLAGS          += -Warray-temporaries -fcheck-array-temporaries
-    USER_DEFS        += -DDEBUG
+    CXXFLAGS          += -Wall -Wextra -Wconversion
+    CXXFLAGS          += -Warray-temporaries -fcheck-array-temporaries
+	CXXFLAGS          += -g -O0
+    USER_DEFS         += -DDEBUG
   else
-    CXXLAGS          += $(OPT)
+    CXXFLAGS          += $(OPT)
   endif
   
   # Turn on OpenMP parallelization
