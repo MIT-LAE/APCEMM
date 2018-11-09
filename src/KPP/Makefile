@@ -107,8 +107,6 @@ KPP_JacobianSP.o    : KPP_JacobianSP.cpp
 
 KPP_LinearAlgebra.o : KPP_LinearAlgebra.cpp
 
-KPP_Main.o          : KPP_Main.cpp
-
 KPP_Main_ADJ.o      : KPP_Main_ADJ.cpp
 
 KPP_Monitor.o       : KPP_Monitor.cpp
