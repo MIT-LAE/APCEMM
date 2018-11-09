@@ -37,7 +37,7 @@ namespace output
             std::cout << " File " << currFileName << " didn't open!" << "\n";
             return SAVE_FAILURE;
         } else {
-            std::cout << "\n Starting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
+//            std::cout << "\n Starting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
             time( &rawtime );
             strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
@@ -3284,7 +3284,7 @@ namespace output
 #endif /* RINGS */
 
             if ( didSaveSucceed == NC_SUCCESS ) {
-                std::cout << "Done saving to netCDF!" << "\n";
+//                std::cout << " Done saving to netCDF!" << "\n";
             } else if ( didSaveSucceed != NC_SUCCESS ) {
                 std::cout << "Error occured in saving data: didSaveSucceed: " << didSaveSucceed << "\n";
                 return SAVE_FAILURE;
@@ -3323,7 +3323,7 @@ namespace output
             std::cout << " File " << currFileName << " didn't open!" << "\n";
             return SAVE_FAILURE;
         } else {
-            std::cout << "\n Starting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
+//            std::cout << "\n Starting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
             time( &rawtime );
             strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
@@ -3375,7 +3375,7 @@ namespace output
             util::delete1D( aerArray );
 
             if ( didSaveSucceed == NC_SUCCESS ) {
-                std::cout << "Done saving to netCDF!" << "\n";
+//                std::cout << " Done saving to netCDF!" << "\n";
             } else if ( didSaveSucceed != NC_SUCCESS ) {
                 std::cout << "Error occured in saving data: didSaveSucceed: " << didSaveSucceed << "\n";
                 return SAVE_FAILURE;
@@ -3416,7 +3416,7 @@ namespace output
             std::cout << " File " << outputFile << " didn't open!" << "\n";
             return SAVE_FAILURE;
         } else {
-            std::cout << "\n Starting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
+//            std::cout << "\n Starting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
             time( &rawtime );
             strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
@@ -3647,7 +3647,7 @@ namespace output
 
 
             if ( didSaveSucceed == NC_SUCCESS ) {
-                std::cout << "Done saving to netCDF!" << "\n";
+//                std::cout << " Done saving to netCDF!" << "\n";
             } else if ( didSaveSucceed != NC_SUCCESS ) {
                 std::cout << "Error occured in saving data: didSaveSucceed: " << didSaveSucceed << "\n";
                 return SAVE_FAILURE;
