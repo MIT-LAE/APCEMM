@@ -93,28 +93,28 @@ export OMP_NUM_THREADS=$omp_threads
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Define version ID
-id="v2-0"
+id="APCEMM"
 
 # Define APCEMM log file
 log="$id.log"
 
 # Define current directory
-currDir=${PWD##*/}
+currDir=${PWD##}
 
 # Change this to point to the APCEMM binary file
-export exepath=${currDir}/build/apps/APCEMM
+export exepath=${currDir}/build/apps/APCEMM.sh
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Start the simulation
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Run APCEMM and pipe output to log
-echo 'Running on ' $OMP_NUM_THREADS ' cores' >> $log
-echo 'Host computer: ' `hostname` >> $log
-echo 'Initiation date and time: ' `date +%c` >> $log
-srun -c $OMP_NUM_THREADS time -p $exepath >> $log
+echo 'Running on' $OMP_NUM_THREADS 'core(s)'
+echo 'Host computer: ' `hostname`
+echo 'Initiation date and time: ' `date +%c`
+srun -c $OMP_NUM_THREADS time -p $exepath
 
 # Echo end
-echo 'Run ended at ' `date +%c` >> $log
+echo 'Run ended at ' `date +%c`
 
 # Report additional information if job was killed because of memory limit
 oom_check $?
