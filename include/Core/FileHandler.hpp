@@ -27,72 +27,154 @@ class FileHandler
     public:
 
         FileHandler( );
-        FileHandler( const char* fileName, bool doWrite, bool doRead = 0, bool overWrite_ = 0 );
+
+        FileHandler( const char* fileName, const bool doWrite, \
+                     const bool doRead = 0, const bool overWrite_ = 0 );
+
         ~FileHandler( );
+
         void UpdateMode();
+
         FileHandler( const FileHandler &f );
+
         FileHandler& operator=( const FileHandler &f );
+
         NcFile openFile( );
+
         void closeFile( NcFile &dataFile );
+
         int getNumDim( NcFile &dataFile ) const;
+
         int getNumVar( NcFile &dataFile ) const;
+
         int getNumAtt( NcFile &dataFile ) const;
-        NcDim* addDim( NcFile &dataFile, const char* dimName, long size = 0 ) const;
+
+        NcDim* addDim( NcFile &dataFile, const char* dimName, \
+                       long size = 0 ) const;
+
         template <class T>
-        int addConst( NcFile &dataFile, T *inputVar, const char* varName, long size, const char* type, const char* unit, const char* varFullName ) const;
+        int addConst( NcFile &dataFile, T *inputVar, const char* varName, \
+                      long size, const char* type, const char* unit,      \
+                      const char* varFullName, const bool verbose = 0 ) const;
+
         template <class T>
-        inline int addConst( NcFile &dataFile, T *inputVar, const char* varName, long size, const char* type, const char* unit ) const {
-            return addConst( dataFile, inputVar, varName, size, type, unit, varName );
+        inline int addConst( NcFile &dataFile, T *inputVar,  \
+                             const char* varName, long size, \
+                             const char* type, const char* unit ) const {
+            return addConst( dataFile, inputVar, varName, size, type, unit, varName, 0 );
         }
+
         template <class T>
-        inline int addConst( NcFile &dataFile, T *inputVar, const char* varName, long size, const char* type) const {
-            return addConst( dataFile, inputVar, varName, size, type, "-", varName );
+        inline int addConst( NcFile &dataFile, T *inputVar,  \
+                             const char* varName, long size, \
+                             const char* type) const {
+            return addConst( dataFile, inputVar, varName, size, type, "-", varName, 0 );
         }
+
         template <class T>
-        int addVar( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim, const char* type, const char* unit, const char* varFullName ) const;
+        int addVar( NcFile &dataFile, T *inputVar, const char* varName,      \
+                    const NcDim *varDim, const char* type, const char* unit, \
+                    const char* varFullName, const bool verbose = 0 ) const;
+
         template <class T>
-        inline int addVar( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim, const char* type, const char* unit ) const {
-            return addVar( dataFile, inputVar, varName, varDim, type, unit, varName );
+        inline int addVar( NcFile &dataFile, T *inputVar, const char* varName, \
+                           const NcDim *varDim, const char* type,              \
+                           const char* unit ) const {
+            return addVar( dataFile, inputVar, varName, varDim, type, unit, varName, 0 );
         }
+
         template <class T>
-        inline int addVar( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim, const char* type ) const {
-            return addVar( dataFile, inputVar, varName, varDim, type, "-", varName );
+        inline int addVar( NcFile &dataFile, T *inputVar, const char* varName, \
+                           const NcDim *varDim, const char* type ) const {
+            return addVar( dataFile, inputVar, varName, varDim, type, "-", varName, 0 );
         }
+
         template <class T>
-        int addVar2D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit, const char* varFullName ) const;
+        int addVar2D( NcFile &dataFile, T *inputVar, const char* varName, \
+                      const NcDim *varDim1, const NcDim *varDim2,         \
+                      const char* type, const char* unit,                 \
+                      const char* varFullName, const bool verbose = 0 ) const;
+
         template <class T>
-        inline int addVar2D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type, const char* unit ) const {
-            return addVar2D( dataFile, inputVar, varName, varDim1, varDim2, type, unit, varName );
+        inline int addVar2D( NcFile &dataFile, T *inputVar,             \
+                             const char* varName, const NcDim *varDim1, \
+                             const NcDim *varDim2, const char* type,    \
+                             const char* unit ) const {
+            return addVar2D( dataFile, inputVar, varName,  \
+                             varDim1, varDim2, type, unit, \
+                             varName, 0 );
         }
+
         template <class T>
-        inline int addVar2D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const char* type ) const {
-            return addVar2D( dataFile, inputVar, varName, varDim1, varDim2, type, "-", varName );
+        inline int addVar2D( NcFile &dataFile, T *inputVar,             \
+                             const char* varName, const NcDim *varDim1, \
+                             const NcDim *varDim2, const char* type ) const {
+            return addVar2D( dataFile, inputVar, varName, \
+                             varDim1, varDim2, type, "-", \
+                             varName, 0 );
         }
+
         template <class T>
-        int addVar3D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const char* type, const char* unit, const char* varFullName ) const;
+        int addVar3D( NcFile &dataFile, T *inputVar, const char* varName, \
+                      const NcDim *varDim1, const NcDim *varDim2,         \
+                      const NcDim *varDim3, const char* type,             \
+                      const char* unit, const char* varFullName,          \
+                      const bool verbose = 0 ) const;
+
         template <class T>
-        inline int addVar3D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const char* type, const char* unit ) const {
-            return addVar3D( dataFile, inputVar, varName, varDim1, varDim2, varDim3, type, unit, varName );
+        inline int addVar3D( NcFile &dataFile, T *inputVar,              \
+                             const char* varName, const NcDim *varDim1,  \
+                             const NcDim *varDim2, const NcDim *varDim3, \
+                             const char* type, const char* unit ) const {
+            return addVar3D( dataFile, inputVar, varName, varDim1, \
+                             varDim2, varDim3, type, unit, varName, 0 );
         }
+
         template <class T>
-        inline int addVar3D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const char* type ) const {
-            return addVar3D( dataFile, inputVar, varName, varDim1, varDim2, varDim3, type, "-", varName );
+        inline int addVar3D( NcFile &dataFile, T *inputVar,              \
+                             const char* varName, const NcDim *varDim1,  \
+                             const NcDim *varDim2, const NcDim *varDim3, \
+                             const char* type ) const {
+            return addVar3D( dataFile, inputVar, varName, varDim1, \
+                             varDim2, varDim3, type, "-", varName, 0 );
         }
+
         template <class T>
-        int addVar4D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const NcDim *varDim4, const char* type, const char* unit, const char* varFullName ) const;
+        int addVar4D( NcFile &dataFile, T *inputVar, const char* varName, \
+                      const NcDim *varDim1, const NcDim *varDim2,         \
+                      const NcDim *varDim3, const NcDim *varDim4,         \
+                      const char* type, const char* unit,                 \
+                      const char* varFullName, const bool verbose = 0 ) const;
+
         template <class T>
-        inline int addVar4D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const NcDim *varDim4, const char* type, const char* unit ) const {
-            return addVar4D( dataFile, inputVar, varName, varDim1, varDim2, varDim3, varDim4, type, unit, varName );
+        inline int addVar4D( NcFile &dataFile, T *inputVar,              \
+                             const char* varName, const NcDim *varDim1,  \
+                             const NcDim *varDim2, const NcDim *varDim3, \
+                             const NcDim *varDim4, const char* type,     \
+                             const char* unit ) const {
+            return addVar4D( dataFile, inputVar, varName, varDim1, varDim2, \
+                             varDim3, varDim4, type, unit, varName, 0 );
         }
+
         template <class T>
-        inline int addVar4D( NcFile &dataFile, T *inputVar, const char* varName, const NcDim *varDim1, const NcDim *varDim2, const NcDim *varDim3, const NcDim *varDim4, const char* type ) const {
-            return addVar4D( dataFile, inputVar, varName, varDim1, varDim2, varDim3, varDim4, type, "-", varName );
+        inline int addVar4D( NcFile &dataFile, T *inputVar,              \
+                             const char* varName, const NcDim *varDim1,  \
+                             const NcDim *varDim2, const NcDim *varDim3, \
+                             const NcDim *varDim4, const char* type ) const {
+            return addVar4D( dataFile, inputVar, varName, varDim1, varDim2, \
+                             varDim3, varDim4, type, "-", varName, 0 );
         }
+
         int addAtt( NcFile &dataFile, const char* attName, const char* attValue ) const;
+
         NcVar* getVar( NcFile &dataFile, const char* varName ) const; /* NcToken -> const char* */
+
         char* getAtt( NcVar* var ) const;
+
         const char* getFileName( ) const;
+
         bool isFileOpen( ) const;
+
 
         /* File name */
         const char* fileName;
