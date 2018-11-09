@@ -451,64 +451,65 @@ int PlumeModel( const unsigned int iCase,                   \
     {
         std::cout << "\n\n ## ON THREAD: " << omp_get_thread_num() << "\n ##";
 
-        const unsigned int coutPrecision = 5;
-        const unsigned int txtWidth      = coutPrecision + 2;
-        std::cout << std::setprecision(coutPrecision);
-        std::cout << "\n ## ATMOSPHERIC COND.:";
-        std::cout << "\n ##\n";
-        std::cout << " ## - Temperature: " << std::setw(txtWidth) << temperature_K          << " [  K]\n";
-        std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [hPa]\n";
-        std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [  %]\n";
-        std::cout << " ## - Latitude   : " << std::setw(txtWidth) << latitude_deg           << " [deg]\n";
-        std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [ - ]\n";
+        if ( 0 ) {
+            const unsigned int coutPrecision = 5;
+            const unsigned int txtWidth      = coutPrecision + 2;
+            std::cout << std::setprecision(coutPrecision);
+            std::cout << "\n ## ATMOSPHERIC COND.:";
+            std::cout << "\n ##\n";
+            std::cout << " ## - Temperature: " << std::setw(txtWidth) << temperature_K          << " [  K]\n";
+            std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [hPa]\n";
+            std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [  %]\n";
+            std::cout << " ## - Latitude   : " << std::setw(txtWidth) << latitude_deg           << " [deg]\n";
+            std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [ - ]\n";
 
-        std::cout << "\n ## EMISSIONS:";
-        std::cout << "\n ##\n";
-        std::cout << " ## - E_CO2 = " << std::setw(txtWidth+3) << EI.getCO2() * aircraft.getFuelFlow() / aircraft.getVFlight()           << " [kg(CO2)/km]"\
-            " ( EI  = " << std::setw(txtWidth) << EI.getCO2() * 1.00E-03 << " [kg/kg_fuel] )\n";
-        std::cout << " ## - E_CO  = " << std::setw(txtWidth+3) << EI.getCO()  * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(CO) /km]"\
-            " ( EI  = " << std::setw(txtWidth) << EI.getCO()             << " [ g/kg_fuel] )\n";
-        std::cout << " ## - E_CH4 = " << std::setw(txtWidth+3) << EI.getCH4() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+06 << " [mg(CH4)/km]"\
-            " ( EI  = " << std::setw(txtWidth) << EI.getCH4() * 1.00E+03 << " [mg/kg_fuel] )\n";
-        std::cout << " ## - E_NOx = " << std::setw(txtWidth+3) << ( EI.getNO() / MW_NO + EI.getNO2() / MW_NO2 + EI.getHNO2() / MW_HNO2 ) * MW_N \
-                                                  * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(N)  /km]"\
-            " ( EI  = " << std::setw(txtWidth) << EI.getNOx()            << " [ g/kg_fuel] )\n";
-        std::cout << " ## - E_SO2 = " << std::setw(txtWidth+3) << EI.getSO2() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(SO2)/km]"\
-            " ( EI  = " << std::setw(txtWidth) << EI.getSO2()            << " [ g/kg_fuel] )\n";
-        std::cout << " ##                                   ( FSC = " << std::setw(txtWidth) << JetA.getFSC() << " [-]          )\n";
-        std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(Soo)/km]"\
-            " ( EI  = " << std::setw(txtWidth) << EI.getSoot()* 1.00E+03 << " [mg/kg_fuel] )\n";
-        std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) << " [ #(Soo)/km]"\
-            " ( GMD = " << std::setw(txtWidth) << 2.0 * EI.getSootRad() * 1.0E+09 << " [nm]         )\n";
+            std::cout << "\n ## EMISSIONS:";
+            std::cout << "\n ##\n";
+            std::cout << " ## - E_CO2 = " << std::setw(txtWidth+3) << EI.getCO2() * aircraft.getFuelFlow() / aircraft.getVFlight()           << " [kg(CO2)/km]"\
+                " ( EI  = " << std::setw(txtWidth) << EI.getCO2() * 1.00E-03 << " [kg/kg_fuel] )\n";
+            std::cout << " ## - E_CO  = " << std::setw(txtWidth+3) << EI.getCO()  * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(CO) /km]"\
+                " ( EI  = " << std::setw(txtWidth) << EI.getCO()             << " [ g/kg_fuel] )\n";
+            std::cout << " ## - E_CH4 = " << std::setw(txtWidth+3) << EI.getCH4() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+06 << " [mg(CH4)/km]"\
+                " ( EI  = " << std::setw(txtWidth) << EI.getCH4() * 1.00E+03 << " [mg/kg_fuel] )\n";
+            std::cout << " ## - E_NOx = " << std::setw(txtWidth+3) << ( EI.getNO() / MW_NO + EI.getNO2() / MW_NO2 + EI.getHNO2() / MW_HNO2 ) * MW_N \
+                                                      * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(N)  /km]"\
+                " ( EI  = " << std::setw(txtWidth) << EI.getNOx()            << " [ g/kg_fuel] )\n";
+            std::cout << " ## - E_SO2 = " << std::setw(txtWidth+3) << EI.getSO2() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(SO2)/km]"\
+                " ( EI  = " << std::setw(txtWidth) << EI.getSO2()            << " [ g/kg_fuel] )\n";
+            std::cout << " ##                                   ( FSC = " << std::setw(txtWidth) << JetA.getFSC() << " [-]          )\n";
+            std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(Soo)/km]"\
+                " ( EI  = " << std::setw(txtWidth) << EI.getSoot()* 1.00E+03 << " [mg/kg_fuel] )\n";
+            std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) << " [ #(Soo)/km]"\
+                " ( GMD = " << std::setw(txtWidth) << 2.0 * EI.getSootRad() * 1.0E+09 << " [nm]         )\n";
 
-        std::cout << "\n ## AEROSOLS:";
-        std::cout << "\n ##\n";
-        std::cout << " ## - LA : " << std::setw(txtWidth+3) << liquidAer.Moment() << " [#/cm^3], \n";
-        std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.EffRadius() * 1.0E+09 << " [nm], \n";
-        std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";
-        std::cout << " ##\n";
-        std::cout << " ## - PA : " << std::setw(txtWidth+3) << iceAer.Moment() << " [#/cm^3], \n";
-        if ( iceAer.Moment(2) > 0 )
-            std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.EffRadius() * 1.0E+06 << " [mum], \n";
-        else
-            std::cout << " ##        " << std::setw(txtWidth+3) << 0.0E+00 << " [mum], \n";
-        std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";
+            std::cout << "\n ## AEROSOLS:";
+            std::cout << "\n ##\n";
+            std::cout << " ## - LA : " << std::setw(txtWidth+3) << liquidAer.Moment() << " [#/cm^3], \n";
+            std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.EffRadius() * 1.0E+09 << " [nm], \n";
+            std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";
+            std::cout << " ##\n";
+            std::cout << " ## - PA : " << std::setw(txtWidth+3) << iceAer.Moment() << " [#/cm^3], \n";
+            if ( iceAer.Moment(2) > 0 )
+                std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.EffRadius() * 1.0E+06 << " [mum], \n";
+            else
+                std::cout << " ##        " << std::setw(txtWidth+3) << 0.0E+00 << " [mum], \n";
+            std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";
 
-        std::cout << "\n ## BACKG COND.:";
-        std::cout << "\n ##\n";
-        std::cout << " ## - NOx  = " << std::setw(txtWidth) << ( varArray[ind_NO] + varArray[ind_NO2] ) / airDens * 1.0E+12 << " [ppt]\n";
-        std::cout << " ## - HNO3 = " << std::setw(txtWidth) << ( varArray[ind_HNO3] ) / airDens * 1.0E+12 << " [ppt]\n";
-        std::cout << " ## - O3   = " << std::setw(txtWidth) << ( varArray[ind_O3] )   / airDens * 1.0E+09 << " [ppb]\n";
-        std::cout << " ## - CO   = " << std::setw(txtWidth) << ( varArray[ind_CO] )   / airDens * 1.0E+09 << " [ppb]\n";
-        std::cout << " ##\n";
-        std::cout << " ## - LA : " << std::setw(txtWidth+3) << Data.LA_nDens << " [#/cm^3], \n";
-        std::cout << " ##        " << std::setw(txtWidth+3) << Data.LA_rEff  << " [nm], \n";
-        std::cout << " ##        " << std::setw(txtWidth+3) << Data.LA_SAD   << " [mum^2/cm^3] \n";
-        std::cout << " ##\n";
-        std::cout << " ## - PA : " << std::setw(txtWidth+3) << Data.PA_nDens << " [#/cm^3], \n";
-        std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_rEff * 1.00E-03  << " [mum], \n";
-        std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_SAD   << " [mum^2/cm^3] \n";
-
+            std::cout << "\n ## BACKG COND.:";
+            std::cout << "\n ##\n";
+            std::cout << " ## - NOx  = " << std::setw(txtWidth) << ( varArray[ind_NO] + varArray[ind_NO2] ) / airDens * 1.0E+12 << " [ppt]\n";
+            std::cout << " ## - HNO3 = " << std::setw(txtWidth) << ( varArray[ind_HNO3] ) / airDens * 1.0E+12 << " [ppt]\n";
+            std::cout << " ## - O3   = " << std::setw(txtWidth) << ( varArray[ind_O3] )   / airDens * 1.0E+09 << " [ppb]\n";
+            std::cout << " ## - CO   = " << std::setw(txtWidth) << ( varArray[ind_CO] )   / airDens * 1.0E+09 << " [ppb]\n";
+            std::cout << " ##\n";
+            std::cout << " ## - LA : " << std::setw(txtWidth+3) << Data.LA_nDens << " [#/cm^3], \n";
+            std::cout << " ##        " << std::setw(txtWidth+3) << Data.LA_rEff  << " [nm], \n";
+            std::cout << " ##        " << std::setw(txtWidth+3) << Data.LA_SAD   << " [mum^2/cm^3] \n";
+            std::cout << " ##\n";
+            std::cout << " ## - PA : " << std::setw(txtWidth+3) << Data.PA_nDens << " [#/cm^3], \n";
+            std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_rEff * 1.00E-03  << " [mum], \n";
+            std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_SAD   << " [mum^2/cm^3] \n";
+        }
     }
 
 
@@ -553,7 +554,7 @@ int PlumeModel( const unsigned int iCase,                   \
         if ( DEBUG ) {
             /* Print message */
             std::cout << "\n";
-            std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size();
+            std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size() << ", " << omp_get_thread_num();
             std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]";
         }
 
@@ -562,7 +563,7 @@ int PlumeModel( const unsigned int iCase,                   \
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         
         /* Compute time step */
-        dt = UpdateTime( curr_Time_s, tInitial_s, 3600.0*sun->sunRise, 3600.0*sun->sunSet );
+        dt = timeArray[nTime+1] - timeArray[nTime]; //UpdateTime( curr_Time_s, tInitial_s, 3600.0*sun->sunRise, 3600.0*sun->sunSet );
         LAST_STEP = ( curr_Time_s + dt >= tFinal_s );
 
         SANDS_GasPhase.UpdateTimeStep( dt );
@@ -695,11 +696,11 @@ int PlumeModel( const unsigned int iCase,                   \
         /** ~~~~ Update cosine of solar zenight angle ~~~~~ **/
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
-        /* Compute SUN */
-        sun->Update( curr_Time_s );
+        /* Compute the cosize of solar zenith angle midway through the integration step */
+        sun->Update( curr_Time_s + dt/2 );
 
         /* Store cosine of solar zenith angle */
-        ambientData.cosSZA[nTime] = sun->CSZA;
+        ambientData.cosSZA[nTime+1] = sun->CSZA;
 
         if ( DEBUG ) {
             std::cout << "\n DEBUG : \n";
@@ -824,14 +825,17 @@ int PlumeModel( const unsigned int iCase,                   \
                 if ( IERR < 0 ) {
                     /* Integration failed */
 
-                    std::cout << "Integration failed for ring = " << iRing << " at time t = " << curr_Time_s << "( nTime = " << nTime << " )\n";
-                    std::cout << " ~~~ Printing reaction rates:\n";
-                    for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
-                        std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
-                    }
-                    std::cout << " ~~~ Printing concentrations:\n";
-                    for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
-                        std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                    std::cout << "Integration failed for ring = " << iRing << " at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+
+                    if ( DEBUG ) {
+                        std::cout << " ~~~ Printing reaction rates:\n";
+                        for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                            std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                        }
+                        std::cout << " ~~~ Printing concentrations:\n";
+                        for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
+                            std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                        }
                     }
 
                     return KPP_FAIL;
@@ -912,21 +916,24 @@ int PlumeModel( const unsigned int iCase,                   \
             if ( IERR < 0 ) {
                 /* Integration failed */
 
-                std::cout << "Integration failed for ring = " << iRing << " at time t = " << curr_Time_s << "( nTime = " << nTime << " )\n";
-                std::cout << " ~~~ Printing reaction rates:\n";
-                for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
-                    std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
-                }
-                std::cout << " ~~~ Printing concentrations:\n";
-                for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
-                    std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                std::cout << "Integration failed for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+                    
+                if ( DEBUG ) {
+                    std::cout << " ~~~ Printing reaction rates:\n";
+                    for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                        std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                    }
+                    std::cout << " ~~~ Printing concentrations:\n";
+                    for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
+                        std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                    }
                 }
 
                 return KPP_FAIL;
             }
 
             ambientData.FillIn( varArray, nTime + 1 );
-                
+
             Data.applyAmbient( varArray, mapRing2Mesh, nRing );
 
         }
@@ -980,14 +987,17 @@ int PlumeModel( const unsigned int iCase,                   \
                     if ( IERR < 0 ) {
                         /* Integration failed */
 
-                        std::cout << "Integration failed for ring = " << iRing << " at time t = " << curr_Time_s << "( nTime = " << nTime << " )\n";
-                        std::cout << " ~~~ Printing reaction rates:\n";
-                        for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
-                            std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
-                        }
-                        std::cout << " ~~~ Printing concentrations:\n";
-                        for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
-                            std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                        std::cout << "Integration failed for grid cell = (" << jNy << ", " << iNx << ") at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+                    
+                        if ( DEBUG ) {
+                            std::cout << " ~~~ Printing reaction rates:\n";
+                            for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                                std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                            }
+                            std::cout << " ~~~ Printing concentrations:\n";
+                            for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
+                                std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                            }
                         }
 
                         return KPP_FAIL;
@@ -1038,14 +1048,17 @@ int PlumeModel( const unsigned int iCase,                   \
             if ( IERR < 0 ) {
                 /* Integration failed */
 
-                std::cout << "Integration failed for ring = " << iRing << " at time t = " << curr_Time_s << "( nTime = " << nTime << " )\n";
-                std::cout << " ~~~ Printing reaction rates:\n";
-                for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
-                    std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
-                }
-                std::cout << " ~~~ Printing concentrations:\n";
-                for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
-                    std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                std::cout << "Integration failed for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+
+                if ( DEBUG ) {
+                    std::cout << " ~~~ Printing reaction rates:\n";
+                    for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                        std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                    }
+                    std::cout << " ~~~ Printing concentrations:\n";
+                    for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
+                        std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                    }
                 }
 
                 return KPP_FAIL;
@@ -1306,44 +1319,253 @@ int PlumeModel( const unsigned int iCase,                   \
 #if ( RINGS && ADJOINT )
 
     std::copy(sun->CSZA_Vector.begin(), sun->CSZA_Vector.end(), SZA_CST);
-    double finalPlume[NSPEC];
-    double initBackg[NSPEC];
-    double VAR_OPT[NVAR * timeArray.size()];
+//    double finalPlume[NSPEC];
+//    double initBackg[NSPEC];
+    double VAR_OPT[NVAR]; // * timeArray.size()];
 
-    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
-        finalPlume[iSpec] = 0.0E+00;
-        initBackg[iSpec]  = 0.0E+00;
-    }
+//    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+//        finalPlume[iSpec] = 0.0E+00;
+//        initBackg[iSpec]  = 0.0E+00;
+//    }
+//
+//    for ( iRing = 0; iRing < nRing; iRing++ ) {
+//        ringSpecies.getData( varArray, fixArray, nTime, iRing );
+//        for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+//            if ( iSpec < NVAR )
+//                finalPlume[iSpec] += varArray[iSpec] * ringArea[iRing];
+//            else
+//                finalPlume[iSpec] += fixArray[iSpec - NVAR] * ringArea[iRing];
+//        }
+//    }
+//    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ )
+//        finalPlume[iSpec] /= totArea;
+//
+//    ambientData.getData( varArray, fixArray, aerArray, 0 );
+//    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+//        if ( iSpec < NVAR )
+//            initBackg[iSpec] = varArray[iSpec];
+//        else
+//            initBackg[iSpec] = fixArray[iSpec - NVAR];
+//    }
 
-    for ( iRing = 0; iRing < nRing; iRing++ ) {
-        ringSpecies.getData( varArray, fixArray, nTime, iRing );
-        for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
-            if ( iSpec < NVAR )
-                finalPlume[iSpec] += varArray[iSpec] * ringArea[iRing];
-            else
-                finalPlume[iSpec] += fixArray[iSpec - NVAR] * ringArea[iRing];
-        }
-    }
-    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ )
-        finalPlume[iSpec] /= totArea;
+    const std::vector<double> initBackg = ringSpecies.RingAverage( ringArea, totArea, 0 );
+    const std::vector<double> finalPlume = ringSpecies.RingAverage( ringArea, totArea, timeArray.size() - 1 );
 
-    ambientData.getData( varArray, fixArray, aerArray, 0 );
-    for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
-        if ( iSpec < NVAR )
-            initBackg[iSpec] = varArray[iSpec];
-        else
-            initBackg[iSpec] = fixArray[iSpec - NVAR];
-    }
-
-    IERR = KPP_Main_ADJ( finalPlume, initBackg,               \
+    IERR = KPP_Main_ADJ( &(finalPlume)[0], &(initBackg)[0],   \
+                         fixArray,                            \
                          temperature_K, pressure_Pa, airDens, \
                          &(timeArray)[0], timeArray.size(),   \
                          KPPADJ_RTOLS, KPPADJ_ATOLS,          \
                          /* Output */ VAR_OPT, DEBUG_ADJOINT );
-    
+
     if ( IERR < 0 ) {
         /* Adjoint integration failed */
         return KPPADJ_FAIL;
+    }
+    
+    /* Create ambient struture */
+    Ambient adjointData( timeArray.size(), Data.getAmbient(), Data.getAerosol(), Data.getLiqSpecies() );
+    adjointData.FillIn( VAR_OPT, 0 );
+
+
+    /* Perform forward integration with optimized initial conditions */
+    const int NADJ = NVAR;
+    double Y_adj[NADJ][NVAR], ATOL_adj[NADJ][NVAR], RTOL_adj[NADJ][NVAR];
+
+
+
+    /* ---- TOLERANCES ---------------------- */
+
+    for( unsigned int i = 0; i < NVAR; i++ ) {
+        RTOL[i] = KPPADJ_RTOLS; //1.0e-5; //1.0e-4; 3
+        ATOL[i] = KPPADJ_ATOLS; //1.0e-4; //1.0e-3; 2
+    }
+    
+    STEPMIN = (double)0.0;
+    STEPMAX = (double)0.0;
+
+    /* Tolerances for calculating adjoints are 
+     * used for controlling adjoint truncation 
+     * error and for solving the linear adjoint
+     * equations by iterations.
+     * Note: Adjoints typically span many orders
+     * of magnitude and a careful tuning of 
+     * ATOL_adj may be necessary */
+
+    for( unsigned int i = 0; i < NADJ; i++ ) {
+        for( unsigned int j = 0; j < NVAR; j++ ) {
+            RTOL_adj[i][j] = 1.0e-5;
+            ATOL_adj[i][j] = 1.0e-10;
+        }
+    }
+    
+    /* ICNTRL , RCNTRL  = Adjoint settings
+     * ISTATUS, RSTATUS = Adjoint statistics */
+
+    double RCNTRL[20], RSTATUS[20];
+    int ICNTRL[20], ISTATUS[20];
+
+    /* Default control options */
+    for( unsigned int i = 0; i < 20; i++ ) {
+        ICNTRL[i] = 0;
+        RCNTRL[i] = (double)0.0;
+        ISTATUS[i] = 0;
+        RSTATUS[i] = (double)0.0;
+    }
+
+    ICNTRL[6] = 1;
+
+    /* Reinitialize time */
+    curr_Time_s = tInitial_s; /* [s] */
+    nTime = 0;
+
+    /* Time loop starts here */
+
+    while ( curr_Time_s < tFinal_s ) {
+        
+        if ( DEBUG ) {
+            /* Print message */
+            std::cout << "\n";
+            std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size() << " ( on thread " << omp_get_thread_num() << " )";
+            std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]";
+        }
+
+        dt = timeArray[nTime+1] - timeArray[nTime]; //UpdateTime( curr_Time_s, tInitial_s, 3600.0*sun->sunRise, 3600.0*sun->sunSet );
+
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~ Update cosine of solar zenight angle ~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+        /* Compute the cosize of solar zenith angle midway through the integration step */
+        sun->Update( curr_Time_s + dt/2 );
+
+        /* Store cosine of solar zenith angle */
+        adjointData.cosSZA[nTime+1] = sun->CSZA;
+
+        if ( DEBUG ) {
+            std::cout << "\n DEBUG : \n";
+            std::cout << "         CSZA = " << sun->CSZA << "\n";
+        }
+
+
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~ Update photolysis rates ~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+        for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
+            PHOTOL[iPhotol] = 0.0E+00;
+
+        if ( sun->CSZA > 0.0E+00 )
+            Read_JRates( PHOTOL, sun->CSZA );
+
+        if ( DEBUG ) {
+            std::cout << "\n DEBUG : \n";
+            for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
+                std::cout << "         PHOTOL[" << iPhotol << "] = " << PHOTOL[iPhotol] << "\n";
+        }
+
+
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~ KPP ~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~ The Kinetics Pre-Processor ~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+        /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+
+        /* Ambient chemistry */
+        adjointData.getData( varArray, fixArray, aerArray, nTime );
+
+        for ( unsigned int iFix = 0; iFix < NFIX; iFix++ )
+            FIX[iFix] = fixArray[iFix];
+
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+        /* ~~~~ Chemical rates ~~~~ */
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+        /* Update heterogeneous chemistry reaction rates */
+        if ( HETCHEMISTRY ) {
+
+            for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+                HET[iSpec][0] = 0.0E+00;
+                HET[iSpec][1] = 0.0E+00;
+                HET[iSpec][2] = 0.0E+00;
+            }
+
+            relHumidity_Ring = varArray[ind_H2O] * \
+                               physConst::kB * temperature_K * 1.00E+06 / \
+                               physFunc::pSat_H2Ol( temperature_K );
+            GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
+                       Data.STATE_PSC, varArray, AerosolArea, AerosolRadi, IWC, kheti_sla );
+
+            if ( DEBUG ) {
+                std::cout << "\n DEBUG :   Heterogeneous chemistry rates (Ambient)\n";
+                std::cout << "       :   Aerosol properties\n";
+                std::cout << "       :   Radius ice/NAT    = " << AerosolRadi[0] * 1.0E+06 << " [mum]\n";
+                std::cout << "       :   Radius strat. liq = " << AerosolRadi[1] * 1.0E+09 << " [nm]\n";
+                std::cout << "       :   Radius trop. sulf = " << AerosolRadi[2] * 1.0E+09 << " [nm]\n";
+                std::cout << "       :   Radius soot part. = " << AerosolRadi[3] * 1.0E+09 << " [nm]\n";
+                std::cout << "       :   Area ice/NAT      = " << AerosolArea[0] * 1.0E+12 << " [mum^2/cm^3]\n";
+                std::cout << "       :   Area strat. liq   = " << AerosolArea[1] * 1.0E+12 << " [mum^2/cm^3]\n";
+                std::cout << "       :   Area trop. sulf   = " << AerosolArea[2] * 1.0E+12 << " [mum^2/cm^3]\n";
+                std::cout << "       :   Area soot part.   = " << AerosolArea[3] * 1.0E+12 << " [mum^2/cm^3]\n";
+                std::cout << "       :   HET[ind_HO2][0]   = " << HET[ind_HO2][0]          << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_NO2][0]   = " << HET[ind_NO2][0]          << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_NO3][0]   = " << HET[ind_NO3][0]          << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_N2O5][0]  = " << HET[ind_N2O5][0]         << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_BrNO3][0] = " << HET[ind_BrNO3][0]        << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_HOBr][0]  = " << HET[ind_HOBr][0]         << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_HBr][0]   = " << HET[ind_HBr][0]          << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_HOBr][1]  = " << HET[ind_HOBr][1]         << " [molec/cm^3/s]\n";
+                std::cout << "       :   PSC Rates:\n";
+                std::cout << "       :   HET[ind_N2O5][1]  = " << HET[ind_N2O5][1]         << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_ClNO3][0] = " << HET[ind_ClNO3][0]        << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_ClNO3][1] = " << HET[ind_ClNO3][1]        << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_ClNO3][2] = " << HET[ind_ClNO3][2]        << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_BrNO3][1] = " << HET[ind_BrNO3][1]        << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_HOCl][0]  = " << HET[ind_HOCl][0]         << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_HOCl][1]  = " << HET[ind_HOCl][1]         << " [molec/cm^3/s]\n";
+                std::cout << "       :   HET[ind_HOBr][2]  = " << HET[ind_HOBr][2]         << " [molec/cm^3/s]\n";
+            }
+        }
+
+        /* Update reaction rates */
+        for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
+            RCONST[iReact] = 0.0E+00;
+
+        Update_RCONST( temperature_K, pressure_Pa, airDens, varArray[ind_H2O] );
+
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+        /* ~~~~~ Integration ~~~~~~ */
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+ 
+        IERR = INTEGRATE_ADJ( NADJ, varArray, Y_adj, timeArray[nTime], timeArray[nTime+1], ATOL_adj, RTOL_adj, ICNTRL, RCNTRL, ISTATUS, RSTATUS );
+//        IERR = KPP_Main( varArray, fixArray, curr_Time_s, dt, KPP_RTOLS, KPP_ATOLS );
+
+        if ( IERR < 0 ) {
+            /* Integration failed */
+
+            std::cout << "Integration failed for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+                
+            if ( DEBUG ) {
+                std::cout << " ~~~ Printing reaction rates:\n";
+                for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                    std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                }
+                std::cout << " ~~~ Printing concentrations:\n";
+                for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
+                    std::cout << "Species " << iSpec << ": " << varArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                }
+            }
+
+            return KPP_FAIL;
+        }
+
+        adjointData.FillIn( varArray, nTime + 1 );
+        
+        curr_Time_s += dt;
+        nTime++;
+        
     }
 
     #if ( SAVE_ADJOINT )
@@ -1360,8 +1582,9 @@ int PlumeModel( const unsigned int iCase,                   \
 
         isSaved = output::Write_Adjoint( fullPath.c_str(),                    \
                                          ringSpecies, ambientData,            \
+                                         adjointData,                         \
                                          ringArea, totArea,                   \
-                                         timeArray, VAR_OPT,                  \
+                                         timeArray,                           \
                                          temperature_K, pressure_Pa, airDens, \
                                          relHumidity_w, relHumidity_i );
 
