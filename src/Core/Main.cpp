@@ -23,7 +23,8 @@ std::vector<std::vector<double> > ReadParameters( );
 int PlumeModel( const unsigned int iCase,                   \
                 double temperature_K, double pressure_Pa,   \
                 double relHumidity_w, double longitude_deg, \
-                double latitude_deg );
+                double latitude_deg,                        \
+                const std::vector<double> &inputEmission );
 
 int main( int , char* [] )
 {
@@ -67,6 +68,13 @@ int main( int , char* [] )
             double relHumidity_w = parameters[2][iCase];
             double longitude_deg = parameters[3][iCase];
             double latitude_deg  = parameters[4][iCase];
+            std::vector<double> emissionIndices( 6, 0.0E+00 );
+            emissionIndices[0] = parameters[5][iCase];
+            emissionIndices[1] = parameters[6][iCase];
+            emissionIndices[2] = parameters[7][iCase];
+            emissionIndices[3] = parameters[8][iCase];
+            emissionIndices[4] = parameters[9][iCase];
+            emissionIndices[5] = parameters[10][iCase];
 
         #pragma omp critical
             { std::cout << "-> Running case " << iCase << " on thread " << omp_get_thread_num() << "\n"; }
@@ -103,7 +111,7 @@ int main( int , char* [] )
 
                     iERR = PlumeModel( iCase, temperature_K, pressure_Pa, \
                                        relHumidity_w, longitude_deg,      \
-                                       latitude_deg );
+                                       latitude_deg, emissionIndices );
                     break;
 
                 /* Adjoint Model */

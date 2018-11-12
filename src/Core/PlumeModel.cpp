@@ -95,7 +95,8 @@ void Transport( Solution& Data, Solver& SANDS );
 int PlumeModel( const unsigned int iCase,                   \
                 double temperature_K, double pressure_Pa,   \
                 double relHumidity_w, double longitude_deg, \
-                double latitude_deg )
+                double latitude_deg, \
+                const std::vector<double> &inputEmission )
 {
    
 #if ( DEBUG )
@@ -294,7 +295,18 @@ int PlumeModel( const unsigned int iCase,                   \
 
     /* Define aircraft */
     char const *aircraftName("B747-800");
-    const Aircraft aircraft( aircraftName, temperature_K, pressure_Pa, relHumidity_w );
+    Aircraft aircraft( aircraftName, temperature_K, pressure_Pa, relHumidity_w );
+
+#if ( APCEMM_LUT )
+
+    aircraft.setEI_NOx(inputEmission[0]);
+    aircraft.setEI_CO(inputEmission[1]);
+    aircraft.setEI_HC(inputEmission[2]);
+    aircraft.setEI_Soot(inputEmission[3]);
+    aircraft.setSootRad(inputEmission[4]);
+    aircraft.setFuelFlow(inputEmission[5]);
+
+#endif /* APCEMM_LUT */
 
     /* Print AC Debug? */
     if ( DEBUG_AC_INPUT )
@@ -1291,18 +1303,55 @@ int PlumeModel( const unsigned int iCase,                   \
     std::cout << "\n";
 
 #endif /* TIME_IT */
-    
-#if ( SAVE_FORWARD )
 
-    isSaved = output::Write( ringSpecies, ambientData, ringCluster, timeArray, temperature_K, pressure_Pa, airDens, relHumidity_w, relHumidity_i, longitude_deg, latitude_deg, sun->sunRise, sun->sunSet );
-    if ( isSaved == output::SAVE_FAILURE ) {
-        std::cout << " Saving to ring-averaged concentrations to file failed...\n";
-        return SAVE_FAIL;
+
+    #if ( SAVE_FORWARD || SAVE_ADJOINT )
+    
+    {
+        struct stat sb;
+        if (!(stat( OUT_PATH.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
+            const int dir_err = mkdir( OUT_PATH.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+            if ( dir_err == -1 ) {
+                std::cout << " Could not create directory: " << OUT_PATH << "\n";
+                return DIR_FAIL; 
+            }
+        }
     }
 
-#endif /* SAVE_FORWARD */
+    #endif /* SAVE_FORWARD || SAVE_ADJOINT */
 
-#if ( SAVE_LA_MICROPHYS )
+    #if ( SAVE_FORWARD )
+
+    { 
+        std::stringstream ss;
+        ss << std::setw(5) << std::setfill('0') << iCase;
+        std::string file = "APCEMM_Case_" + ss.str();
+        std::string fullPath;
+
+        if ( OUT_PATH.back() == '/' )
+            fullPath = OUT_PATH + file;
+        else
+            fullPath = OUT_PATH + '/' + file;
+        fullPath = fullPath + ".nc";
+
+        isSaved = output::Write( fullPath.c_str(),                    \
+                                 ringSpecies,                         \
+                                 ambientData,                         \
+                                 ringCluster,                         \
+                                 timeArray,                           \
+                                 temperature_K, pressure_Pa, airDens, \
+                                 relHumidity_w, relHumidity_i,        \
+                                 longitude_deg, latitude_deg,         \
+                                 sun->sunRise, sun->sunSet );
+        if ( isSaved == output::SAVE_FAILURE ) {
+            std::cout << " Saving to ring-averaged concentrations to file failed...\n";
+            return SAVE_FAIL;
+        }
+    }
+
+    #endif /* SAVE_FORWARD */
+
+    #if ( SAVE_LA_MICROPHYS )
     
     isSaved = output::Write_MicroPhys( OUT_FILE_LA, saveOutput_LA, saveTime_LA, \
                                        Data.liquidAerosol.getBinCenters(), \
@@ -1313,9 +1362,9 @@ int PlumeModel( const unsigned int iCase,                   \
         return SAVE_FAIL;
     }
 
-#endif /* SAVE_LA_MICROPHYS */
+    #endif /* SAVE_LA_MICROPHYS */
 
-#if ( SAVE_PA_MICROPHYS )
+    #if ( SAVE_PA_MICROPHYS )
 
     isSaved = output::Write_MicroPhys( OUT_FILE_PA, saveOutput_PA, saveTime_PA, \
                                        Data.solidAerosol.getBinCenters(), \
@@ -1326,15 +1375,16 @@ int PlumeModel( const unsigned int iCase,                   \
         return SAVE_FAIL;
     }
 
-#endif /* SAVE_PA_MICROPHYS */
-
-#pragma omp critical 
-    {
-        std::cout << "\n\n ## ON THREAD " << omp_get_thread_num() << ": Starting adjoint calculation...\n";
-    }
+    #endif /* SAVE_PA_MICROPHYS */
 
 
-#if ( RINGS && ADJOINT )
+    #if ( RINGS && ADJOINT )
+
+        #pragma omp critical 
+        {
+            std::cout << "\n\n ## ON THREAD " << omp_get_thread_num() << ": Starting adjoint calculation...\n";
+        }
+
 
     std::copy(sun->CSZA_Vector.begin(), sun->CSZA_Vector.end(), SZA_CST);
     double VAR_OPT[NVAR];
@@ -1553,20 +1603,12 @@ int PlumeModel( const unsigned int iCase,                   \
     }
 
     #if ( SAVE_ADJOINT )
-        
+       
+    {
         std::stringstream ss;
         ss << std::setw(5) << std::setfill('0') << iCase;
         std::string file = "APCEMM_ADJ_Case_" + ss.str();
         std::string fullPath;
-
-        struct stat sb;
-        if (!(stat( OUT_PATH.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
-            const int dir_err = mkdir("foo", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-            if ( dir_err == -1 ) {
-                std::cout << " Could not create directory: " << OUT_PATH << "\n";
-                return DIR_FAIL; 
-            }
-        }
 
         if ( OUT_PATH.back() == '/' )
             fullPath = OUT_PATH + file;
@@ -1587,10 +1629,11 @@ int PlumeModel( const unsigned int iCase,                   \
             std::cout << " File name: " << fullPath << "\n";
             return SAVE_FAIL;
         }
+    }
 
     #endif /* SAVE_ADJOINT */
 
-#endif /* RINGS */
+    #endif /* RINGS */
 
     /* Clear dynamically allocated variable(s) */
     sun->~SZA();
