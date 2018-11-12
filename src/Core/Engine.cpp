@@ -491,5 +491,50 @@ double Engine::getDelta() const
 
 } /* End of Engine::getDelta */
 
+void Engine::setEI_NOx(const double NOx)
+{
+    EI_NOx  = NOx;
+    EI_NO   = NOxtoNO   * EI_NOx;
+    EI_NO2  = NOxtoNO2  * EI_NOx;
+    EI_HNO2 = NOxtoHNO2 * EI_NOx;
+
+} /* End of Engine::setEI_NOx */
+
+void Engine::setEI_CO(const double CO)
+{
+
+    EI_CO = CO;
+
+} /* End of Engine::setEI_CO */
+
+void Engine::setEI_HC(const double HC)
+{
+
+    EI_HC = HC;
+
+} /* End of Engine::setEI_HC */
+
+void Engine::setEI_Soot(const double Soot)
+{
+
+    EI_Soot = Soot;
+
+} /* End of Engine::setEI_Soot */
+
+void Engine::setSootRad(const double sootRad)
+{
+
+    SootRad = sootRad;
+
+} /* End of Engine::setSootRad */
+
+void Engine::setFuelFlow(const double ff)
+{
+
+    fuelflow = ff;
+
+} /* End of Engine::setFuelFlow */
+
+
 /* End of Engine.cpp */
 
