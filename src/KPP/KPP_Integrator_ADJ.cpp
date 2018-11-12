@@ -62,6 +62,10 @@ double ros_A[15], ros_C[15], ros_M[6], ros_E[6], ros_Alpha[6], ros_Gamma[6],
        ros_ELO;
 int ros_NewF[6]; /* Holds Boolean values */
 char ros_Name[12]; /* Length 12 */
+#pragma omp threadprivate(ros_S, rosMethod)
+#pragma omp threadprivate(ros_A, ros_C, ros_M, ros_E)
+#pragma omp threadprivate(ros_Alpha, ros_Gamma, ros_ELO)
+#pragma omp threadprivate(ros_NewF, ros_Name)
 
 /*~~~>  Types of Adjoints Implemented */
 enum adjoint { Adj_none=1, Adj_discrete=2, Adj_continuous=3,
@@ -73,79 +77,81 @@ int stack_ptr; /* last written entry */
 double *chk_H, *chk_T;
 double **chk_Y, **chk_K, **chk_J; /* 2D arrays */
 double **chk_dY, **chk_d2Y; /* 2D arrays */
+#pragma omp threadprivate(stack_ptr)
+#pragma omp threadprivate(chk_H, chk_T, chk_Y, chk_K, chk_J, chk_dY, chk_d2Y)
 
 /* Function Headers */
 int INTEGRATE_ADJ(int NADJ, double Y[], double Lambda[][NVAR],
-		   double TIN, double TOUT, double ATOL_adj[][NVAR],
-		   double RTOL_adj[][NVAR], int ICNTRL_U[],
-		   double RCNTRL_U[], int ISTATUS_U[], double RSTATUS_U[]);
+                  double TIN, double TOUT, double ATOL_adj[][NVAR],
+		          double RTOL_adj[][NVAR], int ICNTRL_U[],
+                  double RCNTRL_U[], int ISTATUS_U[], double RSTATUS_U[]);
 int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
-		   double Tstart, double Tend, double AbsTol[],
-		   double RelTol[], double AbsTol_adj[][NVAR],
-		   double RelTol_adj[][NVAR], double RCNTRL[],
-		   int ICNTRL[], double RSTATUS[], int ISTATUS[] );
+		           double Tstart, double Tend, double AbsTol[],
+        		   double RelTol[], double AbsTol_adj[][NVAR],
+		           double RelTol_adj[][NVAR], double RCNTRL[],
+        		   int ICNTRL[], double RSTATUS[], int ISTATUS[] );
 void ros_AllocateDBuffers( int S, int SaveLU );
 void ros_FreeDBuffers( int SaveLU );
 void ros_AllocateCBuffers();
 void ros_FreeCBuffers();
 void ros_DPush( int S, double T, double H, double Ystage[],
-		double K[], double E[], int P[], int SaveLU );
+	        	double K[], double E[], int P[], int SaveLU );
 void ros_DPop( int S, double* T, double* H, double* Ystage,
-	       double* K, double* E, int* P, int SaveLU );
+    	       double* K, double* E, int* P, int SaveLU );
 void ros_CPush( double T, double H, double Y[], double dY[],
-		double d2Y[] );
+		        double d2Y[] );
 void ros_CPop( double T, double H, double Y[], double dY[],
-	       double d2Y[] );
-static int ros_ErrorMsg( int Code );
+    	       double d2Y[] );
+int ADJ_ros_ErrorMsg( int Code );
 int ros_FwdInt (double Y[], double Tstart, double Tend, double T,
-		double AbsTol[], double RelTol[], int AdjointType,
-		double Hmin, double Hstart, double Hmax,
-		double Roundoff, int ISTATUS[], int Max_no_steps,
-		double RSTATUS[], int Autonomous, int VectorTol,
-		double FacMax, double FacMin, double FacSafe,
-		double FacRej, int SaveLU);
+		        double AbsTol[], double RelTol[], int AdjointType,
+		        double Hmin, double Hstart, double Hmax,
+		        double Roundoff, int ISTATUS[], int Max_no_steps,
+		        double RSTATUS[], int Autonomous, int VectorTol,
+		        double FacMax, double FacMin, double FacSafe,
+		        double FacRej, int SaveLU);
 int ros_DadjInt ( int NADJ, double Lambda[][NVAR], double Tstart,
-		  double Tend, double T, int SaveLU, int ISTATUS[],
-		  double Roundoff, int Autonomous);
+		          double Tend, double T, int SaveLU, int ISTATUS[],
+		          double Roundoff, int Autonomous);
 int ros_CadjInt ( int NADJ, double Y[][NVAR], double Tstart, double Tend,
-		  double T, double AbsTol_adj[][NVAR],
-		  double RelTol_adj[][NVAR], double RSTATUS[],
-		  double Hmin, double Hmax, double Hstart,
-		  double Roundoff, int Max_no_steps, int Autonomous,
-		  int VectorTol, double FacMax, double FacMin,
-		  double FacSafe, double FacRej, int ISTATUS[] );
+		          double T, double AbsTol_adj[][NVAR],
+		          double RelTol_adj[][NVAR], double RSTATUS[],
+		          double Hmin, double Hmax, double Hstart,
+		          double Roundoff, int Max_no_steps, int Autonomous,
+		          int VectorTol, double FacMax, double FacMin,
+		          double FacSafe, double FacRej, int ISTATUS[] );
 int ros_SimpleCadjInt ( int NADJ, double Y[][NVAR], double Tstart,
-			double Tend, double T, int ISTATUS[],
-			int Autonomous,	double Roundoff );
+			            double Tend, double T, int ISTATUS[],
+			            int Autonomous,	double Roundoff );
 double ros_ErrorNorm ( double Y[], double Ynew[], double Yerr[],
-		       double AbsTol[], double RelTol[], int VectorTol );
+		               double AbsTol[], double RelTol[], int VectorTol );
 void ros_FunTimeDerivative ( double T, double Roundoff, double Y[],
-			     double Fcn0[], double dFdT[], int ISTATUS[] );
+			                 double Fcn0[], double dFdT[], int ISTATUS[] );
 void ros_JacTimeDerivative ( double T, double Roundoff, double Y[],
-			     double Jac0[], double dJdT[], int ISTATUS[] );
+			                 double Jac0[], double dJdT[], int ISTATUS[] );
 int ros_PrepareMatrix ( double H, int Direction, double gam,
-			 double Jac0[], double Ghimj[], int Pivot[],
-			 int ISTATUS[] );
+			            double Jac0[], double Ghimj[], int Pivot[],
+			            int ISTATUS[] );
 void ros_Decomp( double A[], int Pivot[], int* ising, int ISTATUS[] );
 void ros_Solve( char How, double A[], int Pivot[], double b[],
-		int ISTATUS[] );
+		        int ISTATUS[] );
 void ros_cadj_Y( double T, double Y[] );
 void ros_Hermite3( double a, double b, double T, double Ya[],
-		   double Yb[], double Ja[], double Jb[], double Y[] );
+		           double Yb[], double Ja[], double Jb[], double Y[] );
 void ros_Hermite5( double a, double b, double T, double Ya[],
-		   double Yb[], double Ja[], double Jb[], double Ha[],
-		   double Hb[], double Y[] );
+		           double Yb[], double Ja[], double Jb[], double Ha[],
+		           double Hb[], double Y[] );
 void Ros2();
 void Ros3();
 void Ros4();
 void Rodas3();
 void Rodas4();
-static void JacTemplate( double T, double Y[], double Jcb[] );
-void HessTemplate( double T, double Y[], double Hes[] );
-static void FunTemplate( double T, double Y[], double Fun [] );
+void ADJ_JacTemplate( double T, double Y[], double Jcb[] );
+void ADJ_HessTemplate( double T, double Y[], double Hes[] );
+void ADJ_FunTemplate( double T, double Y[], double Fun [] );
 void WSCAL( int N, double Alpha, double X[], int incX );
 void WAXPY( int N, double Alpha, double X[], int incX, double Y[],
-	    int incY );
+    	    int incY );
 void WCOPY( int N, double X[], int incX, double Y[], int incY );
 double WLAMCH( char C );
 void Update_PHOTO( );
@@ -161,71 +167,71 @@ void Hessian( double V[], double F[], double RCT[], double Hess[] );
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 int INTEGRATE_ADJ( int NADJ, double Y[], double Lambda[][NVAR],
-		    double TIN, double TOUT, double ATOL_adj[][NVAR],
-		    double RTOL_adj[][NVAR], double ATOL[],
-            double RTOL[], int ICNTRL_U[],
-		    double RCNTRL_U[], int ISTATUS_U[],
-		    double RSTATUS_U[], double STEPMIN ) {
+	               double TIN, double TOUT, double ATOL_adj[][NVAR],
+		           double RTOL_adj[][NVAR], double ATOL[],
+                   double RTOL[], int ICNTRL_U[],
+		           double RCNTRL_U[], int ISTATUS_U[],
+		           double RSTATUS_U[], double STEPMIN ) {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*  Local Variables */
-  double RCNTRL[20], RSTATUS[20];
-  int ICNTRL[20], ISTATUS[20], IERR, i;
+    double RCNTRL[20], RSTATUS[20];
+    int ICNTRL[20], ISTATUS[20], IERR, i;
 
-  for( i = 0; i < 20; i++ ) {
-    ICNTRL[i]  = 0;
-    RCNTRL[i]  = ZERO;
-    ISTATUS[i] = 0;
-    RSTATUS[i] = ZERO;
-  }
+    for( i = 0; i < 20; i++ ) {
+        ICNTRL[i]  = 0;
+        RCNTRL[i]  = ZERO;
+        ISTATUS[i] = 0;
+        RSTATUS[i] = ZERO;
+    }
 
-/*~~~> fine-tune the integrator:
-  ICNTRL(1) = 0       ! 0 = non-autonomous, 1 = autonomous
-  ICNTRL(2) = 1       ! 0 = scalar, 1 = vector tolerances
-  RCNTRL(3) = STEPMIN ! starting step
-  ICNTRL(3) = 5       ! choice of the method for forward integration
-  ICNTRL(6) = 1       ! choice of the method for continuous adjoint
-  ICNTRL(7) = 2       ! 1=none, 2=discrete, 3=full continuous,
-                        4=simplified continuous adjoint
-  ICNTRL(8) = 1       ! Save fwd LU factorization: 0=*don't* save, 1=save */
+/*~~~> fine-tune the integrator: 
+    ICNTRL(1) = 0       ! 0 = non-autonomous, 1 = autonomous
+    ICNTRL(2) = 1       ! 0 = scalar, 1 = vector tolerances
+    RCNTRL(3) = STEPMIN ! starting step
+    ICNTRL(3) = 5       ! choice of the method for forward integration
+    ICNTRL(6) = 1       ! choice of the method for continuous adjoint
+    ICNTRL(7) = 2       ! 1=none, 2=discrete, 3=full continuous,
+                          4=simplified continuous adjoint
+    ICNTRL(8) = 1       ! Save fwd LU factorization: 0=*don't* save, 1=save */
 
 /* if optional parameters are given, and if they are >=0, then they overwrite
    default settings */
-  if(ICNTRL_U != NULL) {
-    for(i=0; i<20; i++) {
-      if(ICNTRL_U[i] > 0) {
-	    ICNTRL[i] = ICNTRL_U[i];
-      } /* end if */
-    } /* end for */
-  } /* end if */
+    if(ICNTRL_U != NULL) {
+        for(i=0; i<20; i++) {
+            if(ICNTRL_U[i] > 0) {
+	            ICNTRL[i] = ICNTRL_U[i];
+            } /* end if */
+        } /* end for */
+    } /* end if */
 
-  if(RCNTRL_U != NULL) {
-    for(i=0; i<20; i++) {
-  	  if(RCNTRL_U[i] > 0) {
-        RCNTRL[i] = RCNTRL_U[i];
-      } /* enf if */
-    } /* enf for */
-  } /* end if */
+    if(RCNTRL_U != NULL) {
+        for(i=0; i<20; i++) {
+  	        if(RCNTRL_U[i] > 0) {
+                RCNTRL[i] = RCNTRL_U[i];
+            } /* enf if */
+        } /* end for */
+    } /* end if */
 
-  IERR = RosenbrockADJ( Y, NADJ, Lambda, TIN, TOUT, ATOL, RTOL, ATOL_adj,
-			RTOL_adj, RCNTRL, ICNTRL, RSTATUS, ISTATUS );
+    IERR = RosenbrockADJ( Y, NADJ, Lambda, TIN, TOUT, ATOL, RTOL, ATOL_adj,
+	                	  RTOL_adj, RCNTRL, ICNTRL, RSTATUS, ISTATUS );
 
 //  if (IERR < 0)
 //    printf( "RosenbrockADJ: Unsucessful step at T=%f (IERR=%d)", TIN/3600, IERR );
 
-  STEPMIN = RSTATUS[Nhexit];
+    STEPMIN = RSTATUS[Nhexit];
 
 /* if optional parameters are given for output
          copy to them to return information */
-//  if(ISTATUS_U != NULL)
-//    for(i=0; i<20; i++)
-//	ISTATUS_U[i] = ISTATUS[i];
-//  }
+//    if(ISTATUS_U != NULL) {
+//        for(i=0; i<20; i++)
+//        	ISTATUS_U[i] = ISTATUS[i];
+//    }
 
-//  if(RSTATUS_U != NULL)
-//    for(i=0; i<20; i++)
-//	RSTATUS_U[i] = RSTATUS[i];
-//  }
+//    if(RSTATUS_U != NULL) {
+//        for(i=0; i<20; i++)
+//        	RSTATUS_U[i] = RSTATUS[i];
+//    }
   
   return IERR;
 
@@ -233,10 +239,10 @@ int INTEGRATE_ADJ( int NADJ, double Y[], double Lambda[][NVAR],
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
-		   double Tstart, double Tend, double AbsTol[],
-		   double RelTol[], double AbsTol_adj[][NVAR],
-		   double RelTol_adj[][NVAR], double RCNTRL[],
-		   int ICNTRL[], double RSTATUS[], int ISTATUS[] ) {
+        		   double Tstart, double Tend, double AbsTol[],
+		           double RelTol[], double AbsTol_adj[][NVAR],
+        		   double RelTol_adj[][NVAR], double RCNTRL[],
+		           int ICNTRL[], double RSTATUS[], int ISTATUS[] ) {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     ADJ = Adjoint of the Tangent Linear Model of a Rosenbrock Method
@@ -390,266 +396,268 @@ int RosenbrockADJ( double Y[], int NADJ, double Lambda[][NVAR],
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~>  Local variables */
-  double Roundoff, FacMin, FacMax, FacRej, FacSafe;
-  double Hmin, Hmax, Hstart;
-  double Texit=0.0;
-  int i, UplimTol, Max_no_steps=0, IERR;
-  int AdjointType=0, CadjMethod=0;
-  int Autonomous, VectorTol, SaveLU; /* Holds boolean values */
+    double Roundoff, FacMin, FacMax, FacRej, FacSafe;
+    double Hmin, Hmax, Hstart;
+    double Texit=0.0;
+    int i, UplimTol, Max_no_steps=0, IERR;
+    int AdjointType=0, CadjMethod=0;
+    int Autonomous, VectorTol, SaveLU; /* Holds boolean values */
 
-  stack_ptr = -1;
+    stack_ptr = -1;
 
 /*~~~>  Initialize statistics */
-  for(i=0; i<20; i++) {
-    ISTATUS[i] = 0;
-    RSTATUS[i] = ZERO;
-  }
+    for(i=0; i<20; i++) {
+        ISTATUS[i] = 0;
+        RSTATUS[i] = ZERO;
+    }
 
 /*~~~>  Autonomous or time dependent ODE. Default is time dependent. */
-  Autonomous = !(ICNTRL[0] == 0);
+    Autonomous = !(ICNTRL[0] == 0);
 
 /*~~~> For Scalar tolerances(ICNTRL[1] != 0) the code uses AbsTol[0] and
          RelTol[0]
    For Vector tolerances(ICNTRL[1] == 0) the code uses AbsTol[1:NVAR] and
      RelTol[1:NVAR] */
 
-  if (ICNTRL[1] == 0) {
-    VectorTol = TRUE;
-    UplimTol  = NVAR;
-  }
-  else {
-    VectorTol = FALSE;
-    UplimTol  = 1;
-  }
+    if (ICNTRL[1] == 0) {
+        VectorTol = TRUE;
+        UplimTol  = NVAR;
+    }
+    else {
+        VectorTol = FALSE;
+        UplimTol  = 1;
+    }
 
 /*~~~>   Initialize the particular Rosenbrock method selected */
-  switch( ICNTRL[2] ) {
-    case 0:
-    case 4:
-      Rodas3();
-      break;
-    case 1:
-      Ros2();
-      break;
-    case 2:
-      Ros3();
-      break;
-    case 3:
-      Ros4();
-      break;
-    case 5:
-      Rodas4();
-      break;
-    default:
-      printf( "Unknown Rosenbrock method: ICNTRL[2]=%d", ICNTRL[2] );
-      return ros_ErrorMsg( -2 );
-  } /* End switch */
+    switch( ICNTRL[2] ) {
+        case 0:
+        case 4:
+            Rodas3();
+            break;
+        case 1:
+            Ros2();
+            break;
+        case 2:
+            Ros3();
+            break;
+        case 3:
+            Ros4();
+            break;
+        case 5:
+            Rodas4();
+            break;
+        default:
+            printf( "Unknown Rosenbrock method: ICNTRL[2]=%d", ICNTRL[2] );
+            return ADJ_ros_ErrorMsg( -2 );
+
+    } /* End switch */
 
 /*~~~>   The maximum number of steps admitted */
-  if (ICNTRL[3] == 0)
-    Max_no_steps = bufsize - 1;
-  else if (Max_no_steps > 0)
-    Max_no_steps = ICNTRL[3];
-  else {
-    printf("User-selected max no. of steps: ICNTRL[3]=%d",ICNTRL[3] );
-    return ros_ErrorMsg( -1 );
-  }
+    if (ICNTRL[3] == 0)
+        Max_no_steps = bufsize - 1;
+    else if (Max_no_steps > 0)
+        Max_no_steps = ICNTRL[3];
+    else {
+        printf("User-selected max no. of steps: ICNTRL[3]=%d",ICNTRL[3] );
+        return ADJ_ros_ErrorMsg( -1 );
+    }
 
 /*~~~>The particular Rosenbrock method chosen for integrating the cts adjoint*/
-  if (ICNTRL[5] == 0)
-    CadjMethod = 4;
-  else if ( (ICNTRL[5] >= 1) && (ICNTRL[5] <= 5) )
-    CadjMethod = ICNTRL[5];
-  else {
-    printf( "Unknown CADJ Rosenbrock method: ICNTRL[5]=%d", CadjMethod );
-    return ros_ErrorMsg( -2 );
-  }
+    if (ICNTRL[5] == 0)
+        CadjMethod = 4;
+    else if ( (ICNTRL[5] >= 1) && (ICNTRL[5] <= 5) )
+        CadjMethod = ICNTRL[5];
+    else {
+        printf( "Unknown CADJ Rosenbrock method: ICNTRL[5]=%d", CadjMethod );
+        return ADJ_ros_ErrorMsg( -2 );
+    }
 
 /*~~~>  Discrete or continuous adjoint formulation */
-  if ( ICNTRL[6] == 0 )
-    AdjointType = Adj_discrete;
-  else if ( (ICNTRL[6] >= 1) && (ICNTRL[6] <= 4) )
-    AdjointType = ICNTRL[6];
-  else {
-    printf( "User-selected adjoint type: ICNTRL[6]=%d", AdjointType );
-    return ros_ErrorMsg( -9 );
-  }
+    if ( ICNTRL[6] == 0 )
+        AdjointType = Adj_discrete;
+    else if ( (ICNTRL[6] >= 1) && (ICNTRL[6] <= 4) )
+        AdjointType = ICNTRL[6];
+    else {
+        printf( "User-selected adjoint type: ICNTRL[6]=%d", AdjointType );
+        return ADJ_ros_ErrorMsg( -9 );
+    }
 
 /*~~~> Save or not the forward LU factorization */
-  SaveLU = (ICNTRL[7] != 0);
+    SaveLU = (ICNTRL[7] != 0);
 
 /*~~~>  Unit roundoff (1+Roundoff>1)  */
-  Roundoff = WLAMCH('E');
+    Roundoff = WLAMCH('E');
 
 /*~~~>  Lower bound on the step size: (positive value) */
-  if (RCNTRL[0] == ZERO)
-    Hmin = ZERO;
-  else if (RCNTRL[0] > ZERO)
-    Hmin = RCNTRL[0];
-  else {
-    printf( "User-selected Hmin: RCNTRL[0]=%f", RCNTRL[0] );
-    return ros_ErrorMsg( -3 );
-  }
+    if (RCNTRL[0] == ZERO)
+        Hmin = ZERO;
+    else if (RCNTRL[0] > ZERO)
+        Hmin = RCNTRL[0];
+    else {
+        printf( "User-selected Hmin: RCNTRL[0]=%f", RCNTRL[0] );
+        return ADJ_ros_ErrorMsg( -3 );
+    }
 
 /*~~~>  Upper bound on the step size: (positive value) */
-  if (RCNTRL[1] == ZERO)
-    Hmax = ABS((Tend-Tstart));
-  else if (RCNTRL[1] > ZERO)
-    Hmax = MIN(ABS((RCNTRL[1])),ABS((Tend-Tstart)));
-  else {
-    printf( "User-selected Hmax: RCNTRL[1]=%f", RCNTRL[1] );
-    return ros_ErrorMsg( -3 );
-  }
+    if (RCNTRL[1] == ZERO)
+        Hmax = ABS((Tend-Tstart));
+    else if (RCNTRL[1] > ZERO)
+        Hmax = MIN(ABS((RCNTRL[1])),ABS((Tend-Tstart)));
+    else {
+        printf( "User-selected Hmax: RCNTRL[1]=%f", RCNTRL[1] );
+        return ADJ_ros_ErrorMsg( -3 );
+    }
 
 /*~~~>  Starting step size: (positive value) */
-  if (RCNTRL[2] == ZERO) {
-    Hstart = MAX(Hmin,DeltaMin);
-  }
-  else if (RCNTRL[2] > ZERO)
-    Hstart = MIN(ABS(RCNTRL[2]),ABS(Tend-Tstart));
-  else {
-    printf( "User-selected Hstart: RCNTRL[2]=%f", RCNTRL[2] );
-    return ros_ErrorMsg( -3 );
-  }
+    if (RCNTRL[2] == ZERO) {
+        Hstart = MAX(Hmin,DeltaMin);
+    }
+    else if (RCNTRL[2] > ZERO)
+        Hstart = MIN(ABS(RCNTRL[2]),ABS(Tend-Tstart));
+    else {
+        printf( "User-selected Hstart: RCNTRL[2]=%f", RCNTRL[2] );
+        return ADJ_ros_ErrorMsg( -3 );
+    }
 
 /*~~~>  Step size can be changed s.t.  FacMin < Hnew/Hold < FacMax */
-  if (RCNTRL[3] == ZERO)
-    FacMin = (double)0.2;
-  else if (RCNTRL[3] > ZERO)
-    FacMin = RCNTRL[3];
-  else {
-    printf( "User-selected FacMin: RCNTRL[3]=%f", RCNTRL[3] );
-    return ros_ErrorMsg( -4 );
-  }
-  if (RCNTRL[4] == ZERO)
-    FacMax = (double)6.0;
-  else if (RCNTRL[4] > ZERO)
-    FacMax = RCNTRL[4];
-  else {
-    printf( "User-selected FacMax: RCNTRL[4]=%f", RCNTRL[4] );
-    return ros_ErrorMsg( -4 );
-  }
+    if (RCNTRL[3] == ZERO)
+        FacMin = (double)0.2;
+    else if (RCNTRL[3] > ZERO)
+        FacMin = RCNTRL[3];
+    else {
+        printf( "User-selected FacMin: RCNTRL[3]=%f", RCNTRL[3] );
+        return ADJ_ros_ErrorMsg( -4 );
+    }
+    if (RCNTRL[4] == ZERO)
+        FacMax = (double)6.0;
+    else if (RCNTRL[4] > ZERO)
+        FacMax = RCNTRL[4];
+    else {
+        printf( "User-selected FacMax: RCNTRL[4]=%f", RCNTRL[4] );
+        return ADJ_ros_ErrorMsg( -4 );
+    }
 
 /*~~~>   FacRej: Factor to decrease step after 2 succesive rejections */
-  if (RCNTRL[5] == ZERO)
-    FacRej = (double)0.1;
-  else if (RCNTRL[5] > ZERO)
-    FacRej = RCNTRL[5];
-  else {
-    printf( "User-selected FacRej: RCNTRL[5]=%f", RCNTRL[5] );
-    return ros_ErrorMsg( -4 );
-  }
+    if (RCNTRL[5] == ZERO)
+        FacRej = (double)0.1;
+    else if (RCNTRL[5] > ZERO)
+        FacRej = RCNTRL[5];
+    else {
+        printf( "User-selected FacRej: RCNTRL[5]=%f", RCNTRL[5] );
+        return ADJ_ros_ErrorMsg( -4 );
+    }
 
 /*~~~>   FacSafe: Safety Factor in the computation of new step size */
-  if (RCNTRL[6] == ZERO)
-    FacSafe = (double)0.9;
-  else if (RCNTRL[6] > ZERO)
-    FacSafe = RCNTRL[6];
-  else {
-    printf( "User-selected FacSafe: RCNTRL[6]=%f", RCNTRL[6] );
-    return ros_ErrorMsg( -4 );
-  }
+    if (RCNTRL[6] == ZERO)
+        FacSafe = (double)0.9;
+    else if (RCNTRL[6] > ZERO)
+        FacSafe = RCNTRL[6];
+    else {
+        printf( "User-selected FacSafe: RCNTRL[6]=%f", RCNTRL[6] );
+        return ADJ_ros_ErrorMsg( -4 );
+    }
 
 /*~~~>  Check if tolerances are reasonable */
-  for(i=0; i < UplimTol; i++) {
-    if ( (AbsTol[i] <= ZERO) || (RelTol[i] <= (double)10.0*Roundoff)
-	 || (RelTol[i] >= (double)1.0) ) {
-      printf( " AbsTol[%d] = %f", i, AbsTol[i] );
-      printf( " RelTol[%d] = %f", i, RelTol[i] );
-      return ros_ErrorMsg( -5 );
+    for(i=0; i < UplimTol; i++) {
+        if ( (AbsTol[i] <= ZERO) || (RelTol[i] <= (double)10.0*Roundoff)
+    	 || (RelTol[i] >= (double)1.0) ) {
+            printf( " AbsTol[%d] = %f", i, AbsTol[i] );
+            printf( " RelTol[%d] = %f", i, RelTol[i] );
+            return ADJ_ros_ErrorMsg( -5 );
+        }
     }
-  }
 
 /*~~~>  Allocate checkpoint space or open checkpoint files */
-  if (AdjointType == Adj_discrete) {
-    ros_AllocateDBuffers( ros_S, SaveLU );
-  }
-  else if ( (AdjointType == Adj_continuous) ||
-	    (AdjointType == Adj_simple_continuous) ) {
-    ros_AllocateCBuffers();
-  }
+    if (AdjointType == Adj_discrete) {
+        ros_AllocateDBuffers( ros_S, SaveLU );
+    }
+    else if ( (AdjointType == Adj_continuous) ||
+	        (AdjointType == Adj_simple_continuous) ) {
+        ros_AllocateCBuffers();
+    }
 
 /*~~~>  CALL Forward Rosenbrock method */
-  IERR = ros_FwdInt(Y, Tstart, Tend, Texit, AbsTol, RelTol, AdjointType, Hmin,
-		    Hstart, Hmax, Roundoff, ISTATUS, Max_no_steps,
-		    RSTATUS, Autonomous, VectorTol, FacMax, FacMin,
-		    FacSafe, FacRej, SaveLU);
+    IERR = ros_FwdInt(Y, Tstart, Tend, Texit, AbsTol, RelTol, AdjointType, Hmin,
+	            	  Hstart, Hmax, Roundoff, ISTATUS, Max_no_steps,
+		              RSTATUS, Autonomous, VectorTol, FacMax, FacMin,
+		              FacSafe, FacRej, SaveLU);
 
-//  printf( "\n\nFORWARD STATISTICS\n" );
-//  printf( "Step=%d Acc=%d Rej=%d Singular=%d\n\n", Nstp, Nacc, Nrej, Nsng );
+//    printf( "\n\nFORWARD STATISTICS\n" );
+//    printf( "Step=%d Acc=%d Rej=%d Singular=%d\n\n", Nstp, Nacc, Nrej, Nsng );
 
 /*~~~>  If Forward integration failed return */
-  if ( IERR < 0 )
-    return IERR;
-  else
-    //printf("\nForward integration successful!\n");
+    if ( IERR < 0 )
+        return IERR;
+    
+//    printf("\nForward integration successful!\n");
 
-//  printf( "IERR after forward integration: %d\n\n", IERR);
+//    printf( "IERR after forward integration: %d\n\n", IERR);
 /*~~~>   Initialize the particular Rosenbrock method for continuous adjoint */
-  if ( (AdjointType == Adj_continuous) ||
-       (AdjointType == Adj_simple_continuous) ) {
-    switch (CadjMethod) {
-      case 1:
-	Ros2();
-	break;
-      case 2:
-	Ros3();
-	break;
-      case 3:
-	Ros4();
-	break;
-      case 4:
-	Rodas3();
-	break;
-      case 5:
-	Rodas4();
-	break;
-      default:
-	printf( "Unknown Rosenbrock method: ICNTRL[2]=%d", ICNTRL[2] );
-	return ros_ErrorMsg( -2 );
-    }
-  } /* End switch */
+    if ( (AdjointType == Adj_continuous) ||
+           (AdjointType == Adj_simple_continuous) ) {
+        switch (CadjMethod) {
+        case 1:
+        	Ros2();
+	        break;
+        case 2:
+	        Ros3();
+        	break;
+        case 3:
+	        Ros4();
+	        break;
+        case 4:
+	        Rodas3();
+	        break;
+        case 5:
+	        Rodas4();
+	        break;
+        default:
+	        printf( "Unknown Rosenbrock method: ICNTRL[2]=%d", ICNTRL[2] );
+	        return ADJ_ros_ErrorMsg( -2 );
+        }
+    } /* End switch */
 
-  //printf( "Adjoint Type: %d\n", AdjointType);
+//    printf( "Adjoint Type: %d\n", AdjointType);
 
-  switch( AdjointType ) {
-    case Adj_discrete:
-      //printf("Adjoint discrete\n");
-      IERR = ros_DadjInt (NADJ, Lambda, Tstart, Tend, Texit, SaveLU, ISTATUS,
-			  Roundoff, Autonomous );
-      break;
-    case Adj_continuous:
-      //printf("Adjoint continuous\n");
-      IERR = ros_CadjInt (NADJ, Lambda, Tend, Tstart, Texit, AbsTol_adj,
-			  RelTol_adj, RSTATUS, Hmin, Hmax, Hstart, Roundoff,
-			  Max_no_steps, Autonomous, VectorTol, FacMax, FacMin,
-			  FacSafe, FacRej, ISTATUS);
-      break;
-    case Adj_simple_continuous:
-      //printf("Adjoint simple continuous\n");
-      IERR = ros_SimpleCadjInt (NADJ, Lambda, Tstart, Tend, Texit, ISTATUS,
-				Autonomous, Roundoff);
-  } /* End switch for AdjointType */
+    switch( AdjointType ) {
+        case Adj_discrete:
+//            printf("Adjoint discrete\n");
+            IERR = ros_DadjInt (NADJ, Lambda, Tstart, Tend, Texit, SaveLU, ISTATUS,
+			                    Roundoff, Autonomous );
+            break;
+        case Adj_continuous:
+//            printf("Adjoint continuous\n");
+            IERR = ros_CadjInt (NADJ, Lambda, Tend, Tstart, Texit, AbsTol_adj,
+			                    RelTol_adj, RSTATUS, Hmin, Hmax, Hstart, Roundoff,
+			                    Max_no_steps, Autonomous, VectorTol, FacMax, FacMin,
+			                    FacSafe, FacRej, ISTATUS);
+            break;
+        case Adj_simple_continuous:
+//            printf("Adjoint simple continuous\n");
+            IERR = ros_SimpleCadjInt (NADJ, Lambda, Tstart, Tend, Texit, ISTATUS,
+				                      Autonomous, Roundoff);
+    } /* End switch for AdjointType */
 
-  //printf( "ADJOINT STATISTICS\n" );
-  //printf( "Step=%d Acc=%d Rej=%d Singular=%d\n",Nstp,Nacc,Nrej,Nsng );
+//    printf( "ADJOINT STATISTICS\n" );
+//    printf( "Step=%d Acc=%d Rej=%d Singular=%d\n",Nstp,Nacc,Nrej,Nsng );
 
-//  printf( "\nIERR after adjoint integration: %d\n\n", IERR);
+//    printf( "\nIERR after adjoint integration: %d\n\n", IERR);
 
 /*~~~>  Free checkpoint space or close checkpoint files */
-  if (AdjointType == Adj_discrete)
-    ros_FreeDBuffers( SaveLU );
-  else if ( (AdjointType == Adj_continuous) ||
-	    (AdjointType == Adj_simple_continuous) )
-    ros_FreeCBuffers();
+    if (AdjointType == Adj_discrete)
+        ros_FreeDBuffers( SaveLU );
+    else if ( (AdjointType == Adj_continuous) ||
+	        (AdjointType == Adj_simple_continuous) )
+        ros_FreeCBuffers();
 
-  if ( IERR == 1 ) {}
-    //printf("\nAdjoint integration successful!\n");
-  else
-    printf("\nAdjoint integration failed: %d\n", IERR);
+//    if ( IERR == 1 ) {}
+//        printf("\nAdjoint integration successful!\n");
+//    else
+//      printf("\nAdjoint integration failed: %d\n", IERR);
 
 
-  return IERR;
+    return IERR;
+
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -657,70 +665,70 @@ void ros_AllocateDBuffers( int S, int SaveLU ) {
 /*~~~>  Allocate buffer space for discrete adjoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  int i;
+    int i;
 
-  chk_H = (double*) malloc(bufsize * sizeof(double));
-  if (chk_H == NULL) {
+    chk_H = (double*) malloc(bufsize * sizeof(double));
+    if (chk_H == NULL) {
     printf("Failed allocation of buffer H");
     exit(0);
-  }
-
-  chk_T = (double*) malloc(bufsize * sizeof(double));
-  if (chk_T == NULL) {
-    printf("Failed allocation of buffer T");
-    exit(0);
-  }
-
-  chk_Y = (double**) malloc(bufsize * sizeof(double*));
-  if (chk_Y == NULL) {
-    printf("Failed allocation of buffer Y");
-    exit(0);
-  }
-  for(i=0; i<bufsize; i++) {
-    chk_Y[i] = (double*) malloc(NVAR * S * sizeof(double));
-    if (chk_Y[i] == NULL) {
-      printf("Failed allocation of buffer Y");
-      exit(0);
     }
-  }
 
-  chk_K = (double**) malloc(bufsize * sizeof(double*));
-  if (chk_K == NULL) {
-    printf("Failed allocation of buffer K");
-    exit(0);
-  }
-  for(i=0; i<bufsize; i++) {
-    chk_K[i] = (double*) malloc(NVAR * S * sizeof(double));
+    chk_T = (double*) malloc(bufsize * sizeof(double));
+    if (chk_T == NULL) {
+        printf("Failed allocation of buffer T");
+        exit(0);
+    }
+
+    chk_Y = (double**) malloc(bufsize * sizeof(double*));
+    if (chk_Y == NULL) {
+        printf("Failed allocation of buffer Y");
+        exit(0);
+    }
+    for(i=0; i<bufsize; i++) {
+        chk_Y[i] = (double*) malloc(NVAR * S * sizeof(double));
+        if (chk_Y[i] == NULL) {
+            printf("Failed allocation of buffer Y");
+            exit(0);
+        }
+    }
+
+    chk_K = (double**) malloc(bufsize * sizeof(double*));
     if (chk_K == NULL) {
-      printf("Failed allocation of buffer K");
-      exit(0);
+        printf("Failed allocation of buffer K");
+        exit(0);
     }
-  }
+    for(i=0; i<bufsize; i++) {
+        chk_K[i] = (double*) malloc(NVAR * S * sizeof(double));
+        if (chk_K == NULL) {
+            printf("Failed allocation of buffer K");
+            exit(0);
+        }
+    }
 
-  if (SaveLU) {
-    chk_J = (double**) malloc(bufsize * sizeof(double*));
-    if (chk_J == NULL) {
-      printf( "Failed allocation of buffer J");
-      exit(0);
-    }
+    if (SaveLU) {
+        chk_J = (double**) malloc(bufsize * sizeof(double*));
+        if (chk_J == NULL) {
+            printf( "Failed allocation of buffer J");
+            exit(0);
+        }
 #ifdef FULL_ALGEBRA
-    for(i=0; i<bufsize; i++) {
-      chk_J[i] = (double*) malloc(NVAR * NVAR * sizeof(double));
-      if (chk_J == NULL) {
-	printf( "Failed allocation of buffer J");
-	exit(0);
-      }
-    }
+        for(i=0; i<bufsize; i++) {
+            chk_J[i] = (double*) malloc(NVAR * NVAR * sizeof(double));
+            if (chk_J == NULL) {
+	            printf( "Failed allocation of buffer J");
+	            exit(0);
+            }
+        }
 #else
-    for(i=0; i<bufsize; i++) {
-      chk_J[i] = (double*) malloc(LU_NONZERO * sizeof(double));
-      if (chk_J == NULL) {
-	printf( "Failed allocation of buffer J");
-	exit(0);
-      }
-    }
+        for(i=0; i<bufsize; i++) {
+            chk_J[i] = (double*) malloc(LU_NONZERO * sizeof(double));
+            if (chk_J == NULL) {
+    	        printf( "Failed allocation of buffer J");
+	            exit(0);
+            }
+        }
 #endif
-  }
+    }
 
 } /* End of ros_AllocateDBuffers */
 
@@ -729,23 +737,23 @@ void ros_FreeDBuffers( int SaveLU ) {
 /*~~~>  Deallocate buffer space for discrete adjoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  int i;
+    int i;
 
-  free(chk_H);
-  free(chk_T);
+    free(chk_H);
+    free(chk_T);
 
-  for(i=0; i<bufsize; i++) {
-    free(chk_Y[i]);
-    free(chk_K[i]);
-  }
-  free(chk_Y);
-  free(chk_K);
+    for(i=0; i<bufsize; i++) {
+        free(chk_Y[i]);
+        free(chk_K[i]);
+    }
+    free(chk_Y);
+    free(chk_K);
 
-  if (SaveLU) {
-    for(i=0; i<bufsize; i++)
-      free(chk_J[i]);
-    free(chk_J);
-  }
+    if (SaveLU) {
+        for(i=0; i<bufsize; i++)
+            free(chk_J[i]);
+        free(chk_J);
+    }
 
 } /* End of ros_FreeDBuffers */
 
@@ -756,56 +764,57 @@ void ros_AllocateCBuffers() {
 
   int i;
 
-  chk_H = (double*) malloc(bufsize * sizeof(double));
-  if (chk_H == NULL) {
-    printf( "Failed allocation of buffer H");
-    exit(0);
-  }
+    chk_H = (double*) malloc(bufsize * sizeof(double));
+    if (chk_H == NULL) {
+        printf( "Failed allocation of buffer H");
+        exit(0);
+    }
 
-  chk_T = (double*) malloc(bufsize * sizeof(double));
-  if (chk_T == NULL) {
-    printf( "Failed allocation of buffer T");
-    exit(0);
-  }
+    chk_T = (double*) malloc(bufsize * sizeof(double));
+    if (chk_T == NULL) {
+        printf( "Failed allocation of buffer T");
+        exit(0);
+    }
 
-  chk_Y = (double**) malloc(sizeof(double*) * bufsize);
-  if (chk_Y == NULL) {
-    printf( "Failed allocation of buffer Y");
-    exit(0);
-  }
-  for(i=0; i<bufsize; i++) {
-    chk_Y[i] = (double*) malloc( sizeof(double)* NVAR );
+    chk_Y = (double**) malloc(sizeof(double*) * bufsize);
     if (chk_Y == NULL) {
-      printf( "Failed allocation of buffer Y");
-      exit(0);
+        printf( "Failed allocation of buffer Y");
+        exit(0);
     }
-  }
+    for(i=0; i<bufsize; i++) {
+        chk_Y[i] = (double*) malloc( sizeof(double)* NVAR );
+        if (chk_Y == NULL) {
+            printf( "Failed allocation of buffer Y");
+            exit(0);
+        }
+    }
 
-  chk_dY = (double**) malloc(sizeof(double*) * bufsize);
-  if (chk_dY == NULL) {
-    printf( "Failed allocation of buffer dY");
-    exit(0);
-  }
-  for(i=0; i<bufsize; i++) {
-    chk_dY[i] = (double*) malloc( sizeof(double) * NVAR);
+    chk_dY = (double**) malloc(sizeof(double*) * bufsize);
     if (chk_dY == NULL) {
-      printf( "Failed allocation of buffer dY");
-      exit(0);
+        printf( "Failed allocation of buffer dY");
+        exit(0);
     }
-  }
+    for(i=0; i<bufsize; i++) {
+        chk_dY[i] = (double*) malloc( sizeof(double) * NVAR);
+        if (chk_dY == NULL) {
+            printf( "Failed allocation of buffer dY");
+            exit(0);
+        }
+    }
 
-  chk_d2Y = (double**) malloc(sizeof(double*) * bufsize);
-  if (chk_d2Y == NULL) {
-    printf( "Failed allocation of buffer d2Y");
-    exit(0);
-  }
-  for(i=0; i<bufsize; i++) {
-    chk_d2Y[i] = (double*) malloc( sizeof(double) * NVAR);
+    chk_d2Y = (double**) malloc(sizeof(double*) * bufsize);
     if (chk_d2Y == NULL) {
-      printf( "Failed allocation of buffer d2Y");
-      exit(0);
+        printf( "Failed allocation of buffer d2Y");
+        exit(0);
     }
-  }
+    for(i=0; i<bufsize; i++) {
+        chk_d2Y[i] = (double*) malloc( sizeof(double) * NVAR);
+        if (chk_d2Y == NULL) {
+            printf( "Failed allocation of buffer d2Y");
+            exit(0);
+        }
+    }
+
 } /* End of ros_AllocateCBuffers */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -813,20 +822,20 @@ void ros_FreeCBuffers() {
 /*~~~>  Dallocate buffer space for continuous adjoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  int i;
+    int i;
 
-  free(chk_H);
-  free(chk_T);
+    free(chk_H);
+    free(chk_T);
 
-  for(i=0; i<bufsize; i++) {
-    free(chk_Y[i]);
-    free(chk_dY[i]);
-    free(chk_d2Y[i]);
-  }
+    for(i=0; i<bufsize; i++) {
+        free(chk_Y[i]);
+        free(chk_dY[i]);
+        free(chk_d2Y[i]);
+    }
 
-  free(chk_Y);
-  free(chk_dY);
-  free(chk_d2Y);
+    free(chk_Y);
+    free(chk_dY);
+    free(chk_d2Y);
 
 } /* End of ros_FreeCBuffers */
 
@@ -837,34 +846,34 @@ void ros_DPush( int S, double T, double H, double Ystage[],
 ~~~> Saves the next trajectory snapshot for discrete adjoints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  int i;
+    int i;
 
-  stack_ptr = stack_ptr + 1;
-  if ( stack_ptr >= bufsize ) {
-    printf( "Push failed: buffer overflow" );
-    exit(0);
-  }
-
-  chk_H[ stack_ptr ] = H;
-  chk_T[ stack_ptr ] = T;
-  for(i=0; i<NVAR*S; i++) {
-    chk_Y[stack_ptr][i] = Ystage[i];
-    chk_K[stack_ptr][i] = K[i];
-  }
-
-  if (SaveLU) {
-#ifdef FULL_ALGEBRA
-    int j;
-    for(j=0; j<NVAR; j++) {
-      for(i=0; i<NVAR; i++)
-	chk_J[stack_ptr][i][j] = E[i][j];
-      chk_P[stack_ptr][j] = P[j];
+    stack_ptr = stack_ptr + 1;
+    if ( stack_ptr >= bufsize ) {
+        printf( "Push failed: buffer overflow" );
+        exit(0);
     }
+
+    chk_H[ stack_ptr ] = H;
+    chk_T[ stack_ptr ] = T;
+    for(i=0; i<NVAR*S; i++) {
+        chk_Y[stack_ptr][i] = Ystage[i];
+        chk_K[stack_ptr][i] = K[i];
+    }
+
+    if (SaveLU) {
+#ifdef FULL_ALGEBRA
+        int j;
+        for(j=0; j<NVAR; j++) {
+            for(i=0; i<NVAR; i++)
+	            chk_J[stack_ptr][i][j] = E[i][j];
+            chk_P[stack_ptr][j] = P[j];
+        }
 #else
-    for(i=0; i<LU_NONZERO; i++)
-      chk_J[stack_ptr][i] = E[i];
+        for(i=0; i<LU_NONZERO; i++)
+            chk_J[stack_ptr][i] = E[i];
 #endif
-  }
+    }
 
 } /* End of ros_DPush */
 
@@ -875,36 +884,36 @@ void ros_DPop( int S, double* T, double* H, double* Ystage,
 ~~~> Retrieves the next trajectory snapshot for discrete adjoints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  int i;
+    int i;
 
-  if ( stack_ptr < 0 ) {
-    printf( "Pop failed: empty buffer" );
-    exit(0);
-  }
-
-  *H = chk_H[ stack_ptr ];
-  *T = chk_T[ stack_ptr ];
-
-  for(i=0; i<NVAR*S; i++) {
-    Ystage[i] = chk_Y[stack_ptr][i];
-    K[i]      = chk_K[stack_ptr][i];
-  }
-
-  if (SaveLU) {
-#ifdef FULL_ALGEBRA
-    int j;
-    for(i=0; i<NVAR; i++) {
-      for(j=0; j<NVAR; j++)
-	E[(j*NVAR)+i] = chk_J[stack_ptr][j][i];
-      P[i] = chk_P[stack_ptr][i];
+    if ( stack_ptr < 0 ) {
+        printf( "Pop failed: empty buffer" );
+        exit(0);
     }
-#else
-    for(i=0; i<LU_NONZERO; i++)
-      E[i] = chk_J[stack_ptr][i];
-#endif
-  }
 
-  stack_ptr--;
+    *H = chk_H[ stack_ptr ];
+    *T = chk_T[ stack_ptr ];
+
+    for(i=0; i<NVAR*S; i++) {
+        Ystage[i] = chk_Y[stack_ptr][i];
+        K[i]      = chk_K[stack_ptr][i];
+    }
+
+    if (SaveLU) {
+#ifdef FULL_ALGEBRA
+        int j;
+        for(i=0; i<NVAR; i++) {
+            for(j=0; j<NVAR; j++)
+	            E[(j*NVAR)+i] = chk_J[stack_ptr][j][i];
+            P[i] = chk_P[stack_ptr][i];
+        }
+#else
+        for(i=0; i<LU_NONZERO; i++)
+            E[i] = chk_J[stack_ptr][i];
+#endif
+    }
+
+    stack_ptr--;
 
 } /* End of ros_DPop */
 
@@ -915,21 +924,22 @@ void ros_CPush( double T, double H, double Y[], double dY[],
 ~~~> Saves the next trajectory snapshot for discrete adjoints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  int i;
+    int i;
 
-  stack_ptr++;
-  if ( stack_ptr > bufsize ) {
-    printf( "Push failed: buffer overflow" );
-    exit(0);
-  }
-  chk_H[ stack_ptr ] = H;
-  chk_T[ stack_ptr ] = T;
+    stack_ptr++;
+    if ( stack_ptr > bufsize ) {
+        printf( "Push failed: buffer overflow" );
+        exit(0);
+    }
+    chk_H[ stack_ptr ] = H;
+    chk_T[ stack_ptr ] = T;
 
-  for(i = 0; i< NVAR; i++ ) {
-    chk_Y[stack_ptr][i] = Y[i];
-    chk_dY[stack_ptr][i] = dY[i];
-    chk_d2Y[stack_ptr][i] = d2Y[i];
-  }
+    for(i = 0; i< NVAR; i++ ) {
+        chk_Y[stack_ptr][i] = Y[i];
+        chk_dY[stack_ptr][i] = dY[i];
+        chk_d2Y[stack_ptr][i] = d2Y[i];
+    }
+
 } /* End of ros_CPush */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -939,75 +949,78 @@ void ros_CPop( double T, double H, double Y[], double dY[],
 ~~~> Retrieves the next trajectory snapshot for discrete adjoints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  int i;
+    int i;
 
-  if ( stack_ptr <= 0 ) {
-    printf( "Pop failed: empty buffer" );
-    exit(0);
-  }
-  H = chk_H[ stack_ptr ];
-  T = chk_T[ stack_ptr ];
+    if ( stack_ptr <= 0 ) {
+        printf( "Pop failed: empty buffer" );
+        exit(0);
+    }
+    H = chk_H[ stack_ptr ];
+    T = chk_T[ stack_ptr ];
 
-  for(i=0; i<NVAR; i++) {
-    Y[i] = chk_Y[stack_ptr][i];
-    dY[i] = chk_dY[stack_ptr][i];
-    d2Y[i] = chk_d2Y[stack_ptr][i];
-  }
-  stack_ptr--;
+    for(i=0; i<NVAR; i++) {
+        Y[i] = chk_Y[stack_ptr][i];
+        dY[i] = chk_dY[stack_ptr][i];
+        d2Y[i] = chk_d2Y[stack_ptr][i];
+    }
+
+    stack_ptr--;
+
 } /* End of ros_CPop */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-static int ros_ErrorMsg( int Code ) {
+int ADJ_ros_ErrorMsg( int Code ) {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Handles all error messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  int IERR = Code;
-//  printf( "\nForced exit from RosenbrockADJ due to the following error:");
+    int IERR = Code;
+//    printf( "\nForced exit from RosenbrockADJ due to the following error:");
 
-  switch (Code) {
-    case -1:
-      printf( "--> Improper value for maximal no of steps" );
-      break;
-    case -2:
-      printf( "--> Selected RosenbrockADJ method not implemented" );
-      break;
-    case -3:
-      printf( "--> Hmin/Hmax/Hstart must be positive" );
-      break;
-    case -4:
-      printf( "--> FacMin/FacMax/FacRej must be positive" );
-      break;
-    case -5:
-      printf( "--> Improper tolerance values" );
-      break;
-    case -6:
-      printf( "--> No of steps exceeds maximum buffer bound" );
-      break;
-    case -7:
-      //printf( "--> Step size too small: T + 10*H = T or H < Roundoff" );
-      break;
-    case -8:
-      printf( "--> Matrix is repeatedly singular" );
-      break;
-    case -9:
-      printf( "--> Improper type of adjoint selected" );
-      break;
-    default:
-      printf( "Unknown Error code: %d", Code );
-  } /* End of switch */
+    switch (Code) {
+        case -1:
+            printf( "--> Improper value for maximal no of steps" );
+            break;
+        case -2:
+            printf( "--> Selected RosenbrockADJ method not implemented" );
+            break;
+        case -3:
+            printf( "--> Hmin/Hmax/Hstart must be positive" );
+            break;
+        case -4:
+            printf( "--> FacMin/FacMax/FacRej must be positive" );
+            break;
+        case -5:
+            printf( "--> Improper tolerance values" );
+            break;
+        case -6:
+            printf( "--> No of steps exceeds maximum buffer bound" );
+            break;
+        case -7:
+//            printf( "--> Step size too small: T + 10*H = T or H < Roundoff" );
+              break;
+        case -8:
+            printf( "--> Matrix is repeatedly singular" );
+            break;
+        case -9:
+            printf( "--> Improper type of adjoint selected" );
+            break;
+        default:
+            printf( "Unknown Error code: %d", Code );
+    } /* End of switch */
 
-  return IERR;
-} /* End of ros_ErrorMsg */
+    return IERR;
+
+} /* End of ADJ_ros_ErrorMsg */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 int ros_FwdInt ( double Y[], double Tstart, double Tend, double T,
-		 double AbsTol[], double RelTol[], int AdjointType,
-		 double Hmin, double Hstart, double Hmax,
-		 double Roundoff, int ISTATUS[], int Max_no_steps,
-		 double RSTATUS[], int Autonomous, int VectorTol,
-		 double FacMax, double FacMin, double FacSafe,
-		 double FacRej, int SaveLU ) {
+		         double AbsTol[], double RelTol[], int AdjointType,
+		         double Hmin, double Hstart, double Hmax,
+		         double Roundoff, int ISTATUS[], int Max_no_steps,
+		         double RSTATUS[], int Autonomous, int VectorTol,
+		         double FacMax, double FacMin, double FacSafe,
+		         double FacRej, int SaveLU ) {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    Template for the implementation of a generic RosenbrockADJ method
       defined by ros_S (no of stages)
@@ -1020,219 +1033,218 @@ int ros_FwdInt ( double Y[], double Tstart, double Tend, double T,
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /* ~~~~ Local variables */
-  double Ynew[NVAR], Fcn0[NVAR], Fcn[NVAR];
-  double K[NVAR*ros_S], dFdT[NVAR];
-  double *Ystage = NULL; /* Array pointer */
+    double Ynew[NVAR], Fcn0[NVAR], Fcn[NVAR];
+    double K[NVAR*ros_S], dFdT[NVAR];
+    double *Ystage = NULL; /* Array pointer */
 #ifdef FULL_ALGEBRA
-  double Jac0[NVAR][NVAR],  Ghimj[NVAR][NVAR];
+    double Jac0[NVAR][NVAR],  Ghimj[NVAR][NVAR];
 #else
-  double Jac0[LU_NONZERO], Ghimj[LU_NONZERO];
+    double Jac0[LU_NONZERO], Ghimj[LU_NONZERO];
 #endif
-  double H, Hnew, HC, HG, Fac, Tau;
-  double Err, Yerr[NVAR];
-  int Pivot[NVAR], Direction, ioffset, i, j=0, istage;
-  int RejectLastH, RejectMoreH, Singular; /* Boolean Values */
+    double H, Hnew, HC, HG, Fac, Tau;
+    double Err, Yerr[NVAR];
+    int Pivot[NVAR], Direction, ioffset, i, j=0, istage;
+    int RejectLastH, RejectMoreH, Singular; /* Boolean Values */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~>  Allocate stage vector buffer if needed */
-  if (AdjointType == Adj_discrete) {
-    Ystage = (double*) malloc(NVAR*ros_S*sizeof(double));
+    if (AdjointType == Adj_discrete) {
+        Ystage = (double*) malloc(NVAR*ros_S*sizeof(double));
     /* Uninitialized Ystage may lead to NaN on some compilers */
-    if (Ystage == NULL) {
-      printf( "Allocation of Ystage failed" );
-      exit(0);
+        if (Ystage == NULL) {
+            printf( "Allocation of Ystage failed" );
+            exit(0);
+        }
     }
-  }
 
 /*~~~>  Initial preparations */
-  T = Tstart;
-  RSTATUS[Nhexit] = ZERO;
-  H = MIN( MAX(ABS(Hmin),ABS(Hstart)) , ABS(Hmax) );
+    T = Tstart;
+    RSTATUS[Nhexit] = ZERO;
+    H = MIN( MAX(ABS(Hmin),ABS(Hstart)) , ABS(Hmax) );
 
-  if (ABS(H) <= ((double)10.0)*Roundoff)
-    H = DeltaMin;
+    if (ABS(H) <= ((double)10.0)*Roundoff)
+        H = DeltaMin;
 
-  if (Tend >= Tstart)
-    Direction = 1;
-  else
-    Direction = -1;
+    if (Tend >= Tstart)
+        Direction = 1;
+    else
+        Direction = -1;
 
-  H = Direction*H;
+    H = Direction*H;
 
-  RejectLastH = FALSE;
-  RejectMoreH = FALSE;
+    RejectLastH = FALSE;
+    RejectMoreH = FALSE;
 
 /*~~~> Time loop begins below */
-  while ( ((Direction > 0) && ((T-Tend)+Roundoff <= ZERO)) ||
-	  ((Direction < 0) && ((Tend-T)+Roundoff <= ZERO)) ) { /* TimeLoop */
+    while ( ((Direction > 0) && ((T-Tend)+Roundoff <= ZERO)) ||
+	      ((Direction < 0) && ((Tend-T)+Roundoff <= ZERO)) ) { /* TimeLoop */
 
-    if ( ISTATUS[Nstp] > Max_no_steps )  /* Too many steps */
-      return ros_ErrorMsg( -6 );
+        if ( ISTATUS[Nstp] > Max_no_steps )  /* Too many steps */
+            return ADJ_ros_ErrorMsg( -6 );
 
-    if ( ((T+((double)0.1)*H) == T) || (H <= Roundoff) ) /* Step size too small */
-      return ros_ErrorMsg( -7 );
+        if ( ((T+((double)0.1)*H) == T) || (H <= Roundoff) ) /* Step size too small */
+            return ADJ_ros_ErrorMsg( -7 );
 
 /*~~~>  Limit H if necessary to avoid going beyond Tend */
-    RSTATUS[Nhexit] = H;
-    H = MIN(H,ABS((Tend-T)));
+        RSTATUS[Nhexit] = H;
+        H = MIN(H,ABS((Tend-T)));
 
 /*~~~>   Compute the function at current time */
-    FunTemplate(T,Y,Fcn0);
-    ISTATUS[Nfun] = ISTATUS[Nfun] + 1;
+        ADJ_FunTemplate(T,Y,Fcn0);
+        ISTATUS[Nfun] = ISTATUS[Nfun] + 1;
 
 /*~~~>  Compute the function derivative with respect to T */
-    if (!Autonomous)
-      ros_FunTimeDerivative ( T, Roundoff, Y, Fcn0, dFdT, ISTATUS );
+        if (!Autonomous)
+            ros_FunTimeDerivative ( T, Roundoff, Y, Fcn0, dFdT, ISTATUS );
 
 /*~~~>   Compute the Jacobian at current time */
-    JacTemplate(T,Y,Jac0);
-    ISTATUS[Njac] = ISTATUS[Njac] + 1;
+        ADJ_JacTemplate(T,Y,Jac0);
+        ISTATUS[Njac] = ISTATUS[Njac] + 1;
 
 /*~~~>  Repeat step calculation until current step accepted */
-    do {  /* UntilAccepted */
+        do {  /* UntilAccepted */
 
-      Singular = ros_PrepareMatrix ( H,Direction,ros_Gamma[0],Jac0,Ghimj,Pivot,
-				     ISTATUS );
+            Singular = ros_PrepareMatrix ( H,Direction,ros_Gamma[0],Jac0,Ghimj,Pivot,
+			                      	       ISTATUS );
 
-      if (Singular) /* More than 5 consecutive failed decompositions */
-	    return ros_ErrorMsg( -8 );
+            if (Singular) /* More than 5 consecutive failed decompositions */
+	            return ADJ_ros_ErrorMsg( -8 );
 
 /*~~~>   Compute the stages */
-      for( istage = 0; istage < ros_S; istage++ ) { /* Stage */
+            for( istage = 0; istage < ros_S; istage++ ) { /* Stage */
 
-	/* Current istage offset. Current istage vector is
-	   K(ioffset+1:ioffset+NVAR) */
-	ioffset = NVAR*istage;
+	        /* Current istage offset. Current istage vector is
+	           K(ioffset+1:ioffset+NVAR) */
+	            ioffset = NVAR*istage;
 
-	/*For the 1st istage the function has been computed previously*/
-	if ( istage == 0 ) {
-	  WCOPY(NVAR,Fcn0,1,Fcn,1);
-	  if (AdjointType == Adj_discrete) { /* Save stage solution */
-	    for(i=0; i<NVAR; i++)
-	      Ystage[i] = Y[i];
-	    WCOPY(NVAR,Y,1,Ynew,1);
-	  }
-	}
-	/* istage>0 and a new function evaluation is needed at the
-	   current istage */
-	else if ( ros_NewF[istage] ) {
-	  WCOPY(NVAR,Y,1,Ynew,1);
-	  for ( j = 0; j < istage; j++ ) {
-	    WAXPY( NVAR,ros_A[(istage)*(istage-1)/2+j],
-		   &K[NVAR*j],1,Ynew,1 );
-	  }
-	  Tau = T + ros_Alpha[istage]*Direction*H;
-	  FunTemplate(Tau,Ynew,Fcn);
-	  ISTATUS[Nfun] = ISTATUS[Nfun] + 1;
-	} /* if istage == 1 elseif ros_NewF[istage] */
+	        /*For the 1st istage the function has been computed previously */
+	            if ( istage == 0 ) {
+	                WCOPY(NVAR,Fcn0,1,Fcn,1);
+	                if (AdjointType == Adj_discrete) { /* Save stage solution */
+	                    for(i=0; i<NVAR; i++)
+	                        Ystage[i] = Y[i];
+	                    WCOPY(NVAR,Y,1,Ynew,1);
+	                }
+	            }
 
-	/* Save stage solution every time even if ynew is not updated */
-	if ( ( istage > 0 ) && (AdjointType == Adj_discrete) ) {
-	  for(i=0; i<NVAR; i++)
-	    Ystage[ioffset+i] = Ynew[i];
-	}
-	WCOPY(NVAR,Fcn,1,&K[ioffset],1);
-	for( j = 0; j < istage; j++ ) {
-	  HC = ros_C[(istage)*(istage-1)/2+j]/(Direction*H);
-	  WAXPY(NVAR,HC,&K[NVAR*j],1,&K[ioffset],1);
-	}
-	if (( !Autonomous) && (ros_Gamma[istage] != ZERO)) {
-	  HG = Direction*H*ros_Gamma[istage];
-	  WAXPY(NVAR,HG,dFdT,1,&K[ioffset],1);
-	}
-	ros_Solve('N', Ghimj, Pivot, &K[ioffset], ISTATUS);
-      } /* End of Stage loop */
+	        /* istage>0 and a new function evaluation is needed at the
+	           current istage */
+	            else if ( ros_NewF[istage] ) {
+	                WCOPY(NVAR,Y,1,Ynew,1);
+	                for ( j = 0; j < istage; j++ ) {
+	                    WAXPY( NVAR,ros_A[(istage)*(istage-1)/2+j],
+		                       &K[NVAR*j],1,Ynew,1 );
+	                }
+	                Tau = T + ros_Alpha[istage]*Direction*H;
+	                ADJ_FunTemplate(Tau,Ynew,Fcn);
+	                ISTATUS[Nfun] = ISTATUS[Nfun] + 1;
+	            } /* if istage == 1 elseif ros_NewF[istage] */
+
+	        /* Save stage solution every time even if ynew is not updated */
+	            if ( ( istage > 0 ) && (AdjointType == Adj_discrete) ) {
+	                for(i=0; i<NVAR; i++)
+	                    Ystage[ioffset+i] = Ynew[i];
+	            }
+	            WCOPY(NVAR,Fcn,1,&K[ioffset],1);
+	            for( j = 0; j < istage; j++ ) {
+	                HC = ros_C[(istage)*(istage-1)/2+j]/(Direction*H);
+	                WAXPY(NVAR,HC,&K[NVAR*j],1,&K[ioffset],1);
+	            }
+	            if (( !Autonomous) && (ros_Gamma[istage] != ZERO)) {
+	                HG = Direction*H*ros_Gamma[istage];
+	                WAXPY(NVAR,HG,dFdT,1,&K[ioffset],1);
+	            }
+	            ros_Solve('N', Ghimj, Pivot, &K[ioffset], ISTATUS);
+            } /* End of Stage loop */
 
 /*~~~>  Compute the new solution */
-      WCOPY(NVAR,Y,1,Ynew,1);
-      for( j=0; j<ros_S; j++ )
-	    WAXPY(NVAR,ros_M[j],&K[NVAR*j],1,Ynew,1);
+            WCOPY(NVAR,Y,1,Ynew,1);
+            for( j=0; j<ros_S; j++ )
+	            WAXPY(NVAR,ros_M[j],&K[NVAR*j],1,Ynew,1);
 
 /*~~~>  Compute the error estimation */
-      WSCAL(NVAR,ZERO,Yerr,1);
-      for( j=0; j<ros_S; j++ )
-	    WAXPY(NVAR,ros_E[j],&K[NVAR*j],1,Yerr,1);
-      Err = ros_ErrorNorm ( Y, Ynew, Yerr, AbsTol, RelTol, VectorTol );
+            WSCAL(NVAR,ZERO,Yerr,1);
+            for( j=0; j<ros_S; j++ )
+	            WAXPY(NVAR,ros_E[j],&K[NVAR*j],1,Yerr,1);
+            Err = ros_ErrorNorm ( Y, Ynew, Yerr, AbsTol, RelTol, VectorTol );
 
 /*~~~> New step size is bounded by FacMin <= Hnew/H <= FacMax */
-      Fac  = MIN(FacMax,MAX(FacMin,FacSafe/(pow(Err,(ONE/ros_ELO)))));
-      Hnew = H*Fac;
+            Fac  = MIN(FacMax,MAX(FacMin,FacSafe/(pow(Err,(ONE/ros_ELO)))));
+            Hnew = H*Fac;
 
 /*~~~>  Check the error magnitude and adjust step size */
-      ISTATUS[Nstp] = ISTATUS[Nstp] + 1;
-      if ( (Err <= ONE) || (H <= Hmin) ) {  /*~~~> Accept step */
-	ISTATUS[Nacc]++;
-	if (AdjointType == Adj_discrete) { /* Save current state */
-	  ros_DPush( ros_S, T, H, Ystage, K, Ghimj, Pivot, SaveLU );
-	}
-	else if ( (AdjointType == Adj_continuous) ||
-		  (AdjointType == Adj_simple_continuous) ) {
+            ISTATUS[Nstp] = ISTATUS[Nstp] + 1;
+            if ( (Err <= ONE) || (H <= Hmin) ) {  /*~~~> Accept step */
+	            ISTATUS[Nacc]++;
+	            if (AdjointType == Adj_discrete) { /* Save current state */
+	                ros_DPush( ros_S, T, H, Ystage, K, Ghimj, Pivot, SaveLU );
+	            }
+	            else if ( (AdjointType == Adj_continuous) ||
+		                (AdjointType == Adj_simple_continuous) ) {
 #ifdef FULL_ALGEBRA
-	  K = MATMUL(Jac0,Fcn0);
+	                K = MATMUL(Jac0,Fcn0);
 #else
-	  Jac_SP_Vec( Jac0, Fcn0, &K[0] );
+	                Jac_SP_Vec( Jac0, Fcn0, &K[0] );
 #endif
-	  if ( !Autonomous)
-	    WAXPY(NVAR,ONE,dFdT,1,&K[0],1);
-	  ros_CPush( T, H, Y, Fcn0, &K[0] );
-	}
-	WCOPY(NVAR,Ynew,1,Y,1);
-	T = T + Direction*H;
-//    printf("T, dt: %7.5f, %.5e\n", T/3600, H);
-//    printf("Hmin, Hnew, Hmax: %.5e, %.5e, %.5e\n",Hmin,Hnew,Hmax);
-	Hnew = MAX(Hmin,MIN(Hnew,Hmax));
-//    Hnew = MIN( MAX(ABS(Hmin),ABS(Hnew)) , ABS(Hmax) );
-	if (RejectLastH) { /* No step size increase after a rejected step */
-	  Hnew = MIN(Hnew,H);
-	}
-	RSTATUS[Nhexit] = H;
-	RSTATUS[Nhnew]  = Hnew;
-	RSTATUS[Ntexit] = T;
-	RejectLastH = FALSE;
-	RejectMoreH = FALSE;
-	H = Hnew;
-	break; /* UntilAccepted - EXIT THE LOOP: WHILE STEP NOT ACCEPTED */
-      }
+	                if ( !Autonomous)
+	                    WAXPY(NVAR,ONE,dFdT,1,&K[0],1);
+	                ros_CPush( T, H, Y, Fcn0, &K[0] );
+	            }
+	            WCOPY(NVAR,Ynew,1,Y,1);
+	            T = T + Direction*H;
+	            Hnew = MAX(Hmin,MIN(Hnew,Hmax));
+	            if (RejectLastH) { /* No step size increase after a rejected step */
+	                Hnew = MIN(Hnew,H);
+	            }
+	            RSTATUS[Nhexit] = H;
+	            RSTATUS[Nhnew]  = Hnew;
+	            RSTATUS[Ntexit] = T;
+	            RejectLastH = FALSE;
+	            RejectMoreH = FALSE;
+	            H = Hnew;
+	            break; /* UntilAccepted - EXIT THE LOOP: WHILE STEP NOT ACCEPTED */
+            }
 
-      else { /*~~~> Reject step */
-	if (RejectMoreH) {
-	  Hnew = H*FacRej;
-    }
-        RejectMoreH = RejectLastH;
-        RejectLastH = TRUE;
-        H = Hnew;
-        if (ISTATUS[Nacc] >= 1)
-	  ISTATUS[Nrej]++;
-      } /* End if else - Err <= 1 */
+            else { /*~~~> Reject step */
+	            if (RejectMoreH) {
+	                Hnew = H*FacRej;
+                }
+                RejectMoreH = RejectLastH;
+                RejectLastH = TRUE;
+                H = Hnew;
+                if (ISTATUS[Nacc] >= 1)
+	                ISTATUS[Nrej]++;
+            } /* End if else - Err <= 1 */
 
-    } while(1); /* End of UntilAccepted do loop */
-  } /* End of TimeLoop */
+        } while(1); /* End of UntilAccepted do loop */
+    } /* End of TimeLoop */
 
 /*~~~> Save last state: only needed for continuous adjoint */
-  if ( (AdjointType == Adj_continuous) ||
-       (AdjointType == Adj_simple_continuous) ) {
-    FunTemplate(T,Y,Fcn0);
-    ISTATUS[Nfun]++;
-    JacTemplate(T,Y,Jac0);
-    ISTATUS[Njac]++;
+    if ( (AdjointType == Adj_continuous) ||
+           (AdjointType == Adj_simple_continuous) ) {
+        ADJ_FunTemplate(T,Y,Fcn0);
+        ISTATUS[Nfun]++;
+        ADJ_JacTemplate(T,Y,Jac0);
+        ISTATUS[Njac]++;
 #ifdef FULL_ALGEBRA
-    K = MATMUL(Jac0,Fcn0);
+        K = MATMUL(Jac0,Fcn0);
 #else
-    Jac_SP_Vec( Jac0, Fcn0, &K[0] );
+        Jac_SP_Vec( Jac0, Fcn0, &K[0] );
 #endif
-    if (!Autonomous) {
-      ros_FunTimeDerivative ( T, Roundoff, Y, Fcn0, dFdT, ISTATUS );
-      WAXPY(NVAR,ONE,dFdT,1,&K[0],1);
-    }
-    ros_CPush( T, H, Y, Fcn0, &K[0] );
+        if (!Autonomous) {
+            ros_FunTimeDerivative ( T, Roundoff, Y, Fcn0, dFdT, ISTATUS );
+            WAXPY(NVAR,ONE,dFdT,1,&K[0],1);
+        }
+        ros_CPush( T, H, Y, Fcn0, &K[0] );
 /*~~~> Deallocate stage buffer: only needed for discrete adjoint */
-  }
-  else if (AdjointType == Adj_discrete) {
-    free(Ystage);
-  }
+    }
+    else if (AdjointType == Adj_discrete) {
+        free(Ystage);
+    }
 
 /*~~~> Succesful exit */
-  return 1;  /*~~~> The integration was successful */
+    return 1;  /*~~~> The integration was successful */
+
 } /* End of ros_FwdInt */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1250,132 +1262,132 @@ int ros_DadjInt ( int NADJ, double Lambda[][NVAR], double Tstart,
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~~ Local variables */
-  double Ystage[NVAR*ros_S], K[NVAR*ros_S];
-  double U[NADJ][NVAR*ros_S], V[NADJ][NVAR*ros_S];
+    double Ystage[NVAR*ros_S], K[NVAR*ros_S];
+    double U[NADJ][NVAR*ros_S], V[NADJ][NVAR*ros_S];
 #ifdef FULL_ALGEBRA
-  double Jac[NVAR][NVAR], dJdT[NVAR][NVAR], Ghimj[NVAR][NVAR];
+    double Jac[NVAR][NVAR], dJdT[NVAR][NVAR], Ghimj[NVAR][NVAR];
 #else
-  double Jac[LU_NONZERO], dJdT[LU_NONZERO], Ghimj[LU_NONZERO];
+    double Jac[LU_NONZERO], dJdT[LU_NONZERO], Ghimj[LU_NONZERO];
 #endif
-  double Hes0[NHESS];
-  double Tmp[NVAR], Tmp2[NVAR];
-  double H=0.0, HC, HA, Tau;
-  int Pivot[NVAR], Direction;
-  int i, j, m, istage, istart, jstart;
+    double Hes0[NHESS];
+    double Tmp[NVAR], Tmp2[NVAR];
+    double H=0.0, HC, HA, Tau;
+    int Pivot[NVAR], Direction;
+    int i, j, m, istage, istart, jstart;
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  if (Tend  >=  Tstart)
-    Direction = 1;
-  else
-    Direction = -1;
+    if (Tend  >=  Tstart)
+        Direction = 1;
+    else
+        Direction = -1;
 
-  /*~~~> Time loop begins below */
-  while ( stack_ptr > 0 ) { /* TimeLoop */
+    /*~~~> Time loop begins below */
+    while ( stack_ptr > 0 ) { /* TimeLoop */
 
-    /*~~~>  Recover checkpoints for stage values and vectors */
-    ros_DPop( ros_S, &T, &H, &Ystage[0], &K[0], &Ghimj[0], &Pivot[0], SaveLU );
+        /*~~~>  Recover checkpoints for stage values and vectors */
+        ros_DPop( ros_S, &T, &H, &Ystage[0], &K[0], &Ghimj[0], &Pivot[0], SaveLU );
 
-    /*~~~>    Compute LU decomposition */
-    if (!SaveLU) {
-      JacTemplate(T,&Ystage[0],Ghimj);
-      ISTATUS[Njac] = ISTATUS[Njac] + 1;
-      Tau = ONE/(Direction*H*ros_Gamma[0]);
+        /*~~~>    Compute LU decomposition */
+        if (!SaveLU) {
+            ADJ_JacTemplate(T,&Ystage[0],Ghimj);
+            ISTATUS[Njac] = ISTATUS[Njac] + 1;
+            Tau = ONE/(Direction*H*ros_Gamma[0]);
 #ifdef FULL_ALGEBRA
-      for(j=0; j<NVAR; j++) {
-	for(i=0; i<NVAR; i++)
-	  Ghimj[i][j] = -Ghimj[i][j];
-      }
-      for(i=0; i<NVAR; i++)
-	Ghimj[i][i] = Ghimj[i][i]+Tau;
+            for(j=0; j<NVAR; j++) {
+	            for(i=0; i<NVAR; i++)
+	                Ghimj[i][j] = -Ghimj[i][j];
+            }
+            for(i=0; i<NVAR; i++)
+	            Ghimj[i][i] = Ghimj[i][i]+Tau;
 #else
-      WSCAL(LU_NONZERO,(-ONE),Ghimj,1);
-      for (i=0; i<NVAR; i++)
-	Ghimj[LU_DIAG[i]] = Ghimj[LU_DIAG[i]]+Tau;
+            WSCAL(LU_NONZERO,(-ONE),Ghimj,1);
+            for (i=0; i<NVAR; i++)
+	            Ghimj[LU_DIAG[i]] = Ghimj[LU_DIAG[i]]+Tau;
 #endif
-      ros_Decomp(Ghimj, Pivot, &j, ISTATUS);
-    }
+            ros_Decomp(Ghimj, Pivot, &j, ISTATUS);
+        }
 
 /*~~~>   Compute Hessian at the beginning of the interval */
-    HessTemplate(T,&Ystage[0],Hes0);
+        ADJ_HessTemplate(T,&Ystage[0],Hes0);
 
 /*~~~>   Compute the stages */
-    for (istage = ros_S - 1; istage >= 0; istage--) { /* Stage loop */
+        for (istage = ros_S - 1; istage >= 0; istage--) { /* Stage loop */
 
-      /*~~~> Current istage first entry */
-      istart = NVAR*istage;
+            /*~~~> Current istage first entry */
+            istart = NVAR*istage;
 
-      /*~~~> Compute U */
-      for (m = 0; m<NADJ; m++) {
-        WCOPY(NVAR,&Lambda[m][0],1,&U[m][istart],1);
-        WSCAL(NVAR,ros_M[istage],&U[m][istart],1);
-      } /* m=0:NADJ-1 */
-      for (j = istage+1; j < ros_S; j++) {
-        jstart = NVAR*j;
-        HA = ros_A[j*(j-1)/2+istage];
-        HC = ros_C[j*(j-1)/2+istage]/(Direction*H);
-        for ( m = 0; m < NADJ; m++ ) {
-          WAXPY(NVAR,HA,&V[m][jstart],1,&U[m][istart],1);
-          WAXPY(NVAR,HC,&U[m][jstart],1,&U[m][istart],1);
-	    } /* m=0:NADJ-1 */
-      }
-      for ( m = 0; m < NADJ; m++ )
-	    ros_Solve('T', Ghimj, Pivot, &U[m][istart], ISTATUS); /* m=1:NADJ-1 */
+            /*~~~> Compute U */
+            for (m = 0; m<NADJ; m++) {
+                WCOPY(NVAR,&Lambda[m][0],1,&U[m][istart],1);
+                WSCAL(NVAR,ros_M[istage],&U[m][istart],1);
+            } /* m=0:NADJ-1 */
+            for (j = istage+1; j < ros_S; j++) {
+                jstart = NVAR*j;
+                HA = ros_A[j*(j-1)/2+istage];
+                HC = ros_C[j*(j-1)/2+istage]/(Direction*H);
+                for ( m = 0; m < NADJ; m++ ) {
+                    WAXPY(NVAR,HA,&V[m][jstart],1,&U[m][istart],1);
+                    WAXPY(NVAR,HC,&U[m][jstart],1,&U[m][istart],1);
+	            } /* m=0:NADJ-1 */
+            }
+            for ( m = 0; m < NADJ; m++ )
+	            ros_Solve('T', Ghimj, Pivot, &U[m][istart], ISTATUS); /* m=1:NADJ-1 */
 
-      /*~~~> Compute V */
-      Tau = T + ros_Alpha[istage]*Direction*H;
-      JacTemplate(Tau,&Ystage[istart],Jac);
-      ISTATUS[Njac]++;
-      for ( m = 0; m < NADJ; m++ ) {
+            /*~~~> Compute V */
+            Tau = T + ros_Alpha[istage]*Direction*H;
+            ADJ_JacTemplate(Tau,&Ystage[istart],Jac);
+            ISTATUS[Njac]++;
+            for ( m = 0; m < NADJ; m++ ) {
 #ifdef FULL_ALGEBRA
-	for (i=istart; i < istart+NVAR-1; i++ )
-	  V[[m][i] = MATMUL(TRANSPOSE(Jac),U[m][i]];
+	            for (i=istart; i < istart+NVAR-1; i++ )
+	                V[[m][i] = MATMUL(TRANSPOSE(Jac),U[m][i]];
 #else
-	JacTR_SP_Vec(Jac,&U[m][istart],&V[m][istart]);
+	            JacTR_SP_Vec(Jac,&U[m][istart],&V[m][istart]);
 #endif
-      } /* m=0:NADJ-1 */
-    } /*End of Stage loop */
+            } /* m=0:NADJ-1 */
+        } /*End of Stage loop */
 
-    if (!Autonomous)
+        if (!Autonomous)
 /*~~~>  Compute the Jacobian derivative with respect to T.
         Last "Jac" computed for stage 1 */
-      ros_JacTimeDerivative ( T, Roundoff, &Ystage[0], Jac, dJdT, ISTATUS );
+            ros_JacTimeDerivative ( T, Roundoff, &Ystage[0], Jac, dJdT, ISTATUS );
 
 /*~~~>  Compute the new solution */
-    /*~~~>  Compute Lambda */
-    for( istage = 0; istage < ros_S; istage++ ) {
-      istart = NVAR*istage;
-      for (m = 0; m < NADJ; m++) {
-	/* Add V_i */
-	WAXPY(NVAR,ONE,&V[m][istart],1,&Lambda[m][0],1);
-	/* Add (H0xK_i)^T * U_i */
-	HessTR_Vec ( Hes0, &U[m][istart], &K[istart], Tmp );
-	WAXPY(NVAR,ONE,Tmp,1,&Lambda[m][0],1);
-      } /* m=0:NADJ-1 */
-    }
-
-    /* Add H * dJac_dT_0^T * \sum(gamma_i U_i) */
-    /* Tmp holds sum gamma_i U_i */
-    if (!Autonomous) {
-      for( m = 0; m < NADJ; m++ ) {
-	    for(i=0; i<NVAR; i++)
-	      Tmp[i] = ZERO;
-	      for( istage = 0; istage < ros_S; istage++ ) {
+        /*~~~>  Compute Lambda */
+        for( istage = 0; istage < ros_S; istage++ ) {
             istart = NVAR*istage;
-            WAXPY(NVAR,ros_Gamma[istage],&U[m][istart],1,Tmp,1);
-          }
-#ifdef FULL_ALGEBRA
-        Tmp2 = MATMUL(TRANSPOSE(dJdT),Tmp);
-#else
-        JacTR_SP_Vec(dJdT,Tmp,Tmp2);
-#endif
-        WAXPY(NVAR,H,Tmp2,1,&Lambda[m][0],1);
-      } /* m=0:NADJ-1 */
-    } /* .NOT.Autonomous */
-  } /* End of TimeLoop */
+            for (m = 0; m < NADJ; m++) {
+	            /* Add V_i */
+	            WAXPY(NVAR,ONE,&V[m][istart],1,&Lambda[m][0],1);
+	            /* Add (H0xK_i)^T * U_i */
+	            HessTR_Vec ( Hes0, &U[m][istart], &K[istart], Tmp );
+	            WAXPY(NVAR,ONE,Tmp,1,&Lambda[m][0],1);
+            } /* m=0:NADJ-1 */
+        }
 
-  /*~~~> Save last state */
-  /*~~~> Succesful exit */
-  return 1;  /*~~~> The integration was successful */
+        /* Add H * dJac_dT_0^T * \sum(gamma_i U_i) */
+        /* Tmp holds sum gamma_i U_i */
+        if (!Autonomous) {
+            for( m = 0; m < NADJ; m++ ) {
+	            for(i=0; i<NVAR; i++)
+	                Tmp[i] = ZERO;
+	            for( istage = 0; istage < ros_S; istage++ ) {
+                    istart = NVAR*istage;
+                    WAXPY(NVAR,ros_Gamma[istage],&U[m][istart],1,Tmp,1);
+                }
+#ifdef FULL_ALGEBRA
+                Tmp2 = MATMUL(TRANSPOSE(dJdT),Tmp);
+#else
+                JacTR_SP_Vec(dJdT,Tmp,Tmp2);
+#endif
+                WAXPY(NVAR,H,Tmp2,1,&Lambda[m][0],1);
+            } /* m=0:NADJ-1 */
+        } /* .NOT.Autonomous */
+    } /* End of TimeLoop */
+
+    /*~~~> Save last state */
+    /*~~~> Succesful exit */
+    return 1;  /*~~~> The integration was successful */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 } /* End of ros_DadjInt */
@@ -1444,13 +1456,13 @@ int ros_CadjInt ( int NADJ, double Y[][NVAR], double Tstart, double Tend,
 
     if ( ISTATUS[Nstp] > Max_no_steps ) { /* Too many steps */
       printf("Error -6.\n");
-      return ros_ErrorMsg( -6 );
+      return ADJ_ros_ErrorMsg( -6 );
     }
 
     /* Step size too small */
     if ( ((T+((double)0.1)*H) == T) || (ABS((H)) <= Roundoff) ) {
       printf("Error -7.\n");
-      return ros_ErrorMsg( -7 );
+      return ADJ_ros_ErrorMsg( -7 );
     }
 
 /*~~~>  Limit H if necessary to avoid going beyond Tend */
@@ -1460,7 +1472,7 @@ int ros_CadjInt ( int NADJ, double Y[][NVAR], double Tstart, double Tend,
 /*~~~>   Interpolate forward solution */
     ros_cadj_Y( T, Y0 );
 /*~~~>   Compute the Jacobian at current time */
-    JacTemplate(T, Y0, Jac0);
+    ADJ_JacTemplate(T, Y0, Jac0);
     ISTATUS[Njac]++;
 
 /*~~~>  Compute the function derivative with respect to T */
@@ -1504,7 +1516,7 @@ int ros_CadjInt ( int NADJ, double Y[][NVAR], double Tstart, double Tend,
       Singular = ros_PrepareMatrix(H,Direction,ros_Gamma[0], Jac0,Ghimj,Pivot,
 				   ISTATUS);
       if (Singular) /* More than 5 consecutive failed decompositions */
-	    return ros_ErrorMsg( -8 );
+	    return ADJ_ros_ErrorMsg( -8 );
 
 /*~~~>   Compute the stages */
       for ( istage = 0; istage < ros_S; istage++ ) { /* Stage loop */
@@ -1532,7 +1544,7 @@ int ros_CadjInt ( int NADJ, double Y[][NVAR], double Tstart, double Tend,
 	  Tau = T + ros_Alpha[istage]*Direction*H;
 	  printf("T, Tau: %6.4e, %6.4e\n",T/3600, Tau/3600);
 	  ros_cadj_Y( Tau, Y0 );
-	  JacTemplate(Tau, Y0, Jac);
+	  ADJ_JacTemplate(Tau, Y0, Jac);
 	  ISTATUS[Njac]++;
 
 #ifdef FULL_ALGEBRA
@@ -1676,7 +1688,7 @@ int ros_SimpleCadjInt ( int NADJ, double Y[][NVAR], double Tstart,
       Y0[i] = chk_Y[istack][i];
 
 /*~~~>   Compute the Jacobian at current time */
-    JacTemplate(T, Y0, Jac0);
+    ADJ_JacTemplate(T, Y0, Jac0);
     ISTATUS[Njac] = ISTATUS[Njac] + 1;
 
 /*~~~>  Compute the function derivative with respect to T */
@@ -1731,7 +1743,7 @@ int ros_SimpleCadjInt ( int NADJ, double Y[][NVAR], double Tstart,
 /*~~~>    Compute LU decomposition */
     ros_Decomp( Ghimj, Pivot, &j, ISTATUS );
     if (j != 0) {
-      ros_ErrorMsg( -8 );
+      ADJ_ros_ErrorMsg( -8 );
       printf( "The matrix is singular !");
       exit(0);
     }
@@ -1762,7 +1774,7 @@ int ros_SimpleCadjInt ( int NADJ, double Y[][NVAR], double Tstart,
 	  ros_Hermite3( chk_T[istack-1], chk_T[istack], Tau,
 			&chk_Y[istack-1][i], &chk_Y[istack][i],
 			&chk_dY[istack-1][i], &chk_dY[istack][i], Y0 );
-	JacTemplate(Tau, Y0, Jac);
+	ADJ_JacTemplate(Tau, Y0, Jac);
 	ISTATUS[Njac]++;
 
 #ifdef FULL_ALGEBRA
@@ -1820,22 +1832,23 @@ double ros_ErrorNorm ( double Y[], double Ynew[], double Yerr[],
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /* Local variables */
-  double Err, Scale, Ymax;
-  int i;
+    double Err, Scale, Ymax;
+    int i;
 
-  Err = ZERO;
-  for(i=0; i<NVAR; i++) {
-    Ymax = MAX(ABS(Y[i]),ABS(Ynew[i]));
-    if (VectorTol)
-      Scale = AbsTol[i]+RelTol[i]*Ymax;
-    else
-      Scale = AbsTol[0]+RelTol[0]*Ymax;
+    Err = ZERO;
+    for(i=0; i<NVAR; i++) {
+        Ymax = MAX(ABS(Y[i]),ABS(Ynew[i]));
+        if (VectorTol)
+        Scale = AbsTol[i]+RelTol[i]*Ymax;
+        else
+            Scale = AbsTol[0]+RelTol[0]*Ymax;
 
-    Err = Err+pow((Yerr[i]/Scale),2);
-  }
-  Err  = SQRT(Err/NVAR);
+        Err = Err+pow((Yerr[i]/Scale),2);
+    }
+    Err  = SQRT(Err/NVAR);
 
-  return MAX(Err,(double)1.0e-10);
+    return MAX(Err,(double)1.0e-10);
+
 } /* End of ros_ErrorNorm */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1846,13 +1859,13 @@ void ros_FunTimeDerivative ( double T, double Roundoff, double Y[],
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~> Local variables */
-  double Delta;
+    double Delta;
 
-  Delta = SQRT(Roundoff)*MAX(DeltaMin,ABS(T));
-  FunTemplate(T+Delta,Y,dFdT);
-  ISTATUS[Nfun]++;
-  WAXPY(NVAR,(-ONE),Fcn0,1,dFdT,1);
-  WSCAL(NVAR,(ONE/Delta),dFdT,1);
+    Delta = SQRT(Roundoff)*MAX(DeltaMin,ABS(T));
+    ADJ_FunTemplate(T+Delta,Y,dFdT);
+    ISTATUS[Nfun]++;
+    WAXPY(NVAR,(-ONE),Fcn0,1,dFdT,1);
+    WSCAL(NVAR,(ONE/Delta),dFdT,1);
 
 } /* End of ros_FunTimeDerivative */
 
@@ -1864,18 +1877,19 @@ void ros_JacTimeDerivative ( double T, double Roundoff, double Y[],
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~> Local variables */
-  double Delta;
+    double Delta;
 
-  Delta = SQRT(Roundoff)*MAX(DeltaMin,ABS(T));
-  JacTemplate(T+Delta,Y,dJdT);
-  ISTATUS[Njac]++;
+    Delta = SQRT(Roundoff)*MAX(DeltaMin,ABS(T));
+    ADJ_JacTemplate(T+Delta,Y,dJdT);
+    ISTATUS[Njac]++;
 #ifdef FULL_ALGEBRA
-  WAXPY(NVAR*NVAR,(-ONE),Jac0,1,dJdT,1);
-  WSCAL(NVAR*NVAR,(ONE/Delta),dJdT,1);
+    WAXPY(NVAR*NVAR,(-ONE),Jac0,1,dJdT,1);
+    WSCAL(NVAR*NVAR,(ONE/Delta),dJdT,1);
 #else
-  WAXPY(LU_NONZERO,(-ONE),Jac0,1,dJdT,1);
-  WSCAL(LU_NONZERO,(ONE/Delta),dJdT,1);
+    WAXPY(LU_NONZERO,(-ONE),Jac0,1,dJdT,1);
+    WSCAL(LU_NONZERO,(ONE/Delta),dJdT,1);
 #endif
+
 } /* End of ros_JacTimeDerivative */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1892,52 +1906,53 @@ int ros_PrepareMatrix ( double H, int Direction, double gam,
  --- --- --- --- --- --- --- --- --- --- --- --- --- */
 
 /*~~~> Local variables */
-  int i, ising, Nconsecutive;
-  int Singular; /* Boolean value */
-  double ghinv;
+    int i, ising, Nconsecutive;
+    int Singular; /* Boolean value */
+    double ghinv;
 
-  Nconsecutive = 0;
-  Singular = TRUE;
+    Nconsecutive = 0;
+    Singular = TRUE;
 
-  while (Singular) {
+    while (Singular) {
 
 /*~~~>    Construct Ghimj = 1/(H*gam) - Jac0 */
 #ifdef FULL_ALGEBRA
-    WCOPY(NVAR*NVAR,Jac0,1,Ghimj,1);
-    WSCAL(NVAR*NVAR,(-ONE),Ghimj,1);
-    ghinv = ONE/(Direction*H*gam);
-    for(i=0; i<NVAR; i++)
-      Ghimj[i][i] = Ghimj[i][i]+ghinv;
+        WCOPY(NVAR*NVAR,Jac0,1,Ghimj,1);
+        WSCAL(NVAR*NVAR,(-ONE),Ghimj,1);
+        ghinv = ONE/(Direction*H*gam);
+        for(i=0; i<NVAR; i++)
+            Ghimj[i][i] = Ghimj[i][i]+ghinv;
 #else
-    WCOPY(LU_NONZERO,Jac0,1,Ghimj,1);
-    WSCAL(LU_NONZERO,(-ONE),Ghimj,1);
-    ghinv = ONE/(Direction*H*gam);
-    for(i=0; i<NVAR; i++)
-      Ghimj[LU_DIAG[i]] = Ghimj[LU_DIAG[i]]+ghinv;
+        WCOPY(LU_NONZERO,Jac0,1,Ghimj,1);
+        WSCAL(LU_NONZERO,(-ONE),Ghimj,1);
+        ghinv = ONE/(Direction*H*gam);
+        for(i=0; i<NVAR; i++)
+            Ghimj[LU_DIAG[i]] = Ghimj[LU_DIAG[i]]+ghinv;
 #endif
 
 /*~~~>    Compute LU decomposition */
-    ros_Decomp( Ghimj, Pivot, &ising, ISTATUS );
-    if (ising == 0)
+        ros_Decomp( Ghimj, Pivot, &ising, ISTATUS );
+        if (ising == 0)
 /*~~~>    If successful done */
-      Singular = FALSE;
+            Singular = FALSE;
 
-    else { /* ising != 0 */
+        else { /* ising != 0 */
 /*~~~>    If unsuccessful half the step size;
           if 5 consecutive fails then return */
-      ISTATUS[Nsng]++;
-      Nconsecutive++;
-      Singular = TRUE;
-      printf( "Warning: LU Decomposition returned ising = %d", ising );
-      if (Nconsecutive <= 5) /*Less than 5 consecutive failed decompositions*/
-	H = H*HALF;
-      else  /* More than 5 consecutive failed decompositions */
-	return Singular;
+            ISTATUS[Nsng]++;
+            Nconsecutive++;
+            Singular = TRUE;
+            printf( "Warning: LU Decomposition returned ising = %d", ising );
+            if (Nconsecutive <= 5) /*Less than 5 consecutive failed decompositions*/
+	            H = H*HALF;
+            else  /* More than 5 consecutive failed decompositions */
+	            return Singular;
 
-    }  /* End of ising */
-  }  /* while Singular */
+        }  /* End of ising */
+    }  /* while Singular */
 
-  return Singular;
+    return Singular;
+
 } /* End of ros_PrepareMatrix */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1947,12 +1962,12 @@ void ros_Decomp( double A[], int Pivot[], int* ising, int ISTATUS[] ) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #ifdef FULL_ALGEBRA
-  DGETRF( NVAR, NVAR, A, NVAR, Pivot, ising );
+    DGETRF( NVAR, NVAR, A, NVAR, Pivot, ising );
 #else
-  *ising = KppDecomp ( A );
-  Pivot[0] = 1;
+    *ising = KppDecomp ( A );
+    Pivot[0] = 1;
 #endif
-  ISTATUS[Ndec]++;
+    ISTATUS[Ndec]++;
 
 } /* End of ros_Decomp */
 
@@ -1963,26 +1978,26 @@ void ros_Solve( char How, double A[], int Pivot[], double b[],
   Template for the forward/backward substitution
   (using pre-computed LU decomposition)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-  switch (How) {
-    case 'N':
+    switch (How) {
+        case 'N':
 #ifdef FULL_ALGEBRA
-      DGETRS( 'N', NVAR , 1, A, NVAR, Pivot, b, NVAR, 0 );
+            DGETRS( 'N', NVAR , 1, A, NVAR, Pivot, b, NVAR, 0 );
 #else
-      KppSolve( A, b );
+            KppSolve( A, b );
 #endif
-      break;
-    case 'T':
+            break;
+        case 'T':
 #ifdef FULL_ALGEBRA
-      DGETRS( 'T', NVAR , 1, A, NVAR, Pivot, b, NVAR, 0 );
+            DGETRS( 'T', NVAR , 1, A, NVAR, Pivot, b, NVAR, 0 );
 #else
-      KppSolveTR( A, b, b );
+            KppSolveTR( A, b, b );
 #endif
-      break;
-    default:
-      printf( "Error: unknown argument in ros_Solve: How=%d", How );
-      exit(0);
-  }
-  ISTATUS[Nsol]++;
+            break;
+        default:
+            printf( "Error: unknown argument in ros_Solve: How=%d", How );
+            exit(0);
+    }
+    ISTATUS[Nsol]++;
 
 } /* End of ros_Solve */
 
@@ -1993,22 +2008,22 @@ void ros_cadj_Y( double T, double Y[] ) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~> Local variables */
-  int i,j;
+    int i,j;
 
-  if( (T < chk_T[0]) || (T> chk_T[stack_ptr]) ) {
-    printf( "Cannot locate solution at T = %f", T );
-    printf( "Stored trajectory is between Tstart = %f", chk_T[0] );
-    printf( "    and Tend = %f", chk_T[stack_ptr] );
-    exit(0);
-  }
-  for(i=0; i<stack_ptr-1; i++) {
-    if( (T >= chk_T[i]) &&(T <= chk_T[i+1]) )
-      exit(0);
-  }
+    if( (T < chk_T[0]) || (T> chk_T[stack_ptr]) ) {
+        printf( "Cannot locate solution at T = %f", T );
+        printf( "Stored trajectory is between Tstart = %f", chk_T[0] );
+        printf( "    and Tend = %f", chk_T[stack_ptr] );
+        exit(0);
+    }
+    for(i=0; i<stack_ptr-1; i++) {
+        if( (T >= chk_T[i]) &&(T <= chk_T[i+1]) )
+        exit(0);
+    }
 
-  for(j=0; j<NVAR; j++ )
-    ros_Hermite3( chk_T[i], chk_T[i+1], T, &chk_Y[i][j], &chk_Y[i+1][j],
-		  &chk_dY[i][j],  &chk_dY[i+1][j], Y );
+    for(j=0; j<NVAR; j++ )
+        ros_Hermite3( chk_T[i], chk_T[i+1], T, &chk_Y[i][j], &chk_Y[i+1][j],
+		      &chk_dY[i][j],  &chk_dY[i+1][j], Y );
 
 } /* End of ros_cadj_Y */
 
@@ -2022,35 +2037,35 @@ void ros_Hermite3( double a, double b, double T, double Ya[],
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~> Local variables */
-  double Tau, amb[3], C[4][NVAR];
-  int i, j;
+    double Tau, amb[3], C[4][NVAR];
+    int i, j;
 
-  amb[0] = ((double)1.0)/(a-b);
-  for(i=1; i<3; i++)
-    amb[i] = amb[i-1]*amb[0];
+    amb[0] = ((double)1.0)/(a-b);
+    for(i=1; i<3; i++)
+        amb[i] = amb[i-1]*amb[0];
 
 /* c(1) = ya; */
-  WCOPY(NVAR,Ya,1,&C[0][0],1);
+    WCOPY(NVAR,Ya,1,&C[0][0],1);
 /* c(2) = ja; */
-  WCOPY(NVAR,Ja,1,&C[1][0],1);
+    WCOPY(NVAR,Ja,1,&C[1][0],1);
 /* c(3) = 2/(a-b)*ja + 1/(a-b)*jb - 3/(a - b)^2*ya + 3/(a - b)^2*yb; */
-  WCOPY(NVAR,Ya,1,&C[2][0],1);
-  WSCAL(NVAR,-3.0*amb[1],&C[2][0],1);
-  WAXPY(NVAR,3.0*amb[1],Yb,1,&C[2][0],1);
-  WAXPY(NVAR,2.0*amb[0],Ja,1,&C[2][0],1);
-  WAXPY(NVAR,amb[0],Jb,1,&C[2][0],1);
+    WCOPY(NVAR,Ya,1,&C[2][0],1);
+    WSCAL(NVAR,-3.0*amb[1],&C[2][0],1);
+    WAXPY(NVAR,3.0*amb[1],Yb,1,&C[2][0],1);
+    WAXPY(NVAR,2.0*amb[0],Ja,1,&C[2][0],1);
+    WAXPY(NVAR,amb[0],Jb,1,&C[2][0],1);
 /* c(4) =  1/(a-b)^2*ja + 1/(a-b)^2*jb - 2/(a-b)^3*ya + 2/(a-b)^3*yb */
-  WCOPY(NVAR,Ya,1,&C[3][0],1);
-  WSCAL(NVAR,-2.0*amb[2],&C[3][0],1);
-  WAXPY(NVAR,2.0*amb[2],Yb,1,&C[3][0],1);
-  WAXPY(NVAR,amb[1],Ja,1,&C[3][0],1);
-  WAXPY(NVAR,amb[1],Jb,1,&C[3][0],1);
+    WCOPY(NVAR,Ya,1,&C[3][0],1);
+    WSCAL(NVAR,-2.0*amb[2],&C[3][0],1);
+    WAXPY(NVAR,2.0*amb[2],Yb,1,&C[3][0],1);
+    WAXPY(NVAR,amb[1],Ja,1,&C[3][0],1);
+    WAXPY(NVAR,amb[1],Jb,1,&C[3][0],1);
 
-  Tau = T - a;
-  WCOPY(NVAR,&C[3][0],1,Y,1);
-  WSCAL(NVAR,pow(Tau,3),Y,1);
-  for(j=2; j>=0; j--)
-    WAXPY(NVAR,pow(Tau,(j-1)),&C[j][0],1,Y,1);
+    Tau = T - a;
+    WCOPY(NVAR,&C[3][0],1,Y,1);
+    WSCAL(NVAR,pow(Tau,3),Y,1);
+    for(j=2; j>=0; j--)
+        WAXPY(NVAR,pow(Tau,(j-1)),&C[j][0],1,Y,1);
 
 } /* End of ros_Hermite3 */
 
@@ -2065,57 +2080,57 @@ void ros_Hermite5( double a, double b, double T, double Ya[],
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~> Local variables */
-  double Tau, amb[5], C[6][NVAR];
-  int i, j;
+    double Tau, amb[5], C[6][NVAR];
+    int i, j;
 
-  amb[0] = ((double)1.0)/(a-b);
-  for(i=1; i<5; i++)
-    amb[i] = amb[i-1]*amb[0];
+    amb[0] = ((double)1.0)/(a-b);
+    for(i=1; i<5; i++)
+        amb[i] = amb[i-1]*amb[0];
 
 /* c(1) = ya; */
-  WCOPY(NVAR,Ya,1,&C[0][0],1);
+    WCOPY(NVAR,Ya,1,&C[0][0],1);
 /* c(2) = ja; */
-  WCOPY(NVAR,Ja,1,&C[1][0],1);
+    WCOPY(NVAR,Ja,1,&C[1][0],1);
 /* c(3) = ha/2; */
-  WCOPY(NVAR,Ha,1,&C[2][0],1);
-  WSCAL(NVAR,HALF,&C[2][0],1);
+    WCOPY(NVAR,Ha,1,&C[2][0],1);
+    WSCAL(NVAR,HALF,&C[2][0],1);
 
 /* c(4) = 10*amb(3)*ya - 10*amb(3)*yb - 6*amb(2)*ja - 4*amb(2)*jb
           + 1.5*amb(1)*ha - 0.5*amb(1)*hb ; */
-  WCOPY(NVAR,Ya,1,&C[3][0],1);
-  WSCAL(NVAR,10.0*amb[2],&C[3][0],1);
-  WAXPY(NVAR,-10.0*amb[2],Yb,1,&C[3][0],1);
-  WAXPY(NVAR,-6.0*amb[1],Ja,1,&C[3][0],1);
-  WAXPY(NVAR,-4.0*amb[1],Jb,1,&C[3][0],1);
-  WAXPY(NVAR, 1.5*amb[0],Ha,1,&C[3][0],1);
-  WAXPY(NVAR,-0.5*amb[0],Hb,1,&C[3][0],1);
+    WCOPY(NVAR,Ya,1,&C[3][0],1);
+    WSCAL(NVAR,10.0*amb[2],&C[3][0],1);
+    WAXPY(NVAR,-10.0*amb[2],Yb,1,&C[3][0],1);
+    WAXPY(NVAR,-6.0*amb[1],Ja,1,&C[3][0],1);
+    WAXPY(NVAR,-4.0*amb[1],Jb,1,&C[3][0],1);
+    WAXPY(NVAR, 1.5*amb[0],Ha,1,&C[3][0],1);
+    WAXPY(NVAR,-0.5*amb[0],Hb,1,&C[3][0],1);
 
 /* c(5) =   15*amb(4)*ya - 15*amb(4)*yb - 8.*amb(3)*ja - 7*amb(3)*jb
             + 1.5*amb(2)*ha - 1*amb(2)*hb ; */
-  WCOPY(NVAR,Ya,1,&C[4][0],1);
-  WSCAL(NVAR, 15.0*amb[3],&C[4][0],1);
-  WAXPY(NVAR,-15.0*amb[3],Yb,1,&C[4][0],1);
-  WAXPY(NVAR,-8.0*amb[2],Ja,1,&C[4][0],1);
-  WAXPY(NVAR,-7.0*amb[2],Jb,1,&C[4][0],1);
-  WAXPY(NVAR,1.5*amb[1],Ha,1,&C[4][0],1);
-  WAXPY(NVAR,-amb[1],Hb,1,&C[4][0],1);
+    WCOPY(NVAR,Ya,1,&C[4][0],1);
+    WSCAL(NVAR, 15.0*amb[3],&C[4][0],1);
+    WAXPY(NVAR,-15.0*amb[3],Yb,1,&C[4][0],1);
+    WAXPY(NVAR,-8.0*amb[2],Ja,1,&C[4][0],1);
+    WAXPY(NVAR,-7.0*amb[2],Jb,1,&C[4][0],1);
+    WAXPY(NVAR,1.5*amb[1],Ha,1,&C[4][0],1);
+    WAXPY(NVAR,-amb[1],Hb,1,&C[4][0],1);
 
 /* c(6) =   6*amb(5)*ya - 6*amb(5)*yb - 3.*amb(4)*ja - 3.*amb(4)*jb
             + 0.5*amb(3)*ha -0.5*amb(3)*hb ; */
-  WCOPY(NVAR,Ya,1,&C[5][0],1);
-  WSCAL(NVAR, 6.0*amb[4],&C[5][0],1);
-  WAXPY(NVAR,-6.0*amb[4],Yb,1,&C[5][0],1);
-  WAXPY(NVAR,-3.0*amb[3],Ja,1,&C[5][0],1);
-  WAXPY(NVAR,-3.0*amb[3],Jb,1,&C[5][0],1);
-  WAXPY(NVAR, 0.5*amb[2],Ha,1,&C[5][0],1);
-  WAXPY(NVAR,-0.5*amb[2],Hb,1,&C[5][0],1);
+    WCOPY(NVAR,Ya,1,&C[5][0],1);
+    WSCAL(NVAR, 6.0*amb[4],&C[5][0],1);
+    WAXPY(NVAR,-6.0*amb[4],Yb,1,&C[5][0],1);
+    WAXPY(NVAR,-3.0*amb[3],Ja,1,&C[5][0],1);
+    WAXPY(NVAR,-3.0*amb[3],Jb,1,&C[5][0],1);
+    WAXPY(NVAR, 0.5*amb[2],Ha,1,&C[5][0],1);
+    WAXPY(NVAR,-0.5*amb[2],Hb,1,&C[5][0],1);
 
-  Tau = T - a;
-  WCOPY(NVAR,&C[5][0],1,Y,1);
-  for(j=4; j>=0; j--) {
-    WSCAL(NVAR,Tau,Y,1);
-    WAXPY(NVAR,ONE,&C[j][0],1,Y,1);
-  }
+    Tau = T - a;
+    WCOPY(NVAR,&C[5][0],1,Y,1);
+    for(j=4; j>=0; j--) {
+        WSCAL(NVAR,Tau,Y,1);
+        WAXPY(NVAR,ONE,&C[j][0],1,Y,1);
+    }
 
 } /* End of ros_Hermite5 */
 
@@ -2125,15 +2140,15 @@ void Ros2() {
  --- AN L-STABLE METHOD, 2 stages, order 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  double g;
+    double g;
 
-  g = (double)1.0 + ((double)1.0)/SQRT((double)2.0);
+    g = (double)1.0 + ((double)1.0)/SQRT((double)2.0);
 
-  rosMethod = RS2;
+    rosMethod = RS2;
 /*~~~> Name of the method */
-  strcpy(ros_Name, "ROS-2");
+    strcpy(ros_Name, "ROS-2");
 /*~~~> Number of stages */
-  ros_S = 2;
+    ros_S = 2;
 
 /*~~~> The coefficient matrices A and C are strictly lower triangular.
   The lower triangular (subdiagonal) elements are stored in row-wise order:
@@ -2142,34 +2157,34 @@ void Ros2() {
       A[i][j] = ros_A[ (i-1)*(i-2)/2 + j ]
       C[i][j] = ros_C[ (i-1)*(i-2)/2 + j ] */
 
-  ros_A[0] = ((double)1.0)/g;
-  ros_C[0] = ((double)-2.0)/g;
+    ros_A[0] = ((double)1.0)/g;
+    ros_C[0] = ((double)-2.0)/g;
 
 /*~~~> Does the stage i require a new function evaluation (ros_NewF[i]=TRUE)
        or does it re-use the function evaluation from stage i-1
        (ros_NewF[i]=FALSE) */
-  ros_NewF[0] = TRUE;
-  ros_NewF[1] = TRUE;
+    ros_NewF[0] = TRUE;
+    ros_NewF[1] = TRUE;
 
 /*~~~> M_i = Coefficients for new step solution */
-  ros_M[0]= ((double)3.0)/((double)2.0*g);
-  ros_M[1]= ((double)1.0)/((double)2.0*g);
+    ros_M[0]= ((double)3.0)/((double)2.0*g);
+    ros_M[1]= ((double)1.0)/((double)2.0*g);
 
 /* E_i = Coefficients for error estimator */
-  ros_E[0] = ((double)1.0)/((double)2.0*g);
-  ros_E[1] = ((double)1.0)/((double)2.0*g);
+    ros_E[0] = ((double)1.0)/((double)2.0*g);
+    ros_E[1] = ((double)1.0)/((double)2.0*g);
 
 /*~~~> ros_ELO = estimator of local order - the minimum between the
        main and the embedded scheme orders plus one */
-  ros_ELO = (double)2.0;
+    ros_ELO = (double)2.0;
 
 /*~~~> Y_stage_i ~ Y( T + H*Alpha_i ) */
-  ros_Alpha[0] = (double)0.0;
-  ros_Alpha[1] = (double)1.0;
+    ros_Alpha[0] = (double)0.0;
+    ros_Alpha[1] = (double)1.0;
 
 /*~~~> Gamma_i = \sum_j  gamma_{i,j} */
-  ros_Gamma[0] = g;
-  ros_Gamma[1] =-g;
+    ros_Gamma[0] = g;
+    ros_Gamma[1] =-g;
 
 } /* End of Ros2 */
 
@@ -2179,11 +2194,11 @@ void Ros3() {
  --- AN L-STABLE METHOD, 3 stages, order 3, 2 function evaluations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  rosMethod = RS3;
+    rosMethod = RS3;
 /*~~~> Name of the method */
-  strcpy(ros_Name, "ROS-3");
+    strcpy(ros_Name, "ROS-3");
 /*~~~> Number of stages */
-  ros_S = 3;
+    ros_S = 3;
 
 /*~~~> The coefficient matrices A and C are strictly lower triangular.
    The lower triangular (subdiagonal) elements are stored in row-wise order:
@@ -2192,39 +2207,39 @@ void Ros3() {
        A[i][j] = ros_A[ (i-1)*(i-2)/2 + j ]
        C[i][j] = ros_C[ (i-1)*(i-2)/2 + j ] */
 
-  ros_A[0]= (double)1.0;
-  ros_A[1]= (double)1.0;
-  ros_A[2]= (double)0.0;
-  ros_C[0] = (double)-0.10156171083877702091975600115545e01;
-  ros_C[1] = (double) 0.40759956452537699824805835358067e01;
-  ros_C[2] = (double) 0.92076794298330791242156818474003e01;
+    ros_A[0]= (double)1.0;
+    ros_A[1]= (double)1.0;
+    ros_A[2]= (double)0.0;
+    ros_C[0] = (double)-0.10156171083877702091975600115545e01;
+    ros_C[1] = (double) 0.40759956452537699824805835358067e01;
+    ros_C[2] = (double) 0.92076794298330791242156818474003e01;
 
 /*~~~> Does the stage i require a new function evaluation (ros_NewF[i]=TRUE)
        or does it re-use the function evaluation from stage i-1
        (ros_NewF[i]=FALSE) */
-  ros_NewF[0] = TRUE;
-  ros_NewF[1] = TRUE;
-  ros_NewF[2] = FALSE;
+    ros_NewF[0] = TRUE;
+    ros_NewF[1] = TRUE;
+    ros_NewF[2] = FALSE;
 /*~~~> M_i = Coefficients for new step solution */
-  ros_M[0] = (double) 0.1e01;
-  ros_M[1] = (double) 0.61697947043828245592553615689730e01;
-  ros_M[2] = (double)-0.42772256543218573326238373806514;
+    ros_M[0] = (double) 0.1e01;
+    ros_M[1] = (double) 0.61697947043828245592553615689730e01;
+    ros_M[2] = (double)-0.42772256543218573326238373806514;
 /* E_i = Coefficients for error estimator */
-  ros_E[0] = (double) 0.5;
-  ros_E[1] = (double)-0.29079558716805469821718236208017e01;
-  ros_E[2] = (double) 0.22354069897811569627360909276199;
+    ros_E[0] = (double) 0.5;
+    ros_E[1] = (double)-0.29079558716805469821718236208017e01;
+    ros_E[2] = (double) 0.22354069897811569627360909276199;
 
 /*~~~> ros_ELO = estimator of local order - the minimum between the
        main and the embedded scheme orders plus 1 */
-  ros_ELO = (double)3.0;
+    ros_ELO = (double)3.0;
 /*~~~> Y_stage_i ~ Y( T + H*Alpha_i ) */
-  ros_Alpha[0]= (double)0.0;
-  ros_Alpha[1]= (double)0.43586652150845899941601945119356;
-  ros_Alpha[2]= (double)0.43586652150845899941601945119356;
+    ros_Alpha[0]= (double)0.0;
+    ros_Alpha[1]= (double)0.43586652150845899941601945119356;
+    ros_Alpha[2]= (double)0.43586652150845899941601945119356;
 /*~~~> Gamma_i = \sum_j  gamma_{i,j} */
-  ros_Gamma[0]= (double)0.43586652150845899941601945119356;
-  ros_Gamma[1]= (double)0.24291996454816804366592249683314;
-  ros_Gamma[2]= (double)0.21851380027664058511513169485832e01;
+    ros_Gamma[0]= (double)0.43586652150845899941601945119356;
+    ros_Gamma[1]= (double)0.24291996454816804366592249683314;
+    ros_Gamma[2]= (double)0.21851380027664058511513169485832e01;
 
 } /* End of Ros3 */
 
@@ -2240,11 +2255,11 @@ void Ros4() {
       SPRINGER-VERLAG (1990)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  rosMethod = RS4;
+    rosMethod = RS4;
 /*~~~> Name of the method */
-  strcpy(ros_Name, "ROS-4");
+    strcpy(ros_Name, "ROS-4");
 /*~~~> Number of stages */
-  ros_S = 4;
+    ros_S = 4;
 
 /*~~~> The coefficient matrices A and C are strictly lower triangular.
    The lower triangular (subdiagonal) elements are stored in row-wise order:
@@ -2253,51 +2268,51 @@ void Ros4() {
        A[i][j] = ros_A[ (i-1)*(i-2)/2 + j ]
        C[i][j] = ros_C[ (i-1)*(i-2)/2 + j ] */
 
-  ros_A[0] = (double)0.2000000000000000e01;
-  ros_A[1] = (double)0.1867943637803922e01;
-  ros_A[2] = (double)0.2344449711399156;
-  ros_A[3] = ros_A[1];
-  ros_A[4] = ros_A[2];
-  ros_A[5] = (double)0.0;
+    ros_A[0] = (double)0.2000000000000000e01;
+    ros_A[1] = (double)0.1867943637803922e01;
+    ros_A[2] = (double)0.2344449711399156;
+    ros_A[3] = ros_A[1];
+    ros_A[4] = ros_A[2];
+    ros_A[5] = (double)0.0;
 
-  ros_C[0] = (double)-0.7137615036412310e01;
-  ros_C[1] = (double) 0.2580708087951457e01;
-  ros_C[2] = (double) 0.6515950076447975;
-  ros_C[3] = (double)-0.2137148994382534e01;
-  ros_C[4] = (double)-0.3214669691237626;
-  ros_C[5] = (double)-0.6949742501781779;
+    ros_C[0] = (double)-0.7137615036412310e01;
+    ros_C[1] = (double) 0.2580708087951457e01;
+    ros_C[2] = (double) 0.6515950076447975;
+    ros_C[3] = (double)-0.2137148994382534e01;
+    ros_C[4] = (double)-0.3214669691237626;
+    ros_C[5] = (double)-0.6949742501781779;
 
 /*~~~> Does the stage i require a new function evaluation (ros_NewF[i]=TRUE)
        or does it re-use the function evaluation from stage i-1
        (ros_NewF[i]=FALSE) */
-  ros_NewF[0] = TRUE;
-  ros_NewF[1] = TRUE;
-  ros_NewF[2] = TRUE;
-  ros_NewF[3] = FALSE;
+    ros_NewF[0] = TRUE;
+    ros_NewF[1] = TRUE;
+    ros_NewF[2] = TRUE;
+    ros_NewF[3] = FALSE;
 /*~~~> M_i = Coefficients for new step solution */
-  ros_M[0] = (double)0.2255570073418735e01;
-  ros_M[1] = (double)0.2870493262186792;
-  ros_M[2] = (double)0.4353179431840180;
-  ros_M[3] = (double)0.1093502252409163e01;
+    ros_M[0] = (double)0.2255570073418735e01;
+    ros_M[1] = (double)0.2870493262186792;
+    ros_M[2] = (double)0.4353179431840180;
+    ros_M[3] = (double)0.1093502252409163e01;
 /*~~~> E_i  = Coefficients for error estimator */
-  ros_E[0] = (double)-0.2815431932141155;
-  ros_E[1] = (double)-0.7276199124938920e-01;
-  ros_E[2] = (double)-0.1082196201495311;
-  ros_E[3] = (double)-0.1093502252409163e01;
+    ros_E[0] = (double)-0.2815431932141155;
+    ros_E[1] = (double)-0.7276199124938920e-01;
+    ros_E[2] = (double)-0.1082196201495311;
+    ros_E[3] = (double)-0.1093502252409163e01;
 
 /*~~~> ros_ELO  = estimator of local order - the minimum between the
        main and the embedded scheme orders plus 1 */
-  ros_ELO = (double)4.0;
+    ros_ELO = (double)4.0;
 /*~~~> Y_stage_i ~ Y( T + H*Alpha_i ) */
-  ros_Alpha[0] = (double)0.0;
-  ros_Alpha[1] = (double)0.1145640000000000e01;
-  ros_Alpha[2] = (double)0.6552168638155900;
-  ros_Alpha[3] = ros_Alpha[2];
+    ros_Alpha[0] = (double)0.0;
+    ros_Alpha[1] = (double)0.1145640000000000e01;
+    ros_Alpha[2] = (double)0.6552168638155900;
+    ros_Alpha[3] = ros_Alpha[2];
 /*~~~> Gamma_i = \sum_j  gamma_{i,j} */
-  ros_Gamma[0] = (double) 0.5728200000000000;
-  ros_Gamma[1] = (double)-0.1769193891319233e01;
-  ros_Gamma[2] = (double) 0.7592633437920482;
-  ros_Gamma[3] = (double)-0.1049021087100450;
+    ros_Gamma[0] = (double) 0.5728200000000000;
+    ros_Gamma[1] = (double)-0.1769193891319233e01;
+    ros_Gamma[2] = (double) 0.7592633437920482;
+    ros_Gamma[3] = (double)-0.1049021087100450;
 
 } /* End of Ros4 */
 
@@ -2307,11 +2322,11 @@ void Rodas3() {
  --- A STIFFLY-STABLE METHOD, 4 stages, order 3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  rosMethod = RD3;
+    rosMethod = RD3;
 /*~~~> Name of the method */
-  strcpy(ros_Name, "RODAS-3");
+    strcpy(ros_Name, "RODAS-3");
 /*~~~> Number of stages */
-  ros_S = 4;
+    ros_S = 4;
 
 /*~~~> The coefficient matrices A and C are strictly lower triangular.
    The lower triangular (subdiagonal) elements are stored in row-wise order:
@@ -2320,51 +2335,51 @@ void Rodas3() {
        A[i][j] = ros_A[ (i-1)*(i-2)/2 + j ]
        C[i][j] = ros_C[ (i-1)*(i-2)/2 + j ] */
 
-  ros_A[0] = (double)0.0;
-  ros_A[1] = (double)2.0;
-  ros_A[2] = (double)0.0;
-  ros_A[3] = (double)2.0;
-  ros_A[4] = (double)0.0;
-  ros_A[5] = (double)1.0;
+    ros_A[0] = (double)0.0;
+    ros_A[1] = (double)2.0;
+    ros_A[2] = (double)0.0;
+    ros_A[3] = (double)2.0;
+    ros_A[4] = (double)0.0;
+    ros_A[5] = (double)1.0;
 
-  ros_C[0] = (double) 4.0;
-  ros_C[1] = (double) 1.0;
-  ros_C[2] = (double)-1.0;
-  ros_C[3] = (double) 1.0;
-  ros_C[4] = (double)-1.0;
-  ros_C[5] = -(((double)8.0)/((double)3.0));
+    ros_C[0] = (double) 4.0;
+    ros_C[1] = (double) 1.0;
+    ros_C[2] = (double)-1.0;
+    ros_C[3] = (double) 1.0;
+    ros_C[4] = (double)-1.0;
+    ros_C[5] = -(((double)8.0)/((double)3.0));
 
 /*~~~> Does the stage i require a new function evaluation (ros_NewF[i]=TRUE)
        or does it re-use the function evaluation from stage i-1
        (ros_NewF[i]=FALSE) */
-  ros_NewF[0] = TRUE;
-  ros_NewF[1] = FALSE;
-  ros_NewF[2] = TRUE;
-  ros_NewF[3] = TRUE;
+    ros_NewF[0] = TRUE;
+    ros_NewF[1] = FALSE;
+    ros_NewF[2] = TRUE;
+    ros_NewF[3] = TRUE;
 /*~~~> M_i = Coefficients for new step solution */
-  ros_M[0] = (double)2.0;
-  ros_M[1] = (double)0.0;
-  ros_M[2] = (double)1.0;
-  ros_M[3] = (double)1.0;
+    ros_M[0] = (double)2.0;
+    ros_M[1] = (double)0.0;
+    ros_M[2] = (double)1.0;
+    ros_M[3] = (double)1.0;
 /*~~~> E_i  = Coefficients for error estimator */
-  ros_E[0] = (double)0.0;
-  ros_E[1] = (double)0.0;
-  ros_E[2] = (double)0.0;
-  ros_E[3] = (double)1.0;
+    ros_E[0] = (double)0.0;
+    ros_E[1] = (double)0.0;
+    ros_E[2] = (double)0.0;
+    ros_E[3] = (double)1.0;
 
 /*~~~> ros_ELO  = estimator of local order - the minimum between the
     main and the embedded scheme orders plus 1 */
-  ros_ELO  = (double)3.0;
+    ros_ELO  = (double)3.0;
 /*~~~> Y_stage_i ~ Y( T + H*Alpha_i ) */
-  ros_Alpha[0] = (double)0.0;
-  ros_Alpha[1] = (double)0.0;
-  ros_Alpha[2] = (double)1.0;
-  ros_Alpha[3] = (double)1.0;
+    ros_Alpha[0] = (double)0.0;
+    ros_Alpha[1] = (double)0.0;
+    ros_Alpha[2] = (double)1.0;
+    ros_Alpha[3] = (double)1.0;
 /*~~~> Gamma_i = \sum_j  gamma_{i,j} */
-  ros_Gamma[0] = (double)0.5;
-  ros_Gamma[1] = (double)1.5;
-  ros_Gamma[2] = (double)0.0;
-  ros_Gamma[3] = (double)0.0;
+    ros_Gamma[0] = (double)0.5;
+    ros_Gamma[1] = (double)1.5;
+    ros_Gamma[2] = (double)0.0;
+    ros_Gamma[3] = (double)0.0;
 
 } /* End of Rodas3 */
 
@@ -2379,27 +2394,27 @@ void Rodas4() {
       SPRINGER-VERLAG (1996)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-  rosMethod = RD4;
+    rosMethod = RD4;
 /*~~~> Name of the method */
-  strcpy(ros_Name, "RODAS-4");
+    strcpy(ros_Name, "RODAS-4");
 /*~~~> Number of stages */
-  ros_S = 6;
+    ros_S = 6;
 
 /*~~~> Y_stage_i ~ Y( T + H*Alpha_i ) */
-  ros_Alpha[0] = (double)0.000;
-  ros_Alpha[1] = (double)0.386;
-  ros_Alpha[2] = (double)0.210;
-  ros_Alpha[3] = (double)0.630;
-  ros_Alpha[4] = (double)1.000;
-  ros_Alpha[5] = (double)1.000;
+    ros_Alpha[0] = (double)0.000;
+    ros_Alpha[1] = (double)0.386;
+    ros_Alpha[2] = (double)0.210;
+    ros_Alpha[3] = (double)0.630;
+    ros_Alpha[4] = (double)1.000;
+    ros_Alpha[5] = (double)1.000;
 
 /*~~~> Gamma_i = \sum_j  gamma_{i,j} */
-  ros_Gamma[0] = (double) 0.2500000000000000;
-  ros_Gamma[1] = (double)-0.1043000000000000;
-  ros_Gamma[2] = (double) 0.1035000000000000;
-  ros_Gamma[3] = (double)-0.3620000000000023e-01;
-  ros_Gamma[4] = (double) 0.0;
-  ros_Gamma[5] = (double) 0.0;
+    ros_Gamma[0] = (double) 0.2500000000000000;
+    ros_Gamma[1] = (double)-0.1043000000000000;
+    ros_Gamma[2] = (double) 0.1035000000000000;
+    ros_Gamma[3] = (double)-0.3620000000000023e-01;
+    ros_Gamma[4] = (double) 0.0;
+    ros_Gamma[5] = (double) 0.0;
 
 /*~~~> The coefficient matrices A and C are strictly lower triangular.
    The lower triangular (subdiagonal) elements are stored in row-wise order:
@@ -2407,136 +2422,137 @@ void Rodas4() {
    The general mapping formula is:  A[i][j] = ros_A[ (i-1)*(i-2)/2 + j ]
                   C[i][j] = ros_C[ (i-1)*(i-2)/2 + j ] */
 
-  ros_A[0] = (double) 0.1544000000000000e01;
-  ros_A[1] = (double) 0.9466785280815826;
-  ros_A[2] = (double) 0.2557011698983284;
-  ros_A[3] = (double) 0.3314825187068521e01;
-  ros_A[4] = (double) 0.2896124015972201e01;
-  ros_A[5] = (double) 0.9986419139977817;
-  ros_A[6] = (double) 0.1221224509226641e01;
-  ros_A[7] = (double) 0.6019134481288629e01;
-  ros_A[8] = (double) 0.1253708332932087e02;
-  ros_A[9] = (double)-0.6878860361058950;
-  ros_A[10] = ros_A[6];
-  ros_A[11] = ros_A[7];
-  ros_A[12] = ros_A[8];
-  ros_A[13] = ros_A[9];
-  ros_A[14] = (double)1.0;
+    ros_A[0] = (double) 0.1544000000000000e01;
+    ros_A[1] = (double) 0.9466785280815826;
+    ros_A[2] = (double) 0.2557011698983284;
+    ros_A[3] = (double) 0.3314825187068521e01;
+    ros_A[4] = (double) 0.2896124015972201e01;
+    ros_A[5] = (double) 0.9986419139977817;
+    ros_A[6] = (double) 0.1221224509226641e01;
+    ros_A[7] = (double) 0.6019134481288629e01;
+    ros_A[8] = (double) 0.1253708332932087e02;
+    ros_A[9] = (double)-0.6878860361058950;
+    ros_A[10] = ros_A[6];
+    ros_A[11] = ros_A[7];
+    ros_A[12] = ros_A[8];
+    ros_A[13] = ros_A[9];
+    ros_A[14] = (double)1.0;
 
-  ros_C[0]  = (double)-0.5668800000000000e01;
-  ros_C[1]  = (double)-0.2430093356833875e01;
-  ros_C[2]  = (double)-0.2063599157091915;
-  ros_C[3]  = (double)-0.1073529058151375;
-  ros_C[4]  = (double)-0.9594562251023355e01;
-  ros_C[5]  = (double)-0.2047028614809616e02;
-  ros_C[6]  = (double) 0.7496443313967647e01;
-  ros_C[7]  = (double)-0.1024680431464352e02;
-  ros_C[8]  = (double)-0.3399990352819905e02;
-  ros_C[9]  = (double) 0.1170890893206160e02;
-  ros_C[10] = (double) 0.8083246795921522e01;
-  ros_C[11] = (double)-0.7981132988064893e01;
-  ros_C[12] = (double)-0.3152159432874371e02;
-  ros_C[13] = (double) 0.1631930543123136e02;
-  ros_C[14] = (double)-0.6058818238834054e01;
+    ros_C[0]  = (double)-0.5668800000000000e01;
+    ros_C[1]  = (double)-0.2430093356833875e01;
+    ros_C[2]  = (double)-0.2063599157091915;
+    ros_C[3]  = (double)-0.1073529058151375;
+    ros_C[4]  = (double)-0.9594562251023355e01;
+    ros_C[5]  = (double)-0.2047028614809616e02;
+    ros_C[6]  = (double) 0.7496443313967647e01;
+    ros_C[7]  = (double)-0.1024680431464352e02;
+    ros_C[8]  = (double)-0.3399990352819905e02;
+    ros_C[9]  = (double) 0.1170890893206160e02;
+    ros_C[10] = (double) 0.8083246795921522e01;
+    ros_C[11] = (double)-0.7981132988064893e01;
+    ros_C[12] = (double)-0.3152159432874371e02;
+    ros_C[13] = (double) 0.1631930543123136e02;
+    ros_C[14] = (double)-0.6058818238834054e01;
 
 /*~~~> M_i = Coefficients for new step solution */
-  ros_M[0] = ros_A[6];
-  ros_M[1] = ros_A[7];
-  ros_M[2] = ros_A[8];
-  ros_M[3] = ros_A[9];
-  ros_M[4] = (double)1.0;
-  ros_M[5] = (double)1.0;
+    ros_M[0] = ros_A[6];
+    ros_M[1] = ros_A[7];
+    ros_M[2] = ros_A[8];
+    ros_M[3] = ros_A[9];
+    ros_M[4] = (double)1.0;
+    ros_M[5] = (double)1.0;
 
 /*~~~> E_i  = Coefficients for error estimator */
-  ros_E[0] = (double)0.0;
-  ros_E[1] = (double)0.0;
-  ros_E[2] = (double)0.0;
-  ros_E[3] = (double)0.0;
-  ros_E[4] = (double)0.0;
-  ros_E[5] = (double)1.0;
+    ros_E[0] = (double)0.0;
+    ros_E[1] = (double)0.0;
+    ros_E[2] = (double)0.0;
+    ros_E[3] = (double)0.0;
+    ros_E[4] = (double)0.0;
+    ros_E[5] = (double)1.0;
 
 /*~~~> Does the stage i require a new function evaluation (ros_NewF[i]=TRUE)
        or does it re-use the function evaluation from stage i-1
        (ros_NewF[i]=FALSE) */
-  ros_NewF[0] = TRUE;
-  ros_NewF[1] = TRUE;
-  ros_NewF[2] = TRUE;
-  ros_NewF[3] = TRUE;
-  ros_NewF[4] = TRUE;
-  ros_NewF[5] = TRUE;
+    ros_NewF[0] = TRUE;
+    ros_NewF[1] = TRUE;
+    ros_NewF[2] = TRUE;
+    ros_NewF[3] = TRUE;
+    ros_NewF[4] = TRUE;
+    ros_NewF[5] = TRUE;
 
 /*~~~> ros_ELO  = estimator of local order - the minimum between the
         main and the embedded scheme orders plus 1 */
-  ros_ELO = (double)4.0;
+    ros_ELO = (double)4.0;
 
 } /* End of Rodas4 */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-static void FunTemplate( double T, double Y[], double Ydot[] ) {
+void ADJ_FunTemplate( double T, double Y[], double Ydot[] ) {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Template for the ODE function call.
   Updates the rate coefficients (and possibly the fixed species) at each call
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~> Local variables */
-  double Told;
+    double Told;
 
-  Told = TIME;
-  TIME = T;
-  Update_PHOTO();
-  Fun( Y, FIX, RCONST, Ydot );
-  TIME = Told;
+    Told = TIME;
+    TIME = T;
+    Update_PHOTO();
+    Fun( Y, FIX, RCONST, Ydot );
+    TIME = Told;
 
-} /* End of FunTemplate */
+} /* End of ADJ_FunTemplate */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-static void JacTemplate( double T, double Y[], double Jcb[] ) {
+void ADJ_JacTemplate( double T, double Y[], double Jcb[] ) {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Template for the ODE Jacobian call.
   Updates the rate coefficients (and possibly the fixed species) at each call
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~> Local variables */
-  double Told;
+    double Told;
 #ifdef FULL_ALGEBRA
-  double JV[LU_NONZERO];
-  int i, j;
+    double JV[LU_NONZERO];
+    int i, j;
 #endif
 
-  Told = TIME;
-  TIME = T;
-  Update_PHOTO();
+    Told = TIME;
+    TIME = T;
+    Update_PHOTO();
 #ifdef FULL_ALGEBRA
-  Jac_SP(Y, FIX, RCONST, JV);
-  for(j=0; j<NVAR; j++) {
-    for(i=0; i<NVAR; i++)
-      Jcb[i][j] = (double)0.0;
-  }
-  for(i=0; i<LU_NONZERO; i++)
-    Jcb[LU_ICOL[i]][LU_IROW[i]] = JV[i];
+    Jac_SP(Y, FIX, RCONST, JV);
+    for(j=0; j<NVAR; j++) {
+        for(i=0; i<NVAR; i++)
+            Jcb[i][j] = (double)0.0;
+    }
+    for(i=0; i<LU_NONZERO; i++)
+        Jcb[LU_ICOL[i]][LU_IROW[i]] = JV[i];
 #else
-  Jac_SP( Y, FIX, RCONST, Jcb );
+    Jac_SP( Y, FIX, RCONST, Jcb );
 #endif
-  TIME = Told;
-} /* End of JacTemplate */
+    TIME = Told;
+
+} /* End of ADJ_JacTemplate */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-void HessTemplate( double T, double Y[], double Hes[] ) {
+void ADJ_HessTemplate( double T, double Y[], double Hes[] ) {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Template for the ODE Hessian call.
   Updates the rate coefficients (and possibly the fixed species) at each call
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~> Local variables */
-  double Told;
+    double Told;
 
-  Told = TIME;
-  TIME = T;
-  Update_PHOTO();
-  Hessian( Y, FIX, RCONST, Hes );
-  TIME = Told;
+    Told = TIME;
+    TIME = T;
+    Update_PHOTO();
+    Hessian( Y, FIX, RCONST, Hes );
+    TIME = Told;
 
-} /* End of HessTemplate */
+} /* End of ADJ_HessTemplate */
 
 /* End of INTEGRATE function                                                 */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
