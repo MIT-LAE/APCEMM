@@ -16,25 +16,28 @@
 namespace output 
 {
 
-    int Write( const SpeciesArray &ringSpecies, const Ambient ambientData, const Cluster &ringCluster, \
-               const std::vector<double> &timeArray, const double &temperature_K, const double &pressure_Pa, \
-               const double &airDens, const double &relHumidity_w, const double &relHumidity_i, \
-               const double &longitude_deg, const double &latitude_deg, const double &sunRise, const double &sunSet ) 
+    int Write( const char* outFile,                                              \
+               const SpeciesArray &ringSpecies, const Ambient ambientData,       \
+               const Cluster &ringCluster, const std::vector<double> &timeArray, \
+               const double &temperature_K, const double &pressure_Pa,           \
+               const double &airDens, const double &relHumidity_w,               \
+               const double &relHumidity_i, const double &longitude_deg,         \
+               const double &latitude_deg,                                       \
+               const double &sunRise, const double &sunSet ) 
     {
 
         const bool doWrite = 1;
         const bool doRead = 1;
         const bool overWrite = 1;
-        const char* currFileName( OUT_FILE );
 
         int didSaveSucceed = 1;
         time_t rawtime;
         char buffer[80];
 
-        FileHandler fileHandler( currFileName, doWrite, doRead, overWrite );
+        FileHandler fileHandler( outFile, doWrite, doRead, overWrite );
         NcFile currFile = fileHandler.openFile();
         if ( !fileHandler.isFileOpen() ) {
-            std::cout << " File " << currFileName << " didn't open!" << "\n";
+            std::cout << " File " << outFile << " didn't open!" << "\n";
             return SAVE_FAILURE;
         } else {
 //            std::cout << "\n Starting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
@@ -3292,7 +3295,7 @@ namespace output
 
             fileHandler.closeFile( currFile );
             if ( fileHandler.isFileOpen() ) {
-                std::cout << "File " << currFileName << " didn't close properly!" << "\n";
+                std::cout << "File " << outFile << " didn't close properly!" << "\n";
                 return SAVE_FAILURE;
             }
         }
