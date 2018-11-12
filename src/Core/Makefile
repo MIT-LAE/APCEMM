@@ -169,8 +169,6 @@ BuildTime.o         : BuildTime.cpp
 
 Cluster.o           : Cluster.cpp
 
-Combvec.o           : Combvec.cpp
-
 Diffusion.o         : Diffusion.cpp
 
 Emission.o          : Emission.cpp
@@ -194,8 +192,6 @@ PlumeModel.o        : PlumeModel.cpp
 PrintMessage.o      : PrintMessage.cpp
 
 ReadParameters.o    : ReadParameters.cpp
-
-Reshape.o           : Reshape.cpp
 
 Ring.o              : Ring.cpp
 
