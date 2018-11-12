@@ -26,6 +26,12 @@
 
 class Engine
 {
+
+    /* Forward declaration */
+    class Aircraft;
+
+    friend class Aircraft;
+
     public:
         
         Engine( );
@@ -49,6 +55,12 @@ class Engine
         double getFuelFlow() const;
         double getTheta() const;
         double getDelta() const;
+        void setEI_NOx(const double NOx);
+        void setEI_CO(const double CO);
+        void setEI_HC(const double HC);
+        void setEI_Soot(const double Soot);
+        void setSootRad(const double sootRad);
+        void setFuelFlow(const double ff);
 
     protected:
 

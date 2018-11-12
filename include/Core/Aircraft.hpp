@@ -43,6 +43,15 @@ class Aircraft
         unsigned int getEngNumber() const;
         double getVortexdeltaz1() const;
         double getVortexdeltazw() const;
+        void setEI_NOx(const double NOx);
+        void setEI_CO(const double CO);
+        void setEI_HC(const double HC);
+        void setEI_Soot(const double Soot);
+        void setSootRad(const double sootRad);
+        void setFuelFlow(const double ff);
+
+        /* Engine */
+        Engine engine;
 
     protected:
 
@@ -59,9 +68,6 @@ class Aircraft
         /* Weight */
         double MTOW; /* [kg] */
         double currMass; /* [kg] */
-
-        /* Engine */
-        Engine engine;
 
         /* Number of engines */
         unsigned int engNumber;
