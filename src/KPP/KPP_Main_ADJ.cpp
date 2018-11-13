@@ -265,7 +265,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
     DELTAO3 = VAR_RUN[ind_O3]  - finalPlume[ind_O3];
 
     if ( verbose )
-        printf(" DELTAO3 : %f\n", DELTAO3  / airDens * TOPPT);
+        printf(" DELTAO3 : %f [ppt]\n", DELTAO3  / airDens * TOPPT);
 
     /* Optimization method:
      * (1) Conjugate gradient */
@@ -365,7 +365,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             if ( i <= 1 ) // NOx
                 DIAG[i] = 1.0 / ( VAR_BACKG[ind_OPT[0]] + VAR_BACKG[ind_OPT[1]] );
             else if ( i > 1 ) // O3
-                DIAG[i] = 30.0 / ( VAR_BACKG[ind_OPT[i]] ); 
+                DIAG[i] = 1.0 / ( VAR_BACKG[ind_OPT[i]] ); 
 
             wDiff[i] = DIAG[i] * ( VAR_RUN[ind_OPT[i]] - finalPlume[ind_OPT[i]] );
         }
@@ -496,6 +496,9 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                         METRIC += pow( ( DIAG[i+1] * ( VAR_RUN[ind_OPT[i+1]] - finalPlume[ind_OPT[i+1]] ) ), 2);
                 }
 
+                if ( verbose )
+                    printf("Step: %d, METRIC: %e\n", j, METRIC);
+
                 if ( METRIC < METRIC_min ) {
                     METRIC_min = METRIC;
                     imin = j;
@@ -511,7 +514,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
                 j++;
 
-                if ( METRIC > METRIC_prev ) {
+                if ( ( METRIC > METRIC_prev ) && ( METRIC < 2.0 * METRIC_ABS_MIN ) ){
                     IERR = 0;
                     break;
                 }
@@ -522,7 +525,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             
             /* ---- LINE SEARCH ENDS HERE ----------- */
             
-            if ( ( N > 5 ) && ( ABS( METRIC_OLD / METRIC - 1 ) < 1.00E-05 ) ) {
+            if ( ( N > 4 ) && ( ABS( METRIC_OLD / METRIC - 1 ) < 1.00E-04 ) ) {
                 IERR = 0;
                 break;
             }
@@ -569,14 +572,16 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             IERR = INTEGRATE_ADJ( NADJ, VAR_RUN, Y_adj, TSTART, TEND, ATOL_adj, RTOL_adj, ATOL, RTOL, ICNTRL, RCNTRL, ISTATUS, RSTATUS, STEPMIN );
 
             if ( IERR < 0 ) {
-                printf(" Adjoint integration failed\n");
+                printf(" Adjoint integration failed\n Metric: %e\n", METRIC);
+                printf(" [NO](t = t0)    = %f [ppt]\n", VAR_INIT[ind_NO]/airDens*1E12);
+                printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*1E12);
+                printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*1E9);
+                printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*1E9);
                 return IERR;
             }
             
             // if O3 delta smaller than 0.5 ppt and NOx delta smaller than 0.05 ppt
             if ( ABS((VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*TOPPT) < 0.1 && ABS((VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT) < 0.05 ) {
-                if ( verbose )
-                    printf(" Minimizer has been found!\n");
                 IERR = 0;
                 break;
             }
@@ -625,6 +630,10 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
             if ( IERR < 0 ) {
                 printf(" Forward integration failed\n");
+                printf(" [NO](t = t0)    = %f [ppt]\n", VAR_INIT[ind_NO]/airDens*1E12);
+                printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*1E12);
+                printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*1E9);
+                printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*1E9);
                 return IERR;
             }
 
