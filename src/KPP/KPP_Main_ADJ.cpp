@@ -260,12 +260,21 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
     /* Compute difference between forward ambient
      * run and final plume concentrations */
-    double DELTAO3;
+    double DELTAO3f, DELTANOf, DELTANO2f;
     
-    DELTAO3 = VAR_RUN[ind_O3]  - finalPlume[ind_O3];
+    DELTAO3f  = VAR_RUN[ind_O3]  - finalPlume[ind_O3];
+    DELTANOf  = VAR_RUN[ind_NO]  - finalPlume[ind_NO];
+    DELTANO2f = VAR_RUN[ind_NO2] - finalPlume[ind_NO2];
 
-    if ( verbose )
-        printf(" DELTAO3 : %f [ppt]\n", DELTAO3  / airDens * TOPPT);
+    const double DELTAO3f_0  = DELTAO3f;
+    const double DELTANOf_0  = DELTANOf;
+    const double DELTANO2f_0 = DELTANO2f;
+
+    if ( verbose ) {
+        printf(" DELTAO3 : %f [ppt]\n", DELTAO3f  / airDens * TOPPT);
+        printf(" DELTANO : %f [ppt]\n", DELTANOf  / airDens * TOPPT);
+        printf(" DELTANO2: %f [ppt]\n", DELTANO2f  / airDens * TOPPT);
+    }
 
     /* Optimization method:
      * (1) Conjugate gradient */
@@ -379,13 +388,13 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                 if ( i > 0 )
                     printf("       [");
                 for ( j = 0; j < NOPT; j++ )
-                    printf("%.3e ",A_mat[i][j]);
+                    printf("%+e ",A_mat[i][j]);
                 printf("]\n");
             }
             printf(" Weighted difference\n");
             printf(" wDiff = [");
             for ( i = 0; i < NOPT; i++ )
-                printf("%.3e ",wDiff[i]);
+                printf("%+e ",wDiff[i]);
             printf("]\n");
         }
 
@@ -415,18 +424,18 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
         METRIC_OLD = METRIC_min;
         METRIC_prev = METRIC_min;
         METRIC_ABS_MIN = METRIC_min;
-
+        
         for ( i = 0; i < NVAR; i++ ) {
             VAR_RUN[i]     = VAR_BACKG[i];
             VAR_INIT[i]    = VAR_BACKG[i];
             VAR_DIR[i]     = VAR_BACKG[i];
             VAR_OUTPUT[i]  = VAR_BACKG[i];
         }
-        VAR_RUN[ind_O3]    -= DELTAO3/Y_adj[ind_O3][ind_O3];
-        VAR_INIT[ind_O3]   -= DELTAO3/Y_adj[ind_O3][ind_O3];
-        VAR_DIR[ind_O3]    -= DELTAO3/Y_adj[ind_O3][ind_O3];
-        VAR_OUTPUT[ind_O3] -= DELTAO3/Y_adj[ind_O3][ind_O3];
-
+        VAR_RUN[ind_O3]    -= DELTAO3f/Y_adj[ind_O3][ind_O3];
+        VAR_INIT[ind_O3]   -= DELTAO3f/Y_adj[ind_O3][ind_O3];
+        VAR_DIR[ind_O3]    -= DELTAO3f/Y_adj[ind_O3][ind_O3];
+        VAR_OUTPUT[ind_O3] -= DELTAO3f/Y_adj[ind_O3][ind_O3];
+              
         for ( i = 0; i < NOPT; i++ ) {
             alpha[i] = ABS( VAR_DIR[ind_OPT[i]] / dir[i] );
             if ( alpha_maxstep < alpha[i] )
@@ -573,10 +582,10 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
             if ( IERR < 0 ) {
                 printf(" Adjoint integration failed\n Metric: %e\n", METRIC);
-                printf(" [NO](t = t0)    = %f [ppt]\n", VAR_INIT[ind_NO]/airDens*1E12);
-                printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*1E12);
-                printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*1E9);
-                printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*1E9);
+                printf(" [NO](t = t0)    = %f [ppt]\n", VAR_INIT[ind_NO]/airDens*TOPPT);
+                printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*TOPPT);
+                printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*TOPPB);
+                printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*TOPPB);
                 return IERR;
             }
             
@@ -600,8 +609,9 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
             for ( i = 0; i < NVAR; i++ )
                 VAR_DIR[i] = VAR_INIT[i];
-            DELTAO3 = VAR_RUN[ind_O3] - finalPlume[ind_O3];
-            VAR_DIR[ind_O3] -= DELTAO3/Y_adj[ind_O3][ind_O3];
+        
+            DELTAO3f = VAR_RUN[ind_O3] - finalPlume[ind_O3];
+//            VAR_DIR[ind_O3] -= DELTAO3f/Y_adj[ind_O3][ind_O3];
             
             for ( i = 0; i < NVAR; i++ )
                 VAR_RUN[i] = VAR_DIR[i];
@@ -630,10 +640,10 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
             if ( IERR < 0 ) {
                 printf(" Forward integration failed\n");
-                printf(" [NO](t = t0)    = %f [ppt]\n", VAR_INIT[ind_NO]/airDens*1E12);
-                printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*1E12);
-                printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*1E9);
-                printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*1E9);
+                printf(" [NO](t = t0)    = %f [ppt]\n", VAR_INIT[ind_NO]/airDens*TOPPT);
+                printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*TOPPT);
+                printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*TOPPB);
+                printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*TOPPB);
                 return IERR;
             }
 
@@ -653,13 +663,13 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                     if ( i > 0 )
                         printf("       [");
                     for ( j = 0; j < NOPT; j++ )
-                        printf("%.3e ",A_mat[i][j]);
+                        printf("%+e ",A_mat[i][j]);
                     printf("]\n");
                 }
                 printf(" Weighted difference\n");
                 printf(" wDiff = [");
                 for ( i = 0; i < NOPT; i++ )
-                    printf("%.3e ",wDiff[i]);
+                    printf("%+e ",wDiff[i]);
                 printf("]\n");
             }
 
@@ -678,7 +688,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             /* Only select ONE of the following update formula!! */
             for ( i = 0; i < NOPT; i++ ) {
                 /* Fletcher-Reeves */
-                beta += dir[i] * dir[i] / ( dirold[i] * dirold[i] );
+//                beta += dir[i] * dir[i] / ( dirold[i] * dirold[i] );
                 /* Polak-Ribière */
 //                beta += dir[i] * ( dir[i] - dirold[i] ) / ( dirold[i] * dirold[i] );
                 /* Hestenes-Stiefel */
@@ -699,8 +709,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                 printf(" dir = [ %e, %e, %e ]\n",dir[0],dir[1],dir[2]);
 
             if ( verbose ) {
-                printf(" O3: %2.7f, %2.7f, %2.7f\n",VAR_RUN[ind_O3]/airDens*1E9, finalPlume[ind_O3]/airDens*1E9,(VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*1E12);
-                printf(" NOx: %2.7f, %2.7f, %2.7f\n",(VAR_RUN[ind_NO]+VAR_RUN[ind_NO2])/airDens*1E12, (finalPlume[ind_NO] + finalPlume[ind_NO2])/airDens*1E12, (VAR_RUN[ind_NO]+VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*1E12);
+                printf(" O3: %2.7f, %2.7f, %2.7f\n",VAR_RUN[ind_O3]/airDens*1E9, finalPlume[ind_O3]/airDens*1E9,(VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*TOPPT);
+                printf(" NOx: %2.7f, %2.7f, %2.7f\n",(VAR_RUN[ind_NO]+VAR_RUN[ind_NO2])/airDens*TOPPT, (finalPlume[ind_NO] + finalPlume[ind_NO2])/airDens*TOPPT, (VAR_RUN[ind_NO]+VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT);
             }
 
             alpha_maxstep = -1.0;
@@ -716,6 +726,118 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             N++;
 
         }
+       
+        if ( verbose )
+            printf("\n Trying to tweak ozone concentration\n");
+
+        /* Try tweaking the ozone value */
+        for ( i = 0; i < NVAR; i++ )
+            VAR_RUN[i] = VAR_OUTPUT[i];
+        for ( i = 0; i < NOPT; i++ )
+            VAR_INIT[ind_OPT[i]] = VAR_RUN[ind_OPT[i]];
+        VAR_INIT[ind_HNO3] = VAR_RUN[ind_HNO3];
+
+        /* No adjoint computation */
+        ICNTRL[6] = 1;
+
+        /* ---- INITIALIZE RATES ------------------ */
+
+        for ( i = 0; i < NREACT; i++ )
+            RCONST[i] = 0.0E+00;
+
+        for ( i = 0; i < NSPEC; i++ ) {
+            HET[i][0] = 0.0E+00;
+            HET[i][1] = 0.0E+00;
+            HET[i][2] = 0.0E+00;
+        }
+
+        Update_RCONST( temperature_K, pressure_Pa, airDens, VAR_RUN[ind_H2O] );
+
+        /* ---- COMPUTE SENSITIVITIES -------------- */
+
+        TIME = TSTART;
+        IERR = INTEGRATE_ADJ( NADJ, VAR_RUN, Y_adj, TSTART, TEND, ATOL_adj, RTOL_adj, ATOL, RTOL, ICNTRL, RCNTRL, ISTATUS, RSTATUS, STEPMIN );
+
+        if ( IERR < 0 ) {
+            printf(" Forward integration failed\n");
+            printf(" [NO](t = t0)    = %f [ppt]\n", VAR_INIT[ind_NO]/airDens*TOPPT);
+            printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*TOPPT);
+            printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*TOPPB);
+            printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*TOPPB);
+            return IERR;
+        }
+                
+        /* Compute metric */
+        METRIC_ABS_MIN = 0.0;
+        for ( i = 0; i < NOPT - 1; i++ ) {
+            if ( i < 1 )
+                METRIC_ABS_MIN += pow( ( DIAG[0] * ( VAR_RUN[ind_OPT[0]] + VAR_RUN[ind_OPT[1]] - finalPlume[ind_OPT[0]] - finalPlume[ind_OPT[1]] ) ), 2);
+            else
+                METRIC_ABS_MIN += pow( ( DIAG[i+1] * ( VAR_RUN[ind_OPT[i+1]] - finalPlume[ind_OPT[i+1]] ) ), 2);
+        }
+
+        if ( verbose )
+            printf("METRIC: %e\n", METRIC_ABS_MIN);
+
+            
+        /* Try tweaking the ozone value */
+        DELTAO3f = VAR_RUN[ind_O3] - finalPlume[ind_O3];
+        for ( i = 0; i < NVAR; i++ )
+            VAR_RUN[i] = VAR_OUTPUT[i];
+        VAR_RUN[ind_O3]   -= DELTAO3f/Y_adj[ind_O3][ind_O3];
+        for ( i = 0; i < NOPT; i++ )
+            VAR_INIT[ind_OPT[i]] = VAR_RUN[ind_OPT[i]];
+        VAR_INIT[ind_HNO3] = VAR_RUN[ind_HNO3];
+
+        /* No adjoint computation */
+        ICNTRL[6] = 1;
+
+        /* ---- INITIALIZE RATES ------------------ */
+
+        for ( i = 0; i < NREACT; i++ )
+            RCONST[i] = 0.0E+00;
+
+        for ( i = 0; i < NSPEC; i++ ) {
+            HET[i][0] = 0.0E+00;
+            HET[i][1] = 0.0E+00;
+            HET[i][2] = 0.0E+00;
+        }
+
+        Update_RCONST( temperature_K, pressure_Pa, airDens, VAR_RUN[ind_H2O] );
+
+        /* ---- COMPUTE SENSITIVITIES -------------- */
+
+        TIME = TSTART;
+        IERR = INTEGRATE_ADJ( NADJ, VAR_RUN, Y_adj, TSTART, TEND, ATOL_adj, RTOL_adj, ATOL, RTOL, ICNTRL, RCNTRL, ISTATUS, RSTATUS, STEPMIN );
+
+        if ( IERR < 0 ) {
+            printf(" Forward integration failed\n");
+            printf(" [NO](t = t0)    = %f [ppt]\n", VAR_INIT[ind_NO]/airDens*TOPPT);
+            printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*TOPPT);
+            printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*TOPPB);
+            printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*TOPPB);
+            return IERR;
+        }
+                
+        /* Compute metric */
+        METRIC = 0.0;
+        for ( i = 0; i < NOPT - 1; i++ ) {
+            if ( i < 1 )
+                METRIC += pow( ( DIAG[0] * ( VAR_RUN[ind_OPT[0]] + VAR_RUN[ind_OPT[1]] - finalPlume[ind_OPT[0]] - finalPlume[ind_OPT[1]] ) ), 2);
+            else
+                METRIC += pow( ( DIAG[i+1] * ( VAR_RUN[ind_OPT[i+1]] - finalPlume[ind_OPT[i+1]] ) ), 2);
+        }
+
+        if ( verbose )
+            printf("METRIC: %e\n", METRIC);
+
+        if ( METRIC < METRIC_ABS_MIN ) {
+            if ( verbose )
+                printf("Tweaking worked!\n");
+            for ( i = 0; i < NOPT; i++ )
+                VAR_OUTPUT[ind_OPT[i]] = VAR_INIT[ind_OPT[i]];
+            VAR_OUTPUT[ind_HNO3]   = VAR_INIT[ind_HNO3];
+        }
 
         /* ---- OPTIMIZATION ENDS HERE ---------------------- */
 
@@ -723,8 +845,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 #pragma omp critical
         {
             printf("\n ## ON THREAD: %d\n", omp_get_thread_num());
-            printf(" ## O3 Delta : %+f [ppt]\n",(VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*TOPPT);
-            printf(" ## NOx Delta: %+f [ppt]\n",(VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT);
+            printf(" ## O3 Delta : %+f [ppt], %f %% \n",(VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*TOPPT, 100.0 * ABS((VAR_RUN[ind_O3] - finalPlume[ind_O3]) / DELTAO3f_0));
+            printf(" ## NOx Delta: %+f [ppt], %f %% \n",(VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT, 100.0 * ABS((VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/ ( DELTANOf_0 + DELTANO2f_0 )));
         }
 
     }
