@@ -133,8 +133,12 @@ LINK := -L$(LIB_DIR)
 # Define any libraries to link into executable: use -llibname option
 LINK := $(LINK) -lstdc++ -lm
 
+LINK_FFTW := -lfftw3 -lfftw3f -lfftw3l
+# -lfftw3_omp -lfftw3_threads
+
 # Create linker command to create the APCEMM executable
-LINK := $(LINK) -Wl,--start-group -lUtil -lSands -lfftw3 -lKpp -lEpm -lAim -lnetcdf_c++ -Wl,--end-group
+LINK := $(LINK) -Wl,--start-group -lUtil -lSands $(LINK_FFTW) -lKpp -lEpm -lAim -lnetcdf_c++ -Wl,--end-group
+# -lfftw3_omp -lpthread -lfftw3_threads
 
 ###############################################################################
 ###                                                                         ###
@@ -191,7 +195,7 @@ ifeq ($(COMPILER),g++)
 
 #  CFLAGS              := CXXFLAGS
 
-  CFLAGS := -Wall -Wextra -O3 -fopenmp -std=c++11 $(USER_DEFS)
+  CFLAGS := -Wall -Wextra -g -O3 -fopenmp -std=c++11 $(USER_DEFS)
 
   # Include options (i.e. for finding *.h* files)
   INCLUDE := -I$(ROOT_DIR)/include

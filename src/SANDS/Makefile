@@ -89,11 +89,7 @@ debug:
 ###                                                                         ###
 ###############################################################################
 
+FFT.o               : FFT.cpp
 
-SANDS.o             : SANDS.cpp      \
-                      Solver.o
-
-SaveWisdom.o        : SaveWisdom.cpp
-                      
 Solver.o            : Solver.cpp
 
