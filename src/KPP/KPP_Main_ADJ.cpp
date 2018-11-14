@@ -832,6 +832,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             printf("METRIC: %e\n", METRIC);
 
         if ( METRIC < METRIC_ABS_MIN ) {
+            METRIC_ABS_MIN = METRIC;
             if ( verbose )
                 printf("Tweaking worked!\n");
             for ( i = 0; i < NOPT; i++ )
@@ -844,7 +845,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
 #pragma omp critical
         {
-            printf("\n ## ON THREAD: %d\n", omp_get_thread_num());
+            printf("\n ## ON THREAD: %d. Integration successful (METRIC: %e)\n", omp_get_thread_num(), METRIC_ABS_MIN);
             printf(" ## O3 Delta : %+f [ppt], %f %% \n",(VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*TOPPT, 100.0 * ABS((VAR_RUN[ind_O3] - finalPlume[ind_O3]) / DELTAO3f_0));
             printf(" ## NOx Delta: %+f [ppt], %f %% \n",(VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT, 100.0 * ABS((VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/ ( DELTANOf_0 + DELTANO2f_0 )));
         }
