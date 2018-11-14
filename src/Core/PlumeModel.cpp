@@ -23,9 +23,10 @@ static int SUCCESS     =  1;
 #include <complex>
 #include <ctime>
 #include <sys/stat.h>
+#include <fftw3.h>
 #include "omp.h"
 
-#include "Util/ForwardsDecl.hpp"
+#include "Util/ForwardDecl.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
 #include "Core/Monitor.hpp"
@@ -89,13 +90,13 @@ std::vector<double> BuildTime( double tStart, double tFinal, \
                double sunRise, double sunSet );
 double UpdateTime( double time, double tStart, \
                    double sunRise, double sunSet );
-void Transport( Solution& Data, Solver& SANDS );
+void Transport( Solution& Data, SANDS::Solver& Solver );
 
 
 int PlumeModel( const unsigned int iCase,                   \
                 double temperature_K, double pressure_Pa,   \
                 double relHumidity_w, double longitude_deg, \
-                double latitude_deg, \
+                double latitude_deg,                        \
                 const std::vector<double> &inputEmission )
 {
    
@@ -264,18 +265,15 @@ int PlumeModel( const unsigned int iCase,                   \
     /* Fill negative values? */
     const bool fillNegValues = 1;
     /* Fill with? */
-    const double fillWith = 0.0;
+    const double fillWith = 0.0E+00;
 
     /* Allocate Solvers */
-    Solver SANDS_GasPhase( fillNegValues, fillWith );
-    Solver SANDS_MicroPhys( fillNegValues, 1.00E-50 );
-    
-    /* Run FFTW_Wisdom? */
-    if ( FFTW_WISDOM ) {
-        std::cout << "FFTW_Wisdom..." << "\n";
-        SANDS_GasPhase.Wisdom( Data.CO2 );
+    SANDS::Solver Solver;
+    #pragma omp critical
+    {
+        Solver.Initialize( fillNegValues, fillWith );
     }
-
+    
 
     /** ~~~~~~~~~~~~~~~~~ **/
     /**     Emissions     **/
@@ -596,8 +594,7 @@ int PlumeModel( const unsigned int iCase,                   \
         dt = timeArray[nTime+1] - timeArray[nTime]; //UpdateTime( curr_Time_s, tInitial_s, 3600.0*sun->sunRise, 3600.0*sun->sunSet );
         LAST_STEP = ( curr_Time_s + dt >= tFinal_s );
 
-        SANDS_GasPhase.UpdateTimeStep( dt );
-        SANDS_MicroPhys.UpdateTimeStep( dt );
+        Solver.UpdateTimeStep( dt );
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /**     Advection & Diffusion    **/
@@ -648,10 +645,9 @@ int PlumeModel( const unsigned int iCase,                   \
         }
    
         /* Update diffusion and advection arrays */
-        SANDS_GasPhase.UpdateDiff( d_x, d_y );
-        SANDS_MicroPhys.UpdateDiff( d_x, d_y );
+        Solver.UpdateDiff( d_x, d_y );
         /* Assume no plume advection */
-        SANDS_GasPhase.UpdateAdv ( 0.0E+00, 0.0E+00 );
+        Solver.UpdateAdv ( 0.0E+00, 0.0E+00 );
         /* Microphysics settling is considered for each bin independently */
 
         
@@ -670,27 +666,27 @@ int PlumeModel( const unsigned int iCase,                   \
 
 #if ( DIFFUSION || ADVECTION )
         /* Advection and diffusion for gas phase species */
-        Transport( Data, SANDS_GasPhase );
+        Transport( Data, Solver ); //, plan_FFT, plan_IFFT );
         
         /* Advection and diffusion for aerosol particles */
-        SANDS_MicroPhys.UpdateAdv ( 0.0E+00, 0.0E+00 );
-        SANDS_MicroPhys.Solve( Data.sootDens );
+        Solver.UpdateAdv ( 0.0E+00, 0.0E+00 );
+        Solver.Run( Data.sootDens ); //, plan_FFT, plan_IFFT );
         /* Monodisperse assumption for soot particles */
-        SANDS_MicroPhys.Solve( Data.sootRadi );
-        SANDS_MicroPhys.Solve( Data.sootArea );
+        Solver.Run( Data.sootRadi ); //, plan_FFT, plan_IFFT );
+        Solver.Run( Data.sootArea ); //, plan_FFT, plan_IFFT );
         
         /* We assume that sulfate aerosols do not settle */
         if ( TRANSPORT_LA ) {
             /* Transport of liquid aerosols */
             for ( unsigned int iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ )
-                SANDS_MicroPhys.Solve( Data.liquidAerosol.pdf[iBin_LA] );
+                Solver.Run( Data.liquidAerosol.pdf[iBin_LA] ); //, plan_FFT, plan_IFFT );
         }
 
         if ( TRANSPORT_PA ) {
             /* Transport of solid aerosols */
             for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
-                SANDS_MicroPhys.UpdateAdv ( 0.0E+00, vFall[iBin_PA] );
-                SANDS_MicroPhys.Solve( Data.solidAerosol.pdf[iBin_PA] );
+                Solver.UpdateAdv ( 0.0E+00, vFall[iBin_PA] );
+                Solver.Run( Data.solidAerosol.pdf[iBin_PA] ); //, plan_FFT, plan_IFFT );
             }
         }
 
@@ -855,7 +851,7 @@ int PlumeModel( const unsigned int iCase,                   \
                 if ( IERR < 0 ) {
                     /* Integration failed */
 
-                    std::cout << "Integration failed for ring = " << iRing << " at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+                    std::cout << "Integration failed on " << omp_get_thread_num() << " for ring = " << iRing << " at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
 
                     if ( DEBUG ) {
                         std::cout << " ~~~ Printing reaction rates:\n";
@@ -946,7 +942,7 @@ int PlumeModel( const unsigned int iCase,                   \
             if ( IERR < 0 ) {
                 /* Integration failed */
 
-                std::cout << "Integration failed for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+                std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
                     
                 if ( DEBUG ) {
                     std::cout << " ~~~ Printing reaction rates:\n";
@@ -1017,7 +1013,7 @@ int PlumeModel( const unsigned int iCase,                   \
                     if ( IERR < 0 ) {
                         /* Integration failed */
 
-                        std::cout << "Integration failed for grid cell = (" << jNy << ", " << iNx << ") at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+                        std::cout << "Integration failed on " << omp_get_thread_num() << " for grid cell = (" << jNy << ", " << iNx << ") at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
                     
                         if ( DEBUG ) {
                             std::cout << " ~~~ Printing reaction rates:\n";
@@ -1078,7 +1074,7 @@ int PlumeModel( const unsigned int iCase,                   \
             if ( IERR < 0 ) {
                 /* Integration failed */
 
-                std::cout << "Integration failed for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+                std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
 
                 if ( DEBUG ) {
                     std::cout << " ~~~ Printing reaction rates:\n";
@@ -1579,7 +1575,7 @@ int PlumeModel( const unsigned int iCase,                   \
         if ( IERR < 0 ) {
             /* Integration failed */
 
-            std::cout << "Integration failed for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+            std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
                 
             if ( DEBUG ) {
                 std::cout << " ~~~ Printing reaction rates:\n";

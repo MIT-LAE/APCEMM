@@ -25,15 +25,9 @@ const std::string OUT_PATH    = "/net/d04/data/fritzt/CAPCEMM/";
 #define DIFFUSION               1    /* Is diffusion turned on? */
 #define ADVECTION               1    /* Is advection turned on? */
 
-/* FFTW */
-#define FFTW_WISDOM             0    /* Find most efficient algorithm 
-                                        through FFTW_wisdom. 
-                                        Takes ~ 10s */
-const char* const WISDOMFILE = "data/FFTW_Wisdom.out"; 
-
 /* CHEMISTRY */
 #define CHEMISTRY               1    /* Is chemistry turned on? */
-#define HETCHEMISTRY            1    /* Is heterogeneous chemistry
+#define HETCHEMISTRY            0    /* Is heterogeneous chemistry
                                         turned on? */
 #define PSC_SIM                 0    /* Polar Stratospheric Clouds? */
 #define ADJOINT                 1    /* Adjoint chemistry? */
@@ -55,7 +49,7 @@ const char* const WISDOMFILE = "data/FFTW_Wisdom.out";
                                         for ice in s */
 #define LIQ_MICROPHYSICS        0    /* Is sulfate microphysics turned
                                         on? */
-#define LIQCOAG_TSTEP          14400 /* Minimal coagulation time step for 
+#define LIQCOAG_TSTEP           3600 /* Minimal coagulation time step for 
                                         liquid aerosols in s */
 
 /* SYMMETRIES */
@@ -79,8 +73,7 @@ const char* const AMBFILE     = "data/Ambient.txt";
 #define SAVE_TO_DOUBLE          1 
 
 /* Save ring-averaged concentrations? */
-#define SAVE_FORWARD            0
-const char* const OUT_FILE    = "data/output.nc";
+#define SAVE_FORWARD            1
 
 /* Save chemical rates? */
 #define SAVE_PL                 1

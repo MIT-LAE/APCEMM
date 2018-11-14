@@ -17,6 +17,7 @@
 /* Grid parameters */
 #define NX                256         /* Number of grid cells in the x-direction */
 #define NY                256         /* Number of grid cells in the y-direction */
+#define NYH               NY/2 + 1
 #define NCELL             NX*NY       /* Number of grid cells */
 #define XLIM              6.5E+03     /* x-limits of the domain [m] */
 #define YLIM              6.5E+02     /* y-limits of the domain [m] */
