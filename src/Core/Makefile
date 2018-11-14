@@ -189,8 +189,6 @@ Meteorology.o       : Meteorology.cpp
 
 PlumeModel.o        : PlumeModel.cpp
 
-PrintMessage.o      : PrintMessage.cpp
-
 ReadParameters.o    : ReadParameters.cpp
 
 Ring.o              : Ring.cpp
