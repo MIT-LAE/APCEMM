@@ -35,15 +35,23 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
 std::vector<std::vector<double> > ReadParameters( )
 {
 
-    std::cout << "Reading in parameters..." << std::endl;
-
     std::vector<double> temperature_K, pressure_Pa, relHumidity_w, longitude_deg, latitude_deg;
     std::vector<double> EI_NOx, EI_CO, EI_HC, EI_Soot, SootRad, ff;
 
     std::vector<std::vector<double> > parameters;
 
     /* Emission indices */
-    EI_NOx.push_back( 6.0E+00 );
+
+//    EI_NOx.push_back( 6.0E+00 );
+//    EI_NOx.push_back( 7.0E+00 );
+    EI_NOx.push_back( 8.0E+00 );
+    EI_NOx.push_back( 9.0E+00 );
+    EI_NOx.push_back( 10.0E+00 );
+    EI_NOx.push_back( 11.0E+00 );
+    EI_NOx.push_back( 12.0E+00 );
+    EI_NOx.push_back( 13.0E+00 );
+    EI_NOx.push_back( 14.0E+00 );
+
     EI_CO.push_back( 0.0E+00 );
     EI_HC.push_back( 0.0E+00 );
     EI_Soot.push_back( 0.0E+00 );
