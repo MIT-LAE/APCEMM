@@ -15,7 +15,7 @@
 #ifndef PHYSCONSTANT_H_INCLUDED
 #define PHYSCONSTANT_H_INCLUDED
 
-#include "ForwardsDecl.hpp"
+#include "ForwardDecl.hpp"
 
 #include "MolarWeights.hpp"
 
@@ -33,6 +33,9 @@ namespace physConst
 
     /* Double-precision value of \pi */
     static const RealDouble PI = 3.141592653589793238460;
+
+    /* Double-precision 1j ( 1j * 1j = -1 ) */
+    static const ComplexDouble _1j ( 0.0E+00, 1.0E+00 );
 
     /* Avogadro number   , Unit : [ molecules / mol ] */
     static const RealDouble Na = 6.022140857E+23;  

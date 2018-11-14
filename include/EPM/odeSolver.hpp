@@ -25,7 +25,7 @@
 #include <boost/numeric/odeint/stepper/controlled_runge_kutta.hpp>
 #include <boost/numeric/odeint/iterator/adaptive_iterator.hpp>
 
-#include "Util/ForwardsDecl.hpp"
+#include "Util/ForwardDecl.hpp"
 #include "Core/Parameters.hpp"
 #include "Util/PhysConstant.hpp"
 #include "Util/PhysFunction.hpp"

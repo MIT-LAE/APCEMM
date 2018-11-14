@@ -16,7 +16,7 @@
 
 #include <iostream>
 
-#include "Util/ForwardsDecl.hpp"
+#include "Util/ForwardDecl.hpp"
 #include "Util/PhysConstant.hpp"
 #include "Util/PhysFunction.hpp"
 

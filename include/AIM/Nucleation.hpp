@@ -17,7 +17,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "Util/ForwardsDecl.hpp"
+#include "Util/ForwardDecl.hpp"
 
 namespace AIM
 {

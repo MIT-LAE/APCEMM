@@ -17,7 +17,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "ForwardsDecl.hpp"
+#include "ForwardDecl.hpp"
 #include "PhysConstant.hpp"
 
 namespace met
