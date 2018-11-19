@@ -25,6 +25,8 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
                                            const std::vector<double>& relHumidity_w, \
                                            const std::vector<double>& longitude_deg, \
                                            const std::vector<double>& latitude_deg,  \
+                                           const std::vector<double>& dayGMT,        \
+                                           const std::vector<double>& emissionTime,  \
                                            const std::vector<double>& EI_NOx,        \
                                            const std::vector<double>& EI_CO,         \
                                            const std::vector<double>& EI_HC,         \
@@ -37,6 +39,8 @@ std::vector<std::vector<double> > ReadParameters( )
 
     std::vector<double> temperature_K, pressure_Pa, relHumidity_w, longitude_deg, latitude_deg;
     std::vector<double> EI_NOx, EI_CO, EI_HC, EI_Soot, SootRad, ff;
+    std::vector<double> dayGMT;
+    std::vector<double> emissionTime;
 
     std::vector<std::vector<double> > parameters;
 
@@ -60,9 +64,10 @@ std::vector<std::vector<double> > ReadParameters( )
 
     /* Temperature array in [K] */
 
-    for ( unsigned int i = 0; i < 31; i++ ) {
-        temperature_K.push_back( 200.0 + 2.0 * i );
-    }
+//    for ( unsigned int i = 0; i < 31; i++ ) {
+//        temperature_K.push_back( 200.0 + 2.0 * i );
+//    }
+    temperature_K.push_back(236.0);
 
     /* Pressure array in [Pa] */
 
@@ -80,11 +85,20 @@ std::vector<std::vector<double> > ReadParameters( )
 
     latitude_deg.push_back(60.0);
 
+    /* Emission date */
+
+    dayGMT.push_back(81.0);
+
+    /* Emission time in [hrs] */
+    emissionTime.push_back(20.0);
+
     parameters = CombVec( temperature_K, \
                           pressure_Pa,   \
                           relHumidity_w, \
                           longitude_deg, \
                           latitude_deg,  \
+                          dayGMT,        \
+                          emissionTime,  \
                           EI_NOx,        \
                           EI_CO,         \
                           EI_HC,         \
@@ -113,6 +127,8 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
                                            const std::vector<double>& relHumidity_w, \
                                            const std::vector<double>& longitude_deg, \
                                            const std::vector<double>& latitude_deg,  \
+                                           const std::vector<double>& dayGMT,        \
+                                           const std::vector<double>& emissionTime,  \
                                            const std::vector<double>& EI_NOx,        \
                                            const std::vector<double>& EI_CO,         \
                                            const std::vector<double>& EI_HC,         \
@@ -245,6 +261,58 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
     y.clear(); z.clear();
 
     nCases *= latitude_deg.size();
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(std::vector<double>( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ ) {
+            y[j][i] = u[j][i];
+        }
+        y[counter-1][i] = v[0][i];
+    }
+    
+    /* z = dayGMT */
+    z.push_back(std::vector<double>(dayGMT.size()));
+    for ( i = 0; i < dayGMT.size(); i++ )
+        z[0][i] = dayGMT[i];
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ ) {
+        y[i].clear();
+    }
+    z[0].clear();
+    y.clear(); z.clear();
+
+    nCases *= dayGMT.size();
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(std::vector<double>( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ ) {
+            y[j][i] = u[j][i];
+        }
+        y[counter-1][i] = v[0][i];
+    }
+    
+    /* z = emissionTime */
+    z.push_back(std::vector<double>(emissionTime.size()));
+    for ( i = 0; i < emissionTime.size(); i++ )
+        z[0][i] = emissionTime[i];
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ ) {
+        y[i].clear();
+    }
+    z[0].clear();
+    y.clear(); z.clear();
+
+    nCases *= emissionTime.size();
     counter += 1;
     for ( i = 0; i < counter; i++ )
         y.push_back(std::vector<double>( nCases ));
