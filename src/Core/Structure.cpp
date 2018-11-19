@@ -79,8 +79,8 @@ void Solution::Print( const std::vector<std::vector<double> >& vector_2D, \
 
 } /* End of Solution::Print */
 
-void Solution::Initialize( char const *fileName, const double temperature, const double pressure, \
-                           const double airDens, const double relHum, const double lat, \
+void Solution::Initialize( char const *fileName, const Input &input, \
+                           const double airDens,                    \
                            const Meteorology &met, const bool DBG )
 {
 
@@ -90,8 +90,7 @@ void Solution::Initialize( char const *fileName, const double temperature, const
 
     file.open( fileName );
 
-    if ( file.is_open() )
-    {
+    if ( file.is_open() ) {
         std::string line;
         unsigned int i = 0;
 
@@ -112,11 +111,13 @@ void Solution::Initialize( char const *fileName, const double temperature, const
         }
         file.close();
     }
-    else
-    {
+    else {
         std::string const currFunc("Structure::Initialize");
         std::cout << "ERROR: In " << currFunc << ": Can't read (" << fileName << ")" << std::endl;
     }
+
+    SpinUp( amb_Value, input, airDens, \
+            /* Time for which ambient file is valid in hr */ (const double) 8.0 );
 
     /* Gaseous species */
     SetShape( CO2      , size_x , size_y, amb_Value[  0] * airDens );
@@ -260,7 +261,7 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     } else {
         for ( unsigned int i = 0; i < size_x; i++ ) {
             for ( unsigned int j = 0; j < size_y; j++ ) {
-                H2O[j][i] = (relHum/((double) 100.0) * \
+                H2O[j][i] = (input.relHumidity_w()/((double) 100.0) * \
                                  physFunc::pSat_H2Ol( met.temp[j][i] ) / ( physConst::kB * met.temp[j][i] )) / 1.00E+06;
                 /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
 
@@ -285,7 +286,8 @@ void Solution::Initialize( char const *fileName, const double temperature, const
     NDENS.assign( 2, 0.0 );
     SAD.assign( 2, 0.0 );
 
-    STATE_PSC = STRAT_AER( temperature, pressure, airDens, lat, stratData, (2.0*XLIM)*(2.0*YLIM), KHETI_SLA, SOLIDFRAC, AERFRAC, RAD, RHO, KG, NDENS, SAD, DBG );
+    STATE_PSC = STRAT_AER( input.temperature_K(), input.pressure_Pa(), airDens, input.latitude_deg(), \
+                           stratData, (2.0*XLIM)*(2.0*YLIM), KHETI_SLA, SOLIDFRAC, AERFRAC, RAD, RHO, KG, NDENS, SAD, DBG );
   
     /* Liquid/solid species */
     SetShape( SO4L , size_x, size_y, (double) AERFRAC[0]                          * stratData[0] );
@@ -369,7 +371,7 @@ void Solution::Initialize( char const *fileName, const double temperature, const
         liquidAerosol = LAAerosol;
     }
 
-    const AIM::Coagulation kernel1( "liquid", LA_rJ, LA_vJ, physConst::RHO_SULF, temperature, pressure );
+    const AIM::Coagulation kernel1( "liquid", LA_rJ, LA_vJ, physConst::RHO_SULF, input.temperature_K(), input.pressure_Pa() );
 
     LA_Kernel = kernel1;
 
@@ -423,7 +425,7 @@ void Solution::Initialize( char const *fileName, const double temperature, const
         solidAerosol = PAAerosol;
     }
     
-    const AIM::Coagulation kernel2( "ice", PA_rJ, PA_vJ, physConst::RHO_ICE, temperature, pressure );
+    const AIM::Coagulation kernel2( "ice", PA_rJ, PA_vJ, physConst::RHO_ICE, input.temperature_K(), input.pressure_Pa() );
 
     PA_Kernel = kernel2;
 
@@ -1395,6 +1397,122 @@ void Solution::getAerosolProp( double ( &radi )[4], double ( &area )[4], double 
 
 
 } /* End of Solution::getAerosolProp */
+
+int Solution::SpinUp( std::vector<double> &amb_Value, \
+                       const Input &input,             \
+                       const double airDens,           \
+                       const double startTime )
+{
+
+    /* Chemistry timestep
+     * DT_CHEM = 10 mins */
+    const double DT_CHEM = 10.0 * 60.0; 
+    double curr_Time_s = startTime * 3600.0; 
+    
+    /* Integrate chemistry from startTime until endTime
+     * Make sure than endTime is greater than startTime, 
+     * if not integrate until next day at the same time */
+    double RunUntil = input.emissionTime();
+
+    /* If emission time corresponds to data from file exit here */
+    if ( startTime == RunUntil )
+        return 1;
+
+    if ( RunUntil < startTime )
+        RunUntil += 24.0;
+
+    /* Convert to seconds */
+    RunUntil *= 3600.0;
+    
+    /* Allocate arrays for KPP */
+    int IERR = 0;
+    double STEPMIN = (double)0.0;
+
+    double RTOL[NVAR];
+    double ATOL[NVAR];
+
+    for( unsigned int i = 0; i < NVAR; i++ ) {
+        RTOL[i] = KPP_RTOLS; 
+        ATOL[i] = KPP_ATOLS; 
+    }
+
+
+    /* Initialize arrays */
+    for ( unsigned int iVar = 0; iVar < NVAR; iVar++ )
+        VAR[iVar] = amb_Value[iVar] * airDens;
+
+    for ( unsigned int iFix = 0; iFix < NFIX; iFix++ )
+        FIX[iFix] = amb_Value[NVAR+iFix] * airDens;
+
+    /* Define sun parameters */
+    SZA *sun = new SZA( input.latitude_deg(), input.dayGMT() );
+    
+    if ( DEBUG )
+        std::cout << "\n Running spin-up from " << curr_Time_s / 3600.0 << " to " << RunUntil / 3600.0 << " [hr]\n";
+
+    while ( curr_Time_s < RunUntil ) {
+       
+        /* Compute the cosize of solar zenith angle midway through the integration step */
+        sun->Update( curr_Time_s + DT_CHEM/2 );
+
+        for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
+            PHOTOL[iPhotol] = 0.0E+00;
+
+        if ( sun->CSZA > 0.0E+00 )
+            Read_JRates( PHOTOL, sun->CSZA );
+
+        if ( DEBUG ) {
+            std::cout << "\n DEBUG : (In SpinUp)\n";
+            for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
+                std::cout << "         PHOTOL[" << iPhotol << "] = " << PHOTOL[iPhotol] << "\n";
+        }
+        
+        /* Update reaction rates */
+        for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
+            RCONST[iReact] = 0.0E+00;
+
+        Update_RCONST( input.temperature_K(), input.pressure_Pa(), airDens, VAR[ind_H2O] );
+
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+        /* ~~~~~ Integration ~~~~~~ */
+        /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+        IERR = INTEGRATE( VAR, curr_Time_s, curr_Time_s + DT_CHEM, \
+                          ATOL, RTOL, STEPMIN );
+                
+        if ( IERR < 0 ) {
+            /* Integration failed */
+
+            std::cout << " SpinUp Integration failed on " << omp_get_thread_num() << " at time t = " << curr_Time_s/3600.0 << "\n";
+
+            if ( DEBUG ) {
+                std::cout << " ~~~ Printing reaction rates:\n";
+                for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                    std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                }
+                std::cout << " ~~~ Printing concentrations:\n";
+                for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
+                    std::cout << "Species " << iSpec << ": " << VAR[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                }
+            }
+
+            return KPP_FAIL;
+        }
+
+        curr_Time_s += DT_CHEM;
+
+    }
+    
+    for ( unsigned int iVar = 0; iVar < NVAR; iVar++ )
+        amb_Value[iVar] = VAR[iVar] / airDens;
+
+
+    /* Clear dynamically allocated variable(s) */
+    sun->~SZA();
+
+    return IERR;
+
+} /* End of Solution::SpinUp */
 
 unsigned int Solution::getNx() const
 {

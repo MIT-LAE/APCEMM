@@ -29,6 +29,7 @@ static int SUCCESS     =  1;
 #include "Util/ForwardDecl.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
+#include "Core/Input.hpp"
 #include "Core/Monitor.hpp"
 #include "SANDS/Solver.hpp"
 #include "AIM/Coagulation.hpp"
@@ -63,9 +64,6 @@ static int SUCCESS     =  1;
 #endif /* SAVE_FORWARD || SAVE_ADJOINT || SAVE_PA_MICROPHYS || SAVE_LA_MICROPHYS */
 
 #if ( CHEMISTRY )
-    static int KPP_FAIL    = -1;
-    static int KPPADJ_FAIL = -5;
-    
     double C[NSPEC];          /* Concentration of all species */
     double * VAR = &C[0];     /* Concentration of variable species (global) */
     double * FIX = &C[NVAR];  /* Concentration of fixed species (global) */
@@ -93,21 +91,25 @@ double UpdateTime( double time, double tStart, \
 void Transport( Solution& Data, SANDS::Solver& Solver );
 
 
-int PlumeModel( const unsigned int iCase,                   \
-                double temperature_K, double pressure_Pa,   \
-                double relHumidity_w, double longitude_deg, \
-                double latitude_deg,                        \
-                const std::vector<double> &inputEmission )
+int PlumeModel( const unsigned int iCase, \
+                const Input &input )
 {
-   
+
 #if ( DEBUG )
 
     std::cout << "\n DEBUG is turned ON!\n\n";
 
 #endif /* DEBUG */
+    
+    RealDouble temperature_K = input.temperature_K();
+    RealDouble pressure_Pa   = input.pressure_Pa();
+    RealDouble relHumidity_w = input.relHumidity_w();
 
-    const unsigned int dayGMT(81);
-    const double EmissionTime = 8.0;
+    const RealDouble longitude_deg = input.longitude_deg();
+    const RealDouble latitude_deg  = input.latitude_deg();
+
+    const UInt dayGMT = input.dayGMT();
+    const RealDouble emissionTime = input.emissionTime();
 
     /* Grid indices */
     unsigned int iNx = 0;
@@ -185,11 +187,11 @@ int PlumeModel( const unsigned int iCase,                   \
      */ 
 
     /* Define emission and simulation time */
-    const double tEmission_h = std::fmod(EmissionTime, 24.0); /* [hr] */
-    const double tInitial_h  = tEmission_h;                   /* [hr] */
-    const double tFinal_h    = tInitial_h + TSIMUL;           /* [hr] */
-    const double tInitial_s  = tInitial_h * 3600.0;           /* [s] */
-    const double tFinal_s    = tFinal_h   * 3600.0;           /* [s] */
+    const double tEmission_h = emissionTime;        /* [hr] */
+    const double tInitial_h  = tEmission_h;         /* [hr] */
+    const double tFinal_h    = tInitial_h + TSIMUL; /* [hr] */
+    const double tInitial_s  = tInitial_h * 3600.0; /* [s] */
+    const double tFinal_s    = tFinal_h   * 3600.0; /* [s] */
 
     /* Current time in [s] */
     double curr_Time_s = tInitial_s; /* [s] */
@@ -223,7 +225,7 @@ int PlumeModel( const unsigned int iCase,                   \
     /* [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K]           ) * [m3/cm3] */
 
     /* Set solution arrays to ambient data */
-    Data.Initialize( AMBFILE, temperature_K, pressure_Pa, airDens, relHumidity_w, latitude_deg, Met, DEBUG );
+    Data.Initialize( AMBFILE, input, airDens, Met, DEBUG );
 
     /* Print Background Debug? */
     if ( DEBUG_BG_INPUT )
@@ -297,12 +299,12 @@ int PlumeModel( const unsigned int iCase,                   \
 
 #if ( APCEMM_LUT )
 
-    aircraft.setEI_NOx(inputEmission[0]);
-    aircraft.setEI_CO(inputEmission[1]);
-    aircraft.setEI_HC(inputEmission[2]);
-    aircraft.setEI_Soot(inputEmission[3]);
-    aircraft.setSootRad(inputEmission[4]);
-    aircraft.setFuelFlow(inputEmission[5]);
+    aircraft.setEI_NOx( input.EI_NOx() );
+    aircraft.setEI_CO( input.EI_CO() );
+    aircraft.setEI_HC( input.EI_HC() );
+    aircraft.setEI_Soot( input.EI_Soot() );
+    aircraft.setSootRad( input.sootRad() );
+    aircraft.setFuelFlow( input.fuelFlow() );
 
 #endif /* APCEMM_LUT */
 
@@ -851,7 +853,7 @@ int PlumeModel( const unsigned int iCase,                   \
                 if ( IERR < 0 ) {
                     /* Integration failed */
 
-                    std::cout << "Integration failed on " << omp_get_thread_num() << " for ring = " << iRing << " at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+                    std::cout << "Integration failed on " << omp_get_thread_num() << " for ring = " << iRing << " at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
 
                     if ( DEBUG ) {
                         std::cout << " ~~~ Printing reaction rates:\n";
@@ -942,7 +944,7 @@ int PlumeModel( const unsigned int iCase,                   \
             if ( IERR < 0 ) {
                 /* Integration failed */
 
-                std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+                std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
                     
                 if ( DEBUG ) {
                     std::cout << " ~~~ Printing reaction rates:\n";
@@ -1013,7 +1015,7 @@ int PlumeModel( const unsigned int iCase,                   \
                     if ( IERR < 0 ) {
                         /* Integration failed */
 
-                        std::cout << "Integration failed on " << omp_get_thread_num() << " for grid cell = (" << jNy << ", " << iNx << ") at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+                        std::cout << "Integration failed on " << omp_get_thread_num() << " for grid cell = (" << jNy << ", " << iNx << ") at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
                     
                         if ( DEBUG ) {
                             std::cout << " ~~~ Printing reaction rates:\n";
@@ -1074,7 +1076,7 @@ int PlumeModel( const unsigned int iCase,                   \
             if ( IERR < 0 ) {
                 /* Integration failed */
 
-                std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+                std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
 
                 if ( DEBUG ) {
                     std::cout << " ~~~ Printing reaction rates:\n";
@@ -1575,7 +1577,7 @@ int PlumeModel( const unsigned int iCase,                   \
         if ( IERR < 0 ) {
             /* Integration failed */
 
-            std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s << " ( nTime = " << nTime << " )\n";
+            std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
                 
             if ( DEBUG ) {
                 std::cout << " ~~~ Printing reaction rates:\n";

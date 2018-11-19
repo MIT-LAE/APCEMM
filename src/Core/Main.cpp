@@ -16,18 +16,15 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#include "SANDS/Solver.hpp"
 #include "omp.h"
 
 #include "Core/Parameters.hpp"
+#include "Core/Input.hpp"
 
 void PrintMessage( bool doPrint );
 std::vector<std::vector<double> > ReadParameters( );
-int PlumeModel( const unsigned int iCase,                   \
-                double temperature_K, double pressure_Pa,   \
-                double relHumidity_w, double longitude_deg, \
-                double latitude_deg,                        \
-                const std::vector<double> &inputEmission );
+int PlumeModel( const unsigned int iCase, \
+                const Input &inputCase );
 
 int main( int , char* [] )
 {
@@ -35,7 +32,24 @@ int main( int , char* [] )
     std::vector<std::vector<double> > parameters;
     unsigned int iCase, nCases;
     unsigned int jCase;
-    const unsigned int jCase0 = 0;
+    const unsigned int iOFFSET = 0;
+    
+    const unsigned int model = 1;
+
+    /*
+     * model = 0 -> Box Model
+     *
+     * model = 1 -> Plume Model
+     *                   + 
+     *              Adjoint Model
+     *
+     * model = 2 -> Adjoint Model
+     *
+     * model = 3 -> Box Model
+     *                  +
+     *              Plume Model
+     */
+
 
     #pragma omp master
     {
@@ -69,38 +83,11 @@ int main( int , char* [] )
     #pragma omp parallel for schedule(dynamic, 1) shared(parameters, nCases)
     for ( iCase = 0; iCase < nCases; iCase++ ) {
 
-        double temperature_K = parameters[0][iCase];
-        double pressure_Pa   = parameters[1][iCase];
-        double relHumidity_w = parameters[2][iCase];
-        double longitude_deg = parameters[3][iCase];
-        double latitude_deg  = parameters[4][iCase];
-        std::vector<double> emissionIndices( 6, 0.0E+00 );
-        emissionIndices[0] = parameters[5][iCase];
-        emissionIndices[1] = parameters[6][iCase];
-        emissionIndices[2] = parameters[7][iCase];
-        emissionIndices[3] = parameters[8][iCase];
-        emissionIndices[4] = parameters[9][iCase];
-        emissionIndices[5] = parameters[10][iCase];
+        const Input inputCase( iCase, parameters );
 
         #pragma omp critical
         { std::cout << "-> Running case " << iCase << " on thread " << omp_get_thread_num() << "\n"; }
 
-
-        const unsigned int model = 1;
-
-        /*
-         * model = 0 -> Box Model
-         *
-         * model = 1 -> Plume Model
-         *                   + 
-         *              Adjoint Model
-         *
-         * model = 2 -> Adjoint Model
-         *
-         * model = 3 -> Box Model
-         *                  +
-         *              Plume Model
-         */
 
         int iERR = 0;
 
@@ -115,10 +102,8 @@ int main( int , char* [] )
             /* Plume Model (APCEMM) */
             case 1:
 
-                jCase = jCase0 + iCase;
-                iERR = PlumeModel( jCase, temperature_K, pressure_Pa, \
-                                   relHumidity_w, longitude_deg,      \
-                                   latitude_deg, emissionIndices );
+                jCase = iOFFSET + iCase;
+                iERR = PlumeModel( jCase, inputCase );
                 break;
 
             /* Adjoint Model */
@@ -149,11 +134,11 @@ int main( int , char* [] )
                 std::cout << " Error: " << iERR << "\n";
                 std::cout << std::fixed;
                 std::cout << std::setprecision(3);
-                std::cout << " T   : " << std::setw(8) << temperature_K << " [K]\n";
-                std::cout << " P   : " << std::setw(8) << pressure_Pa/((double) 100.0) << " [hPa]\n";
-                std::cout << " RH_w: " << std::setw(8) << relHumidity_w << " [%]\n";
-                std::cout << " LON : " << std::setw(8) << longitude_deg << " [deg]\n";
-                std::cout << " LAT : " << std::setw(8) << latitude_deg << " [deg]\n";
+                std::cout << " T   : " << std::setw(8) << inputCase.temperature_K() << " [K]\n";
+                std::cout << " P   : " << std::setw(8) << inputCase.pressure_Pa()/((double) 100.0) << " [hPa]\n";
+                std::cout << " RH_w: " << std::setw(8) << inputCase.relHumidity_w() << " [%]\n";
+                std::cout << " LON : " << std::setw(8) << inputCase.longitude_deg() << " [deg]\n";
+                std::cout << " LAT : " << std::setw(8) << inputCase.latitude_deg() << " [deg]\n";
             }
             else { std::cout << " APCEMM Case: " << iCase << " completed.\n"; }
         }
