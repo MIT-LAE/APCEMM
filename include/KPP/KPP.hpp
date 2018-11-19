@@ -45,6 +45,10 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
                 const double RADI[NAERO], const double IWC,                 \
                 const double KHETI_SLA[11] );
 void Read_JRates ( double JRates[], const double CSZA );
+    
+static int KPP_FAIL    = -1;
+static int KPPADJ_FAIL = -5;
+    
 
 #ifdef __cplusplus
 }
