@@ -179,6 +179,8 @@ FileHandler.o       : FileHandler.cpp
 
 Fuel.o              : Fuel.cpp
 
+Input.o             : Input.cpp
+
 LiquidAer.o         : LiquidAer.cpp
 
 Main.o              : Main.cpp
