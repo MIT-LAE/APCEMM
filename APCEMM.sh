@@ -13,7 +13,7 @@
 #SBATCH --hint=nomultithread
 
 # number of CPUs to utilize
-#SBATCH -c 24
+#SBATCH -c24
 
 # Memory per core. Job will crash if this limit is exceeded.  Default
 # is 1000M per allocated core. Use values that will permit multiple
@@ -21,7 +21,7 @@
 # 2000M will allow allow all 12 processors on a node with 24000M of
 # RAM to be utilized, while specifying 2G (=2048M) would only allow 11
 # of the processors to be used.
-#SBATCH --mem-per-cpu=24000M
+#SBATCH --mem-per-cpu=1500M
 
 # Number of nodes to utilize
 #SBATCH -N 1
