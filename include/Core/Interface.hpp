@@ -16,7 +16,7 @@
 
 #include <string>
 
-const std::string OUT_PATH    = "/net/d04/data/fritzt/CAPCEMM/";
+const std::string OUT_PATH    = "/net/d04/data/fritzt/CAPCEMM/LUT";
 
 /* APCEMM Look-up table */
 #define APCEMM_LUT              1    /* Build look-up table? */
@@ -73,7 +73,7 @@ const char* const AMBFILE     = "data/Ambient.txt";
 #define SAVE_TO_DOUBLE          1 
 
 /* Save ring-averaged concentrations? */
-#define SAVE_FORWARD            1
+#define SAVE_FORWARD            0
 
 /* Save chemical rates? */
 #define SAVE_PL                 1
