@@ -119,6 +119,47 @@ void Solution::Initialize( char const *fileName, const Input &input, \
     SpinUp( amb_Value, input, airDens, \
             /* Time for which ambient file is valid in hr */ (const double) 8.0 );
 
+    /* Enforce pre-defined values? *
+     * Read input defined values for background concentrations */
+
+    /* Split NOx as NO and NO2 using the current NO/NO2 ratio */
+
+    /* Inputs are in ppb */
+
+    if ( input.backgNOx() > 0.0E+00 ) {
+        const double NONO2rat = amb_Value[ind_NO]/amb_Value[ind_NO2];
+        /* NOx = NO + NO2 = NO2 * ( r + 1 ) 
+         * NO2 = NOx / ( r + 1 );
+         * NO  = NOx - NO2; */
+        amb_Value[ind_NO2] = input.backgNOx() / ( NONO2rat + 1 );
+        amb_Value[ind_NO]  = input.backgNOx() - amb_Value[ind_NO2];
+
+        /* Convert to mixing ratio */
+        amb_Value[ind_NO2] /= 1.0E+09;
+        amb_Value[ind_NO]  /= 1.0E+09;
+    }
+
+    if ( input.backgHNO3() > 0.0E+00 ) {
+        /* Convert from ppb to mixing ratio */
+        amb_Value[ind_HNO3] = input.backgHNO3() / 1.0E+09;
+    }
+        
+    if ( input.backgO3() > 0.0E+00 ) {
+        /* Convert from ppb to mixing ratio */
+        amb_Value[ind_O3] = input.backgO3() / 1.0E+09;
+    }
+
+    if ( input.backgCO() > 0.0E+00 ) {
+        /* Convert from ppb to mixing ratio */
+        amb_Value[ind_CO] = input.backgCO() / 1.0E+09;
+    }
+
+    if ( input.backgCH4() > 0.0E+00 ) {
+        /* Convert from ppb to mixing ratio */
+        amb_Value[ind_CH4] = input.backgCH4() / 1.0E+09;
+    }
+
+
     /* Gaseous species */
     SetShape( CO2      , size_x , size_y, amb_Value[  0] * airDens );
     SetShape( PPN      , size_x , size_y, amb_Value[  1] * airDens );
