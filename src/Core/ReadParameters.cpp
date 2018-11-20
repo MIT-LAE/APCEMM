@@ -32,7 +32,12 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
                                            const std::vector<double>& EI_HC,         \
                                            const std::vector<double>& EI_Soot,       \
                                            const std::vector<double>& SootRad,       \
-                                           const std::vector<double>& ff );
+                                           const std::vector<double>& ff,            \
+                                           const std::vector<double>& backgNOx,      \
+                                           const std::vector<double>& backgHNO3,     \
+                                           const std::vector<double>& backgO3,       \
+                                           const std::vector<double>& backgCO,       \
+                                           const std::vector<double>& backgCH4 );
 
 std::vector<std::vector<double> > ReadParameters( )
 {
@@ -41,19 +46,50 @@ std::vector<std::vector<double> > ReadParameters( )
     std::vector<double> EI_NOx, EI_CO, EI_HC, EI_Soot, SootRad, ff;
     std::vector<double> dayGMT;
     std::vector<double> emissionTime;
+    std::vector<double> backgNOx, backgHNO3, backgO3, backgCO, backgCH4;
 
     std::vector<std::vector<double> > parameters;
 
     /* Emission indices */
 
+    /* Temperature array in [K] */
+
+    for ( unsigned int i = 0; i < 31; i++ ) {
+        temperature_K.push_back( 200.0 + 2.0 * i );
+    }
+
+    /* Pressure array in [Pa] */
+
+    pressure_Pa.push_back( 240.0E2 );
+
+    /* Relative humidity w.r.t liquid water array in [\%] */
+
+    relHumidity_w.push_back( 30.0 );
+
+    /* Longitude array expressed in deg */
+
+    longitude_deg.push_back( -15.0 );
+
+    /* Latitude array expressed in deg */
+
+    latitude_deg.push_back( 60.0 );
+
+    /* Emission date */
+
+    dayGMT.push_back( 81.0 );
+
+    /* Emission time in [hrs] */
+    emissionTime.push_back( 8.0 );
+    emissionTime.push_back( 20.0 );
+
 //    EI_NOx.push_back( 6.0E+00 );
 //    EI_NOx.push_back( 7.0E+00 );
     EI_NOx.push_back( 8.0E+00 );
-    EI_NOx.push_back( 9.0E+00 );
+//    EI_NOx.push_back( 9.0E+00 );
     EI_NOx.push_back( 10.0E+00 );
-    EI_NOx.push_back( 11.0E+00 );
+//    EI_NOx.push_back( 11.0E+00 );
     EI_NOx.push_back( 12.0E+00 );
-    EI_NOx.push_back( 13.0E+00 );
+//    EI_NOx.push_back( 13.0E+00 );
     EI_NOx.push_back( 14.0E+00 );
 
     EI_CO.push_back( 0.0E+00 );
@@ -62,35 +98,18 @@ std::vector<std::vector<double> > ReadParameters( )
     SootRad.push_back( 0.0E+00 );
     ff.push_back( 0.0E+00 );
 
-    /* Temperature array in [K] */
-
-//    for ( unsigned int i = 0; i < 31; i++ ) {
-//        temperature_K.push_back( 200.0 + 2.0 * i );
-//    }
-    temperature_K.push_back(236.0);
-
-    /* Pressure array in [Pa] */
-
-    pressure_Pa.push_back(240.0E2);
-
-    /* Relative humidity w.r.t liquid water array in [\%] */
-
-    relHumidity_w.push_back(30.0);
-
-    /* Longitude array expressed in deg */
-
-    longitude_deg.push_back(-15.0);
-
-    /* Latitude array expressed in deg */
-
-    latitude_deg.push_back(60.0);
-
-    /* Emission date */
-
-    dayGMT.push_back(81.0);
-
-    /* Emission time in [hrs] */
-    emissionTime.push_back(20.0);
+//    backgNOx.push_back( 102.9E-03 );
+    backgNOx.push_back( 50.0E-03 );
+    backgNOx.push_back( 100.0E-03 );
+    backgNOx.push_back( 150.0E-03 );
+    backgNOx.push_back( 200.0E-03 );
+    backgHNO3.push_back( 81.5E-03 );
+//    backgO3.push_back( 55.0E+00 );
+    backgO3.push_back( 50.0E+00 );
+    backgO3.push_back( 75.0E+00 );
+    backgO3.push_back( 100.0E+00 );
+    backgCO.push_back( 42.6E+00 );
+    backgCH4.push_back( 1.76E+03 );
 
     parameters = CombVec( temperature_K, \
                           pressure_Pa,   \
@@ -104,7 +123,12 @@ std::vector<std::vector<double> > ReadParameters( )
                           EI_HC,         \
                           EI_Soot,       \
                           SootRad,       \
-                          ff );
+                          ff,            \
+                          backgNOx,      \
+                          backgHNO3,     \
+                          backgO3,       \
+                          backgCO,       \
+                          backgCH4 );
 
     /* For debug */
     if ( false ) {
@@ -134,7 +158,12 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
                                            const std::vector<double>& EI_HC,         \
                                            const std::vector<double>& EI_Soot,       \
                                            const std::vector<double>& SootRad,       \
-                                           const std::vector<double>& ff )
+                                           const std::vector<double>& ff,            \
+                                           const std::vector<double>& backgNOx,      \
+                                           const std::vector<double>& backgHNO3,     \
+                                           const std::vector<double>& backgO3,       \
+                                           const std::vector<double>& backgCO,       \
+                                           const std::vector<double>& backgCH4 )
 {
     std::vector<std::vector<double> > combinations;
 
@@ -480,6 +509,136 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
         y[counter-1][i] = v[0][i];
     }
 
+    /* z = backgNOx */
+    z.push_back(std::vector<double>(backgNOx.size()));
+    for ( i = 0; i < backgNOx.size(); i++ )
+        z[0][i] = backgNOx[i];
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ ) {
+        y[i].clear();
+    }
+    z[0].clear();
+    y.clear(); z.clear();
+
+    nCases *= backgNOx.size();
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(std::vector<double>( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ ) {
+            y[j][i] = u[j][i];
+        }
+        y[counter-1][i] = v[0][i];
+    }
+    
+    /* z = backgHNO3 */
+    z.push_back(std::vector<double>(backgHNO3.size()));
+    for ( i = 0; i < backgHNO3.size(); i++ )
+        z[0][i] = backgHNO3[i];
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ ) {
+        y[i].clear();
+    }
+    z[0].clear();
+    y.clear(); z.clear();
+
+    nCases *= backgHNO3.size();
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(std::vector<double>( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ ) {
+            y[j][i] = u[j][i];
+        }
+        y[counter-1][i] = v[0][i];
+    }
+    
+    /* z = backgO3 */
+    z.push_back(std::vector<double>(backgO3.size()));
+    for ( i = 0; i < backgO3.size(); i++ )
+        z[0][i] = backgO3[i];
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ ) {
+        y[i].clear();
+    }
+    z[0].clear();
+    y.clear(); z.clear();
+
+    nCases *= backgO3.size();
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(std::vector<double>( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ ) {
+            y[j][i] = u[j][i];
+        }
+        y[counter-1][i] = v[0][i];
+    }
+    
+    /* z = backgCO */
+    z.push_back(std::vector<double>(backgCO.size()));
+    for ( i = 0; i < backgCO.size(); i++ )
+        z[0][i] = backgCO[i];
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ ) {
+        y[i].clear();
+    }
+    z[0].clear();
+    y.clear(); z.clear();
+
+    nCases *= backgCO.size();
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(std::vector<double>( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ ) {
+            y[j][i] = u[j][i];
+        }
+        y[counter-1][i] = v[0][i];
+    }
+    
+    /* z = backgCH4 */
+    z.push_back(std::vector<double>(backgCH4.size()));
+    for ( i = 0; i < backgCH4.size(); i++ )
+        z[0][i] = backgCH4[i];
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ ) {
+        y[i].clear();
+    }
+    z[0].clear();
+    y.clear(); z.clear();
+
+    nCases *= backgCH4.size();
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(std::vector<double>( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ ) {
+            y[j][i] = u[j][i];
+        }
+        y[counter-1][i] = v[0][i];
+    }
+    
     return y;
 
 } /* End of CombVec */
