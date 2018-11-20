@@ -20,25 +20,31 @@
 
 class Input
 {
+
         
-     RealDouble temperature_K_;
-     RealDouble pressure_Pa_;
-     RealDouble relHumidity_w_;
+    RealDouble temperature_K_;
+    RealDouble pressure_Pa_;
+    RealDouble relHumidity_w_;
 
-     RealDouble longitude_deg_;
-     RealDouble latitude_deg_;
+    RealDouble longitude_deg_;
+    RealDouble latitude_deg_;
 
-     UInt dayGMT_;
-     RealDouble emissionTime_;
+    UInt dayGMT_;
+    RealDouble emissionTime_;
 
-     RealDouble EI_NOx_;
-     RealDouble EI_CO_;
-     RealDouble EI_HC_;
-     RealDouble EI_Soot_;
-     RealDouble sootRad_;
+    RealDouble EI_NOx_;
+    RealDouble EI_CO_;
+    RealDouble EI_HC_;
+    RealDouble EI_Soot_;
+    RealDouble sootRad_;
 
-     RealDouble fuelFlow_;
+    RealDouble fuelFlow_;
 
+    RealDouble backgNOx_;
+    RealDouble backgHNO3_;
+    RealDouble backgO3_;
+    RealDouble backgCO_;
+    RealDouble backgCH4_;
 
     public:
 
@@ -49,7 +55,8 @@ class Input
                const RealDouble lat_deg,       \
                const unsigned int dayGMT,      \
                const RealDouble emissionTime,  \
-               const Vector_1D emissionInput);
+               const Vector_1D emissionInput,  \
+               const Vector_1D backgMixRatio );
         Input( unsigned int iCase, \
                const Vector_2D &parameters );
 
@@ -73,6 +80,11 @@ class Input
         
         RealDouble fuelFlow() const { return fuelFlow_; }
 
+        RealDouble backgNOx() const { return backgNOx_; }
+        RealDouble backgHNO3() const { return backgHNO3_; }
+        RealDouble backgO3() const { return backgO3_; }
+        RealDouble backgCO() const { return backgCO_; }
+        RealDouble backgCH4() const { return backgCH4_; }
 
 };
 
