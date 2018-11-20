@@ -195,7 +195,7 @@ ifeq ($(COMPILER),g++)
 
 #  CFLAGS              := CXXFLAGS
 
-  CFLAGS := -Wall -Wextra -g -O3 -fopenmp -std=c++11 $(USER_DEFS)
+  CFLAGS := -Wall -Wextra -O3 -fopenmp -std=c++11 $(USER_DEFS)
 
   # Include options (i.e. for finding *.h* files)
   INCLUDE := -I$(ROOT_DIR)/include
