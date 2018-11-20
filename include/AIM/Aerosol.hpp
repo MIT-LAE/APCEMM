@@ -20,7 +20,7 @@
 #include <cstring>
 #include <boost/math/special_functions/gamma.hpp>
 
-#include "Util/ForwardsDecl.hpp"
+#include "Util/ForwardDecl.hpp"
 #include "Util/PhysConstant.hpp"
 #include "AIM/Coagulation.hpp"
 

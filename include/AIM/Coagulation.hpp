@@ -19,7 +19,7 @@
 #include <vector>
 #include <cstring>
 
-#include "Util/ForwardsDecl.hpp"
+#include "Util/ForwardDecl.hpp"
 #include "Util/PhysConstant.hpp"
 #include "Util/PhysFunction.hpp"
 #include "AIM/buildKernel.hpp"

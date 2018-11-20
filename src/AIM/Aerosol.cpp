@@ -848,6 +848,8 @@ namespace AIM
         if ( &rhs == this )
             return *this;
 
+        Nx = rhs.Nx;
+        Ny = rhs.Ny;
         bin_Centers = rhs.bin_Centers;
         bin_VCenters = rhs.bin_VCenters;
         bin_Edges = rhs.bin_Edges;
@@ -1492,6 +1494,10 @@ namespace AIM
             out[2] = 4.0 * physConst::PI * Moment( 2, PDF );
             out[3] = 4.0 / 3.0 * physConst::PI * Moment( 3, PDF );
             out[1] = 3.0 * out[3] / out[2];
+        } else {
+            out[1] = 1.00E-07;
+            out[2] = 0.00E+00;
+            out[3] = 0.00E+00;
         }
 
         return out;

@@ -17,6 +17,7 @@
 /* Grid parameters */
 #define NX                256         /* Number of grid cells in the x-direction */
 #define NY                256         /* Number of grid cells in the y-direction */
+#define NYH               NY/2 + 1
 #define NCELL             NX*NY       /* Number of grid cells */
 #define XLIM              6.5E+03     /* x-limits of the domain [m] */
 #define YLIM              6.5E+02     /* y-limits of the domain [m] */
@@ -60,6 +61,8 @@
 /* Chemistry parameters */
 #define KPP_RTOLS             1.00E-03    /* Relative tolerances in KPP */
 #define KPP_ATOLS             1.00E-03    /* Absolute tolerances in KPP */
+#define KPPADJ_RTOLS          1.00E-05    /* Relative tolerances in KPP_Adjoint */
+#define KPPADJ_ATOLS          1.00E-04    /* Absolute tolerances in KPP_Adjoint */
 
 /* Aerosol parameters */
 #define N_AER                 3           /* Number of aerosols considered */

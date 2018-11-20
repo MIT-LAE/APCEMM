@@ -20,16 +20,21 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <cmath> 
 
 #include "Core/Interface.hpp"
 #include "Core/Parameters.hpp"
+#include "Core/Input.hpp"
 #include "KPP/KPP_Parameters.h"
+#include "KPP/KPP_Global.h"
+#include "KPP/KPP.hpp"
 #include "Util/PhysConstant.hpp"
 #include "Util/PhysFunction.hpp"
 #include "Core/Emission.hpp"
 #include "Core/Aircraft.hpp"
 #include "Core/Engine.hpp"
 #include "Core/LiquidAer.hpp"
+#include "Core/SZA.hpp"
 #include "AIM/Aerosol.hpp"
 #include "Core/Meteorology.hpp"
 
@@ -49,8 +54,9 @@ class Solution
         void Print( const std::vector<std::vector<double> >& vector_2D, \
                     const unsigned int i_max = 1, \
                     const unsigned int j_max = 1 ) const;
-        void Initialize( char const *fileName, const double temperature, const double pressure, \
-                         const double airDens, const double relHum, const double lat, \
+        void Initialize( char const *fileName, \
+                         const Input &input,   \
+                         const double airDens, \
                          const Meteorology &met, const bool DBG );
         void getData( double varArray[], double fixArray[], \
                       const unsigned int i = 0, \
@@ -78,6 +84,11 @@ class Solution
         std::vector<double> getAerosolArea( ) const;
         void getAerosolProp( double ( &radi )[4], double ( &area )[4], double &IWC, \
                              const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) const;
+        int SpinUp( std::vector<double> &amb_Value, \
+                    const Input &input,             \
+                    const double airDens,           \
+                    const double startTime );
+
         unsigned int getNx() const;
         unsigned int getNy() const;
         void Debug( const double airDens );

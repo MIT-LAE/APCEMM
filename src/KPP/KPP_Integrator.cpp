@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+
+#include "KPP/KPP.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "KPP/KPP_Global.h"
 #include "KPP/KPP_Sparse.h"
@@ -124,7 +126,8 @@
  void KppSolve ( double A[], double b[] );
  
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-int INTEGRATE( double TIN, double TOUT )
+int INTEGRATE( double VAR[] , double TIN   , double TOUT,
+               double ATOL[], double RTOL[], double STEPMIN )
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 {
    static double  RPAR[20];

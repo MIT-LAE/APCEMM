@@ -18,6 +18,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include "omp.h"
+
 #ifndef KPP_GLOBAL_H_INCLUDED
 #define KPP_GLOBAL_H_INCLUDED
 
@@ -28,13 +30,6 @@ extern double * VAR;
 extern double * FIX;
 extern double RCONST[NREACT];                   /* Rate constants (global) */
 extern double TIME;                             /* Current integration time */
-extern double RTOLS;                            /* (scalar) Relative tolerance */
-extern double TSTART;                           /* Integration start time */
-extern double TEND;                             /* Final integration time */
-extern double ATOL[NVAR];                       /* Absolute tolerance */
-extern double RTOL[NVAR];                       /* Relative tolerance */
-extern double STEPMIN;                          /* Lower bound for integration step */
-extern double STEPMAX;                          /* Upper bound for integration step */
 extern int LOOKAT[NLOOKAT];                     /* Indexes of species to look at */
 extern const char * SPC_NAMES[NSPEC];           /* Names of chemical species */
 extern char * SMASS[NMASS];                     /* Names of atoms for mass balance */
@@ -45,6 +40,11 @@ extern char * EQN_TAGS[NREACT];                 /* Equation tags */
 
 extern double PHOTOL[NPHOTOL];                  /* Photolysis rates */
 extern double HET[NSPEC][3];                    /* Heterogeneous reaction rates */
+extern double SZA_CST[3];                       /* Constants to compute cosSZA */
+
+/* The following variables need to be declared THREADPRIVATE
+ * because they get written to within an OpenMP parallel loop */
+#pragma omp threadprivate( C, VAR, FIX, RCONST, PHOTOL, HET, TIME, SZA_CST )
 
 /* INLINED global variable declarations                             */
 

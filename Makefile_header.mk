@@ -133,8 +133,12 @@ LINK := -L$(LIB_DIR)
 # Define any libraries to link into executable: use -llibname option
 LINK := $(LINK) -lstdc++ -lm
 
+LINK_FFTW := -lfftw3 -lfftw3f -lfftw3l
+# -lfftw3_omp -lfftw3_threads
+
 # Create linker command to create the APCEMM executable
-LINK := $(LINK) -Wl,--start-group -lUtil -lSands -lfftw3 -lKpp -lEpm -lAim -lnetcdf_c++ -Wl,--end-group
+LINK := $(LINK) -Wl,--start-group -lUtil -lSands $(LINK_FFTW) -lKpp -lEpm -lAim -lnetcdf_c++ -Wl,--end-group
+# -lfftw3_omp -lpthread -lfftw3_threads
 
 ###############################################################################
 ###                                                                         ###
@@ -172,11 +176,12 @@ ifeq ($(COMPILER),g++)
   REGEXP             := (^[Yy]|^[Yy][Ee][Ss])
   ifeq ($(shell [[ "$(DEBUG)" =~ $(REGEXP) ]] && echo true),true)
     #-fcheck=all would be more comprehensive but would force bounds checking
-    CXXLAGS          += -Wall -Wextra -Wconversion
-    CXXLAGS          += -Warray-temporaries -fcheck-array-temporaries
-    USER_DEFS        += -DDEBUG
+    CXXFLAGS          += -Wall -Wextra -Wconversion
+    CXXFLAGS          += -Warray-temporaries -fcheck-array-temporaries
+	CXXFLAGS          += -g -O0
+    USER_DEFS         += -DDEBUG
   else
-    CXXLAGS          += $(OPT)
+    CXXFLAGS          += $(OPT)
   endif
   
   # Turn on OpenMP parallelization

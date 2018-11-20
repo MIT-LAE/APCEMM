@@ -17,7 +17,6 @@
 #include <iostream>
 #include "Core/Mesh.hpp"
 #include "Util/MetFunction.hpp"
-#include "Core/Structure.hpp"
 
 class Meteorology
 {

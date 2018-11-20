@@ -23,15 +23,11 @@
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
 #include "Util/PhysConstant.hpp"
-#include "Util/ForwardsDecl.hpp"
+#include "Util/ForwardDecl.hpp"
+#include "SANDS/FFT.hpp"
 
-    typedef fftw_complex FFTW_ComplexDouble;
-
-    const ComplexDouble _1j ( 0.0, 1.0 );          /* j^2 = -1 */
-
-    void SANDS( Real_2DVector &V, Real_2DVector &diff, Complex_2DVector &adv, \
-                const char* fileName_FFTW, const bool realInput );
-    void SaveWisdom( Real_2DVector &V, const char* fileName_FFTW );
+namespace SANDS 
+{
 
     /* A class for solving the 2D-Avection Diffusion equation */
 
@@ -40,67 +36,124 @@
 
         public:
             
-            /* Base constructor  */
-            Solver( );
-
-            /* Constructor */
-            Solver( const bool fill = 0, const RealDouble fillValue = 0.0, const unsigned flag = FFTW_ESTIMATE );
-
-            /* Copy constructor */
-            /*
-             * Parameter s to be copied
+            /**
+             * Constructor
              */
-            Solver( const Solver &s );
 
-            /* Destructor */
+            Solver();
+
+            /** 
+             * Initializer 
+             *
+             * Initialize 2D solver
+             *
+             * @param fill (bool)        : Fill negative values?
+             * @param fillValue (double) : Fill with? (default = 0.0E+00) 
+             */
+
+            void Initialize( const bool fill = 1, const RealDouble fillValue = 0.0E+00 );
+
+            /**
+             * Destructor 
+             *
+             * Destroys 2D solver
+             */
+
             ~Solver( );
+
+            /**
+             * Assign frequencies 
+             */
 
             void AssignFreq( );
 
-            /* Update time step */
+            /**
+             * Update time step 
+             *
+             * @param T (double) : New timestep [s]
+             *
+             * Returns an error if T <= 0.0
+             */
+
             void UpdateTimeStep( const RealDouble T );
 
-            /* Update diffusion field */
+            /**
+             * Update diffusion field 
+             *
+             * @param dH (double) : Horizontal diffusion coefficient [m2/s]
+             * @param dV (double) : Vertical diffusion coefficient [m2/s]
+             *
+             * Returns an error if dH or dV is non positive 
+             */
+
             void UpdateDiff( const RealDouble dH, const RealDouble dV );
 
-            /* Update advection field */
+            /**
+             * Update advection field 
+             *
+             * @param vH (double) : Horizontal advection velocity [m/s]
+             * @param vV (double) : Vertical advection velocity [m/s]
+             */
+
             void UpdateAdv( const RealDouble vH, const RealDouble vV );
            
-            void Solve( Real_2DVector &V, const bool realInput = 1 );
+            /**
+             * Solves the 2D advection-diffusion equation over dt using
+             * the diffusion and advection fields 
+             *
+             * @param V (2D vector) : Field to be diffused 
+             */
 
-            /* Fill value between threshold with val */
-            void Fill( Real_2DVector &V, const RealDouble val, const RealDouble threshold = 0.0 );
+            void Run( Vector_2D &V );
 
-            void Wisdom( Real_2DVector &V );
+            /**
+             * Fill value below threshold with value
+             *
+             * @param V (2D vector)      : Field to be filled
+             * @param val (double)       : Filling value
+             * @param threshold (double) : Threshold (default = 0.0)
+             */
 
-            Real_2DVector getDiffFactor( ) const;
+            void Fill( Vector_2D &V, const RealDouble val, const RealDouble threshold = 0.0 );
 
-            Complex_2DVector getAdvFactor( ) const;
+            /** 
+             * Returns the 2D diffusion field 
+             */
 
-            unsigned int getNx() const;
-            unsigned int getNy() const;
-            RealDouble getXlim() const;
-            RealDouble getYlim() const;
-            RealDouble getDt() const;
+            Vector_2D getDiffFactor( ) const;
+            
+            /** 
+             * Returns the 2D advection field 
+             */
+
+            Vector_2Dc getAdvFactor( ) const;
 
         protected:
 
             unsigned int n_x, n_y;
             RealDouble xlim, ylim;
-            const bool doFill;
-            const RealDouble fillVal;
-            unsigned FFTW_flag;
+            bool doFill;
+            RealDouble fillVal;
             double dt;
 
         private:
 
-            static const char *wisdomFile;
-            Real_2DVector DiffFactor;
-            Complex_2DVector AdvFactor;
-            Real_1DVector kx, ky, kxx, kyy;
+            /* Diffusion and advectoin field */
+            Vector_2D DiffFactor;
+            Vector_2Dc AdvFactor;
             
+            /* Frequencies */
+            Vector_1D kx, ky;
+            Vector_1D kxx, kyy;
+            
+            /* FFT Solver */
+            FourierTransform<double> *FFT;
+
+
 
     };
+
+} /* SANDS */
 
 #endif /* SOLVER_H_INCLUDED */
 

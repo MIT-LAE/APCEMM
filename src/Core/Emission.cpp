@@ -41,6 +41,7 @@ Emission::Emission( )
 
 Emission::Emission( const Engine &engine, const Fuel &fuel )
 {
+
     /* Constructor */
 
     Populate_withEngine( engine );
@@ -48,7 +49,7 @@ Emission::Emission( const Engine &engine, const Fuel &fuel )
     Populate_withFuel( fuel );
     
     /* Carbon footprint */
-    double carbContent = 0.95; 
+    const double carbContent = 0.95; 
     CO2 -= ( 44.095 / 28.010 * CO + 44.095 / (82.0/5.0) * HC + 44.095 / 12.0 * carbContent * Soot);
     /* Assume that soot is 95% carbon by weight */
     /* Add organic carbon .. TBD */
@@ -98,8 +99,7 @@ Emission::Emission( const Engine &engine, const Fuel &fuel )
     }
 
     engineName = engine.getName();
-
-    fuelChem =  fuel.getChemFormula();
+    fuelChem   = fuel.getChemFormula();
 
 } /* End of Emission::Emission */
 
@@ -145,6 +145,7 @@ Emission::~Emission( )
 
 void Emission::Populate_withEngine( const Engine &engine )
 {
+
     /* Gaseous species */
     /*** Engine characteristics */
     NOx  = engine.getEI_NOx();

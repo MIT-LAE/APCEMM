@@ -16,7 +16,7 @@
 
 #include <cmath>
 
-#include "ForwardsDecl.hpp"
+#include "ForwardDecl.hpp"
 #include "PhysConstant.hpp"
 
 namespace physFunc

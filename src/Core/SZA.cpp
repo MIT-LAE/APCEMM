@@ -39,6 +39,10 @@ SZA::SZA( const double lat_, const unsigned int day_ ):
     CSZA_max = std::max( sinLAT * sinDEC + cosLAT * cosDEC, 0.0 );
     CSZA = 0.0;
 
+    /* Vector of coefficient 
+     * CSZA = CSZA_Vector[0] + CSZA_Vector[1] * cos( CSZA_Vector{3} * (Time/3600.0 - 12.0 ) )*/
+    CSZA_Vector = { sinLAT * sinDEC, cosLAT * cosDEC, 15.0 * physConst::PI / 180.0 };
+
 } /* End of SZA::SZA */
 
 SZA::~SZA( )
@@ -53,6 +57,34 @@ void SZA::Update( const double solarTime )
 
     CSZA = std::max( sinLAT * sinDEC + cosLAT * cosDEC * std::cos( std::abs( ( solarTime/3600.0 - 12.0 ) ) * 15.0 * physConst::PI / 180.0 ), 0.0 ); 
 
-} /* End of SZA::Update_SUN */
+} /* End of SZA::Update */
+
+double SZA::getCSZA( const double solarTime )
+{
+
+    return std::max( sinLAT * sinDEC + cosLAT * cosDEC * std::cos( std::abs( ( solarTime/3600.0 - 12.0 ) ) * 15.0 * physConst::PI / 180.0 ), 0.0 ); 
+
+} /* End of SZA::getCSZA */
+
+std::vector<double> SZA::getSZA_Vector( ) const
+{
+
+    return CSZA_Vector;
+
+} /* End of SZA::getSZA_Vector */
+
+void* castSZA( SZA *sun )
+{
+
+    return( reinterpret_cast< void* >( sun ) );
+
+} /* End of castSZA */
+
+double castCSZA( void *sun, const double solarTime )
+{
+    
+    return( reinterpret_cast< SZA* >( sun )->getCSZA( solarTime ) );
+
+} /* End of castCSZA */
 
 /* End of SZA.cpp */

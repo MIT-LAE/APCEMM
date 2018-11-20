@@ -14,6 +14,8 @@
 #ifndef SZA_H_INCLUDED
 #define SZA_H_INCLUDED
 
+#ifdef __cplusplus
+
 #include <iostream>
 #include <cmath>
 
@@ -28,6 +30,8 @@ class SZA
         ~SZA( );
 
         void Update( const double solarTime );
+        double getCSZA( const double solarTime );
+        std::vector<double> getSZA_Vector( ) const;
 
         const double latitude;
         const unsigned int dayGMT;
@@ -37,6 +41,8 @@ class SZA
 
         double CSZA_max;
         double CSZA;
+
+        std::vector<double> CSZA_Vector;
 
     private:
         
@@ -55,5 +61,19 @@ class SZA
         double cosDEC;
 
 };
+
+#endif /* __cplusplus */
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif /* __cplusplus */
+
+    void* castSZA( SZA *sun );
+    double castCSZA( void *sun, const double solarTime );
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* SZA_H_INCLUDED */

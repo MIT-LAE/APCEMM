@@ -169,8 +169,6 @@ BuildTime.o         : BuildTime.cpp
 
 Cluster.o           : Cluster.cpp
 
-Combvec.o           : Combvec.cpp
-
 Diffusion.o         : Diffusion.cpp
 
 Emission.o          : Emission.cpp
@@ -180,6 +178,8 @@ Engine.o            : Engine.cpp
 FileHandler.o       : FileHandler.cpp
 
 Fuel.o              : Fuel.cpp
+
+Input.o             : Input.cpp
 
 LiquidAer.o         : LiquidAer.cpp
 
@@ -191,11 +191,7 @@ Meteorology.o       : Meteorology.cpp
 
 PlumeModel.o        : PlumeModel.cpp
 
-PrintMessage.o      : PrintMessage.cpp
-
 ReadParameters.o    : ReadParameters.cpp
-
-Reshape.o           : Reshape.cpp
 
 Ring.o              : Ring.cpp
 

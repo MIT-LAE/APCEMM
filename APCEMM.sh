@@ -13,7 +13,7 @@
 #SBATCH --hint=nomultithread
 
 # number of CPUs to utilize
-#SBATCH -c 24
+#SBATCH -c24
 
 # Memory per core. Job will crash if this limit is exceeded.  Default
 # is 1000M per allocated core. Use values that will permit multiple
@@ -21,7 +21,7 @@
 # 2000M will allow allow all 12 processors on a node with 24000M of
 # RAM to be utilized, while specifying 2G (=2048M) would only allow 11
 # of the processors to be used.
-#SBATCH --mem-per-cpu=24000M
+#SBATCH --mem-per-cpu=1500M
 
 # Number of nodes to utilize
 #SBATCH -N 1
@@ -93,28 +93,28 @@ export OMP_NUM_THREADS=$omp_threads
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Define version ID
-id="v2-0"
+id="APCEMM"
 
 # Define APCEMM log file
 log="$id.log"
 
 # Define current directory
-currDir=${PWD##*/}
+currDir=${PWD##}
 
 # Change this to point to the APCEMM binary file
-export exepath=${currDir}/build/apps/APCEMM
+export exepath=${currDir}/build/apps/APCEMM.sh
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Start the simulation
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Run APCEMM and pipe output to log
-echo 'Running on ' $OMP_NUM_THREADS ' cores' >> $log
-echo 'Host computer: ' `hostname` >> $log
-echo 'Initiation date and time: ' `date +%c` >> $log
-srun -c $OMP_NUM_THREADS time -p $exepath >> $log
+echo 'Running on' $OMP_NUM_THREADS 'core(s)'
+echo 'Host computer: ' `hostname`
+echo 'Initiation date and time: ' `date +%c`
+srun -c $OMP_NUM_THREADS time -p $exepath
 
 # Echo end
-echo 'Run ended at ' `date +%c` >> $log
+echo 'Run ended at ' `date +%c`
 
 # Report additional information if job was killed because of memory limit
 oom_check $?

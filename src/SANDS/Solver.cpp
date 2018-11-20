@@ -13,72 +13,49 @@
 
 #include "SANDS/Solver.hpp"
 
-    const char *Solver::wisdomFile = WISDOMFILE;
+namespace SANDS
+{
 
     Solver::Solver( ):
         n_x( NX ),
         n_y( NY ),
         xlim( XLIM ),
         ylim( YLIM ),
-        doFill( 0 ), 
-        fillVal( 0.0 ),
-        FFTW_flag( FFTW_ESTIMATE )
+        doFill( 1 ), 
+        fillVal( 0.0E+00 ),
+        FFT( NULL )
     {
-        /* Base Constructor */
 
-    } /* End of Solver::Solver */
-
-    Solver::Solver( const bool fill, const RealDouble fillValue, const unsigned flag ):
-        n_x( NX ),
-        n_y( NY ),
-        xlim( XLIM ),
-        ylim( YLIM ),
-        doFill( fill ), 
-        fillVal( fillValue ),
-        FFTW_flag( flag )
-    {
         /* Constructor */
 
-        n_x = NX;
-        n_y = NY;
+    } /* End of Solver::Solver */
 
-        xlim = XLIM;
-        ylim = YLIM;
+    void Solver::Initialize( const bool fill, const RealDouble fillValue )
+    {
+    
+        FFT = new FourierTransform<double>( n_x, n_y );
 
+        doFill = fill;
+        fillVal = fillValue;
+
+        /* Initialize frequencies */
         AssignFreq();
 
+        /* Initialize diffusion and advection fields */
         for ( unsigned int i = 0; i < n_y; i++ ) {
-            DiffFactor.push_back( Real_1DVector( n_x ) );
-            AdvFactor .push_back( Complex_1DVector( n_x ) );
+            DiffFactor.push_back( Vector_1D( n_x ) );
+            AdvFactor .push_back( Vector_1Dc( n_x ) );
         }
-
-    } /* End of Solver::Solver */
-
-    Solver::Solver( const Solver &s ):
-        n_x( s.n_x ),
-        n_y( s.n_y ),
-        xlim( s.xlim ),
-        ylim( s.ylim ),
-        doFill( s.doFill ),
-        fillVal( s.fillVal ),
-        FFTW_flag( s.FFTW_flag )
-    {
-
-        dt = s.dt;
-
-        DiffFactor = s.DiffFactor;
-        AdvFactor = s.AdvFactor;
-
-        kx = s.kx;
-        ky = s.ky;
-        kxx = s.kxx;
-        kyy = s.kyy;
-
-    } /* End of Solver::Solver */
+    
+    } /* End of Solver::Initialize */
 
     Solver::~Solver( )
     {
+
         /* Destructor */
+
+        delete FFT;
+        /* ^ Calls ~FFT */
 
     } /* End of Solver::~Solver */
 
@@ -89,10 +66,12 @@
         int k;
      
         /* The domain extends from -xlim to xlim
-         * so, length of the interval is 2*xlim */
-        /* Formula is:
+         * The length of the interval is thus 2*xlim */
+    
+        /* The frequencies are defined as:
          * kx = 2.0 * PI / (length of interval) * [0:Nx/2-1 -Nx/2:-1]
          */
+
         i0 = n_x/2; 
         for ( unsigned int i = 0; i < n_x; i++ ) {
             kx.push_back( 0.0 );
@@ -103,8 +82,6 @@
             i0++;
         }
 
-        /* Allocate n_y elements */
-        
         i0 = n_y/2;
         for ( unsigned int j = 0; j < n_y; j++ ) {
             ky.push_back( 0.0 );
@@ -118,14 +95,14 @@
     }
 
     
-    Real_2DVector Solver::getDiffFactor( ) const
+    Vector_2D Solver::getDiffFactor( ) const
     {
     
         return DiffFactor;
 
     } /* End of Solver::getDiffFactor */
 
-    Complex_2DVector Solver::getAdvFactor( ) const
+    Vector_2Dc Solver::getAdvFactor( ) const
     {
     
         return AdvFactor;
@@ -135,9 +112,14 @@
     void Solver::UpdateTimeStep( const RealDouble T )
     {
 
+        if ( T <= 0.0E+00 ) {
+            std::cout << " In Solver::UpdateTimeStep: Non positive time step!\n";
+            exit(-1);
+        }
+
         dt = T;
 
-    } /* End of Solver::UpdateStep */
+    } /* End of Solver::UpdateTimeStep */
 
     void Solver::UpdateDiff( const RealDouble dH, const RealDouble dV )
     {
@@ -147,12 +129,12 @@
 
         if ( dH < 0.0 ) {
             std::cout << "SANDS: Horizontal diffusion coefficient, dH, is negative: dH = " << dH << std::endl;
-            return;
+            exit(-1);
         }
 
         if ( dV < 0.0 ) {
             std::cout << "SANDS: Vertical diffusion coefficient, dV, is negative: dV = " << dV << std::endl;
-            return;
+            exit(-1);
         }
 
         for ( unsigned int i = 0; i < n_x; i++ ) {
@@ -170,20 +152,21 @@
         
         for ( unsigned int i = 0; i < n_x; i++ ) {
             for ( unsigned int j = 0; j < n_y; j++ )
-                AdvFactor[j][i] = exp( _1j * dt * ( vH * kx[i] + vV * ky[j] ) );
+                AdvFactor[j][i] = exp( physConst::_1j * dt * ( vH * kx[i] + vV * ky[j] ) );
         }
 
     } /* End of Solver::UpdateAdv */
 
-    void Solver::Solve( Real_2DVector &V, const bool realInput )
+    void Solver::Run( Real_2DVector &V )
     {
 
-       SANDS( V, DiffFactor, AdvFactor, wisdomFile, realInput ); 
+        FFT->SANDS( DiffFactor, AdvFactor, V );
 
-       if ( doFill )
-           Fill( V, fillVal );
+        if ( doFill )
+            Fill( V, fillVal );
 
-    } /* End of Solver::SANDS */
+
+    } /* End of Solver::Run */
 
     void Solver::Fill( Real_2DVector &V, const RealDouble val, const RealDouble threshold )
     {
@@ -199,51 +182,6 @@
     } /* End of Solver::Fill */
 
 
-    void Solver::Wisdom( Real_2DVector &V )
-    {
-
-        std::ifstream ifile( wisdomFile );
-
-        if ( (bool)ifile ) 
-            std::cout << "Wisdom file: " << wisdomFile << " will be overwritten! " << std::endl;
-
-        SaveWisdom( V, wisdomFile );
-
-    } /* End of Solver::Wisdom */
-
-    unsigned int Solver::getNx() const
-    {
-
-        return n_x;
-
-    } /* End of Solver::getNx */
-
-    unsigned int Solver::getNy() const
-    {
-
-        return n_y;
-
-    } /* End of Solver::getNy */
-
-    RealDouble Solver::getXlim() const
-    {
-
-        return xlim;
-
-    } /* End of Solver::getXlim */
-
-    RealDouble Solver::getYlim() const
-    {
-
-        return ylim;
-
-    } /* End of Solver::getYlim */
-
-    RealDouble Solver::getDt() const
-    {
-
-        return dt;
-
-    } /* End of Solver::getDt */
+} /* SANDS */
 
 /* End of Solver.cpp */

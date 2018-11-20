@@ -513,7 +513,7 @@ namespace EPM
             
             /* For debugging purposes */
             if ( 0 ) {
-                std::cout << "Time: " << timeArray[iTime+1] << ", Number: " << nPDF_SO4.Moment() << ", Radius: " << nPDF_SO4.getRadius() << "\n";
+                std::cout << "Time: " << timeArray[iTime+1] << ", Number: " << nPDF_SO4.Moment() << ", Radius: " << nPDF_SO4.Radius() << "\n";
             }
        
             totSteps += 1;

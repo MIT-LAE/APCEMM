@@ -1500,6 +1500,294 @@ void SpeciesArray::getData( double varArray[], double fixArray[], unsigned int i
 
 } /* End of SpeciesArray::getData */
 
+std::vector<double> SpeciesArray::RingAverage( const std::vector<double> ringArea, const double totArea, \
+                                               const unsigned int iNt ) const
+{
+
+    std::vector<double> ringAverage( NVAR, 0.0E+00 );
+    unsigned int iRing;
+    double area;
+
+    for ( iRing = 0; iRing < nRing; iRing++ ) {
+        area = ringArea[iRing] / totArea;
+        ringAverage[ind_CO2]      += CO2[iNt][iRing]      * area;
+        ringAverage[ind_PPN]      += PPN[iNt][iRing]      * area;
+        ringAverage[ind_BrNO2]    += BrNO2[iNt][iRing]    * area;
+        ringAverage[ind_IEPOX]    += IEPOX[iNt][iRing]    * area;
+        ringAverage[ind_PMNN]     += PMNN[iNt][iRing]     * area;
+        ringAverage[ind_N2O]      += N2O[iNt][iRing]      * area;
+        ringAverage[ind_N]        += N[iNt][iRing]        * area;
+        ringAverage[ind_PAN]      += PAN[iNt][iRing]      * area;
+        ringAverage[ind_ALK4]     += ALK4[iNt][iRing]     * area;
+        ringAverage[ind_MAP]      += MAP[iNt][iRing]      * area;
+        ringAverage[ind_MPN]      += MPN[iNt][iRing]      * area;
+        ringAverage[ind_Cl2O2]    += Cl2O2[iNt][iRing]    * area;
+        ringAverage[ind_ETP]      += ETP[iNt][iRing]      * area;
+        ringAverage[ind_HNO2]     += HNO2[iNt][iRing]     * area;
+        ringAverage[ind_C3H8]     += C3H8[iNt][iRing]     * area;
+        ringAverage[ind_RA3P]     += RA3P[iNt][iRing]     * area;
+        ringAverage[ind_RB3P]     += RB3P[iNt][iRing]     * area;
+        ringAverage[ind_OClO]     += OClO[iNt][iRing]     * area;
+        ringAverage[ind_ClNO2]    += ClNO2[iNt][iRing]    * area;
+        ringAverage[ind_ISOP]     += ISOP[iNt][iRing]     * area;
+        ringAverage[ind_HNO4]     += HNO4[iNt][iRing]     * area;
+        ringAverage[ind_MAOP]     += MAOP[iNt][iRing]     * area;
+        ringAverage[ind_MP]       += MP[iNt][iRing]       * area;
+        ringAverage[ind_ClOO]     += ClOO[iNt][iRing]     * area;
+        ringAverage[ind_RP]       += RP[iNt][iRing]       * area;
+        ringAverage[ind_BrCl]     += BrCl[iNt][iRing]     * area;
+        ringAverage[ind_PP]       += PP[iNt][iRing]       * area;
+        ringAverage[ind_PRPN]     += PRPN[iNt][iRing]     * area;
+        ringAverage[ind_SO4]      += SO4[iNt][iRing]      * area;
+        ringAverage[ind_Br2]      += Br2[iNt][iRing]      * area;
+        ringAverage[ind_ETHLN]    += ETHLN[iNt][iRing]    * area;
+        ringAverage[ind_MVKN]     += MVKN[iNt][iRing]     * area;
+        ringAverage[ind_R4P]      += R4P[iNt][iRing]      * area;
+        ringAverage[ind_C2H6]     += C2H6[iNt][iRing]     * area;
+        ringAverage[ind_RIP]      += RIP[iNt][iRing]      * area;
+        ringAverage[ind_VRP]      += VRP[iNt][iRing]      * area;
+        ringAverage[ind_ATOOH]    += ATOOH[iNt][iRing]    * area;
+        ringAverage[ind_IAP]      += IAP[iNt][iRing]      * area;
+        ringAverage[ind_DHMOB]    += DHMOB[iNt][iRing]    * area;
+        ringAverage[ind_MOBA]     += MOBA[iNt][iRing]     * area;
+        ringAverage[ind_MRP]      += MRP[iNt][iRing]      * area;
+        ringAverage[ind_N2O5]     += N2O5[iNt][iRing]     * area;
+        ringAverage[ind_ISNOHOO]  += ISNOHOO[iNt][iRing]  * area;
+        ringAverage[ind_ISNP]     += ISNP[iNt][iRing]     * area;
+        ringAverage[ind_ISOPNB]   += ISOPNB[iNt][iRing]   * area;
+        ringAverage[ind_IEPOXOO]  += IEPOXOO[iNt][iRing]  * area;
+        ringAverage[ind_MACRNO2]  += MACRNO2[iNt][iRing]  * area;
+        ringAverage[ind_ROH]      += ROH[iNt][iRing]      * area;
+        ringAverage[ind_MOBAOO]   += MOBAOO[iNt][iRing]   * area;
+        ringAverage[ind_DIBOO]    += DIBOO[iNt][iRing]    * area;
+        ringAverage[ind_PMN]      += PMN[iNt][iRing]      * area;
+        ringAverage[ind_ISNOOB]   += ISNOOB[iNt][iRing]   * area;
+        ringAverage[ind_INPN]     += INPN[iNt][iRing]     * area;
+        ringAverage[ind_H]        += H[iNt][iRing]        * area;
+        ringAverage[ind_BrNO3]    += BrNO3[iNt][iRing]    * area;
+        ringAverage[ind_PRPE]     += PRPE[iNt][iRing]     * area;
+        ringAverage[ind_MVKOO]    += MVKOO[iNt][iRing]    * area;
+        ringAverage[ind_Cl2]      += Cl2[iNt][iRing]      * area;
+        ringAverage[ind_ISOPND]   += ISOPND[iNt][iRing]   * area;
+        ringAverage[ind_HOBr]     += HOBr[iNt][iRing]     * area;
+        ringAverage[ind_A3O2]     += A3O2[iNt][iRing]     * area;
+        ringAverage[ind_PROPNN]   += PROPNN[iNt][iRing]   * area;
+        ringAverage[ind_GLYX]     += GLYX[iNt][iRing]     * area;
+        ringAverage[ind_MAOPO2]   += MAOPO2[iNt][iRing]   * area;
+        ringAverage[ind_CH4]      += CH4[iNt][iRing]      * area;
+        ringAverage[ind_GAOO]     += GAOO[iNt][iRing]     * area;
+        ringAverage[ind_B3O2]     += B3O2[iNt][iRing]     * area;
+        ringAverage[ind_ACET]     += ACET[iNt][iRing]     * area;
+        ringAverage[ind_MACRN]    += MACRN[iNt][iRing]    * area;
+        ringAverage[ind_CH2OO]    += CH2OO[iNt][iRing]    * area;
+        ringAverage[ind_MGLYOO]   += MGLYOO[iNt][iRing]   * area;
+        ringAverage[ind_VRO2]     += VRO2[iNt][iRing]     * area;
+        ringAverage[ind_MGLOO]    += MGLOO[iNt][iRing]    * area;
+        ringAverage[ind_MACROO]   += MACROO[iNt][iRing]   * area;
+        ringAverage[ind_PO2]      += PO2[iNt][iRing]      * area;
+        ringAverage[ind_CH3CHOO]  += CH3CHOO[iNt][iRing]  * area;
+        ringAverage[ind_MAN2]     += MAN2[iNt][iRing]     * area;
+        ringAverage[ind_ISNOOA]   += ISNOOA[iNt][iRing]   * area;
+        ringAverage[ind_H2O2]     += H2O2[iNt][iRing]     * area;
+        ringAverage[ind_PRN1]     += PRN1[iNt][iRing]     * area;
+        ringAverage[ind_ETO2]     += ETO2[iNt][iRing]     * area;
+        ringAverage[ind_KO2]      += KO2[iNt][iRing]      * area;
+        ringAverage[ind_RCO3]     += RCO3[iNt][iRing]     * area;
+        ringAverage[ind_HC5OO]    += HC5OO[iNt][iRing]    * area;
+        ringAverage[ind_GLYC]     += GLYC[iNt][iRing]     * area;
+        ringAverage[ind_ClNO3]    += ClNO3[iNt][iRing]    * area;
+        ringAverage[ind_RIO2]     += RIO2[iNt][iRing]     * area;
+        ringAverage[ind_R4N1]     += R4N1[iNt][iRing]     * area;
+        ringAverage[ind_HOCl]     += HOCl[iNt][iRing]     * area;
+        ringAverage[ind_ATO2]     += ATO2[iNt][iRing]     * area;
+        ringAverage[ind_HNO3]     += HNO3[iNt][iRing]     * area;
+        ringAverage[ind_ISN1]     += ISN1[iNt][iRing]     * area;
+        ringAverage[ind_MAO3]     += MAO3[iNt][iRing]     * area;
+        ringAverage[ind_MRO2]     += MRO2[iNt][iRing]     * area;
+        ringAverage[ind_INO2]     += INO2[iNt][iRing]     * area;
+        ringAverage[ind_HAC]      += HAC[iNt][iRing]      * area;
+        ringAverage[ind_HC5]      += HC5[iNt][iRing]      * area;
+        ringAverage[ind_MGLY]     += MGLY[iNt][iRing]     * area;
+        ringAverage[ind_ISOPNBO2] += ISOPNBO2[iNt][iRing] * area;
+        ringAverage[ind_ISOPNDO2] += ISOPNDO2[iNt][iRing] * area;
+        ringAverage[ind_R4O2]     += R4O2[iNt][iRing]     * area;
+        ringAverage[ind_R4N2]     += R4N2[iNt][iRing]     * area;
+        ringAverage[ind_BrO]      += BrO[iNt][iRing]      * area;
+        ringAverage[ind_RCHO]     += RCHO[iNt][iRing]     * area;
+        ringAverage[ind_MEK]      += MEK[iNt][iRing]      * area;
+        ringAverage[ind_ClO]      += ClO[iNt][iRing]      * area;
+        ringAverage[ind_MACR]     += MACR[iNt][iRing]     * area;
+        ringAverage[ind_SO2]      += SO2[iNt][iRing]      * area;
+        ringAverage[ind_MVK]      += MVK[iNt][iRing]      * area;
+        ringAverage[ind_ALD2]     += ALD2[iNt][iRing]     * area;
+        ringAverage[ind_MCO3]     += MCO3[iNt][iRing]     * area;
+        ringAverage[ind_CH2O]     += CH2O[iNt][iRing]     * area;
+        ringAverage[ind_H2O]      += H2O[iNt][iRing]      * area;
+        ringAverage[ind_Br]       += Br[iNt][iRing]       * area;
+        ringAverage[ind_NO]       += NO[iNt][iRing]       * area;
+        ringAverage[ind_NO3]      += NO3[iNt][iRing]      * area;
+        ringAverage[ind_Cl]       += Cl[iNt][iRing]       * area;
+        ringAverage[ind_O]        += O[iNt][iRing]        * area;
+        ringAverage[ind_O1D]      += O1D[iNt][iRing]      * area;
+        ringAverage[ind_O3]       += O3[iNt][iRing]       * area;
+        ringAverage[ind_HO2]      += HO2[iNt][iRing]      * area;
+        ringAverage[ind_NO2]      += NO2[iNt][iRing]      * area;
+        ringAverage[ind_OH]       += OH[iNt][iRing]       * area;
+        ringAverage[ind_HBr]      += HBr[iNt][iRing]      * area;
+        ringAverage[ind_HCl]      += HCl[iNt][iRing]      * area;
+        ringAverage[ind_CO]       += CO[iNt][iRing]       * area;
+        ringAverage[ind_MO2]      += MO2[iNt][iRing]      * area;
+    }
+
+    return ringAverage;
+
+} /* End of SpeciesArray::RingAverage */
+
+std::vector<std::vector<double>> SpeciesArray::RingAverage( const std::vector<double> ringArea, \
+                                                            const double totArea ) const
+{
+
+    std::vector<std::vector<double>> ringAverage( nTime, std::vector<double>( NVAR, 0.0E+00 ) );
+    unsigned int iRing, iTime;
+    double area;
+
+    for ( iRing = 0; iRing < nRing; iRing++ ) {
+        area = ringArea[iRing] / totArea;
+        for ( iTime = 0; iTime < nTime; iTime++ ) {
+            ringAverage[iTime][ind_CO2]      += CO2[iTime][iRing]      * area;
+            ringAverage[iTime][ind_PPN]      += PPN[iTime][iRing]      * area;
+            ringAverage[iTime][ind_BrNO2]    += BrNO2[iTime][iRing]    * area;
+            ringAverage[iTime][ind_IEPOX]    += IEPOX[iTime][iRing]    * area;
+            ringAverage[iTime][ind_PMNN]     += PMNN[iTime][iRing]     * area;
+            ringAverage[iTime][ind_N2O]      += N2O[iTime][iRing]      * area;
+            ringAverage[iTime][ind_N]        += N[iTime][iRing]        * area;
+            ringAverage[iTime][ind_PAN]      += PAN[iTime][iRing]      * area;
+            ringAverage[iTime][ind_ALK4]     += ALK4[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MAP]      += MAP[iTime][iRing]      * area;
+            ringAverage[iTime][ind_MPN]      += MPN[iTime][iRing]      * area;
+            ringAverage[iTime][ind_Cl2O2]    += Cl2O2[iTime][iRing]    * area;
+            ringAverage[iTime][ind_ETP]      += ETP[iTime][iRing]      * area;
+            ringAverage[iTime][ind_HNO2]     += HNO2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_C3H8]     += C3H8[iTime][iRing]     * area;
+            ringAverage[iTime][ind_RA3P]     += RA3P[iTime][iRing]     * area;
+            ringAverage[iTime][ind_RB3P]     += RB3P[iTime][iRing]     * area;
+            ringAverage[iTime][ind_OClO]     += OClO[iTime][iRing]     * area;
+            ringAverage[iTime][ind_ClNO2]    += ClNO2[iTime][iRing]    * area;
+            ringAverage[iTime][ind_ISOP]     += ISOP[iTime][iRing]     * area;
+            ringAverage[iTime][ind_HNO4]     += HNO4[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MAOP]     += MAOP[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MP]       += MP[iTime][iRing]       * area;
+            ringAverage[iTime][ind_ClOO]     += ClOO[iTime][iRing]     * area;
+            ringAverage[iTime][ind_RP]       += RP[iTime][iRing]       * area;
+            ringAverage[iTime][ind_BrCl]     += BrCl[iTime][iRing]     * area;
+            ringAverage[iTime][ind_PP]       += PP[iTime][iRing]       * area;
+            ringAverage[iTime][ind_PRPN]     += PRPN[iTime][iRing]     * area;
+            ringAverage[iTime][ind_SO4]      += SO4[iTime][iRing]      * area;
+            ringAverage[iTime][ind_Br2]      += Br2[iTime][iRing]      * area;
+            ringAverage[iTime][ind_ETHLN]    += ETHLN[iTime][iRing]    * area;
+            ringAverage[iTime][ind_MVKN]     += MVKN[iTime][iRing]     * area;
+            ringAverage[iTime][ind_R4P]      += R4P[iTime][iRing]      * area;
+            ringAverage[iTime][ind_C2H6]     += C2H6[iTime][iRing]     * area;
+            ringAverage[iTime][ind_RIP]      += RIP[iTime][iRing]      * area;
+            ringAverage[iTime][ind_VRP]      += VRP[iTime][iRing]      * area;
+            ringAverage[iTime][ind_ATOOH]    += ATOOH[iTime][iRing]    * area;
+            ringAverage[iTime][ind_IAP]      += IAP[iTime][iRing]      * area;
+            ringAverage[iTime][ind_DHMOB]    += DHMOB[iTime][iRing]    * area;
+            ringAverage[iTime][ind_MOBA]     += MOBA[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MRP]      += MRP[iTime][iRing]      * area;
+            ringAverage[iTime][ind_N2O5]     += N2O5[iTime][iRing]     * area;
+            ringAverage[iTime][ind_ISNOHOO]  += ISNOHOO[iTime][iRing]  * area;
+            ringAverage[iTime][ind_ISNP]     += ISNP[iTime][iRing]     * area;
+            ringAverage[iTime][ind_ISOPNB]   += ISOPNB[iTime][iRing]   * area;
+            ringAverage[iTime][ind_IEPOXOO]  += IEPOXOO[iTime][iRing]  * area;
+            ringAverage[iTime][ind_MACRNO2]  += MACRNO2[iTime][iRing]  * area;
+            ringAverage[iTime][ind_ROH]      += ROH[iTime][iRing]      * area;
+            ringAverage[iTime][ind_MOBAOO]   += MOBAOO[iTime][iRing]   * area;
+            ringAverage[iTime][ind_DIBOO]    += DIBOO[iTime][iRing]    * area;
+            ringAverage[iTime][ind_PMN]      += PMN[iTime][iRing]      * area;
+            ringAverage[iTime][ind_ISNOOB]   += ISNOOB[iTime][iRing]   * area;
+            ringAverage[iTime][ind_INPN]     += INPN[iTime][iRing]     * area;
+            ringAverage[iTime][ind_H]        += H[iTime][iRing]        * area;
+            ringAverage[iTime][ind_BrNO3]    += BrNO3[iTime][iRing]    * area;
+            ringAverage[iTime][ind_PRPE]     += PRPE[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MVKOO]    += MVKOO[iTime][iRing]    * area;
+            ringAverage[iTime][ind_Cl2]      += Cl2[iTime][iRing]      * area;
+            ringAverage[iTime][ind_ISOPND]   += ISOPND[iTime][iRing]   * area;
+            ringAverage[iTime][ind_HOBr]     += HOBr[iTime][iRing]     * area;
+            ringAverage[iTime][ind_A3O2]     += A3O2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_PROPNN]   += PROPNN[iTime][iRing]   * area;
+            ringAverage[iTime][ind_GLYX]     += GLYX[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MAOPO2]   += MAOPO2[iTime][iRing]   * area;
+            ringAverage[iTime][ind_CH4]      += CH4[iTime][iRing]      * area;
+            ringAverage[iTime][ind_GAOO]     += GAOO[iTime][iRing]     * area;
+            ringAverage[iTime][ind_B3O2]     += B3O2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_ACET]     += ACET[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MACRN]    += MACRN[iTime][iRing]    * area;
+            ringAverage[iTime][ind_CH2OO]    += CH2OO[iTime][iRing]    * area;
+            ringAverage[iTime][ind_MGLYOO]   += MGLYOO[iTime][iRing]   * area;
+            ringAverage[iTime][ind_VRO2]     += VRO2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MGLOO]    += MGLOO[iTime][iRing]    * area;
+            ringAverage[iTime][ind_MACROO]   += MACROO[iTime][iRing]   * area;
+            ringAverage[iTime][ind_PO2]      += PO2[iTime][iRing]      * area;
+            ringAverage[iTime][ind_CH3CHOO]  += CH3CHOO[iTime][iRing]  * area;
+            ringAverage[iTime][ind_MAN2]     += MAN2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_ISNOOA]   += ISNOOA[iTime][iRing]   * area;
+            ringAverage[iTime][ind_H2O2]     += H2O2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_PRN1]     += PRN1[iTime][iRing]     * area;
+            ringAverage[iTime][ind_ETO2]     += ETO2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_KO2]      += KO2[iTime][iRing]      * area;
+            ringAverage[iTime][ind_RCO3]     += RCO3[iTime][iRing]     * area;
+            ringAverage[iTime][ind_HC5OO]    += HC5OO[iTime][iRing]    * area;
+            ringAverage[iTime][ind_GLYC]     += GLYC[iTime][iRing]     * area;
+            ringAverage[iTime][ind_ClNO3]    += ClNO3[iTime][iRing]    * area;
+            ringAverage[iTime][ind_RIO2]     += RIO2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_R4N1]     += R4N1[iTime][iRing]     * area;
+            ringAverage[iTime][ind_HOCl]     += HOCl[iTime][iRing]     * area;
+            ringAverage[iTime][ind_ATO2]     += ATO2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_HNO3]     += HNO3[iTime][iRing]     * area;
+            ringAverage[iTime][ind_ISN1]     += ISN1[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MAO3]     += MAO3[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MRO2]     += MRO2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_INO2]     += INO2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_HAC]      += HAC[iTime][iRing]      * area;
+            ringAverage[iTime][ind_HC5]      += HC5[iTime][iRing]      * area;
+            ringAverage[iTime][ind_MGLY]     += MGLY[iTime][iRing]     * area;
+            ringAverage[iTime][ind_ISOPNBO2] += ISOPNBO2[iTime][iRing] * area;
+            ringAverage[iTime][ind_ISOPNDO2] += ISOPNDO2[iTime][iRing] * area;
+            ringAverage[iTime][ind_R4O2]     += R4O2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_R4N2]     += R4N2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_BrO]      += BrO[iTime][iRing]      * area;
+            ringAverage[iTime][ind_RCHO]     += RCHO[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MEK]      += MEK[iTime][iRing]      * area;
+            ringAverage[iTime][ind_ClO]      += ClO[iTime][iRing]      * area;
+            ringAverage[iTime][ind_MACR]     += MACR[iTime][iRing]     * area;
+            ringAverage[iTime][ind_SO2]      += SO2[iTime][iRing]      * area;
+            ringAverage[iTime][ind_MVK]      += MVK[iTime][iRing]      * area;
+            ringAverage[iTime][ind_ALD2]     += ALD2[iTime][iRing]     * area;
+            ringAverage[iTime][ind_MCO3]     += MCO3[iTime][iRing]     * area;
+            ringAverage[iTime][ind_CH2O]     += CH2O[iTime][iRing]     * area;
+            ringAverage[iTime][ind_H2O]      += H2O[iTime][iRing]      * area;
+            ringAverage[iTime][ind_Br]       += Br[iTime][iRing]       * area;
+            ringAverage[iTime][ind_NO]       += NO[iTime][iRing]       * area;
+            ringAverage[iTime][ind_NO3]      += NO3[iTime][iRing]      * area;
+            ringAverage[iTime][ind_Cl]       += Cl[iTime][iRing]       * area;
+            ringAverage[iTime][ind_O]        += O[iTime][iRing]        * area;
+            ringAverage[iTime][ind_O1D]      += O1D[iTime][iRing]      * area;
+            ringAverage[iTime][ind_O3]       += O3[iTime][iRing]       * area;
+            ringAverage[iTime][ind_HO2]      += HO2[iTime][iRing]      * area;
+            ringAverage[iTime][ind_NO2]      += NO2[iTime][iRing]      * area;
+            ringAverage[iTime][ind_OH]       += OH[iTime][iRing]       * area;
+            ringAverage[iTime][ind_HBr]      += HBr[iTime][iRing]      * area;
+            ringAverage[iTime][ind_HCl]      += HCl[iTime][iRing]      * area;
+            ringAverage[iTime][ind_CO]       += CO[iTime][iRing]       * area;
+            ringAverage[iTime][ind_MO2]      += MO2[iTime][iRing]      * area;
+        }
+    }
+
+    return ringAverage;
+
+} /* End of SpeciesArray::RingAverage */
+
 unsigned int SpeciesArray::getnRing() const
 {
 
