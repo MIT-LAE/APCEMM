@@ -1337,9 +1337,8 @@ int PlumeModel( const unsigned int iCase, \
                                  ambientData,                         \
                                  ringCluster,                         \
                                  timeArray,                           \
-                                 temperature_K, pressure_Pa, airDens, \
-                                 relHumidity_w, relHumidity_i,        \
-                                 longitude_deg, latitude_deg,         \
+                                 input,                               \
+                                 airDens, relHumidity_i,              \
                                  sun->sunRise, sun->sunSet );
         if ( isSaved == output::SAVE_FAILURE ) {
             std::cout << " Saving to ring-averaged concentrations to file failed...\n";
@@ -1614,13 +1613,13 @@ int PlumeModel( const unsigned int iCase, \
             fullPath = OUT_PATH + '/' + file;
         fullPath = fullPath + ".nc";
 
-        isSaved = output::Write_Adjoint( fullPath.c_str(),                    \
-                                         ringSpecies, ambientData,            \
-                                         adjointData,                         \
-                                         ringArea, totArea,                   \
-                                         timeArray,                           \
-                                         temperature_K, pressure_Pa, airDens, \
-                                         relHumidity_w, relHumidity_i );
+        isSaved = output::Write_Adjoint( fullPath.c_str(),         \
+                                         ringSpecies, ambientData, \
+                                         adjointData,              \
+                                         ringArea, totArea,        \
+                                         timeArray,                \
+                                         input,                    \
+                                         airDens, relHumidity_i );
 
         if ( isSaved == output::SAVE_FAILURE ) {
             std::cout << " Saving to adjoint data to file failed...\n";
@@ -1635,7 +1634,6 @@ int PlumeModel( const unsigned int iCase, \
 
     /* Clear dynamically allocated variable(s) */
     sun->~SZA();
-
 
     return SUCCESS;
 

@@ -19,10 +19,8 @@ namespace output
     int Write( const char* outFile,                                              \
                const SpeciesArray &ringSpecies, const Ambient ambientData,       \
                const Cluster &ringCluster, const std::vector<double> &timeArray, \
-               const double &temperature_K, const double &pressure_Pa,           \
-               const double &airDens, const double &relHumidity_w,               \
-               const double &relHumidity_i, const double &longitude_deg,         \
-               const double &latitude_deg,                                       \
+               const Input &input,                                               \
+               const double &airDens, const double &relHumidity_i,               \
                const double &sunRise, const double &sunSet ) 
     {
 
@@ -60,15 +58,25 @@ namespace output
             didSaveSucceed *= fileHandler.addAtt( currFile, "GenerationDate", buffer );
             didSaveSucceed *= fileHandler.addAtt( currFile, "Format", "NetCDF-4" );
 
-            didSaveSucceed *= fileHandler.addConst( currFile, &temperature_K, "Temperature", 1, "float", "K"  , "Ambient Temperature" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Pressure"   , 1, "float", "hPa", "Ambient Pressure" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &airDens      , "Air Density", 1, "float", "molecule / cm ^ 3", "Molecular density" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_w, "RHW"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_i, "RHI"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &longitude_deg, "Longitude"  , 1, "float", "deg", "Longitude" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &latitude_deg , "Latitude"   , 1, "float", "deg", "Latitude" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &sunRise      , "Sun Rise"   , 1, "float", "hrs", "Local sun rise" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &sunSet       , "Sun Set"    , 1, "float", "hrs", "Local sun set" );
+            double value = 0.0E+00;
+            value = input.temperature_K();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Temperature", 1, "float", "K"  , "Ambient Temperature" );
+            value = input.pressure_Pa();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Pressure"   , 1, "float", "hPa", "Ambient Pressure" );
+            value = airDens;
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Air Density", 1, "float", "molecule / cm ^ 3", "Molecular density" );
+            value = input.relHumidity_w();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHW"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
+            value = relHumidity_i;
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHI"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
+            value = input.longitude_deg();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Longitude"  , 1, "float", "deg", "Longitude" );
+            value = input.latitude_deg();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Latitude"   , 1, "float", "deg", "Latitude" );
+            value = sunRise;
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Sun Rise"   , 1, "float", "hrs", "Local sun rise" );
+            value = sunSet;
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Sun Set"    , 1, "float", "hrs", "Local sun set" );
 
             didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim, "float", "-", "Cosine of the solar zenith angle" );
 
@@ -3395,14 +3403,13 @@ namespace output
 
     } /* End of Write_MicroPhys */
 
-    int Write_Adjoint( const char* outputFile,                                       \
-                       const SpeciesArray &ringSpecies, const Ambient ambientData,   \
-                       const Ambient adjointData,                                    \
-                       const std::vector<double> &ringArea, const double totArea,    \
-                       const std::vector<double> &timeArray,                         \
-                       const double &temperature_K, const double &pressure_Pa,       \
-                       const double &airDens, const double &relHumidity_w,           \
-                       const double &relHumidity_i )
+    int Write_Adjoint( const char* outputFile,                                     \
+                       const SpeciesArray &ringSpecies, const Ambient ambientData, \
+                       const Ambient adjointData,                                  \
+                       const std::vector<double> &ringArea, const double totArea,  \
+                       const std::vector<double> &timeArray,                       \
+                       const Input &input,                                         \
+                       const double &airDens, const double &relHumidity_i )
     {
 
         const bool doWrite = 1;
@@ -3432,11 +3439,43 @@ namespace output
             didSaveSucceed *= fileHandler.addAtt( currFile, "GenerationDate", buffer );
             didSaveSucceed *= fileHandler.addAtt( currFile, "Format", "NetCDF-4" );
 
-            didSaveSucceed *= fileHandler.addConst( currFile, &temperature_K, "Temperature", 1, "float", "K"  , "Ambient Temperature" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Pressure"   , 1, "float", "hPa", "Ambient Pressure" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &airDens      , "Air Density", 1, "float", "molecule / cm ^ 3", "Molecular density" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_w, "RHW"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_i, "RHI"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
+            double value = 0.0E+00;
+            value = input.temperature_K();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Temperature", 1, "float", "K"  , "Ambient Temperature" );
+            value = input.pressure_Pa();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Pressure"   , 1, "float", "hPa", "Ambient Pressure" );
+            value = airDens;
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Air Density", 1, "float", "molecule / cm ^ 3", "Molecular density" );
+            value = input.relHumidity_w();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHW"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
+            value = relHumidity_i;
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHI"        , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
+            value = input.dayGMT();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Day GMT", 1, "int", "-"  , "Emission day" );
+            value = input.emissionTime();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Time", 1, "float", "hr"  , "Emission time" );
+            value = input.EI_NOx();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "NOx EI", 1, "float", "g/kg_fuel"  , "NOx Emission index" );
+            value = input.EI_CO();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "CO EI", 1, "float", "g/kg_fuel"  , "CO Emission index" );
+            value = input.EI_HC();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "HC EI", 1, "float", "g/kg_fuel"  , "HC Emission index" );
+            value = input.EI_Soot();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Soot EI", 1, "float", "g/kg_fuel"  , "Soot Emission index" );
+            value = input.sootRad();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Soot Radius", 1, "float", "g/kg_fuel"  , "Soot radius" );
+            value = input.fuelFlow();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Fuel flow", 1, "float", "kg/s"  , "Engine fuel flow" );
+            value = input.backgNOx();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "NOx", 1, "float", "ppb"  , "Background NOx mixing ratio" );
+            value = input.backgHNO3();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "HNO3", 1, "float", "ppb"  , "Background HNO3 mixing ratio" );
+            value = input.backgO3();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "O3", 1, "float", "ppb"  , "Background O3 mixing ratio" );
+            value = input.backgCO();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "CO", 1, "float", "ppb"  , "Background CO mixing ratio" );
+            value = input.backgCH4();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "CH4", 1, "float", "ppb"  , "Background CH4 mixing ratio" );
 
             didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim, "float", "-", "Cosine of the solar zenith angle" );
 
