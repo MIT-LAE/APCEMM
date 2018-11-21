@@ -95,8 +95,8 @@ class Input
 
         std::string fileName() const { return fileName_; }
         std::string fileName_ADJ() const { return fileName_ADJ_; }
-        std::string fileName2char() const { return fileName_.c_str(); }
-        std::string fileName_ADJ2char() const { return fileName_ADJ_.c_str(); }
+        const char* fileName2char() const { return fileName_.c_str(); }
+        const char* fileName_ADJ2char() const { return fileName_ADJ_.c_str(); }
 
 };
 
