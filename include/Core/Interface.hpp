@@ -20,6 +20,7 @@ const std::string OUT_PATH    = "/net/d04/data/fritzt/CAPCEMM/LUT";
 
 /* APCEMM Look-up table */
 #define APCEMM_LUT              1    /* Build look-up table? */
+#define REBUILD                 0    /* Overwrite output files */
 
 /* TRANSPORT */
 #define DIFFUSION               1    /* Is diffusion turned on? */
