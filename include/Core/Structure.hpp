@@ -89,8 +89,8 @@ class Solution
                     const double airDens,           \
                     const double startTime );
 
-        unsigned int getNx() const;
-        unsigned int getNy() const;
+        unsigned int Nx() const { return size_x; };
+        unsigned int Ny() const { return size_y; };
         void Debug( const double airDens );
 
         /* Gaseous species */

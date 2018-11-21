@@ -1555,20 +1555,6 @@ int Solution::SpinUp( std::vector<double> &amb_Value, \
 
 } /* End of Solution::SpinUp */
 
-unsigned int Solution::getNx() const
-{
-
-    return size_x;
-
-} /* End of Solution::getNx */
-
-unsigned int Solution::getNy() const
-{
-
-    return size_y;
-
-} /* End of Solution::getNy */
-
 void Solution::Debug( const double airDens )
 {
     unsigned int iNx, jNy;
