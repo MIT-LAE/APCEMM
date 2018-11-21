@@ -21,7 +21,9 @@ Input::Input( const RealDouble temperature_K, \
               const UInt dayGMT,              \
               const RealDouble emissionTime,  \
               const Vector_1D emissionInput,  \
-              const Vector_1D backgMixRatio ):
+              const Vector_1D backgMixRatio,  \
+              const std::string fileName,     \
+              const std::string fileName_ADJ ):
     temperature_K_ ( temperature_K ),
     pressure_Pa_   ( pressure_Pa) ,
     relHumidity_w_ ( relHumidity_w ),
@@ -39,7 +41,9 @@ Input::Input( const RealDouble temperature_K, \
     backgHNO3_     ( backgMixRatio[1] ),
     backgO3_       ( backgMixRatio[2] ),
     backgCO_       ( backgMixRatio[3] ),
-    backgCH4_      ( backgMixRatio[4] )
+    backgCH4_      ( backgMixRatio[4] ),
+    fileName_      ( fileName ),
+    fileName_ADJ_  ( fileName_ADJ )
 {
 
     /* Constructor */
@@ -109,8 +113,10 @@ Input::Input( const RealDouble temperature_K, \
 
 } /* End of Input::Input */
 
-Input::Input( unsigned int iCase, \
-              const Vector_2D &parameters ):
+Input::Input( unsigned int iCase,          \
+              const Vector_2D &parameters, \
+              const std::string fileName,  \
+              const std::string fileName_ADJ ):
     temperature_K_ ( parameters[0][iCase] ),
     pressure_Pa_   ( parameters[1][iCase] ),
     relHumidity_w_ ( parameters[2][iCase] ),
@@ -128,7 +134,9 @@ Input::Input( unsigned int iCase, \
     backgHNO3_     ( parameters[14][iCase] ),
     backgO3_       ( parameters[15][iCase] ),
     backgCO_       ( parameters[16][iCase] ),
-    backgCH4_      ( parameters[17][iCase] )
+    backgCH4_      ( parameters[17][iCase] ),
+    fileName_      ( fileName ),
+    fileName_ADJ_  ( fileName_ADJ )
 {
 
     /* Constructor */

@@ -46,6 +46,9 @@ class Input
     RealDouble backgCO_;
     RealDouble backgCH4_;
 
+    std::string fileName_;
+    std::string fileName_ADJ_;
+
     public:
 
         Input( const RealDouble temperature_K, \
@@ -56,9 +59,13 @@ class Input
                const unsigned int dayGMT,      \
                const RealDouble emissionTime,  \
                const Vector_1D emissionInput,  \
-               const Vector_1D backgMixRatio );
-        Input( unsigned int iCase, \
-               const Vector_2D &parameters );
+               const Vector_1D backgMixRatio,  \
+               const std::string fileName,     \
+               const std::string fileName_ADJ );
+        Input( unsigned int iCase,          \
+               const Vector_2D &parameters, \
+               const std::string fileName,  \
+               const std::string fileName_ADJ );
 
         ~Input();
 
@@ -85,6 +92,11 @@ class Input
         RealDouble backgO3() const { return backgO3_; }
         RealDouble backgCO() const { return backgCO_; }
         RealDouble backgCH4() const { return backgCH4_; }
+
+        std::string fileName() const { return fileName_; }
+        std::string fileName_ADJ() const { return fileName_ADJ_; }
+        std::string fileName2char() const { return fileName_.c_str(); }
+        std::string fileName_ADJ2char() const { return fileName_ADJ_.c_str(); }
 
 };
 
