@@ -37,37 +37,37 @@ class Mesh
         Mesh( const Mesh &m );
         Mesh& operator=( const Mesh &m );
         void Ring2Mesh( Cluster &c );
-        Real_1DVector getX( ) const;
-        Real_1DVector getY( ) const;
-        Real_1DVector getX_e( ) const;
-        Real_1DVector getY_e( ) const;
-        Real_2DVector getAreas( ) const;
-        RealDouble getTotArea( ) const;
-        RealDouble gethx( ) const;
-        RealDouble gethy( ) const;
-        unsigned int getNx( ) const;
-        unsigned int getNy( ) const;
-        std::vector<std::vector<std::vector<bool> > > getMap( ) const;
-        std::vector<std::vector<std::pair<unsigned int, unsigned int> > > getList() const;
-        std::vector<unsigned int> getnMap( ) const;
+        Real_1DVector y( ) const { return x_; }
+        Real_1DVector x( ) const { return y_; }
+        Real_1DVector x_edge( ) const { return x_e_; }
+        Real_1DVector y_edge( ) const { return y_e_; }
+        Real_2DVector areas( ) const { return areas_; }
+        RealDouble totArea( ) const { return totArea_; }
+        RealDouble hx( ) const { return hx_; }
+        RealDouble hy( ) const { return hy_; }
+        unsigned int Nx() const { return nx; }
+        unsigned int Ny() const { return ny; }
+        std::vector<std::vector<std::vector<bool> > > map( ) const { return RingMeshMap; }
+        std::vector<std::vector<std::pair<unsigned int, unsigned int> > > list() const { return indList; }
+        std::vector<unsigned int> nMap( ) const { return nCellMap; }
         void Debug() const;
 
     private:
 
         /* Cell center coordinates */
-        Real_1DVector x, y;
+        Real_1DVector x_, y_;
 
         /* Cell edges */
-        Real_1DVector x_e, y_e;
+        Real_1DVector x_e_, y_e_;
 
         /* Cell areas */
-        Real_2DVector areas;
+        Real_2DVector areas_;
 
         /* Total area */
-        RealDouble totArea;
+        RealDouble totArea_;
 
         RealDouble xlim, ylim;
-        RealDouble hx, hy;
+        RealDouble hx_, hy_;
         unsigned int nx, ny;
         std::vector<unsigned int> nCellMap;
         std::vector<std::vector<std::pair<unsigned int, unsigned int> > > indList;

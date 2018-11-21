@@ -882,9 +882,9 @@ SpeciesArray::~SpeciesArray( )
 void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
 {
 
-    std::vector<std::vector<std::vector<bool> > > map = m.getMap();
-    std::vector<unsigned int> nMap = m.getnMap();
-    std::vector<std::vector<std::pair<unsigned int, unsigned int>>> indList = m.getList();
+    std::vector<std::vector<std::vector<bool> > > map = m.map();
+    std::vector<unsigned int> nMap = m.nMap();
+    std::vector<std::vector<std::pair<unsigned int, unsigned int>>> indList = m.list();
 
     std::vector<double> properties_LA( 4, 0.0E+00 );
     std::vector<double> properties_PA( 4, 0.0E+00 );

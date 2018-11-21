@@ -32,8 +32,8 @@ Meteorology::Meteorology( const bool loadFile, \
 
     /* Constructor */
 
-    std::vector<double> X = m.getX();
-    std::vector<double> Y = m.getY();
+    std::vector<double> X = m.x();
+    std::vector<double> Y = m.y();
     
     alt.assign( Y.size(), 0.0E+00 );
     press.assign( Y.size(), 0.0E+00 );
