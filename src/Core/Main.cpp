@@ -17,14 +17,25 @@
 #include <string>
 #include <vector>
 #include "omp.h"
+#include <sys/stat.h>
 
+#include "Core/Interface.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Input.hpp"
 
+static int DIR_FAIL = -9;
+
 void PrintMessage( bool doPrint );
 std::vector<std::vector<double> > ReadParameters( );
-int PlumeModel( const unsigned int iCase, \
-                const Input &inputCase );
+int PlumeModel( const Input &inputCase );
+
+inline bool exist( const std::string &name )
+{
+
+    struct stat buffer;
+    return (stat (name.c_str(), &buffer) == 0 );
+
+} /* End of exist */
 
 int main( int , char* [] )
 {
@@ -49,6 +60,15 @@ int main( int , char* [] )
      *                  +
      *              Plume Model
      */
+        
+    struct stat sb;
+    if (!(stat( OUT_PATH.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
+        const int dir_err = mkdir( OUT_PATH.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+        if ( dir_err == -1 ) {
+            std::cout << " Could not create directory: " << OUT_PATH << "\n";
+            return DIR_FAIL; 
+        }
+    }
 
 
     #pragma omp master
@@ -83,64 +103,91 @@ int main( int , char* [] )
     #pragma omp parallel for schedule(dynamic, 1) shared(parameters, nCases)
     for ( iCase = 0; iCase < nCases; iCase++ ) {
 
-        const Input inputCase( iCase, parameters );
+        jCase = iOFFSET + iCase;
 
-        #pragma omp critical
-        { std::cout << "-> Running case " << iCase << " on thread " << omp_get_thread_num() << "\n"; }
+        std::string fullPath, fullPath_ADJ;
 
-
-        int iERR = 0;
-
-        switch (model) {
-
-            /* Box Model */
-            case 0:
-
-                std::cout << "Not implemented yet\n";
-                break;
-
-            /* Plume Model (APCEMM) */
-            case 1:
-
-                jCase = iOFFSET + iCase;
-                iERR = PlumeModel( jCase, inputCase );
-                break;
-
-            /* Adjoint Model */
-            case 2:
-
-                std::cout << "Not implemented yet\n";
-                break;
-
-            case 3:
-
-                std::cout << "Not implemented yet\n";
-                break;
-
-            default:
-
-                std::cout << "Wrong input for model\n";
-                std::cout << "model = " << model << "\n";
-                std::cout << "Value should be between 0 and 3\n";
-                break;
-                
+        std::stringstream ss, ss_ADJ;
+        ss << std::setw(5) << std::setfill('0') << jCase;
+        std::string file = "APCEMM_Case_" + ss.str();
+        ss_ADJ << std::setw(5) << std::setfill('0') << jCase;
+        std::string file_ADJ = "APCEMM_ADJ_Case_" + ss_ADJ.str();
+        if ( OUT_PATH.back() == '/' ) {
+            fullPath = OUT_PATH + file;
+            fullPath_ADJ = OUT_PATH + file_ADJ;
+        } else {
+            fullPath = OUT_PATH + '/' + file;
+            fullPath_ADJ = OUT_PATH + '/' + file_ADJ;
         }
+        fullPath = fullPath + ".nc";
+        fullPath_ADJ = fullPath_ADJ + ".nc";
 
+        bool fileExist = 0;
+        
         #pragma omp critical 
-        {
-            if ( iERR < 0 ) {
-                std::cout.precision(3);
-                std::cout << "\n APCEMM Case: " << iCase << " failed on thread " << omp_get_thread_num() << ".\n";
-                std::cout << " Error: " << iERR << "\n";
-                std::cout << std::fixed;
-                std::cout << std::setprecision(3);
-                std::cout << " T   : " << std::setw(8) << inputCase.temperature_K() << " [K]\n";
-                std::cout << " P   : " << std::setw(8) << inputCase.pressure_Pa()/((double) 100.0) << " [hPa]\n";
-                std::cout << " RH_w: " << std::setw(8) << inputCase.relHumidity_w() << " [%]\n";
-                std::cout << " LON : " << std::setw(8) << inputCase.longitude_deg() << " [deg]\n";
-                std::cout << " LAT : " << std::setw(8) << inputCase.latitude_deg() << " [deg]\n";
+        { fileExist = exist( fullPath_ADJ ); }
+
+        if ( !fileExist || REBUILD ) {
+            
+            const Input inputCase( iCase, parameters, fullPath, fullPath_ADJ );
+
+            #pragma omp critical
+            { std::cout << "-> Running case " << iCase << " on thread " << omp_get_thread_num() << "\n"; }
+
+
+            int iERR = 0;
+
+            switch (model) {
+
+                /* Box Model */
+                case 0:
+
+                    std::cout << "Not implemented yet\n";
+                    break;
+
+                /* Plume Model (APCEMM) */
+                case 1:
+
+                    iERR = PlumeModel( inputCase );
+                    break;
+
+                /* Adjoint Model */
+                case 2:
+
+                    std::cout << "Not implemented yet\n";
+                    break;
+
+                case 3:
+
+                    std::cout << "Not implemented yet\n";
+                    break;
+
+                default:
+
+                    std::cout << "Wrong input for model\n";
+                    std::cout << "model = " << model << "\n";
+                    std::cout << "Value should be between 0 and 3\n";
+                    break;
+                    
             }
-            else { std::cout << " APCEMM Case: " << iCase << " completed.\n"; }
+
+            #pragma omp critical 
+            {
+                if ( iERR < 0 ) {
+                    std::cout.precision(3);
+                    std::cout << "\n APCEMM Case: " << iCase << " failed on thread " << omp_get_thread_num() << ".\n";
+                    std::cout << " Error: " << iERR << "\n";
+                    std::cout << std::fixed;
+                    std::cout << std::setprecision(3);
+                    std::cout << " T   : " << std::setw(8) << inputCase.temperature_K() << " [K]\n";
+                    std::cout << " P   : " << std::setw(8) << inputCase.pressure_Pa()/((double) 100.0) << " [hPa]\n";
+                    std::cout << " RH_w: " << std::setw(8) << inputCase.relHumidity_w() << " [%]\n";
+                    std::cout << " LON : " << std::setw(8) << inputCase.longitude_deg() << " [deg]\n";
+                    std::cout << " LAT : " << std::setw(8) << inputCase.latitude_deg() << " [deg]\n";
+                }
+                else { std::cout << " APCEMM Case: " << iCase << " completed.\n"; }
+            }
+
         }
 
     }
@@ -195,4 +242,3 @@ void PrintMessage( bool doPrint )
 } /* End of PrintMessage */
 
 /* End of Main.cpp */
-

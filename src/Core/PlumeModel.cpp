@@ -80,8 +80,6 @@ static int SUCCESS     =  1;
 #endif /* ADJOINT */
 
 
-static int DIR_FAIL = -9;
-
 void DiffParam( double time, double &d_x, double &d_y );
 void AdvGlobal( double time, double &v_x, double &v_y, double &dTrav_x, double &dTrav_y );
 std::vector<double> BuildTime( double tStart, double tFinal, \
@@ -91,8 +89,7 @@ double UpdateTime( double time, double tStart, \
 void Transport( Solution& Data, SANDS::Solver& Solver );
 
 
-int PlumeModel( const unsigned int iCase, \
-                const Input &input )
+int PlumeModel( const Input &input )
 {
 
 #if ( DEBUG )
@@ -172,7 +169,7 @@ int PlumeModel( const unsigned int iCase, \
     Mesh m;
 
     /* Get cell areas */
-    const std::vector<std::vector<double>> cellAreas = m.getAreas();
+    const std::vector<std::vector<double>> cellAreas = m.areas();
 
     /** ~~~~~~~~~~~~~~~~~ **/
     /**        Time       **/
@@ -447,7 +444,7 @@ int PlumeModel( const unsigned int iCase, \
     m.Ring2Mesh( ringCluster );
    
     /* Get mapping */
-    const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh = m.getList();
+    const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh = m.list();
     
     /* Print ring to mesh mapping? */
     if ( DEBUG_MAPPING )
@@ -1303,36 +1300,10 @@ int PlumeModel( const unsigned int iCase, \
 #endif /* TIME_IT */
 
 
-    #if ( SAVE_FORWARD || SAVE_ADJOINT )
-    
-    {
-        struct stat sb;
-        if (!(stat( OUT_PATH.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
-            const int dir_err = mkdir( OUT_PATH.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
-            if ( dir_err == -1 ) {
-                std::cout << " Could not create directory: " << OUT_PATH << "\n";
-                return DIR_FAIL; 
-            }
-        }
-    }
-
-    #endif /* SAVE_FORWARD || SAVE_ADJOINT */
-
     #if ( SAVE_FORWARD )
 
     { 
-        std::stringstream ss;
-        ss << std::setw(5) << std::setfill('0') << iCase;
-        std::string file = "APCEMM_Case_" + ss.str();
-        std::string fullPath;
-
-        if ( OUT_PATH.back() == '/' )
-            fullPath = OUT_PATH + file;
-        else
-            fullPath = OUT_PATH + '/' + file;
-        fullPath = fullPath + ".nc";
-
-        isSaved = output::Write( fullPath.c_str(),                    \
+        isSaved = output::Write( input.fileName2char(),               \
                                  ringSpecies,                         \
                                  ambientData,                         \
                                  ringCluster,                         \
@@ -1352,7 +1323,7 @@ int PlumeModel( const unsigned int iCase, \
     
     isSaved = output::Write_MicroPhys( OUT_FILE_LA, saveOutput_LA, saveTime_LA, \
                                        Data.liquidAerosol.getBinCenters(), \
-                                       m.getX(), m.getY(), temperature_K, pressure_Pa, 0.0, \
+                                       m.x(), m.y(), temperature_K, pressure_Pa, 0.0, \
                                        relHumidity_w, relHumidity_i );
     if ( isSaved == output::SAVE_FAILURE ) {
         std::cout << " Saving liquid aerosol's properties failed...\n";
@@ -1365,7 +1336,7 @@ int PlumeModel( const unsigned int iCase, \
 
     isSaved = output::Write_MicroPhys( OUT_FILE_PA, saveOutput_PA, saveTime_PA, \
                                        Data.solidAerosol.getBinCenters(), \
-                                       m.getX(), m.getY(), temperature_K, pressure_Pa, 0.0, \
+                                       m.x(), m.y(), temperature_K, pressure_Pa, 0.0, \
                                        relHumidity_w, relHumidity_i );
     if ( isSaved == output::SAVE_FAILURE ) {
         std::cout << " Saving solid aerosol's properties failed...\n";
@@ -1602,28 +1573,16 @@ int PlumeModel( const unsigned int iCase, \
     #if ( SAVE_ADJOINT )
        
     {
-        std::stringstream ss;
-        ss << std::setw(5) << std::setfill('0') << iCase;
-        std::string file = "APCEMM_ADJ_Case_" + ss.str();
-        std::string fullPath;
-
-        if ( OUT_PATH.back() == '/' )
-            fullPath = OUT_PATH + file;
-        else
-            fullPath = OUT_PATH + '/' + file;
-        fullPath = fullPath + ".nc";
-
-        isSaved = output::Write_Adjoint( fullPath.c_str(),         \
-                                         ringSpecies, ambientData, \
-                                         adjointData,              \
-                                         ringArea, totArea,        \
-                                         timeArray,                \
-                                         input,                    \
+        isSaved = output::Write_Adjoint( input.fileName_ADJ2char(), \
+                                         ringSpecies, ambientData,  \
+                                         adjointData,               \
+                                         ringArea, totArea,         \
+                                         timeArray,                 \
+                                         input,                     \
                                          airDens, relHumidity_i );
 
         if ( isSaved == output::SAVE_FAILURE ) {
             std::cout << " Saving to adjoint data to file failed...\n";
-            std::cout << " File name: " << fullPath << "\n";
             return SAVE_FAIL;
         }
     }
