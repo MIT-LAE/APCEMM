@@ -24,7 +24,9 @@ static int SUCCESS     =  1;
 #include <ctime>
 #include <sys/stat.h>
 #include <fftw3.h>
-#include "omp.h"
+#ifdef OMP
+    #include "omp.h"
+#endif /* OMP */
 
 #include "Util/ForwardDecl.hpp"
 #include "Core/Parameters.hpp"
@@ -92,9 +94,12 @@ void Transport( Solution& Data, SANDS::Solver& Solver );
 int PlumeModel( const Input &input )
 {
 
-#if ( DEBUG )
+bool printDEBUG = 0;
+
+#ifdef DEBUG
 
     std::cout << "\n DEBUG is turned ON!\n\n";
+    printDEBUG = 1;
 
 #endif /* DEBUG */
     
@@ -208,7 +213,7 @@ int PlumeModel( const Input &input )
     /**     Meteorology    **/
     /** ~~~~~~~~~~~~~~~~~~ **/
 
-    Meteorology Met( LOAD_MET, m, temperature_K, 11.2E+03, -3.0E-03, DEBUG );
+    Meteorology Met( LOAD_MET, m, temperature_K, 11.2E+03, -3.0E-03, printDEBUG );
     
     /** ~~~~~~~~~~~~~~~~~~ **/
     /**     Background     **/
@@ -222,7 +227,7 @@ int PlumeModel( const Input &input )
     /* [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K]           ) * [m3/cm3] */
 
     /* Set solution arrays to ambient data */
-    Data.Initialize( AMBFILE, input, airDens, Met, DEBUG );
+    Data.Initialize( AMBFILE, input, airDens, Met, printDEBUG );
 
     /* Print Background Debug? */
     if ( DEBUG_BG_INPUT )
@@ -476,9 +481,11 @@ int PlumeModel( const Input &input )
 
 #pragma omp critical
     {
-        std::cout << "\n\n ## ON THREAD: " << omp_get_thread_num() << "\n ##";
+        #ifdef OMP
+            std::cout << "\n\n ## ON THREAD: " << omp_get_thread_num() << "\n ##";
+        #endif /* OMP */
 
-        if ( 0 ) {
+        if ( printDEBUG ) {
             const unsigned int coutPrecision = 5;
             const unsigned int txtWidth      = coutPrecision + 2;
             std::cout << std::setprecision(coutPrecision);
@@ -578,10 +585,13 @@ int PlumeModel( const Input &input )
 
     while ( curr_Time_s < tFinal_s ) {
 
-        if ( DEBUG ) {
+        if ( printDEBUG ) {
             /* Print message */
             std::cout << "\n";
-            std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size() << ", " << omp_get_thread_num();
+            std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size();
+            #ifdef OMP
+                std::cout << ", " << omp_get_thread_num();
+            #endif /* OMP */
             std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]";
         }
 
@@ -590,7 +600,7 @@ int PlumeModel( const Input &input )
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         
         /* Compute time step */
-        dt = timeArray[nTime+1] - timeArray[nTime]; //UpdateTime( curr_Time_s, tInitial_s, 3600.0*sun->sunRise, 3600.0*sun->sunSet );
+        dt = timeArray[nTime+1] - timeArray[nTime];
         LAST_STEP = ( curr_Time_s + dt >= tFinal_s );
 
         Solver.UpdateTimeStep( dt );
@@ -727,7 +737,7 @@ int PlumeModel( const Input &input )
         /* Store cosine of solar zenith angle */
         ambientData.cosSZA[nTime+1] = sun->CSZA;
 
-        if ( DEBUG ) {
+        if ( printDEBUG ) {
             std::cout << "\n DEBUG : \n";
             std::cout << "         CSZA = " << sun->CSZA << "\n";
         }
@@ -743,7 +753,7 @@ int PlumeModel( const Input &input )
         if ( sun->CSZA > 0.0E+00 )
             Read_JRates( PHOTOL, sun->CSZA );
 
-        if ( DEBUG ) {
+        if ( printDEBUG ) {
             std::cout << "\n DEBUG : \n";
             for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
                 std::cout << "         PHOTOL[" << iPhotol << "] = " << PHOTOL[iPhotol] << "\n";
@@ -803,7 +813,7 @@ int PlumeModel( const Input &input )
                     GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
                                Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, kheti_sla );
 
-                    if ( DEBUG ) {
+                    if ( printDEBUG ) {
                         std::cout << "\n DEBUG :  Heterogeneous chemistry rates (Ring:  " << iRing << ")\n";
                         std::cout << "       :  Aerosol properties\n";
                         std::cout << "       :  Radius ice/NAT    = " << AerosolRadi[0] * 1.0E+06 << " [mum]\n";
@@ -850,9 +860,13 @@ int PlumeModel( const Input &input )
                 if ( IERR < 0 ) {
                     /* Integration failed */
 
-                    std::cout << "Integration failed on " << omp_get_thread_num() << " for ring = " << iRing << " at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
+                    std::cout << "Integration failed";
+                    #ifdef OMP
+                        std::cout << " on " << omp_get_thread_num();
+                    #endif /* OMP */
+                    std::cout << " for ring = " << iRing << " at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
 
-                    if ( DEBUG ) {
+                    if ( printDEBUG ) {
                         std::cout << " ~~~ Printing reaction rates:\n";
                         for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
                             std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
@@ -894,7 +908,7 @@ int PlumeModel( const Input &input )
                 GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
                            Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, kheti_sla );
 
-                if ( DEBUG ) {
+                if ( printDEBUG ) {
                     std::cout << "\n DEBUG :   Heterogeneous chemistry rates (Ambient)\n";
                     std::cout << "       :   Aerosol properties\n";
                     std::cout << "       :   Radius ice/NAT    = " << AerosolRadi[0] * 1.0E+06 << " [mum]\n";
@@ -941,9 +955,13 @@ int PlumeModel( const Input &input )
             if ( IERR < 0 ) {
                 /* Integration failed */
 
-                std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
+                    std::cout << "Integration failed";
+                    #ifdef OMP
+                        std::cout << " on " << omp_get_thread_num();
+                    #endif /* OMP */
+                    std::cout << " for ambient conditions at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
                     
-                if ( DEBUG ) {
+                if ( printDEBUG ) {
                     std::cout << " ~~~ Printing reaction rates:\n";
                     for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
                         std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
@@ -1012,9 +1030,13 @@ int PlumeModel( const Input &input )
                     if ( IERR < 0 ) {
                         /* Integration failed */
 
-                        std::cout << "Integration failed on " << omp_get_thread_num() << " for grid cell = (" << jNy << ", " << iNx << ") at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
+                        std::cout << "Integration failed";
+                        #ifdef OMP
+                            std::cout << " on " << omp_get_thread_num();
+                        #endif /* OMP */
+                        std::cout << " for grid cell = (" << jNy << ", " << iNx << ") at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
                     
-                        if ( DEBUG ) {
+                        if ( printDEBUG ) {
                             std::cout << " ~~~ Printing reaction rates:\n";
                             for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
                                 std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
@@ -1073,9 +1095,13 @@ int PlumeModel( const Input &input )
             if ( IERR < 0 ) {
                 /* Integration failed */
 
-                std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
+                std::cout << "Integration failed";
+                #ifdef OMP
+                    std::cout << " on " << omp_get_thread_num();
+                #endif /* OMP */
+                std::cout << " for ambient conditions at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
 
-                if ( DEBUG ) {
+                if ( printDEBUG ) {
                     std::cout << " ~~~ Printing reaction rates:\n";
                     for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
                         std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
@@ -1116,7 +1142,7 @@ int PlumeModel( const Input &input )
         /* Liquid aerosol coagulation */
         if ( ITS_TIME_FOR_LIQ_COAGULATION && LIQ_MICROPHYSICS ) {
             dtLiqCoag = ( curr_Time_s - lastTimeLiqCoag );
-            if ( DEBUG )
+            if ( printDEBUG )
                 std::cout << "\n DEBUG (Liquid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeLiqCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtLiqCoag << " s\n";
 
             lastTimeLiqCoag = curr_Time_s;
@@ -1128,7 +1154,7 @@ int PlumeModel( const Input &input )
         /* Solid aerosol coagulation */
         if ( ITS_TIME_FOR_ICE_COAGULATION && ICE_MICROPHYSICS ) {
             dtIceCoag = ( curr_Time_s - lastTimeIceCoag );
-            if ( DEBUG )
+            if ( printDEBUG )
                 std::cout << "\n DEBUG (Solid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeIceCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceCoag << " s\n";
 
             lastTimeIceCoag = curr_Time_s;
@@ -1148,7 +1174,7 @@ int PlumeModel( const Input &input )
         ITS_TIME_TO_SAVE_LA_OUTPUT = ( ( ( curr_Time_s - saveTime_LA.back() ) >= SAVE_LA_DT ) || LAST_STEP );
         /* Save liquid aerosol at current time */
         if ( ITS_TIME_TO_SAVE_LA_OUTPUT ) {
-            if ( DEBUG )
+            if ( printDEBUG )
                 std::cout << "\n DEBUG (Save Liquid Aerosols): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last time liquid aerosols were saved: " << ( saveTime_LA.back() - tInitial_s ) / 3600.0 << " hr\n";
 
             if ( LAST_STEP )
@@ -1165,7 +1191,7 @@ int PlumeModel( const Input &input )
         ITS_TIME_TO_SAVE_PA_OUTPUT = ( ( ( curr_Time_s - saveTime_PA.back() ) >= SAVE_PA_DT ) || LAST_STEP );
         /* Save solid aerosol at current time */
         if ( ITS_TIME_TO_SAVE_PA_OUTPUT ) {
-            if ( DEBUG )
+            if ( printDEBUG )
                 std::cout << "\n DEBUG (Save Solid Aerosols): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last time solid aerosols were saved: " << ( saveTime_PA.back() - tInitial_s ) / 3600.0 << " hr\n";
 
             if ( LAST_STEP )
@@ -1348,11 +1374,12 @@ int PlumeModel( const Input &input )
 
     #if ( RINGS && ADJOINT )
 
-        #pragma omp critical 
-        {
-            std::cout << "\n\n ## ON THREAD " << omp_get_thread_num() << ": Starting adjoint calculation...\n";
-        }
-
+        #ifdef OMP
+            #pragma omp critical 
+            { std::cout << "\n\n ## ON THREAD " << omp_get_thread_num() << ": Starting adjoint calculation...\n"; }
+        #else
+            std::cout << "\n\n Starting adjoint calculation...\n";
+        #endif /* OMP */
 
     std::copy(sun->CSZA_Vector.begin(), sun->CSZA_Vector.end(), SZA_CST);
     double VAR_OPT[NVAR];
@@ -1429,10 +1456,13 @@ int PlumeModel( const Input &input )
 
     while ( curr_Time_s < tFinal_s ) {
         
-        if ( DEBUG ) {
+        if ( printDEBUG ) {
             /* Print message */
             std::cout << "\n";
-            std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size() << " ( on thread " << omp_get_thread_num() << " )";
+            std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size();
+            #ifdef OMP 
+                std::cout << " ( on thread " << omp_get_thread_num() << " )";
+            #endif /* OMP */
             std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]";
         }
 
@@ -1448,7 +1478,7 @@ int PlumeModel( const Input &input )
         /* Store cosine of solar zenith angle */
         adjointData.cosSZA[nTime+1] = sun->CSZA;
 
-        if ( DEBUG ) {
+        if ( printDEBUG ) {
             std::cout << "\n DEBUG : \n";
             std::cout << "         CSZA = " << sun->CSZA << "\n";
         }
@@ -1464,7 +1494,7 @@ int PlumeModel( const Input &input )
         if ( sun->CSZA > 0.0E+00 )
             Read_JRates( PHOTOL, sun->CSZA );
 
-        if ( DEBUG ) {
+        if ( printDEBUG ) {
             std::cout << "\n DEBUG : \n";
             for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
                 std::cout << "         PHOTOL[" << iPhotol << "] = " << PHOTOL[iPhotol] << "\n";
@@ -1501,7 +1531,7 @@ int PlumeModel( const Input &input )
             GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
                        Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, kheti_sla );
 
-            if ( DEBUG ) {
+            if ( printDEBUG ) {
                 std::cout << "\n DEBUG :   Heterogeneous chemistry rates (Ambient)\n";
                 std::cout << "       :   Aerosol properties\n";
                 std::cout << "       :   Radius ice/NAT    = " << AerosolRadi[0] * 1.0E+06 << " [mum]\n";
@@ -1547,9 +1577,13 @@ int PlumeModel( const Input &input )
         if ( IERR < 0 ) {
             /* Integration failed */
 
-            std::cout << "Integration failed on " << omp_get_thread_num() << " for ambient conditions at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
+            std::cout << "Integration failed";
+            #ifdef OMP
+                std::cout << " on " << omp_get_thread_num();
+            #endif /* OMP */
+            std::cout << " for ambient conditions at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
                 
-            if ( DEBUG ) {
+            if ( printDEBUG ) {
                 std::cout << " ~~~ Printing reaction rates:\n";
                 for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
                     std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";

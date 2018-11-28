@@ -16,7 +16,9 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#include "omp.h"
+#ifdef OMP
+    #include "omp.h"
+#endif /* OMP */
 #include <sys/stat.h>
 
 #include "Core/Interface.hpp"
@@ -91,10 +93,17 @@ int main( int , char* [] )
 
     #pragma omp single
     {
-        if ( nCases > 1 )
-            std::cout << "\n Running model for " << nCases << " cases on " << omp_get_num_procs() << " processors\n"; 
-        else
-            std::cout << "\n Running model for " << nCases << " case on " << omp_get_num_procs() << " processors\n"; 
+        #ifdef OMP 
+            if ( nCases > 1 )
+                std::cout << "\n Running model for " << nCases << " cases on " << omp_get_num_procs() << " processors.\n"; 
+            else
+                std::cout << "\n Running model for " << nCases << " case on " << omp_get_num_procs() << " processors.\n"; 
+        #else
+            if ( nCases > 1 )
+                std::cout << "\n Running model for " << nCases << " cases.\n"; 
+            else
+                std::cout << "\n Running model for " << nCases << " case.\n"; 
+        #endif /* OMP */
     }
 
     /* Synchronize the threads */
@@ -132,7 +141,13 @@ int main( int , char* [] )
             const Input inputCase( iCase, parameters, fullPath, fullPath_ADJ );
 
             #pragma omp critical
-            { std::cout << "-> Running case " << iCase << " on thread " << omp_get_thread_num() << "\n"; }
+            { 
+                std::cout << "-> Running case " << iCase;
+                #ifdef OMP
+                    std::cout << " on thread " << omp_get_thread_num();
+                #endif /* OMP */
+                std::cout << "\n";
+            }
 
 
             int iERR = 0;
@@ -175,7 +190,11 @@ int main( int , char* [] )
             {
                 if ( iERR < 0 ) {
                     std::cout.precision(3);
-                    std::cout << "\n APCEMM Case: " << iCase << " failed on thread " << omp_get_thread_num() << ".\n";
+                    std::cout << "\n APCEMM Case: " << iCase << " failed";
+                    #ifdef OMP
+                        std::cout << "on thread " << omp_get_thread_num();
+                    #endif /* OMP */
+                    std::cout << ".\n";
                     std::cout << " Error: " << iERR << "\n";
                     std::cout << std::fixed;
                     std::cout << std::setprecision(3);

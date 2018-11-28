@@ -24,7 +24,9 @@
 #include <math.h>
 #include <string.h>
 #include <stdbool.h>
-#include "omp.h"
+#ifdef OMP
+    #include "omp.h"
+#endif /* OMP */
 
 #include "KPP/KPP.hpp"
 #include "KPP/KPP_Parameters.h"
@@ -845,7 +847,11 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
 #pragma omp critical
         {
-            printf("\n ## ON THREAD: %d. Integration successful (METRIC: %e)\n", omp_get_thread_num(), METRIC_ABS_MIN);
+            #ifdef OMP
+                printf("\n ## ON THREAD: %d. Integration successful (METRIC: %e)\n", omp_get_thread_num(), METRIC_ABS_MIN);
+            #else
+                printf("\n Integration successful (METRIC: %e)\n", METRIC_ABS_MIN);
+            #endif /* OMP */
             printf(" ## O3 Delta : %+f [ppt], %f %% \n",(VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*TOPPT, 100.0 * ABS((VAR_RUN[ind_O3] - finalPlume[ind_O3]) / DELTAO3f_0));
             printf(" ## NOx Delta: %+f [ppt], %f %% \n",(VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT, 100.0 * ABS((VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/ ( DELTANOf_0 + DELTANO2f_0 )));
         }
