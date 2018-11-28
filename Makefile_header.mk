@@ -49,12 +49,6 @@ ifndef OMP
   OMP                :=0
 endif
 
-# Option to turn off OpenMP for testing
-REGEXP               :=(^[Nn]|^[Oo])
-ifeq ($(shell [[ "$(OMP)" =~ $(REGEXP) ]] && echo true),true)
-  USER_DEFS          += -DNO_OMP
-endif
-
 # %%%%% Set default compiler %%%%%
 
 # %%%%% If COMPILER is not defined, default to the $(CXX) variable, which %%%%%
@@ -138,7 +132,6 @@ LINK_FFTW := -lfftw3 -lfftw3f -lfftw3l
 
 # Create linker command to create the APCEMM executable
 LINK := $(LINK) -Wl,--start-group -lUtil -lSands $(LINK_FFTW) -lKpp -lEpm -lAim -lnetcdf_c++ -Wl,--end-group
-# -lfftw3_omp -lpthread -lfftw3_threads
 
 ###############################################################################
 ###                                                                         ###
@@ -154,9 +147,7 @@ ifeq ($(COMPILER),g++)
   VERSION            :=$(subst .,,$(VERSION))
 
   # Base set of compiler flags
-  CXXLAGS            :=-cpp -std=c++11 -w -std=legacy -fautomatic -fno-align-commons
-  CXXLAGS            += -fconvert=big-endian
-  CXXLAGS            += -fno-range-check
+  CXXFLAGS            :=-std=c++11 -w
 
   # Default optimization level for all routines (-O3)
   ifndef OPT
@@ -169,16 +160,16 @@ ifeq ($(COMPILER),g++)
     #                        Intel Sandy-Bridge Xeon (e.g. E5-2680)
     #  -mfpmath=sse         Use SSE extensions
     #  -funroll-loops       Enable loop unrolling
-    OPT              := -O3 -funroll-loops
+    OPT              := -O3 -funroll-loops -limf -march=native -msse
   endif
   
   # Pick compiler options for debug run or regular run 
   REGEXP             := (^[Yy]|^[Yy][Ee][Ss])
   ifeq ($(shell [[ "$(DEBUG)" =~ $(REGEXP) ]] && echo true),true)
-    #-fcheck=all would be more comprehensive but would force bounds checking
     CXXFLAGS          += -Wall -Wextra -Wconversion
-    CXXFLAGS          += -Warray-temporaries -fcheck-array-temporaries
-	CXXFLAGS          += -g -O0
+    CXXFLAGS          += -Wno-c++0x-compat
+    CXXFLAGS          += -Wno-unused
+    CXXFLAGS          += -g -O0
     USER_DEFS         += -DDEBUG
   else
     CXXFLAGS          += $(OPT)
@@ -187,15 +178,12 @@ ifeq ($(COMPILER),g++)
   # Turn on OpenMP parallelization
   REGEXP             :=(^[Yy]|^[Yy][Ee][Ss])
   ifeq ($(shell [[ "$(OMP)" =~ $(REGEXP) ]] && echo true),true)
-    CXXLAGS           += -fopenmp
+    CXXFLAGS          += -fopenmp
+    USER_DEFS         += -DOMP
   endif
-  
+ 
   # Append the user options in USER_DEFS to CXXFLAGS
   CXXFLAGS            += $(USER_DEFS)
-
-#  CFLAGS              := CXXFLAGS
-
-  CFLAGS := -Wall -Wextra -O3 -fopenmp -std=c++11 $(USER_DEFS)
 
   # Include options (i.e. for finding *.h* files)
   INCLUDE := -I$(ROOT_DIR)/include
@@ -203,8 +191,8 @@ ifeq ($(COMPILER),g++)
 endif
 
 # Set the standard compiler variables
-GCC  := $(COMPILE_CMD) $(CFLAGS) $(INCLUDE) $(LINK)
-LD   := $(COMPILE_CMD) $(CFLAGS)
+GCC  := $(COMPILE_CMD) $(CXXFLAGS) $(INCLUDE) $(LINK)
+LD   := $(COMPILE_CMD) $(CXXFLAGS)
 
 ###############################################################################
 ###                                                                         ###
@@ -259,4 +247,5 @@ export MAKEFLAGS
 #	@@echo "INCLUDE     : $(INCLUDE)"
 #	@@echo "LINK        : $(LINK)"
 #	@@echo "USERDEFS    : $(USER_DEFS)"
+#	@@echo "FLAGS       : $(CXXFLAGS)"
 
