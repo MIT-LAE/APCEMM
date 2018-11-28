@@ -15,6 +15,8 @@
 #define FFT_H_INCLUDED
 
 #include <iostream>
+#include <cstdlib>
+
 #include <Util/ForwardDecl.hpp>
 #include <fftw3.h>
 
