@@ -7,7 +7,7 @@
 
 # Time limit after which the job will be killed. The default time limit
 # is 60 minutes. Specified as HH:MM:SS or D-HH:MM
-#SBATCH --time=7-00:00
+#SBATCH --time=30-00:00
 
 # Prevent multithreading of the cores
 #SBATCH --hint=nomultithread
