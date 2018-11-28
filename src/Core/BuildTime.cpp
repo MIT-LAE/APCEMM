@@ -65,12 +65,13 @@ double UpdateTime( double time, const double tStart, \
     else
         timeStep = default_TimeStep;
 
+    /* Add a small bit to ensure that we get passed the sunrise/set */
     if ( (std::fmod((time),(24.0*3600.0)) < (sunSet)) \
       && (std::fmod((time + timeStep),(24.0*3600.0)) > sunSet) )
-        timeStep = std::max( sunSet - std::fmod((time),(24.0*3600.0)), 1.0 );
+        timeStep = sunSet - std::fmod((time),(24.0*3600.0)) + 1.00E-03;
     if ( (std::fmod((time),(24.0*3600.0)) < (sunRise)) \
       && (std::fmod((time + timeStep),(24.0*3600.0)) > sunRise) )
-        timeStep = std::max( sunRise - std::fmod((time),(24.0*3600.0)), 1.0 );
+        timeStep = sunRise - std::fmod((time),(24.0*3600.0)) + 1.00E-03;
 
     return timeStep;
 
