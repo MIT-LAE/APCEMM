@@ -87,7 +87,8 @@ class Solution
         int SpinUp( std::vector<double> &amb_Value, \
                     const Input &input,             \
                     const double airDens,           \
-                    const double startTime );
+                    const double startTime,         \
+                    const bool DEBUG = 0 );
 
         unsigned int Nx() const { return size_x; };
         unsigned int Ny() const { return size_y; };

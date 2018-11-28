@@ -1440,9 +1440,10 @@ void Solution::getAerosolProp( double ( &radi )[4], double ( &area )[4], double 
 } /* End of Solution::getAerosolProp */
 
 int Solution::SpinUp( std::vector<double> &amb_Value, \
-                       const Input &input,             \
-                       const double airDens,           \
-                       const double startTime )
+                       const Input &input,            \
+                       const double airDens,          \
+                       const double startTime,        \
+                       const bool DEBUG )
 {
 
     /* Chemistry timestep
@@ -1524,7 +1525,11 @@ int Solution::SpinUp( std::vector<double> &amb_Value, \
         if ( IERR < 0 ) {
             /* Integration failed */
 
-            std::cout << " SpinUp Integration failed on " << omp_get_thread_num() << " at time t = " << curr_Time_s/3600.0 << "\n";
+            std::cout << " SpinUp Integration failed";
+            #ifdef OMP
+                std::cout << " on " << omp_get_thread_num();
+            #endif /* OMP */
+            std::cout << " at time t = " << curr_Time_s/3600.0 << "\n";
 
             if ( DEBUG ) {
                 std::cout << " ~~~ Printing reaction rates:\n";
