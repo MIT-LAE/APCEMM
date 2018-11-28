@@ -1471,7 +1471,7 @@ namespace AIM
 
     } /* End of Grid_Aerosol::updatePdf */
 
-    Vector_1D Grid_Aerosol::Average( const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) const
+    Vector_1D Grid_Aerosol::Average( const std::vector<std::pair<unsigned int, unsigned int> > &indexList ) const
     {
 
         Vector_1D out( 4, 0.0E+00 );
@@ -1504,7 +1504,7 @@ namespace AIM
 
     } /* End of Grid_Aerosol::Average */
 
-    void Grid_Aerosol::addPDF( const Aerosol aerosol, const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) 
+    void Grid_Aerosol::addPDF( const Aerosol aerosol, const std::vector<std::pair<unsigned int, unsigned int> > &indexList ) 
     {
 
         Vector_1D AerPDF = aerosol.getPDF();
@@ -1520,7 +1520,7 @@ namespace AIM
 
     } /* End of Grid_Aerosol::addPDF */
 
-    void Grid_Aerosol::addPDF( const Vector_1D PDF, const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) 
+    void Grid_Aerosol::addPDF( const Vector_1D PDF, const std::vector<std::pair<unsigned int, unsigned int> > &indexList ) 
     {
 
         unsigned int iNx, jNy;
