@@ -62,12 +62,12 @@ int main( int , char* [] )
      *                  +
      *              Plume Model
      */
-        
+    
     struct stat sb;
     if (!(stat( OUT_PATH.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
         const int dir_err = mkdir( OUT_PATH.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
         if ( dir_err == -1 ) {
-            std::cout << " Could not create directory: " << OUT_PATH << "\n";
+            std::cout << " Could not create directory: " << OUT_PATH << "" << std::endl;
             return DIR_FAIL; 
         }
     }
@@ -95,14 +95,14 @@ int main( int , char* [] )
     {
         #ifdef OMP 
             if ( nCases > 1 )
-                std::cout << "\n Running model for " << nCases << " cases on " << omp_get_num_procs() << " processors.\n"; 
+                std::cout << "\n Running model for " << nCases << " cases on " << omp_get_num_procs() << " processors." << std::endl; 
             else
-                std::cout << "\n Running model for " << nCases << " case on " << omp_get_num_procs() << " processors.\n"; 
+                std::cout << "\n Running model for " << nCases << " case on " << omp_get_num_procs() << " processors." << std::endl; 
         #else
             if ( nCases > 1 )
-                std::cout << "\n Running model for " << nCases << " cases.\n"; 
+                std::cout << "\n Running model for " << nCases << " cases." << std::endl; 
             else
-                std::cout << "\n Running model for " << nCases << " case.\n"; 
+                std::cout << "\n Running model for " << nCases << " case." << std::endl; 
         #endif /* OMP */
     }
 
@@ -146,7 +146,7 @@ int main( int , char* [] )
                 #ifdef OMP
                     std::cout << " on thread " << omp_get_thread_num();
                 #endif /* OMP */
-                std::cout << "\n";
+                std::cout << "" << std::endl;
             }
 
 
@@ -157,7 +157,7 @@ int main( int , char* [] )
                 /* Box Model */
                 case 0:
 
-                    std::cout << "Not implemented yet\n";
+                    std::cout << "Not implemented yet" << std::endl;
                     break;
 
                 /* Plume Model (APCEMM) */
@@ -169,19 +169,19 @@ int main( int , char* [] )
                 /* Adjoint Model */
                 case 2:
 
-                    std::cout << "Not implemented yet\n";
+                    std::cout << "Not implemented yet" << std::endl;
                     break;
 
                 case 3:
 
-                    std::cout << "Not implemented yet\n";
+                    std::cout << "Not implemented yet" << std::endl;
                     break;
 
                 default:
 
-                    std::cout << "Wrong input for model\n";
-                    std::cout << "model = " << model << "\n";
-                    std::cout << "Value should be between 0 and 3\n";
+                    std::cout << "Wrong input for model" << std::endl;
+                    std::cout << "model = " << model << "" << std::endl;
+                    std::cout << "Value should be between 0 and 3" << std::endl;
                     break;
                     
             }
@@ -192,19 +192,19 @@ int main( int , char* [] )
                     std::cout.precision(3);
                     std::cout << "\n APCEMM Case: " << iCase << " failed";
                     #ifdef OMP
-                        std::cout << "on thread " << omp_get_thread_num();
+                        std::cout << " on thread " << omp_get_thread_num();
                     #endif /* OMP */
-                    std::cout << ".\n";
-                    std::cout << " Error: " << iERR << "\n";
+                    std::cout << "." << std::endl;
+                    std::cout << " Error: " << iERR << "" << std::endl;
                     std::cout << std::fixed;
                     std::cout << std::setprecision(3);
-                    std::cout << " T   : " << std::setw(8) << inputCase.temperature_K() << " [K]\n";
-                    std::cout << " P   : " << std::setw(8) << inputCase.pressure_Pa()/((double) 100.0) << " [hPa]\n";
-                    std::cout << " RH_w: " << std::setw(8) << inputCase.relHumidity_w() << " [%]\n";
-                    std::cout << " LON : " << std::setw(8) << inputCase.longitude_deg() << " [deg]\n";
-                    std::cout << " LAT : " << std::setw(8) << inputCase.latitude_deg() << " [deg]\n";
+                    std::cout << " T   : " << std::setw(8) << inputCase.temperature_K() << " [K]" << std::endl;
+                    std::cout << " P   : " << std::setw(8) << inputCase.pressure_Pa()/((double) 100.0) << " [hPa]" << std::endl;
+                    std::cout << " RH_w: " << std::setw(8) << inputCase.relHumidity_w() << " [%]" << std::endl;
+                    std::cout << " LON : " << std::setw(8) << inputCase.longitude_deg() << " [deg]" << std::endl;
+                    std::cout << " LAT : " << std::setw(8) << inputCase.latitude_deg() << " [deg]" << std::endl;
                 }
-                else { std::cout << " APCEMM Case: " << iCase << " completed.\n"; }
+                else { std::cout << " APCEMM Case: " << iCase << " completed." << std::endl; }
             }
 
         }
