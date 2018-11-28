@@ -140,9 +140,10 @@ const char* const OUT_FILE_LA = "data/LiqAerosol.nc";
 #define H2O_MASS_CHECK          1    /* H2O mass check? */
 
 /* DEBUG */
+/* DEBUG is now specified in Makefile header */
 #define DEBUG_ALL               0    /* Debug all? */
-#define DEBUG                   0    /* Debug all except variables that have
-                                        specific debug options (see below) */
+//#define DEBUG                   0    /* Debug all except variables that have
+//                                        specific debug options (see below) */
 
 #define DEBUG_AC_INPUT          0    /* Debug AC Input? */
 #define DEBUG_BG_INPUT          0    /* Debug Background Input? */
