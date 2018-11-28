@@ -88,7 +88,7 @@ class Solution
                     const Input &input,             \
                     const double airDens,           \
                     const double startTime,         \
-                    const bool DEBUG = 0 );
+                    const bool DGB = 0 );
 
         unsigned int Nx() const { return size_x; };
         unsigned int Ny() const { return size_y; };

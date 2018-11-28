@@ -1443,7 +1443,7 @@ int Solution::SpinUp( std::vector<double> &amb_Value, \
                        const Input &input,            \
                        const double airDens,          \
                        const double startTime,        \
-                       const bool DEBUG )
+                       const bool DBG )
 {
 
     /* Chemistry timestep
@@ -1489,7 +1489,7 @@ int Solution::SpinUp( std::vector<double> &amb_Value, \
     /* Define sun parameters */
     SZA *sun = new SZA( input.latitude_deg(), input.dayGMT() );
     
-    if ( DEBUG )
+    if ( DBG )
         std::cout << "\n Running spin-up from " << curr_Time_s / 3600.0 << " to " << RunUntil / 3600.0 << " [hr]\n";
 
     while ( curr_Time_s < RunUntil ) {
@@ -1503,7 +1503,7 @@ int Solution::SpinUp( std::vector<double> &amb_Value, \
         if ( sun->CSZA > 0.0E+00 )
             Read_JRates( PHOTOL, sun->CSZA );
 
-        if ( DEBUG ) {
+        if ( DBG ) {
             std::cout << "\n DEBUG : (In SpinUp)\n";
             for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
                 std::cout << "         PHOTOL[" << iPhotol << "] = " << PHOTOL[iPhotol] << "\n";
@@ -1531,7 +1531,7 @@ int Solution::SpinUp( std::vector<double> &amb_Value, \
             #endif /* OMP */
             std::cout << " at time t = " << curr_Time_s/3600.0 << "\n";
 
-            if ( DEBUG ) {
+            if ( DBG ) {
                 std::cout << " ~~~ Printing reaction rates:\n";
                 for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
                     std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
