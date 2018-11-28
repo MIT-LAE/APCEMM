@@ -66,6 +66,9 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
     int i, j;
     int IERR = 1;
 
+    /* Did we break? */
+    bool BREAK = 0;
+
     /* Species considered for the optimization */
     int ind_OPT[NOPT] = {ind_NO, ind_NO2, ind_O3};
 
@@ -527,6 +530,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
                 if ( ( METRIC > METRIC_prev ) && ( METRIC < 2.0 * METRIC_ABS_MIN ) ){
                     IERR = 0;
+                    BREAK = 1;
                     break;
                 }
 
@@ -538,6 +542,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             
             if ( ( N > 4 ) && ( ABS( METRIC_OLD / METRIC - 1 ) < 1.00E-04 ) ) {
                 IERR = 0;
+                BREAK = 1;
                 break;
             }
 
@@ -594,6 +599,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             // if O3 delta smaller than 0.5 ppt and NOx delta smaller than 0.05 ppt
             if ( ABS((VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*TOPPT) < 0.1 && ABS((VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT) < 0.05 ) {
                 IERR = 0;
+                BREAK = 1;
                 break;
             }
 
@@ -848,10 +854,9 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 #pragma omp critical
         {
             #ifdef OMP
-                printf("\n ## ON THREAD: %d. Integration successful (METRIC: %e)\n", omp_get_thread_num(), METRIC_ABS_MIN);
-            #else
-                printf("\n Integration successful (METRIC: %e)\n", METRIC_ABS_MIN);
+                printf("\n ## ON THREAD: %d.", omp_get_thread_num());
             #endif /* OMP */
+            printf(" Integration successful (METRIC: %e), break = %d\n", METRIC_ABS_MIN, BREAK);
             printf(" ## O3 Delta : %+f [ppt], %f %% \n",(VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*TOPPT, 100.0 * ABS((VAR_RUN[ind_O3] - finalPlume[ind_O3]) / DELTAO3f_0));
             printf(" ## NOx Delta: %+f [ppt], %f %% \n",(VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT, 100.0 * ABS((VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/ ( DELTANOf_0 + DELTANO2f_0 )));
         }
