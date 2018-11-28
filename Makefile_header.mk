@@ -16,6 +16,9 @@
 # !REVISION HISTORY:
 # 03 Oct 2018 - T. Fritz - Initial version
 # 10 Oct 2018 - T. Fritz - Added Makefile flags
+# 28 Nov 2018 - T. Fritz - Fixed typo
+# 						   Added optimization flags
+# 						   Removed flags unrelevant to C/C++ code
 #------------------------------------------------------------------------------
 
 ###############################################################################
