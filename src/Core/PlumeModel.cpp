@@ -876,7 +876,8 @@ bool printDEBUG = 0;
                             std::cout << "Species " << iSpec << ": " << VAR[iSpec]/airDens*1.0E+09 << " [ppb]\n";
                         }
                     }
-
+                    
+                    delete sun; sun = NULL;
                     return KPP_FAIL;
                 }
                 
@@ -972,6 +973,7 @@ bool printDEBUG = 0;
                     }
                 }
 
+                delete sun; sun = NULL;
                 return KPP_FAIL;
             }
 
@@ -1047,6 +1049,7 @@ bool printDEBUG = 0;
                             }
                         }
 
+                        delete sun; sun = NULL;
                         return KPP_FAIL;
                     }
 
@@ -1112,6 +1115,7 @@ bool printDEBUG = 0;
                     }
                 }
 
+                delete sun; sun = NULL;
                 return KPP_FAIL;
             }
 
@@ -1594,6 +1598,7 @@ bool printDEBUG = 0;
                 }
             }
 
+            delete sun; sun = NULL;
             return KPP_FAIL;
         }
 
@@ -1626,8 +1631,9 @@ bool printDEBUG = 0;
     #endif /* RINGS */
 
     /* Clear dynamically allocated variable(s) */
-    sun->~SZA();
-
+    if ( sun != NULL )
+        sun->~SZA();
+    
     return SUCCESS;
 
 } /* End of PlumeModel */
