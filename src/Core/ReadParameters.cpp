@@ -54,9 +54,10 @@ std::vector<std::vector<double> > ReadParameters( )
 
     /* Temperature array in [K] */
 
-    for ( unsigned int i = 0; i < 31; i++ ) {
-        temperature_K.push_back( 200.0 + 2.0 * i );
-    }
+    temperature_K.push_back(220.0);
+//    for ( unsigned int i = 0; i < 31; i++ ) {
+//        temperature_K.push_back( 200.0 + 2.0 * i );
+//    }
 
     /* Pressure array in [Pa] */
 
@@ -80,7 +81,7 @@ std::vector<std::vector<double> > ReadParameters( )
 
     /* Emission time in [hrs] */
     emissionTime.push_back( 8.0 );
-    emissionTime.push_back( 20.0 );
+//    emissionTime.push_back( 20.0 );
 
 //    EI_NOx.push_back( 6.0E+00 );
 //    EI_NOx.push_back( 7.0E+00 );
@@ -88,9 +89,9 @@ std::vector<std::vector<double> > ReadParameters( )
 //    EI_NOx.push_back( 9.0E+00 );
     EI_NOx.push_back( 10.0E+00 );
 //    EI_NOx.push_back( 11.0E+00 );
-    EI_NOx.push_back( 12.0E+00 );
+//    EI_NOx.push_back( 12.0E+00 );
 //    EI_NOx.push_back( 13.0E+00 );
-    EI_NOx.push_back( 14.0E+00 );
+//    EI_NOx.push_back( 14.0E+00 );
 
     EI_CO.push_back( 0.0E+00 );
     EI_HC.push_back( 0.0E+00 );
@@ -100,14 +101,14 @@ std::vector<std::vector<double> > ReadParameters( )
 
 //    backgNOx.push_back( 102.9E-03 );
     backgNOx.push_back( 50.0E-03 );
-    backgNOx.push_back( 100.0E-03 );
-    backgNOx.push_back( 150.0E-03 );
-    backgNOx.push_back( 200.0E-03 );
+//    backgNOx.push_back( 100.0E-03 );
+//    backgNOx.push_back( 150.0E-03 );
+//    backgNOx.push_back( 200.0E-03 );
     backgHNO3.push_back( 81.5E-03 );
 //    backgO3.push_back( 55.0E+00 );
     backgO3.push_back( 50.0E+00 );
-    backgO3.push_back( 75.0E+00 );
-    backgO3.push_back( 100.0E+00 );
+//    backgO3.push_back( 75.0E+00 );
+//    backgO3.push_back( 100.0E+00 );
     backgCO.push_back( 42.6E+00 );
     backgCH4.push_back( 1.76E+03 );
 
@@ -668,6 +669,8 @@ std::vector<std::vector<double> > Copy_blocked( std::vector<std::vector<double> 
         }
     }
 
+    delete[] ind;
+
     return b;
 } /* End of Copy_blocked */
 
@@ -695,6 +698,8 @@ std::vector<std::vector<double> > Copy_interleaved( std::vector<std::vector<doub
             }
         }
     }
+
+    delete[] ind;
 
     return Reshape_Vector( b, mr, n*mc );
 
