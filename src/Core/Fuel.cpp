@@ -89,6 +89,9 @@ void Fuel::getAtoms( const char *fuelChem )
         tptr++;
     }
 
+    free((char*) temp); temp = NULL;
+//    free((unsigned char*) tptr); tptr = NULL;
+
     const char *atoms = {"hcns"}; 
     std::size_t found, next_found;
 
