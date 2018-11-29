@@ -44,7 +44,6 @@ int main( int , char* [] )
 
     std::vector<std::vector<double> > parameters;
     unsigned int iCase, nCases;
-    unsigned int jCase;
     const unsigned int iOFFSET = 0;
     
     const unsigned int model = 1;
@@ -112,7 +111,7 @@ int main( int , char* [] )
     #pragma omp parallel for schedule(dynamic, 1) shared(parameters, nCases)
     for ( iCase = 0; iCase < nCases; iCase++ ) {
 
-        jCase = iOFFSET + iCase;
+        unsigned int jCase = iOFFSET + iCase;
 
         std::string fullPath, fullPath_ADJ;
 
@@ -132,7 +131,7 @@ int main( int , char* [] )
         fullPath_ADJ = fullPath_ADJ + ".nc";
 
         bool fileExist = 0;
-        
+       
         #pragma omp critical 
         { fileExist = exist( fullPath_ADJ ); }
 
