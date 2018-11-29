@@ -336,14 +336,17 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
         dir    = (double *) malloc( sizeof(double) * NOPT );
         if ( dir == NULL ) {
             printf(" malloc of size %d failed!\n", NOPT);
+            free( wDiff ); wDiff = NULL;
             return -1;
         }
         dirold = (double *) malloc( sizeof(double) * NOPT );
         if ( dirold == NULL ) {
             printf(" malloc of size %d failed!\n", NOPT);
+            free( wDiff ); wDiff = NULL;
+            free( dir ); dir = NULL;
             return -1;
         }
-
+        
         double **A_mat; 
 
         A_mat = (double **) malloc( sizeof(double *) * NOPT );
@@ -351,6 +354,12 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             A_mat[i] = (double *) malloc( sizeof(double) * NOPT );
             if ( A_mat[i] == NULL ) {
                 printf(" malloc of size %d failed!\n", NOPT);
+                for ( j = 0; j < i; j++ )
+                    free( A_mat[j] );
+                free( A_mat );
+                free( wDiff ); wDiff = NULL;
+                free( dir ); dir = NULL;
+                free( dirold ); dirold = NULL;
                 return -1;
             }
         }
@@ -593,6 +602,12 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                 printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*TOPPT);
                 printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*TOPPB);
                 printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*TOPPB);
+                for ( j = 0; j < NOPT; j++ )
+                    free( A_mat[j] );
+                free( A_mat );
+                free( wDiff ); wDiff = NULL;
+                free( dir ); dir = NULL;
+                free( dirold ); dirold = NULL;
                 return IERR;
             }
             
@@ -652,6 +667,12 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                 printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*TOPPT);
                 printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*TOPPB);
                 printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*TOPPB);
+                for ( j = 0; j < NOPT; j++ )
+                    free( A_mat[j] );
+                free( A_mat );
+                free( wDiff ); wDiff = NULL;
+                free( dir ); dir = NULL;
+                free( dirold ); dirold = NULL;
                 return IERR;
             }
 
@@ -772,6 +793,12 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*TOPPT);
             printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*TOPPB);
             printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*TOPPB);
+            for ( j = 0; j < NOPT; j++ )
+                free( A_mat[j] );
+            free( A_mat );
+            free( wDiff ); wDiff = NULL;
+            free( dir ); dir = NULL;
+            free( dirold ); dirold = NULL;
             return IERR;
         }
                 
@@ -824,6 +851,12 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             printf(" [NO2](t = t0)   = %f [ppt]\n", VAR_INIT[ind_NO2]/airDens*TOPPT);
             printf(" [O3](t = t0)    = %f [ppb]\n", VAR_INIT[ind_O3]/airDens*TOPPB);
             printf(" [HNO3](t = t0)  = %f [ppb]\n", VAR_INIT[ind_HNO3]/airDens*TOPPB);
+            for ( j = 0; j < NOPT; j++ )
+                free( A_mat[j] );
+            free( A_mat );
+            free( wDiff ); wDiff = NULL;
+            free( dir ); dir = NULL;
+            free( dirold ); dirold = NULL;
             return IERR;
         }
                 
@@ -850,8 +883,14 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
         /* ---- OPTIMIZATION ENDS HERE ---------------------- */
 
+        for ( j = 0; j < NOPT; j++ )
+            free( A_mat[j] );
+        free( A_mat ); 
+        free( wDiff ); wDiff = NULL;
+        free( dir ); dir = NULL;
+        free( dirold ); dirold = NULL;
 
-#pragma omp critical
+        #pragma omp critical
         {
             #ifdef OMP
                 printf("\n ## ON THREAD: %d.", omp_get_thread_num());
@@ -862,6 +901,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
         }
 
     }
+
 
     return IERR;
 
