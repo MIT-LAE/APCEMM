@@ -130,9 +130,12 @@ int INTEGRATE( double VAR[] , double TIN   , double TOUT,
                double ATOL[], double RTOL[], double STEPMIN )
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 {
-   static double  RPAR[20];
-   static int  i, IERR, IPAR[20];
-   static int Ns=0, Na=0, Nr=0, Ng=0;
+    static double  RPAR[20];
+    static int  i, IERR, IPAR[20];
+    static int Ns=0, Na=0, Nr=0, Ng=0;
+    #pragma omp threadprivate( RPAR )
+    #pragma omp threadprivate( i, IERR, IPAR )
+    #pragma omp threadprivate( Ns, Na, Nr, Ng )
 
    for ( i = 0; i < 20; i++ ) {
      IPAR[i] = 0;
