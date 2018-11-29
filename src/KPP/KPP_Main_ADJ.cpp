@@ -611,8 +611,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                 return IERR;
             }
             
-            // if O3 delta smaller than 0.5 ppt and NOx delta smaller than 0.05 ppt
-            if ( ABS((VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*TOPPT) < 0.1 && ABS((VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT) < 0.05 ) {
+            // if O3 delta smaller than 0.5 ppt and NOx delta smaller than 0.01 ppt
+            if ( ABS((VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*TOPPT) < 0.1 && ABS((VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT) < 0.01 ) {
                 IERR = 0;
                 BREAK = 1;
                 break;
