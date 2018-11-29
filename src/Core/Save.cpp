@@ -3544,6 +3544,10 @@ namespace output
                 strncpy( charName, "O3 ambient mixing ratio", sizeof(charName) );
                 didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
 
+                delete[] spcArray; spcArray = NULL;
+                delete[] ambArray; ambArray = NULL;
+                delete[] adjArray; adjArray = NULL;
+
             #endif /* DO_SAVE_O3 */
 
             #if ( DO_SAVE_NO )
@@ -3577,6 +3581,10 @@ namespace output
                 strncpy( charSpc, "NO_Ambient", sizeof(charSpc) );
                 strncpy( charName, "NO ambient mixing ratio", sizeof(charName) );
                 didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] spcArray; spcArray = NULL;
+                delete[] ambArray; ambArray = NULL;
+                delete[] adjArray; adjArray = NULL;
 
             #endif /* DO_SAVE_NO */
 
@@ -3612,6 +3620,10 @@ namespace output
                 strncpy( charName, "NO2 ambient mixing ratio", sizeof(charName) );
                 didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
 
+                delete[] spcArray; spcArray = NULL;
+                delete[] ambArray; ambArray = NULL;
+                delete[] adjArray; adjArray = NULL;
+
             #endif /* DO_SAVE_NO2 */
 
             #if ( DO_SAVE_HNO3 )
@@ -3645,6 +3657,10 @@ namespace output
                 strncpy( charSpc, "HNO3_Ambient", sizeof(charSpc) );
                 strncpy( charName, "HNO3 ambient mixing ratio", sizeof(charName) );
                 didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] spcArray; spcArray = NULL;
+                delete[] ambArray; ambArray = NULL;
+                delete[] adjArray; adjArray = NULL;
 
             #endif /* DO_SAVE_HNO3 */
 
@@ -3681,12 +3697,12 @@ namespace output
                 strncpy( charName, "NOx ambient mixing ratio", sizeof(charName) );
                 didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
 
+                delete[] spcArray; spcArray = NULL;
+                delete[] ambArray; ambArray = NULL;
+                delete[] adjArray; adjArray = NULL;
+
             #endif /* DO_SAVE_NOx */
             
-            util::delete1D( spcArray );
-            util::delete1D( adjArray );
-            util::delete1D( ambArray );
-
 
             if ( didSaveSucceed == NC_SUCCESS ) {
 //                std::cout << " Done saving to netCDF!" << "\n";
