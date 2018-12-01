@@ -293,7 +293,7 @@ bool printDEBUG = 0;
 
     /* Define fuel */
     char const *ChemFormula("C12H24");
-    const Fuel JetA( ChemFormula );
+    Fuel JetA( ChemFormula );
 
     /* Define aircraft */
     char const *aircraftName("B747-800");
@@ -307,6 +307,7 @@ bool printDEBUG = 0;
     aircraft.setEI_Soot( input.EI_Soot() );
     aircraft.setSootRad( input.sootRad() );
     aircraft.setFuelFlow( input.fuelFlow() );
+    JetA.setFSC( input.EI_SO2() * (double) 500.0 );
 
 #endif /* APCEMM_LUT */
 
@@ -481,69 +482,68 @@ bool printDEBUG = 0;
 
 #pragma omp critical
     {
+
         #ifdef OMP
             std::cout << "\n\n ## ON THREAD: " << omp_get_thread_num() << "\n ##";
         #endif /* OMP */
+        const unsigned int coutPrecision = 5;
+        const unsigned int txtWidth      = coutPrecision + 2;
+        std::cout << std::setprecision(coutPrecision);
+        std::cout << "\n ## ATMOSPHERIC COND.:";
+        std::cout << "\n ##\n";
+        std::cout << " ## - Temperature: " << std::setw(txtWidth) << temperature_K          << " [  K]\n";
+        std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [hPa]\n";
+        std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [  %]\n";
+        std::cout << " ## - Latitude   : " << std::setw(txtWidth) << latitude_deg           << " [deg]\n";
+        std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [ - ]\n";
 
-        if ( printDEBUG ) {
-            const unsigned int coutPrecision = 5;
-            const unsigned int txtWidth      = coutPrecision + 2;
-            std::cout << std::setprecision(coutPrecision);
-            std::cout << "\n ## ATMOSPHERIC COND.:";
-            std::cout << "\n ##\n";
-            std::cout << " ## - Temperature: " << std::setw(txtWidth) << temperature_K          << " [  K]\n";
-            std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [hPa]\n";
-            std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [  %]\n";
-            std::cout << " ## - Latitude   : " << std::setw(txtWidth) << latitude_deg           << " [deg]\n";
-            std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [ - ]\n";
+        std::cout << "\n ## EMISSIONS:";
+        std::cout << "\n ##\n";
+        std::cout << " ## - E_CO2 = " << std::setw(txtWidth+3) << EI.getCO2() * aircraft.getFuelFlow() / aircraft.getVFlight()           << " [kg(CO2)/km]"\
+            " ( EI  = " << std::setw(txtWidth) << EI.getCO2() * 1.00E-03 << " [kg/kg_fuel] )\n";
+        std::cout << " ## - E_CO  = " << std::setw(txtWidth+3) << EI.getCO()  * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(CO) /km]"\
+            " ( EI  = " << std::setw(txtWidth) << EI.getCO()             << " [ g/kg_fuel] )\n";
+        std::cout << " ## - E_CH4 = " << std::setw(txtWidth+3) << EI.getCH4() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+06 << " [mg(CH4)/km]"\
+            " ( EI  = " << std::setw(txtWidth) << EI.getCH4() * 1.00E+03 << " [mg/kg_fuel] )\n";
+        std::cout << " ## - E_NOx = " << std::setw(txtWidth+3) << ( EI.getNO() / MW_NO + EI.getNO2() / MW_NO2 + EI.getHNO2() / MW_HNO2 ) * MW_N \
+                                                  * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(N)  /km]"\
+            " ( EI  = " << std::setw(txtWidth) << EI.getNOx()            << " [ g/kg_fuel] )\n";
+        std::cout << " ## - E_SO2 = " << std::setw(txtWidth+3) << EI.getSO2() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(SO2)/km]"\
+            " ( EI  = " << std::setw(txtWidth) << EI.getSO2()            << " [ g/kg_fuel] )\n";
+        std::cout << " ##                                   ( FSC = " << std::setw(txtWidth) << JetA.getFSC() << " [-]          )\n";
+        std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(Soo)/km]"\
+            " ( EI  = " << std::setw(txtWidth) << EI.getSoot()* 1.00E+03 << " [mg/kg_fuel] )\n";
+        std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) << " [ #(Soo)/km]"\
+            " ( GMD = " << std::setw(txtWidth) << 2.0 * EI.getSootRad() * 1.0E+09 << " [nm]         )\n";
 
-            std::cout << "\n ## EMISSIONS:";
-            std::cout << "\n ##\n";
-            std::cout << " ## - E_CO2 = " << std::setw(txtWidth+3) << EI.getCO2() * aircraft.getFuelFlow() / aircraft.getVFlight()           << " [kg(CO2)/km]"\
-                " ( EI  = " << std::setw(txtWidth) << EI.getCO2() * 1.00E-03 << " [kg/kg_fuel] )\n";
-            std::cout << " ## - E_CO  = " << std::setw(txtWidth+3) << EI.getCO()  * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(CO) /km]"\
-                " ( EI  = " << std::setw(txtWidth) << EI.getCO()             << " [ g/kg_fuel] )\n";
-            std::cout << " ## - E_CH4 = " << std::setw(txtWidth+3) << EI.getCH4() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+06 << " [mg(CH4)/km]"\
-                " ( EI  = " << std::setw(txtWidth) << EI.getCH4() * 1.00E+03 << " [mg/kg_fuel] )\n";
-            std::cout << " ## - E_NOx = " << std::setw(txtWidth+3) << ( EI.getNO() / MW_NO + EI.getNO2() / MW_NO2 + EI.getHNO2() / MW_HNO2 ) * MW_N \
-                                                      * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(N)  /km]"\
-                " ( EI  = " << std::setw(txtWidth) << EI.getNOx()            << " [ g/kg_fuel] )\n";
-            std::cout << " ## - E_SO2 = " << std::setw(txtWidth+3) << EI.getSO2() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(SO2)/km]"\
-                " ( EI  = " << std::setw(txtWidth) << EI.getSO2()            << " [ g/kg_fuel] )\n";
-            std::cout << " ##                                   ( FSC = " << std::setw(txtWidth) << JetA.getFSC() << " [-]          )\n";
-            std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(Soo)/km]"\
-                " ( EI  = " << std::setw(txtWidth) << EI.getSoot()* 1.00E+03 << " [mg/kg_fuel] )\n";
-            std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) << " [ #(Soo)/km]"\
-                " ( GMD = " << std::setw(txtWidth) << 2.0 * EI.getSootRad() * 1.0E+09 << " [nm]         )\n";
+        std::cout << "\n ## AEROSOLS:";
+        std::cout << "\n ##\n";
+        std::cout << " ## - LA : " << std::setw(txtWidth+3) << liquidAer.Moment() << " [#/cm^3], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.EffRadius() * 1.0E+09 << " [nm], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";
+        std::cout << " ##\n";
+        std::cout << " ## - PA : " << std::setw(txtWidth+3) << iceAer.Moment() << " [#/cm^3], \n";
+        if ( iceAer.Moment(2) > 0 )
+            std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.EffRadius() * 1.0E+06 << " [mum], \n";
+        else
+            std::cout << " ##        " << std::setw(txtWidth+3) << 0.0E+00 << " [mum], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";
 
-            std::cout << "\n ## AEROSOLS:";
-            std::cout << "\n ##\n";
-            std::cout << " ## - LA : " << std::setw(txtWidth+3) << liquidAer.Moment() << " [#/cm^3], \n";
-            std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.EffRadius() * 1.0E+09 << " [nm], \n";
-            std::cout << " ##        " << std::setw(txtWidth+3) << liquidAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";
-            std::cout << " ##\n";
-            std::cout << " ## - PA : " << std::setw(txtWidth+3) << iceAer.Moment() << " [#/cm^3], \n";
-            if ( iceAer.Moment(2) > 0 )
-                std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.EffRadius() * 1.0E+06 << " [mum], \n";
-            else
-                std::cout << " ##        " << std::setw(txtWidth+3) << 0.0E+00 << " [mum], \n";
-            std::cout << " ##        " << std::setw(txtWidth+3) << iceAer.Moment(2) * 1.0E+12 << " [mum^2/cm^3] \n";
+        std::cout << "\n ## BACKG COND.:";
+        std::cout << "\n ##\n";
+        std::cout << " ## - NOx  = " << std::setw(txtWidth) << ( VAR[ind_NO] + VAR[ind_NO2] ) / airDens * 1.0E+12 << " [ppt]\n";
+        std::cout << " ## - HNO3 = " << std::setw(txtWidth) << ( VAR[ind_HNO3] ) / airDens * 1.0E+12 << " [ppt]\n";
+        std::cout << " ## - O3   = " << std::setw(txtWidth) << ( VAR[ind_O3] )   / airDens * 1.0E+09 << " [ppb]\n";
+        std::cout << " ## - CO   = " << std::setw(txtWidth) << ( VAR[ind_CO] )   / airDens * 1.0E+09 << " [ppb]\n";
+        std::cout << " ##\n";
+        std::cout << " ## - LA : " << std::setw(txtWidth+3) << Data.LA_nDens << " [#/cm^3], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << Data.LA_rEff  << " [nm], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << Data.LA_SAD   << " [mum^2/cm^3] \n";
+        std::cout << " ##\n";
+        std::cout << " ## - PA : " << std::setw(txtWidth+3) << Data.PA_nDens << " [#/cm^3], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_rEff * 1.00E-03  << " [mum], \n";
+        std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_SAD   << " [mum^2/cm^3] \n";
 
-            std::cout << "\n ## BACKG COND.:";
-            std::cout << "\n ##\n";
-            std::cout << " ## - NOx  = " << std::setw(txtWidth) << ( VAR[ind_NO] + VAR[ind_NO2] ) / airDens * 1.0E+12 << " [ppt]\n";
-            std::cout << " ## - HNO3 = " << std::setw(txtWidth) << ( VAR[ind_HNO3] ) / airDens * 1.0E+12 << " [ppt]\n";
-            std::cout << " ## - O3   = " << std::setw(txtWidth) << ( VAR[ind_O3] )   / airDens * 1.0E+09 << " [ppb]\n";
-            std::cout << " ## - CO   = " << std::setw(txtWidth) << ( VAR[ind_CO] )   / airDens * 1.0E+09 << " [ppb]\n";
-            std::cout << " ##\n";
-            std::cout << " ## - LA : " << std::setw(txtWidth+3) << Data.LA_nDens << " [#/cm^3], \n";
-            std::cout << " ##        " << std::setw(txtWidth+3) << Data.LA_rEff  << " [nm], \n";
-            std::cout << " ##        " << std::setw(txtWidth+3) << Data.LA_SAD   << " [mum^2/cm^3] \n";
-            std::cout << " ##\n";
-            std::cout << " ## - PA : " << std::setw(txtWidth+3) << Data.PA_nDens << " [#/cm^3], \n";
-            std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_rEff * 1.00E-03  << " [mum], \n";
-            std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_SAD   << " [mum^2/cm^3] \n";
-        }
     }
 
 
