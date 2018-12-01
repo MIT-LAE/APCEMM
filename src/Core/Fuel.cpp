@@ -163,6 +163,14 @@ double Fuel::getFSC() const
 
 } /* End of Fuel::getFSC */
 
+void Fuel::setFSC( const double FSC_ )
+{
+
+    if ( FSC_ > 0.0E+00 )
+        FSC = FSC_;
+
+} /* End of Fuel::setFSC */
+
 std::string Fuel::getChemFormula() const
 {
 

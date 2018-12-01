@@ -33,6 +33,7 @@ class Fuel
         double getAtomN() const;
         double getAtomS() const;
         double getFSC() const;
+        void setFSC( const double FSC_ );
         std::string getChemFormula() const;
         
     protected:
