@@ -34,14 +34,16 @@ Input::Input( const RealDouble temperature_K, \
     EI_NOx_        ( emissionInput[0] ),
     EI_CO_         ( emissionInput[1] ),
     EI_HC_         ( emissionInput[2] ),
-    EI_Soot_       ( emissionInput[3] ),
-    sootRad_       ( emissionInput[4] ),
-    fuelFlow_      ( emissionInput[5] ),
+    EI_SO2_        ( emissionInput[3] ),
+    EI_Soot_       ( emissionInput[4] ),
+    sootRad_       ( emissionInput[5] ),
+    fuelFlow_      ( emissionInput[6] ),
     backgNOx_      ( backgMixRatio[0] ),
     backgHNO3_     ( backgMixRatio[1] ),
     backgO3_       ( backgMixRatio[2] ),
     backgCO_       ( backgMixRatio[3] ),
     backgCH4_      ( backgMixRatio[4] ),
+    backgSO2_      ( backgMixRatio[5] ),
     fileName_      ( fileName ),
     fileName_ADJ_  ( fileName_ADJ )
 {
@@ -87,6 +89,9 @@ Input::Input( const RealDouble temperature_K, \
     if ( EI_HC_ < 0.0E+00 || EI_HC_ > 1.0E+01 )
         std::cout << " In Input::Input: EI_HC takes an unrealisable value: EI_HC = " << EI_HC_ << " [g/kg_fuel]\n";
     
+    if ( EI_SO2_ < 0.0E+00 || EI_SO2_ > 1.0E+02 )
+        std::cout << " In Input::Input: EI_SO2 takes an unrealisable value: EI_SO2 = " << EI_SO2_ << " [g/kg_fuel]\n";
+    
     if ( EI_Soot_ < 0.0E+00 || EI_Soot_ > 2.0E-01 )
         std::cout << " In Input::Input: EI_Soot takes an unrealisable value: EI_Soot = " << EI_Soot_ << " [g/kg_fuel]\n";
     
@@ -110,6 +115,9 @@ Input::Input( const RealDouble temperature_K, \
     
     if ( backgCH4_ < 0.0E+00 || backgCH4_ > 1.0E+09 )
         std::cout << " In Input::Input: backgCH4 takes an unrealisable value: backgCH4 = " << backgCH4_ << " [ppb]\n";
+    
+    if ( backgSO2_ < 0.0E+00 || backgSO2_ > 1.0E+09 )
+        std::cout << " In Input::Input: backgSO2 takes an unrealisable value: backgCH4 = " << backgSO2_ << " [ppb]\n";
 
 } /* End of Input::Input */
 
@@ -127,14 +135,16 @@ Input::Input( unsigned int iCase,          \
     EI_NOx_        ( parameters[7][iCase] ),
     EI_CO_         ( parameters[8][iCase] ),
     EI_HC_         ( parameters[9][iCase] ),
-    EI_Soot_       ( parameters[10][iCase] ),
-    sootRad_       ( parameters[11][iCase] ),
-    fuelFlow_      ( parameters[12][iCase] ),
-    backgNOx_      ( parameters[13][iCase] ),
-    backgHNO3_     ( parameters[14][iCase] ),
-    backgO3_       ( parameters[15][iCase] ),
-    backgCO_       ( parameters[16][iCase] ),
-    backgCH4_      ( parameters[17][iCase] ),
+    EI_SO2_        ( parameters[10][iCase] ),
+    EI_Soot_       ( parameters[11][iCase] ),
+    sootRad_       ( parameters[12][iCase] ),
+    fuelFlow_      ( parameters[13][iCase] ),
+    backgNOx_      ( parameters[14][iCase] ),
+    backgHNO3_     ( parameters[15][iCase] ),
+    backgO3_       ( parameters[16][iCase] ),
+    backgCO_       ( parameters[17][iCase] ),
+    backgCH4_      ( parameters[18][iCase] ),
+    backgSO2_      ( parameters[19][iCase] ),
     fileName_      ( fileName ),
     fileName_ADJ_  ( fileName_ADJ )
 {
@@ -180,6 +190,9 @@ Input::Input( unsigned int iCase,          \
     if ( EI_HC_ < 0.0E+00 || EI_HC_ > 1.0E+01 )
         std::cout << " In Input::Input: EI_HC takes an unrealisable value: EI_HC = " << EI_HC_ << " [g/kg_fuel]\n";
     
+    if ( EI_SO2_ < 0.0E+00 || EI_SO2_ > 1.0E+02 )
+        std::cout << " In Input::Input: EI_SO2 takes an unrealisable value: EI_SO2 = " << EI_SO2_ << " [g/kg_fuel]\n";
+
     if ( EI_Soot_ < 0.0E+00 || EI_Soot_ > 2.0E-01 )
         std::cout << " In Input::Input: EI_Soot takes an unrealisable value: EI_Soot = " << EI_Soot_ << " [g/kg_fuel]\n";
     
@@ -203,6 +216,9 @@ Input::Input( unsigned int iCase,          \
     
     if ( backgCH4_ < 0.0E+00 || backgCH4_ > 1.0E+09 )
         std::cout << " In Input::Input: backgCH4 takes an unrealisable value: backgCH4 = " << backgCH4_ << " [ppb]\n";
+    
+    if ( backgSO2_ < 0.0E+00 || backgSO2_ > 1.0E+09 )
+        std::cout << " In Input::Input: backgSO2 takes an unrealisable value: backgCH4 = " << backgSO2_ << " [ppb]\n";
 
 } /* End of Input::Input */
 
