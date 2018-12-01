@@ -30,6 +30,7 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
                                            const std::vector<double>& EI_NOx,        \
                                            const std::vector<double>& EI_CO,         \
                                            const std::vector<double>& EI_HC,         \
+                                           const std::vector<double>& EI_SO2,        \
                                            const std::vector<double>& EI_Soot,       \
                                            const std::vector<double>& SootRad,       \
                                            const std::vector<double>& ff,            \
@@ -37,16 +38,17 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
                                            const std::vector<double>& backgHNO3,     \
                                            const std::vector<double>& backgO3,       \
                                            const std::vector<double>& backgCO,       \
-                                           const std::vector<double>& backgCH4 );
+                                           const std::vector<double>& backgCH4,      \
+                                           const std::vector<double>& backgSO2 );
 
 std::vector<std::vector<double> > ReadParameters( )
 {
 
     std::vector<double> temperature_K, pressure_Pa, relHumidity_w, longitude_deg, latitude_deg;
-    std::vector<double> EI_NOx, EI_CO, EI_HC, EI_Soot, SootRad, ff;
+    std::vector<double> EI_NOx, EI_CO, EI_HC, EI_SO2, EI_Soot, SootRad, ff;
     std::vector<double> dayGMT;
     std::vector<double> emissionTime;
-    std::vector<double> backgNOx, backgHNO3, backgO3, backgCO, backgCH4;
+    std::vector<double> backgNOx, backgHNO3, backgO3, backgCO, backgCH4, backgSO2;
 
     std::vector<std::vector<double> > parameters;
 
@@ -54,14 +56,14 @@ std::vector<std::vector<double> > ReadParameters( )
 
     /* Temperature array in [K] */
 
-    temperature_K.push_back(220.0);
-//    for ( unsigned int i = 0; i < 31; i++ ) {
-//        temperature_K.push_back( 200.0 + 2.0 * i );
-//    }
+    for ( unsigned int i = 0; i < 31; i++ ) {
+        temperature_K.push_back( 200.0 + 2.0 * i );
+    }
 
     /* Pressure array in [Pa] */
 
-    pressure_Pa.push_back( 240.0E2 );
+    pressure_Pa.push_back( 200.0E2 );
+    pressure_Pa.push_back( 220.0E2 );
 
     /* Relative humidity w.r.t liquid water array in [\%] */
 
@@ -81,20 +83,24 @@ std::vector<std::vector<double> > ReadParameters( )
 
     /* Emission time in [hrs] */
     emissionTime.push_back( 8.0 );
-//    emissionTime.push_back( 20.0 );
+    emissionTime.push_back( 20.0 );
 
 //    EI_NOx.push_back( 6.0E+00 );
 //    EI_NOx.push_back( 7.0E+00 );
     EI_NOx.push_back( 8.0E+00 );
 //    EI_NOx.push_back( 9.0E+00 );
-    EI_NOx.push_back( 10.0E+00 );
+//    EI_NOx.push_back( 10.0E+00 );
 //    EI_NOx.push_back( 11.0E+00 );
 //    EI_NOx.push_back( 12.0E+00 );
 //    EI_NOx.push_back( 13.0E+00 );
 //    EI_NOx.push_back( 14.0E+00 );
 
-    EI_CO.push_back( 0.0E+00 );
-    EI_HC.push_back( 0.0E+00 );
+    EI_CO.push_back( 0.5E+00 );
+    EI_CO.push_back( 1.0E+00 );
+    EI_CO.push_back( 1.5E+00 );
+    EI_CO.push_back( 2.0E+00 );
+    EI_HC.push_back( 0.6E+00 );
+    EI_SO2.push_back( 0.8E+00 );
     EI_Soot.push_back( 0.0E+00 );
     SootRad.push_back( 0.0E+00 );
     ff.push_back( 0.0E+00 );
@@ -109,8 +115,12 @@ std::vector<std::vector<double> > ReadParameters( )
     backgO3.push_back( 50.0E+00 );
 //    backgO3.push_back( 75.0E+00 );
 //    backgO3.push_back( 100.0E+00 );
-    backgCO.push_back( 42.6E+00 );
+    backgCO.push_back( 20.0E+00 );
+    backgCO.push_back( 40.0E+00 );
+    backgCO.push_back( 60.0E+00 );
+    backgCO.push_back( 80.0E+00 );
     backgCH4.push_back( 1.76E+03 );
+    backgSO2.push_back( 7.25E-03 );
 
     parameters = CombVec( temperature_K, \
                           pressure_Pa,   \
@@ -122,6 +132,7 @@ std::vector<std::vector<double> > ReadParameters( )
                           EI_NOx,        \
                           EI_CO,         \
                           EI_HC,         \
+                          EI_SO2,        \
                           EI_Soot,       \
                           SootRad,       \
                           ff,            \
@@ -129,7 +140,8 @@ std::vector<std::vector<double> > ReadParameters( )
                           backgHNO3,     \
                           backgO3,       \
                           backgCO,       \
-                          backgCH4 );
+                          backgCH4,      \
+                          backgSO2 );
 
     /* For debug */
     if ( false ) {
@@ -157,6 +169,7 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
                                            const std::vector<double>& EI_NOx,        \
                                            const std::vector<double>& EI_CO,         \
                                            const std::vector<double>& EI_HC,         \
+                                           const std::vector<double>& EI_SO2,         \
                                            const std::vector<double>& EI_Soot,       \
                                            const std::vector<double>& SootRad,       \
                                            const std::vector<double>& ff,            \
@@ -164,7 +177,8 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
                                            const std::vector<double>& backgHNO3,     \
                                            const std::vector<double>& backgO3,       \
                                            const std::vector<double>& backgCO,       \
-                                           const std::vector<double>& backgCH4 )
+                                           const std::vector<double>& backgCH4,      \
+                                           const std::vector<double>& backgSO2 )
 {
     std::vector<std::vector<double> > combinations;
 
@@ -432,6 +446,32 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
         y[counter-1][i] = v[0][i];
     }
 
+    /* z = EI_SO2 */
+    z.push_back(std::vector<double>(EI_SO2.size()));
+    for ( i = 0; i < EI_SO2.size(); i++ )
+        z[0][i] = EI_SO2[i];
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ ) {
+        y[i].clear();
+    }
+    z[0].clear();
+    y.clear(); z.clear();
+
+    nCases *= EI_SO2.size();
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(std::vector<double>( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ ) {
+            y[j][i] = u[j][i];
+        }
+        y[counter-1][i] = v[0][i];
+    }
+
     /* z = EI_Soot */
     z.push_back(std::vector<double>(EI_Soot.size()));
     for ( i = 0; i < EI_Soot.size(); i++ )
@@ -629,6 +669,32 @@ std::vector<std::vector<double> > CombVec( const std::vector<double>& temperatur
     y.clear(); z.clear();
 
     nCases *= backgCH4.size();
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(std::vector<double>( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ ) {
+            y[j][i] = u[j][i];
+        }
+        y[counter-1][i] = v[0][i];
+    }
+    
+    /* z = backgSO2 */
+    z.push_back(std::vector<double>(backgSO2.size()));
+    for ( i = 0; i < backgSO2.size(); i++ )
+        z[0][i] = backgSO2[i];
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ ) {
+        y[i].clear();
+    }
+    z[0].clear();
+    y.clear(); z.clear();
+
+    nCases *= backgSO2.size();
     counter += 1;
     for ( i = 0; i < counter; i++ )
         y.push_back(std::vector<double>( nCases ));
