@@ -120,7 +120,8 @@ namespace EPM
 
         const AIM::Coagulation Kernel( "liquid", SO4_rJ, SO4_vJ, physConst::RHO_SULF, temperature_K, pressure_Pa );
         const AIM::Coagulation Kernel_SO4_Soot( "liquid", SO4_rJ, physConst::RHO_SULF, EI.getSootRad(), physConst::RHO_SOOT, temperature_K, pressure_Pa );
-        static const Vector_1D KernelSO4Soot = Kernel_SO4_Soot.getKernel_1D();
+       
+        const Vector_1D KernelSO4Soot = Kernel_SO4_Soot.getKernel_1D();
 
         /* For debug purposes */
         if ( DEBUG_COAGKERNEL )
@@ -136,7 +137,8 @@ namespace EPM
 
         /* Type of sulfate distribution */
         /* lognormal distribution */
-        static AIM::Aerosol nPDF_SO4( SO4_rJ, SO4_rE, nSO4, rSO4, sSO4, "lognormal" );
+        thread_local static AIM::Aerosol nPDF_SO4( SO4_rJ, SO4_rE, nSO4, rSO4, sSO4, "lognormal" );
+
         /* normal distribution */
         // AIM::Aerosol nPDF_SO4( SO4_rJ, SO4_rE, nSO4, rSO4, sSO4, "normal" );
         /* power distribution */
@@ -238,6 +240,9 @@ namespace EPM
             const RealDouble sticking_SO4;
             const RealDouble sigma_SO4;
 
+            const Vector_1D KernelSO4Soot;
+
+
             private:
 
             public:
@@ -245,7 +250,7 @@ namespace EPM
                 gas_aerosol_rhs( RealDouble temperature_K, RealDouble pressure_Pa, RealDouble delta_T, \
                                  RealDouble H2O_molcm3, RealDouble SO4_molcm3, RealDouble SO4l_molcm3, \
                                  RealDouble SO4g_molcm3, RealDouble HNO3_molcm3, RealDouble part_cm3, \
-                                 RealDouble part_r0 ):
+                                 RealDouble part_r0, Vector_1D Kernel_ ):
                     m_temperature_K( temperature_K ),
                     m_pressure_Pa( pressure_Pa ),
                     m_delta_T( delta_T ),
@@ -257,7 +262,8 @@ namespace EPM
                     m_part_cm3( part_cm3 ),
                     m_part_r0( part_r0 ),
                     sticking_SO4( 1.0 ),
-                    sigma_SO4( 5.0E+14 )
+                    sigma_SO4( 5.0E+14 ),
+                    KernelSO4Soot( Kernel_ )
                 {
 
                     /* Default Constructor */
@@ -437,7 +443,7 @@ namespace EPM
         EPM::streamingObserver observer( obs_Var, obs_Time, EPM_ind, "/home/fritzt/CAPCEMM/data/Micro.out", 1 );
 
         /* Creating ode's right hand side */
-        gas_aerosol_rhs rhs( temperature_K, pressure_Pa, delta_T, H2O_amb, SO4_amb, SO4l_amb, SO4g_amb, HNO3_amb, Soot_amb, EI.getSootRad() );
+        gas_aerosol_rhs rhs( temperature_K, pressure_Pa, delta_T, H2O_amb, SO4_amb, SO4l_amb, SO4g_amb, HNO3_amb, Soot_amb, EI.getSootRad(), KernelSO4Soot ); 
 
         /* Total number of steps */
         UInt totSteps = 0;
@@ -459,7 +465,6 @@ namespace EPM
         RealDouble SO4l_3mins = 0;
         RealDouble SO4g_3mins = 0;
         RealDouble Tracer_3mins = 0;
-//        AIM::Aerosol *pSO4pdf_3mins;
         AIM::Aerosol pSO4pdf_3mins( nPDF_SO4 );
 
         iTime = 0;

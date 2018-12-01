@@ -19,6 +19,7 @@
 #include <vector>
 #include <boost/array.hpp>
 #include <boost/numeric/odeint.hpp>
+#include "omp.h"
 
 #include "Util/ForwardDecl.hpp"
 #include "Util/PhysConstant.hpp"
