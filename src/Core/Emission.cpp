@@ -170,7 +170,7 @@ void Emission::Populate_withFuel( const Fuel &fuel )
     CO2 *= 1000; /* [ g/kg fuel ]*/
     H2O *= 1000; /* [ g/kg fuel ]*/
     /* getFSC from fuel */
-    SO2 = fuel.getFSC() / 2.0 / 1000.0;
+    SO2 = fuel.getFSC() * 2.0 / 1000.0;
 
 } /* End of Emission::Populate_withFuel */
 
