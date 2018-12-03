@@ -3460,6 +3460,8 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "CO EI"          , 1, "float", "g/kg_fuel"  , "CO Emission index" );
             value = input.EI_HC();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "HC EI"          , 1, "float", "g/kg_fuel"  , "HC Emission index" );
+            value = input.EI_SO2();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "SO2 EI"          , 1, "float", "g/kg_fuel"  , "SO2 Emission index" );
             value = input.EI_Soot();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Soot EI"        , 1, "float", "g/kg_fuel"  , "Soot Emission index" );
             value = input.sootRad();
@@ -3476,6 +3478,8 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background CO"  , 1, "float", "ppb"  , "Background CO mixing ratio" );
             value = input.backgCH4();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background CH4" , 1, "float", "ppb"  , "Background CH4 mixing ratio" );
+            value = input.backgSO2();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background SO2" , 1, "float", "ppb"  , "Background SO2 mixing ratio" );
 
             didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim, "float", "-", "Cosine of the solar zenith angle" );
 
@@ -3512,6 +3516,37 @@ namespace output
             char charName[50];
             char charUnit[20];
                
+
+            #if ( DO_SAVE_SO2 )
+
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ )
+                    plumeData[iNt] = ringAverage[iNt][ind_SO2];
+               
+                #if ( SAVE_TO_DOUBLE )
+                    spcArray = util::vect2double( plumeData      , NT, scalingFactor );
+                    ambArray = util::vect2double( ambientData.SO2 , NT, scalingFactor );
+                #else
+                    spcArray = util::vect2float ( plumeData      , NT, scalingFactor );
+                    ambArray = util::vect2float ( ambientData.SO2 , NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "SO2_Plume", sizeof(charSpc) );
+                strncpy( charName, "SO2 plume-averaged mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "SO2_Ambient", sizeof(charSpc) );
+                strncpy( charName, "SO2 ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] spcArray; spcArray = NULL;
+                delete[] ambArray; ambArray = NULL;
+                delete[] adjArray; adjArray = NULL;
+
+            #endif /* DO_SAVE_SO2 */
 
             #if ( DO_SAVE_O3 )
 
