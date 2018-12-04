@@ -467,8 +467,12 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
         while ( N < N_MAX ) {
 
-            if ( verbose )
+            if ( verbose ) {
+                #ifdef OMP
+                    printf("\n ## ON THREAD: %d.", omp_get_thread_num());
+                #endif /* OMP */
                 printf("\nN: %d, METRIC: %6.5e, Ratio, %e\n\n", N, METRIC, METRIC_OLD/METRIC);
+            }
 
             METRIC_OLD = METRIC;
 
@@ -537,7 +541,11 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
                 j++;
 
-                if ( ( METRIC > METRIC_prev ) && ( METRIC < 2.0 * METRIC_ABS_MIN ) ){
+                if ( ( METRIC > METRIC_prev ) && ( METRIC < 2.0 * METRIC_ABS_MIN ) \
+                        && ( VAR_RUN[ind_NO] > 0.0E+00 ) \
+                        && ( VAR_RUN[ind_NO2] > 0.0E+00 ) \
+                        && ( VAR_RUN[ind_O3] > 0.0E+00 ) \
+                        && ( VAR_RUN[ind_HNO3] > 0.0E+00 ) ){
                     IERR = 0;
                     BREAK = 1;
                     break;
