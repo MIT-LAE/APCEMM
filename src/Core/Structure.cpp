@@ -158,6 +158,11 @@ void Solution::Initialize( char const *fileName, const Input &input, \
         /* Convert from ppb to mixing ratio */
         amb_Value[ind_CH4] = input.backgCH4() / 1.0E+09;
     }
+    
+    if ( input.backgSO2() > 0.0E+00 ) {
+        /* Convert from ppb to mixing ratio */
+        amb_Value[ind_SO2] = input.backgSO2() / 1.0E+09;
+    }
 
 
     /* Gaseous species */
