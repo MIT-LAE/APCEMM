@@ -3519,17 +3519,17 @@ namespace output
 
             #if ( DO_SAVE_SO2 )
 
-                scalingFactor = TO_PPB;
-                strncpy( charUnit, "ppb", sizeof(charUnit) );
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
 
                 for ( unsigned int iNt = 0; iNt < NT; iNt++ )
                     plumeData[iNt] = ringAverage[iNt][ind_SO2];
                
                 #if ( SAVE_TO_DOUBLE )
-                    spcArray = util::vect2double( plumeData      , NT, scalingFactor );
+                    spcArray = util::vect2double( plumeData       , NT, scalingFactor );
                     ambArray = util::vect2double( ambientData.SO2 , NT, scalingFactor );
                 #else
-                    spcArray = util::vect2float ( plumeData      , NT, scalingFactor );
+                    spcArray = util::vect2float ( plumeData       , NT, scalingFactor );
                     ambArray = util::vect2float ( ambientData.SO2 , NT, scalingFactor );
                 #endif /* SAVE_TO_DOUBLE */
 
