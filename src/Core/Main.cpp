@@ -16,6 +16,11 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <cstdio>
+#include <ctime>
+#include <unistd.h>
+#include <limits.h>
 #ifdef OMP
     #include "omp.h"
 #endif /* OMP */
@@ -27,7 +32,8 @@
 
 static int DIR_FAIL = -9;
 
-void PrintMessage( bool doPrint );
+void CreateREADME( const std::string folder, const std::string fileName, \
+                   const std::string purpose );
 std::vector<std::vector<double> > ReadParameters( );
 int PlumeModel( const Input &inputCase );
 
@@ -38,6 +44,7 @@ inline bool exist( const std::string &name )
     return (stat (name.c_str(), &buffer) == 0 );
 
 } /* End of exist */
+
 
 int main( int , char* [] )
 {
@@ -66,7 +73,7 @@ int main( int , char* [] )
     if (!(stat( OUT_PATH.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
         const int dir_err = mkdir( OUT_PATH.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
         if ( dir_err == -1 ) {
-            std::cout << " Could not create directory: " << OUT_PATH << "" << std::endl;
+            std::cout << " Could not create directory: " << OUT_PATH << "Pressure-Temperature dependency" << std::endl;
             return DIR_FAIL; 
         }
     }
@@ -74,10 +81,8 @@ int main( int , char* [] )
 
     #pragma omp master
     {
-        const bool doPrint = false;
-
-        /* Print welcome message */
-        PrintMessage( doPrint );
+        /* Create README */
+        CreateREADME( OUT_PATH, "README", "" );
 
         /* Read in parameters */
         parameters = ReadParameters();
@@ -214,18 +219,37 @@ int main( int , char* [] )
 
 } /* End of Main */
 
-void PrintMessage( bool doPrint )
+void CreateREADME( const std::string folder, const std::string fileName, const std::string purpose )
 {
-    std::string welcomeMessage, authorsMessage;
 
-    welcomeMessage = "\n\n\
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\
-            ~~~~~~~~                                  ~~~~~~~~\n\
-            ~~~~~~~~             APCEMM               ~~~~~~~~\n\
-            ~~~~~~~~                                  ~~~~~~~~\n\
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\0";
+    std::ofstream README;
+    const std::string fullPath = folder + "/" + fileName;
+    README.open( fullPath.c_str() );
+
+    README << "############################################################################\
+             \n############################################################################\
+             \n###                                                                      ###\
+             \n###                             APCEMM                                   ###\
+             \n###                               --                                     ###\
+             \n###   A(ircraft) P(lume) C(hemistry) E(mission) M(icrophysics) M(odel)   ###\
+             \n###                                                                      ###\
+             \n###                                                                      ###\
+             \n###   Version: 5.0                                                       ###\
+             \n###   Author : Thibaud M. Fritz                                          ###\
+             \n###   Contact: Thibaud M. Fritz (fritzt@mit.edu),                        ###\
+             \n###            Sebastian D. Eastham (seastham@mit.edu)                   ###\
+             \n###                                                                      ###\
+             \n############################################################################\
+             \n############################################################################\
+             \n###                                                                      ###\
+             \n###   This project was funded by NASA and developed at                   ###\
+             \n###   the laboratory for Aviation and the Environment,                   ###\
+             \n###   Massachusetts Institute of Technology,                             ###\
+             \n###   Cambridge, MA, USA                                                 ###\
+             \n###                                                                      ###\
+             \n############################################################################\
+             \n############################################################################\n\n";
+
 
 /*
                             _\
@@ -239,23 +263,41 @@ void PrintMessage( bool doPrint )
                                       /____/\0
 */
 
-    authorsMessage = "\
-            \n   Version: 5.0\n\
-            \n   Author: Thibaud M. Fritz (fritzt@mit.edu),\
-            \n     with contributions from:\
-            \n         - Sebastian D. Eastham (seastham@mit.edu),\
-            \n         - Raymond L. Speth (speth@mit.edu).\n\
-            \n   Corresponding author: Sebastian D. Eastham (seastham@mit.edu)\n\
-            \n   This project was funded by NASA and developed at \
-            \n   the Laboratory for Aviation and the Environment,\
-            \n   Department of Aeronautics and Astronautics\
-            \n   Massachusetts Institute of Technology\
-            \n   Cambridge, MA, USA\n\0";
+    /* Print simulation start date */
+    std::time_t rawtime;
+    std::tm* timeinfo;
+    std::time(&rawtime);
+    timeinfo = std::localtime(&rawtime);
 
-    std::cout << welcomeMessage << std::endl;
+    char buffer[50];
+    std::strftime(buffer,50,"%m/%d/%Y %H:%M",timeinfo);
+    README << "\n## Simulation start date " << buffer << "\n";
 
-    if ( doPrint )
-        std::cout << authorsMessage << std::endl;
+    /* Print source code directory */
+    char cwd[PATH_MAX];
+    getcwd(cwd, sizeof(cwd));
+    if ( cwd != NULL )
+        README << "\n## Source files: " << cwd << "\n";
+    else
+        std::cout << "\n Failed to get current working directory" << std::endl;
+
+    /* Print destination folder */
+    README << "\n## Destination folder: " << folder << "\n";
+
+    /* Getting hostname and username */
+    char hostname[HOST_NAME_MAX]; 
+    char username[LOGIN_NAME_MAX]; 
+    gethostname(hostname, HOST_NAME_MAX); 
+    getlogin_r(username, LOGIN_NAME_MAX);
+    README << "\n## Running as " << username << " on " << hostname << "\n";
+
+    /* Printing purpose */
+    README << "\n## Purpose: " << purpose;
+
+    /* Print empty lines and force flush */
+    README << "\n\n\n" << std::endl;
+
+    README.close();
 
 } /* End of PrintMessage */
 
