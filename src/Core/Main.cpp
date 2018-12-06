@@ -69,11 +69,12 @@ int main( int , char* [] )
      *              Plume Model
      */
     
+    /* Create output directory */
     struct stat sb;
     if (!(stat( OUT_PATH.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
         const int dir_err = mkdir( OUT_PATH.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
         if ( dir_err == -1 ) {
-            std::cout << " Could not create directory: " << OUT_PATH << "Pressure-Temperature dependency" << std::endl;
+            std::cout << " Could not create directory: " << OUT_PATH << std::endl;
             return DIR_FAIL; 
         }
     }
@@ -81,8 +82,10 @@ int main( int , char* [] )
 
     #pragma omp master
     {
+
         /* Create README */
-        CreateREADME( OUT_PATH, "README", "" );
+        const std::string description = "T-P-CO coupled effects on NOx-O3 effective emission indices";
+        CreateREADME( OUT_PATH, "README", description );
 
         /* Read in parameters */
         parameters = ReadParameters();
@@ -95,6 +98,7 @@ int main( int , char* [] )
     /* Synchronize the threads */
     #pragma omp barrier
 
+    /* Print number of cases considered */
     #pragma omp single
     {
         #ifdef OMP 
@@ -112,6 +116,9 @@ int main( int , char* [] )
 
     /* Synchronize the threads */
     #pragma omp barrier
+
+
+    /* ---- CASE LOOP STARTS HERE ---------- */
 
     #pragma omp parallel for schedule(dynamic, 1) shared(parameters, nCases)
     for ( iCase = 0; iCase < nCases; iCase++ ) {
@@ -215,7 +222,10 @@ int main( int , char* [] )
 
     }
     
+    /* ---- CASE LOOP ENDS HERE ---------- */
+    
     return 0;
+
 
 } /* End of Main */
 
