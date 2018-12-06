@@ -590,7 +590,7 @@ bool printDEBUG = 0;
             std::cout << "\n";
             std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size();
             #ifdef OMP
-                std::cout << ", " << omp_get_thread_num();
+                std::cout << " (thread: " << omp_get_thread_num() << ")";
             #endif /* OMP */
             std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]";
         }
@@ -1610,16 +1610,17 @@ bool printDEBUG = 0;
     }
 
     #if ( SAVE_ADJOINT )
-       
     {
-        isSaved = output::Write_Adjoint( input.fileName_ADJ2char(), \
-                                         ringSpecies, ambientData,  \
-                                         adjointData,               \
-                                         ringArea, totArea,         \
-                                         timeArray,                 \
-                                         input,                     \
-                                         airDens, relHumidity_i );
-
+        #pragma omp critical
+        {
+            isSaved = output::Write_Adjoint( input.fileName_ADJ2char(), \
+                                             ringSpecies, ambientData,  \
+                                             adjointData,               \
+                                             ringArea, totArea,         \
+                                             timeArray,                 \
+                                             input,                     \
+                                             airDens, relHumidity_i );
+        }
         if ( isSaved == output::SAVE_FAILURE ) {
             std::cout << " Saving to adjoint data to file failed...\n";
             return SAVE_FAIL;
