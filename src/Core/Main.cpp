@@ -223,7 +223,9 @@ int main( int , char* [] )
     }
     
     /* ---- CASE LOOP ENDS HERE ---------- */
-    
+   
+    std::cout << "\n All cases have been completed!" << std::endl;
+
     return 0;
 
 
