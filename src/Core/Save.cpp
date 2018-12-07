@@ -3412,6 +3412,7 @@ namespace output
                        const double &airDens, const double &relHumidity_i )
     {
 
+        std::cout << " Starting to save adjoint output!" << std::endl;
         const bool doWrite = 1;
         const bool doRead = 1;
         const bool overWrite = 1;
@@ -3436,7 +3437,7 @@ namespace output
             didSaveSucceed *= fileHandler.addAtt( currFile, "FileName", fileHandler.getFileName() );
             didSaveSucceed *= fileHandler.addAtt( currFile, "Author", "Thibaud M. Fritz (fritzt@mit.edu)" );
             didSaveSucceed *= fileHandler.addAtt( currFile, "Contact", "Thibaud M. Fritz (fritzt@mit.edu)" );
-            didSaveSucceed *= fileHandler.addAtt( currFile, "GenerationDate", buffer );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Generation Date", buffer );
             didSaveSucceed *= fileHandler.addAtt( currFile, "Format", "NetCDF-4" );
 
             double value = 0.0E+00;
@@ -3516,37 +3517,6 @@ namespace output
             char charName[50];
             char charUnit[20];
                
-
-            #if ( DO_SAVE_SO2 )
-
-                scalingFactor = TO_PPT;
-                strncpy( charUnit, "ppt", sizeof(charUnit) );
-
-                for ( unsigned int iNt = 0; iNt < NT; iNt++ )
-                    plumeData[iNt] = ringAverage[iNt][ind_SO2];
-               
-                #if ( SAVE_TO_DOUBLE )
-                    spcArray = util::vect2double( plumeData       , NT, scalingFactor );
-                    ambArray = util::vect2double( ambientData.SO2 , NT, scalingFactor );
-                #else
-                    spcArray = util::vect2float ( plumeData       , NT, scalingFactor );
-                    ambArray = util::vect2float ( ambientData.SO2 , NT, scalingFactor );
-                #endif /* SAVE_TO_DOUBLE */
-
-
-                strncpy( charSpc, "SO2_Plume", sizeof(charSpc) );
-                strncpy( charName, "SO2 plume-averaged mixing ratio", sizeof(charName) );
-                didSaveSucceed *= fileHandler.addVar( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
-
-                strncpy( charSpc, "SO2_Ambient", sizeof(charSpc) );
-                strncpy( charName, "SO2 ambient mixing ratio", sizeof(charName) );
-                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
-
-                delete[] spcArray; spcArray = NULL;
-                delete[] ambArray; ambArray = NULL;
-
-            #endif /* DO_SAVE_SO2 */
-
             #if ( DO_SAVE_O3 )
 
                 scalingFactor = TO_PPB;
