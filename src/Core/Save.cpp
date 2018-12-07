@@ -3544,7 +3544,6 @@ namespace output
 
                 delete[] spcArray; spcArray = NULL;
                 delete[] ambArray; ambArray = NULL;
-                delete[] adjArray; adjArray = NULL;
 
             #endif /* DO_SAVE_SO2 */
 
