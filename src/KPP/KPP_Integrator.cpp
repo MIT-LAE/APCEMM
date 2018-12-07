@@ -329,7 +329,7 @@ int Rosenbrock(double Y[], double Tstart, double Tend,
    
   /*~~~>   The maximum number of steps admitted */
    if (IPAR[2] == 0)  
-      Max_no_steps = 100000;
+      Max_no_steps = 500000;
    else                
       Max_no_steps=IPAR[2];
    if (Max_no_steps < 0) { 
