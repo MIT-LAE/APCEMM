@@ -143,9 +143,15 @@ int main( int , char* [] )
         fullPath_ADJ = fullPath_ADJ + ".nc";
 
         bool fileExist = 0;
-       
-        #pragma omp critical 
-        { fileExist = exist( fullPath_ADJ ); }
+
+        #if ( ADJOINT )
+            #pragma omp critical
+            { fileExist = exist( fullPath_ADJ ); }
+        #else
+            #pragma omp critical
+            { fileExist = exist( fullPath ); }
+        #endif /* ADJOINT */
+
 
         if ( !fileExist || REBUILD ) {
             
