@@ -77,6 +77,34 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Sun Rise"   , 1, "float", "hrs", "Local sun rise" );
             value = sunSet;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Sun Set"    , 1, "float", "hrs", "Local sun set" );
+            value = input.emissionTime();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Time"  , 1, "float", "hr"  , "Emission time" );
+            value = input.EI_NOx();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "NOx EI"         , 1, "float", "g/kg_fuel"  , "NOx Emission index" );
+            value = input.EI_CO();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "CO EI"          , 1, "float", "g/kg_fuel"  , "CO Emission index" );
+            value = input.EI_HC();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "HC EI"          , 1, "float", "g/kg_fuel"  , "HC Emission index" );
+            value = input.EI_SO2();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "SO2 EI"          , 1, "float", "g/kg_fuel"  , "SO2 Emission index" );
+            value = input.EI_Soot();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Soot EI"        , 1, "float", "g/kg_fuel"  , "Soot Emission index" );
+            value = input.sootRad();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Soot Radius"    , 1, "float", "g/kg_fuel"  , "Soot radius" );
+            value = input.fuelFlow();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Fuel flow"      , 1, "float", "kg/s"  , "Engine fuel flow" );
+            value = input.backgNOx();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background NOx" , 1, "float", "ppb"  , "Background NOx mixing ratio" );
+            value = input.backgHNO3();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background HNO3", 1, "float", "ppb"  , "Background HNO3 mixing ratio" );
+            value = input.backgO3();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background O3"  , 1, "float", "ppb"  , "Background O3 mixing ratio" );
+            value = input.backgCO();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background CO"  , 1, "float", "ppb"  , "Background CO mixing ratio" );
+            value = input.backgCH4();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background CH4" , 1, "float", "ppb"  , "Background CH4 mixing ratio" );
+            value = input.backgSO2();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background SO2" , 1, "float", "ppb"  , "Background SO2 mixing ratio" );
 
             didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim, "float", "-", "Cosine of the solar zenith angle" );
 
