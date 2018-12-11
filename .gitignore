@@ -37,14 +37,15 @@ Thumbs.db
 # Some Shell files #
 ####################
 *.sh
-!APCEMM.sh
+!*APCEMM*.sh
 
 # Folders #
 ###########
-build
-trash
-lib/*
-debug/*
+Code*/build
+Code*/trash
+Code*/lib*
+Code*/debug*
+doc*
 
 # netCDF files #
 ################

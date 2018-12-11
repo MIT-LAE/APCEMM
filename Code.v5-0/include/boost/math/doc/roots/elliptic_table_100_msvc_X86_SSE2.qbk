@@ -1,0 +1,20 @@
+[/./../../../libs/math/doc/roots/elliptic_table_100_msvc_X86_SSE2.qbk
+Copyright 2015 Paul A. Bristow.
+Copyright 2015 John Maddock.
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at
+http://www.boost.org/LICENSE_1_0.txt).
+]
+
+
+[h6 Program [@../../example/root_elliptic_finding.cpp root_elliptic_finding.cpp],
+ Microsoft Visual C++ version 14.1, Dinkumware standard library version 650, Win32
+Compiled in optimise mode., _X86_SSE2]
+[table:elliptic root with radius 28 and arc length 300) for float, double, long double and cpp_bin_float_50 types, using _X86_SSE2
+[[][float][][][] [][double][][][] [][long d][][][] [][cpp50][][]]
+[[Algo     ][Its][Times][Norm][Dis][ ][Its][Times][Norm][Dis][ ][Its][Times][Norm][Dis][ ][Its][Times][Norm][Dis][ ]]
+[[TOMS748  ][  6][  875][1.44][  0][ ][  9][ 1328][1.67][  1][ ][  9][ 1328][1.67][  1][ ][ 11][987500][1.47][ -3][ ]]
+[[Newton   ][  3][  781][1.28][ -1][ ][  4][  984][1.24][  1][ ][  4][  984][1.24][  1][ ][  5][801562][1.19][  0][ ]]
+[[Halley   ][  2][  609][[role blue 1.00]][  0][ ][  3][  796][[role blue 1.00]][  3][ ][  3][  796][[role blue 1.00]][  3][ ][  4][671875][[role blue 1.00]][  0][ ]]
+[[Schr'''&#xf6;'''der][  3][  796][1.31][ -1][ ][  6][ 1453][1.83][  1][ ][  6][ 1453][1.83][  1][ ][  5][843750][1.26][ -2][ ]]
+] [/end of table root]
