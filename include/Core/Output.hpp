@@ -128,7 +128,7 @@
 #define DO_SAVE_MEK                     0 /* Save MEK      */
 #define DO_SAVE_ClO                     0 /* Save ClO      */
 #define DO_SAVE_MACR                    0 /* Save MACR     */
-#define DO_SAVE_SO2                     0 /* Save SO2      */
+#define DO_SAVE_SO2                     1 /* Save SO2      */
 #define DO_SAVE_MVK                     0 /* Save MVK      */
 #define DO_SAVE_ALD2                    0 /* Save ALD2     */
 #define DO_SAVE_MCO3                    0 /* Save MCO3     */
