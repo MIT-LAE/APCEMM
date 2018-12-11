@@ -75,6 +75,7 @@
 #  20 Oct 2018 - T. Fritz - Included OMP_NUM_THREADS in slurm
 #                           environments
 #  21 Oct 2018 - T. Fritz - Pipe output to log
+#  11 Dec 2018 - T. Fritz - Created run directories
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -92,22 +93,32 @@ export OMP_NUM_THREADS=$omp_threads
 # Initialize
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Define version ID
-id="APCEMM"
-
-# Define APCEMM log file
-log="$id.log"
-
 # Define current directory
 currDir=${PWD##}
 
+if [[ -e ${currDir}/APCEMM ]]; then
+    rm ${currDir}/APCEMM
+fi
+
+log=$PWD/log.build
+if [[ -e ${currDir}/$log ]]; then
+    rm ${currDir}/$log
+fi
+
+make realclean
+if [ "$OMP_NUM_THREADS" -eq "1" ]; then
+    make -j4 spbuild 2>&1 | tee $log
+else
+    make -j4 mpbuild 2>&1 | tee $log
+fi
+
 # Change this to point to the APCEMM binary file
-export exepath=${currDir}/APCEMM.sh
+export exepath=${currDir}/APCEMM
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Start the simulation
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Run APCEMM and pipe output to log
+# Run APCEMM
 echo 'Running on' $OMP_NUM_THREADS 'core(s)'
 echo 'Host computer: ' `hostname`
 echo 'Initiation date and time: ' `date +%c`
