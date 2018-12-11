@@ -52,22 +52,28 @@ std::vector<std::vector<double> > ReadParameters( )
 
     std::vector<std::vector<double> > parameters;
 
-    /* Emission indices */
+    /* #######################################
+     * ## Ambient meteorological conditions ## 
+     * ####################################### */
 
     /* Temperature array in [K] */
 
-    for ( unsigned int i = 0; i < 31; i++ ) {
-        temperature_K.push_back( 200.0 + 2.0 * i );
-    }
+    temperature_K.push_back( 220.0 );
+//    for ( unsigned int i = 0; i < 31; i++ ) {
+//        temperature_K.push_back( 200.0 + 2.0 * i );
+//    }
 
     /* Pressure array in [Pa] */
 
-    pressure_Pa.push_back( 200.0E2 );
     pressure_Pa.push_back( 220.0E2 );
 
     /* Relative humidity w.r.t liquid water array in [\%] */
 
     relHumidity_w.push_back( 30.0 );
+
+    /* #######################
+     * ## Coord. (lon-lat)  ## 
+     * ####################### */
 
     /* Longitude array expressed in deg */
 
@@ -77,48 +83,66 @@ std::vector<std::vector<double> > ReadParameters( )
 
     latitude_deg.push_back( 60.0 );
 
-    /* Emission date */
+    /* #######################
+     * ## Emiss day (0-365) ## 
+     * ####################### */
 
     dayGMT.push_back( 81.0 );
 
-    /* Emission time in [hrs] */
+    /* #######################
+     * ## Emiss time  [hrs] ## 
+     * ####################### */
+
     emissionTime.push_back( 8.0 );
     emissionTime.push_back( 20.0 );
 
-//    EI_NOx.push_back( 6.0E+00 );
-//    EI_NOx.push_back( 7.0E+00 );
-    EI_NOx.push_back( 8.0E+00 );
-//    EI_NOx.push_back( 9.0E+00 );
-//    EI_NOx.push_back( 10.0E+00 );
-//    EI_NOx.push_back( 11.0E+00 );
-//    EI_NOx.push_back( 12.0E+00 );
-//    EI_NOx.push_back( 13.0E+00 );
-//    EI_NOx.push_back( 14.0E+00 );
+    /* ####################### 
+     * ## EMISSION INDICES  ##
+     * ####################### */
 
-    EI_CO.push_back( 0.5E+00 );
+    EI_NOx.push_back( 1.0E-05 );
+    EI_NOx.push_back( 1.0E+01 );
+
+//    EI_CO.push_back( 0.5E+00 );
     EI_CO.push_back( 1.0E+00 );
-    EI_CO.push_back( 1.5E+00 );
-    EI_CO.push_back( 2.0E+00 );
+//    EI_CO.push_back( 1.5E+00 );
+//    EI_CO.push_back( 2.0E+00 );
+
     EI_HC.push_back( 0.6E+00 );
+    
     EI_SO2.push_back( 0.8E+00 );
+    EI_SO2.push_back( 1.2E+00 );
+    EI_SO2.push_back( 2.0E+00 );
+    EI_SO2.push_back( 1.0E+01 );
+    EI_SO2.push_back( 2.0E+01 );
+    EI_SO2.push_back( 1.0E+02 );
+    
     EI_Soot.push_back( 0.0E+00 );
+    
     SootRad.push_back( 0.0E+00 );
+    
     ff.push_back( 0.0E+00 );
 
-//    backgNOx.push_back( 102.9E-03 );
+    /* #######################
+     * ## BACKGRD MIX RATIO ##
+     * ####################### */
+
     backgNOx.push_back( 50.0E-03 );
 //    backgNOx.push_back( 100.0E-03 );
 //    backgNOx.push_back( 150.0E-03 );
 //    backgNOx.push_back( 200.0E-03 );
+    
     backgHNO3.push_back( 81.5E-03 );
-//    backgO3.push_back( 55.0E+00 );
+
     backgO3.push_back( 50.0E+00 );
 //    backgO3.push_back( 75.0E+00 );
 //    backgO3.push_back( 100.0E+00 );
-    backgCO.push_back( 20.0E+00 );
+
+//    backgCO.push_back( 20.0E+00 );
     backgCO.push_back( 40.0E+00 );
-    backgCO.push_back( 60.0E+00 );
-    backgCO.push_back( 80.0E+00 );
+//    backgCO.push_back( 60.0E+00 );
+//    backgCO.push_back( 80.0E+00 );
+    
     backgCH4.push_back( 1.76E+03 );
     backgSO2.push_back( 7.25E-03 );
 
