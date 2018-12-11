@@ -22,7 +22,7 @@
 
 # Logs #
 ########
-*.log
+*log*
 *.sql
 *.out
 
