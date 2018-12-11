@@ -24,6 +24,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "Core/Interface.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "KPP/KPP_Global.h"
 #include "KPP/KPP_Sparse.h"
