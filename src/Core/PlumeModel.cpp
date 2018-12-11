@@ -719,13 +719,13 @@ bool printDEBUG = 0;
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
         /* Compute SO4_l fraction */
-        for ( iNx = 0; iNx < NX; iNx++ ) {
-            for ( jNy = 0; jNy < NY; jNy++ ) {
-                frac_gSO4 = H2SO4_GASFRAC( temperature_K, Data.SO4[jNy][iNx] );
-                Data.SO4L[jNy][iNx] = ( 1.0 - frac_gSO4 ) * Data.SO4T[jNy][iNx];
-                Data.SO4[jNy][iNx]  = Data.SO4T[jNy][iNx] - Data.SO4L[jNy][iNx];
-            }
-        }
+//        for ( iNx = 0; iNx < NX; iNx++ ) {
+//            for ( jNy = 0; jNy < NY; jNy++ ) {
+//                frac_gSO4 = H2SO4_GASFRAC( temperature_K, Data.SO4[jNy][iNx] );
+//                Data.SO4L[jNy][iNx] = ( 1.0 - frac_gSO4 ) * Data.SO4T[jNy][iNx];
+//                Data.SO4[jNy][iNx]  = Data.SO4T[jNy][iNx] - Data.SO4L[jNy][iNx];
+//            }
+//        }
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~ Update cosine of solar zenight angle ~~~~~ **/
