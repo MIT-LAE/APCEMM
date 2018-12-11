@@ -36,8 +36,8 @@ Thumbs.db
 
 # Some Shell files #
 ####################
-*.sh
-!*APCEMM*.sh
+*.mp
+*.sp
 
 # Folders #
 ###########
