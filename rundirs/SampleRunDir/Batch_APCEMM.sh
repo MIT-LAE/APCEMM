@@ -21,7 +21,7 @@
 # 2000M will allow allow all 12 processors on a node with 24000M of
 # RAM to be utilized, while specifying 2G (=2048M) would only allow 11
 # of the processors to be used.
-#SBATCH --mem-per-cpu=1500M
+#SBATCH --mem-per-cpu=2000M
 
 # Number of nodes to utilize
 #SBATCH -N 1
@@ -118,13 +118,18 @@ export exepath=${currDir}/APCEMM
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Start the simulation
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Run APCEMM
+
+log=$PWD/log.run
+
+# Run APCEMM and pipe output to log file
+echo ''
 echo 'Running on' $OMP_NUM_THREADS 'core(s)'
 echo 'Host computer: ' `hostname`
 echo 'Initiation date and time: ' `date +%c`
-srun -c $OMP_NUM_THREADS time -p $exepath
+srun -c $OMP_NUM_THREADS time -p $exepath 2>&1 | tee $log
 
 # Echo end
+echo ''
 echo 'Run ended at ' `date +%c`
 
 # Report additional information if job was killed because of memory limit

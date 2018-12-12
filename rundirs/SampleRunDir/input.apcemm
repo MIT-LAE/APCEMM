@@ -1,0 +1,81 @@
+APCEMM SIMULATION
+------------------------+------------------------------------------------------
+%%% SIMULATION MENU %%% :
+Parameter sweep?        : T
+Output folder           : /path/to/folder
+Run directory           : ./
+Input backgrd condition : /net/d04/data/fritzt/APCEMM_data/init.txt
+Save forward results    : F
+ => netCDF file name    : APCEMM_Case_*
+Turn on adjoint optim.  : T
+ => netCDF file name    : APCEMM_ADJ_Case_*
+------------------------+------------------------------------------------------
+%%% PARAMETER SWEEP %%% :
+Parameter entries --->  : Format is either 200 220 240 or 200:20:240
+Meteorological parameter:
+ => Temperature [K]     : 200:2:260
+ => R.Hum. wrt water [%]: 30
+Geographical parameters :
+ => LAT [deg]           : +60
+ => LON [deg]           : -15 
+ => Pressure [hPa]      : 200:20:300
+ => Emission day [1-365]: 81
+ => Emission time [0-24]: 8
+Background mix. ratios  :
+ => NOx  [ppt]          : 50:50:200
+ => HNO3 [ppt]          : 81.5
+ => O3   [ppb]          : 50:50:200
+ => CO   [ppb]          : 20 40 60 80
+ => CH4  [ppm]          : 1.76
+ => SO2  [ppt]          : 7.25
+Emission indices        :
+ => NOx  [g/kg_fuel]    : 10
+ => CO   [g/kg_fuel]    : 1
+ => UHC  [g/kg_fuel]    : 0.6
+ => SO2  [g/kg_fuel]    : 1.0
+ => Soot [g/kg_fuel]    : 0.0
+ => Soot Radius [m]     : 20.0E-09
+ => SO2 to SO4 conv [%] : 5
+------------------------+------------------------------------------------------
+%%% TRANSPORT MENU %%%  :
+Turn on Transport?      : T
+ => Fill Negative Values: T
+Convect Timestep [min]  : 10
+------------------------+------------------------------------------------------
+%%% CHEMISTRY MENU %%%  :
+Turn on Chemistry?      : T
+Use ring structure?     : T
+Read in J-Rates?        : T
+Chemistry Timestep [min]: 10
+------------------------+------------------------------------------------------
+%%% AEROSOL MENU %%%    :
+Turn on grav. settling? : T
+Turn on coagulation?    : F
+ => Coag. timestep [min]: 60
+Turn on ice growth?     : T
+Turn on plume sinking?  : T
+------------------------+------------------------------------------------------
+%%% METEOROLOGY MENU %%%:
+Initialize T from MET?  : F
+Initialize H2O form MET?: F
+------------------------+------------------------------------------------------
+%%% DIAGNOSTIC MENU %%% :
+netCDF file name        : trac_avg.apcemm.hhmm
+Diagnostic Entries ---> : L
+------------------------+------------------------------------------------------
+%%% TIMESERIES MENU %%% :
+Save species timeseries?: F
+ => Inst timeseries file: ts_hhmm.nc
+ => Species to include  : O3
+ => Frequency [min]     : 10
+Save aerosol timeseries?: F
+ => Inst timeseries file: ts_aerosol_hhmm.nc
+ => Aerosol to include  : ice
+ => Frequency [min]     : 10
+------------------------+------------------------------------------------------
+%%% PROD & LOSS MENU %%%:
+Turn on P/L diag?       : F
+Save O3 P/L?            : F
+------------------------+------------------------------------------------------
+END OF FILE             :
+------------------------+------------------------------------------------------
