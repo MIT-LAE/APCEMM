@@ -38,6 +38,7 @@ Thumbs.db
 ####################
 *.mp
 *.sp
+rundirs/*/APCEMM
 
 # Folders #
 ###########
