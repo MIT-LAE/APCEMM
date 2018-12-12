@@ -26,6 +26,8 @@
 #endif /* OMP */
 #include <sys/stat.h>
 
+#include "Core/Input_Mod.hpp"
+#include "Core/ReadInput.hpp"
 #include "Core/Interface.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Input.hpp"
@@ -45,8 +47,8 @@ inline bool exist( const std::string &name )
 
 } /* End of exist */
 
-
-int main( int , char* [] )
+//int main( int argc, char* argv[] )
+int main( int , char* )
 {
 
     std::vector<std::vector<double> > parameters;
@@ -54,6 +56,9 @@ int main( int , char* [] )
     const unsigned int iOFFSET = 0;
     
     const unsigned int model = 1;
+
+    /* Declaring the Input Option object for use in APCEMM */
+    OptInput Input_Opt; // Input Option object
 
     /*
      * model = 0 -> Box Model
@@ -69,29 +74,34 @@ int main( int , char* [] )
      *              Plume Model
      */
     
-    /* Create output directory */
-    struct stat sb;
-    if (!(stat( OUT_PATH.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
-        const int dir_err = mkdir( OUT_PATH.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
-        if ( dir_err == -1 ) {
-            std::cout << " Could not create directory: " << OUT_PATH << std::endl;
-            return DIR_FAIL; 
-        }
-    }
 
 
     #pragma omp master
     {
 
-        /* Create README */
-        const std::string description = "T-P-CO coupled effects on NOx-O3 effective emission indices";
-        CreateREADME( OUT_PATH, "README", description );
-
+        /* Read in input file */
+        Read_Input_File( Input_Opt );
+        
         /* Read in parameters */
         parameters = ReadParameters();
 
         /* Number of cases */
         nCases  = parameters[0].size();
+        
+        /* Create output directory */
+        struct stat sb;
+        if (!(stat( OUT_PATH.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
+            const int dir_err = mkdir( OUT_PATH.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+            if ( dir_err == -1 ) {
+                std::cout << " Could not create directory: " << OUT_PATH << std::endl;
+                std::cout << " You may not have write permission" << std::endl;
+                exit(1);
+            }
+        }
+        
+        /* Create README */
+        const std::string description = "";
+        CreateREADME( OUT_PATH, "README", description );
 
     }
 
@@ -118,9 +128,11 @@ int main( int , char* [] )
     #pragma omp barrier
 
 
+    /* ===================================== */
     /* ---- CASE LOOP STARTS HERE ---------- */
+    /* ===================================== */
 
-    #pragma omp parallel for schedule(dynamic, 1) shared(parameters, nCases)
+    #pragma omp parallel for schedule(dynamic, 1) shared(Input_Opt, parameters, nCases)
     for ( iCase = 0; iCase < nCases; iCase++ ) {
 
         unsigned int jCase = iOFFSET + iCase;
@@ -228,9 +240,15 @@ int main( int , char* [] )
 
     }
     
-    /* ---- CASE LOOP ENDS HERE ---------- */
+    /* ===================================== */
+    /* ---- CASE LOOP ENDS HERE ------------ */
+    /* ===================================== */
    
     std::cout << "\n All cases have been completed!" << std::endl;
+
+    /* ===================================== */
+    /* ---- END NORMALLY ------------------- */
+    /* ===================================== */
 
     return 0;
 
