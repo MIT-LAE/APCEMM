@@ -181,6 +181,8 @@ Fuel.o              : Fuel.cpp
 
 Input.o             : Input.cpp
 
+Input_Mod.o         : Input_Mod.cpp
+
 LiquidAer.o         : LiquidAer.cpp
 
 Main.o              : Main.cpp
@@ -190,6 +192,8 @@ Mesh.o              : Mesh.cpp
 Meteorology.o       : Meteorology.cpp
 
 PlumeModel.o        : PlumeModel.cpp
+
+ReadInput.o         : ReadInput.cpp
 
 ReadParameters.o    : ReadParameters.cpp
 
