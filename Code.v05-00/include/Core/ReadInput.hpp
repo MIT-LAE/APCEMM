@@ -18,10 +18,14 @@
 #include <fstream>
 #include <cstring>
 #include <algorithm>
+#include <cstdlib>
 
-void Read_Input_File( const char* fileName );
+#include "Core/Input_Mod.hpp"
+
+void Read_Input_File( OptInput &Input_Opt );
 std::vector<std::string> Split_Line( std::string line2split, const std::string delimiter );
-void Read_Simulation_Menu( Option &Input_Opt, bool RC );
+void Read_Simulation_Menu( OptInput &Input_Opt, bool RC );
+void Read_Parameters( OptInput &Input_Opt, bool RC );
 
 #endif /* INPUT_READER_H_INCLUDED */
 
