@@ -25,8 +25,11 @@
 
 void Read_Input_File( OptInput &Input_Opt );
 std::vector<std::string> Split_Line( std::string line2split, const std::string delimiter );
-void Read_Simulation_Menu( OptInput &Input_Opt, bool RC );
-void Read_Parameters( OptInput &Input_Opt, bool RC );
+void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC );
+void Read_Parameters( OptInput &Input_Opt, bool &RC );
+void Read_Transport_Menu( OptInput &Input_Opt, bool &RC );
+void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC );
+void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC );
 
 #endif /* INPUT_READER_H_INCLUDED */
 
