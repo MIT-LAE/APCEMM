@@ -195,8 +195,6 @@ PlumeModel.o        : PlumeModel.cpp
 
 ReadInput.o         : ReadInput.cpp
 
-ReadParameters.o    : ReadParameters.cpp
-
 Ring.o              : Ring.cpp
 
 Save.o              : Save.cpp
