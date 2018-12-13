@@ -15,10 +15,11 @@ Parameter entries --->  : Format is either 200 220 240 or 200:20:240
 Meteorological parameter:
  => Temperature [K]     : 200 220 240
  => R.Hum. wrt water [%]: 30
-Geographical parameters :
+Geographical location   :
  => LON [deg]           : -15
  => LAT [deg]           : +60
  => Pressure [hPa]      : 200:20:300
+Time of emission        :
  => Emission day [1-365]: 81
  => Emission time [0-24]: 8
 Background mix. ratios  :
@@ -34,8 +35,9 @@ Emission indices        :
  => UHC  [g/kg_fuel]    : 0.6
  => SO2  [g/kg_fuel]    : 1.0
  => SO2 to SO4 conv [%] : 5
- => Soot [g/kg_fuel]    : 0.0
+ => Soot [g/kg_fuel]    : 0.02
  => Soot Radius [m]     : 20.0E-09
+Total fuel flow [kg/s]  : 3.2
 ------------------------+------------------------------------------------------
 %%% TRANSPORT MENU %%%  :
 Turn on Transport?      : T
@@ -44,7 +46,7 @@ Convect Timestep [min]  : 10
 ------------------------+------------------------------------------------------
 %%% CHEMISTRY MENU %%%  :
 Turn on Chemistry?      : T
-Use ring structure?     : T
+ => Use ring structure? : T
 Read in J-Rates?        : T
 Chemistry Timestep [min]: 10
 ------------------------+------------------------------------------------------
@@ -53,7 +55,7 @@ Turn on grav. settling? : T
 Turn on coagulation?    : F
  => Coag. timestep [min]: 60
 Turn on ice growth?     : T
-Turn on plume sinking?  : T
+Turn on plume updraft?  : F
 ------------------------+------------------------------------------------------
 %%% METEOROLOGY MENU %%%:
 Initialize T from MET?  : F
