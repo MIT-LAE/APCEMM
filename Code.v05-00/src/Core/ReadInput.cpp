@@ -350,11 +350,11 @@ void Read_Parameters( OptInput &Input_Opt, bool RC )
         std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
         exit(1);
     }
-    
+   
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
-    Input_Opt.PARAMETER_TEMPERATURE_UNIT = unit.c_str();
+    Input_Opt.PARAMETER_TEMPERATURE_UNIT.assign( unit );
 
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         Input_Opt.PARAMETER_TEMPERATURE.push_back(std::stod(tokens[i]));
@@ -407,7 +407,7 @@ void Read_Parameters( OptInput &Input_Opt, bool RC )
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
-    Input_Opt.PARAMETER_RHW_UNIT = unit.c_str();
+    Input_Opt.PARAMETER_RHW_UNIT.assign( unit );
 
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         Input_Opt.PARAMETER_RHW.push_back(std::stod(tokens[i]));
@@ -416,7 +416,6 @@ void Read_Parameters( OptInput &Input_Opt, bool RC )
 
     getline( inputFile, line, '\n' );
     
-    std::cout << "  => Temperature [" << Input_Opt.PARAMETER_TEMPERATURE_UNIT << "]     : ";
     /* ==================================================== */
     /* Longitude                                            */
     /* ==================================================== */
@@ -426,12 +425,8 @@ void Read_Parameters( OptInput &Input_Opt, bool RC )
     if ( VERBOSE )
         std::cout << line << std::endl;
 
-    std::cout << "  => Temperature [" << Input_Opt.PARAMETER_TEMPERATURE_UNIT << "]     : ";
-    std::cout << line << std::endl;
     subline = line.substr(FIRSTCOL);
-    std::cout << "  => Temperature [" << Input_Opt.PARAMETER_TEMPERATURE_UNIT << "]     : ";
     found = subline.find( COLON );
-    std::cout << "  => Temperature [" << Input_Opt.PARAMETER_TEMPERATURE_UNIT << "]     : ";
     if ( found != std::string::npos) {
         subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
         tokens = Split_Line( subline, COLON );
@@ -460,7 +455,6 @@ void Read_Parameters( OptInput &Input_Opt, bool RC )
         }
         Input_Opt.PARAMETER_LONGITUDE_RANGE = 0;
     }
-    std::cout << "  => Temperature [" << Input_Opt.PARAMETER_TEMPERATURE_UNIT << "]     : ";
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
         std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
         exit(1);
@@ -469,14 +463,12 @@ void Read_Parameters( OptInput &Input_Opt, bool RC )
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
-    Input_Opt.PARAMETER_LONGITUDE_UNIT = unit.c_str();
-    std::cout << "  => Temperature [" << Input_Opt.PARAMETER_TEMPERATURE_UNIT << "]     : ";
+    Input_Opt.PARAMETER_LONGITUDE_UNIT.assign( unit );
 
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         Input_Opt.PARAMETER_LONGITUDE.push_back(std::stod(tokens[i]));
     }
 
-    std::cout << "  => Temperature [" << Input_Opt.PARAMETER_TEMPERATURE_UNIT << "]     : ";
     /* ==================================================== */
     /* Latitude                                             */
     /* ==================================================== */
@@ -524,13 +516,12 @@ void Read_Parameters( OptInput &Input_Opt, bool RC )
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
-    Input_Opt.PARAMETER_LATITUDE_UNIT = unit.c_str();
+    Input_Opt.PARAMETER_LATITUDE_UNIT.assign( unit );
 
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         Input_Opt.PARAMETER_LATITUDE.push_back(std::stod(tokens[i]));
     }
     
-    std::cout << "  => Temperature [" << Input_Opt.PARAMETER_TEMPERATURE_UNIT << "]     : ";
     /* ==================================================== */
     /* Pressure                                             */
     /* ==================================================== */
@@ -578,12 +569,119 @@ void Read_Parameters( OptInput &Input_Opt, bool RC )
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
-    Input_Opt.PARAMETER_PRESSURE_UNIT = unit.c_str();
+    Input_Opt.PARAMETER_PRESSURE_UNIT.assign( unit );
 
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         Input_Opt.PARAMETER_PRESSURE.push_back(std::stod(tokens[i]));
     }
 
+    /* ==================================================== */
+    /* Emission day                                         */
+    /* ==================================================== */
+
+    variable = "Emission day";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    subline = line.substr(FIRSTCOL);
+    found = subline.find( COLON );
+    if ( found != std::string::npos) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        tokens = Split_Line( subline, COLON );
+        if (tokens.size() != 3) {
+            std::cout << " Wrong input for " << variable << std::endl;
+            std::cout << " Expected format is: " << std::endl;
+            std::cout << "   --> begin:step:end" << std::endl;
+            std::cout << "       or" << std::endl;
+            std::cout << "   --> val1 val2 val3 ..." << std::endl;
+            exit(1);
+        }
+        if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+             ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+             ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+            std::cout << " Wrong input for " << variable << std::endl;
+            std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_EDAY_RANGE = 1;
+    } 
+    else {
+        tokens = Split_Line( subline, SPACE );
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for" << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_EDAY_RANGE = 0;
+    }
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        exit(1);
+    }
+    
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_EDAY_UNIT.assign( unit );
+
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        Input_Opt.PARAMETER_EDAY.push_back(std::stoi(tokens[i]) % 365);
+    }
+
+    /* ==================================================== */
+    /* Emission time                                         */
+    /* ==================================================== */
+
+    variable = "Emission time";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    subline = line.substr(FIRSTCOL);
+    found = subline.find( COLON );
+    if ( found != std::string::npos) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        tokens = Split_Line( subline, COLON );
+        if (tokens.size() != 3) {
+            std::cout << " Wrong input for " << variable << std::endl;
+            std::cout << " Expected format is: " << std::endl;
+            std::cout << "   --> begin:step:end" << std::endl;
+            std::cout << "       or" << std::endl;
+            std::cout << "   --> val1 val2 val3 ..." << std::endl;
+            exit(1);
+        }
+        if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+             ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+             ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+            std::cout << " Wrong input for " << variable << std::endl;
+            std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_ETIME_RANGE = 1;
+    } 
+    else {
+        tokens = Split_Line( subline, SPACE );
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for" << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_ETIME_RANGE = 0;
+    }
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        exit(1);
+    }
+    
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_ETIME_UNIT.assign( unit );
+
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        Input_Opt.PARAMETER_ETIME.push_back(std::fmod(std::stod(tokens[i]),2.40E+01));
+    }
+    
+    getline( inputFile, line, '\n' );
 
     /* Return success */
     RC = SUCCESS; 
@@ -611,7 +709,7 @@ void Read_Parameters( OptInput &Input_Opt, bool RC )
             std::cout << Input_Opt.PARAMETER_RHW[i] << " ";
         std::cout << std::endl;
     }
-    std::cout << " Geographical parameters   :" << std::endl;
+    std::cout << " Geographical parameters :" << std::endl;
     std::cout << "  => LON [" << Input_Opt.PARAMETER_LONGITUDE_UNIT << "]           : ";
     if ( Input_Opt.PARAMETER_LONGITUDE_RANGE )
         std::cout << Input_Opt.PARAMETER_LONGITUDE[0] << ":" << Input_Opt.PARAMETER_LONGITUDE[1] << ":" << Input_Opt.PARAMETER_LONGITUDE[2] << std::endl;
@@ -620,7 +718,7 @@ void Read_Parameters( OptInput &Input_Opt, bool RC )
             std::cout << Input_Opt.PARAMETER_LONGITUDE[i] << " ";
         std::cout << std::endl;
     }
-    std::cout << "  => LAT [" << Input_Opt.PARAMETER_LATITUDE_UNIT << "]            : ";
+    std::cout << "  => LAT [" << Input_Opt.PARAMETER_LATITUDE_UNIT << "]           : ";
     if ( Input_Opt.PARAMETER_LATITUDE_RANGE )
         std::cout << Input_Opt.PARAMETER_LATITUDE[0] << ":" << Input_Opt.PARAMETER_LATITUDE[1] << ":" << Input_Opt.PARAMETER_LATITUDE[2] << std::endl;
     else {
@@ -628,7 +726,7 @@ void Read_Parameters( OptInput &Input_Opt, bool RC )
             std::cout << Input_Opt.PARAMETER_LATITUDE[i] << " ";
         std::cout << std::endl;
     }
-    std::cout << "  => Pressure [" << Input_Opt.PARAMETER_PRESSURE_UNIT << "] : ";
+    std::cout << "  => Pressure [" << Input_Opt.PARAMETER_PRESSURE_UNIT << "]      : ";
     if ( Input_Opt.PARAMETER_PRESSURE_RANGE )
         std::cout << Input_Opt.PARAMETER_PRESSURE[0] << ":" << Input_Opt.PARAMETER_PRESSURE[1] << ":" << Input_Opt.PARAMETER_PRESSURE[2] << std::endl;
     else {
