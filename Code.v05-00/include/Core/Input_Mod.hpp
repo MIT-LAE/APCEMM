@@ -103,8 +103,36 @@ class OptInput
         bool        PARAMETER_EI_SOOTRAD_RANGE;
         std::string PARAMETER_EI_SOOTRAD_UNIT;
         Vector_1D   PARAMETER_EI_SOOTRAD;
+        bool        PARAMETER_FF_RANGE;
+        std::string PARAMETER_FF_UNIT;
+        Vector_1D   PARAMETER_FF;
         
+        /* ========================================== */
+        /* ---- TRANSPORT MENU ---------------------- */
+        /* ========================================== */
 
+        bool       TRANSPORT_TRANSPORT ;
+        bool       TRANSPORT_FILL;
+        RealDouble TRANSPORT_TIMESTEP;
+
+        /* ========================================== */
+        /* ---- CHEMISTRY MENU ---------------------- */
+        /* ========================================== */
+
+        bool       CHEMISTRY_CHEMISTRY;
+        bool       CHEMISTRY_RINGS;
+        bool       CHEMISTRY_READ_JRATES;
+        RealDouble CHEMISTRY_TIMESTEP;
+
+        /* ========================================== */
+        /* ---- AEROSOL MENU ------------------------ */
+        /* ========================================== */
+
+        bool       AEROSOL_GRAVSETTLING;
+        bool       AEROSOL_COAGULATION;
+        RealDouble AEROSOL_COAGULATION_TIMESTEP;
+        bool       AEROSOL_ICE_GROWTH;
+        bool       AEROSOL_PLUME_UPDRAFT;
 
 };
 
