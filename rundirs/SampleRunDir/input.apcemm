@@ -3,11 +3,12 @@ APCEMM SIMULATION
 %%% SIMULATION MENU %%% :
 Parameter sweep?        : T
 Output folder           : /path/to/folder
+ => Overwrite? if exists: F
 Run directory           : ./
 Input backgrd condition : /net/d04/data/fritzt/APCEMM_data/init.txt
-Save forward results    : F
+Save forward results    : T
  => netCDF file name    : APCEMM_Case_*
-Turn on adjoint optim.  : T
+Turn on adjoint optim.  : F
  => netCDF file name    : APCEMM_ADJ_Case_*
 ------------------------+------------------------------------------------------
 %%% PARAMETER SWEEP %%% : (Parameter sweep? needs to be set to "T")
