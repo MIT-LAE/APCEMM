@@ -32,6 +32,7 @@ class OptInput
 
         bool        SIMULATION_PARAMETER_SWEEP;
         std::string SIMULATION_OUTPUT_FOLDER;
+        bool        SIMULATION_OVERWRITE;
         std::string SIMULATION_RUN_DIRECTORY;
         std::string SIMULATION_INPUT_BACKG_COND;
         bool        SIMULATION_SAVE_FORWARD;
