@@ -36,7 +36,6 @@ static int DIR_FAIL = -9;
 
 void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
-std::vector<std::vector<double> > ReadParameters( );
 int PlumeModel( const Input &inputCase );
 
 inline bool exist( const std::string &name )
@@ -47,7 +46,6 @@ inline bool exist( const std::string &name )
 
 } /* End of exist */
 
-//int main( int argc, char* argv[] )
 int main( int , char* )
 {
 
@@ -83,39 +81,53 @@ int main( int , char* )
         Read_Input_File( Input_Opt );
         
         /* Read in parameters */
-        parameters = ReadParameters();
+        parameters = ReadParameters( Input_Opt );
 
         /* Number of cases */
         nCases  = parameters[0].size();
         
         /* Create output directory */
         struct stat sb;
-        if (!(stat( OUT_PATH.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
-            const int dir_err = mkdir( OUT_PATH.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+        if ( !( stat( Input_Opt.SIMULATION_OUTPUT_FOLDER.c_str(), &sb) == 0 \
+                    && S_ISDIR(sb.st_mode) ) ) {
+
+            /* Create directory */
+            const int dir_err = \
+                    mkdir( Input_Opt.SIMULATION_OUTPUT_FOLDER.c_str(), \
+                            S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+
             if ( dir_err == -1 ) {
-                std::cout << " Could not create directory: " << OUT_PATH << std::endl;
+                std::cout << " Could not create directory: ";
+                std::cout << Input_Opt.SIMULATION_OUTPUT_FOLDER << std::endl;
                 std::cout << " You may not have write permission" << std::endl;
                 exit(1);
             }
+            
+            /* Create README */
+            const std::string description = "";
+            CreateREADME( Input_Opt.SIMULATION_OUTPUT_FOLDER, "README", description );
+
         }
-        
-        /* Create README */
-        const std::string description = "";
-        CreateREADME( OUT_PATH, "README", description );
+    } /* master CPU */
 
-    }
-
-    /* Synchronize the threads */
+    /* ====================================================================== */
+    /* ---- Synchronize the threads ----------------------------------------- */
+    /* ====================================================================== */
     #pragma omp barrier
 
     /* Print number of cases considered */
     #pragma omp single
     {
         #ifdef OMP 
-            if ( nCases > 1 )
-                std::cout << "\n Running model for " << nCases << " cases on " << omp_get_num_procs() << " processors." << std::endl; 
-            else
-                std::cout << "\n Running model for " << nCases << " case on " << omp_get_num_procs() << " processors." << std::endl; 
+            const char* numberprocs = std::getenv("SLURM_CPUS_ON_NODE");
+            if ( nCases > 1 ) {
+                std::cout << "\n Running model for " << nCases << " cases on ";
+                std::cout << numberprocs << " processors." << std::endl; 
+            }
+            else {
+                std::cout << "\n Running model for " << nCases << " case on ";
+                std::cout << numberprocs << " processors." << std::endl; 
+            }
         #else
             if ( nCases > 1 )
                 std::cout << "\n Running model for " << nCases << " cases." << std::endl; 
@@ -124,13 +136,10 @@ int main( int , char* )
         #endif /* OMP */
     }
 
-    /* Synchronize the threads */
-    #pragma omp barrier
 
-
-    /* ===================================== */
-    /* ---- CASE LOOP STARTS HERE ---------- */
-    /* ===================================== */
+    /* ====================================================================== */
+    /* ---- CASE LOOP STARTS HERE ------------------------------------------- */
+    /* ====================================================================== */
 
     #pragma omp parallel for schedule(dynamic, 1) shared(Input_Opt, parameters, nCases)
     for ( iCase = 0; iCase < nCases; iCase++ ) {
@@ -138,40 +147,39 @@ int main( int , char* )
         unsigned int jCase = iOFFSET + iCase;
 
         std::string fullPath, fullPath_ADJ;
-
         std::stringstream ss, ss_ADJ;
-        ss << std::setw(5) << std::setfill('0') << jCase;
-        std::string file = "APCEMM_Case_" + ss.str();
+        ss     << std::setw(5) << std::setfill('0') << jCase;
+        std::string file     = Input_Opt.SIMULATION_FORWARD_FILENAME + ss.str();
         ss_ADJ << std::setw(5) << std::setfill('0') << jCase;
-        std::string file_ADJ = "APCEMM_ADJ_Case_" + ss_ADJ.str();
-        if ( OUT_PATH.back() == '/' ) {
-            fullPath = OUT_PATH + file;
-            fullPath_ADJ = OUT_PATH + file_ADJ;
+        std::string file_ADJ = Input_Opt.SIMULATION_ADJOINT_FILENAME + ss_ADJ.str();
+
+        if ( Input_Opt.SIMULATION_OUTPUT_FOLDER.back() == '/' ) {
+            fullPath     = Input_Opt.SIMULATION_OUTPUT_FOLDER + file;
+            fullPath_ADJ = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_ADJ;
         } else {
-            fullPath = OUT_PATH + '/' + file;
-            fullPath_ADJ = OUT_PATH + '/' + file_ADJ;
+            fullPath     = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file;
+            fullPath_ADJ = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file_ADJ;
         }
         fullPath = fullPath + ".nc";
         fullPath_ADJ = fullPath_ADJ + ".nc";
 
         bool fileExist = 0;
 
-        #if ( ADJOINT )
+        if ( Input_Opt.SIMULATION_ADJOINT ) {
             #pragma omp critical
             { fileExist = exist( fullPath_ADJ ); }
-        #else
+        } else {
             #pragma omp critical
             { fileExist = exist( fullPath ); }
-        #endif /* ADJOINT */
+        }
 
-
-        if ( !fileExist || REBUILD ) {
+        if ( !fileExist || Input_Opt.SIMULATION_OVERWRITE ) {
             
             const Input inputCase( iCase, parameters, fullPath, fullPath_ADJ );
 
             #pragma omp critical
             { 
-                std::cout << "-> Running case " << iCase;
+                std::cout << " -> Running case " << iCase;
                 #ifdef OMP
                     std::cout << " on thread " << omp_get_thread_num();
                 #endif /* OMP */
@@ -227,11 +235,16 @@ int main( int , char* )
                     std::cout << " Error: " << iERR << "" << std::endl;
                     std::cout << std::fixed;
                     std::cout << std::setprecision(3);
-                    std::cout << " T   : " << std::setw(8) << inputCase.temperature_K() << " [K]" << std::endl;
-                    std::cout << " P   : " << std::setw(8) << inputCase.pressure_Pa()/((double) 100.0) << " [hPa]" << std::endl;
-                    std::cout << " RH_w: " << std::setw(8) << inputCase.relHumidity_w() << " [%]" << std::endl;
-                    std::cout << " LON : " << std::setw(8) << inputCase.longitude_deg() << " [deg]" << std::endl;
-                    std::cout << " LAT : " << std::setw(8) << inputCase.latitude_deg() << " [deg]" << std::endl;
+                    std::cout << " T   : " << std::setw(8) << inputCase.temperature_K();
+                    std::cout << " [K]" << std::endl;
+                    std::cout << " P   : " << std::setw(8) << inputCase.pressure_Pa()/((double) 100.0);
+                    std::cout << " [hPa]" << std::endl;
+                    std::cout << " RH_w: " << std::setw(8) << inputCase.relHumidity_w();
+                    std::cout << " [%]" << std::endl;
+                    std::cout << " LON : " << std::setw(8) << inputCase.longitude_deg();
+                    std::cout << " [deg]" << std::endl;
+                    std::cout << " LAT : " << std::setw(8) << inputCase.latitude_deg();
+                    std::cout << " [deg]" << std::endl;
                 }
                 else { std::cout << " APCEMM Case: " << iCase << " completed." << std::endl; }
             }
@@ -240,15 +253,15 @@ int main( int , char* )
 
     }
     
-    /* ===================================== */
-    /* ---- CASE LOOP ENDS HERE ------------ */
-    /* ===================================== */
+    /* ====================================================================== */
+    /* ---- CASE LOOP ENDS HERE --------------------------------------------- */
+    /* ====================================================================== */
    
     std::cout << "\n All cases have been completed!" << std::endl;
 
-    /* ===================================== */
-    /* ---- END NORMALLY ------------------- */
-    /* ===================================== */
+    /* ====================================================================== */
+    /* ---- END NORMALLY ---------------------------------------------------- */
+    /* ====================================================================== */
 
     return 0;
 
