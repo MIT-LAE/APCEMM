@@ -35,14 +35,14 @@ Meteorology::Meteorology( const bool loadFile, \
     std::vector<double> X = m.x();
     std::vector<double> Y = m.y();
     
-    alt.assign( Y.size(), 0.0E+00 );
-    press.assign( Y.size(), 0.0E+00 );
+    alt_.assign( Y.size(), 0.0E+00 );
+    press_.assign( Y.size(), 0.0E+00 );
 
     for ( unsigned int iNy = 0; iNy < Y.size(); iNy++ )
-        temp.push_back( std::vector<double>( X.size(), 0.0E+00 ) );
+        temp_.push_back( std::vector<double>( X.size(), 0.0E+00 ) );
 
     for ( unsigned int iNy = 0; iNy < Y.size(); iNy++ )
-        H2O.push_back( std::vector<double>( X.size(), 0.0E+00 ) );
+        H2O_.push_back( std::vector<double>( X.size(), 0.0E+00 ) );
 
     if ( LOAD ) {
 
@@ -51,16 +51,16 @@ Meteorology::Meteorology( const bool loadFile, \
     } else { 
 
         for ( unsigned int iNy = 0; iNy < Y.size(); iNy++ )
-            alt[iNy] = altitude + Y[iNy];
-        met::ISA( alt, press );
+            alt_[iNy] = altitude + Y[iNy];
+        met::ISA( alt_, press_ );
         /* User defined fields can be set here ! */
         for ( unsigned int iNy = 0; iNy < Y.size(); iNy++ ) {
-            temp[iNy][0] = temperature_K + Y[iNy] * LapseRate;
+            temp_[iNy][0] = temperature_K + Y[iNy] * LapseRate;
             /* Unit check: Y [m] * LapseRate [K/m] */
-            H2O[iNy][0] = 0.0E+00;
-            for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
-                temp[iNy][iNx] = temp[iNy][iNx];
-                H2O[iNy][iNx] = H2O[iNy][0];
+            H2O_[iNy][0] = 0.0E+00;
+            for ( unsigned int iNx = 1; iNx < X.size(); iNx++ ) {
+                temp_[iNy][iNx] = temp_[iNy][0];
+                H2O_[iNy][iNx]  = H2O_[iNy][0];
             }
         }
 
@@ -70,9 +70,9 @@ Meteorology::Meteorology( const bool loadFile, \
         std::cout << "\n DEBUG : Meteorology\n";
         std::cout << "         Grid number | Altitude [km] | Pressure [hPa] | Temperature [K] | H2O [-]\n";
         for ( unsigned int iNy = Y.size() - 1; iNy --> 0; ) {
-            std::cout << "         " << std::setw(11) << iNy << " | " << std::setw(13) << alt[iNy] * 1.00E-03 \
-                      << " | " << std::setw(14) << press[iNy] * 1.00E-02 << " | " << std::setw(15) << temp[iNy][0] \
-                      << " | " << std::setw(9) << H2O[iNy][0] << "\n";
+            std::cout << "         " << std::setw(11) << iNy << " | " << std::setw(13) << alt_[iNy] * 1.00E-03 \
+                      << " | " << std::setw(14) << press_[iNy] * 1.00E-02 << " | " << std::setw(15) << temp_[iNy][0] \
+                      << " | " << std::setw(9) << H2O_[iNy][0] << "\n";
         }
         std::cout << "\n";
     }
@@ -83,10 +83,10 @@ Meteorology::Meteorology( const Meteorology &met ) :
     LOAD( met.LOAD )
 {
 
-    alt = met.alt;
-    press = met.press;
-    temp = met.temp;
-    H2O = met.H2O;
+    alt_ = met.alt_;
+    press_ = met.press_;
+    temp_ = met.temp_;
+    H2O_ = met.H2O_;
 
 } /* End of Meteorology::Meteorology */
 

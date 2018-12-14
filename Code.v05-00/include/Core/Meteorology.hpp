@@ -33,6 +33,12 @@ class Meteorology
         Meteorology( const Meteorology &met );
         ~Meteorology( );
 
+        double alt( unsigned int j ) const { return alt_[j]; }
+        double press( unsigned int j ) const { return press_[j]; }
+
+        double temp( unsigned int j, unsigned int i) const { return temp_[j][i]; }
+        double H2O( unsigned int j, unsigned int i) const { return H2O_[j][i]; }
+
         friend class Solution;
 
     protected:
@@ -41,11 +47,11 @@ class Meteorology
         const bool LOAD;
 
         /* Assume that pressure only depends on the vertical coordinate */
-        std::vector<double> alt;
-        std::vector<double> press;
+        std::vector<double> alt_;
+        std::vector<double> press_;
         /* Temperature and humidity fields can potentially be 2D fields */
-        std::vector<std::vector<double>> temp;
-        std::vector<std::vector<double>> H2O;
+        std::vector<std::vector<double>> temp_;
+        std::vector<std::vector<double>> H2O_;
 
 
 };
