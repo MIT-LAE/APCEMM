@@ -22,7 +22,7 @@
 
 # Logs #
 ########
-*.log
+*log*
 *.sql
 *.out
 
@@ -36,19 +36,26 @@ Thumbs.db
 
 # Some Shell files #
 ####################
-*.sh
-!APCEMM.sh
+*.mp
+*.sp
+rundirs/*/APCEMM
 
 # Folders #
 ###########
-build
-trash
-lib/*
-debug/*
+Code*/build
+Code*/trash
+Code*/lib*
+Code*/debug*
+doc*
 
 # netCDF files #
 ################
 *.nc
+
+# Debug files #
+###############
+gdb*
+valgrind*
 
 # For UNIX #
 ############
