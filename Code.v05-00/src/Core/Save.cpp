@@ -3479,8 +3479,8 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHW"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
             value = relHumidity_i;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHI"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
-            value = input.dayGMT();
-            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Day GMT"        , 1, "int"  , "-"  , "Emission day" );
+            value = input.emissionDay();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emisison Day"   , 1, "int"  , "-"  , "Emission day" );
             value = input.emissionTime();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Time"  , 1, "float", "hr"  , "Emission time" );
             value = input.EI_NOx();
@@ -3490,7 +3490,7 @@ namespace output
             value = input.EI_HC();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "HC EI"          , 1, "float", "g/kg_fuel"  , "HC Emission index" );
             value = input.EI_SO2();
-            didSaveSucceed *= fileHandler.addConst( currFile, &value, "SO2 EI"          , 1, "float", "g/kg_fuel"  , "SO2 Emission index" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "SO2 EI"         , 1, "float", "g/kg_fuel"  , "SO2 Emission index" );
             value = input.EI_Soot();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Soot EI"        , 1, "float", "g/kg_fuel"  , "Soot Emission index" );
             value = input.sootRad();
