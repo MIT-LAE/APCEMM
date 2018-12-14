@@ -29,13 +29,14 @@ class Input
     RealDouble longitude_deg_;
     RealDouble latitude_deg_;
 
-    UInt dayGMT_;
+    UInt emissionDay_;
     RealDouble emissionTime_;
 
     RealDouble EI_NOx_;
     RealDouble EI_CO_;
     RealDouble EI_HC_;
     RealDouble EI_SO2_;
+    RealDouble EI_SO2TOSO4_;
     RealDouble EI_Soot_;
     RealDouble sootRad_;
 
@@ -78,13 +79,14 @@ class Input
         RealDouble longitude_deg() const { return longitude_deg_; }
         RealDouble latitude_deg() const { return latitude_deg_; }
 
-        UInt dayGMT() const { return dayGMT_; }
+        UInt emissionDay() const { return emissionDay_; }
         RealDouble emissionTime() const { return emissionTime_; }
 
         RealDouble EI_NOx() const { return EI_NOx_; }
         RealDouble EI_CO() const { return EI_CO_; }
         RealDouble EI_HC() const { return EI_HC_; }
         RealDouble EI_SO2() const { return EI_SO2_; }
+        RealDouble EI_SO2TOSO4() const { return EI_SO2TOSO4_; }
         RealDouble EI_Soot() const { return EI_Soot_; }
         RealDouble sootRad() const { return sootRad_; }
         

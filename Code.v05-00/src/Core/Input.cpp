@@ -29,7 +29,7 @@ Input::Input( const RealDouble temperature_K, \
     relHumidity_w_ ( relHumidity_w ),
     longitude_deg_ ( long_deg ),
     latitude_deg_  ( lat_deg ),
-    dayGMT_        ( dayGMT ),
+    emissionDay_   ( dayGMT ),
     emissionTime_  ( emissionTime ),
     EI_NOx_        ( emissionInput[0] ),
     EI_CO_         ( emissionInput[1] ),
@@ -62,8 +62,8 @@ Input::Input( const RealDouble temperature_K, \
     while ( latitude_deg_ < -90 )
         latitude_deg_ += 180;
 
-    while ( dayGMT_ > 365 )
-        dayGMT_ -= 365;
+    while ( emissionDay_ > 365 )
+        emissionDay_ -= 365;
 
     while ( emissionTime_ > 24.0 )
         emissionTime_ -= 24.0;
@@ -77,8 +77,8 @@ Input::Input( const RealDouble temperature_K, \
     if ( relHumidity_w_ >= 9.50E+01 || pressure_Pa_ <= 0.00E+00 )
         std::cout << " In Input::Input: relHumidity_w takes an unrealisable value: relHumidity_w = " << relHumidity_w_ << " [%]\n";
 
-    if ( dayGMT_ <= 0.0 )
-        std::cout << " In Input::Input: dayGMT takes an unrealisable value: dayGMT = " << dayGMT_ << " [-]\n";
+    if ( emissionDay_ <= 0.0 )
+        std::cout << " In Input::Input: emissionDay takes an unrealisable value: emissionDay = " << emissionDay_ << " [-]\n";
 
     if ( EI_NOx_ < 0.0E+00 || EI_NOx_ > 3.0E+01 )
         std::cout << " In Input::Input: EI_NOx takes an unrealisable value: EI_NOx = " << EI_NOx_ << " [g/kg_fuel]\n";
@@ -126,25 +126,26 @@ Input::Input( unsigned int iCase,          \
               const std::string fileName,  \
               const std::string fileName_ADJ ):
     temperature_K_ ( parameters[0][iCase] ),
-    pressure_Pa_   ( parameters[1][iCase] ),
-    relHumidity_w_ ( parameters[2][iCase] ),
-    longitude_deg_ ( parameters[3][iCase] ),
-    latitude_deg_  ( parameters[4][iCase] ),
-    dayGMT_        ( parameters[5][iCase] ),
+    relHumidity_w_ ( parameters[1][iCase] ),
+    longitude_deg_ ( parameters[2][iCase] ),
+    latitude_deg_  ( parameters[3][iCase] ),
+    pressure_Pa_   ( parameters[4][iCase] ),
+    emissionDay_   ( parameters[5][iCase] ),
     emissionTime_  ( parameters[6][iCase] ),
     EI_NOx_        ( parameters[7][iCase] ),
     EI_CO_         ( parameters[8][iCase] ),
     EI_HC_         ( parameters[9][iCase] ),
     EI_SO2_        ( parameters[10][iCase] ),
-    EI_Soot_       ( parameters[11][iCase] ),
-    sootRad_       ( parameters[12][iCase] ),
-    fuelFlow_      ( parameters[13][iCase] ),
-    backgNOx_      ( parameters[14][iCase] ),
-    backgHNO3_     ( parameters[15][iCase] ),
-    backgO3_       ( parameters[16][iCase] ),
-    backgCO_       ( parameters[17][iCase] ),
-    backgCH4_      ( parameters[18][iCase] ),
-    backgSO2_      ( parameters[19][iCase] ),
+    EI_SO2TOSO4_   ( parameters[11][iCase] ),
+    EI_Soot_       ( parameters[12][iCase] ),
+    sootRad_       ( parameters[13][iCase] ),
+    fuelFlow_      ( parameters[14][iCase] ),
+    backgNOx_      ( parameters[15][iCase] ),
+    backgHNO3_     ( parameters[16][iCase] ),
+    backgO3_       ( parameters[17][iCase] ),
+    backgCO_       ( parameters[18][iCase] ),
+    backgCH4_      ( parameters[19][iCase] ),
+    backgSO2_      ( parameters[20][iCase] ),
     fileName_      ( fileName ),
     fileName_ADJ_  ( fileName_ADJ )
 {
@@ -163,8 +164,8 @@ Input::Input( unsigned int iCase,          \
     while ( latitude_deg_ < -90 )
         latitude_deg_ += 180;
 
-    while ( dayGMT_ > 365 )
-        dayGMT_ -= 365;
+    while ( emissionDay_ > 365 )
+        emissionDay_ -= 365;
 
     while ( emissionTime_ > 24.0 )
         emissionTime_ -= 24.0;
@@ -178,8 +179,8 @@ Input::Input( unsigned int iCase,          \
     if ( relHumidity_w_ >= 9.50E+01 || pressure_Pa_ <= 0.00E+00 )
         std::cout << " In Input::Input: relHumidity_w takes an unrealisable value: relHumidity_w = " << relHumidity_w_ << " [%]\n";
 
-    if ( dayGMT_ <= 0.0 )
-        std::cout << " In Input::Input: dayGMT takes an unrealisable value: dayGMT = " << dayGMT_ << " [-]\n";
+    if ( emissionDay_ <= 0.0 )
+        std::cout << " In Input::Input: emissionDay takes an unrealisable value: emissionDay = " << emissionDay_ << " [-]\n";
 
     if ( EI_NOx_ < 0.0E+00 || EI_NOx_ > 3.0E+01 )
         std::cout << " In Input::Input: EI_NOx takes an unrealisable value: EI_NOx = " << EI_NOx_ << " [g/kg_fuel]\n";
