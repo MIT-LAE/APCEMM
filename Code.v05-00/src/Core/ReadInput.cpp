@@ -1917,12 +1917,14 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
 
     try {
         value = std::stod( tokens[0] );
-        if ( value > 0.0E+00 )
-            Input_Opt.TRANSPORT_TIMESTEP = value;
-        else {
-            std::cout << " Wrong input for: " << variable << std::endl;
-            std::cout << " Timestep needs to be positive" << std::endl;
-            exit(1);
+        if ( Input_Opt.TRANSPORT_TRANSPORT ) {
+            if ( value > 0.0E+00 )
+                Input_Opt.TRANSPORT_TIMESTEP = value;
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Timestep needs to be positive" << std::endl;
+                exit(1);
+            }
         }
     } catch(std::exception& e) {
         std::cout << " Could not convert string to double for " << variable << std::endl;
@@ -1983,6 +1985,12 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
         exit(1);
     }
 
+    if ( ( Input_Opt.SIMULATION_ADJOINT == 1 ) && \
+         ( Input_Opt.CHEMISTRY_CHEMISTRY == 0 ) ) {
+        std::cout << " Cannot perform an adjoint simulation with chemistry turned off. Abort!" << std::endl;
+        exit(1);
+    }
+
     /* ==================================================== */
     /* Use ring structure?                                  */
     /* ==================================================== */
@@ -1999,6 +2007,27 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
         Input_Opt.CHEMISTRY_RINGS = 1;
     else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
         Input_Opt.CHEMISTRY_RINGS = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* ==================================================== */
+    /* Perform het. chem.?                                  */
+    /* ==================================================== */
+
+    variable = "Perform het. chem.?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+   
+    /* Extract variable range */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+        Input_Opt.CHEMISTRY_HETCHEM = 1;
+    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+        Input_Opt.CHEMISTRY_HETCHEM = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
@@ -2039,12 +2068,14 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
 
     try {
         value = std::stod( tokens[0] );
-        if ( value > 0.0E+00 )
-            Input_Opt.CHEMISTRY_TIMESTEP = value;
-        else {
-            std::cout << " Wrong input for: " << variable << std::endl;
-            std::cout << " Timestep needs to be positive" << std::endl;
-            exit(1);
+        if ( Input_Opt.CHEMISTRY_CHEMISTRY ) {
+            if ( value > 0.0E+00 )
+                Input_Opt.CHEMISTRY_TIMESTEP = value;
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Timestep needs to be positive" << std::endl;
+                exit(1);
+            }
         }
     } catch(std::exception& e) {
         std::cout << " Could not convert string to double for " << variable << std::endl;
@@ -2063,6 +2094,7 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " ------------------------+---------------------------------------- "  << std::endl;
     std::cout << " Turn on Chemistry?      : " << Input_Opt.CHEMISTRY_CHEMISTRY         << std::endl;
     std::cout << "  => Use ring structure? : " << Input_Opt.CHEMISTRY_RINGS             << std::endl;
+    std::cout << " Perform het. chem.?     : " << Input_Opt.CHEMISTRY_HETCHEM           << std::endl;
     std::cout << " Read in J-Rates?        : " << Input_Opt.CHEMISTRY_READ_JRATES       << std::endl;
     std::cout << " Chemistry Timestep [min]: " << Input_Opt.CHEMISTRY_TIMESTEP          << std::endl;
 

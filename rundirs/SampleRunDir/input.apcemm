@@ -48,6 +48,7 @@ Convect Timestep [min]  : 10
 %%% CHEMISTRY MENU %%%  :
 Turn on Chemistry?      : T
  => Use ring structure? : T
+Perform het. chem.?     : T
 Read in J-Rates?        : T
 Chemistry Timestep [min]: 10
 ------------------------+------------------------------------------------------

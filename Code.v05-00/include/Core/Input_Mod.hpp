@@ -122,6 +122,7 @@ class OptInput
 
         bool       CHEMISTRY_CHEMISTRY;
         bool       CHEMISTRY_RINGS;
+        bool       CHEMISTRY_HETCHEM;
         bool       CHEMISTRY_READ_JRATES;
         RealDouble CHEMISTRY_TIMESTEP;
 
