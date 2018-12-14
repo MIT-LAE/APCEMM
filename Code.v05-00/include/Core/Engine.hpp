@@ -39,7 +39,6 @@ class Engine
         Engine( const Engine &e );
         Engine& operator=( const Engine &e );
         ~Engine( );
-        bool CheckFile( const char *fileName ) const;
         void OpenFile( const char *fileName, std::ifstream &file );
         void CloseFile( std::ifstream &file );
         bool GetEDB( std::ifstream &file, const char *engineName, std::string &idle, std::string &approach, std::string &climbout, std::string &takeoff );

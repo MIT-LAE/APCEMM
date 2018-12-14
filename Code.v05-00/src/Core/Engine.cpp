@@ -13,7 +13,7 @@
 
 #include "Core/Engine.hpp"
 
-const char * const Engine::engineFileName = "./data/ENG_EI.txt";
+const char * const Engine::engineFileName = "/net/d04/data/fritzt/APCEMM_Data/ENG_EI.txt";
 
 Engine::Engine( )
 {
@@ -348,24 +348,16 @@ Engine::~Engine( )
 
 } /* End of Engine::~Engine */
 
-bool Engine::CheckFile( const char *fileName ) const
-{
-    std::ifstream f( fileName );
-    return f.is_open();
-
-} /* End of Engine::CheckFile */
-
 void Engine::OpenFile( const char *fileName, std::ifstream &file )
 {
-    const bool file_exists = CheckFile( fileName );
+    
+    file.open( fileName );
 
-    if (!file_exists) {
+    if ( !file ) {
         std::string const currFunc("Engine::OpenFile");
-        std::cout << "ERROR: In " << currFunc << ": Can't read (" << fileName << ")" << std::endl;
+        std::cout << "ERROR: In " << currFunc << ": Cannot read (" << fileName << ")" << std::endl;
         return;
     }
-
-    file.open( fileName );
 
 } /* End of Engine::OpenFile */
 
