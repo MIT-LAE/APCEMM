@@ -27,7 +27,6 @@
 
 /* Time */
 #define TSIMUL            2.4E+01     /* Simulation time [hrs] */
-#define DT                6.0E+02     /* Default time step [s] = 10 min */
 
 /* Atmospheric parameters */
 #define GAMMA            -3.0E+00     /* Ambient temperature lapse rate [K/km] */
