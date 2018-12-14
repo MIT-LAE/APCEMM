@@ -207,7 +207,7 @@ void Aircraft::setFuelFlow(const double ff)
 {
 
     if ( ff > 0.0E+00 )
-        engine.setFuelFlow(ff);
+        engine.setFuelFlow(ff / engNumber);
 
 
 } /* End of Aircraft::setFuelFlow */
