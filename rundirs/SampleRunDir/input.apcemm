@@ -5,7 +5,7 @@ Parameter sweep?        : T
 Output folder           : /path/to/folder
  => Overwrite? if exists: F
 Run directory           : ./
-Input backgrd condition : /net/d04/data/fritzt/APCEMM_data/init.txt
+Input backgrd condition : /net/d04/data/fritzt/APCEMM_Data/init.txt
 Save forward results    : T
  => netCDF file name    : APCEMM_Case_*
 Turn on adjoint optim.  : F
