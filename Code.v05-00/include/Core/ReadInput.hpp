@@ -32,30 +32,10 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC );
 void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC );
 void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC );
 
-Vector_2D ReadParameters( const OptInput Input_Opt );
 Vector_2D Copy_blocked( Vector_2D& m, int n );
 Vector_2D Copy_interleaved( Vector_2D& m, int n );
 Vector_2D Reshape_Vector( Vector_2D& vector_2D, int n_x, int n_y );
-Vector_2D CombVec( const Vector_1D& temperature_K, \
-                   const Vector_1D& pressure_Pa,   \
-                   const Vector_1D& relHumidity_w, \
-                   const Vector_1D& longitude_deg, \
-                   const Vector_1D& latitude_deg,  \
-                   const Vector_1D& dayGMT,        \
-                   const Vector_1D& emissionTime,  \
-                   const Vector_1D& EI_NOx,        \
-                   const Vector_1D& EI_CO,         \
-                   const Vector_1D& EI_HC,         \
-                   const Vector_1D& EI_SO2,        \
-                   const Vector_1D& EI_Soot,       \
-                   const Vector_1D& SootRad,       \
-                   const Vector_1D& ff,            \
-                   const Vector_1D& backgNOx,      \
-                   const Vector_1D& backgHNO3,     \
-                   const Vector_1D& backgO3,       \
-                   const Vector_1D& backgCO,       \
-                   const Vector_1D& backgCH4,      \
-                   const Vector_1D& backgSO2 );
+Vector_2D CombVec( const OptInput Input_Opt );
 
 #endif /* INPUT_READER_H_INCLUDED */
 

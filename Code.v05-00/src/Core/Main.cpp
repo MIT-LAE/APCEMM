@@ -80,8 +80,8 @@ int main( int , char* )
         /* Read in input file */
         Read_Input_File( Input_Opt );
         
-        /* Read in parameters */
-        parameters = ReadParameters( Input_Opt );
+        /* Collect parameters and create cases */
+        parameters = CombVec( Input_Opt );
 
         /* Number of cases */
         nCases  = parameters[0].size();

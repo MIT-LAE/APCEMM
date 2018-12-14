@@ -2213,692 +2213,1078 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
 
 } /* End of Read_Aerosol_Menu */
 
-Vector_2D ReadParameters( const OptInput Input_Opt )
+Vector_2D CombVec( const OptInput Input_Opt )
 {
-
-    Vector_1D temperature_K, pressure_Pa, relHumidity_w, longitude_deg, latitude_deg;
-    Vector_1D EI_NOx, EI_CO, EI_HC, EI_SO2, EI_Soot, SootRad, ff;
-    Vector_1D dayGMT;
-    Vector_1D emissionTime;
-    Vector_1D backgNOx, backgHNO3, backgO3, backgCO, backgCH4, backgSO2;
-
-    Vector_2D parameters;
-
-    /* #######################################
-     * ## Ambient meteorological conditions ## 
-     * ####################################### */
-
-    /* Temperature array in [K] */
-
-    temperature_K.push_back( 220.0 );
-//    for ( unsigned int i = 0; i < 31; i++ ) {
-//        temperature_K.push_back( 200.0 + 2.0 * i );
-//    }
-
-    /* Pressure array in [Pa] */
-
-    pressure_Pa.push_back( 220.0E2 );
-
-    /* Relative humidity w.r.t liquid water array in [\%] */
-
-    relHumidity_w.push_back( 30.0 );
-
-    /* #######################
-     * ## Coord. (lon-lat)  ## 
-     * ####################### */
-
-    /* Longitude array expressed in deg */
-
-    longitude_deg.push_back( -15.0 );
-
-    /* Latitude array expressed in deg */
-
-    latitude_deg.push_back( 60.0 );
-
-    /* #######################
-     * ## Emiss day (0-365) ## 
-     * ####################### */
-
-    dayGMT.push_back( 81.0 );
-
-    /* #######################
-     * ## Emiss time  [hrs] ## 
-     * ####################### */
-
-    emissionTime.push_back( 8.0 );
-    emissionTime.push_back( 20.0 );
-
-    /* ####################### 
-     * ## EMISSION INDICES  ##
-     * ####################### */
-
-    EI_NOx.push_back( 1.0E-05 );
-    EI_NOx.push_back( 1.0E+01 );
-
-//    EI_CO.push_back( 0.5E+00 );
-    EI_CO.push_back( 1.0E+00 );
-//    EI_CO.push_back( 1.5E+00 );
-//    EI_CO.push_back( 2.0E+00 );
-
-    EI_HC.push_back( 0.6E+00 );
-    
-    EI_SO2.push_back( 0.8E+00 );
-    EI_SO2.push_back( 1.2E+00 );
-    EI_SO2.push_back( 2.0E+00 );
-    EI_SO2.push_back( 1.0E+01 );
-    EI_SO2.push_back( 2.0E+01 );
-    EI_SO2.push_back( 1.0E+02 );
-    
-    EI_Soot.push_back( 0.0E+00 );
-    
-    SootRad.push_back( 0.0E+00 );
-    
-    ff.push_back( 0.0E+00 );
-
-    /* #######################
-     * ## BACKGRD MIX RATIO ##
-     * ####################### */
-
-    backgNOx.push_back( 50.0E-03 );
-//    backgNOx.push_back( 100.0E-03 );
-//    backgNOx.push_back( 150.0E-03 );
-//    backgNOx.push_back( 200.0E-03 );
-    
-    backgHNO3.push_back( 81.5E-03 );
-
-    backgO3.push_back( 50.0E+00 );
-//    backgO3.push_back( 75.0E+00 );
-//    backgO3.push_back( 100.0E+00 );
-
-//    backgCO.push_back( 20.0E+00 );
-    backgCO.push_back( 40.0E+00 );
-//    backgCO.push_back( 60.0E+00 );
-//    backgCO.push_back( 80.0E+00 );
-    
-    backgCH4.push_back( 1.76E+03 );
-    backgSO2.push_back( 7.25E-03 );
-
-    parameters = CombVec( temperature_K, \
-                          pressure_Pa,   \
-                          relHumidity_w, \
-                          longitude_deg, \
-                          latitude_deg,  \
-                          dayGMT,        \
-                          emissionTime,  \
-                          EI_NOx,        \
-                          EI_CO,         \
-                          EI_HC,         \
-                          EI_SO2,        \
-                          EI_Soot,       \
-                          SootRad,       \
-                          ff,            \
-                          backgNOx,      \
-                          backgHNO3,     \
-                          backgO3,       \
-                          backgCO,       \
-                          backgCH4,      \
-                          backgSO2 );
-
-    /* For debug */
-    if ( false ) {
-        unsigned int i, j;
-        std::cout.precision(2);
-        for ( i = 0; i < parameters.size(); i++ ) {
-            for ( j = 0; j < parameters[0].size(); j++) {
-                std::cout << parameters[i][j] << " ";
-            }
-            std::cout << "" << std::endl;
-        }
-    }
-
-    return parameters;
-
-} /* End of ReadParameters */
-
-Vector_2D CombVec( const Vector_1D& temperature_K, \
-                   const Vector_1D& pressure_Pa,   \
-                   const Vector_1D& relHumidity_w, \
-                   const Vector_1D& longitude_deg, \
-                   const Vector_1D& latitude_deg,  \
-                   const Vector_1D& dayGMT,        \
-                   const Vector_1D& emissionTime,  \
-                   const Vector_1D& EI_NOx,        \
-                   const Vector_1D& EI_CO,         \
-                   const Vector_1D& EI_HC,         \
-                   const Vector_1D& EI_SO2,        \
-                   const Vector_1D& EI_Soot,       \
-                   const Vector_1D& SootRad,       \
-                   const Vector_1D& ff,            \
-                   const Vector_1D& backgNOx,      \
-                   const Vector_1D& backgHNO3,     \
-                   const Vector_1D& backgO3,       \
-                   const Vector_1D& backgCO,       \
-                   const Vector_1D& backgCH4,      \
-                   const Vector_1D& backgSO2 )
-{
-    Vector_2D combinations;
 
     unsigned int counter = 1;
-    unsigned int nCases = temperature_K.size();
+    unsigned int nCases;  
 
     unsigned int i, j;
 
+    double currVal = 0.0E+00;
+
+    Vector_1D cases;
     Vector_2D y, z;
     Vector_2D u, v;
 
-    y.push_back(Vector_1D(temperature_K.size()));
-    for ( i = 0; i < temperature_K.size(); i++ )
-        y[0][i] = temperature_K[i];
+    /* ======================================================================= */
+    /* ---- TEMPERATURE ------------------------------------------------------ */
+    /* ---- Accepted units are: Kelvin (default), Celsius, Fahrenheit          */
+    /* ======================================================================= */
 
-    /* z = Pressure_Pa */
-    z.push_back(Vector_1D(pressure_Pa.size()));
-    for ( i = 0; i < pressure_Pa.size(); i++ )
-        z[0][i] = pressure_Pa[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= pressure_Pa.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
+    if ( Input_Opt.PARAMETER_TEMPERATURE_RANGE ) {
+        currVal = Input_Opt.PARAMETER_TEMPERATURE[0];
+        while ( currVal <= Input_Opt.PARAMETER_TEMPERATURE[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_TEMPERATURE[1];
         }
-        y[counter-1][i] = v[0][i];
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_TEMPERATURE.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_TEMPERATURE[i]);
+    }
+    nCases = cases.size();
+
+    /* Do unit conversion to default unit */
+    if ( Input_Opt.PARAMETER_TEMPERATURE_UNIT.compare( "K" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( Input_Opt.PARAMETER_TEMPERATURE_UNIT.compare( "C" ) == 0 ) {
+        /* Convert C to K */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] += 273.15;
+    } else if ( Input_Opt.PARAMETER_TEMPERATURE_UNIT.compare( "F" ) == 0 ) {
+        /* Convert F to K */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] = ( cases[i] + 459.67 ) * (double) 5.0/9;
+    } else {
+        std::cout << " Unknown unit for variable 'Temperature': ";
+        std::cout << Input_Opt.PARAMETER_TEMPERATURE_UNIT << std::endl;
+        exit(1);
     }
 
-    for ( i = 0; i < counter - 1; i++ ) {
-        u[i].clear();
-    }
-    u.clear();
-    v[0].clear(); v.clear();
+    y.push_back(Vector_1D(cases.size()));
+    for ( i = 0; i < cases.size(); i++ )
+        y[0][i] = cases[i];
+    cases.clear();
 
-    /* z = relHumidity_w */
-    z.push_back(Vector_1D(relHumidity_w.size()));
-    for ( i = 0; i < relHumidity_w.size(); i++ )
-        z[0][i] = relHumidity_w[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= relHumidity_w.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
+    /* ======================================================================= */
+    /* ---- RELATIVE HUMIDITY ------------------------------------------------ */
+    /* ---- Accepted units are: % (0-100, default), - (0-1)                    */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_RHW_RANGE ) {
+        currVal = Input_Opt.PARAMETER_RHW[0];
+        while ( currVal <= Input_Opt.PARAMETER_RHW[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_RHW[1];
         }
-        y[counter-1][i] = v[0][i];
-    }
-
-    for ( i = 0; i < counter - 1; i++ ) {
-        u[i].clear();
-    }
-    u.clear();
-    v[0].clear(); v.clear();
-
-    /* z = longitude_deg */
-    z.push_back(Vector_1D(longitude_deg.size()));
-    for ( i = 0; i < longitude_deg.size(); i++ )
-        z[0][i] = longitude_deg[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= longitude_deg.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
-        }
-        y[counter-1][i] = v[0][i];
-    }
-
-    for ( i = 0; i < counter - 1; i++ ) {
-        u[i].clear();
-    }
-    u.clear();
-    v[0].clear(); v.clear();
-
-    /* z = latitude_deg */
-    z.push_back(Vector_1D(latitude_deg.size()));
-    for ( i = 0; i < latitude_deg.size(); i++ )
-        z[0][i] = latitude_deg[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= latitude_deg.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
-        }
-        y[counter-1][i] = v[0][i];
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_RHW.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_RHW[i]);
     }
     
-    /* z = dayGMT */
-    z.push_back(Vector_1D(dayGMT.size()));
-    for ( i = 0; i < dayGMT.size(); i++ )
-        z[0][i] = dayGMT[i];
+    if ( Input_Opt.PARAMETER_RHW_UNIT.compare( "%" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( Input_Opt.PARAMETER_RHW_UNIT.compare( "-" ) == 0 ) {
+        /* Convert - to % */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 100.0;
+    } else {
+        std::cout << " Unknown unit for variable 'Relative humidity': ";
+        std::cout << Input_Opt.PARAMETER_RHW_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
 
     u = Copy_blocked(y,z[0].size());
     v = Copy_interleaved(z,y[0].size());
 
-    for ( i = 0; i < counter; i++ ) {
+    for ( i = 0; i < counter; i++ )
         y[i].clear();
-    }
     z[0].clear();
     y.clear(); z.clear();
 
-    nCases *= dayGMT.size();
     counter += 1;
     for ( i = 0; i < counter; i++ )
         y.push_back(Vector_1D( nCases ));
 
     for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
+        for ( j = 0; j < counter - 1; j++ )
             y[j][i] = u[j][i];
-        }
         y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+
+    /* ======================================================================= */
+    /* ---- LONGITUDE -------------------------------------------------------- */
+    /* ---- Accepted units are: degree (default)                               */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_LONGITUDE_RANGE ) {
+        currVal = Input_Opt.PARAMETER_LONGITUDE[0];
+        while ( currVal <= Input_Opt.PARAMETER_LONGITUDE[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_LONGITUDE[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_LONGITUDE.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_LONGITUDE[i]);
     }
     
-    /* z = emissionTime */
-    z.push_back(Vector_1D(emissionTime.size()));
-    for ( i = 0; i < emissionTime.size(); i++ )
-        z[0][i] = emissionTime[i];
+    if ( Input_Opt.PARAMETER_LONGITUDE_UNIT.compare( "deg" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else {
+        std::cout << " Unknown unit for variable 'Longitude': ";
+        std::cout << Input_Opt.PARAMETER_LONGITUDE_UNIT << std::endl;
+        exit(1);
+    }
 
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+    
     u = Copy_blocked(y,z[0].size());
     v = Copy_interleaved(z,y[0].size());
 
-    for ( i = 0; i < counter; i++ ) {
+    for ( i = 0; i < counter; i++ )
         y[i].clear();
-    }
     z[0].clear();
     y.clear(); z.clear();
 
-    nCases *= emissionTime.size();
     counter += 1;
     for ( i = 0; i < counter; i++ )
         y.push_back(Vector_1D( nCases ));
 
     for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
+        for ( j = 0; j < counter - 1; j++ )
             y[j][i] = u[j][i];
-        }
         y[counter-1][i] = v[0][i];
     }
+    cases.clear();
 
-    /* z = EI_NOx */
-    z.push_back(Vector_1D(EI_NOx.size()));
-    for ( i = 0; i < EI_NOx.size(); i++ )
-        z[0][i] = EI_NOx[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= EI_NOx.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
+    /* ======================================================================= */
+    /* ---- LATITUDE --------------------------------------------------------- */
+    /* ---- Accepted units are: degree (default)                               */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_LATITUDE_RANGE ) {
+        currVal = Input_Opt.PARAMETER_LATITUDE[0];
+        while ( currVal <= Input_Opt.PARAMETER_LATITUDE[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_LATITUDE[1];
         }
-        y[counter-1][i] = v[0][i];
-    }
-
-    /* z = EI_CO */
-    z.push_back(Vector_1D(EI_CO.size()));
-    for ( i = 0; i < EI_CO.size(); i++ )
-        z[0][i] = EI_CO[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= EI_CO.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
-        }
-        y[counter-1][i] = v[0][i];
-    }
-
-    /* z = EI_HC */
-    z.push_back(Vector_1D(EI_HC.size()));
-    for ( i = 0; i < EI_HC.size(); i++ )
-        z[0][i] = EI_HC[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= EI_HC.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
-        }
-        y[counter-1][i] = v[0][i];
-    }
-
-    /* z = EI_SO2 */
-    z.push_back(Vector_1D(EI_SO2.size()));
-    for ( i = 0; i < EI_SO2.size(); i++ )
-        z[0][i] = EI_SO2[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= EI_SO2.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
-        }
-        y[counter-1][i] = v[0][i];
-    }
-
-    /* z = EI_Soot */
-    z.push_back(Vector_1D(EI_Soot.size()));
-    for ( i = 0; i < EI_Soot.size(); i++ )
-        z[0][i] = EI_Soot[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= EI_Soot.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
-        }
-        y[counter-1][i] = v[0][i];
-    }
-
-    /* z = SootRad */
-    z.push_back(Vector_1D(SootRad.size()));
-    for ( i = 0; i < SootRad.size(); i++ )
-        z[0][i] = SootRad[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= SootRad.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
-        }
-        y[counter-1][i] = v[0][i];
-    }
-
-    /* z = ff */
-    z.push_back(Vector_1D(ff.size()));
-    for ( i = 0; i < ff.size(); i++ )
-        z[0][i] = ff[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= ff.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
-        }
-        y[counter-1][i] = v[0][i];
-    }
-
-    /* z = backgNOx */
-    z.push_back(Vector_1D(backgNOx.size()));
-    for ( i = 0; i < backgNOx.size(); i++ )
-        z[0][i] = backgNOx[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= backgNOx.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
-        }
-        y[counter-1][i] = v[0][i];
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_LATITUDE.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_LATITUDE[i]);
     }
     
-    /* z = backgHNO3 */
-    z.push_back(Vector_1D(backgHNO3.size()));
-    for ( i = 0; i < backgHNO3.size(); i++ )
-        z[0][i] = backgHNO3[i];
-
-    u = Copy_blocked(y,z[0].size());
-    v = Copy_interleaved(z,y[0].size());
-
-    for ( i = 0; i < counter; i++ ) {
-        y[i].clear();
-    }
-    z[0].clear();
-    y.clear(); z.clear();
-
-    nCases *= backgHNO3.size();
-    counter += 1;
-    for ( i = 0; i < counter; i++ )
-        y.push_back(Vector_1D( nCases ));
-
-    for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
-            y[j][i] = u[j][i];
-        }
-        y[counter-1][i] = v[0][i];
+    if ( Input_Opt.PARAMETER_LATITUDE_UNIT.compare( "deg" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else {
+        std::cout << " Unknown unit for variable 'Latitude': ";
+        std::cout << Input_Opt.PARAMETER_LATITUDE_UNIT << std::endl;
+        exit(1);
     }
     
-    /* z = backgO3 */
-    z.push_back(Vector_1D(backgO3.size()));
-    for ( i = 0; i < backgO3.size(); i++ )
-        z[0][i] = backgO3[i];
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
 
     u = Copy_blocked(y,z[0].size());
     v = Copy_interleaved(z,y[0].size());
 
-    for ( i = 0; i < counter; i++ ) {
+    for ( i = 0; i < counter; i++ )
         y[i].clear();
-    }
     z[0].clear();
     y.clear(); z.clear();
 
-    nCases *= backgO3.size();
     counter += 1;
     for ( i = 0; i < counter; i++ )
         y.push_back(Vector_1D( nCases ));
 
     for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
+        for ( j = 0; j < counter - 1; j++ )
             y[j][i] = u[j][i];
-        }
         y[counter-1][i] = v[0][i];
     }
+    cases.clear();
     
-    /* z = backgCO */
-    z.push_back(Vector_1D(backgCO.size()));
-    for ( i = 0; i < backgCO.size(); i++ )
-        z[0][i] = backgCO[i];
+    /* ======================================================================= */
+    /* ---- PRESSURE --------------------------------------------------------- */
+    /* ---- Accepted units are: Pa (default), hPa                              */
+    /* ======================================================================= */
 
+    if ( Input_Opt.PARAMETER_PRESSURE_RANGE ) {
+        currVal = Input_Opt.PARAMETER_PRESSURE[0];
+        while ( currVal <= Input_Opt.PARAMETER_PRESSURE[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_PRESSURE[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_PRESSURE.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_PRESSURE[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_PRESSURE_UNIT.compare( "Pa" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( Input_Opt.PARAMETER_PRESSURE_UNIT.compare( "hPa" ) == 0 ) {
+        for ( i = 0; i < nCases; i++ )
+            cases[i] *= 100.0;
+    } else {
+        std::cout << " Unknown unit for variable 'Pressure': ";
+        std::cout << Input_Opt.PARAMETER_PRESSURE_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+    
     u = Copy_blocked(y,z[0].size());
     v = Copy_interleaved(z,y[0].size());
 
-    for ( i = 0; i < counter; i++ ) {
+    for ( i = 0; i < counter; i++ )
         y[i].clear();
-    }
     z[0].clear();
     y.clear(); z.clear();
 
-    nCases *= backgCO.size();
     counter += 1;
     for ( i = 0; i < counter; i++ )
         y.push_back(Vector_1D( nCases ));
 
     for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
+        for ( j = 0; j < counter - 1; j++ )
             y[j][i] = u[j][i];
-        }
         y[counter-1][i] = v[0][i];
     }
-    
-    /* z = backgCH4 */
-    z.push_back(Vector_1D(backgCH4.size()));
-    for ( i = 0; i < backgCH4.size(); i++ )
-        z[0][i] = backgCH4[i];
+    cases.clear();
 
+    /* ======================================================================= */
+    /* ---- EMISSION DAY ----------------------------------------------------- */
+    /* ---- Accepted units are: 1-365 (default)                                */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_EDAY_RANGE ) {
+        currVal = Input_Opt.PARAMETER_EDAY[0];
+        while ( currVal <= Input_Opt.PARAMETER_EDAY[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_EDAY[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_EDAY.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_EDAY[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "1-365" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else {
+        std::cout << " Unknown unit for variable 'Emission Day': ";
+        std::cout << Input_Opt.PARAMETER_EDAY_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+    
     u = Copy_blocked(y,z[0].size());
     v = Copy_interleaved(z,y[0].size());
 
-    for ( i = 0; i < counter; i++ ) {
+    for ( i = 0; i < counter; i++ )
         y[i].clear();
-    }
     z[0].clear();
     y.clear(); z.clear();
 
-    nCases *= backgCH4.size();
     counter += 1;
     for ( i = 0; i < counter; i++ )
         y.push_back(Vector_1D( nCases ));
 
     for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
+        for ( j = 0; j < counter - 1; j++ )
             y[j][i] = u[j][i];
-        }
         y[counter-1][i] = v[0][i];
     }
+    cases.clear();
     
-    /* z = backgSO2 */
-    z.push_back(Vector_1D(backgSO2.size()));
-    for ( i = 0; i < backgSO2.size(); i++ )
-        z[0][i] = backgSO2[i];
+    /* ======================================================================= */
+    /* ---- EMISSION TIME ---------------------------------------------------- */
+    /* ---- Accepted units are: 0-24 (default)                                 */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_ETIME_RANGE ) {
+        currVal = Input_Opt.PARAMETER_ETIME[0];
+        while ( currVal <= Input_Opt.PARAMETER_ETIME[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_ETIME[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_ETIME.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_ETIME[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "0-24" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else {
+        std::cout << " Unknown unit for variable 'Emission Time': ";
+        std::cout << Input_Opt.PARAMETER_ETIME_UNIT << std::endl;
+        exit(1);
+    }
 
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+    
     u = Copy_blocked(y,z[0].size());
     v = Copy_interleaved(z,y[0].size());
 
-    for ( i = 0; i < counter; i++ ) {
+    for ( i = 0; i < counter; i++ )
         y[i].clear();
-    }
     z[0].clear();
     y.clear(); z.clear();
 
-    nCases *= backgSO2.size();
     counter += 1;
     for ( i = 0; i < counter; i++ )
         y.push_back(Vector_1D( nCases ));
 
     for ( i = 0; i < nCases; i++ ) {
-        for ( j = 0; j < counter - 1; j++ ) {
+        for ( j = 0; j < counter - 1; j++ )
             y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+
+    /* ======================================================================= */
+    /* ---- EI_NOX ----------------------------------------------------------- */
+    /* ---- Accepted units are: g/kg_fuel (default)                            */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_EI_NOX_RANGE ) {
+        currVal = Input_Opt.PARAMETER_EI_NOX[0];
+        while ( currVal <= Input_Opt.PARAMETER_EI_NOX[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_EI_NOX[1];
         }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_EI_NOX.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_EI_NOX[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else {
+        std::cout << " Unknown unit for variable 'EI_NOX': ";
+        std::cout << Input_Opt.PARAMETER_EI_NOX_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+
+    /* ======================================================================= */
+    /* ---- EI_CO ------------------------------------------------------------ */
+    /* ---- Accepted units are: g/kg_fuel (default)                            */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_EI_CO_RANGE ) {
+        currVal = Input_Opt.PARAMETER_EI_CO[0];
+        while ( currVal <= Input_Opt.PARAMETER_EI_CO[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_EI_CO[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_EI_CO.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_EI_CO[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_EI_CO_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else {
+        std::cout << " Unknown unit for variable 'EI_CO': ";
+        std::cout << Input_Opt.PARAMETER_EI_CO_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+    
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+
+    /* ======================================================================= */
+    /* ---- EI_UHC ----------------------------------------------------------- */
+    /* ---- Accepted units are: g/kg_fuel (default)                            */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_EI_UHC_RANGE ) {
+        currVal = Input_Opt.PARAMETER_EI_UHC[0];
+        while ( currVal <= Input_Opt.PARAMETER_EI_UHC[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_EI_UHC[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_EI_UHC.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_EI_UHC[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_EI_UHC_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else {
+        std::cout << " Unknown unit for variable 'EI_UHC': ";
+        std::cout << Input_Opt.PARAMETER_EI_UHC_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+
+    /* ======================================================================= */
+    /* ---- EI_SO2 ----------------------------------------------------------- */
+    /* ---- Accepted units are: g/kg_fuel (default)                            */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_EI_SO2_RANGE ) {
+        currVal = Input_Opt.PARAMETER_EI_SO2[0];
+        while ( currVal <= Input_Opt.PARAMETER_EI_SO2[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_EI_SO2[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_EI_SO2.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_EI_SO2[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_EI_SO2_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else {
+        std::cout << " Unknown unit for variable 'EI_SO2': ";
+        std::cout << Input_Opt.PARAMETER_EI_SO2_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+    
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+    
+    /* ======================================================================= */
+    /* ---- EI_SO2TOSO4 ------------------------------------------------------ */
+    /* ---- Accepted units are: - (default), %                                 */
+    /* ======================================================================= */
+
+    if ( Input_Opt.PARAMETER_EI_SO2TOSO4_RANGE ) {
+        currVal = Input_Opt.PARAMETER_EI_SO2TOSO4[0];
+        while ( currVal <= Input_Opt.PARAMETER_EI_SO2TOSO4[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_EI_SO2TOSO4[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_EI_SO2TOSO4.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_EI_SO2TOSO4[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_EI_SO2TOSO4_UNIT.compare( "-" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( Input_Opt.PARAMETER_EI_SO2TOSO4_UNIT.compare( "%" ) == 0 ) {
+        /* Convert % to - */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] /= 100.0;
+    } else {
+        std::cout << " Unknown unit for variable 'EI_SO2TOSO4': ";
+        std::cout << Input_Opt.PARAMETER_EI_SO2TOSO4_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+    
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+
+    /* ======================================================================= */
+    /* ---- EI_SOOT ---------------------------------------------------------- */
+    /* ---- Accepted units are: g/kg_fuel (default)                            */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_EI_SOOT_RANGE ) {
+        currVal = Input_Opt.PARAMETER_EI_SOOT[0];
+        while ( currVal <= Input_Opt.PARAMETER_EI_SOOT[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_EI_SOOT[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_EI_SOOT.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_EI_SOOT[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else {
+        std::cout << " Unknown unit for variable 'EI_SOOT': ";
+        std::cout << Input_Opt.PARAMETER_EI_SOOT_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+
+    /* ======================================================================= */
+    /* ---- EI_SOOTRAD ------------------------------------------------------- */
+    /* ---- Accepted units are: m (default), nm                                */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_EI_SOOTRAD_RANGE ) {
+        currVal = Input_Opt.PARAMETER_EI_SOOTRAD[0];
+        while ( currVal <= Input_Opt.PARAMETER_EI_SOOTRAD[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_EI_SOOTRAD[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_EI_SOOTRAD.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_EI_SOOTRAD[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_EI_SOOTRAD_UNIT.compare( "m" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( Input_Opt.PARAMETER_EI_SOOTRAD_UNIT.compare( "nm" ) == 0 ) {
+        /* Convert nm to m */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] /= 1.00E+09;
+    } else {
+        std::cout << " Unknown unit for variable 'EI_SOOTRAD': ";
+        std::cout << Input_Opt.PARAMETER_EI_SOOTRAD_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+
+    /* ======================================================================= */
+    /* ---- TOTAL FUEL FLOW -------------------------------------------------- */
+    /* ---- Accepted units are: kg/s (default)                                 */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_FF_RANGE ) {
+        currVal = Input_Opt.PARAMETER_FF[0];
+        while ( currVal <= Input_Opt.PARAMETER_FF[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_FF[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_FF.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_FF[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_FF_UNIT.compare( "kg/s" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else {
+        std::cout << " Unknown unit for variable 'FF': ";
+        std::cout << Input_Opt.PARAMETER_FF_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+    
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+
+    /* ======================================================================= */
+    /* ---- BACKGROUND NOX MIXING RATIO -------------------------------------- */
+    /* ---- Accepted units are: ppb (default), ppt, ppm                        */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_BACKG_NOX_RANGE ) {
+        currVal = Input_Opt.PARAMETER_BACKG_NOX[0];
+        while ( currVal <= Input_Opt.PARAMETER_BACKG_NOX[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_BACKG_NOX[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_BACKG_NOX.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_BACKG_NOX[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_BACKG_NOX_UNIT.compare( "ppb" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( Input_Opt.PARAMETER_BACKG_NOX_UNIT.compare( "ppt" ) == 0 ) {
+        /* Convert ppt to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E-03;
+    } else if ( Input_Opt.PARAMETER_BACKG_NOX_UNIT.compare( "ppm" ) == 0 ) {
+        /* Convert ppm to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E+03;
+    } else {
+        std::cout << " Unknown unit for variable 'BACKG_NOX': ";
+        std::cout << Input_Opt.PARAMETER_BACKG_NOX_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+    
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+    
+    /* ======================================================================= */
+    /* ---- BACKGROUND HNO3 MIXING RATIO ------------------------------------- */
+    /* ---- Accepted units are: ppb (default), ppt, ppm                        */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_BACKG_HNO3_RANGE ) {
+        currVal = Input_Opt.PARAMETER_BACKG_HNO3[0];
+        while ( currVal <= Input_Opt.PARAMETER_BACKG_HNO3[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_BACKG_HNO3[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_BACKG_HNO3.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_BACKG_HNO3[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_BACKG_HNO3_UNIT.compare( "ppb" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( Input_Opt.PARAMETER_BACKG_HNO3_UNIT.compare( "ppt" ) == 0 ) {
+        /* Convert ppt to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E-03;
+    } else if ( Input_Opt.PARAMETER_BACKG_HNO3_UNIT.compare( "ppm" ) == 0 ) {
+        /* Convert ppm to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E+03;
+    } else {
+        std::cout << " Unknown unit for variable 'BACKG_HNO3': ";
+        std::cout << Input_Opt.PARAMETER_BACKG_HNO3_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+    
+    /* ======================================================================= */
+    /* ---- BACKGROUND O3 MIXING RATIO --------------------------------------- */
+    /* ---- Accepted units are: ppb (default), ppt, ppm                        */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_BACKG_O3_RANGE ) {
+        currVal = Input_Opt.PARAMETER_BACKG_O3[0];
+        while ( currVal <= Input_Opt.PARAMETER_BACKG_O3[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_BACKG_O3[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_BACKG_O3.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_BACKG_O3[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_BACKG_O3_UNIT.compare( "ppb" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( Input_Opt.PARAMETER_BACKG_O3_UNIT.compare( "ppt" ) == 0 ) {
+        /* Convert ppt to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E-03;
+    } else if ( Input_Opt.PARAMETER_BACKG_O3_UNIT.compare( "ppm" ) == 0 ) {
+        /* Convert ppm to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E+03;
+    } else {
+        std::cout << " Unknown unit for variable 'BACKG_O3': ";
+        std::cout << Input_Opt.PARAMETER_BACKG_O3_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+    
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+    
+    /* ======================================================================= */
+    /* ---- BACKGROUND CO MIXING RATIO --------------------------------------- */
+    /* ---- Accepted units are: ppb (default), ppt, ppm                        */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_BACKG_CO_RANGE ) {
+        currVal = Input_Opt.PARAMETER_BACKG_CO[0];
+        while ( currVal <= Input_Opt.PARAMETER_BACKG_CO[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_BACKG_CO[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_BACKG_CO.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_BACKG_CO[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_BACKG_CO_UNIT.compare( "ppb" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( Input_Opt.PARAMETER_BACKG_CO_UNIT.compare( "ppt" ) == 0 ) {
+        /* Convert ppt to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E-03;
+    } else if ( Input_Opt.PARAMETER_BACKG_CO_UNIT.compare( "ppm" ) == 0 ) {
+        /* Convert ppm to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E+03;
+    } else {
+        std::cout << " Unknown unit for variable 'BACKG_CO': ";
+        std::cout << Input_Opt.PARAMETER_BACKG_CO_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+    
+    /* ======================================================================= */
+    /* ---- BACKGROUND CH4 MIXING RATIO -------------------------------------- */
+    /* ---- Accepted units are: ppb (default), ppt, ppm                        */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_BACKG_CH4_RANGE ) {
+        currVal = Input_Opt.PARAMETER_BACKG_CH4[0];
+        while ( currVal <= Input_Opt.PARAMETER_BACKG_CH4[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_BACKG_CH4[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_BACKG_CH4.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_BACKG_CH4[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_BACKG_CH4_UNIT.compare( "ppb" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( Input_Opt.PARAMETER_BACKG_CH4_UNIT.compare( "ppt" ) == 0 ) {
+        /* Convert ppt to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E-03;
+    } else if ( Input_Opt.PARAMETER_BACKG_CH4_UNIT.compare( "ppm" ) == 0 ) {
+        /* Convert ppm to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E+03;
+    } else {
+        std::cout << " Unknown unit for variable 'BACKG_CH4': ";
+        std::cout << Input_Opt.PARAMETER_BACKG_CH4_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
+        y[counter-1][i] = v[0][i];
+    }
+    cases.clear();
+    
+    /* ======================================================================= */
+    /* ---- BACKGROUND SO2 MIXING RATIO -------------------------------------- */
+    /* ---- Accepted units are: ppb (default), ppt, ppm                        */
+    /* ======================================================================= */
+    
+    if ( Input_Opt.PARAMETER_BACKG_SO2_RANGE ) {
+        currVal = Input_Opt.PARAMETER_BACKG_SO2[0];
+        while ( currVal <= Input_Opt.PARAMETER_BACKG_SO2[2] ) {
+            cases.push_back( currVal );
+            currVal += Input_Opt.PARAMETER_BACKG_SO2[1];
+        }
+    } else {
+        for ( i = 0; i < Input_Opt.PARAMETER_BACKG_SO2.size(); i++ )
+            cases.push_back(Input_Opt.PARAMETER_BACKG_SO2[i]);
+    }
+    
+    if ( Input_Opt.PARAMETER_BACKG_SO2_UNIT.compare( "ppb" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( Input_Opt.PARAMETER_BACKG_SO2_UNIT.compare( "ppt" ) == 0 ) {
+        /* Convert ppt to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E-03;
+    } else if ( Input_Opt.PARAMETER_BACKG_SO2_UNIT.compare( "ppm" ) == 0 ) {
+        /* Convert ppm to ppb */
+        for ( i = 0; i < cases.size(); i++ )
+            cases[i] *= 1.00E+03;
+    } else {
+        std::cout << " Unknown unit for variable 'BACKG_SO2': ";
+        std::cout << Input_Opt.PARAMETER_BACKG_SO2_UNIT << std::endl;
+        exit(1);
+    }
+
+    z.push_back( Vector_1D(cases.size() ) );
+    for ( i = 0; i < cases.size(); i++ )
+        z[0][i] = cases[i];
+    nCases *= cases.size();
+
+    u = Copy_blocked(y,z[0].size());
+    v = Copy_interleaved(z,y[0].size());
+
+    for ( i = 0; i < counter; i++ )
+        y[i].clear();
+    z[0].clear();
+    y.clear(); z.clear();
+
+    counter += 1;
+    for ( i = 0; i < counter; i++ )
+        y.push_back(Vector_1D( nCases ));
+
+    for ( i = 0; i < nCases; i++ ) {
+        for ( j = 0; j < counter - 1; j++ )
+            y[j][i] = u[j][i];
         y[counter-1][i] = v[0][i];
     }
     
