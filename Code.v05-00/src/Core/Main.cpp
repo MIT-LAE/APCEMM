@@ -36,7 +36,7 @@ static int DIR_FAIL = -9;
 
 void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
-int PlumeModel( const Input &inputCase );
+int PlumeModel( const OptInput &Input_Opt, const Input &inputCase );
 
 inline bool exist( const std::string &name )
 {
@@ -200,7 +200,7 @@ int main( int , char* )
                 /* Plume Model (APCEMM) */
                 case 1:
 
-                    iERR = PlumeModel( inputCase );
+                    iERR = PlumeModel( Input_Opt, inputCase );
                     break;
 
                 /* Adjoint Model */

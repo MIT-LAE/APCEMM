@@ -1492,7 +1492,7 @@ int Solution::SpinUp( std::vector<double> &amb_Value, \
         FIX[iFix] = amb_Value[NVAR+iFix] * airDens;
 
     /* Define sun parameters */
-    SZA *sun = new SZA( input.latitude_deg(), input.dayGMT() );
+    SZA *sun = new SZA( input.latitude_deg(), input.emissionDay() );
     
     if ( DBG )
         std::cout << "\n Running spin-up from " << curr_Time_s / 3600.0 << " to " << RunUntil / 3600.0 << " [hr]\n";

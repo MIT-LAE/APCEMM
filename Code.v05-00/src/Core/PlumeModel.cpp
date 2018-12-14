@@ -29,6 +29,7 @@ static int SUCCESS     =  1;
 #endif /* OMP */
 
 #include "Util/ForwardDecl.hpp"
+#include "Core/Input_Mod.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
 #include "Core/Input.hpp"
@@ -91,7 +92,7 @@ double UpdateTime( double time, double tStart, \
 void Transport( Solution& Data, SANDS::Solver& Solver );
 
 
-int PlumeModel( const Input &input )
+int PlumeModel( const OptInput &Input_Opt, const Input &input )
 {
 
 bool printDEBUG = 0;
@@ -110,7 +111,7 @@ bool printDEBUG = 0;
     const RealDouble longitude_deg = input.longitude_deg();
     const RealDouble latitude_deg  = input.latitude_deg();
 
-    const UInt dayGMT = input.dayGMT();
+    const UInt emissionDay        = input.emissionDay();
     const RealDouble emissionTime = input.emissionTime();
 
     /* Grid indices */
@@ -164,7 +165,7 @@ bool printDEBUG = 0;
                                          / physFunc::pSat_H2Os( temperature_K );
 
     /* Define sun parameters */
-    SZA *sun = new SZA( latitude_deg, dayGMT );    
+    SZA *sun = new SZA( latitude_deg, emissionDay ); 
 
 
     /** ~~~~~~~~~~~~~~~~~ **/
@@ -480,9 +481,8 @@ bool printDEBUG = 0;
 
     /* Output run characteristics to log file/console */
 
-#pragma omp critical
+    #pragma omp critical
     {
-
         #ifdef OMP
             std::cout << "\n\n ## ON THREAD: " << omp_get_thread_num() << "\n ##";
         #endif /* OMP */
@@ -543,6 +543,9 @@ bool printDEBUG = 0;
         std::cout << " ## - PA : " << std::setw(txtWidth+3) << Data.PA_nDens << " [#/cm^3], \n";
         std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_rEff * 1.00E-03  << " [mum], \n";
         std::cout << " ##        " << std::setw(txtWidth+3) << Data.PA_SAD   << " [mum^2/cm^3] \n";
+
+        /* Force flush */
+        std::cout << std::endl;
 
     }
 
