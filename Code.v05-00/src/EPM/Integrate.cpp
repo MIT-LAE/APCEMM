@@ -547,7 +547,7 @@ namespace EPM
 
 #pragma omp critical
         {
-            observer.print2File();
+//            observer.print2File();
         }
         /* Output variables */
 
