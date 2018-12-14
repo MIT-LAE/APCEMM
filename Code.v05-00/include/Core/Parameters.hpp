@@ -23,7 +23,6 @@
 #define YLIM              6.5E+02     /* y-limits of the domain [m] */
 
 /* Ring structure */
-#define RINGS             1           /* 1 or 0? 1: Ring structure, 0: No rings */
 #define NRING             15          /* Number of rings */
 
 /* Time */

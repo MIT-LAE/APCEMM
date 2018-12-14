@@ -18,26 +18,7 @@
 #define APCEMM_LUT              1    /* Build look-up table? */
 #define REBUILD                 0    /* Overwrite output files */
 
-/* TRANSPORT */
-#define DIFFUSION               1    /* Is diffusion turned on? */
-#define ADVECTION               1    /* Is advection turned on? */
-
-/* CHEMISTRY */
-#define CHEMISTRY               1    /* Is chemistry turned on? */
-#define HETCHEMISTRY            0    /* Is heterogeneous chemistry
-                                        turned on? */
 #define PSC_SIM                 0    /* Polar Stratospheric Clouds? */
-#define ADJOINT                 1    /* Adjoint chemistry? */
-
-/* If chemistry is turned off, make sure that adjoint is also 
- * turned off */
-#if ( !CHEMISTRY )
-
-    /* Reset ADJOINT */
-    #undef ADJOINT
-    #define ADJOINT             0   
-
-#endif
 
 /* MICROPHYSICS */
 #define ICE_MICROPHYSICS        0    /* Is ice microphysics turned 
@@ -55,9 +36,6 @@
 #define Y_SYMMETRY              1    /* Is the problem symmetric 
                                         around the y-axis? */
 
-/* BACKGROUND MIX RATIO */
-const char* const AMBFILE     = "data/Ambient.txt";
-
 /* METEOROLOGICAL DATA */ 
 #define LOAD_MET                0    /* Load fine plume-scale met 
                                         data (2D water and 
@@ -69,22 +47,14 @@ const char* const AMBFILE     = "data/Ambient.txt";
  * Saving as float will reduce the memory requirements */
 #define SAVE_TO_DOUBLE          1 
 
-/* Save ring-averaged concentrations? */
-#define SAVE_FORWARD            0
-
 /* Save chemical rates? */
 #define SAVE_PL                 1
-
-/* Save output from adjoint? */
-#define SAVE_ADJOINT            1
 
 /* If chemistry is turned off, don't save PL nor ADJOINT results */
 #if ( !CHEMISTRY )
 
     #undef SAVE_PL
     #define SAVE_PL             0
-    #undef SAVE_ADJOINT
-    #define SAVE_ADJOINT        1
 
 #endif
 

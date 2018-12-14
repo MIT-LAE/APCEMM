@@ -17,10 +17,12 @@
 #include "Core/Parameters.hpp"
 
 double UpdateTime( double time, const double tStart, \
-                   const double sunRise, const double sunSet );
+                   const double sunRise, const double sunSet, \
+                   const double DYN_DT );
 
 std::vector<double> BuildTime( const double tStart, const double tEnd, \
-                               const double sunRise, const double sunSet )
+                               const double sunRise, const double sunSet, \
+                               const double DYN_DT )
 {
 
     unsigned int nT = 0;
@@ -30,10 +32,13 @@ std::vector<double> BuildTime( const double tStart, const double tEnd, \
     double timeStep;
 
     while ( time < tEnd ) {
+
+        /* For debug purposes, uncomment the next line */
+        //std::cout << time/3600 << ", " << timeStep << std::endl;
+
         timeArray.push_back((double) 0.0);
         timeArray[nT] = time;
-        timeStep = UpdateTime( time, tStart, sunRise, sunSet );
-        //std::cout << time/3600 << ", " << timeStep << std::endl;
+        timeStep = UpdateTime( time, tStart, sunRise, sunSet, DYN_DT );
         time += std::min( timeStep, std::abs( ( tEnd - time ) ) );
         nT++;
     }
@@ -46,10 +51,11 @@ std::vector<double> BuildTime( const double tStart, const double tEnd, \
 } /* End of BuildTime */
 
 double UpdateTime( double time, const double tStart, \
-                   const double sunRise, const double sunSet )
+                   const double sunRise, const double sunSet, \
+                   const double DYN_DT )
 {
 
-    const double default_TimeStep = DT;
+    const double default_TimeStep = DYN_DT;
     double timeStep;
 
     if (( time - tStart ) < 3600.0 && ( time - tStart ) >= 0.0) {
