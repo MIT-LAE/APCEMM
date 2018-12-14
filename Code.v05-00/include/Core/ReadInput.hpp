@@ -35,7 +35,7 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC );
 Vector_2D Copy_blocked( Vector_2D& m, int n );
 Vector_2D Copy_interleaved( Vector_2D& m, int n );
 Vector_2D Reshape_Vector( Vector_2D& vector_2D, int n_x, int n_y );
-Vector_2D CombVec( const OptInput Input_Opt );
+Vector_2D CombVec( OptInput &Input_Opt );
 
 #endif /* INPUT_READER_H_INCLUDED */
 

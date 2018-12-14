@@ -42,7 +42,7 @@ void Read_Input_File( OptInput &Input_Opt )
         fullPath += simDir;
     else {
         std::cout << " Simulation Directory is not defined!" << std::endl;
-        std::cout << " Make sure that the variable 'currDir' is exported" << std::endl;
+        std::cout << " Make sure that the variable 'APCEMM_runDir' is exported" << std::endl;
         exit(1);
     }
    
@@ -2213,7 +2213,7 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
 
 } /* End of Read_Aerosol_Menu */
 
-Vector_2D CombVec( const OptInput Input_Opt )
+Vector_2D CombVec( OptInput &Input_Opt )
 {
 
     unsigned int counter = 1;
@@ -2261,6 +2261,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         exit(1);
     }
 
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
+
     y.push_back(Vector_1D(cases.size()));
     for ( i = 0; i < cases.size(); i++ )
         y[0][i] = cases[i];
@@ -2293,6 +2296,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         std::cout << Input_Opt.PARAMETER_RHW_UNIT << std::endl;
         exit(1);
     }
+
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
 
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
@@ -2342,6 +2348,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         exit(1);
     }
 
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
+
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
         z[0][i] = cases[i];
@@ -2389,6 +2398,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         std::cout << Input_Opt.PARAMETER_LATITUDE_UNIT << std::endl;
         exit(1);
     }
+
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
     
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
@@ -2441,6 +2453,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         exit(1);
     }
 
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_PRESSURE_UNIT = "Pa";
+
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
         z[0][i] = cases[i];
@@ -2488,6 +2503,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         std::cout << Input_Opt.PARAMETER_EDAY_UNIT << std::endl;
         exit(1);
     }
+
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_EDAY_UNIT = "1-365";
 
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
@@ -2537,6 +2555,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         exit(1);
     }
 
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_ETIME_UNIT = "0-24";
+
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
         z[0][i] = cases[i];
@@ -2584,6 +2605,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         std::cout << Input_Opt.PARAMETER_EI_NOX_UNIT << std::endl;
         exit(1);
     }
+
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_EI_NOX_UNIT = "g/kg_fuel";
 
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
@@ -2633,6 +2657,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         exit(1);
     }
 
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_EI_CO_UNIT = "g/kg_fuel";
+
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
         z[0][i] = cases[i];
@@ -2681,6 +2708,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         exit(1);
     }
 
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_EI_UHC_UNIT = "g/kg_fuel";
+
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
         z[0][i] = cases[i];
@@ -2728,6 +2758,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         std::cout << Input_Opt.PARAMETER_EI_SO2_UNIT << std::endl;
         exit(1);
     }
+
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_EI_SO2_UNIT = "g/kg_fuel";
 
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
@@ -2781,6 +2814,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         exit(1);
     }
 
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_EI_SO2TOSO4_UNIT = "-";
+
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
         z[0][i] = cases[i];
@@ -2828,6 +2864,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         std::cout << Input_Opt.PARAMETER_EI_SOOT_UNIT << std::endl;
         exit(1);
     }
+
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_EI_SOOT_UNIT = "g/kg_fuel";
 
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
@@ -2881,6 +2920,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         exit(1);
     }
 
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_EI_SOOTRAD_UNIT = "m";
+
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
         z[0][i] = cases[i];
@@ -2928,6 +2970,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         std::cout << Input_Opt.PARAMETER_FF_UNIT << std::endl;
         exit(1);
     }
+
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_FF_UNIT = "kg/s";
 
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
@@ -2985,6 +3030,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         exit(1);
     }
 
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_BACKG_NOX_UNIT = "ppb";
+
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
         z[0][i] = cases[i];
@@ -3040,6 +3088,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         std::cout << Input_Opt.PARAMETER_BACKG_HNO3_UNIT << std::endl;
         exit(1);
     }
+
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_BACKG_HNO3_UNIT = "HNO3";
 
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
@@ -3097,6 +3148,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         exit(1);
     }
 
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_BACKG_O3_UNIT = "ppb";
+
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
         z[0][i] = cases[i];
@@ -3152,6 +3206,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         std::cout << Input_Opt.PARAMETER_BACKG_CO_UNIT << std::endl;
         exit(1);
     }
+
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_BACKG_CO_UNIT = "ppb";
 
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
@@ -3209,6 +3266,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         exit(1);
     }
 
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_BACKG_CH4_UNIT = "ppb";
+
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
         z[0][i] = cases[i];
@@ -3264,6 +3324,9 @@ Vector_2D CombVec( const OptInput Input_Opt )
         std::cout << Input_Opt.PARAMETER_BACKG_SO2_UNIT << std::endl;
         exit(1);
     }
+
+    /* Updating unit now that conversion has been taken care of */
+    Input_Opt.PARAMETER_BACKG_SO2_UNIT = "ppb";
 
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
