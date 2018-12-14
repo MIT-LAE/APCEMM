@@ -78,9 +78,9 @@ double SZA_CST[3];
 
 void DiffParam( double time, double &d_x, double &d_y );
 void AdvGlobal( double time, double &v_x, double &v_y, double &dTrav_x, double &dTrav_y );
-std::vector<double> BuildTime( const double tStart, const double tEnd, \
-                               const double sunRise, const double sunSet, \
-                               const double DYN_DT );
+Vector_1D BuildTime( const double tStart, const double tEnd, \
+                     const double sunRise, const double sunSet, \
+                     const double DYN_DT );
 void Transport( Solution& Data, SANDS::Solver& Solver );
 
 
@@ -218,7 +218,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     Mesh m;
 
     /* Get cell areas */
-    const std::vector<std::vector<double>> cellAreas = m.areas();
+    const Vector_2D cellAreas = m.areas();
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -260,7 +260,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Create time array */
 
     /* Vector of time in [s] */
-    const std::vector<double> timeArray = BuildTime ( tInitial_s, tFinal_s, 3600.0*sun->sunRise, 3600.0*sun->sunSet, DYN_DT );
+    const Vector_1D timeArray = BuildTime ( tInitial_s, tFinal_s, 3600.0*sun->sunRise, 3600.0*sun->sunSet, DYN_DT );
 
     /* Time counter [-] */
     unsigned int nTime = 0;
@@ -484,7 +484,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Transport for solid aerosols? */
     const bool TRANSPORT_PA = ( PA_MICROPHYSICS == 2 );
 
-    std::vector<double> vFall( Data.nBin_PA, 0.0E+00 );
+    Vector_1D vFall( Data.nBin_PA, 0.0E+00 );
     if ( TRANSPORT_PA ) {
         /* Compute settling velocities */
         vFall = AIM::SettlingVelocity( Data.solidAerosol.getBinCenters(), \
@@ -529,7 +529,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Compute ring areas */
     ringCluster.ComputeRingAreas( cellAreas, mapRing2Mesh );
-    const std::vector<double> ringArea = ringCluster.getRingArea();
+    const Vector_1D ringArea = ringCluster.getRingArea();
     const double totArea = std::accumulate( ringArea.begin(), ringArea.end(), 0 );
 
     /* Add emission into the grid */
@@ -631,7 +631,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 
     double frac_gSO4 = 0.0E+00;
-    std::vector<double> aerosolProp( 3, 0.0E+00 );
+    Vector_1D aerosolProp( 3, 0.0E+00 );
     double AerosolArea[NAERO];
     double AerosolRadi[NAERO];
     double IWC = 0;
@@ -1492,8 +1492,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::copy(sun->CSZA_Vector.begin(), sun->CSZA_Vector.end(), SZA_CST);
         double VAR_OPT[NVAR];
 
-        const std::vector<double> initBackg = ringSpecies.RingAverage( ringArea, totArea, 0 );
-        const std::vector<double> finalPlume = ringSpecies.RingAverage( ringArea, totArea, timeArray.size() - 1 );
+        const Vector_1D initBackg = ringSpecies.RingAverage( ringArea, totArea, 0 );
+        const Vector_1D finalPlume = ringSpecies.RingAverage( ringArea, totArea, timeArray.size() - 1 );
 
         IERR = KPP_Main_ADJ( &(finalPlume)[0], &(initBackg)[0],   \
                              temperature_K, pressure_Pa, airDens, \
