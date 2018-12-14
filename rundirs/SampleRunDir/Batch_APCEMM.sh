@@ -94,15 +94,16 @@ export OMP_NUM_THREADS=$omp_threads
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Define current directory
-currDir=${PWD##}
+APCEMM_runDir=${PWD##}
+export APCEMM_runDir
 
-if [[ -e ${currDir}/APCEMM ]]; then
-    rm ${currDir}/APCEMM
+if [[ -e ${APCEMM_runDir}/APCEMM ]]; then
+    rm ${APCEMM_runDir}/APCEMM
 fi
 
 log=$PWD/log.build
-if [[ -e ${currDir}/$log ]]; then
-    rm ${currDir}/$log
+if [[ -e ${APCEMM_runDir}/$log ]]; then
+    rm ${APCEMM_runDir}/$log
 fi
 
 make realclean
@@ -113,7 +114,7 @@ else
 fi
 
 # Change this to point to the APCEMM binary file
-export exepath=${currDir}/APCEMM
+export exepath=${APCEMM_runDir}/APCEMM
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Start the simulation
@@ -141,4 +142,5 @@ oom_check $?
 # Clear variable
 unset id
 unset log
-unset currDir
+unset APCEMM_runDir
+unset exepath
