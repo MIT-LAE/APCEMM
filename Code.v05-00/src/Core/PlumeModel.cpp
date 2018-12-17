@@ -54,7 +54,7 @@ static int SUCCESS     =  1;
 #include "Core/Cluster.hpp"
 #include "Core/Species.hpp"
 
-#if ( TIME_IT )
+#ifdef TIME_IT
     #include "Core/Timer.hpp"
 #endif /* TIME_IT */
 
@@ -178,7 +178,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     bool ITS_TIME_FOR_ICE_COAGULATION = 0;
     double lastTimeIceCoag, dtIceCoag;
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
     Timer Stopwatch, Stopwatch_cumul;
     unsigned long SANDS_clock, KPP_clock;
@@ -663,7 +663,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
     Stopwatch_cumul.Start( );
 
@@ -757,7 +757,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
         Stopwatch.Start( reset );
 
@@ -791,7 +791,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             }
         }
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
         Stopwatch.Stop( );
         SANDS_clock = Stopwatch.Elapsed( );
@@ -857,7 +857,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ======================================================================= */
 
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
         Stopwatch.Start( reset );
 
@@ -1220,7 +1220,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         #endif /* RINGS */
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
         Stopwatch.Stop( );
         KPP_clock = Stopwatch.Elapsed( );
@@ -1384,7 +1384,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 #endif /* CO2_MASS_CHECK */
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
         SANDS_clock_cumul += SANDS_clock;
         KPP_clock_cumul   += KPP_clock;
@@ -1407,7 +1407,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
     Stopwatch_cumul.Stop( );
     clock_cumul = Stopwatch_cumul.Elapsed( );

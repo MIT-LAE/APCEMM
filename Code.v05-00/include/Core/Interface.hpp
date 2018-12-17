@@ -97,9 +97,6 @@ const char* const OUT_FILE_LA = "data/LiqAerosol.nc";
 #endif
 
 
-/* TIME */
-#define TIME_IT                 0    /* Time simulation? */
-
 /* MASS CHECK */
 #define NOy_MASS_CHECK          0    /* NOy mass check? */
 #define CO2_MASS_CHECK          0    /* CO2 mass check? */
