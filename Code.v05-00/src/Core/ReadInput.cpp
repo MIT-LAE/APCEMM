@@ -2788,19 +2788,24 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
-    try {
-        value = std::stod( tokens[0] );
-        if ( value > 0.0E+00 )
-            Input_Opt.TS_FREQ = value;
-        else {
-            std::cout << " Wrong input for: " << variable << std::endl;
-            std::cout << " Frequency needs to be positive" << std::endl;
+   
+    if ( ( strcmp(tokens[0].c_str(), "-") == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Inf") == 0 ) )
+        Input_Opt.TS_FREQ = 0.0E+00;
+    else {
+        try {
+            value = std::stod( tokens[0] );
+            if ( value > 0.0E+00 )
+                Input_Opt.TS_FREQ = value;
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Frequency needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string to double for " << variable << std::endl;
             exit(1);
         }
-    } catch(std::exception& e) {
-        std::cout << " Could not convert string to double for " << variable << std::endl;
-        exit(1);
     }
 
     /* ==================================================== */
@@ -2882,18 +2887,23 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
     
-    try {
-        value = std::stod( tokens[0] );
-        if ( value > 0.0E+00 )
-            Input_Opt.TS_AERO_FREQ = value;
-        else {
-            std::cout << " Wrong input for: " << variable << std::endl;
-            std::cout << " Frequency needs to be positive" << std::endl;
+    if ( ( strcmp(tokens[0].c_str(), "-") == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Inf") == 0 ) )
+        Input_Opt.TS_AERO_FREQ = 0.0E+00;
+    else {
+        try {
+            value = std::stod( tokens[0] );
+            if ( value > 0.0E+00 )
+                Input_Opt.TS_AERO_FREQ = value;
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Frequency needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string to double for " << variable << std::endl;
             exit(1);
         }
-    } catch(std::exception& e) {
-        std::cout << " Could not convert string to double for " << variable << std::endl;
-        exit(1);
     }
 
     /* Return success */
