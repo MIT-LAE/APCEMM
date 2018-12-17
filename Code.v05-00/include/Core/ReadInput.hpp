@@ -31,6 +31,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC );
 void Read_Transport_Menu( OptInput &Input_Opt, bool &RC );
 void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC );
 void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC );
+void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC );
+void Read_Diagnostic_Menu( OptInput &Input_Opt, bool &RC );
+void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC );
+void Read_PL_Menu( OptInput &Input_Opt, bool &RC );
 
 Vector_2D Copy_blocked( Vector_2D& m, int n );
 Vector_2D Copy_interleaved( Vector_2D& m, int n );

@@ -100,6 +100,18 @@ void Read_Input_File( OptInput &Input_Opt )
 
         } else if ( strstr( line.c_str(), "AEROSOL MENU" ) != NULL ) {
             Read_Aerosol_Menu( Input_Opt, RC );
+        
+        } else if ( strstr( line.c_str(), "METEOROLOGY MENU" ) != NULL ) {
+            Read_Meteorology_Menu( Input_Opt, RC );
+        
+        } else if ( strstr( line.c_str(), "DIAGNOSTIC MENU" ) != NULL ) {
+            Read_Diagnostic_Menu( Input_Opt, RC );
+        
+        } else if ( strstr( line.c_str(), "TIMESERIES MENU" ) != NULL ) {
+            Read_Timeseries_Menu( Input_Opt, RC );
+
+        } else if ( strstr( line.c_str(), "PROD & LOSS MENU" ) != NULL ) {
+            Read_PL_Menu( Input_Opt, RC );
 
         } else if ( strstr( line.c_str(), "END OF FILE" ) != NULL )
             break;
@@ -2244,6 +2256,443 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " Turn on plume updraft?  : " << Input_Opt.AEROSOL_PLUME_UPDRAFT       << std::endl;
 
 } /* End of Read_Aerosol_Menu */
+
+void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
+{
+    
+    /* DESCRIPTION: Function Read\_Meteorology\_Menu reads the METEOROLOGY MENU
+     * section of the APCEMM input file. */
+
+    /* INPUT/OUTPUT PARAMETERS:
+     * - Input_Opt: Input options
+     * - RC: Success or failure
+     */
+
+    /* Read until all lines from the menu are read */
+
+    std::vector<std::string> tokens;
+    std::string variable;
+
+    /* ==================================================== */
+    /* Initialize T from MET?                               */
+    /* ==================================================== */
+    
+    variable = "Initialize T from MET?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+        Input_Opt.MET_TEMP_INIT = 1;
+    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+        Input_Opt.MET_TEMP_INIT = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* ==================================================== */
+    /* Initialize H2O from MET?                             */
+    /* ==================================================== */
+    
+    variable = "Initialize H2O from MET?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+        Input_Opt.MET_H2O_INIT = 1;
+    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+        Input_Opt.MET_H2O_INIT = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Met file                                             */
+    /* ==================================================== */
+
+    variable = "Met file";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
+    Input_Opt.MET_FILENAME = tokens[0];
+
+    /* Return success */
+    RC = SUCCESS;
+
+    /* ==================================================== */
+    /* Print to screen                                      */
+    /* ==================================================== */
+
+    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
+    std::cout << " %%% METEOROLOGY MENU %%%:"                                           << std::endl;
+    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
+    std::cout << " Initialize T from MET?  : " << Input_Opt.MET_TEMP_INIT               << std::endl;
+    std::cout << " Initialize H2O from MET?: " << Input_Opt.MET_H2O_INIT                << std::endl;
+    std::cout << " Met file                : " << Input_Opt.MET_FILENAME                << std::endl;
+
+} /* End of Read_Meteorology_Menu */
+
+void Read_Diagnostic_Menu( OptInput &Input_Opt, bool &RC )
+{
+    
+    /* DESCRIPTION: Function Read\_Diagnostic\_Menu reads the DIAGNOSTIC MENU
+     * section of the APCEMM input file. */
+
+    /* INPUT/OUTPUT PARAMETERS:
+     * - Input_Opt: Input options
+     * - RC: Success or failure
+     */
+
+    /* Read until all lines from the menu are read */
+
+    std::vector<std::string> tokens;
+    std::string variable;
+
+    /* ==================================================== */
+    /* netCDF file name                                     */
+    /* ==================================================== */
+
+    variable = "netCDF file name";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
+    Input_Opt.DIAG_FILENAME = tokens[0];
+    
+    /* Skip line */
+    getline( inputFile, line, '\n' );
+
+    /* Return success */
+    RC = SUCCESS;
+
+    /* ==================================================== */
+    /* Print to screen                                      */
+    /* ==================================================== */
+
+    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
+    std::cout << " %%% DIAGNOSTIC MENU %%% :"                                           << std::endl;
+    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
+    std::cout << " netCDF file name        : " << Input_Opt.DIAG_FILENAME               << std::endl;
+    std::cout << " Diagnostic Entries ---> : L" << std::endl;
+
+} /* End of Read_Diagnostic_Menu */
+
+void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
+{
+    
+    /* DESCRIPTION: Function Read\_Timeseries\_Menu reads the TIMESERIES MENU
+     * section of the APCEMM input file. */
+
+    /* INPUT/OUTPUT PARAMETERS:
+     * - Input_Opt: Input options
+     * - RC: Success or failure
+     */
+
+    /* Read until all lines from the menu are read */
+
+    std::vector<std::string> tokens;
+    std::string variable;
+    int value;
+    
+    /* ==================================================== */
+    /* Save species timeseries?                             */
+    /* ==================================================== */
+    
+    variable = "Save species timeseries?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+        Input_Opt.TS_SPEC = 1;
+    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+        Input_Opt.TS_SPEC = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Inst timeseries file                                 */
+    /* ==================================================== */
+
+    variable = "Inst timeseries file";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
+    Input_Opt.TS_FILENAME = tokens[0];
+
+    /* ==================================================== */
+    /* Species to include                                   */
+    /* ==================================================== */
+   
+    variable = "Species to include";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    /* Store in values for variable */
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stoi( tokens[i] );
+            if ( value > 0 )
+                Input_Opt.TS_SPECIES.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to int for " << variable << std::endl;
+            exit(1);
+        }
+    }
+
+    /* ==================================================== */
+    /* Frequency [min]                                      */
+    /* ==================================================== */
+
+    variable = "Frequency [min]";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    try {
+        value = std::stod( tokens[0] );
+        if ( value > 0.0E+00 )
+            Input_Opt.TS_FREQ = value;
+        else {
+            std::cout << " Wrong input for: " << variable << std::endl;
+            std::cout << " Frequency needs to be positive" << std::endl;
+            exit(1);
+        }
+    } catch(std::exception& e) {
+        std::cout << " Could not convert string to double for " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Save aerosol timeseries?                             */
+    /* ==================================================== */
+    
+    variable = "Save aerosol timeseries?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+        Input_Opt.TS_AERO = 1;
+    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+        Input_Opt.TS_AERO = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Inst timeseries file                                 */
+    /* ==================================================== */
+
+    variable = "Inst timeseries file";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
+    Input_Opt.TS_AERO_FILENAME = tokens[0];
+
+    /* ==================================================== */
+    /* Aerosol to include                                   */
+    /* ==================================================== */
+   
+    variable = "Aerosol to include";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    /* Store in values for variable */
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stoi( tokens[i] );
+            if ( value > 0 )
+                Input_Opt.TS_AEROSOL.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to int for " << variable << std::endl;
+            exit(1);
+        }
+    }
+
+    /* ==================================================== */
+    /* Frequency [min]                                      */
+    /* ==================================================== */
+
+    variable = "Frequency [min]";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    try {
+        value = std::stod( tokens[0] );
+        if ( value > 0.0E+00 )
+            Input_Opt.TS_AERO_FREQ = value;
+        else {
+            std::cout << " Wrong input for: " << variable << std::endl;
+            std::cout << " Frequency needs to be positive" << std::endl;
+            exit(1);
+        }
+    } catch(std::exception& e) {
+        std::cout << " Could not convert string to double for " << variable << std::endl;
+        exit(1);
+    }
+
+    /* Return success */
+    RC = SUCCESS;
+    
+    /* ==================================================== */
+    /* Print to screen                                      */
+    /* ==================================================== */
+
+    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
+    std::cout << " %%% TIMESERIES MENU %%% :"                                           << std::endl;
+    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
+    std::cout << " Save species timeseries?: " << Input_Opt.TS_SPEC                     << std::endl;
+    std::cout << "  => Inst timeseries file: " << Input_Opt.TS_FILENAME                 << std::endl;
+    std::cout << "  => Species to include  : ";
+    for ( unsigned int i = 0; i < Input_Opt.TS_SPECIES.size(); i++ )
+        std::cout << Input_Opt.TS_SPECIES[i] << " ";
+    std::cout << std::endl;
+    std::cout << "  => Frequency [min]     : " << Input_Opt.TS_FREQ                     << std::endl;
+    std::cout << " Save aerosol timeseries?: " << Input_Opt.TS_AERO                     << std::endl;
+    std::cout << "  => Inst timeseries file: " << Input_Opt.TS_AERO_FILENAME                 << std::endl;
+    std::cout << "  => Aerosol to include  : ";
+    for ( unsigned int i = 0; i < Input_Opt.TS_AEROSOL.size(); i++ )
+        std::cout << Input_Opt.TS_AEROSOL[i] << " ";
+    std::cout << std::endl;
+    std::cout << "  => Frequency [min]     : " << Input_Opt.TS_AERO_FREQ                     << std::endl;
+
+} /* End of Read_Timeseries_Menu */
+
+void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
+{
+    
+    /* DESCRIPTION: Function Read\_PL\_Menu reads the PROD & LOSS MENU
+     * section of the APCEMM input file. */
+
+    /* INPUT/OUTPUT PARAMETERS:
+     * - Input_Opt: Input options
+     * - RC: Success or failure
+     */
+
+    /* Read until all lines from the menu are read */
+
+    std::vector<std::string> tokens;
+    std::string variable;
+    
+    /* ==================================================== */
+    /* Turn on P/L diag?                                    */
+    /* ==================================================== */
+    
+    variable = "Turn on P/L diag?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+   
+    /* Extract variable range */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+        Input_Opt.PL_PL = 1;
+    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+        Input_Opt.PL_PL = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Save O3 P/L?                                         */
+    /* ==================================================== */
+    
+    variable = "Save O3 P/L?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+   
+    /* Extract variable range */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+        Input_Opt.PL_O3 = 1;
+    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+        Input_Opt.PL_O3 = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* Return success */
+    RC = SUCCESS;
+    
+    /* ==================================================== */
+    /* Print to screen                                      */
+    /* ==================================================== */
+
+    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
+    std::cout << " %%% PROD & LOSS MENU %%%:"                                           << std::endl;
+    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
+    std::cout << " Turn on P/L diag?       : " << Input_Opt.PL_PL                       << std::endl;
+    std::cout << " Save O3 P/L?            : " << Input_Opt.PL_O3                       << std::endl;
+
+} /* End of Read_PL_Menu */
 
 Vector_2D CombVec( OptInput &Input_Opt )
 {
