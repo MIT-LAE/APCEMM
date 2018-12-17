@@ -140,8 +140,9 @@ class OptInput
         /* ---- METEOROLOGY MENU -------------------- */
         /* ========================================== */
 
-        bool MET_TEMP_INIT;
-        bool MET_H2O_INIT;
+        bool        MET_TEMP_INIT;
+        bool        MET_H2O_INIT;
+        std::string MET_FILENAME;
         
         /* ========================================== */
         /* ---- DIAGNOSTIC MENU --------------------- */
@@ -159,7 +160,7 @@ class OptInput
         RealDouble       TS_FREQ;
         bool             TS_AERO;
         std::string      TS_AERO_FILENAME;
-        std::vector<int> TS_AERO_AEROSOL;
+        std::vector<int> TS_AEROSOL;
         RealDouble       TS_AERO_FREQ;
 
         /* ========================================== */
