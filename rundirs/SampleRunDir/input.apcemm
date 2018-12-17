@@ -62,6 +62,7 @@ Turn on plume updraft?  : F
 %%% METEOROLOGY MENU %%%:
 Initialize T from MET?  : F
 Initialize H2O form MET?: F
+Met file                : /path/to/met/input
 ------------------------+------------------------------------------------------
 %%% DIAGNOSTIC MENU %%% :
 netCDF file name        : trac_avg.apcemm.hhmm
@@ -70,11 +71,11 @@ Diagnostic Entries ---> : L
 %%% TIMESERIES MENU %%% :
 Save species timeseries?: F
  => Inst timeseries file: ts_hhmm.nc
- => Species to include  : O3
+ => Species to include  : 1
  => Frequency [min]     : 10
 Save aerosol timeseries?: F
  => Inst timeseries file: ts_aerosol_hhmm.nc
- => Aerosol to include  : ice
+ => Aerosol to include  : 1
  => Frequency [min]     : 10
 ------------------------+------------------------------------------------------
 %%% PROD & LOSS MENU %%%:
