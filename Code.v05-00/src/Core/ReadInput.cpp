@@ -177,9 +177,11 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.SIMULATION_PARAMETER_SWEEP = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.SIMULATION_PARAMETER_SWEEP = 0;
     else {
         std::cout << " Wrong input for: " << "Parameter sweep?" << std::endl;
@@ -210,9 +212,11 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.SIMULATION_OVERWRITE = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.SIMULATION_OVERWRITE = 0;
     else {
         std::cout << " Wrong input for: " << "Overwrite?" << std::endl;
@@ -256,9 +260,11 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.SIMULATION_SAVE_FORWARD = 0;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.SIMULATION_SAVE_FORWARD = 0;
     else {
         std::cout << " Wrong input for: " << "Save forward results" << std::endl;
@@ -290,9 +296,11 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.SIMULATION_ADJOINT = 0;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.SIMULATION_ADJOINT = 0;
     else {
         std::cout << " Wrong input for: " << "Adjoint Optimization" << std::endl;
@@ -358,6 +366,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     std::string unit;
     unsigned first, last;
     std::size_t found;
+    double value; 
 
     /* Skip menu header lines */
     getline( inputFile, line, '\n' );
@@ -425,8 +434,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_TEMPERATURE_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_TEMPERATURE.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value > 0.0E+00 )
+                Input_Opt.PARAMETER_TEMPERATURE.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
     
     /* ==================================================== */
     /* Relative humidity                                    */
@@ -486,10 +508,24 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_RHW_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_RHW.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_RHW.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
 
+    /* Skipping line */
     getline( inputFile, line, '\n' );
     
     /* ==================================================== */
@@ -550,8 +586,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_LONGITUDE_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_LONGITUDE.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            Input_Opt.PARAMETER_LONGITUDE.push_back(std::stod( tokens[i] ));
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* Latitude                                             */
@@ -611,8 +653,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_LATITUDE_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_LATITUDE.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            Input_Opt.PARAMETER_LATITUDE.push_back(std::stod( tokens[i] ));
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
     
     /* ==================================================== */
     /* Pressure                                             */
@@ -672,9 +720,24 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_PRESSURE_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_PRESSURE.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value > 0.0E+00 )
+                Input_Opt.PARAMETER_PRESSURE.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
+
     
+    /* Skipping line */
     getline( inputFile, line, '\n' );
 
     /* ==================================================== */
@@ -735,8 +798,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_EDAY_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_EDAY.push_back(std::stoi(tokens[i]) % 365);
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = ( std::stoi( tokens[i] ) % 365 );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_EDAY.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to int for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* Emission time                                         */
@@ -796,9 +872,24 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_ETIME_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_ETIME.push_back(std::fmod(std::stod(tokens[i]),2.40E+01));
-    
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::fmod(std::stod(tokens[i]), 2.40E+01);
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_ETIME.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
+
+
+    /* Skipping line */
     getline( inputFile, line, '\n' );
 
     /* ==================================================== */
@@ -859,8 +950,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_BACKG_NOX_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_BACKG_NOX.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_BACKG_NOX.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* HNO3 mixing ratio                                      */
@@ -920,8 +1024,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_BACKG_HNO3_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_BACKG_HNO3.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_BACKG_HNO3.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
     
     /* ==================================================== */
     /* O3 mixing ratio                                      */
@@ -981,8 +1098,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_BACKG_O3_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_BACKG_O3.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_BACKG_O3.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* CO mixing ratio                                      */
@@ -1042,8 +1172,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_BACKG_CO_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_BACKG_CO.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_BACKG_CO.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* CH4 mixing ratio                                      */
@@ -1103,8 +1246,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_BACKG_CH4_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_BACKG_CH4.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_BACKG_CH4.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* SO2 mixing ratio                                      */
@@ -1164,10 +1320,24 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_BACKG_SO2_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_BACKG_SO2.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_BACKG_SO2.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
+   
 
-    
+    /* Skipping line */
     getline( inputFile, line, '\n' );
     
     /* ==================================================== */
@@ -1228,8 +1398,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_EI_NOX_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_EI_NOX.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_EI_NOX.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* CO emission index                                    */
@@ -1289,8 +1472,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_EI_CO_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_EI_CO.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_EI_CO.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* UHC emission index                                   */
@@ -1350,8 +1546,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_EI_UHC_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_EI_UHC.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_EI_UHC.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* SO2 emission index                                   */
@@ -1411,8 +1620,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_EI_SO2_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_EI_SO2.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_EI_SO2.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* SO2 to SO4 conversion                                */
@@ -1472,8 +1694,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_EI_SO2TOSO4_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_EI_SO2TOSO4.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_EI_SO2TOSO4.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* Soot emission index                                  */
@@ -1533,8 +1768,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_EI_SOOT_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_EI_SOOT.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_EI_SOOT.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* Soot radius                                          */
@@ -1594,8 +1842,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_EI_SOOTRAD_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_EI_SOOTRAD.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value > 0.0E+00 )
+                Input_Opt.PARAMETER_EI_SOOTRAD.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* ==================================================== */
     /* Fuel flow                                            */
@@ -1655,8 +1916,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_FF_UNIT.assign( unit );
 
     /* Store in values for variable */
-    for ( unsigned int i = 0; i < tokens.size(); i++ )
-        Input_Opt.PARAMETER_FF.push_back(std::stod(tokens[i]));
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_FF.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
 
     /* Return success */
@@ -1885,9 +2159,11 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.TRANSPORT_TRANSPORT = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.TRANSPORT_TRANSPORT = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -1906,9 +2182,11 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.TRANSPORT_FILL = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.TRANSPORT_FILL = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -1988,9 +2266,11 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.CHEMISTRY_CHEMISTRY = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.CHEMISTRY_CHEMISTRY = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2015,9 +2295,11 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.CHEMISTRY_RINGS = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.CHEMISTRY_RINGS = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2036,9 +2318,11 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.CHEMISTRY_HETCHEM = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.CHEMISTRY_HETCHEM = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2057,9 +2341,11 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
     
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.CHEMISTRY_READ_JRATES = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.CHEMISTRY_READ_JRATES = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2141,9 +2427,11 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.AEROSOL_GRAVSETTLING = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.AEROSOL_GRAVSETTLING = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2162,9 +2450,11 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.AEROSOL_COAGULATION = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.AEROSOL_COAGULATION = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2209,9 +2499,11 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
     
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.AEROSOL_ICE_GROWTH = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.AEROSOL_ICE_GROWTH = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2230,9 +2522,11 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
     
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.AEROSOL_PLUME_UPDRAFT = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.AEROSOL_PLUME_UPDRAFT = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2285,9 +2579,11 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
     
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.MET_TEMP_INIT = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.MET_TEMP_INIT = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2306,9 +2602,11 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
     
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.MET_H2O_INIT = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.MET_H2O_INIT = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2424,9 +2722,11 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
     
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.TS_SPEC = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.TS_SPEC = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2515,9 +2815,11 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
     
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.TS_AERO = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.TS_AERO = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2649,9 +2951,11 @@ void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.PL_PL = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.PL_PL = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
@@ -2670,9 +2974,11 @@ void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    if ( strcmp(tokens[0].c_str(), "T" ) == 0 )
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
         Input_Opt.PL_O3 = 1;
-    else if ( strcmp(tokens[0].c_str(), "F" ) == 0 )
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.PL_O3 = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
