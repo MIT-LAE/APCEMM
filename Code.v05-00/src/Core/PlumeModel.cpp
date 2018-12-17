@@ -130,6 +130,40 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     const bool COAG           = Input_Opt.AEROSOL_COAGULATION;
     const double COAG_DT      = Input_Opt.AEROSOL_COAGULATION_TIMESTEP;
     const bool ICE_GROWTH     = Input_Opt.AEROSOL_ICE_GROWTH;
+    
+    /* ======================================================================= */
+    /* ---- Input options from the METEOROLOGY MENU -------------------------- */
+    /* ======================================================================= */
+    
+    const bool MET_TEM_INIT   = Input_Opt.MET_TEMP_INIT;
+    const bool MET_H2O_INIT   = Input_Opt.MET_H2O_INIT;
+    const char* MET_FILENAME  = Input_Opt.MET_FILENAME.c_str();
+
+    /* ======================================================================= */
+    /* ---- Input options from the DIAGNOSTIC MENU --------------------------- */
+    /* ======================================================================= */
+    
+    const char* DIAG_FILENAME = Input_Opt.DIAG_FILENAME.c_str();
+
+    /* ======================================================================= */
+    /* ---- Input options from the TIMESERIES MENU --------------------------- */
+    /* ======================================================================= */
+    
+    const bool TS_SPEC                  = Input_Opt.TS_SPEC;
+    const char* TS_SPEC_FILENAME        = Input_Opt.TS_FILENAME.c_str();
+    const std::vector<int> TS_SPEC_LIST = Input_Opt.TS_SPECIES;
+    const double TS_FREQ                = Input_Opt.TS_FREQ;
+    const bool TS_AERO                  = Input_Opt.TS_AERO;
+    const char* TS_AERO_FILENAME        = Input_Opt.TS_AERO_FILENAME.c_str();
+    const std::vector<int> TS_AERO_LIST = Input_Opt.TS_AEROSOL;
+    const double TS_AERO_FREQ           = Input_Opt.TS_AERO_FREQ;
+    
+    /* ======================================================================= */
+    /* ---- Input options from the PROD & LOSS MENU -------------------------- */
+    /* ======================================================================= */
+
+    const bool SAVE_PL   = Input_Opt.PL_PL;
+    const bool SAVE_O3PL = Input_Opt.PL_O3;
 
     /* Define dynamic timestep in s */
     double DYN_DT;
