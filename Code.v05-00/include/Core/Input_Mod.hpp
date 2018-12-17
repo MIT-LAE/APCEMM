@@ -112,7 +112,7 @@ class OptInput
         /* ---- TRANSPORT MENU ---------------------- */
         /* ========================================== */
 
-        bool       TRANSPORT_TRANSPORT ;
+        bool       TRANSPORT_TRANSPORT;
         bool       TRANSPORT_FILL;
         RealDouble TRANSPORT_TIMESTEP;
 
@@ -135,6 +135,40 @@ class OptInput
         RealDouble AEROSOL_COAGULATION_TIMESTEP;
         bool       AEROSOL_ICE_GROWTH;
         bool       AEROSOL_PLUME_UPDRAFT;
+        
+        /* ========================================== */
+        /* ---- METEOROLOGY MENU -------------------- */
+        /* ========================================== */
+
+        bool MET_TEMP_INIT;
+        bool MET_H2O_INIT;
+        
+        /* ========================================== */
+        /* ---- DIAGNOSTIC MENU --------------------- */
+        /* ========================================== */
+
+        std::string DIAG_FILENAME;
+
+        /* ========================================== */
+        /* ---- TIMESERIES MENU --------------------- */
+        /* ========================================== */
+
+        bool             TS_SPEC;
+        std::string      TS_FILENAME;
+        std::vector<int> TS_SPECIES;
+        RealDouble       TS_FREQ;
+        bool             TS_AERO;
+        std::string      TS_AERO_FILENAME;
+        std::vector<int> TS_AERO_AEROSOL;
+        RealDouble       TS_AERO_FREQ;
+
+        /* ========================================== */
+        /* ---- PROD & LOSS MENU -------------------- */
+        /* ========================================== */
+
+        bool PL_PL;
+        bool PL_O3;
+
 
 };
 

@@ -98,7 +98,20 @@ OptInput::OptInput( ):
     AEROSOL_COAGULATION( 0 ),
     AEROSOL_COAGULATION_TIMESTEP( 0.0E+00 ),
     AEROSOL_ICE_GROWTH( 0 ),
-    AEROSOL_PLUME_UPDRAFT( 0 )
+    AEROSOL_PLUME_UPDRAFT( 0 ),
+    MET_TEMP_INIT( 0 ),
+    MET_H2O_INIT( 0 ),
+    DIAG_FILENAME( 0 ),
+    TS_SPEC( 0 ),
+    TS_FILENAME( "" ),
+    TS_SPECIES( 0 ),
+    TS_FREQ( 0.0E+00 ),
+    TS_AERO( 0 ),
+    TS_AERO_FILENAME( "" ),
+    TS_AERO_AEROSOL( 0 ),
+    TS_AERO_FREQ( 0.0E+00 ),
+    PL_PL( 0 ),
+    PL_O3( 0 )
 {
 
     /* Default constructor */
