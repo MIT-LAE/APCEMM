@@ -47,17 +47,6 @@
  * Saving as float will reduce the memory requirements */
 #define SAVE_TO_DOUBLE          1 
 
-/* Save chemical rates? */
-#define SAVE_PL                 1
-
-/* If chemistry is turned off, don't save PL nor ADJOINT results */
-#if ( !CHEMISTRY )
-
-    #undef SAVE_PL
-    #define SAVE_PL             0
-
-#endif
-
 
 /* OUTPUT MICROPHYSICS */
 /* Save solid aerosol gridded bins? */
