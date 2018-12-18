@@ -45,7 +45,7 @@ namespace output
             const NcDim *timeDim = fileHandler.addDim( currFile, "Time", long(timeArray.size()) );
             didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "Time", timeDim, "float", "s", "Time");
            
-#if ( RINGS )
+#ifdef RINGS
 
             const NcDim *ringDim = fileHandler.addDim( currFile, "ring", long(ringCluster.getnRing()) );
             didSaveSucceed *= fileHandler.addVar( currFile, &((ringCluster.getRingIndex()))[0], "ring index", ringDim, "short", "-", "Ring Indices");
@@ -108,7 +108,7 @@ namespace output
 
             didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim, "float", "-", "Cosine of the solar zenith angle" );
 
-#if ( RINGS )
+#ifdef RINGS
 
             didSaveSucceed *= fileHandler.addVar( currFile, &(ringCluster.getRingArea())[0], "Ring Area", ringDim, "float", "m^2", "Ring Area" );
 
@@ -120,7 +120,7 @@ namespace output
 #define TO_PPB          1.0 / airDens * 1.0E+09 /* Conversion factor from molecule/cm^3 to PPB  */
 #define TO_PPT          1.0 / airDens * 1.0E+12 /* Conversion factor from molecule/cm^3 to PPT  */
 
-#if ( RINGS )
+#ifdef RINGS
 
 #if ( SAVE_TO_DOUBLE )
                 double* spcArray;
