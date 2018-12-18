@@ -2284,29 +2284,6 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     }
 
     /* ==================================================== */
-    /* Use ring structure?                                  */
-    /* ==================================================== */
-
-    variable = "Use ring structure?";
-    getline( inputFile, line, '\n' );
-    if ( VERBOSE )
-        std::cout << line << std::endl;
-   
-    /* Extract variable range */
-    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-
-    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
-         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.CHEMISTRY_RINGS = 1;
-    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
-              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.CHEMISTRY_RINGS = 0;
-    else {
-        std::cout << " Wrong input for: " << variable << std::endl;
-        exit(1);
-    }
-    
-    /* ==================================================== */
     /* Perform het. chem.?                                  */
     /* ==================================================== */
 
@@ -2391,7 +2368,6 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " %%% CHEMISTRY MENU %%%  :"                                           << std::endl;
     std::cout << " ------------------------+---------------------------------------- "  << std::endl;
     std::cout << " Turn on Chemistry?      : " << Input_Opt.CHEMISTRY_CHEMISTRY         << std::endl;
-    std::cout << "  => Use ring structure? : " << Input_Opt.CHEMISTRY_RINGS             << std::endl;
     std::cout << " Perform het. chem.?     : " << Input_Opt.CHEMISTRY_HETCHEM           << std::endl;
     std::cout << " Read in J-Rates?        : " << Input_Opt.CHEMISTRY_READ_JRATES       << std::endl;
     std::cout << " Chemistry Timestep [min]: " << Input_Opt.CHEMISTRY_TIMESTEP          << std::endl;

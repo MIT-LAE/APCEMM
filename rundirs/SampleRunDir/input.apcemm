@@ -2,7 +2,7 @@ APCEMM SIMULATION
 ------------------------+------------------------------------------------------
 %%% SIMULATION MENU %%% :
 Parameter sweep?        : T
-Output folder           : /path/to/folder
+Output folder           : /net/d04/data/fritzt/CAPCEMM/SO2-Forward
  => Overwrite? if exists: F
 Run directory           : ./
 Input backgrd condition : /net/d04/data/fritzt/APCEMM_Data/init.txt
@@ -47,7 +47,6 @@ Convect Timestep [min]  : 10
 ------------------------+------------------------------------------------------
 %%% CHEMISTRY MENU %%%  :
 Turn on Chemistry?      : T
- => Use ring structure? : T
 Perform het. chem.?     : T
 Read in J-Rates?        : T
 Chemistry Timestep [min]: 10
