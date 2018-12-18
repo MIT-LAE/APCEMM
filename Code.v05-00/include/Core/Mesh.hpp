@@ -37,8 +37,8 @@ class Mesh
         Mesh( const Mesh &m );
         Mesh& operator=( const Mesh &m );
         void Ring2Mesh( Cluster &c );
-        Real_1DVector y( ) const { return x_; }
-        Real_1DVector x( ) const { return y_; }
+        Real_1DVector x( ) const { return x_; }
+        Real_1DVector y( ) const { return y_; }
         Real_1DVector x_edge( ) const { return x_e_; }
         Real_1DVector y_edge( ) const { return y_e_; }
         Real_2DVector areas( ) const { return areas_; }
