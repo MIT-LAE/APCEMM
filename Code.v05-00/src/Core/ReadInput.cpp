@@ -262,7 +262,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
 
     if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
          ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.SIMULATION_SAVE_FORWARD = 0;
+        Input_Opt.SIMULATION_SAVE_FORWARD = 1;
     else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
               ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.SIMULATION_SAVE_FORWARD = 0;
@@ -298,7 +298,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
 
     if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
          ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.SIMULATION_ADJOINT = 0;
+        Input_Opt.SIMULATION_ADJOINT = 1;
     else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
               ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
         Input_Opt.SIMULATION_ADJOINT = 0;
@@ -2972,7 +2972,7 @@ void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
     }
 
     if ( ( Input_Opt.CHEMISTRY_CHEMISTRY == 0 ) && \
-         ( ( Input_Opt.PL_PL == 1 ) || ( Input_Opt.PL_O3 == 1 ) ) {
+         ( ( Input_Opt.PL_PL == 1 ) || ( Input_Opt.PL_O3 == 1 ) ) ) {
          std::cout << " Chemistry if turned off but rate output is on!" << std::endl;
          std::cout << " Turning off rate output!" << std::endl;
          Input_Opt.PL_PL = 0;
