@@ -25,6 +25,9 @@
 #include "Core/Mesh.hpp"
 #include "Core/Util.hpp"
 
+static const int SAVE_SUCCESS = 1;
+static const int SAVE_FAILURE = 0;
+
 /* ================================================================== */
 /* ---- Timeseries Diagnostics -------------------------------------- */
 /* ================================================================== */
@@ -32,8 +35,9 @@
 /* Timeseries diagnostic files must be of the form:
  *      *hhmm.nc */
 
-bool Diag_TS( const char* rootName, const int hh, const int mm, \ 
+bool Diag_TS( const char* rootName,                  \
               const std::vector<int> speciesIndices, \
+              const int hh, const int mm,            \
               const Solution& Data, const Mesh& m );
 
 #endif /* DIAG_MOD_H_INCLUDED */
