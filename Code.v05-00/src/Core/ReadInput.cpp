@@ -2971,6 +2971,14 @@ void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
         exit(1);
     }
 
+    if ( ( Input_Opt.CHEMISTRY_CHEMISTRY == 0 ) && \
+         ( ( Input_Opt.PL_PL == 1 ) || ( Input_Opt.PL_O3 == 1 ) ) {
+         std::cout << " Chemistry if turned off but rate output is on!" << std::endl;
+         std::cout << " Turning off rate output!" << std::endl;
+         Input_Opt.PL_PL = 0;
+         Input_Opt.PL_O3 = 0;
+    }
+
     /* Return success */
     RC = SUCCESS;
     
