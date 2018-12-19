@@ -47,6 +47,8 @@ Code*/trash
 Code*/lib*
 Code*/debug*
 doc*
+rundirs/*
+!rundirs/SampleRunDir
 
 # netCDF files #
 ################
