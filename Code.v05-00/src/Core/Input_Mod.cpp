@@ -90,7 +90,6 @@ OptInput::OptInput( ):
     TRANSPORT_FILL( 0 ),
     TRANSPORT_TIMESTEP( 0.0E+00 ),
     CHEMISTRY_CHEMISTRY( 0 ),
-    CHEMISTRY_RINGS( 0 ),
     CHEMISTRY_HETCHEM( 0 ),
     CHEMISTRY_READ_JRATES( 0 ),
     CHEMISTRY_TIMESTEP( 0.0E+00 ),
@@ -98,7 +97,21 @@ OptInput::OptInput( ):
     AEROSOL_COAGULATION( 0 ),
     AEROSOL_COAGULATION_TIMESTEP( 0.0E+00 ),
     AEROSOL_ICE_GROWTH( 0 ),
-    AEROSOL_PLUME_UPDRAFT( 0 )
+    AEROSOL_PLUME_UPDRAFT( 0 ),
+    MET_TEMP_INIT( 0 ),
+    MET_H2O_INIT( 0 ),
+    MET_FILENAME( "" ),
+    DIAG_FILENAME( "" ),
+    TS_SPEC( 0 ),
+    TS_FILENAME( "" ),
+    TS_SPECIES( 0 ),
+    TS_FREQ( 0.0E+00 ),
+    TS_AERO( 0 ),
+    TS_AERO_FILENAME( "" ),
+    TS_AEROSOL( 0 ),
+    TS_AERO_FREQ( 0.0E+00 ),
+    PL_PL( 0 ),
+    PL_O3( 0 )
 {
 
     /* Default constructor */

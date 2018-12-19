@@ -1,0 +1,143 @@
+#==============================================================================
+# species.dat
+#
+# This file contains name and index information about APCEMM species.
+#
+# File Format:
+# -----------------------------------------------------------------------------
+# NAME     (A8   )  Species name (up to 8 chars)
+#  --      (1X   )  1-character space
+# INDEX    (I9   )  Tracer number (up to 9 digits)
+#
+#==============================================================================
+# APCEMM species 
+#==============================================================================
+CO2              1          
+PPN              2          
+BrNO2            3          
+IEPOX            4          
+PMNN             5          
+N2O              6          
+N                7      
+PAN              8          
+ALK4             9          
+MAP             10          
+MPN             11         
+Cl2O2           12         
+ETP             13         
+HNO2            14         
+C3H8            15         
+RA3P            16         
+RB3P            17         
+OClO            18         
+ClNO2           19         
+ISOP            20         
+HNO4            21         
+MAOP            22         
+MP              23         
+ClOO            24         
+RP              25         
+BrCl            26         
+PP              27         
+PRPN            28         
+SO4             29         
+Br2             30        
+ETHLN           31         
+MVKN            32         
+R4P             33         
+C2H6            34         
+RIP             35         
+VRP             36         
+ATOOH           37         
+IAP             38        
+DHMOB           39        
+MOBA            40      
+MRP             41       
+N2O5            42        
+ISNOHOO         43         
+ISNP            44      
+ISOPNB          45        
+IEPOXOO         46         
+MACRNO2         47         
+ROH             48        
+MOBAOO          49      
+DIBOO           50     
+PMN             51     
+ISNOOB          52       
+INPN            53  
+H               54     
+BrNO3           55    
+PRPE            56   
+MVKOO           57    
+Cl2             58
+ISOPND          59     
+HOBr            60   
+A3O2            61     
+PROPNN          62    
+GLYX            63   
+MAOPO2          64  
+CH4             65 
+GAOO            66   
+B3O2            67 
+ACET            68   
+MACRN           69        
+CH2OO           70       
+MGLYOO          71      
+VRO2            72       
+MGLOO           73      
+MACROO          74
+PO2             75     
+CH3CHOO         76       
+MAN2            77         
+ISNOOA          78       
+H2O2            79      
+PRN1            80   
+ETO2            81    
+KO2             82        
+RCO3            83      
+HC5OO           84     
+GLYC            85    
+ClNO3           86    
+RIO2            87    
+R4N1            88   
+HOCl            89  
+ATO2            90    
+HNO3            91   
+ISN1            92  
+MAO3            93  
+MRO2            94        
+INO2            95  
+HAC             96
+HC5             97     
+MGLY            98       
+ISOPNBO2        99         
+ISOPNDO2       100         
+R4O2           101        
+R4N2           102        
+BrO            103        
+RCHO           104        
+MEK            105        
+ClO            106        
+MACR           107        
+SO2            108        
+MVK            109        
+ALD2           110        
+MCO3           111        
+CH2O           112        
+H2O            113        
+Br             114        
+NO             115        
+NO3            116        
+Cl             117        
+O              118        
+O1D            119        
+O3             120        
+HO2            121        
+NO2            122        
+OH             123        
+HBr            124        
+HCl            125        
+CO             126        
+MO2            127        
+
+

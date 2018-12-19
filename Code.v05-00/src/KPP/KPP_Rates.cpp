@@ -899,8 +899,6 @@ void Update_RCONST( const double TEMP, const double PRESS,  \
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#if ( ADJOINT )
-
 void Update_PHOTO( )
 {
 
@@ -988,5 +986,3 @@ void Update_PHOTO( )
 
 /* End of Update_PHOTO function                                     */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-#endif /* ADJOINT */

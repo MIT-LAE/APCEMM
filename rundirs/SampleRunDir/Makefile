@@ -161,7 +161,7 @@ unittest:
 
 sp:
 	@$(MAKE) spclean
-	@$(MAKE) -C $(CODE_DIR) OMP=no > $(LOG_SP)
+	@$(MAKE) -C $(CODE_DIR) OMP=no RINGS=yes > $(LOG_SP)
 	@$(MAKE) printbuildinfo > $(LOG_COMP).sp
 	cp -f $(CODE_DIR)/build/apps/APCEMM.sh $(EXE_SP)
 	./$(EXE_SP) >> $(LOG_SP)
@@ -170,7 +170,7 @@ sp:
 
 mp:
 	@$(MAKE) mpclean
-	@$(MAKE) -C $(CODE_DIR) OMP=yes > $(LOG_MP)
+	@$(MAKE) -C $(CODE_DIR) OMP=yes RINGS=yes> $(LOG_MP)
 	@$(MAKE) printbuildinfo > $(LOG_COMP).mp
 	cp -f $(CODE_DIR)/build/apps/APCEMM.sh $(EXE_MP)
 	./$(EXE_MP) >> $(LOG_MP)
@@ -184,7 +184,7 @@ mp:
 spbuild:
 	@$(MAKE) spexeclean
 	@$(MAKE) splogclean
-	@$(MAKE) -C $(CODE_DIR) OMP=no
+	@$(MAKE) -C $(CODE_DIR) OMP=no RINGS=yes
 	cp -f $(CODE_DIR)/build/apps/APCEMM.sh $(EXE_SP)
 	@$(MAKE) printbuildinfo > $(LOG_COMP).sp
 	@$(MAKE) printbuildinfo
@@ -192,7 +192,7 @@ spbuild:
 mpbuild:
 	@$(MAKE) mpexeclean
 	@$(MAKE) mplogclean
-	@$(MAKE) -C $(CODE_DIR) OMP=yes
+	@$(MAKE) -C $(CODE_DIR) OMP=yes RINGS=yes
 	cp -f $(CODE_DIR)/build/apps/APCEMM.sh $(EXE_MP)
 	@$(MAKE) printbuildinfo > $(LOG_COMP).mp
 	@$(MAKE) printbuildinfo

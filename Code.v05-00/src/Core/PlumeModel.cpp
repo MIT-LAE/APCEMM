@@ -51,10 +51,14 @@ static int SUCCESS     =  1;
 #include "Core/Aircraft.hpp"
 #include "Core/Emission.hpp"
 
+/* For RINGS */
 #include "Core/Cluster.hpp"
 #include "Core/Species.hpp"
 
-#if ( TIME_IT )
+/* For DIAGNOSTIC */
+#include "Core/Diag_Mod.hpp"
+
+#ifdef TIME_IT
     #include "Core/Timer.hpp"
 #endif /* TIME_IT */
 
@@ -78,9 +82,9 @@ double SZA_CST[3];
 
 void DiffParam( double time, double &d_x, double &d_y );
 void AdvGlobal( double time, double &v_x, double &v_y, double &dTrav_x, double &dTrav_y );
-std::vector<double> BuildTime( const double tStart, const double tEnd, \
-                               const double sunRise, const double sunSet, \
-                               const double DYN_DT );
+Vector_1D BuildTime( const double tStart, const double tEnd, \
+                     const double sunRise, const double sunSet, \
+                     const double DYN_DT );
 void Transport( Solution& Data, SANDS::Solver& Solver );
 
 
@@ -120,7 +124,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     const bool CHEMISTRY      = Input_Opt.CHEMISTRY_CHEMISTRY;
     const double CHEMISTRY_DT = Input_Opt.CHEMISTRY_TIMESTEP;
     const bool HETCHEM        = Input_Opt.CHEMISTRY_HETCHEM;
-    const bool RINGS          = Input_Opt.CHEMISTRY_RINGS;
 
     /* ======================================================================= */
     /* ---- Input options from the AEROSOL MENU ------------------------------ */
@@ -130,13 +133,49 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     const bool COAG           = Input_Opt.AEROSOL_COAGULATION;
     const double COAG_DT      = Input_Opt.AEROSOL_COAGULATION_TIMESTEP;
     const bool ICE_GROWTH     = Input_Opt.AEROSOL_ICE_GROWTH;
+    
+    /* ======================================================================= */
+    /* ---- Input options from the METEOROLOGY MENU -------------------------- */
+    /* ======================================================================= */
+    
+    const bool MET_TEM_INIT   = Input_Opt.MET_TEMP_INIT;
+    const bool MET_H2O_INIT   = Input_Opt.MET_H2O_INIT;
+    const char* MET_FILENAME  = Input_Opt.MET_FILENAME.c_str();
+
+    /* ======================================================================= */
+    /* ---- Input options from the DIAGNOSTIC MENU --------------------------- */
+    /* ======================================================================= */
+    
+    const char* DIAG_FILENAME = Input_Opt.DIAG_FILENAME.c_str();
+
+    /* ======================================================================= */
+    /* ---- Input options from the TIMESERIES MENU --------------------------- */
+    /* ======================================================================= */
+    
+    const bool TS_SPEC                  = Input_Opt.TS_SPEC;
+    const char* TS_SPEC_FILENAME        = Input_Opt.TS_FILENAME.c_str();
+    const std::vector<int> TS_SPEC_LIST = Input_Opt.TS_SPECIES;
+    const double TS_FREQ                = Input_Opt.TS_FREQ;
+    const bool TS_AERO                  = Input_Opt.TS_AERO;
+    const char* TS_AERO_FILENAME        = Input_Opt.TS_AERO_FILENAME.c_str();
+    const std::vector<int> TS_AERO_LIST = Input_Opt.TS_AEROSOL;
+    const double TS_AERO_FREQ           = Input_Opt.TS_AERO_FREQ;
+    
+    /* ======================================================================= */
+    /* ---- Input options from the PROD & LOSS MENU -------------------------- */
+    /* ======================================================================= */
+
+    /* TODO: Implement PL rates */
+    const bool SAVE_PL   = Input_Opt.PL_PL;
+    const bool SAVE_O3PL = Input_Opt.PL_O3;
+
 
     /* Define dynamic timestep in s */
     double DYN_DT;
 
     /* If either TRANSPORT or CHEMISTRY is set to 0, then pick the non-zero 
      * timestep.
-     * If both are turned on, then pick the smallest timestep. 
+     * If both are non-zero, then pick the smallest timestep.
      *
      * Both TRANSPORT_DT and CHEMISTRY_DT are expressed in minutes! */
 
@@ -178,7 +217,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     bool ITS_TIME_FOR_ICE_COAGULATION = 0;
     double lastTimeIceCoag, dtIceCoag;
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
     Timer Stopwatch, Stopwatch_cumul;
     unsigned long SANDS_clock, KPP_clock;
@@ -192,7 +231,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 #if ( NOy_MASS_CHECK )
 
     double mass_Ambient_NOy, mass_Emitted_NOy;
-    #if ( RINGS )
+    #ifdef RINGS
         double mass_Emitted_NOy_Rings;
     #endif /* RINGS */
 
@@ -202,7 +241,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     double mass_Ambient_CO2, mass_Emitted_CO2;
 
-    #if ( RINGS )
+    #ifdef RINGS
         double mass_Emitted_CO2_Rings;
     #endif /* RINGS */
 
@@ -218,7 +257,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     Mesh m;
 
     /* Get cell areas */
-    const std::vector<std::vector<double>> cellAreas = m.areas();
+    const Vector_2D cellAreas = m.areas();
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -260,7 +299,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Create time array */
 
     /* Vector of time in [s] */
-    const std::vector<double> timeArray = BuildTime ( tInitial_s, tFinal_s, 3600.0*sun->sunRise, 3600.0*sun->sunSet, DYN_DT );
+    const Vector_1D timeArray = BuildTime ( tInitial_s, tFinal_s, 3600.0*sun->sunRise, 3600.0*sun->sunSet, DYN_DT );
 
     /* Time counter [-] */
     unsigned int nTime = 0;
@@ -484,7 +523,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Transport for solid aerosols? */
     const bool TRANSPORT_PA = ( PA_MICROPHYSICS == 2 );
 
-    std::vector<double> vFall( Data.nBin_PA, 0.0E+00 );
+    Vector_1D vFall( Data.nBin_PA, 0.0E+00 );
     if ( TRANSPORT_PA ) {
         /* Compute settling velocities */
         vFall = AIM::SettlingVelocity( Data.solidAerosol.getBinCenters(), \
@@ -492,8 +531,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     }
 
 
-
-#if ( RINGS )
+#ifdef RINGS
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -529,7 +567,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Compute ring areas */
     ringCluster.ComputeRingAreas( cellAreas, mapRing2Mesh );
-    const std::vector<double> ringArea = ringCluster.getRingArea();
+    const Vector_1D ringArea = ringCluster.getRingArea();
     const double totArea = std::accumulate( ringArea.begin(), ringArea.end(), 0 );
 
     /* Add emission into the grid */
@@ -631,7 +669,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 
     double frac_gSO4 = 0.0E+00;
-    std::vector<double> aerosolProp( 3, 0.0E+00 );
+    Vector_1D aerosolProp( 3, 0.0E+00 );
     double AerosolArea[NAERO];
     double AerosolRadi[NAERO];
     double IWC = 0;
@@ -656,6 +694,12 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 #endif /* SAVE_PA_MICROPHYS */
 
 
+    /* Timeseries diagnostics */
+    if ( TS_SPEC ) {
+        int hh = (int) (curr_Time_s - timeArray[0])/3600;
+        int mm = (int) (curr_Time_s - timeArray[0])/60;
+        Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, Data, m );
+    }
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -663,7 +707,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
     Stopwatch_cumul.Start( );
 
@@ -757,7 +801,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
         Stopwatch.Start( reset );
 
@@ -791,7 +835,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             }
         }
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
         Stopwatch.Stop( );
         SANDS_clock = Stopwatch.Elapsed( );
@@ -857,14 +901,14 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ======================================================================= */
 
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
         Stopwatch.Start( reset );
 
 #endif /* TIME_IT */
 
         /* Are we solving the chemistry in a ring structure? */
-        #if ( RINGS )
+        #ifdef RINGS
 
             /* Fill in variables species for current time */
             ringSpecies.FillIn( Data, m, nTime + 1 );
@@ -1220,7 +1264,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         #endif /* RINGS */
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
         Stopwatch.Stop( );
         KPP_clock = Stopwatch.Elapsed( );
@@ -1336,7 +1380,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::cout << "\n    " << " ~~> Emitted NOy: " << std::setw(6) << mass_Emitted_NOy * 1.0E+06 / physConst::Na * MW_N * 1.0E+06 << " [g(N)/km] ";
         /*                                                               [molec/cm3 * m2] * [m3/cm3]/ [molec/mole]  * [kg/mole]*[g/kg*m/km] = [g/km] */
 
-        if ( RINGS ) {
+#ifdef RINGS
             mass_Emitted_NOy_Rings = 0;
             for ( iRing = 0; iRing < nRing; iRing++ ) {
                 mass_Emitted_NOy_Rings += ( ringSpecies.NO[nTime+1][iRing] + ringSpecies.NO2[nTime+1][iRing] + ringSpecies.NO3[nTime+1][iRing] \
@@ -1350,7 +1394,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             }
             /* How much of this emitted mass is still in the rings? FR = Fraction in rings */
             std::cout << "(FR: " << 100 * mass_Emitted_NOy_Rings / mass_Emitted_NOy << " %)";
-        }
+#endif /* RINGS */
 
 #endif /* NOy_MASS_CHECK */
 
@@ -1373,18 +1417,18 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::cout << "\n    " << " ~~> Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / physConst::Na * MW_CO2 * 1.0E+03 << " [kg/km]   ";
         /*                                                               [molec/cm3 * m2] * [m3/cm3]/ [molec/mole]  *[kg/mole]*[m/km] = [kg/km] */
 
-        if ( RINGS ) {
+#ifdef RINGS
             mass_Emitted_CO2_Rings = 0;
             for ( iRing = 0; iRing < nRing; iRing++ ) {
                 mass_Emitted_CO2_Rings += ( ringSpecies.CO2[nTime+1][iRing] - mass_Ambient_CO2 ) * ringArea[iRing]; 
             }
             /* How much of this emitted mass is still in the rings? FR = Fraction in rings */
             std::cout << "(FR: " << 100 * mass_Emitted_CO2_Rings / mass_Emitted_CO2 << " %)\n";
-        }
+#endif /* RINGS */
 
 #endif /* CO2_MASS_CHECK */
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
         SANDS_clock_cumul += SANDS_clock;
         KPP_clock_cumul   += KPP_clock;
@@ -1398,6 +1442,15 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         curr_Time_s += dt;
         nTime++;
 
+        /* Timeseries diagnostics */
+        if ( TS_SPEC && \
+           (( TS_FREQ == 0 ) || \
+            ( std::fmod((curr_Time_s - timeArray[0])/60.0, TS_FREQ) == 0.0E+00 )) ) {
+           int hh = (int) (curr_Time_s - timeArray[0])/3600;
+           int mm = (int) (curr_Time_s - timeArray[0])/60;
+           Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, Data, m );
+        }
+
     }
     
     /* ======================================================================= */
@@ -1407,7 +1460,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
 
-#if ( TIME_IT )
+#ifdef TIME_IT
 
     Stopwatch_cumul.Stop( );
     clock_cumul = Stopwatch_cumul.Elapsed( );
@@ -1432,8 +1485,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 #endif /* TIME_IT */
 
 
-    #if ( SAVE_FORWARD && RINGS )
-
+#ifdef RINGS
+    if ( SAVE_FORWARD ) {
         isSaved = output::Write( input.fileName2char(),               \
                                  ringSpecies,                         \
                                  ambientData,                         \
@@ -1446,7 +1499,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             std::cout << " Saving to ring-averaged concentrations to file failed...\n";
             return SAVE_FAIL;
         }
-    #endif /* SAVE_FORWARD && RINGS */
+    }
+#endif /* RINGS */
 
     #if ( SAVE_LA_MICROPHYS )
 
@@ -1480,8 +1534,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
 
-    #if ( ADJOINT && RINGS )
+#ifdef RINGS
 
+    if ( ADJOINT ) {
         #ifdef OMP
             #pragma omp critical 
             { std::cout << "\n\n ## ON THREAD " << omp_get_thread_num() << ": Starting adjoint calculation...\n"; }
@@ -1490,10 +1545,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         #endif /* OMP */
 
         std::copy(sun->CSZA_Vector.begin(), sun->CSZA_Vector.end(), SZA_CST);
+        double relHumidity;
         double VAR_OPT[NVAR];
 
-        const std::vector<double> initBackg = ringSpecies.RingAverage( ringArea, totArea, 0 );
-        const std::vector<double> finalPlume = ringSpecies.RingAverage( ringArea, totArea, timeArray.size() - 1 );
+        const Vector_1D initBackg = ringSpecies.RingAverage( ringArea, totArea, 0 );
+        const Vector_1D finalPlume = ringSpecies.RingAverage( ringArea, totArea, timeArray.size() - 1 );
 
         IERR = KPP_Main_ADJ( &(finalPlume)[0], &(initBackg)[0],   \
                              temperature_K, pressure_Pa, airDens, \
@@ -1723,24 +1779,24 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-        if ( ADJOINT ) {
-            #pragma omp critical
-            {
-                isSaved = output::Write_Adjoint( input.fileName_ADJ2char(), \
-                                                 ringSpecies, ambientData,  \
-                                                 adjointData,               \
-                                                 ringArea, totArea,         \
-                                                 timeArray,                 \
-                                                 input,                     \
-                                                 airDens, relHumidity_i );
-            }
-            if ( isSaved == output::SAVE_FAILURE ) {
-                std::cout << " Saving to adjoint data to file failed...\n";
-                return SAVE_FAIL;
-            }
+        #pragma omp critical
+        {
+            isSaved = output::Write_Adjoint( input.fileName_ADJ2char(), \
+                                             ringSpecies, ambientData,  \
+                                             adjointData,               \
+                                             ringArea, totArea,         \
+                                             timeArray,                 \
+                                             input,                     \
+                                             airDens, relHumidity_i );
+        }
+        if ( isSaved == output::SAVE_FAILURE ) {
+            std::cout << " Saving to adjoint data to file failed...\n";
+            return SAVE_FAIL;
         }
 
-    #endif /* ADJOINT && RINGS */
+    }
+
+#endif /* RINGS */
 
     /* Clear dynamically allocated variable(s) */
     if ( sun != NULL )

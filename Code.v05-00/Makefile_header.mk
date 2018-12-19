@@ -184,7 +184,19 @@ ifeq ($(COMPILER),g++)
     CXXFLAGS          += -fopenmp
     USER_DEFS         += -DOMP
   endif
- 
+
+  # Use ring structure?
+  REGEXP             :=(^[Yy]|^[Yy][Ee][Ss])
+  ifeq ($(shell [[ "$(RINGS)" =~ $(REGEXP) ]] && echo true),true)
+    USER_DEFS         += -DRINGS
+  endif
+
+  # Time simulation?
+  REGEXP             :=(^[Yy]|^[Yy][Ee][Ss])
+  ifeq ($(shell [[ "$(TIME)" =~ $(REGEXP) ]] && echo true),true)
+    USER_DEFS         += -DTIME_IT
+  endif
+
   # Append the user options in USER_DEFS to CXXFLAGS
   CXXFLAGS            += $(USER_DEFS)
 
