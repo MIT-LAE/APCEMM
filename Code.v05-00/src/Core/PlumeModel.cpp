@@ -190,6 +190,14 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         exit(1);
     }
 
+    /* If DIAG_OUTPUT is turned on, make sure that output timestep is a
+     * multiple of the dynamic timestep */
+    if ( ( TS_SPEC ) && ( TS_FREQ > 0.0E+00 ) && \
+         ( std::fmod( TS_FREQ / DYN_DT * 60, 1 ) != 0 ) ) {
+        std::cout << " Timeseries frequency should be a multiple of the dynamic timestep!" << std::endl;
+        std::cout << " Output might be compromised!" << std::endl;
+    }
+
     /* Assign parameters */
     
     RealDouble temperature_K = input.temperature_K();
