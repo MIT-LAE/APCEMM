@@ -730,7 +730,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             #ifdef OMP
                 std::cout << " (thread: " << omp_get_thread_num() << ")";
             #endif /* OMP */
-            std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]";
+            std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
         }
 
         /* ======================================================================= */
@@ -1494,19 +1494,22 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 
 #ifdef RINGS
-    if ( SAVE_FORWARD ) {
-        isSaved = output::Write( input.fileName2char(),               \
-                                 ringSpecies,                         \
-                                 ambientData,                         \
-                                 ringCluster,                         \
-                                 timeArray,                           \
-                                 input,                               \
-                                 airDens, relHumidity_i,              \
-                                 sun->sunRise, sun->sunSet );
-        if ( isSaved == output::SAVE_FAILURE ) {
-            std::cout << " Saving to ring-averaged concentrations to file failed...\n";
-            return SAVE_FAIL;
+    #pragma omp critical
+    {
+        if ( SAVE_FORWARD ) {
+            isSaved = output::Write( input.fileName2char(),               \
+                                     ringSpecies,                         \
+                                     ambientData,                         \
+                                     ringCluster,                         \
+                                     timeArray,                           \
+                                     input,                               \
+                                     airDens, relHumidity_i,              \
+                                     sun->sunRise, sun->sunSet );
         }
+    }
+    if ( isSaved == output::SAVE_FAILURE ) {
+        std::cout << " Saving to ring-averaged concentrations to file failed...\n";
+        return SAVE_FAIL;
     }
 #endif /* RINGS */
 
