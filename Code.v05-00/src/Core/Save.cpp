@@ -3480,7 +3480,7 @@ namespace output
             value = relHumidity_i;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHI"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
             value = input.emissionDay();
-            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emisison Day"   , 1, "int"  , "-"  , "Emission day" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Day"   , 1, "int"  , "-"  , "Emission day" );
             value = input.emissionTime();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Time"  , 1, "float", "hr"  , "Emission time" );
             value = input.EI_NOx();
