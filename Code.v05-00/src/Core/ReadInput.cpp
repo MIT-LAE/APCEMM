@@ -2997,6 +2997,8 @@ void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
 Vector_2D CombVec( OptInput &Input_Opt )
 {
 
+    const bool print = 0;
+
     unsigned int counter = 1;
     unsigned int nCases;  
 
@@ -3012,6 +3014,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
     /* ---- TEMPERATURE ------------------------------------------------------ */
     /* ---- Accepted units are: Kelvin (default), Celsius, Fahrenheit          */
     /* ======================================================================= */
+
+    if ( print )
+        std::cout << " Temperature " << std::endl;
 
     if ( Input_Opt.PARAMETER_TEMPERATURE_RANGE ) {
         currVal = Input_Opt.PARAMETER_TEMPERATURE[0];
@@ -3055,6 +3060,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
     /* ---- Accepted units are: % (0-100, default), - (0-1)                    */
     /* ======================================================================= */
     
+    if ( print )
+        std::cout << " Relative humidity " << std::endl;
+    
     if ( Input_Opt.PARAMETER_RHW_RANGE ) {
         currVal = Input_Opt.PARAMETER_RHW[0];
         while ( currVal <= Input_Opt.PARAMETER_RHW[2] ) {
@@ -3079,7 +3087,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
     }
 
     /* Updating unit now that conversion has been taken care of */
-    Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
+    Input_Opt.PARAMETER_RHW_UNIT = "%";
 
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
@@ -3110,6 +3118,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
     /* ---- Accepted units are: degree (default)                               */
     /* ======================================================================= */
     
+    if ( print )
+        std::cout << " Longitude " << std::endl;
+    
     if ( Input_Opt.PARAMETER_LONGITUDE_RANGE ) {
         currVal = Input_Opt.PARAMETER_LONGITUDE[0];
         while ( currVal <= Input_Opt.PARAMETER_LONGITUDE[2] ) {
@@ -3130,7 +3141,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
     }
 
     /* Updating unit now that conversion has been taken care of */
-    Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
+    Input_Opt.PARAMETER_LONGITUDE_UNIT = "deg";
 
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
@@ -3161,6 +3172,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
     /* ---- Accepted units are: degree (default)                               */
     /* ======================================================================= */
     
+    if ( print )
+        std::cout << " Latitude " << std::endl;
+    
     if ( Input_Opt.PARAMETER_LATITUDE_RANGE ) {
         currVal = Input_Opt.PARAMETER_LATITUDE[0];
         while ( currVal <= Input_Opt.PARAMETER_LATITUDE[2] ) {
@@ -3181,13 +3195,13 @@ Vector_2D CombVec( OptInput &Input_Opt )
     }
 
     /* Updating unit now that conversion has been taken care of */
-    Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
+    Input_Opt.PARAMETER_LATITUDE_UNIT = "deg";
     
     z.push_back( Vector_1D(cases.size() ) );
     for ( i = 0; i < cases.size(); i++ )
         z[0][i] = cases[i];
     nCases *= cases.size();
-
+    
     u = Copy_blocked(y,z[0].size());
     v = Copy_interleaved(z,y[0].size());
 
@@ -3211,6 +3225,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
     /* ---- PRESSURE --------------------------------------------------------- */
     /* ---- Accepted units are: Pa (default), hPa                              */
     /* ======================================================================= */
+    
+    if ( print )
+        std::cout << " Pressure " << std::endl;
 
     if ( Input_Opt.PARAMETER_PRESSURE_RANGE ) {
         currVal = Input_Opt.PARAMETER_PRESSURE[0];
@@ -3260,11 +3277,14 @@ Vector_2D CombVec( OptInput &Input_Opt )
         y[counter-1][i] = v[0][i];
     }
     cases.clear();
-
+    
     /* ======================================================================= */
     /* ---- EMISSION DAY ----------------------------------------------------- */
     /* ---- Accepted units are: 1-365 (default)                                */
     /* ======================================================================= */
+    
+    if ( print )
+        std::cout << " Emission day " << std::endl;
     
     if ( Input_Opt.PARAMETER_EDAY_RANGE ) {
         currVal = Input_Opt.PARAMETER_EDAY[0];
@@ -3316,6 +3336,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
     /* ---- EMISSION TIME ---------------------------------------------------- */
     /* ---- Accepted units are: 0-24 (default)                                 */
     /* ======================================================================= */
+    
+    if ( print )
+        std::cout << " Emission time " << std::endl;
     
     if ( Input_Opt.PARAMETER_ETIME_RANGE ) {
         currVal = Input_Opt.PARAMETER_ETIME[0];
@@ -4143,9 +4166,10 @@ Vector_2D Copy_blocked( Vector_2D& m, int n )
     const unsigned int mr = m.size();
     const unsigned int mc = m[0].size();
     unsigned int i, j, k;
+    Vector_1D tmp( mc*n, 0.0E+00 );
 
     for ( i = 0; i < mr; i++ )
-        b.push_back(Vector_1D(mc*n));
+        b.push_back(tmp);
 
 //    unsigned int ind[mc];
     unsigned int *ind = new unsigned int[mc];
@@ -4174,9 +4198,10 @@ Vector_2D Copy_interleaved( Vector_2D& m, int n )
     const unsigned int mr = m.size();
     const unsigned int mc = m[0].size();
     unsigned int i, j, k;
+    Vector_1D tmp( mc, 0.0E+00 );
 
     for ( i = 0; i < mr*n; i++ )
-        b.push_back(Vector_1D(mc));
+        b.push_back(tmp);
 
 //    unsigned int ind[mr];
     unsigned int *ind = new unsigned int[mr];
