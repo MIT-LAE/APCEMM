@@ -21,8 +21,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-int KPP_Main( double varArray[], double fixArray[], double currentT, double dt, \
-              double RTOLS, double ATOLS );
 int INTEGRATE( double VAR[] , double TIN   , double TOUT, \
                double ATOL[], double RTOL[], double STEPMIN );
 int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
