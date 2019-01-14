@@ -3483,6 +3483,10 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Day"   , 1, "int"  , "-"  , "Emission day" );
             value = input.emissionTime();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Time"  , 1, "float", "hr"  , "Emission time" );
+            value = input.longitude_deg();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Longitude"      , 1, "float", "deg", "Longitude" );
+            value = input.latitude_deg();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Latitude"       , 1, "float", "deg", "Latitude" );
             value = input.EI_NOx();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "NOx EI"         , 1, "float", "g/kg_fuel"  , "NOx Emission index" );
             value = input.EI_CO();
