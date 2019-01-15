@@ -28,7 +28,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                   const double airDens, const double timeArray[],       \
                   const unsigned int NT,                                \
                   const double RTOLS, const double ATOLS,               \
-                  double VAR_OUTPUT[], const bool verbose = 0 );
+                  double VAR_OUTPUT[], const bool verbose = 0,          \
+                  const bool RETRY = 0 );
 int INTEGRATE_ADJ( int NADJ, double Y[], double Lambda[][NVAR],        \
 		           double TIN, double TOUT, double ATOL_adj[][NVAR],   \
         	       double RTOL_adj[][NVAR], double ATOL[],             \

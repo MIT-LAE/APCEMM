@@ -60,7 +60,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                   const double airDens, const double timeArray[],       \
                   const unsigned int NT,                                \
                   const double RTOLS, const double ATOLS,               \
-                  double VAR_OUTPUT[], const bool verbose )
+                  double VAR_OUTPUT[], const bool verbose,              \
+                  const bool RETRY )
 {
 
     int i, j;
@@ -418,6 +419,23 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             for ( j = 0; j < NOPT; j++ )
                 dir[i] -= A_mat[i][j] * wDiff[j];
         }
+
+        /* If second run, try another initial direction to allow new potential solutions */
+        if ( RETRY ) {
+            #pragma omp critical
+            {
+                #ifdef OMP
+                    printf("\n ## ON THREAD: %d.", omp_get_thread_num());
+                #endif /* OMP */
+                printf(" Retrying with new initial directions. RETRY: %d\n", RETRY);
+            }
+            for ( i = 0; i < NOPT; i++ ) {
+                dir[i] = 0.0E+00;
+                for ( j = 0; j < NOPT; j++ )
+                    dir[i] += A_mat[i][j] * wDiff[j];
+            }
+        }
+
 
         double VAR_INIT[NVAR];
         double VAR_DIR[NVAR];
@@ -911,6 +929,10 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             printf(" ## O3 Delta : %+f [ppt], %f %% \n",(VAR_RUN[ind_O3] - finalPlume[ind_O3])/airDens*TOPPT, 100.0 * ABS((VAR_RUN[ind_O3] - finalPlume[ind_O3]) / DELTAO3f_0));
             printf(" ## NOx Delta: %+f [ppt], %f %% \n",(VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT, 100.0 * ABS((VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/ ( DELTANOf_0 + DELTANO2f_0 )));
         }
+
+        /* If NOx delta remains too large, restart another optimization procedure */
+        if ( ABS( (VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT ) > 1.00E-01 )
+            IERR = 2;
 
     }
 

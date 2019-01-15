@@ -1567,11 +1567,24 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                              &(timeArray)[0], timeArray.size(),   \
                              KPPADJ_RTOLS, KPPADJ_ATOLS,          \
                              /* Output */ VAR_OPT,                \
-                             /* Debug? */ DEBUG_ADJOINT );
+                             /* Debug? */ DEBUG_ADJOINT,          \
+                             /* 2nd try? */ 0 );
 
         if ( IERR < 0 ) {
             /* Adjoint integration failed */
             return KPPADJ_FAIL;
+        }
+
+        if ( IERR == 2 ) {
+            /* Integration succeeded but convergence was poor. Try again with
+             * new initial direction */
+            IERR = KPP_Main_ADJ( &(finalPlume)[0], &(initBackg)[0],   \
+                                 temperature_K, pressure_Pa, airDens, \
+                                 &(timeArray)[0], timeArray.size(),   \
+                                 KPPADJ_RTOLS, KPPADJ_ATOLS,          \
+                                 /* Output */ VAR_OPT,                \
+                                 /* Debug? */ DEBUG_ADJOINT,          \
+                                 /* 2nd try? */ 1 );
         }
 
         /* Create ambient struture */
