@@ -3662,6 +3662,44 @@ namespace output
 
             #endif /* DO_SAVE_NO2 */
 
+            #if ( DO_SAVE_HNO2 )
+
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ )
+                    plumeData[iNt] = ringAverage[iNt][ind_HNO2];
+
+
+                #if ( SAVE_TO_DOUBLE )
+                    spcArray = util::vect2double( plumeData       , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointData.HNO2, NT, scalingFactor );
+                    ambArray = util::vect2double( ambientData.HNO2, NT, scalingFactor );
+                #else
+                    spcArray = util::vect2float ( plumeData       , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointData.HNO2, NT, scalingFactor );
+                    ambArray = util::vect2float ( ambientData.HNO2, NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "HNO2_Plume", sizeof(charSpc) );
+                strncpy( charName, "HNO2 plume-averaged mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "HNO2_Adjoint", sizeof(charSpc) );
+                strncpy( charName, "HNO2 optimized mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(adjArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "HNO2_Ambient", sizeof(charSpc) );
+                strncpy( charName, "HNO2 ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] spcArray; spcArray = NULL;
+                delete[] ambArray; ambArray = NULL;
+                delete[] adjArray; adjArray = NULL;
+
+            #endif /* DO_SAVE_HNO2 */
+
             #if ( DO_SAVE_HNO3 )
 
                 scalingFactor = TO_PPT;
