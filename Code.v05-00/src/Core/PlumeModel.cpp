@@ -1558,6 +1558,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::copy(sun->CSZA_Vector.begin(), sun->CSZA_Vector.end(), SZA_CST);
         double relHumidity;
         double VAR_OPT[NVAR];
+        double METRIC;
 
         const Vector_1D initBackg = ringSpecies.RingAverage( ringArea, totArea, 0 );
         const Vector_1D finalPlume = ringSpecies.RingAverage( ringArea, totArea, timeArray.size() - 1 );
@@ -1567,24 +1568,44 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                              &(timeArray)[0], timeArray.size(),   \
                              KPPADJ_RTOLS, KPPADJ_ATOLS,          \
                              /* Output */ VAR_OPT,                \
+                             /* Output metric */ &METRIC,          \
                              /* Debug? */ DEBUG_ADJOINT,          \
                              /* 2nd try? */ 0 );
-
-        if ( IERR < 0 ) {
-            /* Adjoint integration failed */
-            return KPPADJ_FAIL;
-        }
 
         if ( IERR == 2 ) {
             /* Integration succeeded but convergence was poor. Try again with
              * new initial direction */
+
+            double VAR_OPT2[NVAR];
+            double METRIC2;
             IERR = KPP_Main_ADJ( &(finalPlume)[0], &(initBackg)[0],   \
                                  temperature_K, pressure_Pa, airDens, \
                                  &(timeArray)[0], timeArray.size(),   \
                                  KPPADJ_RTOLS, KPPADJ_ATOLS,          \
-                                 /* Output */ VAR_OPT,                \
+                                 /* Output */ VAR_OPT2,               \
+                                 /* Output metric */ &METRIC2,         \
                                  /* Debug? */ DEBUG_ADJOINT,          \
                                  /* 2nd try? */ 1 );
+
+            /* If 2nd try provides a better metric, store the new optimized
+             * array; otherwise stick to the original one. */
+            if ( METRIC2 < METRIC ) {
+                for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ )
+                    VAR_OPT[iSpec] = VAR_OPT2[iSpec];
+            } else {
+                #ifdef OMP
+                    #pragma omp critical
+                    { std::cout << "\n ## ON THREAD " << omp_get_thread_num() << ": Sticking to original solution.\n"; }
+                #else
+                    std::cout << "\n Sticking to original optimization solution.\n";
+                #endif /* OMP */
+            }
+
+        }
+
+        if ( IERR < 0 ) {
+            /* Adjoint integration failed */
+            return KPPADJ_FAIL;
         }
 
         /* Create ambient struture */
