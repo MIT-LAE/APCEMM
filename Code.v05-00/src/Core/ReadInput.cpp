@@ -800,7 +800,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     /* Store in values for variable */
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         try {
-            value = ( std::stoi( tokens[i] ) % 365 );
+            value = ( std::stoi( tokens[i] ) - 1 % 365 ) + 1;
             if ( value >= 0.0E+00 )
                 Input_Opt.PARAMETER_EDAY.push_back( value );
             else {
@@ -874,7 +874,6 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     /* Store in values for variable */
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         try {
-            value = std::fmod(std::stod(tokens[i]), 2.40E+01);
             if ( value >= 0.0E+00 )
                 Input_Opt.PARAMETER_ETIME.push_back( value );
             else {
@@ -2771,7 +2770,7 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     else {
         try {
             value = std::stod( tokens[0] );
-            if ( value > 0.0E+00 )
+            if ( value >= 0.0E+00 )
                 Input_Opt.TS_FREQ = value;
             else {
                 std::cout << " Wrong input for: " << variable << std::endl;
@@ -3341,14 +3340,14 @@ Vector_2D CombVec( OptInput &Input_Opt )
         std::cout << " Emission time " << std::endl;
     
     if ( Input_Opt.PARAMETER_ETIME_RANGE ) {
-        currVal = Input_Opt.PARAMETER_ETIME[0];
+        currVal = std::fmod( Input_Opt.PARAMETER_ETIME[0], 24.0 );
         while ( currVal <= Input_Opt.PARAMETER_ETIME[2] ) {
             cases.push_back( currVal );
-            currVal += Input_Opt.PARAMETER_ETIME[1];
+            currVal += std::fmod( Input_Opt.PARAMETER_ETIME[1], 24.0 );
         }
     } else {
         for ( i = 0; i < Input_Opt.PARAMETER_ETIME.size(); i++ )
-            cases.push_back(Input_Opt.PARAMETER_ETIME[i]);
+            cases.push_back( std::fmod( Input_Opt.PARAMETER_ETIME[i], 24.0 ) );
     }
     
     if ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "0-24" ) == 0 ) {
