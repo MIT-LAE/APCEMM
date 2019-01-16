@@ -1221,9 +1221,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                     }
 
                     relHumidity = VAR[ind_H2O] * \
-                                  physConst::kB * Met.temp(jNy,iNx) * 1.00E+06 / \
-                                  physFunc::pSat_H2Ol( Met.temp(jNy,iNx) );
-                    GC_SETHET( Met.temp(jNy,iNx), Met.press(jNy), airDens, relHumidity, \
+                                  physConst::kB * temperature_K * 1.00E+06 / \
+                                  physFunc::pSat_H2Ol( temperature_K );
+                    GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity, \
                                Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, kheti_sla );
                 }
 
@@ -1231,7 +1231,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                 for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
                     RCONST[iReact] = 0.0E+00;
 
-                Update_RCONST( Met.temp(jNy,iNx), Met.press(jNy), airDens, VAR[ind_H2O] );
+                Update_RCONST( temperature_K, pressure_Pa, airDens, VAR[ind_H2O] );
 
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
                 /* ~~~~~~ Integration ~~~~~ */
@@ -1267,7 +1267,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                 }
 
                 ambientData.FillIn( VAR, nTime + 1 );
-
             }
 
         #endif /* RINGS */
