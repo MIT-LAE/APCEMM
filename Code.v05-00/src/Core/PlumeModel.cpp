@@ -705,8 +705,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Timeseries diagnostics */
     if ( TS_SPEC ) {
         int hh = (int) (curr_Time_s - timeArray[0])/3600;
-        int mm = (int) (curr_Time_s - timeArray[0])/60 - 60 * hh;
-        Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, Data, m );
+        int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
+        int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
+        Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, ss, Data, m );
     }
 
     /* ======================================================================= */
@@ -1454,8 +1455,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
            (( TS_FREQ == 0 ) || \
             ( std::fmod((curr_Time_s - timeArray[0])/60.0, TS_FREQ) == 0.0E+00 )) ) {
            int hh = (int) (curr_Time_s - timeArray[0])/3600;
-           int mm = (int) (curr_Time_s - timeArray[0])/60 - 60 * hh;
-           Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, Data, m );
+           int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
+           int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
+           Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, ss, Data, m );
         }
 
     }

@@ -33,11 +33,11 @@ static const int SAVE_FAILURE = 0;
 /* ================================================================== */
 
 /* Timeseries diagnostic files must be of the form:
- *      *hhmm.nc */
+ *      *hhmmss.nc */
 
-bool Diag_TS( const char* rootName,                  \
-              const std::vector<int> speciesIndices, \
-              const int hh, const int mm,            \
+bool Diag_TS( const char* rootName,                     \
+              const std::vector<int> speciesIndices,    \
+              const int hh, const int mm, const int ss, \
               const Solution& Data, const Mesh& m );
 
 #endif /* DIAG_MOD_H_INCLUDED */
