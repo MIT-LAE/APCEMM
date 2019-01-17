@@ -127,11 +127,22 @@ LINK := $(LINK)
 # Add path to APCEMM's library folder
 LINK := -L$(LIB_DIR)
 
+# Adding Matlab's include and library paths for mat library
+MATLAB_INCL      :=/opt/MATLAB/R2016a/extern/include
+MATLAB_LIBBIN    :=/opt/MATLAB/R2016a/bin/glnxa64/
+MATLAB_LIBEXTERN :=/opt/MATLAB/R2016a/extern/lib/glnxa64/
+MATLAB_LIBSYS    :=/opt/MATLAB/R2016a/sys/
+
+# Matlab's linking sequence
+LDLIBS = -Wl,--rpath-link,$(MATLAB_LIBBIN),$\
+			 --rpath-link,$(MATLAB_LIBEXTERN),$\
+			 --rpath-link,$(MATLAB_LIBSYS) $\
+			 -L$(MATLAB_LIBBIN) -L$(MATLAB_LIBEXTERN) -L$(MATLAB_LIBSYS)
+
 # Define any libraries to link into executable: use -llibname option
-LINK := $(LINK) -lstdc++ -lm
+LINK := $(LINK) $(LDLIBS) -lstdc++ -lmx -lmat
 
 LINK_FFTW := -lfftw3 -lfftw3f -lfftw3l
-# -lfftw3_omp -lfftw3_threads
 
 # Create linker command to create the APCEMM executable
 LINK := $(LINK) -Wl,--start-group -lUtil -lSands $(LINK_FFTW) -lKpp -lEpm -lAim -lnetcdf_c++ -Wl,--end-group
@@ -202,6 +213,8 @@ ifeq ($(COMPILER),g++)
 
   # Include options (i.e. for finding *.h* files)
   INCLUDE := -I$(ROOT_DIR)/include
+
+  INCLUDE := $(INCLUDE) -I$(MATLAB_INCL)
 
 endif
 
