@@ -283,13 +283,17 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         NOON_JRATES[iPhotol] = 0.0E+00;
  
     /* Allocating noon-time photolysis rates. */
-    ReadJRates( JRATE_FOLDER,  \ 
-        input.emissionMonth(), \
-        input.emissionDay(),   \
-        input.longitude_deg(), \
-        input.latitude_deg(),  \
-        pressure_Pa/100.0,     \
-        NOON_JRATES );
+
+    #pragma omp critical
+    {
+        ReadJRates( JRATE_FOLDER,  \
+            input.emissionMonth(), \
+            input.emissionDay(),   \
+            input.longitude_deg(), \
+            input.latitude_deg(),  \
+            pressure_Pa/100.0,     \
+            NOON_JRATES );
+    }
 
     if ( printDEBUG ) {
         std::cout << "\n DEBUG : \n";
@@ -298,6 +302,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             std::cout << NOON_JRATES[iPhotol] << "\n";
         }
     }
+
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
