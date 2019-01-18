@@ -233,9 +233,9 @@ Input::Input( unsigned int iCase,          \
     } else if ( ( emissionDOY_ >  90 ) && ( emissionDOY_ <= 120 ) ) {
         emissionMonth_ = 4;
         emissionDay_   = emissionDOY_ - 90;
-    } else if ( ( emissionDOY_ > 121 ) && ( emissionDOY_ <= 151 ) ) {
+    } else if ( ( emissionDOY_ > 120 ) && ( emissionDOY_ <= 151 ) ) {
         emissionMonth_ = 5;
-        emissionDay_   = emissionDOY_ - 121;
+        emissionDay_   = emissionDOY_ - 120;
     } else if ( ( emissionDOY_ > 151 ) && ( emissionDOY_ <= 181 ) ) {
         emissionMonth_ = 6;
         emissionDay_   = emissionDOY_ - 151;
