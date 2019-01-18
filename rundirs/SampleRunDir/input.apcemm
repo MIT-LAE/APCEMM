@@ -8,7 +8,7 @@ Run directory           : ./
 Input backgrd condition : /net/d04/data/fritzt/APCEMM_Data/init.txt
 Save forward results    : T
  => netCDF file name    : APCEMM_Case_*
-Turn on adjoint optim.  : F
+Turn on adjoint optim.  : T
  => netCDF file name    : APCEMM_ADJ_Case_*
 ------------------------+------------------------------------------------------
 %%% PARAMETER SWEEP %%% : (Parameter sweep? needs to be set to "T")
