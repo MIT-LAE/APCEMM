@@ -902,9 +902,10 @@ void Update_RCONST( const double TEMP, const double PRESS,  \
 void Update_PHOTO( )
 {
 
-    Read_JRates( PHOTOL, MAX( SZA_CST[0] + \
-                              SZA_CST[1] * \
-                              cos( SZA_CST[2] * fabs( TIME / double(3600.0) - 12.0 ) ), 0.0E+00 ) );
+    Update_JRates( PHOTOL,           \
+                   MAX( SZA_CST[0] + \
+                        SZA_CST[1] * \
+                        cos( SZA_CST[2] * fabs( TIME / double(3600.0) - 12.0 ) ), 0.0E+00 ) );
 
     RCONST[400] = (PHOTOL[  1]); // O3 -> O + O2
     RCONST[401] = (PHOTOL[  2]); // O3 -> O1D + O2

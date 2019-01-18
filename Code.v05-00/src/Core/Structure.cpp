@@ -895,7 +895,12 @@ void Solution::applyRing( double varArray[], double tempArray[], \
         NO3[j][i]      *= varArray[115] / tempArray[115];
         Cl[j][i]       *= varArray[116] / tempArray[116];
         O[j][i]        *= varArray[117] / tempArray[117];
-        O1D[j][i]      *= varArray[118] / tempArray[118];
+
+        if ( isinf( varArray[118] / tempArray[118] ) )
+            O1D[j][i]   = varArray[118];
+        else
+            O1D[j][i]  *= varArray[118] / tempArray[118];
+
         O3[j][i]       *= varArray[119] / tempArray[119];
         HO2[j][i]      *= varArray[120] / tempArray[120];
         NO2[j][i]      *= varArray[121] / tempArray[121];
@@ -1506,7 +1511,7 @@ int Solution::SpinUp( std::vector<double> &amb_Value, \
             PHOTOL[iPhotol] = 0.0E+00;
 
         if ( sun->CSZA > 0.0E+00 )
-            Read_JRates( PHOTOL, sun->CSZA );
+            Update_JRates( PHOTOL, sun->CSZA );
 
         if ( DBG ) {
             std::cout << "\n DEBUG : (In SpinUp)\n";

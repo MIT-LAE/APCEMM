@@ -13,14 +13,12 @@
 
 #include "Core/ReadJRates.hpp"
 
-Vector_1D ReadJRates( const std::string ROOTDIR,                    \
-                      const unsigned int MM, const unsigned int DD, \
-                      const double LON, const double LAT,           \
-                      const double P_hPa )
+void ReadJRates( const char* ROOTDIR,                          \
+                 const unsigned int MM, const unsigned int DD, \
+                 const double LON, const double LAT,           \
+                 const double P_hPa,                           \
+                 double NOON_JRATES[] )
 {
-
-    /* Allocate and initialize photolysis rates */
-    Vector_1D rates( NPHOTOL, 0.0E+00 );
 
     std::string fullPath_Grid;
     std::string fullPath;
@@ -28,13 +26,10 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
    
     mm << std::setw(2) << std::setfill('0') << MM;
     dd << std::setw(2) << std::setfill('0') << DD;
-    if ( ROOTDIR.back() == '/' ) {
-        fullPath = ROOTDIR + "JData_2013-" + mm.str() + "-" + dd.str() + ".mat";
-        fullPath_Grid = ROOTDIR + "Grid.mat";
-    } else {
-        fullPath = ROOTDIR + '/' + "JData_2013-" + mm.str() + "-" + dd.str() + ".mat";
-        fullPath_Grid = ROOTDIR + '/' + "Grid.mat";
-    }
+    fullPath += ROOTDIR;
+    fullPath += "/JData_2013-" + mm.str() + "-" + dd.str() + ".mat";
+    fullPath_Grid += ROOTDIR;
+    fullPath_Grid += "/Grid.mat";
 
     /* First deal with grid to find indices to evaluate the rates at */
 
@@ -155,23 +150,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -199,23 +194,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -243,23 +238,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -287,23 +282,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -331,23 +326,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -375,23 +370,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -419,23 +414,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -463,23 +458,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -507,23 +502,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -551,23 +546,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -595,23 +590,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -639,23 +634,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -683,23 +678,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -727,23 +722,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -771,23 +766,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -815,23 +810,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -859,23 +854,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -903,23 +898,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -947,23 +942,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -991,23 +986,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1035,23 +1030,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1079,23 +1074,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1123,23 +1118,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1167,23 +1162,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1211,23 +1206,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1255,23 +1250,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1299,23 +1294,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1343,23 +1338,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1387,23 +1382,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1431,23 +1426,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1475,23 +1470,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1519,23 +1514,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1563,23 +1558,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1607,23 +1602,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1651,23 +1646,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1695,23 +1690,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1739,23 +1734,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1783,23 +1778,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1827,23 +1822,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1871,23 +1866,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1915,23 +1910,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -1959,23 +1954,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2003,23 +1998,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2047,23 +2042,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2091,23 +2086,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2135,23 +2130,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2179,23 +2174,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2223,23 +2218,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2267,23 +2262,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2311,23 +2306,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2355,23 +2350,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2399,23 +2394,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2443,23 +2438,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2487,23 +2482,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2531,23 +2526,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2575,23 +2570,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2619,23 +2614,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2663,23 +2658,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2707,23 +2702,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2751,23 +2746,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2795,23 +2790,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2839,23 +2834,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2883,23 +2878,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2927,23 +2922,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -2971,23 +2966,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3015,23 +3010,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3059,23 +3054,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3103,23 +3098,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3147,23 +3142,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3191,23 +3186,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3235,23 +3230,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3279,23 +3274,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3323,23 +3318,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3367,23 +3362,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3411,23 +3406,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3455,23 +3450,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3499,23 +3494,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3543,23 +3538,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3587,23 +3582,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3631,23 +3626,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3675,23 +3670,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3719,23 +3714,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3763,23 +3758,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3807,23 +3802,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3851,23 +3846,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3895,23 +3890,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3939,23 +3934,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -3983,23 +3978,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4027,23 +4022,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4071,23 +4066,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4115,23 +4110,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4159,23 +4154,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4203,23 +4198,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4247,23 +4242,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4291,23 +4286,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4335,23 +4330,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4379,23 +4374,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4423,23 +4418,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4467,23 +4462,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4511,67 +4506,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
-    }
-
-    jRate.clear();
-    mxDestroyArray( mxJRate );
-    iPhotol++;
-    
-    /* BrO_J1 */
-    mxJRate = matGetVariable( pmat, "BrO_J1" );
-    if ( ( mxLON != NULL ) && mxIsDouble( mxLON ) && \
-            !mxIsEmpty( mxLON ) ) {
-        mwSize num = mxGetNumberOfElements( mxLON );
-        double *pr = mxGetPr( mxLON );
-        if ( pr != NULL ) {
-            jRate.reserve( num );
-            jRate.assign(pr, pr+num);
-        }
-    }
-    
-    if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
-    } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
-    } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
-    } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4599,23 +4550,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4643,23 +4594,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4687,23 +4638,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4731,23 +4682,23 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                            ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
                          ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                            ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                   ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
                          ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
                                                   ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
                                                                          ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
@@ -4775,438 +4726,38 @@ Vector_1D ReadJRates( const std::string ROOTDIR,                    \
     }
     
     if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+        NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+        NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+        NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
     mxDestroyArray( mxJRate );
-    iPhotol++;
-    
-    /* PIP_J1 */
-    mxJRate = matGetVariable( pmat, "PIP_J1" );
-    if ( ( mxLON != NULL ) && mxIsDouble( mxLON ) && \
-            !mxIsEmpty( mxLON ) ) {
-        mwSize num = mxGetNumberOfElements( mxLON );
-        double *pr = mxGetPr( mxLON );
-        if ( pr != NULL ) {
-            jRate.reserve( num );
-            jRate.assign(pr, pr+num);
-        }
-    }
-    
-    if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
-    } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
-    } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
-    } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
-    }
-
-    jRate.clear();
-    mxDestroyArray( mxJRate );
-    iPhotol++;
-    
-    /* IPMN_J1 */
-    mxJRate = matGetVariable( pmat, "IPMN_J1" );
-    if ( ( mxLON != NULL ) && mxIsDouble( mxLON ) && \
-            !mxIsEmpty( mxLON ) ) {
-        mwSize num = mxGetNumberOfElements( mxLON );
-        double *pr = mxGetPr( mxLON );
-        if ( pr != NULL ) {
-            jRate.reserve( num );
-            jRate.assign(pr, pr+num);
-        }
-    }
-    
-    if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
-    } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
-    } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
-    } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
-    }
-
-    jRate.clear();
-    mxDestroyArray( mxJRate );
-    iPhotol++;
-    
-    /* ETHLN_J1 */
-    mxJRate = matGetVariable( pmat, "ETHLN_J1" );
-    if ( ( mxLON != NULL ) && mxIsDouble( mxLON ) && \
-            !mxIsEmpty( mxLON ) ) {
-        mwSize num = mxGetNumberOfElements( mxLON );
-        double *pr = mxGetPr( mxLON );
-        if ( pr != NULL ) {
-            jRate.reserve( num );
-            jRate.assign(pr, pr+num);
-        }
-    }
-    
-    if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
-    } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
-    } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
-    } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
-    }
-
-    jRate.clear();
-    mxDestroyArray( mxJRate );
-    iPhotol++;
-    
-    /* DHDC_J1 */
-    mxJRate = matGetVariable( pmat, "DHDC_J1" );
-    if ( ( mxLON != NULL ) && mxIsDouble( mxLON ) && \
-            !mxIsEmpty( mxLON ) ) {
-        mwSize num = mxGetNumberOfElements( mxLON );
-        double *pr = mxGetPr( mxLON );
-        if ( pr != NULL ) {
-            jRate.reserve( num );
-            jRate.assign(pr, pr+num);
-        }
-    }
-    
-    if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
-    } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
-    } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
-    } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
-    }
-
-    jRate.clear();
-    mxDestroyArray( mxJRate );
-    iPhotol++;
-    
-    /* HPALD_J1 */
-    mxJRate = matGetVariable( pmat, "HPALD_J1" );
-    if ( ( mxLON != NULL ) && mxIsDouble( mxLON ) && \
-            !mxIsEmpty( mxLON ) ) {
-        mwSize num = mxGetNumberOfElements( mxLON );
-        double *pr = mxGetPr( mxLON );
-        if ( pr != NULL ) {
-            jRate.reserve( num );
-            jRate.assign(pr, pr+num);
-        }
-    }
-    
-    if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
-    } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
-    } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
-    } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
-    }
-
-    jRate.clear();
-    mxDestroyArray( mxJRate );
-    iPhotol++;
-    
-    /* ISN1_J1 */
-    mxJRate = matGetVariable( pmat, "ISN1_J1" );
-    if ( ( mxLON != NULL ) && mxIsDouble( mxLON ) && \
-            !mxIsEmpty( mxLON ) ) {
-        mwSize num = mxGetNumberOfElements( mxLON );
-        double *pr = mxGetPr( mxLON );
-        if ( pr != NULL ) {
-            jRate.reserve( num );
-            jRate.assign(pr, pr+num);
-        }
-    }
-    
-    if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
-    } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
-    } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
-    } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
-    }
-
-    jRate.clear();
-    mxDestroyArray( mxJRate );
-    iPhotol++;
-    
-    /* MONITS_J1 */
-    mxJRate = matGetVariable( pmat, "MONITS_J1" );
-    if ( ( mxLON != NULL ) && mxIsDouble( mxLON ) && \
-            !mxIsEmpty( mxLON ) ) {
-        mwSize num = mxGetNumberOfElements( mxLON );
-        double *pr = mxGetPr( mxLON );
-        if ( pr != NULL ) {
-            jRate.reserve( num );
-            jRate.assign(pr, pr+num);
-        }
-    }
-    
-    if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
-    } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
-    } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
-    } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
-    }
-
-    jRate.clear();
-    mxDestroyArray( mxJRate );
-    iPhotol++;
-    
-    /* MONITU_J1 */
-    mxJRate = matGetVariable( pmat, "MONITU_J1" );
-    if ( ( mxLON != NULL ) && mxIsDouble( mxLON ) && \
-            !mxIsEmpty( mxLON ) ) {
-        mwSize num = mxGetNumberOfElements( mxLON );
-        double *pr = mxGetPr( mxLON );
-        if ( pr != NULL ) {
-            jRate.reserve( num );
-            jRate.assign(pr, pr+num);
-        }
-    }
-    
-    if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
-    } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
-    } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
-    } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
-    }
-
-    jRate.clear();
-    mxDestroyArray( mxJRate );
-    iPhotol++;
-    
-    /* HONIT_J1 */
-    mxJRate = matGetVariable( pmat, "HONIT_J1" );
-    if ( ( mxLON != NULL ) && mxIsDouble( mxLON ) && \
-            !mxIsEmpty( mxLON ) ) {
-        mwSize num = mxGetNumberOfElements( mxLON );
-        double *pr = mxGetPr( mxLON );
-        if ( pr != NULL ) {
-            jRate.reserve( num );
-            jRate.assign(pr, pr+num);
-        }
-    }
-    
-    if ( LAT_EDGE && LON_EDGE ) {
-        rates[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
-    } else if ( LAT_EDGE ) {
-        rates[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
-    } else if ( LON_EDGE ) {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
-    } else {
-        rates[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
-    }
-
-    jRate.clear();
-    mxDestroyArray( mxJRate );
-    iPhotol++;
 
     /* Close mat file */
     matClose( pmat );
-
-    
-    return rates;
 
 } /* End of ReadJRates */
 

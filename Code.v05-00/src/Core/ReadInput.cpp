@@ -43,7 +43,9 @@ void Read_Input_File( OptInput &Input_Opt )
     else {
         std::cout << " Simulation Directory is not defined!" << std::endl;
         std::cout << " Make sure that the variable 'APCEMM_runDir' is exported" << std::endl;
-        exit(1);
+        const char* simDir_ = "/home/fritzt/CAPCEMM/rundirs/debug";
+        fullPath += simDir_;
+        //exit(1);
     }
    
     fullPath += FILESEP;
@@ -328,19 +330,19 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     /* Print to screen                                      */
     /* ==================================================== */
 
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " %%% SIMULATION MENU %%% :"                                           << std::endl;
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " Parameter sweep?        : " << Input_Opt.SIMULATION_PARAMETER_SWEEP  << std::endl;
-    std::cout << " Output folder           : " << Input_Opt.SIMULATION_OUTPUT_FOLDER    << std::endl;
-    std::cout << "  => Overwrite? if exists: " << Input_Opt.SIMULATION_OVERWRITE        << std::endl;
-    std::cout << " Run directory           : " << Input_Opt.SIMULATION_RUN_DIRECTORY    << std::endl;
-    std::cout << " Input backgrd condition : " << Input_Opt.SIMULATION_INPUT_BACKG_COND << std::endl;
-    std::cout << " Save Forward results    : " << Input_Opt.SIMULATION_SAVE_FORWARD     << std::endl;
-    std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_FORWARD_FILENAME << std::endl;
-    std::cout << " Turn on adjoint optim.  : " << Input_Opt.SIMULATION_ADJOINT          << std::endl;
-    std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_ADJOINT_FILENAME << std::endl;
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " %%% SIMULATION MENU %%% :"                                                        << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " Parameter sweep?        : " << Input_Opt.SIMULATION_PARAMETER_SWEEP               << std::endl;
+    std::cout << " Output folder           : " << Input_Opt.SIMULATION_OUTPUT_FOLDER                 << std::endl;
+    std::cout << "  => Overwrite? if exists: " << Input_Opt.SIMULATION_OVERWRITE                     << std::endl;
+    std::cout << " Run directory           : " << Input_Opt.SIMULATION_RUN_DIRECTORY                 << std::endl;
+    std::cout << " Input backgrd condition : " << Input_Opt.SIMULATION_INPUT_BACKG_COND              << std::endl;
+    std::cout << " Save Forward results    : " << Input_Opt.SIMULATION_SAVE_FORWARD                  << std::endl;
+    std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_FORWARD_FILENAME              << std::endl;
+    std::cout << " Turn on adjoint optim.  : " << Input_Opt.SIMULATION_ADJOINT                       << std::endl;
+    std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_ADJOINT_FILENAME              << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     
 } /* End of Read_Simulation_Menu */
 
@@ -874,6 +876,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     /* Store in values for variable */
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         try {
+            value = std::stod(tokens[i]);
             if ( value >= 0.0E+00 )
                 Input_Opt.PARAMETER_ETIME.push_back( value );
             else {
@@ -1939,8 +1942,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     /* Print to screen                                      */
     /* ==================================================== */
 
-    std::cout << " %%% PARAMETER SWEEP %%% :"                                           << std::endl;
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
+    std::cout << " %%% PARAMETER SWEEP %%% :"                                                        << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
 
     /* ---- Meteorological parameters --------------------- */
     std::cout << " Meteorological parameter:" << std::endl;
@@ -2227,12 +2230,12 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     /* Print to screen                                      */
     /* ==================================================== */
 
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " %%% TRANSPORT MENU %%%  :"                                           << std::endl;
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " Turn on Transport?      : " << Input_Opt.TRANSPORT_TRANSPORT         << std::endl;
-    std::cout << "  => Fill Negative Values: " << Input_Opt.TRANSPORT_FILL              << std::endl;
-    std::cout << " Convect Timestep [min]  : " << Input_Opt.TRANSPORT_TIMESTEP          << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " %%% TRANSPORT MENU %%%  :"                                                        << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " Turn on Transport?      : " << Input_Opt.TRANSPORT_TRANSPORT                      << std::endl;
+    std::cout << "  => Fill Negative Values: " << Input_Opt.TRANSPORT_FILL                           << std::endl;
+    std::cout << " Convect Timestep [min]  : " << Input_Opt.TRANSPORT_TIMESTEP                       << std::endl;
 
 } /* End of Read_Transport_Menu */
 
@@ -2306,29 +2309,6 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     }
     
     /* ==================================================== */
-    /* Read in J-Rates?                                     */
-    /* ==================================================== */
-
-    variable = "Read in J-Rates?";
-    getline( inputFile, line, '\n' );
-    if ( VERBOSE )
-        std::cout << line << std::endl;
-    
-    /* Extract variable */
-    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
-    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
-         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.CHEMISTRY_READ_JRATES = 1;
-    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
-              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.CHEMISTRY_READ_JRATES = 0;
-    else {
-        std::cout << " Wrong input for: " << variable << std::endl;
-        exit(1);
-    }
-    
-    /* ==================================================== */
     /* Chemistry Timestep                                   */
     /* ==================================================== */
 
@@ -2356,6 +2336,20 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
         exit(1);
     }
 
+    /* ==================================================== */
+    /* Photolysis rates folder                              */
+    /* ==================================================== */
+
+    variable = "Photolysis rates folder";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    Input_Opt.CHEMISTRY_JRATE_FOLDER = tokens[0];
+
     /* Return success */
     RC = SUCCESS;
 
@@ -2363,13 +2357,13 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     /* Print to screen                                      */
     /* ==================================================== */
 
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " %%% CHEMISTRY MENU %%%  :"                                           << std::endl;
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " Turn on Chemistry?      : " << Input_Opt.CHEMISTRY_CHEMISTRY         << std::endl;
-    std::cout << " Perform het. chem.?     : " << Input_Opt.CHEMISTRY_HETCHEM           << std::endl;
-    std::cout << " Read in J-Rates?        : " << Input_Opt.CHEMISTRY_READ_JRATES       << std::endl;
-    std::cout << " Chemistry Timestep [min]: " << Input_Opt.CHEMISTRY_TIMESTEP          << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " %%% CHEMISTRY MENU %%%  :"                                                        << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " Turn on Chemistry?      : " << Input_Opt.CHEMISTRY_CHEMISTRY                      << std::endl;
+    std::cout << " Perform het. chem.?     : " << Input_Opt.CHEMISTRY_HETCHEM                        << std::endl;
+    std::cout << " Chemistry Timestep [min]: " << Input_Opt.CHEMISTRY_TIMESTEP                       << std::endl;
+    std::cout << " Photolysis rates folder : " << Input_Opt.CHEMISTRY_JRATE_FOLDER                   << std::endl;
 
 } /* End of Read_Chemistry_Menu */
 
@@ -2515,14 +2509,14 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     /* Print to screen                                      */
     /* ==================================================== */
 
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " %%% AEROSOL MENU %%%    :"                                           << std::endl;
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " Turn on grav. settling? : " << Input_Opt.AEROSOL_GRAVSETTLING        << std::endl;
-    std::cout << " Turn on coagulation?    : " << Input_Opt.AEROSOL_COAGULATION         << std::endl;
-    std::cout << "  => Coag. timestep [min]: " << Input_Opt.AEROSOL_COAGULATION_TIMESTEP<< std::endl;
-    std::cout << " Turn on ice growth?     : " << Input_Opt.AEROSOL_ICE_GROWTH          << std::endl;
-    std::cout << " Turn on plume updraft?  : " << Input_Opt.AEROSOL_PLUME_UPDRAFT       << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " %%% AEROSOL MENU %%%    :"                                                        << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " Turn on grav. settling? : " << Input_Opt.AEROSOL_GRAVSETTLING                     << std::endl;
+    std::cout << " Turn on coagulation?    : " << Input_Opt.AEROSOL_COAGULATION                      << std::endl;
+    std::cout << "  => Coag. timestep [min]: " << Input_Opt.AEROSOL_COAGULATION_TIMESTEP             << std::endl;
+    std::cout << " Turn on ice growth?     : " << Input_Opt.AEROSOL_ICE_GROWTH                       << std::endl;
+    std::cout << " Turn on plume updraft?  : " << Input_Opt.AEROSOL_PLUME_UPDRAFT                    << std::endl;
 
 } /* End of Read_Aerosol_Menu */
 
@@ -2610,12 +2604,12 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     /* Print to screen                                      */
     /* ==================================================== */
 
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " %%% METEOROLOGY MENU %%%:"                                           << std::endl;
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " Initialize T from MET?  : " << Input_Opt.MET_TEMP_INIT               << std::endl;
-    std::cout << " Initialize H2O from MET?: " << Input_Opt.MET_H2O_INIT                << std::endl;
-    std::cout << " Met file                : " << Input_Opt.MET_FILENAME                << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " %%% METEOROLOGY MENU %%%:"                                                        << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " Initialize T from MET?  : " << Input_Opt.MET_TEMP_INIT                            << std::endl;
+    std::cout << " Initialize H2O from MET?: " << Input_Opt.MET_H2O_INIT                             << std::endl;
+    std::cout << " Met file                : " << Input_Opt.MET_FILENAME                             << std::endl;
 
 } /* End of Read_Meteorology_Menu */
 
@@ -2660,11 +2654,11 @@ void Read_Diagnostic_Menu( OptInput &Input_Opt, bool &RC )
     /* Print to screen                                      */
     /* ==================================================== */
 
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " %%% DIAGNOSTIC MENU %%% :"                                           << std::endl;
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " netCDF file name        : " << Input_Opt.DIAG_FILENAME               << std::endl;
-    std::cout << " Diagnostic Entries ---> : L" << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " %%% DIAGNOSTIC MENU %%% :"                                                        << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " netCDF file name        : " << Input_Opt.DIAG_FILENAME                            << std::endl;
+    std::cout << " Diagnostic Entries ---> : L"                                                      << std::endl;
 
 } /* End of Read_Diagnostic_Menu */
 
@@ -2888,23 +2882,23 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     /* Print to screen                                      */
     /* ==================================================== */
 
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " %%% TIMESERIES MENU %%% :"                                           << std::endl;
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " Save species timeseries?: " << Input_Opt.TS_SPEC                     << std::endl;
-    std::cout << "  => Inst timeseries file: " << Input_Opt.TS_FILENAME                 << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " %%% TIMESERIES MENU %%% :"                                                        << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " Save species timeseries?: " << Input_Opt.TS_SPEC                                  << std::endl;
+    std::cout << "  => Inst timeseries file: " << Input_Opt.TS_FILENAME                              << std::endl;
     std::cout << "  => Species to include  : ";
     for ( unsigned int i = 0; i < Input_Opt.TS_SPECIES.size(); i++ )
         std::cout << Input_Opt.TS_SPECIES[i] << " ";
-    std::cout << std::endl;
-    std::cout << "  => Frequency [min]     : " << Input_Opt.TS_FREQ                     << std::endl;
-    std::cout << " Save aerosol timeseries?: " << Input_Opt.TS_AERO                     << std::endl;
-    std::cout << "  => Inst timeseries file: " << Input_Opt.TS_AERO_FILENAME                 << std::endl;
+    std::cout                                                                << std::endl;
+    std::cout << "  => Frequency [min]     : " << Input_Opt.TS_FREQ          << std::endl;
+    std::cout << " Save aerosol timeseries?: " << Input_Opt.TS_AERO          << std::endl;
+    std::cout << "  => Inst timeseries file: " << Input_Opt.TS_AERO_FILENAME << std::endl;
     std::cout << "  => Aerosol to include  : ";
     for ( unsigned int i = 0; i < Input_Opt.TS_AEROSOL.size(); i++ )
         std::cout << Input_Opt.TS_AEROSOL[i] << " ";
-    std::cout << std::endl;
-    std::cout << "  => Frequency [min]     : " << Input_Opt.TS_AERO_FREQ                     << std::endl;
+    std::cout                                                            << std::endl;
+    std::cout << "  => Frequency [min]     : " << Input_Opt.TS_AERO_FREQ << std::endl;
 
 } /* End of Read_Timeseries_Menu */
 
@@ -2985,11 +2979,11 @@ void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
     /* Print to screen                                      */
     /* ==================================================== */
 
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " %%% PROD & LOSS MENU %%%:"                                           << std::endl;
-    std::cout << " ------------------------+---------------------------------------- "  << std::endl;
-    std::cout << " Turn on P/L diag?       : " << Input_Opt.PL_PL                       << std::endl;
-    std::cout << " Save O3 P/L?            : " << Input_Opt.PL_O3                       << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " %%% PROD & LOSS MENU %%%:"                                                        << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
+    std::cout << " Turn on P/L diag?       : " << Input_Opt.PL_PL                                    << std::endl;
+    std::cout << " Save O3 P/L?            : " << Input_Opt.PL_O3                                    << std::endl;
 
 } /* End of Read_PL_Menu */
 

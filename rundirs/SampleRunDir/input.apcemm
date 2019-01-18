@@ -48,8 +48,8 @@ Convect Timestep [min]  : 10
 %%% CHEMISTRY MENU %%%  :
 Turn on Chemistry?      : T
 Perform het. chem.?     : T
-Read in J-Rates?        : T
 Chemistry Timestep [min]: 10
+Photolysis rates folder : /net/d04/data/fritzt/APCEMM_Data/J-Rates
 ------------------------+------------------------------------------------------
 %%% AEROSOL MENU %%%    :
 Turn on grav. settling? : T

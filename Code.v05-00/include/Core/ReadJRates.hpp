@@ -23,9 +23,10 @@
 #include "Util/ForwardDecl.hpp"
 #include "KPP/KPP_Parameters.h"
 
-Vector_1D ReadJRates( const std::string ROOTDIR,                    \
-                      const unsigned int MM, const unsigned int DD, \
-                      const double LON, const double LAT,           \
-                      const double P_hPa );
+void ReadJRates( const char* ROOTDIR,                          \
+                 const unsigned int MM, const unsigned int DD, \
+                 const double LON, const double LAT,           \
+                 const double P_hPa,                           \
+                 double NOON_JRATES[] );
 
 #endif /* READJREATES_H_INCLUDED */

@@ -50,6 +50,7 @@ static int SUCCESS     =  1;
 #include "Core/Engine.hpp"
 #include "Core/Aircraft.hpp"
 #include "Core/Emission.hpp"
+#include "Core/ReadJRates.hpp"
 
 /* For RINGS */
 #include "Core/Cluster.hpp"
@@ -70,9 +71,10 @@ double C[NSPEC];          /* Concentration of all species */
 double * VAR = &C[0];     /* Concentration of variable species (global) */
 double * FIX = &C[NVAR];  /* Concentration of fixed species (global) */
 
-double RCONST[NREACT];    /* Rate constants (global) */
-double PHOTOL[NPHOTOL];   /* Photolysis rates (global) */
-double HET[NSPEC][3];     /* Heterogeneous chemistry rates (global) */
+double RCONST[NREACT];       /* Rate constants (global) */
+double NOON_JRATES[NPHOTOL]; /* Noon-time photolysis rates (global) */
+double PHOTOL[NPHOTOL];      /* Photolysis rates (global) */
+double HET[NSPEC][3];        /* Heterogeneous chemistry rates (global) */
 
 double TIME;              /* Current integration time (global) */
 
@@ -124,6 +126,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     const bool CHEMISTRY      = Input_Opt.CHEMISTRY_CHEMISTRY;
     const double CHEMISTRY_DT = Input_Opt.CHEMISTRY_TIMESTEP;
     const bool HETCHEM        = Input_Opt.CHEMISTRY_HETCHEM;
+    const char* JRATE_FOLDER  = Input_Opt.CHEMISTRY_JRATE_FOLDER.c_str();
 
     /* ======================================================================= */
     /* ---- Input options from the AEROSOL MENU ------------------------------ */
@@ -273,10 +276,31 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
 
-    /* Define sun parameters */
+    /* Define sun parameters, this include sunrise and sunset hours and updates
+     * the local solar zenith angle. */
     SZA *sun = new SZA( latitude_deg, emissionDay ); 
 
-    /* TODO: Read J-Rates here */
+    /* Initialize noon time photolysis rates
+     * The data is after the quantum yield has been applied and represents
+     * the value of the photolysis rates at 12:00 (noon) locally.
+     * The photolysis rates at any given time are obtained by multiplying
+     * those by the cosine of the solar zenith angle, when positive. */
+    for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
+        NOON_JRATES[iPhotol] = 0.0E+00;
+ 
+    /* Allocating noon-time photolysis rates. */
+    ReadJRates( JRATE_FOLDER, 1, 1,  \
+         longitude_deg, latitude_deg, \
+         pressure_Pa/100.0,           \
+         NOON_JRATES );
+
+    if ( printDEBUG ) {
+        std::cout << "\n DEBUG : \n";
+        for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ ) {
+            std::cout << "         NOON_JRATES[" << iPhotol << "] = ";
+            std::cout << NOON_JRATES[iPhotol] << "\n";
+        }
+    }
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -893,7 +917,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         /* If daytime, update photolysis rates */
         if ( sun->CSZA > 0.0E+00 )
-            Read_JRates( PHOTOL, sun->CSZA );
+            Update_JRates( PHOTOL, sun->CSZA );
 
         if ( printDEBUG ) {
             std::cout << "\n DEBUG : \n";
@@ -1569,7 +1593,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                              &(timeArray)[0], timeArray.size(),   \
                              KPPADJ_RTOLS, KPPADJ_ATOLS,          \
                              /* Output */ VAR_OPT,                \
-                             /* Output metric */ &METRIC,          \
+                             /* Output metric */ &METRIC,         \
                              /* Debug? */ DEBUG_ADJOINT,          \
                              /* 2nd try? */ 0 );
 
@@ -1584,7 +1608,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                                  &(timeArray)[0], timeArray.size(),   \
                                  KPPADJ_RTOLS, KPPADJ_ATOLS,          \
                                  /* Output */ VAR_OPT2,               \
-                                 /* Output metric */ &METRIC2,         \
+                                 /* Output metric */ &METRIC2,        \
                                  /* Debug? */ DEBUG_ADJOINT,          \
                                  /* 2nd try? */ 1 );
 
@@ -1705,7 +1729,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
             /* If daytime, update photolysis rates */
             if ( sun->CSZA > 0.0E+00 )
-                Read_JRates( PHOTOL, sun->CSZA );
+                Update_JRates( PHOTOL, sun->CSZA );
 
             if ( printDEBUG ) {
                 std::cout << "\n DEBUG : \n";
