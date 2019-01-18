@@ -45,8 +45,6 @@
 #SBATCH -J APCEMM
 
 #SBATCH -o slurm-%j.out
-#SBATCH -e slurm-%j.err
-
 
 # To submit the job, run:
 #

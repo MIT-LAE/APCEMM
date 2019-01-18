@@ -2,7 +2,7 @@ APCEMM SIMULATION
 ------------------------+------------------------------------------------------
 %%% SIMULATION MENU %%% :
 Parameter sweep?        : T
-Output folder           : /net/d04/data/fritzt/CAPCEMM/SO2-Forward
+Output folder           : /path/to/output/folder
  => Overwrite? if exists: F
 Run directory           : ./
 Input backgrd condition : /net/d04/data/fritzt/APCEMM_Data/init.txt
