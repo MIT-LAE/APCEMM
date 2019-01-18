@@ -43,9 +43,7 @@ void Read_Input_File( OptInput &Input_Opt )
     else {
         std::cout << " Simulation Directory is not defined!" << std::endl;
         std::cout << " Make sure that the variable 'APCEMM_runDir' is exported" << std::endl;
-        const char* simDir_ = "/home/fritzt/CAPCEMM/rundirs/debug";
-        fullPath += simDir_;
-        //exit(1);
+        exit(1);
     }
    
     fullPath += FILESEP;
