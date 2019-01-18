@@ -19,6 +19,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cstdlib>
+#include <vector>
 #include <cmath>
 
 #include "Core/Input_Mod.hpp"

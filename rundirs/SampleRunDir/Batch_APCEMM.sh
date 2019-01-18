@@ -42,7 +42,9 @@
 # Set a name for the job. This will appear in the output of 'squeue'. The
 # default is the name of the job script. This option is probably most useful
 # as a command-line argument to sbatch.
-#xSBATCH -J some_name
+#SBATCH -J APCEMM
+
+#SBATCH -o slurm-%j.out
 
 # To submit the job, run:
 #

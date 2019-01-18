@@ -1413,233 +1413,227 @@ int ros_CadjInt ( int NADJ, double Y[][NVAR], double Tstart, double Tend,
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~~ Local variables */
-  double Y0[NVAR];
-  double Ynew[NADJ][NVAR], Fcn0[NADJ][NVAR], Fcn[NADJ][NVAR];
-  double K[NADJ][NVAR*ros_S], dFdT[NADJ][NVAR];
+    double Y0[NVAR];
+    double Ynew[NADJ][NVAR], Fcn0[NADJ][NVAR], Fcn[NADJ][NVAR];
+    double K[NADJ][NVAR*ros_S], dFdT[NADJ][NVAR];
 #ifdef FULL_ALGEBRA
-  double Jac0[NVAR][NVAR], Ghimj[NVAR][NVAR], Jac[NVAR][NVAR],
-         dJdT[NVAR][NVAR];
+    double Jac0[NVAR][NVAR], Ghimj[NVAR][NVAR], Jac[NVAR][NVAR],
+           dJdT[NVAR][NVAR];
 #else
-  double Jac0[LU_NONZERO], Ghimj[LU_NONZERO], Jac[LU_NONZERO],
-         dJdT[LU_NONZERO];
+    double Jac0[LU_NONZERO], Ghimj[LU_NONZERO], Jac[LU_NONZERO],
+           dJdT[LU_NONZERO];
 #endif
-  double H, Hnew, HC, HG, Fac, Tau;
-  double Err, Yerr[NADJ][NVAR];
-  int Pivot[NVAR], Direction, ioffset, j, istage, iadj;
-  int RejectLastH, RejectMoreH, Singular; /* Boolean values */
+    double H, Hnew, HC, HG, Fac, Tau;
+    double Err, Yerr[NADJ][NVAR];
+    int Pivot[NVAR], Direction, ioffset, j, istage, iadj;
+    int RejectLastH, RejectMoreH, Singular; /* Boolean values */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~>  Initial preparations */
-  T = Tstart;
-  RSTATUS[Nhexit] = (double)0.0;
-  H = MIN( MAX(ABS(Hmin),ABS(Hstart)) , ABS(Hmax) );
-  if (ABS(H) <= ((double)10.0)*Roundoff)
-    H = DeltaMin;
+    T = Tstart;
+    RSTATUS[Nhexit] = (double)0.0;
+    H = MIN( MAX(ABS(Hmin),ABS(Hstart)) , ABS(Hmax) );
+    if (ABS(H) <= ((double)10.0)*Roundoff)
+        H = DeltaMin;
 
-  if (Tend  >=  Tstart)
-    Direction = 1;
-  else
-    Direction = -1;
+    if (Tend  >=  Tstart)
+        Direction = 1;
+    else
+        Direction = -1;
 
-  //H = Direction*H;
-
-  printf("\nDirection: %d, %6.2f, %6.2f\n",Direction,Tstart/3600,Tend/3600);
-
-  RejectLastH = FALSE;
-  RejectMoreH = FALSE;
+    RejectLastH = FALSE;
+    RejectMoreH = FALSE;
 
 /*~~~> Time loop begins below */
-  while ( ((Direction > 0) && ((T-Tend)+Roundoff <= ZERO))
-	  || ((Direction < 0) && ((Tend-T)+Roundoff <= ZERO)) ) { /*TimeLoop*/
+    while ( ((Direction > 0) && ((T-Tend)+Roundoff <= ZERO))
+	      || ((Direction < 0) && ((Tend-T)+Roundoff <= ZERO)) ) { /*TimeLoop*/
 
-    printf("Time step: H = %2.5e\n",H);
 
-    if ( ISTATUS[Nstp] > Max_no_steps ) { /* Too many steps */
-      printf("Error -6.\n");
-      return ADJ_ros_ErrorMsg( -6 );
-    }
+        if ( ISTATUS[Nstp] > Max_no_steps ) { /* Too many steps */
+            printf("Error -6.\n");
+            return ADJ_ros_ErrorMsg( -6 );
+        }
 
-    /* Step size too small */
-    if ( ((T+((double)0.1)*H) == T) || (ABS((H)) <= Roundoff) ) {
-      printf("Error -7.\n");
-      return ADJ_ros_ErrorMsg( -7 );
-    }
+        /* Step size too small */
+        if ( ((T+((double)0.1)*H) == T) || (ABS((H)) <= Roundoff) ) {
+            printf("Error -7.\n");
+            return ADJ_ros_ErrorMsg( -7 );
+        }
 
-/*~~~>  Limit H if necessary to avoid going beyond Tend */
-    RSTATUS[Nhexit] = H;
-    H = MIN(H,ABS((Tend-T)));
+        /*~~~>  Limit H if necessary to avoid going beyond Tend */
+        RSTATUS[Nhexit] = H;
+        H = MIN(H,ABS((Tend-T)));
 
-/*~~~>   Interpolate forward solution */
-    ros_cadj_Y( T, Y0 );
-/*~~~>   Compute the Jacobian at current time */
-    ADJ_JacTemplate(T, Y0, Jac0);
-    ISTATUS[Njac]++;
+        /*~~~>   Interpolate forward solution */
+        ros_cadj_Y( T, Y0 );
+        /*~~~>   Compute the Jacobian at current time */
+        ADJ_JacTemplate(T, Y0, Jac0);
+        ISTATUS[Njac]++;
 
-/*~~~>  Compute the function derivative with respect to T */
-    if (!Autonomous) {
-      ros_JacTimeDerivative ( T, Roundoff, Y0, Jac0, dJdT, ISTATUS );
-      for (iadj = 0; iadj < NADJ; iadj++) {
+        /*~~~>  Compute the function derivative with respect to T */
+        if (!Autonomous) {
+            ros_JacTimeDerivative ( T, Roundoff, Y0, Jac0, dJdT, ISTATUS );
+            for (iadj = 0; iadj < NADJ; iadj++) {
 #ifdef FULL_ALGEBRA
-	for (i=0; i<NVAR; i++)
-	  dFdT[iadj][i] = MATMUL(TRANSPOSE(dJdT),Y[iadj][i]);
+	            for (i=0; i<NVAR; i++)
+	                dFdT[iadj][i] = MATMUL(TRANSPOSE(dJdT),Y[iadj][i]);
 #else
-	JacTR_SP_Vec(dJdT,&Y[iadj][0],&dFdT[iadj][0]);
+	            JacTR_SP_Vec(dJdT,&Y[iadj][0],&dFdT[iadj][0]);
 #endif
-	WSCAL(NVAR,(-ONE),&dFdT[iadj][0],1);
-      } /* End for loop */
-    } /* End if */
+	            WSCAL(NVAR,(-ONE),&dFdT[iadj][0],1);
+            } /* End for loop */
+        } /* End if */
 
-/*~~~>  Ydot = -J^T*Y */
+        /*~~~>  Ydot = -J^T*Y */
 #ifdef FULL_ALGEBRA
-    int i;
-    for(i=0; i<NVAR; i++) {
-      for(j=0; j<NVAR; j++)
-	Jac0[i][j] = -Jac0[i][j];
-    }
+        int i;
+        for(i=0; i<NVAR; i++) {
+            for(j=0; j<NVAR; j++)
+	            Jac0[i][j] = -Jac0[i][j];
+        }
 #else
-    WSCAL(LU_NONZERO,(-ONE),Jac0,1);
-#endif
-
-    for ( iadj = 0; iadj < NADJ; iadj++ ) {
-#ifdef FULL_ALGEBRA
-      int i;
-      for(i=0; i<NVAR; i++)
-	Fcn0[iadj][i] = MATMUL(TRANSPOSE(Jac0),Y[iadj][i]);
-#else
-      JacTR_SP_Vec(Jac0,&Y[iadj][0],&Fcn0[iadj][0]);
-#endif
-    }
-
-/*~~~>  Repeat step calculation until current step accepted */
-    do { /* UntilAccepted */
-
-      Singular = ros_PrepareMatrix(H,Direction,ros_Gamma[0], Jac0,Ghimj,Pivot,
-				   ISTATUS);
-      if (Singular) /* More than 5 consecutive failed decompositions */
-	    return ADJ_ros_ErrorMsg( -8 );
-
-/*~~~>   Compute the stages */
-      for ( istage = 0; istage < ros_S; istage++ ) { /* Stage loop */
-
-	/* Current istage offset. Current istage vector
-	   is K[ioffset+1:ioffset+NVAR] */
-	ioffset = NVAR*(istage-1);
-
-	/* For the 1st istage the function has been computed previously */
-	if ( istage == 0 ) {
-	  for ( iadj = 0; iadj < NADJ; iadj++ )
-	    WCOPY(NVAR,&Fcn0[iadj][0],1,&Fcn[iadj][0],1);
-
-	  /* istage>0 and a new function evaluation is needed at
-	     the current istage */
-	}
-	else if ( ros_NewF[istage] ) {
-	  WCOPY(NVAR*NADJ,&Y[0][0],1,&Ynew[0][0],1);
-	  for (j = 0; j < istage-1; j++) {
-	    for ( iadj = 0; iadj < NADJ; iadj++ )
-	      WAXPY( NVAR,ros_A[(istage-1)*(istage-2)/2+j],
-		     &K[iadj][NVAR*(j-1)+1],1,&Ynew[iadj][0],1);
-	  } /* End for loop */
-	  printf("H: %6.2e, %6.2e\n", H, Direction*H);
-	  Tau = T + ros_Alpha[istage]*Direction*H;
-	  printf("T, Tau: %6.4e, %6.4e\n",T/3600, Tau/3600);
-	  ros_cadj_Y( Tau, Y0 );
-	  ADJ_JacTemplate(Tau, Y0, Jac);
-	  ISTATUS[Njac]++;
-
-#ifdef FULL_ALGEBRA
-	  for(i=0; i<NVAR; i++) {
-	    for(j=0; j<NVAR; j++)
-	      Jac[i][j] = -Jac[i][j];
-	  }
-#else
-	  WSCAL(LU_NONZERO,(-ONE),Jac,1);
+        WSCAL(LU_NONZERO,(-ONE),Jac0,1);
 #endif
 
-	  for ( iadj = 0; iadj < NADJ; iadj++ ) {
+        for ( iadj = 0; iadj < NADJ; iadj++ ) {
 #ifdef FULL_ALGEBRA
-	    for(i=0; i<NVAR; i++)
-	      Fcn[iadj][i] = MATMUL(TRANSPOSE(Jac),Ynew[iadj][i]);
+            int i;
+            for(i=0; i<NVAR; i++)
+	            Fcn0[iadj][i] = MATMUL(TRANSPOSE(Jac0),Y[iadj][i]);
 #else
-	    JacTR_SP_Vec(Jac,&Ynew[iadj][0],&Fcn[iadj][0]);
+            JacTR_SP_Vec(Jac0,&Y[iadj][0],&Fcn0[iadj][0]);
 #endif
-	  } /* End for loop */
-	} /*  if istage == 1 elseif ros_NewF(istage) */
+        }
 
-	for ( iadj = 0; iadj < NADJ; iadj++ )
-	  WCOPY(NVAR,&Fcn[iadj][0],1,&K[iadj][ioffset+1],1);
-	for ( j = 0; j < istage-1; j++ ) {
-	  HC = ros_C[(istage-1)*(istage-2)/2+j]/(Direction*H);
-	  for ( iadj = 0; iadj < NADJ; iadj++ )
-	    WAXPY(NVAR,HC,&K[iadj][NVAR*(j-1)+1],1,&K[iadj][ioffset+1],1);
-	} /* End for loop */
-	if ((!Autonomous) && (ros_Gamma[istage] != ZERO)) {
-	  HG = Direction*H*ros_Gamma[istage];
-	  for ( iadj = 0; iadj < NADJ; iadj++ )
-	    WAXPY(NVAR,HG,&dFdT[iadj][0],1,&K[iadj][ioffset+1],1);
-	} /* End if */
-	for ( iadj = 0; iadj < NADJ; iadj++ )
-	  ros_Solve('T', Ghimj, Pivot, &K[iadj][ioffset+1], ISTATUS);
+        /*~~~>  Repeat step calculation until current step accepted */
+        do { /* UntilAccepted */
 
-      } /* End of Stage loop */
+            Singular = ros_PrepareMatrix(H,Direction,ros_Gamma[0], Jac0,Ghimj,Pivot,
+			        	   ISTATUS);
+            if (Singular) /* More than 5 consecutive failed decompositions */
+	            return ADJ_ros_ErrorMsg( -8 );
 
-/*~~~>  Compute the new solution */
-      for ( iadj = 0; iadj < NADJ; iadj++ ) {
-	WCOPY(NVAR,&Y[iadj][0],1,&Ynew[iadj][0],1);
-	for ( j=0; j<ros_S; j++ )
-	  WAXPY(NVAR,ros_M[j],&K[iadj][NVAR*(j-1)+1],1,&Ynew[iadj][0],1);
-      } /* End for loop */
+            /*~~~>   Compute the stages */
+            for ( istage = 0; istage < ros_S; istage++ ) { /* Stage loop */
 
-/*~~~>  Compute the error estimation */
-      WSCAL(NVAR*NADJ,ZERO,&Yerr[0][0],1);
-      for ( j=0; j<ros_S; j++ ) {
-	for ( iadj = 0; iadj < NADJ; iadj++ )
-	  WAXPY(NVAR,ros_E[j],&K[iadj][NVAR*(j-1)+1],1,&Yerr[iadj][0],1);
-      } /* End for loop */
+	            /* Current istage offset. Current istage vector
+	               is K[ioffset+1:ioffset+NVAR] */
+	            ioffset = NVAR*(istage-1);
 
-/*~~~> Max error among all adjoint components */
-      iadj = 1;
-      Err = ros_ErrorNorm ( &Y[iadj][0], &Ynew[iadj][0], &Yerr[iadj][0],
-			    &AbsTol_adj[iadj][0], &RelTol_adj[iadj][0],
-			    VectorTol );
+	            /* For the 1st istage the function has been computed previously */
+	            if ( istage == 0 ) {
+	                for ( iadj = 0; iadj < NADJ; iadj++ )
+	                    WCOPY(NVAR,&Fcn0[iadj][0],1,&Fcn[iadj][0],1);
 
-/*~~~> New step size is bounded by FacMin <= Hnew/H <= FacMax */
-      Fac  = MIN(FacMax,MAX(FacMin,FacSafe/pow(Err,(ONE/ros_ELO))));
-      Hnew = H*Fac;
+	                /* istage>0 and a new function evaluation is needed at
+	                    the current istage */
+	            }
+	            else if ( ros_NewF[istage] ) {
+	                WCOPY(NVAR*NADJ,&Y[0][0],1,&Ynew[0][0],1);
+	                for (j = 0; j < istage-1; j++) {
+	                    for ( iadj = 0; iadj < NADJ; iadj++ )
+	                        WAXPY( NVAR,ros_A[(istage-1)*(istage-2)/2+j],
+		                            &K[iadj][NVAR*(j-1)+1],1,&Ynew[iadj][0],1);
+	                } /* End for loop */
+	                Tau = T + ros_Alpha[istage]*Direction*H;
+	                ros_cadj_Y( Tau, Y0 );
+              	    ADJ_JacTemplate(Tau, Y0, Jac);
+	                ISTATUS[Njac]++;
 
-/*~~~>  Check the error magnitude and adjust step size */
-      /* ISTATUS[Nstp] = ISTATUS[Nstp] + 1 */
-      if ( (Err <= ONE) || (H <= Hmin) ) {  /*~~~> Accept step */
-	ISTATUS[Nacc] = ISTATUS[Nacc] + 1;
-	WCOPY(NVAR*NADJ,&Ynew[0][0],1,&Y[0][0],1);
-	T = T + Direction*H;
-	Hnew = MAX(Hmin,MIN(Hnew,Hmax));// MIN( MAX(ABS(Hmin),ABS(Hnew)) , ABS(Hmax) ); //
-	if (RejectLastH) /* No step size increase after a rejected step */
-	  Hnew = MIN(Hnew,H);
-	RSTATUS[Nhexit] = H;
-	RSTATUS[Nhnew] = Hnew;
-	RSTATUS[Ntexit] = T;
-	RejectLastH = FALSE;
-	RejectMoreH = FALSE;
-	H = Hnew;
-	break; /* UntilAccepted - EXIT THE LOOP: WHILE STEP NOT ACCEPTED */
-      }
-      else {         /*~~~> Reject step */
-	if (RejectMoreH)
-	  Hnew = H*FacRej;
-	RejectMoreH = RejectLastH;
-	RejectLastH = TRUE;
-	H = Hnew;
-	if (ISTATUS[Nacc] >= 1)
-	  ISTATUS[Nrej]++;
-      } /* Err <= 1 */
+#ifdef FULL_ALGEBRA
+	                for(i=0; i<NVAR; i++) {
+	                    for(j=0; j<NVAR; j++)
+	                        Jac[i][j] = -Jac[i][j];
+	                }
+#else
+	                WSCAL(LU_NONZERO,(-ONE),Jac,1);
+#endif
 
-    } while(1); /* End of UntilAccepted do loop */
+	                for ( iadj = 0; iadj < NADJ; iadj++ ) {
+#ifdef FULL_ALGEBRA
+	                    for(i=0; i<NVAR; i++)
+	                        Fcn[iadj][i] = MATMUL(TRANSPOSE(Jac),Ynew[iadj][i]);
+#else
+	                    JacTR_SP_Vec(Jac,&Ynew[iadj][0],&Fcn[iadj][0]);
+#endif
+	                } /* End for loop */
+	            } /*  if istage == 1 elseif ros_NewF(istage) */
 
-  } /* End of TimeLoop */
+	            for ( iadj = 0; iadj < NADJ; iadj++ )
+	                WCOPY(NVAR,&Fcn[iadj][0],1,&K[iadj][ioffset+1],1);
+	            for ( j = 0; j < istage-1; j++ ) {
+	                HC = ros_C[(istage-1)*(istage-2)/2+j]/(Direction*H);
+	                for ( iadj = 0; iadj < NADJ; iadj++ )
+	                    WAXPY(NVAR,HC,&K[iadj][NVAR*(j-1)+1],1,&K[iadj][ioffset+1],1);
+	            } /* End for loop */
+	            if ((!Autonomous) && (ros_Gamma[istage] != ZERO)) {
+	                HG = Direction*H*ros_Gamma[istage];
+	                for ( iadj = 0; iadj < NADJ; iadj++ )
+	                    WAXPY(NVAR,HG,&dFdT[iadj][0],1,&K[iadj][ioffset+1],1);
+	            } /* End if */
+	            for ( iadj = 0; iadj < NADJ; iadj++ )
+	                ros_Solve('T', Ghimj, Pivot, &K[iadj][ioffset+1], ISTATUS);
 
-  /*~~~> Succesful exit */
-  return 1;  /*~~~> The integration was successful */
+            } /* End of Stage loop */
+
+            /*~~~>  Compute the new solution */
+            for ( iadj = 0; iadj < NADJ; iadj++ ) {
+	            WCOPY(NVAR,&Y[iadj][0],1,&Ynew[iadj][0],1);
+	            for ( j=0; j<ros_S; j++ )
+	                WAXPY(NVAR,ros_M[j],&K[iadj][NVAR*(j-1)+1],1,&Ynew[iadj][0],1);
+            } /* End for loop */
+
+            /*~~~>  Compute the error estimation */
+            WSCAL(NVAR*NADJ,ZERO,&Yerr[0][0],1);
+            for ( j=0; j<ros_S; j++ ) {
+	            for ( iadj = 0; iadj < NADJ; iadj++ )
+	                WAXPY(NVAR,ros_E[j],&K[iadj][NVAR*(j-1)+1],1,&Yerr[iadj][0],1);
+            } /* End for loop */
+
+            /*~~~> Max error among all adjoint components */
+            iadj = 1;
+            Err = ros_ErrorNorm ( &Y[iadj][0], &Ynew[iadj][0], &Yerr[iadj][0],
+			            &AbsTol_adj[iadj][0], &RelTol_adj[iadj][0],
+			            VectorTol );
+
+            /*~~~> New step size is bounded by FacMin <= Hnew/H <= FacMax */
+            Fac  = MIN(FacMax,MAX(FacMin,FacSafe/pow(Err,(ONE/ros_ELO))));
+            Hnew = H*Fac;
+
+            /*~~~>  Check the error magnitude and adjust step size */
+            /* ISTATUS[Nstp] = ISTATUS[Nstp] + 1 */
+            if ( (Err <= ONE) || (H <= Hmin) ) {  /*~~~> Accept step */
+	            ISTATUS[Nacc] = ISTATUS[Nacc] + 1;
+	            WCOPY(NVAR*NADJ,&Ynew[0][0],1,&Y[0][0],1);
+	            T = T + Direction*H;
+	            Hnew = MAX(Hmin,MIN(Hnew,Hmax));// MIN( MAX(ABS(Hmin),ABS(Hnew)) , ABS(Hmax) ); //
+	            if (RejectLastH) /* No step size increase after a rejected step */
+	                Hnew = MIN(Hnew,H);
+	            RSTATUS[Nhexit] = H;
+	            RSTATUS[Nhnew] = Hnew;
+	            RSTATUS[Ntexit] = T;
+	            RejectLastH = FALSE;
+	            RejectMoreH = FALSE;
+	            H = Hnew;
+	            break; /* UntilAccepted - EXIT THE LOOP: WHILE STEP NOT ACCEPTED */
+            }
+            else {         /*~~~> Reject step */
+	            if (RejectMoreH)
+	                Hnew = H*FacRej;
+	            RejectMoreH = RejectLastH;
+	            RejectLastH = TRUE;
+	            H = Hnew;
+	            if (ISTATUS[Nacc] >= 1)
+	                ISTATUS[Nrej]++;
+            } /* Err <= 1 */
+
+        } while(1); /* End of UntilAccepted do loop */
+
+    } /* End of TimeLoop */
+
+    /*~~~> Succesful exit */
+    return 1;  /*~~~> The integration was successful */
+
 } /* End of ros_CadjInt */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1657,170 +1651,170 @@ int ros_SimpleCadjInt ( int NADJ, double Y[][NVAR], double Tstart,
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /*~~~~ Local variables */
-   double Y0[NVAR];
-   double Ynew[NADJ][NVAR], Fcn0[NADJ][NVAR], Fcn[NADJ][NVAR];
-   double K[NADJ][NVAR*ros_S], dFdT[NADJ][NVAR];
+    double Y0[NVAR];
+    double Ynew[NADJ][NVAR], Fcn0[NADJ][NVAR], Fcn[NADJ][NVAR];
+    double K[NADJ][NVAR*ros_S], dFdT[NADJ][NVAR];
 #ifdef FULL_ALGEBRA
-   double Jac0[NVAR][NVAR], Ghimj[NVAR][NVAR], Jac[NVAR][NVAR],
-          dJdT[NVAR][NVAR];
+    double Jac0[NVAR][NVAR], Ghimj[NVAR][NVAR], Jac[NVAR][NVAR],
+           dJdT[NVAR][NVAR];
 #else
-   double Jac0[LU_NONZERO], Ghimj[LU_NONZERO], Jac[LU_NONZERO],
-          dJdT[LU_NONZERO];
+    double Jac0[LU_NONZERO], Ghimj[LU_NONZERO], Jac[LU_NONZERO],
+           dJdT[LU_NONZERO];
 #endif
-   double H, HC, HG, Tau;
-   double ghinv;
-   int Pivot[NVAR], Direction, ioffset, i, j, istage, iadj;
-   int istack;
+    double H, HC, HG, Tau;
+    double ghinv;
+    int Pivot[NVAR], Direction, ioffset, i, j, istage, iadj;
+    int istack;
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-/*~~~>  INITIAL PREPARATIONS */
-  if (Tend  >=  Tstart)
-    Direction = -1;
-  else
-    Direction = 1;
+    /*~~~>  INITIAL PREPARATIONS */
+    if (Tend  >=  Tstart)
+        Direction = -1;
+    else
+        Direction = 1;
 
-/*~~~> Time loop begins below */
-  for( istack = stack_ptr; istack >= 1; istack-- ) { /* TimeLoop */
-    T = chk_T[istack];
-    H = chk_H[istack-1];
-    for(i=0; i<NVAR; i++)
-      Y0[i] = chk_Y[istack][i];
+    /*~~~> Time loop begins below */
+    for( istack = stack_ptr; istack >= 1; istack-- ) { /* TimeLoop */
+        T = chk_T[istack];
+        H = chk_H[istack-1];
+        for(i=0; i<NVAR; i++)
+            Y0[i] = chk_Y[istack][i];
 
-/*~~~>   Compute the Jacobian at current time */
-    ADJ_JacTemplate(T, Y0, Jac0);
-    ISTATUS[Njac] = ISTATUS[Njac] + 1;
+        /*~~~>   Compute the Jacobian at current time */
+        ADJ_JacTemplate(T, Y0, Jac0);
+        ISTATUS[Njac] = ISTATUS[Njac] + 1;
 
-/*~~~>  Compute the function derivative with respect to T */
-    if (!Autonomous) {
-      ros_JacTimeDerivative ( T, Roundoff, Y0, Jac0, dJdT, ISTATUS );
-      for ( iadj = 0; iadj < NADJ; iadj++ ) {
+        /*~~~>  Compute the function derivative with respect to T */
+        if (!Autonomous) {
+            ros_JacTimeDerivative ( T, Roundoff, Y0, Jac0, dJdT, ISTATUS );
+            for ( iadj = 0; iadj < NADJ; iadj++ ) {
 #ifdef FULL_ALGEBRA
-	for( i=0; i<NVAR; i++)
-	  dFdT[iadj][i] = MATMUL(TRANSPOSE(dJdT),Y[iadj][i]);
+	            for( i=0; i<NVAR; i++)
+	                dFdT[iadj][i] = MATMUL(TRANSPOSE(dJdT),Y[iadj][i]);
 #else
-	JacTR_SP_Vec(dJdT,&Y[iadj][0],&dFdT[iadj][0]);
+	            JacTR_SP_Vec(dJdT,&Y[iadj][0],&dFdT[iadj][0]);
 #endif
-	WSCAL(NVAR,(-ONE),&dFdT[iadj][0],1);
-      }
-    }
+	            WSCAL(NVAR,(-ONE),&dFdT[iadj][0],1);
+            }
+        }
 
-/*~~~>  Ydot = -J^T*Y */
+        /*~~~>  Ydot = -J^T*Y */
 #ifdef FULL_ALGEBRA
-    for(i=0; i<NVAR; i++) {
-      for(j=0; j<NVAR; j++)
-	Jac0[i][j] = -Jac0[i][j];
-    }
+        for(i=0; i<NVAR; i++) {
+            for(j=0; j<NVAR; j++)
+	            Jac0[i][j] = -Jac0[i][j];
+        }
 #else
-    WSCAL(LU_NONZERO,(-ONE),Jac0,1);
-#endif
-
-    for(iadj=0; iadj<NADJ; iadj++) {
-#ifdef FULL_ALGEBRA
-      for(i=0; i<NVAR; i++)
-	Fcn0[iadj][i] = MATMUL(TRANSPOSE(Jac0),Y[iadj][i]);
-#else
-      JacTR_SP_Vec(Jac0,&Y[iadj][0],&Fcn0[iadj][0]);
-#endif
-    }
-
-/*~~~>    Construct Ghimj = 1/(H*ham) - Jac0 */
-    ghinv = ONE/(Direction*H*ros_Gamma[0]);
-#ifdef FULL_ALGEBRA
-    for(i=0; i<NVAR; i++) {
-      for(j=0; j<NVAR; j++)
-	Ghimj[i][j] = -Jac0[i][j];
-    }
-    for(i=0; i<NVAR; i++)
-      Ghimj[i][i] = Ghimj[i][i]+ghinv;
-#else
-    WCOPY(LU_NONZERO,Jac0,1,Ghimj,1);
-    WSCAL(LU_NONZERO,(-ONE),Ghimj,1);
-    for(i=0; i<NVAR; i++)
-      Ghimj[LU_DIAG[i]] = Ghimj[LU_DIAG[i]]+ghinv;
+        WSCAL(LU_NONZERO,(-ONE),Jac0,1);
 #endif
 
-/*~~~>    Compute LU decomposition */
-    ros_Decomp( Ghimj, Pivot, &j, ISTATUS );
-    if (j != 0) {
-      ADJ_ros_ErrorMsg( -8 );
-      printf( "The matrix is singular !");
-      exit(0);
-    }
-
-/*~~~>   Compute the stages */
-    for(istage=0; istage<ros_S; istage++) { /* Stage */
-      /* Current istage offset. Current istage vector
-	 is K(ioffset+1:ioffset+NVAR) */
-      ioffset = NVAR*istage;
-
-      /* For the 1st istage the function has been computed previously */
-      if ( istage == 0 ) {
-	for(iadj=0; iadj<NADJ; iadj++)
-	  WCOPY(NVAR,&Fcn0[iadj][0],1,&Fcn[iadj][0],1);
-      }
-      /* istage>=1 and a new function evaluation is needed
-	 at the current istage */
-      else if ( ros_NewF[istage] ) {
-	WCOPY(NVAR*NADJ,&Y[0][0],1,&Ynew[0][0],1);
-	for(j=0; j<istage; j++) {
-	  for(iadj=0; iadj<NADJ; iadj++)
-	    WAXPY(NVAR,ros_A[istage*(istage-1)/2+j], &K[iadj][NVAR*j],1,
-		  &Ynew[iadj][0],1);
-	}
-
-	Tau = T + ros_Alpha[istage]*Direction*H;
-	for(i=0; i<NVAR; i++)
-	  ros_Hermite3( chk_T[istack-1], chk_T[istack], Tau,
-			&chk_Y[istack-1][i], &chk_Y[istack][i],
-			&chk_dY[istack-1][i], &chk_dY[istack][i], Y0 );
-	ADJ_JacTemplate(Tau, Y0, Jac);
-	ISTATUS[Njac]++;
-
+        for(iadj=0; iadj<NADJ; iadj++) {
 #ifdef FULL_ALGEBRA
-	for(i=0; i<NVAR; i++) {
-	  for(j=0; j<NVAR; j++)
-	    Jac[i][j] = -Jac[i][j];
-	}
+            for(i=0; i<NVAR; i++)
+	            Fcn0[iadj][i] = MATMUL(TRANSPOSE(Jac0),Y[iadj][i]);
 #else
-	WSCAL(LU_NONZERO,(-ONE),Jac,1);
+            JacTR_SP_Vec(Jac0,&Y[iadj][0],&Fcn0[iadj][0]);
+#endif
+        }
+
+        /*~~~>    Construct Ghimj = 1/(H*ham) - Jac0 */
+        ghinv = ONE/(Direction*H*ros_Gamma[0]);
+#ifdef FULL_ALGEBRA
+        for(i=0; i<NVAR; i++) {
+            for(j=0; j<NVAR; j++)
+	            Ghimj[i][j] = -Jac0[i][j];
+        }
+        for(i=0; i<NVAR; i++)
+            Ghimj[i][i] = Ghimj[i][i]+ghinv;
+#else
+        WCOPY(LU_NONZERO,Jac0,1,Ghimj,1);
+        WSCAL(LU_NONZERO,(-ONE),Ghimj,1);
+        for(i=0; i<NVAR; i++)
+            Ghimj[LU_DIAG[i]] = Ghimj[LU_DIAG[i]]+ghinv;
 #endif
 
-	for(iadj=0; iadj<NADJ; iadj++) {
+        /*~~~>    Compute LU decomposition */
+        ros_Decomp( Ghimj, Pivot, &j, ISTATUS );
+        if (j != 0) {
+            ADJ_ros_ErrorMsg( -8 );
+            printf( "The matrix is singular !");
+            exit(0);
+        }
+
+        /*~~~>   Compute the stages */
+        for(istage=0; istage<ros_S; istage++) { /* Stage */
+            /* Current istage offset. Current istage vector
+	        is K(ioffset+1:ioffset+NVAR) */
+            ioffset = NVAR*istage;
+
+            /* For the 1st istage the function has been computed previously */
+            if ( istage == 0 ) {
+	            for(iadj=0; iadj<NADJ; iadj++)
+	                WCOPY(NVAR,&Fcn0[iadj][0],1,&Fcn[iadj][0],1);
+            }
+            /* istage>=1 and a new function evaluation is needed
+	        at the current istage */
+            else if ( ros_NewF[istage] ) {
+	            WCOPY(NVAR*NADJ,&Y[0][0],1,&Ynew[0][0],1);
+	            for(j=0; j<istage; j++) {
+	                for(iadj=0; iadj<NADJ; iadj++)
+	                    WAXPY(NVAR,ros_A[istage*(istage-1)/2+j], &K[iadj][NVAR*j],1,
+		                      &Ynew[iadj][0],1);
+	            }
+
+    	        Tau = T + ros_Alpha[istage]*Direction*H;
+	            for(i=0; i<NVAR; i++)
+	                ros_Hermite3( chk_T[istack-1], chk_T[istack], Tau,
+			            &chk_Y[istack-1][i], &chk_Y[istack][i],
+			            &chk_dY[istack-1][i], &chk_dY[istack][i], Y0 );
+    	        ADJ_JacTemplate(Tau, Y0, Jac);
+	            ISTATUS[Njac]++;
+
 #ifdef FULL_ALGEBRA
-	  for(i=0; i<NVAR; i++)
-	    Fcn[iadj][i] = MATMUL(TRANSPOSE(Jac),Ynew[iadj][i]);
+	            for(i=0; i<NVAR; i++) {
+	                for(j=0; j<NVAR; j++)
+	                    Jac[i][j] = -Jac[i][j];
+    	        }
 #else
-	  JacTR_SP_Vec(Jac,&Ynew[iadj][0],&Fcn[iadj][0]);
+	            WSCAL(LU_NONZERO,(-ONE),Jac,1);
 #endif
-	}
-      } /* if istage == 1 elseif ros_NewF(istage) */
 
-      for(iadj=0; iadj<NADJ; iadj++)
-	WCOPY(NVAR,&Fcn[iadj][0],1,&K[iadj][ioffset],1);
-      for(j=0; j<istage-1; j++) {
-	HC = ros_C[istage*(istage-1)/2+j]/(Direction*H);
-	for(iadj=0; iadj<NADJ; iadj++)
-	  WAXPY(NVAR,HC,&K[iadj][NVAR*j],1,&K[iadj][ioffset],1);
-      }
-      if((!Autonomous) && (ros_Gamma[istage] != ZERO)) {
-	HG = Direction*H*ros_Gamma[istage];
-	for(iadj=0; iadj<NADJ; iadj++)
-	  WAXPY(NVAR,HG,&dFdT[iadj][0],1,&K[iadj][ioffset],1);
-      }
-      for(iadj=0; iadj<NADJ; iadj++)
-	ros_Solve('T', Ghimj, Pivot, &K[iadj][ioffset], ISTATUS);
-    } /* End of Stage loop */
+	            for(iadj=0; iadj<NADJ; iadj++) {
+#ifdef FULL_ALGEBRA
+	                for(i=0; i<NVAR; i++)
+	                    Fcn[iadj][i] = MATMUL(TRANSPOSE(Jac),Ynew[iadj][i]);
+#else
+    	            JacTR_SP_Vec(Jac,&Ynew[iadj][0],&Fcn[iadj][0]);
+#endif
+	            }
+            } /* if istage == 1 elseif ros_NewF(istage) */
 
-/*~~~>  Compute the new solution */
-    for(iadj=0; iadj<NADJ; iadj++) {
-      for(j=0; j<ros_S; j++)
-	WAXPY(NVAR,ros_M[j],&K[iadj][NVAR*j],1,&Y[iadj][0],1);
-    }
-  } /* End of TimeLoop */
+            for(iadj=0; iadj<NADJ; iadj++)
+	            WCOPY(NVAR,&Fcn[iadj][0],1,&K[iadj][ioffset],1);
+            for(j=0; j<istage-1; j++) {
+	            HC = ros_C[istage*(istage-1)/2+j]/(Direction*H);
+    	        for(iadj=0; iadj<NADJ; iadj++)
+	            WAXPY(NVAR,HC,&K[iadj][NVAR*j],1,&K[iadj][ioffset],1);
+            }
+            if((!Autonomous) && (ros_Gamma[istage] != ZERO)) {
+	            HG = Direction*H*ros_Gamma[istage];
+	            for(iadj=0; iadj<NADJ; iadj++)
+	                WAXPY(NVAR,HG,&dFdT[iadj][0],1,&K[iadj][ioffset],1);
+            }
+            for(iadj=0; iadj<NADJ; iadj++)
+	            ros_Solve('T', Ghimj, Pivot, &K[iadj][ioffset], ISTATUS);
+        } /* End of Stage loop */
 
-/*~~~> Succesful exit */
-  return 1;  /*~~~> The integration was successful */
+        /*~~~>  Compute the new solution */
+        for(iadj=0; iadj<NADJ; iadj++) {
+            for(j=0; j<ros_S; j++)
+                WAXPY(NVAR,ros_M[j],&K[iadj][NVAR*j],1,&Y[iadj][0],1);
+        }
+    } /* End of TimeLoop */
+
+    /*~~~> Succesful exit */
+    return 1;  /*~~~> The integration was successful */
 
 } /* End of ros_SimpleCadjInt */
 

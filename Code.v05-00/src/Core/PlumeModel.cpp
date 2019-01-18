@@ -50,6 +50,7 @@ static int SUCCESS     =  1;
 #include "Core/Engine.hpp"
 #include "Core/Aircraft.hpp"
 #include "Core/Emission.hpp"
+#include "Core/ReadJRates.hpp"
 
 /* For RINGS */
 #include "Core/Cluster.hpp"
@@ -70,9 +71,10 @@ double C[NSPEC];          /* Concentration of all species */
 double * VAR = &C[0];     /* Concentration of variable species (global) */
 double * FIX = &C[NVAR];  /* Concentration of fixed species (global) */
 
-double RCONST[NREACT];    /* Rate constants (global) */
-double PHOTOL[NPHOTOL];   /* Photolysis rates (global) */
-double HET[NSPEC][3];     /* Heterogeneous chemistry rates (global) */
+double RCONST[NREACT];       /* Rate constants (global) */
+double NOON_JRATES[NPHOTOL]; /* Noon-time photolysis rates (global) */
+double PHOTOL[NPHOTOL];      /* Photolysis rates (global) */
+double HET[NSPEC][3];        /* Heterogeneous chemistry rates (global) */
 
 double TIME;              /* Current integration time (global) */
 
@@ -124,6 +126,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     const bool CHEMISTRY      = Input_Opt.CHEMISTRY_CHEMISTRY;
     const double CHEMISTRY_DT = Input_Opt.CHEMISTRY_TIMESTEP;
     const bool HETCHEM        = Input_Opt.CHEMISTRY_HETCHEM;
+    const char* JRATE_FOLDER  = Input_Opt.CHEMISTRY_JRATE_FOLDER.c_str();
 
     /* ======================================================================= */
     /* ---- Input options from the AEROSOL MENU ------------------------------ */
@@ -190,6 +193,14 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         exit(1);
     }
 
+    /* If DIAG_OUTPUT is turned on, make sure that output timestep is a
+     * multiple of the dynamic timestep */
+    if ( ( TS_SPEC ) && ( TS_FREQ > 0.0E+00 ) && \
+         ( std::fmod( TS_FREQ / DYN_DT * 60, 1 ) != 0 ) ) {
+        std::cout << " Timeseries frequency should be a multiple of the dynamic timestep!" << std::endl;
+        std::cout << " Output might be compromised!" << std::endl;
+    }
+
     /* Assign parameters */
     
     RealDouble temperature_K = input.temperature_K();
@@ -199,12 +210,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Compute relative humidity w.r.t ice */
     RealDouble relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
                                              / physFunc::pSat_H2Os( temperature_K );
-
-    const RealDouble longitude_deg = input.longitude_deg();
-    const RealDouble latitude_deg  = input.latitude_deg();
-
-    const UInt emissionDay        = input.emissionDay();
-    const RealDouble emissionTime = input.emissionTime();
 
     /* Grid indices */
     unsigned int iNx = 0;
@@ -265,10 +270,34 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
 
-    /* Define sun parameters */
-    SZA *sun = new SZA( latitude_deg, emissionDay ); 
+    /* Define sun parameters, this include sunrise and sunset hours and updates
+     * the local solar zenith angle. */
+    SZA *sun = new SZA( input.latitude_deg(), input.emissionDOY() ); 
 
-    /* TODO: Read J-Rates here */
+    /* Initialize noon time photolysis rates
+     * The data is after the quantum yield has been applied and represents
+     * the value of the photolysis rates at 12:00 (noon) locally.
+     * The photolysis rates at any given time are obtained by multiplying
+     * those by the cosine of the solar zenith angle, when positive. */
+    for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
+        NOON_JRATES[iPhotol] = 0.0E+00;
+ 
+    /* Allocating noon-time photolysis rates. */
+    ReadJRates( JRATE_FOLDER,  \ 
+        input.emissionMonth(), \
+        input.emissionDay(),   \
+        input.longitude_deg(), \
+        input.latitude_deg(),  \
+        pressure_Pa/100.0,     \
+        NOON_JRATES );
+
+    if ( printDEBUG ) {
+        std::cout << "\n DEBUG : \n";
+        for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ ) {
+            std::cout << "         NOON_JRATES[" << iPhotol << "] = ";
+            std::cout << NOON_JRATES[iPhotol] << "\n";
+        }
+    }
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -285,11 +314,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
      */ 
 
     /* Define emission and simulation time */
-    const double tEmission_h = emissionTime;        /* [hr] */
-    const double tInitial_h  = tEmission_h;         /* [hr] */
-    const double tFinal_h    = tInitial_h + TSIMUL; /* [hr] */
-    const double tInitial_s  = tInitial_h * 3600.0; /* [s] */
-    const double tFinal_s    = tFinal_h   * 3600.0; /* [s] */
+    const double tEmission_h = input.emissionTime(); /* [hr] */
+    const double tInitial_h  = tEmission_h;          /* [hr] */
+    const double tFinal_h    = tInitial_h + TSIMUL;  /* [hr] */
+    const double tInitial_s  = tInitial_h * 3600.0;  /* [s] */
+    const double tFinal_s    = tFinal_h   * 3600.0;  /* [s] */
 
     /* Current time in [s] */
     double curr_Time_s = tInitial_s; /* [s] */
@@ -612,7 +641,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::cout << " ## - Temperature: " << std::setw(txtWidth) << temperature_K          << " [  K]\n";
         std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [hPa]\n";
         std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [  %]\n";
-        std::cout << " ## - Latitude   : " << std::setw(txtWidth) << latitude_deg           << " [deg]\n";
+        std::cout << " ## - Latitude   : " << std::setw(txtWidth) << input.latitude_deg()   << " [deg]\n";
         std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [ - ]\n";
 
         std::cout << "\n ## EMISSIONS:";
@@ -697,8 +726,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Timeseries diagnostics */
     if ( TS_SPEC ) {
         int hh = (int) (curr_Time_s - timeArray[0])/3600;
-        int mm = (int) (curr_Time_s - timeArray[0])/60;
-        Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, Data, m );
+        int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
+        int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
+        Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, ss, Data, m );
     }
 
     /* ======================================================================= */
@@ -722,7 +752,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             #ifdef OMP
                 std::cout << " (thread: " << omp_get_thread_num() << ")";
             #endif /* OMP */
-            std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]";
+            std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
         }
 
         /* ======================================================================= */
@@ -884,7 +914,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         /* If daytime, update photolysis rates */
         if ( sun->CSZA > 0.0E+00 )
-            Read_JRates( PHOTOL, sun->CSZA );
+            Update_JRates( PHOTOL, sun->CSZA );
 
         if ( printDEBUG ) {
             std::cout << "\n DEBUG : \n";
@@ -1213,9 +1243,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                     }
 
                     relHumidity = VAR[ind_H2O] * \
-                                  physConst::kB * Met.temp(jNy,iNx) * 1.00E+06 / \
-                                  physFunc::pSat_H2Ol( Met.temp(jNy,iNx) );
-                    GC_SETHET( Met.temp(jNy,iNx), Met.press(jNy), airDens, relHumidity, \
+                                  physConst::kB * temperature_K * 1.00E+06 / \
+                                  physFunc::pSat_H2Ol( temperature_K );
+                    GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity, \
                                Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, kheti_sla );
                 }
 
@@ -1223,7 +1253,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                 for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
                     RCONST[iReact] = 0.0E+00;
 
-                Update_RCONST( Met.temp(jNy,iNx), Met.press(jNy), airDens, VAR[ind_H2O] );
+                Update_RCONST( temperature_K, pressure_Pa, airDens, VAR[ind_H2O] );
 
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
                 /* ~~~~~~ Integration ~~~~~ */
@@ -1259,7 +1289,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                 }
 
                 ambientData.FillIn( VAR, nTime + 1 );
-
             }
 
         #endif /* RINGS */
@@ -1447,8 +1476,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
            (( TS_FREQ == 0 ) || \
             ( std::fmod((curr_Time_s - timeArray[0])/60.0, TS_FREQ) == 0.0E+00 )) ) {
            int hh = (int) (curr_Time_s - timeArray[0])/3600;
-           int mm = (int) (curr_Time_s - timeArray[0])/60;
-           Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, Data, m );
+           int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
+           int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
+           Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, ss, Data, m );
         }
 
     }
@@ -1486,19 +1516,22 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 
 #ifdef RINGS
-    if ( SAVE_FORWARD ) {
-        isSaved = output::Write( input.fileName2char(),               \
-                                 ringSpecies,                         \
-                                 ambientData,                         \
-                                 ringCluster,                         \
-                                 timeArray,                           \
-                                 input,                               \
-                                 airDens, relHumidity_i,              \
-                                 sun->sunRise, sun->sunSet );
-        if ( isSaved == output::SAVE_FAILURE ) {
-            std::cout << " Saving to ring-averaged concentrations to file failed...\n";
-            return SAVE_FAIL;
+    #pragma omp critical
+    {
+        if ( SAVE_FORWARD ) {
+            isSaved = output::Write( input.fileName2char(),               \
+                                     ringSpecies,                         \
+                                     ambientData,                         \
+                                     ringCluster,                         \
+                                     timeArray,                           \
+                                     input,                               \
+                                     airDens, relHumidity_i,              \
+                                     sun->sunRise, sun->sunSet );
         }
+    }
+    if ( isSaved == output::SAVE_FAILURE ) {
+        std::cout << " Saving to ring-averaged concentrations to file failed...\n";
+        return SAVE_FAIL;
     }
 #endif /* RINGS */
 
@@ -1547,6 +1580,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::copy(sun->CSZA_Vector.begin(), sun->CSZA_Vector.end(), SZA_CST);
         double relHumidity;
         double VAR_OPT[NVAR];
+        double METRIC;
 
         const Vector_1D initBackg = ringSpecies.RingAverage( ringArea, totArea, 0 );
         const Vector_1D finalPlume = ringSpecies.RingAverage( ringArea, totArea, timeArray.size() - 1 );
@@ -1556,7 +1590,40 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                              &(timeArray)[0], timeArray.size(),   \
                              KPPADJ_RTOLS, KPPADJ_ATOLS,          \
                              /* Output */ VAR_OPT,                \
-                             /* Debug? */ DEBUG_ADJOINT );
+                             /* Output metric */ &METRIC,         \
+                             /* Debug? */ DEBUG_ADJOINT,          \
+                             /* 2nd try? */ 0 );
+
+        if ( IERR == 2 ) {
+            /* Integration succeeded but convergence was poor. Try again with
+             * new initial direction */
+
+            double VAR_OPT2[NVAR];
+            double METRIC2;
+            IERR = KPP_Main_ADJ( &(finalPlume)[0], &(initBackg)[0],   \
+                                 temperature_K, pressure_Pa, airDens, \
+                                 &(timeArray)[0], timeArray.size(),   \
+                                 KPPADJ_RTOLS, KPPADJ_ATOLS,          \
+                                 /* Output */ VAR_OPT2,               \
+                                 /* Output metric */ &METRIC2,        \
+                                 /* Debug? */ DEBUG_ADJOINT,          \
+                                 /* 2nd try? */ 1 );
+
+            /* If 2nd try provides a better metric, store the new optimized
+             * array; otherwise stick to the original one. */
+            if ( METRIC2 < METRIC ) {
+                for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ )
+                    VAR_OPT[iSpec] = VAR_OPT2[iSpec];
+            } else {
+                #ifdef OMP
+                    #pragma omp critical
+                    { std::cout << "\n ## ON THREAD " << omp_get_thread_num() << ": Sticking to original solution.\n"; }
+                #else
+                    std::cout << "\n Sticking to original optimization solution.\n";
+                #endif /* OMP */
+            }
+
+        }
 
         if ( IERR < 0 ) {
             /* Adjoint integration failed */
@@ -1659,7 +1726,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
             /* If daytime, update photolysis rates */
             if ( sun->CSZA > 0.0E+00 )
-                Read_JRates( PHOTOL, sun->CSZA );
+                Update_JRates( PHOTOL, sun->CSZA );
 
             if ( printDEBUG ) {
                 std::cout << "\n DEBUG : \n";

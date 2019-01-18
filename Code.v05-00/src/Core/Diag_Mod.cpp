@@ -13,9 +13,9 @@
 
 #include "Core/Diag_Mod.hpp"
 
-bool Diag_TS( const char* rootName,                  \
-              const std::vector<int> speciesIndices, \
-              const int hh, const int mm,            \
+bool Diag_TS( const char* rootName,                     \
+              const std::vector<int> speciesIndices,    \
+              const int hh, const int mm, const int ss, \
               const Solution& Data, const Mesh& m )
 {
 
@@ -31,6 +31,8 @@ bool Diag_TS( const char* rootName,                  \
     sprintf(hh_string, "%02d", hh );
     char mm_string[10];
     sprintf(mm_string, "%02d", mm );
+    char ss_string[10];
+    sprintf(ss_string, "%02d", ss );
 
     /* Replacing "hh" with hour number since start */
     start_pos = 0; 
@@ -42,7 +44,7 @@ bool Diag_TS( const char* rootName,                  \
     }
 
     if ( found = 0 ) {
-        std::cout << " Diagnostic filename must be of the form *hhmm.nc. Aborting!" << std::endl;
+        std::cout << " Diagnostic filename must be of the form *hhmmss.nc or *hhmm.nc. Aborting!" << std::endl;
         std::cout << " filename: " << rootName << std::endl;
         exit(1);
     }
@@ -56,9 +58,17 @@ bool Diag_TS( const char* rootName,                  \
     }
     
     if ( found = 0 ) {
-        std::cout << " Diagnostic filename must be of the form *hhmm.nc. Aborting!" << std::endl;
+        std::cout << " Diagnostic filename must be of the form *hhmmss.nc or *hhmm.nc. Aborting!" << std::endl;
         std::cout << " filename: " << rootName << std::endl;
         exit(1);
+    }
+
+    /* Replacing "ss" with minute number since start if possible */
+    start_pos = 0;
+    found = 0;
+    while ( (start_pos = fileName.find("ss", start_pos)) != std::string::npos ) {
+        fileName.replace(start_pos, 2, ss_string);
+        start_pos += 2;
     }
 
     const char* outFile = fileName.c_str();

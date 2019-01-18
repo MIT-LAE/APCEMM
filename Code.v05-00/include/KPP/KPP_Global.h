@@ -38,13 +38,14 @@ extern char * EQN_TAGS[NREACT];                 /* Equation tags */
 
 /* INLINED global variable declarations                             */
 
+extern double NOON_JRATES[NPHOTOL];             /* Noon-time photolysis rates */
 extern double PHOTOL[NPHOTOL];                  /* Photolysis rates */
 extern double HET[NSPEC][3];                    /* Heterogeneous reaction rates */
 extern double SZA_CST[3];                       /* Constants to compute cosSZA */
 
 /* The following variables need to be declared THREADPRIVATE
  * because they get written to within an OpenMP parallel loop */
-#pragma omp threadprivate( C, VAR, FIX, RCONST, PHOTOL, HET, TIME, SZA_CST )
+#pragma omp threadprivate( C, VAR, FIX, RCONST, NOON_JRATES, PHOTOL, HET, TIME, SZA_CST )
 
 /* INLINED global variable declarations                             */
 

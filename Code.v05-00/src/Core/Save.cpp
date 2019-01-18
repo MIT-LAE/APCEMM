@@ -3479,10 +3479,14 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHW"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
             value = relHumidity_i;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHI"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
-            value = input.emissionDay();
-            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emisison Day"   , 1, "int"  , "-"  , "Emission day" );
+            value = input.emissionDOY();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Day"   , 1, "int"  , "-"  , "Emission day" );
             value = input.emissionTime();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Time"  , 1, "float", "hr"  , "Emission time" );
+            value = input.longitude_deg();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Longitude"      , 1, "float", "deg", "Longitude" );
+            value = input.latitude_deg();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Latitude"       , 1, "float", "deg", "Latitude" );
             value = input.EI_NOx();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "NOx EI"         , 1, "float", "g/kg_fuel"  , "NOx Emission index" );
             value = input.EI_CO();
@@ -3657,6 +3661,44 @@ namespace output
                 delete[] adjArray; adjArray = NULL;
 
             #endif /* DO_SAVE_NO2 */
+
+            #if ( DO_SAVE_HNO2 )
+
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ )
+                    plumeData[iNt] = ringAverage[iNt][ind_HNO2];
+
+
+                #if ( SAVE_TO_DOUBLE )
+                    spcArray = util::vect2double( plumeData       , NT, scalingFactor );
+                    adjArray = util::vect2double( adjointData.HNO2, NT, scalingFactor );
+                    ambArray = util::vect2double( ambientData.HNO2, NT, scalingFactor );
+                #else
+                    spcArray = util::vect2float ( plumeData       , NT, scalingFactor );
+                    adjArray = util::vect2float ( adjointData.HNO2, NT, scalingFactor );
+                    ambArray = util::vect2float ( ambientData.HNO2, NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "HNO2_Plume", sizeof(charSpc) );
+                strncpy( charName, "HNO2 plume-averaged mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "HNO2_Adjoint", sizeof(charSpc) );
+                strncpy( charName, "HNO2 optimized mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(adjArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "HNO2_Ambient", sizeof(charSpc) );
+                strncpy( charName, "HNO2 ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] spcArray; spcArray = NULL;
+                delete[] ambArray; ambArray = NULL;
+                delete[] adjArray; adjArray = NULL;
+
+            #endif /* DO_SAVE_HNO2 */
 
             #if ( DO_SAVE_HNO3 )
 

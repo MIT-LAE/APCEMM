@@ -240,7 +240,7 @@ int FileHandler::addConst( NcFile &dataFile, T *inputVar, const char* varName, \
      * containing the unit */
     if ( !var->add_att("unit", unit) ) {
         std::cout << "In FileHandler::addConst: unit definition failed for ";
-        std::cout << varName << " ( unit: [" << unit << "]) in " << fileName << "\n";
+        std::cout << varName << " (unit: [" << unit << "]) in " << fileName << "\n";
         return NC_ERROR;
     }
     

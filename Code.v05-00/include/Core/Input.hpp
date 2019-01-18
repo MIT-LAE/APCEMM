@@ -29,7 +29,9 @@ class Input
     RealDouble longitude_deg_;
     RealDouble latitude_deg_;
 
+    UInt emissionDOY_;
     UInt emissionDay_;
+    UInt emissionMonth_;
     RealDouble emissionTime_;
 
     RealDouble EI_NOx_;
@@ -79,7 +81,9 @@ class Input
         RealDouble longitude_deg() const { return longitude_deg_; }
         RealDouble latitude_deg() const { return latitude_deg_; }
 
+        UInt emissionDOY() const { return emissionDOY_; }
         UInt emissionDay() const { return emissionDay_; }
+        UInt emissionMonth() const { return emissionMonth_; }
         RealDouble emissionTime() const { return emissionTime_; }
 
         RealDouble EI_NOx() const { return EI_NOx_; }

@@ -112,28 +112,28 @@ class OptInput
         /* ---- TRANSPORT MENU ---------------------- */
         /* ========================================== */
 
-        bool       TRANSPORT_TRANSPORT;
-        bool       TRANSPORT_FILL;
-        RealDouble TRANSPORT_TIMESTEP;
+        bool        TRANSPORT_TRANSPORT;
+        bool        TRANSPORT_FILL;
+        RealDouble  TRANSPORT_TIMESTEP;
 
         /* ========================================== */
         /* ---- CHEMISTRY MENU ---------------------- */
         /* ========================================== */
 
-        bool       CHEMISTRY_CHEMISTRY;
-        bool       CHEMISTRY_HETCHEM;
-        bool       CHEMISTRY_READ_JRATES;
-        RealDouble CHEMISTRY_TIMESTEP;
+        bool        CHEMISTRY_CHEMISTRY;
+        bool        CHEMISTRY_HETCHEM;
+        std::string CHEMISTRY_JRATE_FOLDER;
+        RealDouble  CHEMISTRY_TIMESTEP;
 
         /* ========================================== */
         /* ---- AEROSOL MENU ------------------------ */
         /* ========================================== */
 
-        bool       AEROSOL_GRAVSETTLING;
-        bool       AEROSOL_COAGULATION;
-        RealDouble AEROSOL_COAGULATION_TIMESTEP;
-        bool       AEROSOL_ICE_GROWTH;
-        bool       AEROSOL_PLUME_UPDRAFT;
+        bool        AEROSOL_GRAVSETTLING;
+        bool        AEROSOL_COAGULATION;
+        RealDouble  AEROSOL_COAGULATION_TIMESTEP;
+        bool        AEROSOL_ICE_GROWTH;
+        bool        AEROSOL_PLUME_UPDRAFT;
         
         /* ========================================== */
         /* ---- METEOROLOGY MENU -------------------- */

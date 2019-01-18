@@ -136,7 +136,7 @@ void FourierTransform<float>::SANDS( const Vector_2Df &diffFactor, \
             in_IFFT[i * colsC + j][REAL] = ( out_FFT[i * colsC + j][REAL] * advFactor[j][i].real() \
                                            - out_FFT[i * colsC + j][IMAG] * advFactor[j][i].imag() ) * diffFactor[j][i] ;
             in_IFFT[i * colsC + j][IMAG] = ( out_FFT[i * colsC + j][REAL] * advFactor[j][i].imag() \
-                                           - out_FFT[i * colsC + j][IMAG] * advFactor[j][i].real() ) * diffFactor[j][i] ;
+                                           + out_FFT[i * colsC + j][IMAG] * advFactor[j][i].real() ) * diffFactor[j][i] ;
         }
     }
 
@@ -269,7 +269,7 @@ void FourierTransform<double>::SANDS( const Vector_2D &diffFactor, \
             in_IFFT[i * colsC + j][REAL] = ( out_FFT[i * colsC + j][REAL] * advFactor[j][i].real() \
                                            - out_FFT[i * colsC + j][IMAG] * advFactor[j][i].imag() ) * diffFactor[j][i] ;
             in_IFFT[i * colsC + j][IMAG] = ( out_FFT[i * colsC + j][REAL] * advFactor[j][i].imag() \
-                                           - out_FFT[i * colsC + j][IMAG] * advFactor[j][i].real() ) * diffFactor[j][i] ;
+                                           + out_FFT[i * colsC + j][IMAG] * advFactor[j][i].real() ) * diffFactor[j][i] ;
         }
     }
 
@@ -403,7 +403,7 @@ void FourierTransform<long double>::SANDS( const Vector_2Dl &diffFactor, \
             in_IFFT[i * colsC + j][REAL] = ( out_FFT[i * colsC + j][REAL] * advFactor[j][i].real() \
                                            - out_FFT[i * colsC + j][IMAG] * advFactor[j][i].imag() ) * diffFactor[j][i] ;
             in_IFFT[i * colsC + j][IMAG] = ( out_FFT[i * colsC + j][REAL] * advFactor[j][i].imag() \
-                                           - out_FFT[i * colsC + j][IMAG] * advFactor[j][i].real() ) * diffFactor[j][i] ;
+                                           + out_FFT[i * colsC + j][IMAG] * advFactor[j][i].real() ) * diffFactor[j][i] ;
         }
     }
 
