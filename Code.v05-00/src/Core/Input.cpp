@@ -29,7 +29,7 @@ Input::Input( const RealDouble temperature_K, \
     relHumidity_w_ ( relHumidity_w ),
     longitude_deg_ ( long_deg ),
     latitude_deg_  ( lat_deg ),
-    emissionDay_   ( dayGMT ),
+    emissionDOY_   ( dayGMT ),
     emissionTime_  ( emissionTime ),
     EI_NOx_        ( emissionInput[0] ),
     EI_CO_         ( emissionInput[1] ),
@@ -62,8 +62,8 @@ Input::Input( const RealDouble temperature_K, \
     while ( latitude_deg_ < -90 )
         latitude_deg_ += 180;
 
-    while ( emissionDay_ > 365 )
-        emissionDay_ -= 365;
+    while ( emissionDOY_ > 365 )
+        emissionDOY_ -= 365;
 
     while ( emissionTime_ > 24.0 )
         emissionTime_ -= 24.0;
@@ -77,8 +77,8 @@ Input::Input( const RealDouble temperature_K, \
     if ( relHumidity_w_ >= 9.50E+01 || pressure_Pa_ <= 0.00E+00 )
         std::cout << " In Input::Input: relHumidity_w takes an unrealisable value: relHumidity_w = " << relHumidity_w_ << " [%]\n";
 
-    if ( emissionDay_ <= 0.0 )
-        std::cout << " In Input::Input: emissionDay takes an unrealisable value: emissionDay = " << emissionDay_ << " [-]\n";
+    if ( emissionDOY_ <= 0.0 )
+        std::cout << " In Input::Input: emissionDOY takes an unrealisable value: emissionDOY = " << emissionDOY_ << " [-]\n";
 
     if ( EI_NOx_ < 0.0E+00 || EI_NOx_ > 3.0E+01 )
         std::cout << " In Input::Input: EI_NOx takes an unrealisable value: EI_NOx = " << EI_NOx_ << " [g/kg_fuel]\n";
@@ -130,7 +130,7 @@ Input::Input( unsigned int iCase,          \
     longitude_deg_ ( parameters[2][iCase] ),
     latitude_deg_  ( parameters[3][iCase] ),
     pressure_Pa_   ( parameters[4][iCase] ),
-    emissionDay_   ( parameters[5][iCase] ),
+    emissionDOY_   ( parameters[5][iCase] ),
     emissionTime_  ( parameters[6][iCase] ),
     EI_NOx_        ( parameters[7][iCase] ),
     EI_CO_         ( parameters[8][iCase] ),
@@ -164,8 +164,8 @@ Input::Input( unsigned int iCase,          \
     while ( latitude_deg_ < -90 )
         latitude_deg_ += 180;
 
-    while ( emissionDay_ > 365 )
-        emissionDay_ -= 365;
+    while ( emissionDOY_ > 365 )
+        emissionDOY_ -= 365;
 
     while ( emissionTime_ > 24.0 )
         emissionTime_ -= 24.0;
@@ -179,8 +179,8 @@ Input::Input( unsigned int iCase,          \
     if ( relHumidity_w_ >= 9.50E+01 || pressure_Pa_ <= 0.00E+00 )
         std::cout << " In Input::Input: relHumidity_w takes an unrealisable value: relHumidity_w = " << relHumidity_w_ << " [%]\n";
 
-    if ( emissionDay_ <= 0.0 )
-        std::cout << " In Input::Input: emissionDay takes an unrealisable value: emissionDay = " << emissionDay_ << " [-]\n";
+    if ( emissionDOY_ <= 0.0 )
+        std::cout << " In Input::Input: emissionDOY takes an unrealisable value: emissionDOY = " << emissionDOY_ << " [-]\n";
 
     if ( EI_NOx_ < 0.0E+00 || EI_NOx_ > 3.0E+01 )
         std::cout << " In Input::Input: EI_NOx takes an unrealisable value: EI_NOx = " << EI_NOx_ << " [g/kg_fuel]\n";
@@ -220,6 +220,49 @@ Input::Input( unsigned int iCase,          \
     
     if ( backgSO2_ < 0.0E+00 || backgSO2_ > 1.0E+09 )
         std::cout << " In Input::Input: backgSO2 takes an unrealisable value: backgCH4 = " << backgSO2_ << " [ppb]\n";
+
+    if ( emissionDOY_ <= 31 ) {
+        emissionMonth_ = 1;
+        emissionDay_   = emissionDOY_;
+    } else if ( ( emissionDOY_ >  31 ) && ( emissionDOY_ <=  59 ) ) {
+        emissionMonth_ = 2;
+        emissionDay_   = emissionDOY_ - 31;
+    } else if ( ( emissionDOY_ >  59 ) && ( emissionDOY_ <=  90 ) ) {
+        emissionMonth_ = 3;
+        emissionDay_   = emissionDOY_ - 59;
+    } else if ( ( emissionDOY_ >  90 ) && ( emissionDOY_ <= 120 ) ) {
+        emissionMonth_ = 4;
+        emissionDay_   = emissionDOY_ - 90;
+    } else if ( ( emissionDOY_ > 121 ) && ( emissionDOY_ <= 151 ) ) {
+        emissionMonth_ = 5;
+        emissionDay_   = emissionDOY_ - 121;
+    } else if ( ( emissionDOY_ > 151 ) && ( emissionDOY_ <= 181 ) ) {
+        emissionMonth_ = 6;
+        emissionDay_   = emissionDOY_ - 151;
+    } else if ( ( emissionDOY_ > 181 ) && ( emissionDOY_ <= 212 ) ) {
+        emissionMonth_ = 7;
+        emissionDay_   = emissionDOY_ - 181;
+    } else if ( ( emissionDOY_ > 212 ) && ( emissionDOY_ <= 243 ) ) {
+        emissionMonth_ = 8;
+        emissionDay_   = emissionDOY_ - 212;
+    } else if ( ( emissionDOY_ > 243 ) && ( emissionDOY_ <= 273 ) ) {
+        emissionMonth_ = 9;
+        emissionDay_   = emissionDOY_ - 243;
+    } else if ( ( emissionDOY_ > 273 ) && ( emissionDOY_ <= 304 ) ) {
+        emissionMonth_ = 10;
+        emissionDay_   = emissionDOY_ - 273;
+    } else if ( ( emissionDOY_ > 304 ) && ( emissionDOY_ <= 334 ) ) {
+        emissionMonth_ = 11;
+        emissionDay_   = emissionDOY_ - 304;
+    } else if ( ( emissionDOY_ > 334 ) && ( emissionDOY_ <= 365 ) ) {
+        emissionMonth_ = 12;
+        emissionDay_   = emissionDOY_ - 334;
+    } else {
+        std::cout << " emissionDOY = " << emissionDOY_ << std::endl;
+        std::cout << " Could not figure out what month this is" << std::endl;
+        exit(-1);
+    }
+
 
 } /* End of Input::Input */
 

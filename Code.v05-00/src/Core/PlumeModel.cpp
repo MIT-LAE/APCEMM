@@ -211,12 +211,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     RealDouble relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
                                              / physFunc::pSat_H2Os( temperature_K );
 
-    const RealDouble longitude_deg = input.longitude_deg();
-    const RealDouble latitude_deg  = input.latitude_deg();
-
-    const UInt emissionDay        = input.emissionDay();
-    const RealDouble emissionTime = input.emissionTime();
-
     /* Grid indices */
     unsigned int iNx = 0;
     unsigned int jNy = 0;
@@ -278,7 +272,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Define sun parameters, this include sunrise and sunset hours and updates
      * the local solar zenith angle. */
-    SZA *sun = new SZA( latitude_deg, emissionDay ); 
+    SZA *sun = new SZA( input.latitude_deg(), input.emissionDOY() ); 
 
     /* Initialize noon time photolysis rates
      * The data is after the quantum yield has been applied and represents
@@ -289,10 +283,13 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         NOON_JRATES[iPhotol] = 0.0E+00;
  
     /* Allocating noon-time photolysis rates. */
-    ReadJRates( JRATE_FOLDER, 1, 1,  \
-         longitude_deg, latitude_deg, \
-         pressure_Pa/100.0,           \
-         NOON_JRATES );
+    ReadJRates( JRATE_FOLDER,  \ 
+        input.emissionMonth(), \
+        input.emissionDay(),   \
+        input.longitude_deg(), \
+        input.latitude_deg(),  \
+        pressure_Pa/100.0,     \
+        NOON_JRATES );
 
     if ( printDEBUG ) {
         std::cout << "\n DEBUG : \n";
@@ -317,11 +314,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
      */ 
 
     /* Define emission and simulation time */
-    const double tEmission_h = emissionTime;        /* [hr] */
-    const double tInitial_h  = tEmission_h;         /* [hr] */
-    const double tFinal_h    = tInitial_h + TSIMUL; /* [hr] */
-    const double tInitial_s  = tInitial_h * 3600.0; /* [s] */
-    const double tFinal_s    = tFinal_h   * 3600.0; /* [s] */
+    const double tEmission_h = input.emissionTime(); /* [hr] */
+    const double tInitial_h  = tEmission_h;          /* [hr] */
+    const double tFinal_h    = tInitial_h + TSIMUL;  /* [hr] */
+    const double tInitial_s  = tInitial_h * 3600.0;  /* [s] */
+    const double tFinal_s    = tFinal_h   * 3600.0;  /* [s] */
 
     /* Current time in [s] */
     double curr_Time_s = tInitial_s; /* [s] */
@@ -644,7 +641,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::cout << " ## - Temperature: " << std::setw(txtWidth) << temperature_K          << " [  K]\n";
         std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [hPa]\n";
         std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [  %]\n";
-        std::cout << " ## - Latitude   : " << std::setw(txtWidth) << latitude_deg           << " [deg]\n";
+        std::cout << " ## - Latitude   : " << std::setw(txtWidth) << input.latitude_deg()   << " [deg]\n";
         std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [ - ]\n";
 
         std::cout << "\n ## EMISSIONS:";
