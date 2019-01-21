@@ -3234,7 +3234,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
     if ( Input_Opt.PARAMETER_PRESSURE_UNIT.compare( "Pa" ) == 0 ) {
         /* Do nothing. Default unit */
     } else if ( Input_Opt.PARAMETER_PRESSURE_UNIT.compare( "hPa" ) == 0 ) {
-        for ( i = 0; i < nCases; i++ )
+        for ( i = 0; i < cases.size(); i++ )
             cases[i] *= 100.0;
     } else {
         std::cout << " Unknown unit for variable 'Pressure': ";
