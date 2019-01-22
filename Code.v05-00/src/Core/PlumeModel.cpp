@@ -116,8 +116,16 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
     const bool TRANSPORT      = Input_Opt.TRANSPORT_TRANSPORT;
-    const bool FILLNEG        = Input_Opt.TRANSPORT_FILL;
     const double TRANSPORT_DT = Input_Opt.TRANSPORT_TIMESTEP;
+ 
+    #ifdef RINGS
+        /* The RINGS option requires that negative values are filled with
+         * positive values. Otherwise, chemistry spits out garbage.
+         * It's better (and safer) to always let this option turned on. */
+        const bool FILLNEG    = 1;
+    #else
+        const bool FILLNEG    = Input_Opt.TRANSPORT_FILL;
+    #endif /* RINGS */
 
     /* ======================================================================= */
     /* ---- Input options from the CHEMISTRY MENU ---------------------------- */
