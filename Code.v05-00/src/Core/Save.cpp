@@ -61,7 +61,7 @@ namespace output
             double value = 0.0E+00;
             value = input.temperature_K();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Temperature", 1, "float", "K"  , "Ambient Temperature" );
-            value = input.pressure_Pa();
+            value = input.pressure_Pa() / 100.0;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Pressure"   , 1, "float", "hPa", "Ambient Pressure" );
             value = airDens;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Air Density", 1, "float", "molecule / cm ^ 3", "Molecular density" );
@@ -3382,7 +3382,7 @@ namespace output
             didSaveSucceed *= fileHandler.addAtt( currFile, "Format", "NetCDF-4" );
 
             didSaveSucceed *= fileHandler.addConst( currFile, &temperature_K, "Temperature", 1, "float", "K"   , "Ambient Temperature" );
-            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Pressure"   , 1, "float", "hPa" , "Ambient Pressure" );
+            didSaveSucceed *= fileHandler.addConst( currFile, &pressure_Pa  , "Pressure"   , 1, "float", "Pa"  , "Ambient Pressure" );
             didSaveSucceed *= fileHandler.addConst( currFile, &lapseRate    , "Lapse Rate" , 1, "float", "K/km", "Ambient temperature lapse rate" );
             didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_w, "RHW"        , 1, "float", "-"   , "Ambient Rel. Humidity w.r.t water" );
             didSaveSucceed *= fileHandler.addConst( currFile, &relHumidity_i, "RHI"        , 1, "float", "-"   , "Ambient Rel. Humidity w.r.t ice" );
@@ -3471,7 +3471,7 @@ namespace output
             double value = 0.0E+00;
             value = input.temperature_K();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Temperature"    , 1, "float", "K"  , "Ambient Temperature" );
-            value = input.pressure_Pa();
+            value = input.pressure_Pa() / 100.0;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Pressure"       , 1, "float", "hPa", "Ambient Pressure" );
             value = airDens;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Air Density"    , 1, "float", "molecule / cm ^ 3", "Molecular density" );
