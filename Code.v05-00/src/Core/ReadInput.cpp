@@ -43,7 +43,9 @@ void Read_Input_File( OptInput &Input_Opt )
     else {
         std::cout << " Simulation Directory is not defined!" << std::endl;
         std::cout << " Make sure that the variable 'APCEMM_runDir' is exported" << std::endl;
-        exit(1);
+        const char* simDir_ = std::getenv("PWD");
+        fullPath += simDir_;
+        //exit(1);
     }
    
     fullPath += FILESEP;
@@ -366,7 +368,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     std::string unit;
     unsigned first, last;
     std::size_t found;
-    double value; 
+    double value;
 
     /* Skip menu header lines */
     getline( inputFile, line, '\n' );
@@ -422,8 +424,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_TEMPERATURE_RANGE = 0;
     }
+    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
   
@@ -496,8 +499,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_RHW_RANGE = 0;
     }
+    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -574,8 +578,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_LONGITUDE_RANGE = 0;
     }
+    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
    
@@ -641,8 +646,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_LATITUDE_RANGE = 0;
     }
+    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -708,8 +714,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_PRESSURE_RANGE = 0;
     }
+    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -786,8 +793,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EDAY_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -860,8 +868,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_ETIME_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -938,8 +947,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_NOX_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1012,8 +1022,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_HNO3_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1086,8 +1097,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_O3_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1160,8 +1172,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_CO_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1234,8 +1247,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_CH4_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1308,8 +1322,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_SO2_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1386,8 +1401,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_NOX_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1460,8 +1476,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_CO_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1534,8 +1551,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_UHC_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1608,8 +1626,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_SO2_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1682,8 +1701,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_SO2TOSO4_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1756,8 +1776,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_SOOT_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1830,8 +1851,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_SOOTRAD_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
@@ -1904,8 +1926,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_FF_RANGE = 0;
     }
+   
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM can not accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting.";
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
         exit(1);
     }
     
