@@ -655,7 +655,10 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [hPa]\n";
         std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [  %]\n";
         std::cout << " ## - Latitude   : " << std::setw(txtWidth) << input.latitude_deg()   << " [deg]\n";
+        std::cout << " ## - Longitude  : " << std::setw(txtWidth) << input.longitude_deg()  << " [deg]\n";
         std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [ - ]\n";
+        std::cout << " ## - Emiss. time: " << std::setw(txtWidth) << input.emissionTime()   << " [hrs]\n";
+        std::cout << " ## - Emiss. day : " << std::setw(txtWidth-3) << input.emissionMonth() << "/" << input.emissionDay() << "\n";
 
         std::cout << "\n ## EMISSIONS:";
         std::cout << "\n ##\n";
@@ -675,6 +678,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             " ( EI  = " << std::setw(txtWidth) << EI.getSoot()* 1.00E+03 << " [mg/kg_fuel] )\n";
         std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) << " [ #(Soo)/km]"\
             " ( GMD = " << std::setw(txtWidth) << 2.0 * EI.getSootRad() * 1.0E+09 << " [nm]         )\n";
+        std::cout << " ## - Fflow = " << std::setw(txtWidth+3) << aircraft.getFuelFlow() << " [      kg/s]\n";
 
         std::cout << "\n ## AEROSOLS:";
         std::cout << "\n ##\n";
