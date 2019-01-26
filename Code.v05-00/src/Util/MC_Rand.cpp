@@ -26,8 +26,8 @@ T fRand(const T fMin, const T fMax) {
 
     /* Returns a random number between fMin and fMax */
 
-    T f = (T) rand()/RAND_MAX;
-    return fMin + f * (fMax - fMin);
+    double f = (double) rand()/RAND_MAX;
+    return (T) fMin + f * (fMax - fMin);
 
 } /* End of fRand */
 
