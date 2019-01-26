@@ -553,7 +553,11 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                         && ( VAR_INIT[ind_NO] > 0.0E+00 ) \
                         && ( VAR_INIT[ind_NO2] > 0.0E+00 ) \
                         && ( VAR_INIT[ind_O3] > 0.0E+00 ) \
-                        && ( VAR_INIT[ind_HNO3] > 0.0E+00 ) ) {
+                        && ( VAR_INIT[ind_HNO3] > 0.0E+00 ) \ 
+                        && ( VAR_RUN[ind_NO] > 0.0E+00 ) \
+                        && ( VAR_RUN[ind_NO2] > 0.0E+00 ) \
+                        && ( VAR_RUN[ind_O3] > 0.0E+00 ) \
+                        && ( VAR_RUN[ind_HNO3] > 0.0E+00 ) ) {
                     METRIC_ABS_MIN = METRIC;
                     for ( i = 0; i < NOPT; i++ ) {
                         VAR_OUTPUT[ind_OPT[i]] = VAR_INIT[ind_OPT[i]];
@@ -564,10 +568,14 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                 j++;
 
                 if ( ( METRIC > METRIC_prev ) && ( METRIC < 2.0 * METRIC_ABS_MIN ) \
+                        && ( VAR_INIT[ind_NO] > 0.0E+00 ) \
+                        && ( VAR_INIT[ind_NO2] > 0.0E+00 ) \
+                        && ( VAR_INIT[ind_O3] > 0.0E+00 ) \
+                        && ( VAR_INIT[ind_HNO3] > 0.0E+00 ) \
                         && ( VAR_RUN[ind_NO] > 0.0E+00 ) \
                         && ( VAR_RUN[ind_NO2] > 0.0E+00 ) \
                         && ( VAR_RUN[ind_O3] > 0.0E+00 ) \
-                        && ( VAR_RUN[ind_HNO3] > 0.0E+00 ) ){
+                        && ( VAR_RUN[ind_HNO3] > 0.0E+00 ) ) {
                     IERR = 0;
                     BREAK = 1;
                     break;
