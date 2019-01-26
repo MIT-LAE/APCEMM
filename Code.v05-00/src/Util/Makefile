@@ -93,5 +93,7 @@ PhysFunction.o      : PhysFunction.cpp
 
 Error.o             : Error.cpp
 
+MC_Rand.o           : MC_Rand.cpp
+
 Meteorology.o       : Meteorology.cpp
 
