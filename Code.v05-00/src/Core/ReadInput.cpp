@@ -3525,7 +3525,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
 
         /* ======================================================================= */
         /* ---- TEMPERATURE ------------------------------------------------------ */
-        /* ---- Accepted units are: Kelvin (default), Celsius, Fahrenheit          */
+        /* ---- Accepted units are: Kelvin (default), Celsius, Fahrenheit, Rankine */
         /* ======================================================================= */
 
         if ( Input_Opt.PARAMETER_TEMPERATURE_RANGE ) {
@@ -3548,6 +3548,10 @@ Vector_2D CombVec( OptInput &Input_Opt )
             /* Convert F to K */
             for ( i = 0; i < cases.size(); i++ )
                 cases[i] = ( cases[i] + 459.67 ) * (double) 5.0/9;
+        } else if ( Input_Opt.PARAMETER_TEMPERATURE_UNIT.compare( "R" ) == 0 ) {
+            /* Convert R to K */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] *= (double) 5.0/9;
         } else {
             std::cout << " Unknown unit for variable 'Temperature': ";
             std::cout << Input_Opt.PARAMETER_TEMPERATURE_UNIT << std::endl;
