@@ -24,6 +24,7 @@
 
 #include "Core/Input_Mod.hpp"
 #include "Util/ForwardDecl.hpp"
+#include "Util/MC_Rand.hpp"
 
 void Read_Input_File( OptInput &Input_Opt );
 std::vector<std::string> Split_Line( std::string line2split, const std::string delimiter );

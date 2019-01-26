@@ -31,6 +31,8 @@ class OptInput
         /* ========================================== */
 
         bool        SIMULATION_PARAMETER_SWEEP;
+        bool        SIMULATION_MONTECARLO;
+        int         SIMULATION_MCRUNS;
         std::string SIMULATION_OUTPUT_FOLDER;
         bool        SIMULATION_OVERWRITE;
         std::string SIMULATION_RUN_DIRECTORY;
