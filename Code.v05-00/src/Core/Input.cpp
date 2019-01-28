@@ -141,7 +141,7 @@ Input::Input( const RealDouble temperature_K, \
     if ( fuelFlow_ < 0.0E+00 ) {
         std::cout << " In Input::Input:";
         std::cout << " fuelFlow takes an unrealisable value: fuelFlow = ";
-        std::cout << fuelFlow_ << " [kg/s/engine]" << std::endl;
+        std::cout << fuelFlow_ << " [kg/s]" << std::endl;
         exit(-1);
     }
     
@@ -353,7 +353,7 @@ Input::Input( unsigned int iCase,          \
     if ( fuelFlow_ < 0.0E+00 ) {
         std::cout << " In Input::Input:";
         std::cout << " fuelFlow takes an unrealisable value: fuelFlow = ";
-        std::cout << fuelFlow_ << " [kg/s/engine]" << std::endl;
+        std::cout << fuelFlow_ << " [kg/s]" << std::endl;
         exit(-1);
     }
     
