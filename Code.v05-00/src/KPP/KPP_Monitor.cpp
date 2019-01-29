@@ -555,6 +555,17 @@
      "          ClOO --> Cl + O2       "
       }; 
 
+  const char *  FAM_NAMES[] = {
+      "POx"   /* Index 0: Production of Ox: O3 + O + O(1D) */,
+      "LOx"   /* Index 1: Loss of Ox: O3 + O + O(1D) */,
+      "LNOx"  /* Index 2: Loss of NOx: N + NO + NO2 + NO3 */,
+      "PHNO3" /* Index 3: Production of HNO3 */,
+      "PCO"   /* Index 4: Production of CO */,
+      "LCO"   /* Index 5: Loss of CO */,
+      "PSO4"  /* Index 6: Production of SO4 */,
+      "LCH4"  /* Index 7: Loss of CH4 */,
+      "PH2O2" /* Index 8: Production of H2O2 */
+  };
 
 /* INLINED global variables                                         */
 

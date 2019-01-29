@@ -26,6 +26,7 @@
 #define NVARACT              126         /* Number of Active species */
 #define NFIX                 8           /* Number of Fixed species */
 #define NREACT               475         /* Number of reactions */
+#define NFAM                 9           /* Number of prod/loss families */
 #define NVARST               0           /* Starting of variables in conc. vect. */
 #define NFIXST               127         /* Starting of fixed in conc. vect. */
 #define NONZERO              1643        /* Number of nonzero entries in Jacobian */
