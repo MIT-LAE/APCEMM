@@ -17,11 +17,13 @@ namespace output
 {
 
     int Write( const char* outFile,                                              \
+               const OptInput &Input_Opt,                                        \
                const SpeciesArray &ringSpecies, const Ambient ambientData,       \
                const Cluster &ringCluster, const std::vector<double> &timeArray, \
                const Input &input,                                               \
                const double &airDens, const double &relHumidity_i,               \
-               const double &sunRise, const double &sunSet ) 
+               const double &sunRise, const double &sunSet,                      \
+               const Vector_3D &plumeRates, const Vector_2D &ambientRates )
     {
 
         const bool doWrite = 1;
@@ -42,8 +44,16 @@ namespace output
             time( &rawtime );
             strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
-            const NcDim *timeDim = fileHandler.addDim( currFile, "Time", long(timeArray.size()) );
+            const NcDim *timeDim = fileHandler.addDim( currFile, "Time", timeArray.size() );
             didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "Time", timeDim, "float", "s", "Time");
+            
+            const NcDim *timeDim_midStep = fileHandler.addDim( currFile, "Time_mid", timeArray.size() - 1 );
+            Vector_1D time_midStep( timeArray.size()-1, 0.0E+00 );
+
+            for ( unsigned int iTime = 0; iTime < timeArray.size() - 1; iTime++ )
+                time_midStep[iTime] = 0.5 * (timeArray[iTime] + timeArray[iTime+1]);
+
+            didSaveSucceed *= fileHandler.addVar( currFile, &time_midStep[0], "Time_mid", timeDim_midStep, "float", "s", "Time at mid time-step");
            
 #ifdef RINGS
 
@@ -106,11 +116,95 @@ namespace output
             value = input.backgSO2();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background SO2" , 1, "float", "ppb"  , "Background SO2 mixing ratio" );
 
-            didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim, "float", "-", "Cosine of the solar zenith angle" );
+            didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim_midStep, "float", "-", "Cosine of the solar zenith angle" );
 
 #ifdef RINGS
 
             didSaveSucceed *= fileHandler.addVar( currFile, &(ringCluster.getRingArea())[0], "Ring Area", ringDim, "float", "m^2", "Ring Area" );
+
+#if ( SAVE_TO_DOUBLE )
+                double* spcArray;
+                double* ambArray;
+                const char* outputType = "double";
+#else
+                float* spcArray;
+                float* ambArray;
+                const char* outputType = "float";
+#endif /* SAVE_TO_DOUBLE */
+
+            if ( Input_Opt.PL_PL ) {
+            
+                const NcDim *famDim = fileHandler.addDim( currFile, "Family", NFAM );
+                std::vector<int> family( NFAM, 0 );
+
+                for ( unsigned int iFam = 0; iFam < NFAM; iFam++ )
+                    family[iFam] = iFam;
+
+                didSaveSucceed *= fileHandler.addVar( currFile, &family[0], "Family", famDim, "int", "-", "Family");
+
+#if ( SAVE_TO_DOUBLE )
+                double* ratesArray;
+                ratesArray = util::vect2double( plumeRates, time_midStep.size(), ringCluster.getnRing(), NFAM );
+#else
+                float* ratesArray;
+                ratesArray = util::vect2float ( plumeRates, time_midStep.size(), ringCluster.getnRing(), NFAM );
+#endif /* SAVE_TO_DOUBLE */
+                
+                didSaveSucceed *= fileHandler.addVar3D( currFile, &(ratesArray)[0], "Rates", timeDim_midStep, ringDim, famDim, outputType, "molec/cm^3/s" );
+
+                util::delete1D( ratesArray );
+                
+                
+#if ( SAVE_TO_DOUBLE )
+                double* ratesArray_;
+                ratesArray_ = util::vect2double( ambientRates, time_midStep.size(), NFAM );
+#else
+                float* ratesArray_;
+                ratesArray_ = util::vect2float ( ambientRates, time_midStep.size(), NFAM );
+#endif /* SAVE_TO_DOUBLE */
+                
+                didSaveSucceed *= fileHandler.addVar2D( currFile, &(ratesArray_)[0], "Ambient Rates", timeDim_midStep, famDim, outputType, "molec/cm^3/s" );
+
+                util::delete1D( ratesArray_ );
+
+            } else {
+
+                if ( Input_Opt.PL_O3 ) {
+
+                    const NcDim *famDim = fileHandler.addDim( currFile, "Family", 2 );
+                    std::vector<int> family( 2, 0 );
+
+                    for ( unsigned int iFam = 0; iFam < 2; iFam++ )
+                        family[iFam] = iFam;
+
+                    didSaveSucceed *= fileHandler.addVar( currFile, &family[0], "Family", famDim, "int", "-", "Family");
+
+#if ( SAVE_TO_DOUBLE )
+                    double* ratesArray;
+                    ratesArray = util::vect2double( plumeRates, time_midStep.size(), ringCluster.getnRing(), 2 );
+#else
+                    float* ratesArray;
+                    ratesArray = util::vect2float ( plumeRates, time_midStep.size(), ringCluster.getnRing(), 2 );
+#endif /* SAVE_TO_DOUBLE */
+                    
+                    didSaveSucceed *= fileHandler.addVar3D( currFile, &(ratesArray)[0], "Rates", timeDim, ringDim, famDim, outputType, "molec/cm^3/s" );
+
+                    util::delete1D( ratesArray );
+                     
+#if ( SAVE_TO_DOUBLE )
+                    double* ratesArray_;
+                    ratesArray_ = util::vect2double( ambientRates, time_midStep.size(), 2 );
+#else
+                    float* ratesArray_;
+                    ratesArray_ = util::vect2float ( ambientRates, time_midStep.size(), 2 );
+#endif /* SAVE_TO_DOUBLE */
+                    
+                    didSaveSucceed *= fileHandler.addVar2D( currFile, &(ratesArray_)[0], "Ambient Rates", timeDim_midStep, famDim, outputType, "molec/cm^3/s" );
+
+                    util::delete1D( ratesArray_ );
+
+                }
+            }
 
 #endif /* RINGS */
 
@@ -122,15 +216,6 @@ namespace output
 
 #ifdef RINGS
 
-#if ( SAVE_TO_DOUBLE )
-                double* spcArray;
-                double* ambArray;
-                const char* outputType = "double";
-#else
-                float* spcArray;
-                float* ambArray;
-                const char* outputType = "float";
-#endif /* SAVE_TO_DOUBLE */
 
                 /* Start saving species ... */
 
@@ -3462,6 +3547,14 @@ namespace output
             const NcDim *timeDim = fileHandler.addDim( currFile, "Time", long(timeArray.size()) );
             didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "Time", timeDim, "float", "s", "Time");
             
+            const NcDim *timeDim_midStep = fileHandler.addDim( currFile, "Time_mid", timeArray.size() - 1 );
+            Vector_1D time_midStep( timeArray.size()-1, 0.0E+00 );
+
+            for ( unsigned int iTime = 0; iTime < timeArray.size() - 1; iTime++ )
+                time_midStep[iTime] = 0.5 * (timeArray[iTime] + timeArray[iTime+1]);
+
+            didSaveSucceed *= fileHandler.addVar( currFile, &time_midStep[0], "Time_mid", timeDim_midStep, "float", "s", "Time at mid time-step");
+            
             didSaveSucceed *= fileHandler.addAtt( currFile, "FileName", fileHandler.getFileName() );
             didSaveSucceed *= fileHandler.addAtt( currFile, "Author", "Thibaud M. Fritz (fritzt@mit.edu)" );
             didSaveSucceed *= fileHandler.addAtt( currFile, "Contact", "Thibaud M. Fritz (fritzt@mit.edu)" );
@@ -3514,7 +3607,7 @@ namespace output
             value = input.backgSO2();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background SO2" , 1, "float", "ppb"  , "Background SO2 mixing ratio" );
 
-            didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim, "float", "-", "Cosine of the solar zenith angle" );
+            didSaveSucceed *= fileHandler.addVar( currFile, &(ambientData.cosSZA)[0], "CSZA", timeDim_midStep, "float", "-", "Cosine of the solar zenith angle" );
 
             /* Define conversion factors */
             #define TO_PPTH         1.0 / airDens * 1.0E+03 /* Conversion factor from molecule/cm^3 to PPTH */

@@ -18,6 +18,7 @@
 
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
+#include "Core/Input_Mod.hpp"
 #include "Core/Input.hpp"
 #include "Core/Output.hpp"
 #include "Core/Species.hpp"
@@ -33,11 +34,13 @@ namespace output
     static const int SAVE_FAILURE = 0;
 
     int Write( const char* outFile,                                              \
+               const OptInput &Input_Opt,                                        \
                const SpeciesArray &ringSpecies, const Ambient ambientData,       \
                const Cluster &ringCluster, const std::vector<double> &timeArray, \
                const Input &input,                                               \
                const double &airDens, const double &relHumidity_i,               \
-               const double &sunRise, const double &sunSet );
+               const double &sunRise, const double &sunSet,                      \
+               const Vector_3D &plumeRates, const Vector_2D &ambientRates );
     int Write_MicroPhys( const char* outputFile, \
                          const std::vector<std::vector<std::vector<std::vector<double>>>> &output_MicroPhys, \
                          const std::vector<double> &timeArray, const std::vector<double> &binCenters,        \

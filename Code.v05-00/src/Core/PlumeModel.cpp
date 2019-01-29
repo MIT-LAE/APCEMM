@@ -748,6 +748,47 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, ss, Data, m );
     }
 
+    /* Prod & loss diagnostics */
+#ifdef RINGS
+
+    /* Rates before chemistry is performed.
+     * Chemistry is performed NT-1 times, the size is thus:
+     * (NT-1) x NRING x NFAM 
+     * and
+     * (NT-1) x NFAM for ambient conditions */
+
+    unsigned int NFAM_ = NFAM;
+    if ( !SAVE_PL && SAVE_O3PL )
+        NFAM_ = 2;
+    else if ( !SAVE_PL && !SAVE_O3PL )
+        NFAM_ = 0;
+
+    Vector_3D plumeRates( timeArray.size() - 1, Vector_2D( NRING, Vector_1D( NFAM_, 0.0E+00 ) ) );
+    Vector_2D ambientRates( timeArray.size() - 1, Vector_1D( NFAM_, 0.0E+00 ) );
+
+#else
+
+    // TODO!!
+    if ( SAVE_PL ) {
+
+        /* If chemistry is performed at the grid cell level, then the 
+         * rates are stored as:
+         * NY x NX x NFAM in [molec/cm^3/s]
+         * into netCDF files at a frequency specified by the input file */
+
+        int hh = (int) (curr_Time_s - timeArray[0])/3600;
+        int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
+        int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
+//        Diag_PL( "PL_hhmmss.nc", hh, mm, ss, Data, m );
+
+    } else {
+        if ( SAVE_O3PL ) {
+        }
+    }
+
+#endif /* RINGS */
+
+
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
     /* ------------------------ TIME LOOP STARTS HERE ------------------------ */
@@ -918,7 +959,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         sun->Update( curr_Time_s + dt/2 );
 
         /* Store cosine of solar zenith angle */
-        ambientData.cosSZA[nTime+1] = sun->CSZA;
+        ambientData.cosSZA[nTime] = sun->CSZA;
 
         if ( printDEBUG ) {
             std::cout << "\n DEBUG : \n";
@@ -1030,6 +1071,49 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                     Update_RCONST( temperature_K, pressure_Pa, airDens, VAR[ind_H2O] );
 
+                    if ( SAVE_PL ) {
+        
+                        double familyRate[NFAM];
+                        
+                        for ( unsigned int iFam = 0; iFam < NFAM; iFam++ )
+                            familyRate[iFam] = 0.0E+00;
+
+                        /* If chemistry is performed within each rings, then the rates
+                         * are stored as:
+                         * NRING x (NT-1) x NFAM in [molec/cm^3/s]
+                         * into the "forward" output file at a frequency specified by 
+                         * the input file "input.apcemm" */
+       
+                        /* Compute family rates */
+                        ComputeFamilies( VAR, FIX, RCONST, familyRate );
+
+                        for ( unsigned int iFam = 0; iFam < NFAM; iFam++ )
+                            plumeRates[nTime][iRing][iFam] = familyRate[iFam];
+
+                    } else {
+                        
+                        if ( SAVE_O3PL ) {
+                        
+                            double familyRate[NFAM];
+                            
+                            for ( unsigned int iFam = 0; iFam < NFAM; iFam++ )
+                                familyRate[iFam] = 0.0E+00;
+
+                            /* If chemistry is performed within each rings, then the rates
+                             * are stored as:
+                             * NRING x (NT-1) x NFAM in [molec/cm^3/s]
+                             * into the "forward" output file at a frequency specified by 
+                             * the input file "input.apcemm" */
+           
+                            /* Compute family rates */
+                            ComputeFamilies( VAR, FIX, RCONST, familyRate );
+
+                            for ( unsigned int iFam = 0; iFam < 2; iFam++ )
+                                plumeRates[nTime][iRing][iFam] = familyRate[iFam];
+
+                        }
+                    }
+
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
                     /* ~~~~~ Integration ~~~~~~ */
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -1127,6 +1211,49 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                     RCONST[iReact] = 0.0E+00;
 
                 Update_RCONST( temperature_K, pressure_Pa, airDens, VAR[ind_H2O] );
+                    
+                if ( SAVE_PL ) {
+    
+                    double familyRate[NFAM];
+                    
+                    for ( unsigned int iFam = 0; iFam < NFAM; iFam++ )
+                        familyRate[iFam] = 0.0E+00;
+
+                    /* If chemistry is performed within each rings, then the rates
+                     * are stored as:
+                     * NRING x (NT-1) x NFAM in [molec/cm^3/s]
+                     * into the "forward" output file at a frequency specified by 
+                     * the input file "input.apcemm" */
+   
+                    /* Compute family rates */
+                    ComputeFamilies( VAR, FIX, RCONST, familyRate );
+
+                    for ( unsigned int iFam = 0; iFam < NFAM; iFam++ )
+                        ambientRates[nTime][iFam] = familyRate[iFam];
+
+                } else {
+                    
+                    if ( SAVE_O3PL ) {
+                    
+                        double familyRate[NFAM];
+                        
+                        for ( unsigned int iFam = 0; iFam < NFAM; iFam++ )
+                            familyRate[iFam] = 0.0E+00;
+
+                        /* If chemistry is performed within each rings, then the rates
+                         * are stored as:
+                         * NRING x (NT-1) x NFAM in [molec/cm^3/s]
+                         * into the "forward" output file at a frequency specified by 
+                         * the input file "input.apcemm" */
+       
+                        /* Compute family rates */
+                        ComputeFamilies( VAR, FIX, RCONST, familyRate );
+
+                        for ( unsigned int iFam = 0; iFam < 2; iFam++ )
+                            ambientRates[nTime][iFam] = familyRate[iFam];
+
+                    }
+                }
 
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
                 /* ~~~~~ Integration ~~~~~~ */
@@ -1537,13 +1664,15 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     {
         if ( SAVE_FORWARD ) {
             isSaved = output::Write( input.fileName2char(),               \
+                                     Input_Opt,                           \
                                      ringSpecies,                         \
                                      ambientData,                         \
                                      ringCluster,                         \
                                      timeArray,                           \
                                      input,                               \
                                      airDens, relHumidity_i,              \
-                                     sun->sunRise, sun->sunSet );
+                                     sun->sunRise, sun->sunSet,           \
+                                     plumeRates, ambientRates );
         }
     }
     if ( isSaved == output::SAVE_FAILURE ) {
@@ -1730,7 +1859,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             sun->Update( curr_Time_s + dt/2 );
 
             /* Store cosine of solar zenith angle */
-            adjointData.cosSZA[nTime+1] = sun->CSZA;
+            adjointData.cosSZA[nTime] = sun->CSZA;
 
             if ( printDEBUG ) {
                 std::cout << "\n DEBUG : \n";
