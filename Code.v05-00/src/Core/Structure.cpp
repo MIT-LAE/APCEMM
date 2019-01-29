@@ -1466,12 +1466,13 @@ int Solution::SpinUp( std::vector<double> &amb_Value, \
      * if not integrate until next day at the same time */
     double RunUntil = input.emissionTime();
 
-    /* If emission time corresponds to data from file exit here */
-    if ( startTime == RunUntil )
-        return 1;
+//    /* If emission time corresponds to data from file exit here */
+//    if ( startTime == RunUntil )
+//        return 1;
 
-    if ( RunUntil < startTime )
-        RunUntil += 24.0;
+//    if ( RunUntil < startTime )
+//        RunUntil += 24.0;
+    RunUntil += 24.0;
 
     /* Convert to seconds */
     RunUntil *= 3600.0;

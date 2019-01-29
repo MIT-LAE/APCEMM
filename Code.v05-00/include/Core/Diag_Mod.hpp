@@ -29,13 +29,27 @@ static const int SAVE_SUCCESS = 1;
 static const int SAVE_FAILURE = 0;
 
 /* ================================================================== */
+/* ---- Prod & Loss Rates Diagnostics ------------------------------- */
+/* ================================================================== */
+
+/* If chemistry is performed at the grid cell level, then the rates
+ * are stored as:
+ * NY x NX x NFAM 
+ * into netCDF files at a frequency specified by the input file */
+
+//bool Diag_PL( const char* ROOTNAME,                     \
+//              const int hh, const int mm, const int ss, \
+//              const Solution& Data,                     \
+//              const Mesh& m );
+
+/* ================================================================== */
 /* ---- Timeseries Diagnostics -------------------------------------- */
 /* ================================================================== */
 
 /* Timeseries diagnostic files must be of the form:
  *      *hhmmss.nc */
 
-bool Diag_TS( const char* rootName,                     \
+bool Diag_TS( const char* ROOTNAME,                     \
               const std::vector<int> speciesIndices,    \
               const int hh, const int mm, const int ss, \
               const Solution& Data, const Mesh& m );

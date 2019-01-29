@@ -2,17 +2,20 @@ APCEMM SIMULATION
 ------------------------+------------------------------------------------------
 %%% SIMULATION MENU %%% :
 Parameter sweep?        : T
+ => Monte Carlo?        : F
+  => Number of runs     : 50
 Output folder           : /path/to/output/folder
  => Overwrite? if exists: F
 Run directory           : ./
 Input backgrd condition : /net/d04/data/fritzt/APCEMM_Data/init.txt
 Save forward results    : T
  => netCDF file name    : APCEMM_Case_*
-Turn on adjoint optim.  : F
+Turn on adjoint optim.  : T
  => netCDF file name    : APCEMM_ADJ_Case_*
 ------------------------+------------------------------------------------------
 %%% PARAMETER SWEEP %%% : (Parameter sweep? needs to be set to "T")
-Parameter entries --->  : Format is either 200 220 240 or 200:20:240
+Parameter entries --->  : Format is either 200 220 240 or 200:20:240 (except
+                        : for MC runs where it should be 200 240 or 200:240)
 Meteorological parameter:
  => Temperature [K]     : 200 220 240
  => R.Hum. wrt water [%]: 30

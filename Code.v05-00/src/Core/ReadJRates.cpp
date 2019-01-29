@@ -151,30 +151,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -195,30 +195,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -239,30 +239,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -283,30 +283,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -327,30 +327,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -371,30 +371,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -415,30 +415,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -459,30 +459,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -503,30 +503,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -547,30 +547,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -591,30 +591,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -635,30 +635,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -679,30 +679,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -723,30 +723,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -767,30 +767,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -811,30 +811,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -855,30 +855,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -899,30 +899,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -943,30 +943,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -987,30 +987,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1031,30 +1031,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1075,30 +1075,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1119,30 +1119,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1163,30 +1163,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1207,30 +1207,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1251,30 +1251,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1295,30 +1295,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1339,30 +1339,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1383,30 +1383,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1427,30 +1427,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1471,30 +1471,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1515,30 +1515,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1559,30 +1559,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1603,30 +1603,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1647,30 +1647,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1691,30 +1691,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1735,30 +1735,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1779,30 +1779,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1823,30 +1823,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1867,30 +1867,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1911,30 +1911,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1955,30 +1955,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -1999,30 +1999,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2043,30 +2043,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2087,30 +2087,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2131,30 +2131,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2175,30 +2175,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2219,30 +2219,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2263,30 +2263,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2307,30 +2307,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2351,30 +2351,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2395,30 +2395,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2439,30 +2439,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2483,30 +2483,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2527,30 +2527,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2571,30 +2571,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2615,30 +2615,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2659,30 +2659,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2703,30 +2703,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2747,30 +2747,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2791,30 +2791,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2835,30 +2835,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2879,30 +2879,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2923,30 +2923,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -2967,30 +2967,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3011,30 +3011,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3055,30 +3055,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3099,30 +3099,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3143,30 +3143,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3187,30 +3187,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3231,30 +3231,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3275,30 +3275,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3319,30 +3319,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3363,30 +3363,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3407,30 +3407,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3451,30 +3451,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3495,30 +3495,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3539,30 +3539,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3583,30 +3583,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3627,30 +3627,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3671,30 +3671,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3715,30 +3715,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3759,30 +3759,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3803,30 +3803,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3847,30 +3847,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3891,30 +3891,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3935,30 +3935,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -3979,30 +3979,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4023,30 +4023,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4067,30 +4067,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4111,30 +4111,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4155,30 +4155,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4199,30 +4199,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4243,30 +4243,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4287,30 +4287,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4331,30 +4331,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4375,30 +4375,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4419,30 +4419,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4463,30 +4463,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4507,30 +4507,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4551,30 +4551,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4595,30 +4595,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4639,30 +4639,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();
@@ -4683,30 +4683,30 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     if ( LAT_EDGE && LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                           ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
-                         ( PRES_HIGH - PRES_LOW );
+                                 ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) /\
+                               ( PRES_HIGH - PRES_LOW );
     } else if ( LAT_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + LAT_INDEX * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW );
     } else if ( LON_EDGE ) {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                           ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                  ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                        ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LAT_HIGH - LAT_LOW );
     } else {
         NOON_JRATES[iPhotol] = ( ( LAT_HIGH - LAT ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
-                           ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
-                                                  ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     )* LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
-                                                                         ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
-                         ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX - 1 ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) + \
+                                 ( LAT - LAT_LOW  ) * ( ( LON_HIGH - LON ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX - 1 + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) + \
+                                                        ( LON - LON_LOW  ) * ( ( P_hPa - PRES_LOW  ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX - 1 ) * LON_SIZE * LAT_SIZE] + \
+                                                                               ( PRES_HIGH - P_hPa ) * jRate[LON_INDEX     + ( LAT_INDEX     ) * LON_SIZE + ( PRES_INDEX     ) * LON_SIZE * LAT_SIZE] ) ) ) /\
+                               ( PRES_HIGH - PRES_LOW ) / ( LON_HIGH - LON_LOW ) / ( LAT_HIGH - LAT_LOW );
     }
 
     jRate.clear();

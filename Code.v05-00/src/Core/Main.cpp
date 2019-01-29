@@ -334,11 +334,9 @@ void CreateREADME( const std::string folder, const std::string fileName, const s
     README << "\n## Destination folder: " << folder << "\n";
 
     /* Getting hostname and username */
-    char hostname[HOST_NAME_MAX]; 
-    char username[LOGIN_NAME_MAX]; 
-    gethostname(hostname, HOST_NAME_MAX); 
-    getlogin_r(username, LOGIN_NAME_MAX);
-    README << "\n## Running as " << username << " on " << hostname << "\n";
+    const char* username = std::getenv("SLURM_JOB_USER");
+    const char* node = std::getenv("SLURM_NODELIST");
+    README << "\n## Running as " << username << " on " << node << "\n";
 
     /* Printing purpose */
     README << "\n## Purpose: " << purpose;
