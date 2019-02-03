@@ -25,9 +25,6 @@
 /* Ring structure */
 #define NRING             15          /* Number of rings */
 
-/* Time */
-#define TSIMUL            2.4E+01     /* Simulation time [hrs] */
-
 /* Atmospheric parameters */
 #define GAMMA            -3.0E+00     /* Ambient temperature lapse rate [K/km] */
 #define TROPP             2.0E+04     /* Pressure at the tropopause [Pa] */

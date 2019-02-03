@@ -322,16 +322,17 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
      *  - tEmission is the local emission time expressed in hours 
      *  (between 0.0 and 24.0)
      *  - tInitial is the local time at which the simulation starts in hours
-     *  - TSIMUL represents the simulation time (in hours)
+     *  - simulationTime represents the simulation time (in hours) (now read from
+     *    input file)
      *  - tFinal corresponds to the final time of the simulation expressed in hours
      */ 
 
     /* Define emission and simulation time */
-    const double tEmission_h = input.emissionTime(); /* [hr] */
-    const double tInitial_h  = tEmission_h;          /* [hr] */
-    const double tFinal_h    = tInitial_h + TSIMUL;  /* [hr] */
-    const double tInitial_s  = tInitial_h * 3600.0;  /* [s] */
-    const double tFinal_s    = tFinal_h   * 3600.0;  /* [s] */
+    const double tEmission_h = input.emissionTime();                 /* [hr] */
+    const double tInitial_h  = tEmission_h;                          /* [hr] */
+    const double tFinal_h    = tInitial_h + input.simulationTime();  /* [hr] */
+    const double tInitial_s  = tInitial_h * 3600.0;                  /* [s] */
+    const double tFinal_s    = tFinal_h   * 3600.0;                  /* [s] */
 
     /* Current time in [s] */
     double curr_Time_s = tInitial_s; /* [s] */
