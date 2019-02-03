@@ -5578,11 +5578,6 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
     
-        for ( i = 0; i < y.size(); i++ ) {
-            for ( j = 0; j < y[0].size(); j++ )
-                std::cout << y[i][j] << " ";
-            std::cout << std::endl;
-        }
         return y;
 
     }
