@@ -21,7 +21,8 @@
 class Input
 {
 
-        
+    RealDouble simulationTime_;
+
     RealDouble temperature_K_;
     RealDouble pressure_Pa_;
     RealDouble relHumidity_w_;
@@ -74,6 +75,7 @@ class Input
 
         ~Input();
 
+        RealDouble simulationTime() const { return simulationTime_; }
         RealDouble temperature_K() const { return temperature_K_; }
         RealDouble pressure_Pa() const { return pressure_Pa_; }
         RealDouble relHumidity_w() const { return relHumidity_w_; }

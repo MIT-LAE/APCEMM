@@ -46,6 +46,9 @@ class OptInput
         /* ---- PARAMETER MENU ---------------------- */
         /* ========================================== */
 
+        bool        PARAMETER_PLUMEPROCESS_RANGE;
+        std::string PARAMETER_PLUMEPROCESS_UNIT;
+        Vector_1D   PARAMETER_PLUMEPROCESS;
         bool        PARAMETER_TEMPERATURE_RANGE;
         std::string PARAMETER_TEMPERATURE_UNIT;
         Vector_1D   PARAMETER_TEMPERATURE;

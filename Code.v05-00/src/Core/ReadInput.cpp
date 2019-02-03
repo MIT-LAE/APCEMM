@@ -41,7 +41,7 @@ void Read_Input_File( OptInput &Input_Opt )
     if ( const char* simDir = std::getenv("APCEMM_runDir") )
         fullPath += simDir;
     else {
-        std::cout << " Simulation Directory is not defined!" << std::endl;
+        std::cout << " \nSimulation Directory is not defined!" << std::endl;
         const char* currDir = std::getenv("PWD");
         fullPath += currDir;
         std::cout << " Reading from PWD: " << currDir << std::endl;
@@ -422,7 +422,6 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     /* Skip menu header lines */
     getline( inputFile, line, '\n' );
     getline( inputFile, line, '\n' );
-    getline( inputFile, line, '\n' );
 
     /* Variable ranges can be defined in two ways:
      *  - min:step:max
@@ -430,6 +429,98 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
 
     /* However, for MC simulations the ranges should be defined as
      * min max or min:max */
+    
+    /* ==================================================== */
+    /* Plume processing time                                */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Plume process.";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_PLUMEPROCESS_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_PLUMEPROCESS_RANGE = 0;
+    }
+    
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_PLUMEPROCESS_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_PLUMEPROCESS_RANGE = 0;
+    }
+
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.assign( unit );
+    
+    /* Store in values for variable */
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value > 0.0E+00 )
+                Input_Opt.PARAMETER_PLUMEPROCESS.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
+   
+    /* Skip header line */
+    getline( inputFile, line, '\n' );
 
     /* ==================================================== */
     /* Temperature                                          */
@@ -2314,6 +2405,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     std::cout << " %%% PARAMETER SWEEP %%% :"                                                        << std::endl;
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
 
+    std::cout << "  => Plume process. [" << Input_Opt.PARAMETER_PLUMEPROCESS_UNIT << "] : ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_PLUMEPROCESS[0] << "," << Input_Opt.PARAMETER_PLUMEPROCESS[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_PLUMEPROCESS[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE )
+            std::cout << Input_Opt.PARAMETER_PLUMEPROCESS[0] << ":" << Input_Opt.PARAMETER_PLUMEPROCESS[1] << ":" << Input_Opt.PARAMETER_PLUMEPROCESS[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_PLUMEPROCESS.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_PLUMEPROCESS[i] << " ";
+            std::cout << std::endl;
+        }
+    }
     /* ---- Meteorological parameters --------------------- */
     std::cout << " Meteorological parameter:" << std::endl;
     std::cout << "  => Temperature [" << Input_Opt.PARAMETER_TEMPERATURE_UNIT << "]     : ";
@@ -3522,6 +3628,42 @@ Vector_2D CombVec( OptInput &Input_Opt )
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         /* Initialize seed */
         setSeed();
+        
+        /* ======================================================================= */
+        /* ---- PLUME PROCESSING TIME ( SIMULATION TIME ) ------------------------ */
+        /* ---- Accepted units are: hr (default)                                   */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_PLUMEPROCESS[0], \
+                                       Input_Opt.PARAMETER_PLUMEPROCESS[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_PLUMEPROCESS[0] );
+        }
+        
+        /* Do unit conversion to default unit */
+        if ( ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "0-24" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "hr" ) == 0 ) ) {
+            /* Do nothing. Default unit */
+        } else if ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "min" ) == 0 ) {
+            /* Convert from min to hr */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] /= 60.0;
+        } else {
+            std::cout << " Unknown unit for variable 'Plume Processing Time': ";
+            std::cout << Input_Opt.PARAMETER_PLUMEPROCESS_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_PLUMEPROCESS_UNIT = "hr";
+
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
 
         /* ======================================================================= */
         /* ---- TEMPERATURE ------------------------------------------------------ */
@@ -3561,6 +3703,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
 
+        counter += 1;
         y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
@@ -3742,7 +3885,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back( Input_Opt.PARAMETER_ETIME[0] );
         }
 
-        if ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "0-24" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "0-24" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "hr" ) == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'Emission Time': ";
@@ -4253,6 +4397,45 @@ Vector_2D CombVec( OptInput &Input_Opt )
     } else {
 
         /* ======================================================================= */
+        /* ---- PLUME PROCESSING TIME ( SIMULATION TIME ) ------------------------ */
+        /* ---- Accepted units are: hr (default)                                   */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE ) {
+            currVal = Input_Opt.PARAMETER_PLUMEPROCESS[0];
+            while ( currVal <= Input_Opt.PARAMETER_PLUMEPROCESS[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_PLUMEPROCESS[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_PLUMEPROCESS.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_PLUMEPROCESS[i]);
+        }
+        nCases = cases.size();
+        
+        /* Do unit conversion to default unit */
+        if ( ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "0-24" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "hr" ) == 0 ) ) {
+            /* Do nothing. Default unit */
+        } else if ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "min" ) == 0 ) {
+            /* Convert from min to hr */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] /= 60.0;
+        } else {
+            std::cout << " Unknown unit for variable 'Plume Processing Time': ";
+            std::cout << Input_Opt.PARAMETER_PLUMEPROCESS_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_PLUMEPROCESS_UNIT = "hr";
+
+        y.push_back(Vector_1D(cases.size()));
+        for ( i = 0; i < cases.size(); i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
+        /* ======================================================================= */
         /* ---- TEMPERATURE ------------------------------------------------------ */
         /* ---- Accepted units are: Kelvin (default), Celsius, Fahrenheit          */
         /* ======================================================================= */
@@ -4267,7 +4450,6 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_TEMPERATURE.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_TEMPERATURE[i]);
         }
-        nCases = cases.size();
 
         /* Do unit conversion to default unit */
         if ( Input_Opt.PARAMETER_TEMPERATURE_UNIT.compare( "K" ) == 0 ) {
@@ -4289,9 +4471,28 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
 
-        y.push_back(Vector_1D(cases.size()));
+        z.push_back( Vector_1D(cases.size() ) );
         for ( i = 0; i < cases.size(); i++ )
-            y[counter-1][i] = cases[i];
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
         cases.clear();
 
         /* ======================================================================= */
@@ -4572,7 +4773,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back( std::fmod( Input_Opt.PARAMETER_ETIME[i], 24.0 ) );
         }
         
-        if ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "0-24" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "0-24" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "hr" ) == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'Emission Time': ";
@@ -5375,7 +5577,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 y[j][i] = u[j][i];
             y[counter-1][i] = v[0][i];
         }
-        
+    
+        for ( i = 0; i < y.size(); i++ ) {
+            for ( j = 0; j < y[0].size(); j++ )
+                std::cout << y[i][j] << " ";
+            std::cout << std::endl;
+        }
         return y;
 
     }
