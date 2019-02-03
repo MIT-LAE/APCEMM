@@ -16,6 +16,7 @@ Turn on adjoint optim.  : T
 %%% PARAMETER SWEEP %%% : (Parameter sweep? needs to be set to "T")
 Parameter entries --->  : Format is either 200 220 240 or 200:20:240 (except
                         : for MC runs where it should be 200 240 or 200:240)
+ => Plume process. [hr] : 2:2:24
 Meteorological parameter:
  => Temperature [K]     : 200 220 240
  => R.Hum. wrt water [%]: 30
