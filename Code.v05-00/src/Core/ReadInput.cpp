@@ -3854,7 +3854,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back( Input_Opt.PARAMETER_EDAY[0] );
         }
 
-        if ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "1-365" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "1-365" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "-" ) == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'Emission Day': ";
@@ -4722,7 +4723,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back(Input_Opt.PARAMETER_EDAY[i]);
         }
         
-        if ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "1-365" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "1-365" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "-" ) == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'Emission Day': ";
