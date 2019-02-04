@@ -91,30 +91,75 @@ void Read_Input_File( OptInput &Input_Opt )
             std::cout << line << std::endl;
 
         if ( strstr( line.c_str(), "SIMULATION MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read SIMULATION MENU ====== */
+            /* ================================ */
+
             Read_Simulation_Menu( Input_Opt, RC ); 
 
         } else if ( strstr( line.c_str(), "PARAMETER SWEEP" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read PARAMETER SWEEP ====== */
+            /* ================================ */
+
             Read_Parameters( Input_Opt, RC );
 
         } else if ( strstr( line.c_str(), "TRANSPORT MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read TRANSPORT MENU ======= */
+            /* ================================ */
+
             Read_Transport_Menu( Input_Opt, RC );
 
         } else if ( strstr( line.c_str(), "CHEMISTRY MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read CHEMISTRY MENU ======= */
+            /* ================================ */
+
             Read_Chemistry_Menu( Input_Opt, RC );
 
         } else if ( strstr( line.c_str(), "AEROSOL MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read AEROSOL MENU ========= */
+            /* ================================ */
+
             Read_Aerosol_Menu( Input_Opt, RC );
         
         } else if ( strstr( line.c_str(), "METEOROLOGY MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read METEOROLOGY MENU ===== */
+            /* ================================ */
+
             Read_Meteorology_Menu( Input_Opt, RC );
         
         } else if ( strstr( line.c_str(), "DIAGNOSTIC MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read DIAGNOSTIC MENU ====== */
+            /* ================================ */
+
             Read_Diagnostic_Menu( Input_Opt, RC );
         
         } else if ( strstr( line.c_str(), "TIMESERIES MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read TIMESERIES MENU ====== */
+            /* ================================ */
+
             Read_Timeseries_Menu( Input_Opt, RC );
 
         } else if ( strstr( line.c_str(), "PROD & LOSS MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read PROD&LOSS MENU ======= */
+            /* ================================ */
+
             Read_PL_Menu( Input_Opt, RC );
 
         } else if ( strstr( line.c_str(), "END OF FILE" ) != NULL )
@@ -122,7 +167,12 @@ void Read_Input_File( OptInput &Input_Opt )
                 
     }
 
+    /* Close input file */
     inputFile.close();
+
+    /* Check that input files do not conflict.
+     * If a conflict is detected, abort! */
+    Are_Flags_Valid( Input_Opt );
 
     return;
 
@@ -5700,5 +5750,25 @@ Vector_2D Reshape_Vector( Vector_2D& vector_2D, int n_x, int n_y )
 
 } /* End of Reshape_Vector */
 
+void Are_Flags_Valid( const OptInput &Input_Opt )
+{
+
+    /* Are_Flags_Valid checks to make sure that flags are valid and
+     * do not conflict */
+
+    /* If chemistry is turned off and P&L chemistry rate output is turned on,
+     * print statement and exit... */
+    if ( !Input_Opt.CHEMISTRY_CHEMISTRY && ( Input_Opt.PL_PL || \
+                                             Input_Opt.PL_O3 ) ) {
+        std::cout << " In Are_Flags_Valid:";
+        std::cout << " CHEMISTRY is turned off while P&L rates output is turned on!" << std::endl;
+        std::cout << " Aborting!" << std::endl;
+        exit(-1);
+    }
+
+    /* Treatment of other conflicts goes here ... */
+
+
+} /* End of AreFlagsValid */
 
 /* End of Input_Reader.cpp */
