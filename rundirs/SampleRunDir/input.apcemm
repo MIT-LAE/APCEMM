@@ -26,7 +26,7 @@ Geographical location   :
  => Pressure [hPa]      : 200:20:300
 Time of emission        :
  => Emission day [1-365]: 81
- => Emission time [0-24]: 8
+ => Emission time [hr]  : 8
 Background mix. ratios  :
  => NOx  [ppt]          : 50:50:200
  => HNO3 [ppt]          : 81.5
