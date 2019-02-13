@@ -426,7 +426,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     vGlob_y = 0;   /* [m/s]  */
     dTrav_x = 0;   /* [m]    */
     dTrav_y = 0;   /* [m]    */
-    shear = 0.005; /* [1/s] */
+
+    shear = input.shear();; /* [1/s] */
 
     /* Fill with? */
     const double fillWith = 0.0E+00;

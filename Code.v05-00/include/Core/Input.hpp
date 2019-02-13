@@ -26,6 +26,7 @@ class Input
     RealDouble temperature_K_;
     RealDouble pressure_Pa_;
     RealDouble relHumidity_w_;
+    RealDouble shear_;
 
     RealDouble longitude_deg_;
     RealDouble latitude_deg_;
@@ -57,17 +58,6 @@ class Input
 
     public:
 
-        Input( const RealDouble temperature_K, \
-               const RealDouble pressure_Pa,   \
-               const RealDouble relHumidity_w, \
-               const RealDouble long_deg,      \
-               const RealDouble lat_deg,       \
-               const unsigned int dayGMT,      \
-               const RealDouble emissionTime,  \
-               const Vector_1D emissionInput,  \
-               const Vector_1D backgMixRatio,  \
-               const std::string fileName,     \
-               const std::string fileName_ADJ );
         Input( unsigned int iCase,          \
                const Vector_2D &parameters, \
                const std::string fileName,  \
@@ -79,6 +69,7 @@ class Input
         RealDouble temperature_K() const { return temperature_K_; }
         RealDouble pressure_Pa() const { return pressure_Pa_; }
         RealDouble relHumidity_w() const { return relHumidity_w_; }
+        RealDouble shear() const { return shear_; }
         
         RealDouble longitude_deg() const { return longitude_deg_; }
         RealDouble latitude_deg() const { return latitude_deg_; }
