@@ -90,7 +90,7 @@ bool Diag_TS( const char* rootName,                     \
         const NcDim *xDim = fileHandler.addDim( currFile, "X Center", long(m.Nx()) );
         didSaveSucceed *= fileHandler.addVar( currFile, &(m.x())[0], "X Centers", xDim, "float", "m", "Grid cell horizontal centers");
 
-        const NcDim *yDim = fileHandler.addDim( currFile, "Y Center", long(m.Nx()) );
+        const NcDim *yDim = fileHandler.addDim( currFile, "Y Center", long(m.Ny()) );
         didSaveSucceed *= fileHandler.addVar( currFile, &(m.y())[0], "Y Centers", yDim, "float", "m", "Grid cell vertical centers");
             
         didSaveSucceed *= fileHandler.addAtt( currFile, "FileName", fileHandler.getFileName() );
