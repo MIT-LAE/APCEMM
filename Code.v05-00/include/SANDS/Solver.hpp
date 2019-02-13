@@ -22,7 +22,6 @@
 
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
-#include "Core/Mesh.hpp"
 #include "Util/PhysConstant.hpp"
 #include "Util/ForwardDecl.hpp"
 #include "SANDS/FFT.hpp"
@@ -105,7 +104,7 @@ namespace SANDS
              * @param m (Mesh)
              * */
  
-            void UpdateShear( const RealDouble shear, const Mesh &m );
+            void UpdateShear( const RealDouble shear, const Vector_1D &y );
 
             /**
              * Solves the 2D advection-diffusion equation over dt using
@@ -159,8 +158,8 @@ namespace SANDS
             Vector_1D kxx, kyy;
             
             /* FFT Solver */
-            FourierTransform_1D<double> *FFT_1D;
-            FourierTransform_2D<double> *FFT_2D;
+            FourierTransform_1D<RealDouble> *FFT_1D;
+            FourierTransform_2D<RealDouble> *FFT_2D;
 
 
 

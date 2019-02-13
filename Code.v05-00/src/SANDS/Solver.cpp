@@ -35,8 +35,8 @@ namespace SANDS
     void Solver::Initialize( const bool fill, const RealDouble fillValue )
     {
     
-        FFT_1D = new FourierTransform_1D<double>( n_x );
-        FFT_2D = new FourierTransform_2D<double>( n_x, n_y );
+        FFT_1D = new FourierTransform_1D<RealDouble>( n_x );
+        FFT_2D = new FourierTransform_2D<RealDouble>( n_x, n_y );
 
         doFill = fill;
         fillVal = fillValue;
@@ -147,44 +147,41 @@ namespace SANDS
             exit(-1);
         }
 
-        for ( unsigned int i = 0; i < n_x; i++ ) {
-            for ( unsigned int j = 0; j < n_y; j++ )
-                DiffFactor[j][i] = exp( dt * ( dH * kxx[i] + dV * kyy[j] ) );
+        for ( unsigned int iNx = 0; iNx < n_x; iNx++ ) {
+            for ( unsigned int jNy = 0; jNy < n_y; jNy++ )
+                DiffFactor[jNy][iNx] = exp( dt * ( dH * kxx[iNx] + dV * kyy[jNy] ) );
         }    
 
     } /* End of Solver::UpdateDiff */
 
-    void Solver::UpdateAdv( const double vH, const double vV )
+    void Solver::UpdateAdv( const RealDouble vH, const RealDouble vV )
     {
 
         // vH > 0 means left, < 0 means right
         // vV > 0 means upwards, < 0 means downwards
         
-        for ( unsigned int i = 0; i < n_x; i++ ) {
-            for ( unsigned int j = 0; j < n_y; j++ )
-                AdvFactor[j][i] = exp( physConst::_1j * dt * ( vH * kx[i] + vV * ky[j] ) );
+        for ( unsigned int iNx = 0; iNx < n_x; iNx++ ) {
+            for ( unsigned int jNy = 0; jNy < n_y; jNy++ )
+                AdvFactor[jNy][iNx] = exp( physConst::_1j * dt * ( vH * kx[iNx] + vV * ky[jNy] ) );
         }
 
     } /* End of Solver::UpdateAdv */
 
-    void Solver::UpdateShear( const double shear_, const Mesh &m )
+    void Solver::UpdateShear( const RealDouble shear_, const Vector_1D &y )
     {
 
         /* Declare and initialize horizontal velocity corresponding to shear.
          * This value is dependent on the layer considered. */
-        double V = 0.0E+00;
+        RealDouble V = 0.0E+00;
 
         /* Update shear value [1/s] */
         shear = shear_;
 
-        /* Get coordinates of each horizontal line */
-        Vector_1D y = m.y();
-
-        for ( unsigned int jNy = 0; jNy < m.Ny(); jNy++ ) {
+        for ( unsigned int jNy = 0; jNy < n_y; jNy++ ) {
             /* Compute horizonal velocity. V > 0 means that layer is going left */
             V = shear * y[jNy];
             /* Computing frequencies */
-            for ( unsigned int iFreq = 0; iFreq < m.Nx(); iFreq++ )
+            for ( unsigned int iFreq = 0; iFreq < n_x; iFreq++ )
                 ShearFactor[jNy][iFreq] = exp( physConst::_1j * dt * V * kx[iFreq] ); 
         }
 

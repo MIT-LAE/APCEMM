@@ -893,7 +893,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* Assume no plume advection */
         Solver.UpdateAdv  ( 0.0E+00, 0.0E+00 );
         /* Update shear */
-        Solver.UpdateShear( shear, m );
+        Solver.UpdateShear( shear, m.y() );
         /* Microphysics settling is considered for each bin independently */
 
         
