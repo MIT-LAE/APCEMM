@@ -23,8 +23,10 @@ namespace SANDS
         ylim( YLIM ),
         doFill( 1 ), 
         fillVal( 0.0E+00 ),
-        FFT( NULL )
+        FFT_1D( NULL ),
+        FFT_2D( NULL )
     {
+
 
         /* Constructor */
 
@@ -33,7 +35,8 @@ namespace SANDS
     void Solver::Initialize( const bool fill, const RealDouble fillValue )
     {
     
-        FFT = new FourierTransform<double>( n_x, n_y );
+        FFT_1D = new FourierTransform_1D<double>( n_x );
+        FFT_2D = new FourierTransform_2D<double>( n_x, n_y );
 
         doFill = fill;
         fillVal = fillValue;
@@ -42,9 +45,13 @@ namespace SANDS
         AssignFreq();
 
         /* Initialize diffusion and advection fields */
+        Vector_1D  tempRow( n_x, 0.0E+00 );
+        Vector_1Dc tempRowc( n_x, 0.0E+00 );
+
         for ( unsigned int i = 0; i < n_y; i++ ) {
-            DiffFactor.push_back( Vector_1D( n_x ) );
-            AdvFactor .push_back( Vector_1Dc( n_x ) );
+            DiffFactor .push_back( tempRow );
+            AdvFactor  .push_back( tempRowc );
+            ShearFactor.push_back( tempRowc );
         }
     
     } /* End of Solver::Initialize */
@@ -54,8 +61,11 @@ namespace SANDS
 
         /* Destructor */
 
-        delete FFT;
-        /* ^ Calls ~FFT */
+        delete FFT_1D;
+        /* ^ Calls ~FFT_1D */
+
+        delete FFT_2D;
+        /* ^ Calls ~FFT_2D */
 
     } /* End of Solver::~Solver */
 
@@ -157,11 +167,44 @@ namespace SANDS
 
     } /* End of Solver::UpdateAdv */
 
+    void Solver::UpdateShear( const double shear_, const Mesh &m )
+    {
+
+        /* Declare and initialize horizontal velocity corresponding to shear.
+         * This value is dependent on the layer considered. */
+        double V = 0.0E+00;
+
+        /* Update shear value [1/s] */
+        shear = shear_;
+
+        /* Get coordinates of each horizontal line */
+        Vector_1D y = m.y();
+
+        for ( unsigned int jNy = 0; jNy < m.Ny(); jNy++ ) {
+            /* Compute horizonal velocity. V > 0 means that layer is going left */
+            V = shear * y[jNy];
+            /* Computing frequencies */
+            for ( unsigned int iFreq = 0; iFreq < m.Nx(); iFreq++ )
+                ShearFactor[jNy][iFreq] = exp( physConst::_1j * dt * V * kx[iFreq] ); 
+        }
+
+    } /* End of Solver::UpdateShear */
+
     void Solver::Run( Real_2DVector &V )
     {
 
-        FFT->SANDS( DiffFactor, AdvFactor, V );
+        /* Operator splitting approach:
+         * 1) solve outward diffusion and advection/settling
+         * 2) Apply shear forces
+         */
 
+        /* 1) Apply diffusion and settling */
+        FFT_2D->SANDS( DiffFactor, AdvFactor, V );
+
+        /* 2) Apply shear forces */
+        FFT_1D->ApplyShear( ShearFactor, V );
+
+        /* Fill negative values with fillVal */
         if ( doFill )
             Fill( V, fillVal );
 
