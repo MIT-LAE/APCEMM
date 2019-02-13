@@ -416,6 +416,18 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Allocate horizontal and vertical distance traveled */
     double dTrav_x, dTrav_y;
 
+    /* Allocate shear */
+    double shear;
+
+    /* Initialize */
+    d_x = 0;       /* [m2/s] */
+    d_y = 0;       /* [m2/s] */
+    vGlob_x = 0;   /* [m/s]  */
+    vGlob_y = 0;   /* [m/s]  */
+    dTrav_x = 0;   /* [m]    */
+    dTrav_y = 0;   /* [m]    */
+    shear = 0.005; /* [1/s] */
+
     /* Fill with? */
     const double fillWith = 0.0E+00;
 
@@ -877,9 +889,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         }
 
         /* Update diffusion and advection arrays */
-        Solver.UpdateDiff( d_x, d_y );
+        Solver.UpdateDiff ( d_x, d_y );
         /* Assume no plume advection */
-        Solver.UpdateAdv ( 0.0E+00, 0.0E+00 );
+        Solver.UpdateAdv  ( 0.0E+00, 0.0E+00 );
+        /* Update shear */
+        Solver.UpdateShear( shear, m );
         /* Microphysics settling is considered for each bin independently */
 
         
@@ -922,6 +936,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                     Solver.Run( Data.solidAerosol.pdf[iBin_PA] );
                 }
             }
+
         }
 
 #ifdef TIME_IT
