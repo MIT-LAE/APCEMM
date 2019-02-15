@@ -826,13 +826,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         try {
             value = std::stod( tokens[i] );
-            if ( value > 0.0E+00 )
-                Input_Opt.PARAMETER_SHEAR.push_back( value );
-            else {
-                std::cout << " Wrong input for: " << variable << std::endl;
-                std::cout << " Index needs to be positive" << std::endl;
-                exit(1);
-            }
+            Input_Opt.PARAMETER_SHEAR.push_back( value );
         } catch(std::exception& e) {
             std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
             exit(1);

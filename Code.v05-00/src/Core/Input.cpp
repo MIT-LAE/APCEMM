@@ -92,7 +92,7 @@ Input::Input( unsigned int iCase,          \
         exit(-1);
     }
 
-    if ( shear_ >= 5.0E-02 || shear_ < 0.0E+00 ) {
+    if ( shear_ >= 5.0E-02 || shear_ < -5.0E-02 ) {
         std::cout << " In Input::Input:";
         std::cout << " shear takes an unrealisable value: shear = ";
         std::cout << shear_ << " [1/s]" << std::endl;
