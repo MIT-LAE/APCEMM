@@ -20,6 +20,7 @@ Parameter entries --->  : Format is either 200 220 240 or 200:20:240 (except
 Meteorological parameter:
  => Temperature [K]     : 200 220 240
  => R.Hum. wrt water [%]: 30
+ => Shear [1/s]         : 0.005
 Geographical location   :
  => LON [deg]           : -15
  => LAT [deg]           : +60
