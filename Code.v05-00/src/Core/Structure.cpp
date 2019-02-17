@@ -310,6 +310,7 @@ void Solution::Initialize( char const *fileName, const Input &input, \
                 H2O[j][i] = (input.relHumidity_w()/((double) 100.0) * \
                                  physFunc::pSat_H2Ol( met.temp_[j][i] ) / ( physConst::kB * met.temp_[j][i] )) / 1.00E+06;
                 /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
+                /* TODO: Or possibly make H2O point to met.H2O? */
 
             }
         }
@@ -1063,7 +1064,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
                             const std::vector<std::vector<double>> cellAreas, bool halfRing, \
                             const double temperature, bool set2Saturation, \
                             AIM::Aerosol &liqAer, AIM::Aerosol &iceAer, \
-                            const double Soot_Den )
+                            const double Soot_Den, const Meteorology &met )
 {
 
     unsigned int innerRing, nCell;
@@ -1123,7 +1124,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
             if ( set2Saturation ) {
                 /* If supersaturated, then set water vapor to saturation and no bare soot particles
                  * as they are all covered with ice */
-                H2O[j][i] = physFunc::pSat_H2Os( temperature ) / ( physConst::kB * temperature * 1.00E+06 ); /* [molec / cm^3] */
+                H2O[j][i] = physFunc::pSat_H2Os( met.temp_[j][i] ) / ( physConst::kB * met.temp_[j][i] * 1.00E+06 ); /* [molec / cm^3] */
             } else {
                 /* If subsaturated, then emit water and soot */
                 H2O[j][i]+= ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
@@ -1165,9 +1166,9 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
                 GLYX[j][i] += ( E_GLYX / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 MGLY[j][i] += ( E_MGLY / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
                 if ( set2Saturation ) {
-                    /* If supersaturated, then set water vapor to saturation and no bare soot particles
-                     * as they are all covered with ice */
-                    H2O[j][i] = physFunc::pSat_H2Os( temperature ) / ( physConst::kB * temperature * 1.00E+06 ); /* [molec / cm^3] */
+                    /* If supersaturated, then set water vapor to saturation and no
+                     * bare soot particles as they are all covered with ice */
+                    H2O[j][i] = physFunc::pSat_H2Os( met.temp_[j][i] ) / ( physConst::kB * met.temp_[j][i] * 1.00E+06 ); /* [molec / cm^3] */
                 } else {
                     /* If subsaturated, then emit water and soot */
                     H2O[j][i]+= ( E_H2O  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */

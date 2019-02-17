@@ -75,7 +75,8 @@ class Solution
                           const std::vector<std::vector<double>> cellAreas, bool halfRing, \
                           double temperature, bool set2Saturation, \
                           AIM::Aerosol &liqAer, AIM::Aerosol &iceAer, \
-                          const double Soot_Den );
+                          const double Soot_Den, \
+                          const Meteorology &met );
         std::vector<double> getAmbient( ) const;
         std::vector<double> getLiqSpecies() const;
         std::vector<std::vector<double> > getAerosol( ) const;
