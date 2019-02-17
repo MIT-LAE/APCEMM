@@ -39,6 +39,9 @@ class Meteorology
         double temp( unsigned int j, unsigned int i) const { return temp_[j][i]; }
         double H2O( unsigned int j, unsigned int i) const { return H2O_[j][i]; }
 
+        std::vector<std::vector<double>> Temp() const { return temp_; }
+        std::vector<double> Press() const { return press_; }
+
         friend class Solution;
 
     protected:
