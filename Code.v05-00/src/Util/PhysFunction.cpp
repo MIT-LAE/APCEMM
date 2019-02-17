@@ -16,7 +16,7 @@
 namespace physFunc
 {
 
-    RealDouble pSat_H2Ol( RealDouble T )
+    RealDouble pSat_H2Ol( const RealDouble T )
     {
         
         /* DESCRIPTION:
@@ -36,7 +36,7 @@ namespace physFunc
 
     } /* End of pSat_H2Ol */
 
-    RealDouble pSat_H2Os( RealDouble T )
+    RealDouble pSat_H2Os( const RealDouble T )
     {
         
         /* DESCRIPTION:
@@ -56,7 +56,7 @@ namespace physFunc
 
     } /* End of pSat_H2Os */
 
-    RealDouble pSat_H2SO4( RealDouble T )
+    RealDouble pSat_H2SO4( const RealDouble T )
     {
         
         /* DESCRIPTION:
@@ -78,7 +78,7 @@ namespace physFunc
 
     } /* End of pSat_H2SO4 */
 
-    RealDouble pSat_HNO3( RealDouble T , RealDouble PPH2O ) 
+    RealDouble pSat_HNO3( const RealDouble T , const RealDouble PPH2O ) 
     {
         
         /* DESCRIPTION:
@@ -95,7 +95,7 @@ namespace physFunc
 
     } /* End of pSat_HNO3 */
 
-    RealDouble rhoAir( RealDouble T, RealDouble P )
+    RealDouble rhoAir( const RealDouble T, const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -112,7 +112,7 @@ namespace physFunc
 
     } /* End of airDens */ 
 
-    RealDouble dynVisc( RealDouble T )
+    RealDouble dynVisc( const RealDouble T )
     {
 
         /* DESCRIPTION:
@@ -128,7 +128,7 @@ namespace physFunc
 
     } /* End of dynVisc */
 
-    RealDouble kinVisc( RealDouble T, RealDouble P )
+    RealDouble kinVisc( const RealDouble T, const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -145,7 +145,7 @@ namespace physFunc
 
     } /* End of kinVisc */
 
-    RealDouble thermalSpeed( RealDouble T, RealDouble m )
+    RealDouble thermalSpeed( const RealDouble T, const RealDouble m )
     {
 
         /* DESCRIPTION:
@@ -163,7 +163,7 @@ namespace physFunc
 
     } /* End of thermalSpeed */
 
-    RealDouble lambda( RealDouble T, RealDouble P )
+    RealDouble lambda( const RealDouble T, const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -180,7 +180,7 @@ namespace physFunc
 
     } /* End of lambda */
 
-    RealDouble mass_sphere( RealDouble r, RealDouble rho )
+    RealDouble mass_sphere( const RealDouble r, const RealDouble rho )
     {
     
         /* DESCRIPTION:
@@ -197,7 +197,8 @@ namespace physFunc
 
     } /* End of mass_sphere */
 
-    RealDouble vFall( RealDouble r, RealDouble rho, RealDouble T, RealDouble P )
+    RealDouble vFall( const RealDouble r, const RealDouble rho, \
+                      const RealDouble T, const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -216,7 +217,8 @@ namespace physFunc
 
     } /* End of vFall */
     
-    RealDouble Kn( RealDouble r, RealDouble T, RealDouble P )
+    RealDouble Kn( const RealDouble r, const RealDouble T, \
+                   const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -234,7 +236,8 @@ namespace physFunc
 
     } /* End of Kn */
 
-    RealDouble partDiffCoef( RealDouble r, RealDouble T, RealDouble P )
+    RealDouble partDiffCoef( const RealDouble r, const RealDouble T, \
+                             const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -252,7 +255,7 @@ namespace physFunc
 
     } /* End of partDiffCoef */
 
-    RealDouble slip_flowCorrection( RealDouble Kn )
+    RealDouble slip_flowCorrection( const RealDouble Kn )
     {
 
         /* DESCRIPTION:
@@ -272,7 +275,8 @@ namespace physFunc
 
     } /* End of slip_flowCorrection */
     
-    RealDouble lambda_p( RealDouble r, RealDouble m, RealDouble T, RealDouble P )
+    RealDouble lambda_p( const RealDouble r, const RealDouble m, \
+                         const RealDouble T, const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -291,7 +295,8 @@ namespace physFunc
 
     } /* End of lambda_p */
 
-    RealDouble delta_p( RealDouble r, RealDouble m, RealDouble T, RealDouble P )
+    RealDouble delta_p( const RealDouble r, const RealDouble m, \
+                        const RealDouble T, const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -314,7 +319,8 @@ namespace physFunc
 
     } /* End of delta_p */
 
-    RealDouble Reynolds_p( RealDouble r, RealDouble rho, RealDouble T, RealDouble P )
+    RealDouble Reynolds_p( const RealDouble r, const RealDouble rho, \
+                           const RealDouble T, const RealDouble P )
     {
         
         /* DESCRIPTION:
@@ -339,7 +345,8 @@ namespace physFunc
 
     } /* End of Reynolds_p */
 
-    RealDouble Schmidt_p( RealDouble r, RealDouble T, RealDouble P )
+    RealDouble Schmidt_p( const RealDouble r, const RealDouble T, \
+                          const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -361,7 +368,9 @@ namespace physFunc
 
     } /* End of Schmidt_p */
 
-    RealDouble Stokes_p( RealDouble r_1, RealDouble rho_1, RealDouble r_2, RealDouble rho_2, RealDouble T, RealDouble P )
+    RealDouble Stokes_p( const RealDouble r_1, const RealDouble rho_1, \
+                         const RealDouble r_2, const RealDouble rho_2, \
+                         const RealDouble T, const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -390,7 +399,9 @@ namespace physFunc
 
     } /* End of Stokes_p */
 
-    RealDouble E_agg( RealDouble r_1, RealDouble rho_1, RealDouble r_2, RealDouble rho_2, RealDouble T, RealDouble P )
+    RealDouble E_agg( const RealDouble r_1, const RealDouble rho_1, \
+                      const RealDouble r_2, const RealDouble rho_2, \
+                      const RealDouble T, const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -448,7 +459,7 @@ namespace physFunc
 
     } /* End of E_agg */
 
-    RealDouble DiffCoef_H2O( RealDouble T, RealDouble P )
+    RealDouble DiffCoef_H2O( const RealDouble T, const RealDouble P )
     {
 
         /* DESCRIPTION: 
@@ -466,7 +477,7 @@ namespace physFunc
 
     } /* End of DiffCoef_H2O */
     
-    RealDouble DiffCoef_H2SO4( RealDouble T, RealDouble P )
+    RealDouble DiffCoef_H2SO4( const RealDouble T, const RealDouble P )
     {
 
         /* DESCRIPTION: 
@@ -489,7 +500,7 @@ namespace physFunc
 
     } /* End of DiffCoef_H2SO4 */
     
-    RealDouble DiffCoef_HNO3( RealDouble T, RealDouble P )
+    RealDouble DiffCoef_HNO3( const RealDouble T, const RealDouble P )
     {
 
         /* DESCRIPTION: 
@@ -512,7 +523,8 @@ namespace physFunc
 
     } /* End of DiffCoef_HNO3 */
     
-    RealDouble CorrDiffCoef_H2O( RealDouble r, RealDouble T, RealDouble P )
+    RealDouble CorrDiffCoef_H2O( const RealDouble r, const RealDouble T, \
+                                 const RealDouble P )
     {
 
         /* DESCRIPTION: 
@@ -539,7 +551,8 @@ namespace physFunc
 
     } /* End of CorrDiffCoef_H2O */
     
-    RealDouble CorrDiffCoef_H2SO4( RealDouble r, RealDouble T, RealDouble P )
+    RealDouble CorrDiffCoef_H2SO4( const RealDouble r, const RealDouble T, \
+                                   const RealDouble P )
     {
 
         /* DESCRIPTION: 
@@ -566,7 +579,8 @@ namespace physFunc
 
     } /* End of CorrDiffCoef_H2SO4 */
 
-    RealDouble CorrDiffCoef_HNO3( RealDouble r, RealDouble T, RealDouble P )
+    RealDouble CorrDiffCoef_HNO3( const RealDouble r, const RealDouble T, \
+                                  const RealDouble P )
     {
 
         /* DESCRIPTION: 
@@ -593,7 +607,8 @@ namespace physFunc
 
     } /* End of CorrDiffCoef_HNO3 */
 
-    RealDouble ThermalCond( RealDouble r, RealDouble T, RealDouble P )
+    RealDouble ThermalCond( const RealDouble r, const RealDouble T, \
+                            const RealDouble P )
     {
 
         /* DESCRIPTION:
@@ -622,7 +637,7 @@ namespace physFunc
 
     } /* End of ThermalCond */
 
-    RealDouble LHeatSubl_H2O( RealDouble T )
+    RealDouble LHeatSubl_H2O( const RealDouble T )
     {
 
         /* DESCRIPTION:
@@ -638,7 +653,7 @@ namespace physFunc
 
     } /* End of LHeatSubl_H2O */
 
-    RealDouble Kelvin( RealDouble r )
+    RealDouble Kelvin( const RealDouble r )
     {
         
         /* DESCRIPTION:
@@ -659,6 +674,37 @@ namespace physFunc
         return exp( a_k / r );
 
     } /* End of Kelvin */
+
+    RealDouble growthRate( const RealDouble r, const RealDouble T, \
+                           const RealDouble P, const RealDouble H2O )
+    {
+
+        /* DESCRIPTION:
+         * Returns the gaseous water condensation rate in kg/s on a signe spherical particle */
+
+        /* INPUT PARAMETERS:
+         * - RealDouble r     :: radius in m
+         * - RealDouble T     :: temperature in K
+         * - RealDouble P     :: pressure in Pa
+         * - RealDouble H2O   :: gaseous water concentration in molec/cm^3 air
+         *
+         * OUTPUT PARAMETERS:
+         * - RealDouble :: growth rate [cm^3 ice/s] */
+
+        const RealDouble dCoef = physFunc::CorrDiffCoef_H2O( r, T, P ); /* [m^2/s] */
+        const RealDouble nSat  = physFunc::pSat_H2Os( T ) / ( physConst::kB * T ); /* [#/m^3] */
+        const RealDouble latS  = physFunc::LHeatSubl_H2O( T ); /* [J/kg] */
+        return 4.0 * physConst::PI * r * dCoef * 1.00E+06 \
+            / ( 1.00E+00 + dCoef * latS * physFunc::Kelvin( r ) * nSat * MW_H2O / \
+                           ( physConst::Na * physFunc::ThermalCond( r, T, P ) * T ) * \
+                           ( latS * MW_H2O / ( physConst::R * T ) - 1.00E+00 ) );
+
+        /* Unit check: 
+         * [m] * [m^2/s] * [cm^3/m^3] / ( [] + [m^2/s] * [J/kg] * [molec/m^3] * [kg/mol] / ( [molec/mol] * [J/m/s/K] * [K] ) )
+         * = [cm^3/s] / ( [] + [] )
+         * = [cm^3/s] */
+
+    } /* End of growthRate */
 
 }
 
