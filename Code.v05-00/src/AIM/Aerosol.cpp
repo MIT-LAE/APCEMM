@@ -621,6 +621,7 @@ namespace AIM
         Ny( 2 ),
         bin_Centers( 2 ),
         bin_Edges( 3 ),
+        bin_VEdges( 3 ),
         bin_Sizes( 2 ),
         nBin( 2 )
     {
@@ -628,7 +629,9 @@ namespace AIM
         /* Default constructor */
 
         for ( UInt iBin = 0; iBin < nBin + 1; iBin++ ) {
-            bin_Edges[iBin] = 0.1E-07 * pow( 1.2, iBin / RealDouble(3.0) );
+            bin_Edges[iBin]  = 0.1E-07 * pow( 1.2, iBin / RealDouble(3.0) );
+            bin_VEdges[iBin] = 4.0 / (double) 3.0 * physConst::PI * bin_Edges[iBin] * \
+                               bin_Edges[iBin] * bin_Edges[iBin];
         }
 
         for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
@@ -696,8 +699,12 @@ namespace AIM
 
         /* Compute size of each bin */
         for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
-            bin_Sizes[iBin] = bin_Edges[iBin+1] - bin_Edges[iBin];
+            bin_VEdges[iBin] = 4.0 / (double) 3.0 * physConst::PI * bin_Edges[iBin] * \
+                               bin_Edges[iBin] * bin_Edges[iBin];
+            bin_Sizes[iBin]  = bin_Edges[iBin+1] - bin_Edges[iBin];
         }
+        bin_VEdges[nBin] = 4.0 / (double) 3.0 * physConst::PI * bin_Edges[nBin] * \
+                           bin_Edges[nBin] * bin_Edges[nBin];
 
         bin_VCenters.resize( nBin, Vector_2D( Ny, Vector_1D( Nx, 0.0E+00 ) ) );
 
@@ -824,6 +831,7 @@ namespace AIM
         bin_Centers = rhs.bin_Centers;
         bin_VCenters = rhs.bin_VCenters;
         bin_Edges = rhs.bin_Edges;
+        bin_VEdges = rhs.bin_VEdges;
         bin_Sizes = rhs.bin_Sizes;
         nBin = rhs.nBin;
         nPart = rhs.nPart;
@@ -853,6 +861,7 @@ namespace AIM
         bin_Centers = rhs.bin_Centers;
         bin_VCenters = rhs.bin_VCenters;
         bin_Edges = rhs.bin_Edges;
+        bin_VEdges = rhs.bin_VEdges;
         bin_Sizes = rhs.bin_Sizes;
         nBin = rhs.nBin;
         nPart = rhs.nPart;
@@ -1310,6 +1319,357 @@ namespace AIM
 
     } /* End of Grid_Aerosol::Coagulate */
 
+    void Grid_Aerosol::Grow( const RealDouble dt, Vector_2D &H2O, const Vector_2D T, const Vector_1D P, const UInt N, const UInt SYM )
+    {
+
+        /* DESCRIPTION:
+         * Performs self-coagulation. Updates Aerosol.pdf and H2O
+         * The numerical scheme is taken from:
+         * M.Z. Jacobson, Fundamentals of atmospheric modeling. Cambridge university press, 2005.*/
+
+        /* INPUT:
+         * - RealDouble dt :: Timestep in s
+         * - Vector_2D H2O :: Vector containing water vapor molecular concentrations [molec/cm^3]
+         *    -> ( Ny x Nx )
+         * - Vector_2D T   :: Vector containing temperature values [K]
+         *    -> ( Ny x Nx )
+         * - Vector_1D P   :: Vector containing pressure values [Pa]
+         *    -> ( Ny )
+         * - UInt N        :: Growth scenarios ( 0, 1 or 2 )
+         * - UInt SYM      :: Symmetry?
+         *
+         * OUTPUT:
+         *
+         */
+
+        UInt Nx_max, Ny_max;
+
+        if ( N == 0 ) {
+            /* No growth is performed */
+            return;
+        } else if ( N == 1 ) {
+            /* No emitted aerosols -> Aerosol is a uniform field */
+            /* Perform growth only once */
+            Nx_max = 1;
+            Ny_max = 1;
+        } else if ( N == 2 ) {
+            /* Perform growth for all */
+            if ( SYM == 2 ) {
+                /* Both X and Y symmetry. Never happens if settling is on!! */
+                Nx_max = Nx/2;
+                Ny_max = Ny/2;
+            } else if ( SYM == 1 ) {
+                /* Only symmetry around the Y axis. Never happens if shear is on!! */
+                Nx_max = Nx/2;
+                Ny_max = Ny;
+            } else if ( SYM == 0 ) {
+                /* No symmetry */
+                Nx_max = Nx;
+                Ny_max = Ny;
+            } else {
+                std::cout << " In Grid_Aerosol::Grow: Wrong input for SYM\n";
+                std::cout << " SYM = " << SYM << "\n";
+                return;
+            }
+        } else {
+            std::cout << " In Grid_Aerosol::Grow: Wrong input for N\n";
+            std::cout << " N = " << N << "\n";
+            return;
+        }
+
+        if ( N == 2 ) {
+
+            /* Every grid cell where the relative humidity w.r.t ice is in 
+             * the range 1 +/- EPS will be considered at equilibrium. */
+            const RealDouble EPS  = 1.00E-05;
+
+            /* If number of particles/cm^3 air is smaller than TINY then
+             * do not apply bin volume center update */
+            const RealDouble TINY = 1.00E-20;
+
+            /* Minimum, maximum particle volumes */
+            const RealDouble MINVOL = bin_VEdges[0];
+            const RealDouble MAXVOL = bin_VEdges[nBin];
+
+            /* Conversion factor from ice volume [m^3] to [molecules] */ 
+            const RealDouble UNITCONVERSION = physConst::RHO_H2O / MW_H2O * physConst::Na; 
+            /* Unit check: [kg/m^3] / [kg/mol] * [molec/mol] = [molec/m^3] */
+
+            /* Scaled Boltzmann constant */
+            const RealDouble kB_ = physConst::kB * 1.00E+06;
+
+            /* Declare and initialize particle totals and water vapor array */
+            Vector_3D icePart = Number( );
+            Vector_3D iceVol  = Volume( );
+            Vector_2D totH2O  = H2O;
+
+            RealDouble partVol = 0.0E+00;
+//            Vector_1D partVol( nBin, 0.0E+00 );
+            std::vector<int> toBin( nBin, 0 );
+            std::vector<int>::iterator iterBegin, iterCurr, iterEnd;
+
+//            const Vector_1D ZEROS( nBin, 0.0E+00 );
+
+            /* Declare and initialize variable to store saturation quantities,
+             * pressure and temperature */
+            RealDouble pSat = 0.0E+00;
+            RealDouble nSat = 0.0E+00;
+            RealDouble locT = 0.0E+00;
+            RealDouble locP = 0.0E+00;
+            /* Declare and initialize total ice concentration */
+            RealDouble totH2Oi = 0.0E+00;
+            /* Vector containing Kelvin factors evaluated at each bin center */
+            Vector_1D kFactor( nBin, 0.0E+00 );
+
+            /* Declare and initialize growth rates per bin */
+            Vector_1D kGrowth( nBin, 0.0E+00 );
+            /* Declare and initialize aggregated growth rates */
+            RealDouble totkGrowth_1 = 0.0E+00;
+            RealDouble totkGrowth_2 = 0.0E+00;
+
+            /* Compute Kelvin factor */
+            for ( UInt iBin = 0; iBin < nBin; iBin++ )
+                kFactor[iBin] = physFunc::Kelvin( bin_Centers[iBin] );
+
+            for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+                for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                    for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+                        totH2O[jNy][iNx] += iceVol[iBin][jNy][iNx] * UNITCONVERSION;
+                        /* Unit check:
+                         * [ molec/cm^3 ] = [ m^3 ice/cm^3 air ]   * [ molec/m^3 ice ] */
+                    }
+                }
+            }
+
+            for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+
+                /* Store local pressure.
+                 * TODO: 
+                 * That might be moved into the loop over iNx eventually to 
+                 * account for 2D pressure met-fields?? */
+                locP = P[jNy];
+
+                for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+
+                    /* Reinitialize total rate and concentrations */
+                    totkGrowth_1 = 0.0E+00;
+                    totkGrowth_2 = 0.0E+00;
+                    totH2Oi      = 0.0E+00;
+
+                    /* Store local temperature */
+                    locT = T[jNy][iNx];
+
+                    /* Store local saturation pressure w.r.t ice */
+                    pSat = physFunc::pSat_H2Os( locT );
+
+                    if ( H2O[jNy][iNx] * kB_ * locT / pSat >= 1.0 + EPS ) {
+                        /* Is grid cell supersaturated? 
+                         * -> If yes, run growth scheme */
+
+                        /* ================================================= */
+                        /* ================================================= */
+                        /* -------------------------------------------------
+                         * Analytical predictor of condensation (APC) scheme
+                         * -------------------------------------------------
+                         * Mark Z. Jacobson, (1997), Numerical Techniques to
+                         * Solve Condensational and Dissolutional Growth
+                         * Equations When Growth is Coupled to Reversible
+                         * Reactions, Aerosol Science and Technology,
+                         * 27:4, 491-498, DOI: 10.1080/02786829708965489     */
+                        /* ================================================= */
+                        /* ================================================= */
+
+                        /* APC scheme:
+                         * dc_{i}(t)/dt = k_{i}(t) * (C(t) - S'_{i}(t) * C_{s,i}(t))       (1)
+                         * dC(t)/dt     = -\sum k_{i} * (C(t) - S'_{i}(t) * C_{s,i}(t))    (2)
+                         *
+                         * The noniterative solution to the growth equation is
+                         * obtained by integrating (1) for a final aerosol
+                         * concentration.
+                         * c_{i}(t) = c_{i}(t-dt) + ...
+                         *          dt * k_{i}(t-h) * (C(t) - S'_{i}(t-dt) * C_{s,i}(t-dt) (3)
+                         * where the final gas molar concentration C(t) is 
+                         * currently unknown.
+                         *
+                         * Final aerosol and gas concentrations are constrained
+                         * by the mass-balance equation:
+                         * C(t) + \sum c_{i}(t) = C(t-dt) + \sum c_{i}(t-dt} = C_{tot}
+                         *
+                         * Solving for the gas concentration give
+                         *          C(t-dt) + dt \sum k_{i}(t) S'_{i}(t) C_{s,i}(t)
+                         * C(t) = --------------------------------------------------
+                         *             1.0  + dt \sum k_{i}(t)
+                         *
+                         * The concentration from this equation cannot fall 
+                         * below zero, but can increase above the total mass
+                         * of the species in the system. In such cases, gas 
+                         * concentration, C(t), is limited by 
+                         * C(t) = min(C(t),C_{tot})
+                         *
+                         * Molar aerosol concentrations are determined by 
+                         * plugging the obtained C(t) back into Equation (3).
+                         *
+                         * The gaseous molar concentration is then updated
+                         * according to
+                         *
+                         * C(t) = C_{tot} - \sum c_{i}
+                         *
+                         * The APC scheme is unconditionally stable, since all
+                         * final concentrations are bounded between 0 and 
+                         * C_{tot}, independently of the time step */
+
+                        /* Compute particle growth rates through ice deposition
+                         * We here assume that C_{s,i} is independent of the
+                         * bin and thus the particle size and only depends
+                         * on meteorological parameters. */
+                        for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+
+                            /* kGrowth is expressed in [cm^3 ice/s/part] */
+                            kGrowth[iBin] = physFunc::growthRate( bin_Centers[iBin], locT, locP, H2O[jNy][iNx] );
+
+                            /* kGrowth_* are thus in 
+                             * [(cm^3 ice/s)/cm^3 air] = [1/s] */
+                            totkGrowth_1 += kGrowth[iBin] * icePart[iBin][jNy][iNx] \
+                                            * kFactor[iBin];
+                            totkGrowth_2 += kGrowth[iBin] * icePart[iBin][jNy][iNx];
+                        }
+
+                        /* Compute the molecular saturation concentration 
+                         * C_{s,i} in [molec/cm^3] */
+                        nSat = pSat / ( kB_ * locT );
+
+                        /* Update gaseous molecular concentration */
+                        H2O[jNy][iNx] = ( H2O[jNy][iNx] + dt * totkGrowth_1 * nSat ) \
+                                      / (   1.00E+00    + dt * totkGrowth_2        );
+
+                        /* Make sure that molecular water does not go over 
+                         * total water (gaseous + solid) concentrations */
+                        H2O[jNy][iNx] = std::min( H2O[jNy][iNx], totH2O[jNy][iNx] );
+
+                        for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+                            iceVol[iBin][jNy][iNx] += dt * kGrowth[iBin] * icePart[iBin][jNy][iNx] \
+                                                    * ( H2O[jNy][iNx] -  kFactor[iBin] * nSat ) / UNITCONVERSION;
+                            /* Unit check:
+                             * [m^3 ice/cm^3 air]   = [s] * [cm^3 ice/s/part] * [part/cm^3 air] \
+                             *                      * [molec/cm^3 air] * [m^3 ice/molec] 
+                             *                      = [cm^3 ice/cm^3 air] * [m^3 ice/cm^3 air] 
+                             *                      = [m^3 ice/cm^3 air] */
+
+                            iceVol[iBin][jNy][iNx] = \
+                                    std::min( std::max( iceVol[iBin][jNy][iNx], 0.0E+00 ), icePart[iBin][jNy][iNx] * MAXVOL );
+
+                            /* Compute total water taken up on particles */
+                            totH2Oi += iceVol[iBin][jNy][iNx] * UNITCONVERSION;
+                            /* Unit check:
+                             * [molec/cm^3 air] = [m^3 ice/cm^3 air] * [molec/m^3 ice] */
+                        }
+
+                        H2O[jNy][iNx] = totH2O[jNy][iNx] - totH2Oi; 
+
+
+                    } else if ( H2O[jNy][iNx] * kB_ * T[jNy][iNx] / pSat <= 1.0 - EPS ) {
+                        /* Is grid cell subsaturated?
+                         * -> If yes, run melting algorithm */
+                    }
+ 
+                    /* ======================================================= */
+                    /* ======================================================= */
+                    /* ============== Moving-center structure ================ */
+                    /* ======================================================= */
+                    /* ============= Update bin center average =============== */
+                    /* ======================================================= */
+                    /* ======================================================= */
+
+                    /* 1. Compute bin particle flux */
+
+                    for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+
+                        /* What does bin iBin grow into? */
+                        toBin[iBin] = -1;
+
+                        /* Only perform computation if number of particle is
+                         * greater than some small number to avoid division
+                         * by ridiculously small numbers */
+
+                        if ( icePart[iBin][jNy][iNx] >= TINY ) {
+
+                            /* Compute particle volume */
+                            partVol = iceVol[iBin][jNy][iNx] / icePart[iBin][jNy][iNx];
+
+                            /* Find which bin corresponds to this particle 
+                             * volume */
+                            toBin[iBin] = std::lower_bound( bin_VEdges.begin(), bin_VEdges.end(), partVol[iBin] ) - bin_VEdges.begin();
+
+                            if ( toBin[iBin] == 0 ) {
+                                if ( partVol[iBin] < bin_VEdges[0] )
+                                    toBin[iBin] = -1;
+                            }
+
+                        }
+
+                    }
+
+                    /* 2. Attribute new particles according to fluxes */
+
+                    for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+
+                        /* Find all bins that end up in bin iBin after growth */
+
+                        /* Initialize total new number of particles and volume 
+                         * to 0 */
+                        icePart_ = 0.0E+00;
+                        iceVol_  = 0.0E+00;
+
+                        /* Bin jBin -> Bin iBin */
+                        jBin = -1;
+
+                        /* Initialize iterators */
+                        iterBegin = toBin.begin();
+                        iterEnd   = toBin.end();
+                        iterCurr  = iterBegin;
+
+                        while ((iterCurr = std::find(iterCurr, iterEnd, iBin)) != iterEnd) {
+                            jBin = std::distance(iterBegin, iterCurr);
+
+                            /* If jBin -> iBin, then add particle number and 
+                             * volume to sum */
+
+                            icePart_ += icePart[jBin][jNy][iNx];
+                            iceVol_  += iceVol[jBin][jNy][iNx];
+
+                            /* Iterate */
+                            iterCurr++;
+                        }
+
+                        if ( icePart_ > 0.0E+00 ){
+                            /* Bin is not empty */
+
+                            /* Compute particle volume:
+                             * [m^3] = [m^3/cm^3 air] / [#/cm^3 air] 
+                             * and clip it between min and max volume allowed. */
+
+                            bin_VCenters[iBin][jNy][iNx] = std::max( std::min( iceVol_ / icePart_, MAXVOL ), MINVOL );
+                            pdf[iBin][jNy][iNx] = icePart_;
+
+                        } else {
+                            /* Bin is empty */
+
+                            /* Set bin center to average volume of the bin.
+                             * This arbitrary value should not matter because
+                             * no particles are in this bin */
+
+                            bin_VCenters[iBin][jNy][iNx] = 0.5 * ( bin_VEdges[iBin] + bin_VEdges[iBin+1] );
+                            pdf[iBin][jNy][iNx] = 0.0E+00;
+
+                        }
+                    }
+                }
+            }
+        }
+
+
+    } /* End of Grid::Aerosol::Grow */
+
     Vector_2D Grid_Aerosol::Moment( UInt n ) const
     {
 
@@ -1326,6 +1686,60 @@ namespace AIM
         return moment;
 
     } /* End of Grid_Aerosol::Moment */
+
+    Vector_3D Grid_Aerosol::Number( ) const
+    {
+
+        Vector_3D number( nBin, Vector_2D( Ny, Vector_1D( Nx, 0.0E+00 ) ) );
+
+        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+                    number[iBin][jNy][iNx] = ( log( bin_Edges[iBin+1] ) - log( bin_Edges[iBin] ) ) * pdf[iBin][jNy][iNx];
+                    /* Unit check: [#/cm^3] */
+                }
+            }
+        }
+
+        return number;
+
+    } /* End of Grid_Aerosol::Numer */
+
+    Vector_3D Grid_Aerosol::Volume( ) const
+    {
+
+        Vector_3D volume( nBin, Vector_2D( Ny, Vector_1D( Nx, 0.0E+00 ) ) );
+
+        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+                    volume[iBin][jNy][iNx] = ( log( bin_Edges[iBin+1] ) - log( bin_Edges[iBin] ) ) * bin_VCenters[iBin][jNy][iNx] * pdf[iBin][jNy][iNx];
+                    /* Unit check: [m^3] * [#/cm^3] = [m^3/cm^3] */
+                }
+            }
+        }
+
+        return volume;
+
+    } /* End of Grid_Aerosol::Volume */
+ 
+    Vector_2D Grid_Aerosol::TotalVolume( ) const
+    {
+
+        Vector_2D volume( Ny, Vector_1D( Nx, 0.0E+00 ) );
+
+        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+                    volume[jNy][iNx] += ( log( bin_Edges[iBin+1] ) - log( bin_Edges[iBin] ) ) * bin_VCenters[iBin][jNy][iNx] * pdf[iBin][jNy][iNx];
+                    /* Unit check: [m^3] * [#/cm^3] = [m^3/cm^3] */
+                }
+            }
+        }
+
+        return volume;
+
+    } /* End of Grid_Aerosol::TotalVolume */
 
     Vector_2D Grid_Aerosol::Radius( ) const
     {

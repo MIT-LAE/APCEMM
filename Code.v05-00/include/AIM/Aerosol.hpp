@@ -124,9 +124,12 @@ class AIM::Grid_Aerosol
         Grid_Aerosol operator-( const Grid_Aerosol &rhs ) const;
 
         /* Coagulation */
-        void Coagulate( const RealDouble dt, const Coagulation &kernel, const UInt N = 2, const UInt SYM = 2 );
-        void Coagulate( const RealDouble dt, const Vector_2D &beta, const Vector_3D &f, const UInt N = 2, const UInt SYM = 2 );
-        
+        void Coagulate( const RealDouble dt, const Coagulation &kernel, const UInt N = 2, const UInt SYM = 0 );
+        void Coagulate( const RealDouble dt, const Vector_2D &beta, const Vector_3D &f, const UInt N = 2, const UInt SYM = 0 );
+
+        /* Ice crystal growth */
+        void Grow( const RealDouble dt, Vector_2D &H2O, const Vector_2D T, const Vector_1D P, const UInt N = 2, const UInt SYM = 0 );
+
         /* Moments */
         Vector_2D Moment( UInt n ) const;
         RealDouble Moment( UInt n, Vector_1D PDF ) const;
@@ -137,6 +140,9 @@ class AIM::Grid_Aerosol
         RealDouble EffRadius( UInt iNx, UInt jNy ) const;
         Vector_2D StdDev( ) const;
         RealDouble StdDev( UInt iNx, UInt jNy ) const;
+        Vector_3D Number( ) const;
+        Vector_3D Volume( ) const;
+        Vector_2D TotalVolume( ) const;
 
         /* utils */
         void updatePdf( Vector_3D pdf_ );
@@ -153,13 +159,14 @@ class AIM::Grid_Aerosol
         Vector_3D getPDF() const;
         
         Vector_3D pdf;
+        Vector_3D bin_VCenters;
 
     protected:
 
         unsigned int Nx, Ny;
         Vector_1D bin_Centers;
-        Vector_3D bin_VCenters;
         Vector_1D bin_Edges;
+        Vector_1D bin_VEdges;
         Vector_1D bin_Sizes;
         UInt nBin;
         RealDouble nPart;
