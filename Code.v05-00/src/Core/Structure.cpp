@@ -303,15 +303,15 @@ void Solution::Initialize( char const *fileName, const Input &input, \
     SetShape( RCOOH    , size_x , size_y, amb_Value[134] * airDens );
 
     if ( LOAD_MET ) {
+        /* Use meteorological input? */
         H2O = met.H2O_;
     } else {
+        /* Else use user-defined H2O profile */
         for ( unsigned int i = 0; i < size_x; i++ ) {
             for ( unsigned int j = 0; j < size_y; j++ ) {
                 H2O[j][i] = (input.relHumidity_w()/((double) 100.0) * \
                                  physFunc::pSat_H2Ol( met.temp_[j][i] ) / ( physConst::kB * met.temp_[j][i] )) / 1.00E+06;
                 /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
-                /* TODO: Or possibly make H2O point to met.H2O? */
-
             }
         }
     }
@@ -466,7 +466,7 @@ void Solution::Initialize( char const *fileName, const Input &input, \
 
     if ( PA_nDens >= 0.0E+00 ) {
         const double expsPA = 1.15;
-        const double rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW ); 
+        const double rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW );
         AIM::Grid_Aerosol PAAerosol( size_x, size_y, PA_rJ, PA_rE, PA_nDens, rPA, expsPA, "lognormal" );
 
         solidAerosol = PAAerosol;
@@ -1064,39 +1064,45 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
                             const std::vector<std::vector<double>> cellAreas, bool halfRing, \
                             const double temperature, bool set2Saturation, \
                             AIM::Aerosol &liqAer, AIM::Aerosol &iceAer, \
-                            const double Soot_Den, const Meteorology &met )
+                            const double Soot_Den, const Mesh &m, \
+                            const Meteorology &met )
 {
+    /* TODO: Release as Gaussian instead of top-hat?
+     * We currently do not need Mesh &m unless an instantaneous 
+     * Gaussian-shaped emission source is implemented */
 
     unsigned int innerRing, nCell;
     unsigned int i, j;
 
     double E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
     double E_Soot;
-    E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * AC.getFuelFlow()  / AC.getVFlight() * physConst::Na;
-    /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg]  ) * [kg fuel/s]       / [m/s]           * [molec/mol]
-     *     = [molec/m] 
+    const double rad = EI.getSootRad();
+    const double fuelPerDist = AC.getFuelFlow() / AC.getVFlight();
+    /* Unit check:  [kg/m]   =   [kg fuel/s]    /     [m/s] */
+    E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg]  ) * [kg fuel/m] * [molec/mol]
+     *     = [molec/m]
      */
-    E_NO   = EI.getNO()   / ( MW_NO   * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_NO2  = EI.getNO2()  / ( MW_NO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_HNO2 = EI.getHNO2() / ( MW_HNO2 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_CO   = EI.getCO()   / ( MW_CO   * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_CH4  = EI.getCH4()  / ( MW_CH4  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_C2H6 = EI.getC2H6() / ( MW_C2H6 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_PRPE = EI.getPRPE() / ( MW_PRPE * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_ALK4 = EI.getALK4() / ( MW_ALK4 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_CH2O = EI.getCH2O() / ( MW_CH2O * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_ALD2 = EI.getALD2() / ( MW_ALD2 * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_GLYX = EI.getGLYX() / ( MW_GLYX * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
-    E_MGLY = EI.getMGLY() / ( MW_MGLY * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+    E_NO   = EI.getNO()   / ( MW_NO   * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    E_NO2  = EI.getNO2()  / ( MW_NO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    E_HNO2 = EI.getHNO2() / ( MW_HNO2 * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    E_CO   = EI.getCO()   / ( MW_CO   * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    E_CH4  = EI.getCH4()  / ( MW_CH4  * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    E_C2H6 = EI.getC2H6() / ( MW_C2H6 * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    E_PRPE = EI.getPRPE() / ( MW_PRPE * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    E_ALK4 = EI.getALK4() / ( MW_ALK4 * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    E_CH2O = EI.getCH2O() / ( MW_CH2O * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    E_ALD2 = EI.getALD2() / ( MW_ALD2 * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    E_GLYX = EI.getGLYX() / ( MW_GLYX * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    E_MGLY = EI.getMGLY() / ( MW_MGLY * 1.0E+03 ) * fuelPerDist * physConst::Na;
     if ( !set2Saturation ) {
-        E_H2O  = EI.getH2O()  / ( MW_H2O  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+        E_H2O  = EI.getH2O()  / ( MW_H2O  * 1.0E+03 ) * fuelPerDist * physConst::Na;
     }
     E_SO2  = ( 1.0 - SO2TOSO4 ) * \
-             EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * AC.getFuelFlow() / AC.getVFlight() * physConst::Na;
+             EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
 
-    const double rad = EI.getSootRad();
-    E_Soot = EI.getSoot() / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * rad * rad * rad ) * AC.getFuelFlow() / AC.getVFlight();
-    /*     = [g_soot/kg_fuel]/ (                        * [kg_soot/m^3]       * [g/kg]   * [m^3]           ) * [kg_fuel/s]      / [m/s]
+    E_Soot = EI.getSoot() / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * rad * rad * rad ) * fuelPerDist;
+    /*     = [g_soot/kg_fuel]/ (                        * [kg_soot/m^3]       * [g/kg]   * [m^3]           ) * [kg_fuel/m]
      *     = [part/m]
      */
 
@@ -1146,6 +1152,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
     }
     else {
         /* Half rings */
+
         nCell = map[0].size() + map[1].size();
         for ( innerRing = 0; innerRing <= 1; innerRing++ ) {
             for ( unsigned int iList = 0; iList < map[innerRing].size(); iList++ ) {
@@ -1179,7 +1186,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC, \
                 SO2[j][i]  += ( E_SO2  / cellAreas[j][i] * 1.0E-06 / nCell ); /* [molec / cm^3] */
 
             }
-        
+
             if ( ( std::isfinite(iceAer.Moment()) ) && ( iceAer.Moment() > 0.0E+00 ) )
                 solidAerosol.addPDF( iceAer, map[innerRing] );
             if ( ( std::isfinite(liqAer.Moment()) ) && ( liqAer.Moment() > 0.0E+00 ) )

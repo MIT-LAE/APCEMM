@@ -76,7 +76,7 @@ class Solution
                           double temperature, bool set2Saturation, \
                           AIM::Aerosol &liqAer, AIM::Aerosol &iceAer, \
                           const double Soot_Den, \
-                          const Meteorology &met );
+                          const Mesh &m, const Meteorology &met );
         std::vector<double> getAmbient( ) const;
         std::vector<double> getLiqSpecies() const;
         std::vector<std::vector<double> > getAerosol( ) const;
