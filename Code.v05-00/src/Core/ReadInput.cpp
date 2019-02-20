@@ -3631,7 +3631,7 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     else {
         try {
             value = std::stod( tokens[0] );
-            if ( value > 0.0E+00 )
+            if ( value >= 0.0E+00 )
                 Input_Opt.TS_AERO_FREQ = value;
             else {
                 std::cout << " Wrong input for: " << variable << std::endl;
