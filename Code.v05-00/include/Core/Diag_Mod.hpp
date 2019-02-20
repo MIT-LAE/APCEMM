@@ -45,7 +45,8 @@ bool Diag_TS_Phys( const char* ROOTNAME,                     \
                    const std::vector<int> aerosolIndices,    \
                    const int hh, const int mm, const int ss, \
                    const Solution& Data, const Mesh& m,      \
-                   const Meteorology &Met );
+                   const Meteorology &Met,                   \
+                   const int outputPDF = 0 );
 
 /* ================================================================== */
 /* ---- Prod & Loss Rates Diagnostics ------------------------------- */

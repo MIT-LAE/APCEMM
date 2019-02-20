@@ -2435,7 +2435,8 @@ bool Diag_TS_Phys( const char* rootName,                     \
                    const std::vector<int> aerosolIndices,    \
                    const int hh, const int mm, const int ss, \
                    const Solution& Data, const Mesh& m,      \
-                   const Meteorology &met ) 
+                   const Meteorology &met,                   \
+                   const int outputPDF )
 {
 
     const bool doWrite   = 1;
@@ -2598,44 +2599,95 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                      (const char*)charUnit,             \
                                      (const char*)charName );
 
-        /* Saving ice aerosol probability density function */
 
-        strncpy( charSpc, "Ice aerosol PDF", sizeof(charSpc) );
-        strncpy( charName, "Ice aerosol probability density function (dN/dlogr)", sizeof(charName) );
-        strncpy( charUnit, "#/cm^3/log(r)", sizeof(charUnit) );
+        if ( outputPDF ) {
 
-#if ( SAVE_TO_DOUBLE )
-        array = util::vect2double( Data.solidAerosol.pdf, Data.nBin_PA, m.Ny(), m.Nx(), scalingFactor );
-#else
-        array = util::vect2float ( Data.solidAerosol.pdf, Data.nBin_PA, m.Ny(), m.Nx(), scalingFactor );
-#endif /* SAVE_TO_DOUBLE */
+            /* This might require a lot of disk space. Instead outputting 
+             * particle number and volume might be better */
 
-        didSaveSucceed *= fileHandler.addVar3D( currFile, &(array)[0],  \
-                                     (const char*)charSpc,              \
-                                     binRad, yDim, xDim, outputType,    \
-                                     (const char*)charUnit,             \
-                                     (const char*)charName );
+            /* Saving ice aerosol probability density function */
 
-        /* Saving ice aerosol bin centers.
-         * A moving bin structure is adopted in APCEMM. Each grid-cell thus 
-         * has a moving bin center.
-         * Array: nBin x NY x NX */
-
-        strncpy( charSpc, "Ice aerosol bin centers", sizeof(charSpc) );
-        strncpy( charName, "Ice aerosol bin centers", sizeof(charName) );
-        strncpy( charUnit, "m^3", sizeof(charUnit) );
+            strncpy( charSpc, "Ice aerosol PDF", sizeof(charSpc) );
+            strncpy( charName, "Ice aerosol probability density function (dN/dlogr)", sizeof(charName) );
+            strncpy( charUnit, "part/cm^3/log(r)", sizeof(charUnit) );
 
 #if ( SAVE_TO_DOUBLE )
-        array = util::vect2double( Data.solidAerosol.bin_VCenters, Data.nBin_PA, m.Ny(), m.Nx(), scalingFactor );
+            array = util::vect2double( Data.solidAerosol.pdf, Data.nBin_PA, m.Ny(), m.Nx(), scalingFactor );
 #else
-        array = util::vect2float ( Data.solidAerosol.bin_VCenters, Data.nBin_PA, m.Ny(), m.Nx(), scalingFactor );
+            array = util::vect2float ( Data.solidAerosol.pdf, Data.nBin_PA, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
-        didSaveSucceed *= fileHandler.addVar3D( currFile, &(array)[0],  \
-                                     (const char*)charSpc,              \
-                                     binRad, yDim, xDim, outputType,    \
-                                     (const char*)charUnit,             \
-                                     (const char*)charName );
+            didSaveSucceed *= fileHandler.addVar3D( currFile, &(array)[0],  \
+                                         (const char*)charSpc,              \
+                                         binRad, yDim, xDim, outputType,    \
+                                         (const char*)charUnit,             \
+                                         (const char*)charName );
+
+            /* Saving ice aerosol bin centers.
+             * A moving bin structure is adopted in APCEMM. Each grid-cell thus 
+             * has a moving bin center.
+             * Array: nBin x NY x NX */
+
+            strncpy( charSpc, "Ice aerosol bin centers", sizeof(charSpc) );
+            strncpy( charName, "Ice aerosol bin centers", sizeof(charName) );
+            strncpy( charUnit, "m^3", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            array = util::vect2double( Data.solidAerosol.bin_VCenters, Data.nBin_PA, m.Ny(), m.Nx(), scalingFactor );
+#else
+            array = util::vect2float ( Data.solidAerosol.bin_VCenters, Data.nBin_PA, m.Ny(), m.Nx(), scalingFactor );
+#endif /* SAVE_TO_DOUBLE */
+
+            didSaveSucceed *= fileHandler.addVar3D( currFile, &(array)[0],  \
+                                         (const char*)charSpc,              \
+                                         binRad, yDim, xDim, outputType,    \
+                                         (const char*)charUnit,             \
+                                         (const char*)charName );
+
+        } else {
+
+            /* This might be a better approach as this requires less disk 
+             * space */
+
+            /* Saving ice aerosol particle number 
+             * Size: NY x NX */
+
+            strncpy( charSpc, "Ice aerosol particle number", sizeof(charSpc) );
+            strncpy( charName, "Ice aerosol particle number", sizeof(charName) );
+            strncpy( charUnit, "part/cm^3", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            array = util::vect2double( Data.solidAerosol.TotalNumber(), m.Ny(), m.Nx(), scalingFactor );
+#else
+            array = util::vect2float ( Data.solidAerosol.TotalNumber(), m.Ny(), m.Nx(), scalingFactor );
+#endif /* SAVE_TO_DOUBLE */
+
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0], \
+                                         (const char*)charSpc,             \
+                                         yDim, xDim, outputType,           \
+                                         (const char*)charUnit,            \
+                                         (const char*)charName );
+
+            /* Saving ice aerosol volume
+             * Size: NY x NX */
+
+            strncpy( charSpc, "Ice aerosol volume", sizeof(charSpc) );
+            strncpy( charName, "Ice aerosol volume", sizeof(charName) );
+            strncpy( charUnit, "m^3/cm^3", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            array = util::vect2double( Data.solidAerosol.TotalVolume(), m.Ny(), m.Nx(), scalingFactor );
+#else
+            array = util::vect2float ( Data.solidAerosol.TotalVolume(), m.Ny(), m.Nx(), scalingFactor );
+#endif /* SAVE_TO_DOUBLE */
+
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0], \
+                                         (const char*)charSpc,             \
+                                         yDim, xDim, outputType,           \
+                                         (const char*)charUnit,            \
+                                         (const char*)charName );
+
+        }
 
         delete[] array; array = NULL;
 
