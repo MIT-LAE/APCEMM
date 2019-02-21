@@ -2965,10 +2965,10 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     }
     
     /* ==================================================== */
-    /* Convect timestep                                     */
+    /* Transport timestep                                   */
     /* ==================================================== */
 
-    variable = "Convect timestep";
+    variable = "Transport timestep";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
@@ -3004,7 +3004,7 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     std::cout << " Turn on Transport?      : " << Input_Opt.TRANSPORT_TRANSPORT                      << std::endl;
     std::cout << "  => Fill Negative Values: " << Input_Opt.TRANSPORT_FILL                           << std::endl;
-    std::cout << " Convect Timestep [min]  : " << Input_Opt.TRANSPORT_TIMESTEP                       << std::endl;
+    std::cout << " Transport Timestep [min]: " << Input_Opt.TRANSPORT_TIMESTEP                       << std::endl;
 
 } /* End of Read_Transport_Menu */
 

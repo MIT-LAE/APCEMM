@@ -48,7 +48,7 @@ Total fuel flow [kg/s]  : 3.2
 %%% TRANSPORT MENU %%%  :
 Turn on Transport?      : T
  => Fill Negative Values: T
-Convect Timestep [min]  : 10
+Transport Timestep [min]: 10
 ------------------------+------------------------------------------------------
 %%% CHEMISTRY MENU %%%  :
 Turn on Chemistry?      : T
