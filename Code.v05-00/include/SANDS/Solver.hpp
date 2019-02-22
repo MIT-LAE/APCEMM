@@ -47,11 +47,14 @@ namespace SANDS
              *
              * Initialize 2D solver
              *
-             * @param fill (bool)        : Fill negative values?
-             * @param fillValue (double) : Fill with? (default = 0.0E+00) 
+             * @param fill (bool)      : Fill negative values?
+             * @param fillVal (double) : Fill with? (default = 0.0E+00) 
+             * @param fillOpt (int)    : Fill option
              */
 
-            void Initialize( const bool fill = 1, const RealDouble fillValue = 0.0E+00 );
+            void Initialize( const bool fill = 1, \
+                             const RealDouble fillValue = 0.0E+00, \
+                             const UInt fillOpt_ = 1 );
 
             /**
              * Destructor 
@@ -110,10 +113,13 @@ namespace SANDS
              * Solves the 2D advection-diffusion equation over dt using
              * the diffusion and advection fields 
              *
-             * @param V (2D vector) : Field to be diffused 
+             * @param V (2D vector)         : Field to be diffused 
+             * @param cellAreas (2D vector) : Cell areas in m^2
+             * @param fillOpt_ (UInt)       : Fill option
              */
 
-            void Run( Vector_2D &V );
+            void Run( Vector_2D &V, const Vector_2D &cellAreas, \
+                      const UInt fillOpt_ = 0 );
 
             /**
              * Fill value below threshold with value
@@ -124,6 +130,16 @@ namespace SANDS
              */
 
             void Fill( Vector_2D &V, const RealDouble val, const RealDouble threshold = 0.0 );
+            
+            /**
+             * Apply correction scheme to get rid of Gibbs oscillations
+             *
+             * @param V (2D vector)         : Field to be filled
+             * @param mass0 (double)        : Mass pre-diffusion/advection
+             * @param cellAreas (2D vector) : Cell areas in m^2
+             */
+    
+            void ScinoccaCorr( Vector_2D &V, const RealDouble mass0, const Vector_2D &cellAreas );
 
             /** 
              * Returns the 2D diffusion field 
@@ -142,6 +158,7 @@ namespace SANDS
             unsigned int n_x, n_y;
             RealDouble xlim, ylim;
             bool doFill;
+            UInt fillOpt;
             RealDouble fillVal;
             RealDouble dt;
             RealDouble shear;

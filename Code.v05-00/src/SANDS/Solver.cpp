@@ -21,7 +21,8 @@ namespace SANDS
         n_y( NY ),
         xlim( XLIM ),
         ylim( YLIM ),
-        doFill( 1 ), 
+        doFill( 1 ),
+        fillOpt( 1 ),
         fillVal( 0.0E+00 ),
         FFT_1D( NULL ),
         FFT_2D( NULL )
@@ -32,14 +33,16 @@ namespace SANDS
 
     } /* End of Solver::Solver */
 
-    void Solver::Initialize( const bool fill, const RealDouble fillValue )
+    void Solver::Initialize( const bool fill_, const RealDouble fillVal_, \
+                             const UInt fillOpt_ )
     {
     
         FFT_1D = new FourierTransform_1D<RealDouble>( n_x );
         FFT_2D = new FourierTransform_2D<RealDouble>( n_x, n_y );
 
-        doFill = fill;
-        fillVal = fillValue;
+        doFill  = fill_;
+        fillOpt = fillOpt_;
+        fillVal = fillVal_;
 
         /* Initialize frequencies */
         AssignFreq();
@@ -159,7 +162,7 @@ namespace SANDS
 
         // vH > 0 means left, < 0 means right
         // vV > 0 means upwards, < 0 means downwards
-        
+
         for ( unsigned int iNx = 0; iNx < n_x; iNx++ ) {
             for ( unsigned int jNy = 0; jNy < n_y; jNy++ )
                 AdvFactor[jNy][iNx] = exp( physConst::_1j * dt * ( vH * kx[iNx] + vV * ky[jNy] ) );
@@ -177,34 +180,51 @@ namespace SANDS
         /* Update shear value [1/s] */
         shear = shear_;
 
-        for ( unsigned int jNy = 0; jNy < n_y; jNy++ ) {
-            /* Compute horizonal velocity. V > 0 means that layer is going left */
-            V = shear * y[jNy];
-            /* Computing frequencies */
-            for ( unsigned int iFreq = 0; iFreq < n_x; iFreq++ )
-                ShearFactor[jNy][iFreq] = exp( physConst::_1j * dt * V * kx[iFreq] ); 
+        if ( shear != 0.0E+00 ) {
+            for ( unsigned int jNy = 0; jNy < n_y; jNy++ ) {
+                /* Compute horizonal velocity. V > 0 means that layer is going left */
+                V = shear * y[jNy];
+                /* Computing frequencies */
+                for ( unsigned int iFreq = 0; iFreq < n_x; iFreq++ )
+                    ShearFactor[jNy][iFreq] = exp( physConst::_1j * dt * V * kx[iFreq] ); 
+            }
         }
 
     } /* End of Solver::UpdateShear */
 
-    void Solver::Run( Real_2DVector &V )
+    void Solver::Run( Vector_2D &V, const Vector_2D &cellAreas, const UInt fillOpt_ )
     {
 
+        RealDouble mass0 = 0.0E+00;
+
+        /* For diagnostic or enforce mass exact conservation, compute mass */
+        if ( doFill && fillOpt_ == 1 ) {
+            for ( UInt jNy = 0; jNy < n_y; jNy++ ) {
+                for ( UInt iNx = 0; iNx < n_x; iNx++ )
+                    mass0 += V[jNy][iNx] * cellAreas[jNy][iNx];
+            }
+        }
+
         /* Operator splitting approach:
-         * 1) solve outward diffusion and advection/settling
+         * 1) Solve outward diffusion and advection/settling
          * 2) Apply shear forces
+         * 3) Apply any correction (positivity, Gibbs oscillation removal) 
          */
 
         /* 1) Apply diffusion and settling */
         FFT_2D->SANDS( DiffFactor, AdvFactor, V );
 
         /* 2) Apply shear forces */
-        FFT_1D->ApplyShear( ShearFactor, V );
+        if ( shear != 0 )
+            FFT_1D->ApplyShear( ShearFactor, V );
 
         /* Fill negative values with fillVal */
-        if ( doFill )
+        if ( doFill && fillOpt_ == 0 )
             Fill( V, fillVal );
-
+ 
+        /* Apply correction scheme to get rid of Gibbs oscillations */
+        if ( doFill && fillOpt_ == 1 )
+            ScinoccaCorr( V, mass0, cellAreas );
 
     } /* End of Solver::Run */
 
@@ -217,9 +237,88 @@ namespace SANDS
                     V[jNy][iNx] = val;
             }
         }
-        
 
     } /* End of Solver::Fill */
+
+    void Solver::ScinoccaCorr( Vector_2D &V, const RealDouble mass0, const Vector_2D &cellAreas )
+    {
+
+        /* The correction scheme is based on:
+         * Scinocca, J. F., et al. "The CCCma third generation AGCM and its 
+         * extension into the middle atmosphere." 
+         * Atmospheric Chemistry and Physics 8.23 (2008): 7055-7074.*/
+
+        /* 
+         * Let V denote the data before advection and W the result of V 
+         * after advection, solved using a spectral solver.
+         *
+         * Ensure that data is positive
+         * W = | V0 * exp( V / V0 - 1 ),  if V <= V0
+         *     | V                     ,  otherwise 
+         *
+         * Ensure that mass is conserved by applying correction
+         * V_new = | W + C * ( W - V_low ) * ( V0 - W ),  if W <= V0
+         *         | W                                 ,  otherwise 
+         *
+         * In order for mass to be conserved, we need to have:
+         * mass0 = \iint V dA = \iint V_new dA
+         *       = \iint W dA + \iint_{W <= V0} C * ( W - V_low ) * ( V0 - W ) dA
+         *       = mass    + C \iint_{W <= V0} ( W - V_low ) * ( V0 - W ) dA
+         * and thus,
+         * C = (mass0 - mass) / \iint_{W <= V0} ( W - V_low ) * ( V0 - W ) dA
+         * 
+         */
+
+        RealDouble mass = 0.0E+00;
+        RealDouble C    = 0.0E+00;
+        RealDouble Vlow = 0.0E+00;
+        RealDouble V0   = 0.0E+00;
+
+        if ( V[0][0] > 0 )
+            V0 = V[0][0];
+        else
+            V0 = -V[0][0];
+        Vlow = V0/1.0E+06;
+
+        for ( UInt jNy = 0; jNy < n_y; jNy++ ) {
+            for ( UInt iNx = 0; iNx < n_x; iNx++ ) {
+                if ( V[jNy][iNx] <= V0 ) {
+                    /* */
+                    V[jNy][iNx] = V0 * exp( V[jNy][iNx] / V0 - 1.0 );
+                    /* Mass of element lower than V0 in [#/cm^3*m^2] */
+                    C += ( V[jNy][iNx] - Vlow ) *\
+                         ( V0 - V[jNy][iNx] )   *\
+                         cellAreas[jNy][iNx];
+                }
+                /* Mass of element after removal of negative values 
+                 * in [V]*[m^2] */
+                mass += V[jNy][iNx] * cellAreas[jNy][iNx];
+            }
+        }
+
+        /* Correction factor. 
+         * If mass0 == mass, then correction factor is 0. */
+        C  = ( mass0 - mass ) / C;
+
+        /* If correction factor is not finite, set it to 0
+         * This is unlikely to make a difference. */
+        if ( !std::isfinite(C) || std::isnan(C) )
+            C = 0.0E+00;
+
+        for ( UInt jNy = 0; jNy < n_y; jNy++ ) {
+            for ( UInt iNx = 0; iNx < n_x; iNx++ ) {
+                if ( V[jNy][iNx] <= V0 ) {
+                    /* Apply correction */
+                    V[jNy][iNx] += C * ( V[jNy][iNx] - Vlow ) \
+                                     * ( V0 - V[jNy][iNx] );
+                    /* We still want positive values */
+                    if ( V[jNy][iNx] < 0.0E+00 )
+                        V[jNy][iNx] = 0.0E+00;
+                }
+            }
+        }
+
+    } /* End of Solver::ScinoccaCorr */
 
 
 } /* SANDS */
