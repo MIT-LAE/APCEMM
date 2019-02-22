@@ -91,7 +91,7 @@
 /* MASS CHECK */
 #define NOy_MASS_CHECK          0    /* NOy mass check? */
 #define CO2_MASS_CHECK          0    /* CO2 mass check? */
-#define H2O_MASS_CHECK          1    /* H2O mass check? */
+#define H2O_MASS_CHECK          0    /* H2O mass check? */
 
 /* DEBUG */
 /* DEBUG is now specified in Makefile header */

@@ -240,23 +240,35 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 #if ( NOy_MASS_CHECK )
 
-    double mass_Ambient_NOy, mass_Emitted_NOy;
+    RealDouble mass_Ambient_NOy, mass_Emitted_NOy;
+
     #ifdef RINGS
-        double mass_Emitted_NOy_Rings;
+        RealDouble mass_Emitted_NOy_Rings;
     #endif /* RINGS */
 
 #endif /* NOy_MASS_CHECK */
 
 #if ( CO2_MASS_CHECK )
 
-    double mass_Ambient_CO2, mass_Emitted_CO2;
+    RealDouble mass_Ambient_CO2, mass_Emitted_CO2;
 
     #ifdef RINGS
-        double mass_Emitted_CO2_Rings;
+        RealDouble mass_Emitted_CO2_Rings;
     #endif /* RINGS */
 
 #endif /* CO2_MASS_CHECK */
 
+#if ( H2O_MASS_CHECK )
+
+    /* Conversion factor from ice volume [m^3] to [molecules] */
+    const RealDouble UNITCONVERSION = physConst::RHO_ICE / MW_H2O * physConst::Na;
+    /* Unit check: [kg/m^3] / [kg/mol] * [molec/mol] = [molec/m^3] */
+
+    RealDouble mass_Ambient_H2O, mass_H2O;
+ 
+    Vector_2D totIceVol;
+
+#endif /* H2O_MASS_CHECK */
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -1332,7 +1344,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                          * By default, run at least one grid cell per 
                          * horizontal layer */
                         if ( ( iNx == 0 ) || \
-                             ( log( std::abs( Data.CO2[jNy][iNx] - Data.CO2[jNy][1] ) / Data.CO2[NY/2][NX/2] ) / log(10) >= -6.0 ) || \
+                             ( log( std::abs( Data.CO2[jNy][iNx] - Data.CO2[jNy][0] ) / Data.CO2[NY/2][NX/2] ) / log(10) >= -6.0 ) || \
                              ( iceVolume_[jNy][iNx] * 1.0E+18 >= 1.00E-02 ) ) {
 
                             /* Convert data structure to KPP inputs (VAR and FIX) */
@@ -1528,7 +1540,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             lastTimeIceCoag = curr_Time_s;
             /* TODO! No more symmetry + Fix bool!! */
             /* Here we assume that the solid aerosol fields are symmetric around the X axis */
-            Data.solidAerosol.Coagulate ( dtIceCoag, Data.PA_Kernel, PA_MICROPHYSICS, (unsigned int) ( 2 - ( relHumidity_i > 100.0 ) ) );
+            Data.solidAerosol.Coagulate ( dtIceCoag, Data.PA_Kernel, PA_MICROPHYSICS, ( shear == 0.0E+00 ) );
         }
 
         /* ======================================================================= */
@@ -1582,7 +1594,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         /* Print to console */
         std::cout << "\n\n    " << " *** NOy mass check: ";
-        std::cout << "\n    " << " ~~> Emitted NOy: " << std::setw(6) << mass_Emitted_NOy * 1.0E+06 / physConst::Na * MW_N * 1.0E+06 << " [g(N)/km] ";
+        std::cout << "\n    " << " ~~> Emitted NOy: " << std::setw(6) << mass_Emitted_NOy * 1.0E+06 / physConst::Na * MW_N * 1.0E+06 << " [g(N)/km] " << std::endl;
         /*                                                               [molec/cm3 * m2] * [m3/cm3]/ [molec/mole]  * [kg/mole]*[g/kg*m/km] = [g/km] */
 
 #ifdef RINGS
@@ -1619,7 +1631,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         std::cout << "\n\n    " << " *** CO2 mass check: ";
 
-        std::cout << "\n    " << " ~~> Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / physConst::Na * MW_CO2 * 1.0E+03 << " [kg/km]   ";
+        std::cout << "\n    " << " ~~> Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / physConst::Na * MW_CO2 * 1.0E+03 << " [kg/km]   " << std::endl;
         /*                                                               [molec/cm3 * m2] * [m3/cm3]/ [molec/mole]  *[kg/mole]*[m/km] = [kg/km] */
 
 #ifdef RINGS
@@ -1632,6 +1644,28 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 #endif /* RINGS */
 
 #endif /* CO2_MASS_CHECK */
+
+#if ( H2O_MASS_CHECK )
+
+        mass_Ambient_H2O = ambientData.H2O[nTime+1];
+        totIceVol = Data.solidAerosol.TotalVolume( );
+
+        /* Compute total water */
+        mass_H2O = 0;
+        for ( iNx = 0; iNx < NX; iNx++ ) {
+            for ( jNy = 0; jNy < NY; jNy++ ) {
+                mass_H2O += ( ( Data.H2O[jNy][iNx] - mass_Ambient_H2O ) + \
+                              totIceVol[jNy][iNx] * UNITCONVERSION ) * \
+                            cellAreas[jNy][iNx];
+            }
+        }
+
+        std::cout << "\n\n    " << " *** H2O mass check: ";
+
+        std::cout << "\n    " << " ~~> H2O: " << std::setw(6) << mass_H2O      * 1.0E+06 / physConst::Na * MW_H2O * 1.0E+03 << " [kg/km]   " << std::endl;
+        /*                                                      [molec/cm3*m2] * [m3/cm3]/ [molec/mole]  *[kg/mole]*[m/km] = [kg/km] */
+
+#endif /* H2O_MASS_CHECK */
 
 #ifdef TIME_IT
 

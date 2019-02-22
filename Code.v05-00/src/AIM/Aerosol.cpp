@@ -1129,7 +1129,8 @@ namespace AIM
         for ( jNy = 0; jNy < Ny_max; jNy++ ) {
             for ( iNx = 0; iNx < Nx_max; iNx++ ) {
                 for ( iBin = 0; iBin < nBin; iBin++ ) {
-                    pdf[iBin][jNy][iNx] *= v_new[iBin][jNy][iNx] / v[iBin][jNy][iNx];
+                    if ( v[iBin][jNy][iNx] > 0.0E+00 )
+                        pdf[iBin][jNy][iNx] *= v_new[iBin][jNy][iNx] / v[iBin][jNy][iNx];
                 }
             }
         }
@@ -1279,7 +1280,8 @@ namespace AIM
                         L[iBin] += ( 1.0 - f[iBin][jBin][iBin] ) * beta[iBin][jBin] * pdf[jBin][jNy][iNx];
                     }
                     v_new[iBin][jNy][iNx] = ( v[iBin][jNy][iNx] + dt * P[iBin] ) / ( 1.0 + dt * L[iBin] );
-                    pdf[iBin][jNy][iNx] *= v_new[iBin][jNy][iNx] / v[iBin][jNy][iNx]; 
+                    if ( v[iBin][jNy][iNx] > 0.0E+00 )
+                        pdf[iBin][jNy][iNx] *= v_new[iBin][jNy][iNx] / v[iBin][jNy][iNx]; 
 
                 }
             }
@@ -1388,7 +1390,7 @@ namespace AIM
             const RealDouble MAXVOL = bin_VEdges[nBin];
 
             /* Conversion factor from ice volume [m^3] to [molecules] */ 
-            const RealDouble UNITCONVERSION = physConst::RHO_H2O / MW_H2O * physConst::Na; 
+            const RealDouble UNITCONVERSION = physConst::RHO_ICE / MW_H2O * physConst::Na;
             /* Unit check: [kg/m^3] / [kg/mol] * [molec/mol] = [molec/m^3] */
 
             /* Scaled Boltzmann constant */
