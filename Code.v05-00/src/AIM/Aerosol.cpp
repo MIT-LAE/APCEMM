@@ -1691,7 +1691,7 @@ namespace AIM
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
             for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
                 for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
-                    moment[jNy][iNx] += ( log( bin_Edges[iBin+1] ) - log( bin_Edges[iBin] ) ) * pow( FACTOR * bin_VCenters[iBin][jNy][iNx], RealDouble( n / 3 ) ) * pdf[iBin][jNy][iNx];
+                    moment[jNy][iNx] += ( log( bin_Edges[iBin+1] ) - log( bin_Edges[iBin] ) ) * pow( FACTOR * bin_VCenters[iBin][jNy][iNx], n / RealDouble( 3.0 ) ) * pdf[iBin][jNy][iNx];
                 }
             }
         }
@@ -1704,11 +1704,13 @@ namespace AIM
     {
 
         Vector_3D number( nBin, Vector_2D( Ny, Vector_1D( Nx, 0.0E+00 ) ) );
+        RealDouble ratio = 0.0E+00;
 
-        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
-            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
-                    number[iBin][jNy][iNx] = ( log( bin_Edges[iBin+1] ) - log( bin_Edges[iBin] ) ) * pdf[iBin][jNy][iNx];
+        for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+            ratio = log( bin_Edges[iBin+1] / bin_Edges[iBin] );
+            for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+                for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                    number[iBin][jNy][iNx] = ratio * pdf[iBin][jNy][iNx];
                     /* Unit check: [#/cm^3] */
                 }
             }
@@ -1729,11 +1731,13 @@ namespace AIM
     {
 
         Vector_3D volume( nBin, Vector_2D( Ny, Vector_1D( Nx, 0.0E+00 ) ) );
+        RealDouble ratio = 0.0E+00;
 
-        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
-            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
-                    volume[iBin][jNy][iNx] = ( log( bin_Edges[iBin+1] ) - log( bin_Edges[iBin] ) ) * bin_VCenters[iBin][jNy][iNx] * pdf[iBin][jNy][iNx];
+        for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+            ratio = log( bin_Edges[iBin+1] / bin_Edges[iBin] );
+            for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+                for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                    volume[iBin][jNy][iNx] = ratio * bin_VCenters[iBin][jNy][iNx] * pdf[iBin][jNy][iNx];
                     /* Unit check: [m^3] * [#/cm^3] = [m^3/cm^3] */
                 }
             }
@@ -1751,9 +1755,8 @@ namespace AIM
 
         /* V = 4.0/3.0*pi*m3 */
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
-            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                m3[jNy][iNx] *= FACTOR;
-            }
+            for ( UInt iNx = 0; iNx < Nx; iNx++ )
+                m3[jNy][iNx] = m3[jNy][iNx] * FACTOR;
         }
 
         return m3;
@@ -1764,12 +1767,12 @@ namespace AIM
     {
 
         Vector_2D TVol = TotalVolume();
-        const RealDouble FACTOR = physConst::RHO_ICE * 1.0E+06;
+        const RealDouble FACTOR = ( physConst::RHO_ICE * 1.0E+03 ) * 1.0E+06;
 
-        /* Unit check: [m^3/cm^3] * [kg/m^3] * [m^3/cm^3] = [kg/m^3] */
+        /* Unit check: [m^3/cm^3] * [g/m^3] * [cm^3/m^3] = [g/m^3] */
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
             for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                TVol[jNy][iNx] *= FACTOR;
+                TVol[jNy][iNx] = TVol[jNy][iNx] * FACTOR;
             }
         }
 
@@ -1783,12 +1786,17 @@ namespace AIM
         Vector_2D chi = IWC();
         Vector_2D rE  = EffRadius();
 
-        const RealDouble a = 3.448E+00;
-        const RealDouble b = 2.431E-03;
+        const RealDouble a = 3.448E+00; /* [m^2/g] */
+        const RealDouble b = 2.431E-09; /* [m^3/g] */
 
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
             for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                chi[jNy][iNx] *= ( a + b / rE[jNy][iNx] );
+                if ( rE[jNy][iNx] > 1.00E-15 ) {
+                    chi[jNy][iNx] = chi[jNy][iNx] * ( a + b / rE[jNy][iNx] );
+                    /* Unit check: 
+                     * [1/m] = [g/m^3] * [m^2/g] */
+                } else
+                    chi[jNy][iNx] = 0.0E+00;
             }
         }
 
