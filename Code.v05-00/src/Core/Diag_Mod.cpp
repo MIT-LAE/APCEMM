@@ -2687,6 +2687,45 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
 
+            /* Saving horizontal optical depth
+             * Size: NY */
+
+            strncpy( charSpc, "Horizontal optical depth", sizeof(charSpc) );
+            strncpy( charName, "Horizontally-integrated optical depth", sizeof(charName) );
+            strncpy( charUnit, "-", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            array = util::vect2double( Data.solidAerosol.xOD( m.x_edge() ), m.Ny(), scalingFactor );
+#else
+            array = util::vect2float ( Data.solidAerosol.xOD( m.x_edge() ), m.Ny(), scalingFactor );
+#endif /* SAVE_TO_DOUBLE */
+
+            didSaveSucceed *= fileHandler.addVar( currFile, &(array)[0],   \
+                                         (const char*)charSpc,             \
+                                         yDim, outputType,                 \
+                                         (const char*)charUnit,            \
+                                         (const char*)charName );
+
+            /* Saving vertical optical depth
+             * Size: NX */
+
+            strncpy( charSpc, "Vertical optical depth", sizeof(charSpc) );
+            strncpy( charName, "Vertically-integrated optical depth", sizeof(charName) );
+            strncpy( charUnit, "-", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            array = util::vect2double( Data.solidAerosol.yOD( m.y_edge() ), m.Nx(), scalingFactor );
+#else
+            array = util::vect2float ( Data.solidAerosol.yOD( m.y_edge() ), m.Nx(), scalingFactor );
+#endif /* SAVE_TO_DOUBLE */
+
+            didSaveSucceed *= fileHandler.addVar( currFile, &(array)[0],   \
+                                         (const char*)charSpc,             \
+                                         xDim, outputType,                 \
+                                         (const char*)charUnit,            \
+                                         (const char*)charName );
+
+
         }
 
         delete[] array; array = NULL;
