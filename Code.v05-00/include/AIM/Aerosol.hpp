@@ -129,20 +129,30 @@ class AIM::Grid_Aerosol
 
         /* Ice crystal growth */
         void Grow( const RealDouble dt, Vector_2D &H2O, const Vector_2D T, const Vector_1D P, const UInt N = 2, const UInt SYM = 0 );
+    
+        /* Update bin centers - Used after aerosol transport */
+        void UpdateCenters( const Vector_3D &iceV, const Vector_3D &PDF );
 
         /* Moments */
         Vector_2D Moment( UInt n ) const;
         RealDouble Moment( UInt n, Vector_1D PDF ) const;
         RealDouble Moment( UInt n, UInt iNx, UInt jNy ) const;
+
+        /* Extra utils */
+        Vector_3D Number( ) const;
+        Vector_2D TotalNumber( ) const;
+        Vector_3D Volume( ) const;
+        Vector_2D TotalVolume( ) const;
+        Vector_2D IWC( ) const;
+        Vector_2D Extinction( ) const;
+        Vector_1D xOD( const Vector_1D xE ) const;
+        Vector_1D yOD( const Vector_1D yE ) const;
         Vector_2D Radius( ) const;
         RealDouble Radius( UInt iNx, UInt jNy ) const;
         Vector_2D EffRadius( ) const;
         RealDouble EffRadius( UInt iNx, UInt jNy ) const;
         Vector_2D StdDev( ) const;
         RealDouble StdDev( UInt iNx, UInt jNy ) const;
-        Vector_3D Number( ) const;
-        Vector_3D Volume( ) const;
-        Vector_2D TotalVolume( ) const;
 
         /* utils */
         void updatePdf( Vector_3D pdf_ );
@@ -152,12 +162,15 @@ class AIM::Grid_Aerosol
 
         /* gets */
         Vector_1D getBinCenters() const;
+        Vector_1D binCenters() const { return bin_Centers; };
         Vector_3D getBinVCenters() const;
         Vector_1D getBinEdges() const;
+        Vector_1D binEdges() const { return bin_Edges; };
         Vector_1D getBinSizes() const;
+        Vector_1D binSizes() const { return bin_Sizes; };
         UInt getNBin() const;
         Vector_3D getPDF() const;
-        
+
         Vector_3D pdf;
         Vector_3D bin_VCenters;
 

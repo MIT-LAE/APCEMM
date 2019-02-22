@@ -640,11 +640,13 @@ namespace AIM
         }
         
         bin_VCenters.resize( nBin, Vector_2D( Ny, Vector_1D( Nx, 0.0 ) ) );
-        
+       
+        RealDouble vol = 0.0E+00;
         for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+            vol = 0.5 * ( bin_VEdges[iBin] + bin_VEdges[iBin+1] );
             for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
-                for ( UInt iNx = 0; iNx < Nx; iNx++ ) {    
-                    bin_VCenters[iBin][jNy][iNx] = 4.0 / RealDouble(3.0) * physConst::PI * ( bin_Edges[iBin] * bin_Edges[iBin] * bin_Edges[iBin] + bin_Edges[iBin+1] * bin_Edges[iBin+1] * bin_Edges[iBin+1] ) * 0.5;
+                for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                    bin_VCenters[iBin][jNy][iNx] = vol;
                 }
             }
         }
@@ -673,6 +675,7 @@ namespace AIM
     Grid_Aerosol::Grid_Aerosol( UInt Nx_, UInt Ny_, Vector_1D bin_Centers_, Vector_1D bin_Edges_, RealDouble nPart_, RealDouble mu_, RealDouble sigma_, const char* distType, RealDouble alpha_, RealDouble gamma_, RealDouble b_ ): 
         Nx( Nx_ ),
         Ny( Ny_ ),
+        bin_VEdges( bin_Centers_.size() + 1 ),
         bin_Sizes( bin_Centers_.size() ),
         type( distType )
     {
@@ -699,20 +702,21 @@ namespace AIM
 
         /* Compute size of each bin */
         for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
-            bin_VEdges[iBin] = 4.0 / (double) 3.0 * physConst::PI * bin_Edges[iBin] * \
+            bin_VEdges[iBin] = 4.0 / (RealDouble) 3.0 * physConst::PI * bin_Edges[iBin] * \
                                bin_Edges[iBin] * bin_Edges[iBin];
             bin_Sizes[iBin]  = bin_Edges[iBin+1] - bin_Edges[iBin];
         }
-        bin_VEdges[nBin] = 4.0 / (double) 3.0 * physConst::PI * bin_Edges[nBin] * \
+        bin_VEdges[nBin] = 4.0 / (RealDouble) 3.0 * physConst::PI * bin_Edges[nBin] * \
                            bin_Edges[nBin] * bin_Edges[nBin];
 
         bin_VCenters.resize( nBin, Vector_2D( Ny, Vector_1D( Nx, 0.0E+00 ) ) );
 
+        RealDouble vol = 0.0E+00;
         for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+            vol = 0.5 * ( bin_VEdges[iBin] + bin_VEdges[iBin+1] );
             for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
-                for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                    bin_VCenters[iBin][jNy][iNx] = 4.0 / RealDouble(3.0) * physConst::PI * ( bin_Edges_[iBin] * bin_Edges_[iBin] * bin_Edges_[iBin] + bin_Edges_[iBin+1] * bin_Edges_[iBin+1] * bin_Edges_[iBin+1] ) * 0.5;
-                }
+                for ( UInt iNx = 0; iNx < Nx; iNx++ )
+                    bin_VCenters[iBin][jNy][iNx] = vol;
             }
         }
         
@@ -1323,7 +1327,7 @@ namespace AIM
     {
 
         /* DESCRIPTION:
-         * Performs self-coagulation. Updates Aerosol.pdf and H2O
+         * Computes growth of ice crystals through direct ice deposition. Updates Aerosol.pdf and H2O
          * The numerical scheme is taken from:
          * M.Z. Jacobson, Fundamentals of atmospheric modeling. Cambridge university press, 2005.*/
 
@@ -1379,14 +1383,6 @@ namespace AIM
 
         if ( N == 2 ) {
 
-            /* Every grid cell where the relative humidity w.r.t ice is in 
-             * the range 1 +/- EPS will be considered at equilibrium. */
-            const RealDouble EPS  = 1.00E-05;
-
-            /* If number of particles/cm^3 air is smaller than TINY then
-             * do not apply bin volume center update */
-            const RealDouble TINY = 1.00E-20;
-
             /* Minimum, maximum particle volumes */
             const RealDouble MINVOL = bin_VEdges[0];
             const RealDouble MAXVOL = bin_VEdges[nBin];
@@ -1403,12 +1399,13 @@ namespace AIM
             Vector_3D iceVol  = Volume( );
             Vector_2D totH2O  = H2O;
 
-            RealDouble partVol = 0.0E+00;
-//            Vector_1D partVol( nBin, 0.0E+00 );
+            RealDouble partVol  = 0.0E+00;
+            RealDouble icePart_ = 0.0E+00;
+            RealDouble iceVol_  = 0.0E+00;
+
+            int jBin = -1;
             std::vector<int> toBin( nBin, 0 );
             std::vector<int>::iterator iterBegin, iterCurr, iterEnd;
-
-//            const Vector_1D ZEROS( nBin, 0.0E+00 );
 
             /* Declare and initialize variable to store saturation quantities,
              * pressure and temperature */
@@ -1461,10 +1458,8 @@ namespace AIM
 
                     /* Store local saturation pressure w.r.t ice */
                     pSat = physFunc::pSat_H2Os( locT );
-
-                    if ( H2O[jNy][iNx] * kB_ * locT / pSat >= 1.0 + EPS ) {
-                        /* Is grid cell supersaturated? 
-                         * -> If yes, run growth scheme */
+ 
+                    if ( H2O[jNy][iNx] * kB_ * locT / pSat > 0.0 ) {
 
                         /* ================================================= */
                         /* ================================================= */
@@ -1566,12 +1561,8 @@ namespace AIM
 
                         H2O[jNy][iNx] = totH2O[jNy][iNx] - totH2Oi; 
 
-
-                    } else if ( H2O[jNy][iNx] * kB_ * T[jNy][iNx] / pSat <= 1.0 - EPS ) {
-                        /* Is grid cell subsaturated?
-                         * -> If yes, run melting algorithm */
                     }
- 
+
                     /* ======================================================= */
                     /* ======================================================= */
                     /* ============== Moving-center structure ================ */
@@ -1591,20 +1582,19 @@ namespace AIM
                          * greater than some small number to avoid division
                          * by ridiculously small numbers */
 
-                        if ( icePart[iBin][jNy][iNx] >= TINY ) {
+                        /* Compute particle volume */
+                        partVol = iceVol[iBin][jNy][iNx] / icePart[iBin][jNy][iNx];
 
-                            /* Compute particle volume */
-                            partVol = iceVol[iBin][jNy][iNx] / icePart[iBin][jNy][iNx];
+                        /* Find which bin corresponds to this particle 
+                         * volume */
+                        toBin[iBin] = std::lower_bound( bin_VEdges.begin(), bin_VEdges.end(), partVol ) \
+                                      - bin_VEdges.begin() - 1;
 
-                            /* Find which bin corresponds to this particle 
-                             * volume */
-                            toBin[iBin] = std::lower_bound( bin_VEdges.begin(), bin_VEdges.end(), partVol[iBin] ) - bin_VEdges.begin();
-
-                            if ( toBin[iBin] == 0 ) {
-                                if ( partVol[iBin] < bin_VEdges[0] )
-                                    toBin[iBin] = -1;
-                            }
-
+                        if ( toBin[iBin] == 0 ) {
+                            if ( partVol < bin_VEdges[0] )
+                                /* Particles are reduced to their core
+                                 * and thus considered lost */
+                                toBin[iBin] = -1;
                         }
 
                     }
@@ -1629,7 +1619,7 @@ namespace AIM
                         iterCurr  = iterBegin;
 
                         while ((iterCurr = std::find(iterCurr, iterEnd, iBin)) != iterEnd) {
-                            jBin = std::distance(iterBegin, iterCurr);
+                            jBin = iterCurr - iterBegin; //std::distance(iterBegin, iterCurr);
 
                             /* If jBin -> iBin, then add particle number and 
                              * volume to sum */
@@ -1641,15 +1631,16 @@ namespace AIM
                             iterCurr++;
                         }
 
-                        if ( icePart_ > 0.0E+00 ){
+                        if ( icePart_ > 0.0E+00 ) {
                             /* Bin is not empty */
 
                             /* Compute particle volume:
                              * [m^3] = [m^3/cm^3 air] / [#/cm^3 air] 
                              * and clip it between min and max volume allowed. */
 
-                            bin_VCenters[iBin][jNy][iNx] = std::max( std::min( iceVol_ / icePart_, MAXVOL ), MINVOL );
-                            pdf[iBin][jNy][iNx] = icePart_;
+                            bin_VCenters[iBin][jNy][iNx] = std::max( std::min( iceVol_ / icePart_, bin_VEdges[iBin+1] ), bin_VEdges[iBin] );
+
+                            pdf[iBin][jNy][iNx] = icePart_ / ( log( bin_Edges[iBin+1] / bin_Edges[iBin] ) );
 
                         } else {
                             /* Bin is empty */
@@ -1667,18 +1658,40 @@ namespace AIM
             }
         }
 
-
     } /* End of Grid::Aerosol::Grow */
+
+    void Grid_Aerosol::UpdateCenters( const Vector_3D &iceV, const Vector_3D &PDF ) {
+
+        const RealDouble TINY = 1.00E-50;
+
+        RealDouble ratio = 0.0E+00;
+
+        for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+            ratio = log( bin_Edges[iBin+1] / bin_Edges[iBin] );
+            for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+                for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                    if ( PDF[iBin][jNy][iNx] > TINY )
+                        bin_VCenters[iBin][jNy][iNx] = std::max( std::min( iceV[iBin][jNy][iNx] / PDF[iBin][jNy][iNx] / ratio, \
+                                                                           0.9999 * bin_VEdges[iBin+1] ), \
+                                                                 1.0001 * bin_VEdges[iBin] );
+                    else
+                        bin_VCenters[iBin][jNy][iNx] = 0.5 * ( bin_VEdges[iBin] + bin_VEdges[iBin+1] );
+                }
+            }
+        }
+
+    } /* End of Grid_Aerosol::UpdateCenters */
 
     Vector_2D Grid_Aerosol::Moment( UInt n ) const
     {
 
         Vector_2D moment( Ny, Vector_1D( Nx, 0.0E+00 ) );
+        const RealDouble FACTOR = 3.0 / RealDouble( 4.0 * physConst::PI );
 
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
             for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
                 for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
-                    moment[jNy][iNx] += ( log( bin_Edges[iBin+1] ) - log( bin_Edges[iBin] ) ) * pow( bin_Centers[iBin], n ) * pdf[iBin][jNy][iNx];
+                    moment[jNy][iNx] += ( log( bin_Edges[iBin+1] ) - log( bin_Edges[iBin] ) ) * pow( FACTOR * bin_VCenters[iBin][jNy][iNx], RealDouble( n / 3 ) ) * pdf[iBin][jNy][iNx];
                 }
             }
         }
@@ -1703,7 +1716,14 @@ namespace AIM
 
         return number;
 
-    } /* End of Grid_Aerosol::Numer */
+    } /* End of Grid_Aerosol::Number */
+
+    Vector_2D Grid_Aerosol::TotalNumber( ) const
+    {
+
+        return Moment( 0 );
+
+    } /* End of Grid_Aerosol::TotalNumber */
 
     Vector_3D Grid_Aerosol::Volume( ) const
     {
@@ -1726,20 +1746,87 @@ namespace AIM
     Vector_2D Grid_Aerosol::TotalVolume( ) const
     {
 
-        Vector_2D volume( Ny, Vector_1D( Nx, 0.0E+00 ) );
+        Vector_2D m3 = Moment( 3 );
+        const RealDouble FACTOR = 4.0 / RealDouble(3.0) * physConst::PI;
 
+        /* V = 4.0/3.0*pi*m3 */
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
             for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
-                    volume[jNy][iNx] += ( log( bin_Edges[iBin+1] ) - log( bin_Edges[iBin] ) ) * bin_VCenters[iBin][jNy][iNx] * pdf[iBin][jNy][iNx];
-                    /* Unit check: [m^3] * [#/cm^3] = [m^3/cm^3] */
-                }
+                m3[jNy][iNx] *= FACTOR;
             }
         }
 
-        return volume;
+        return m3;
 
     } /* End of Grid_Aerosol::TotalVolume */
+
+    Vector_2D Grid_Aerosol::IWC( ) const
+    {
+
+        Vector_2D TVol = TotalVolume();
+        const RealDouble FACTOR = physConst::RHO_ICE * 1.0E+06;
+
+        /* Unit check: [m^3/cm^3] * [kg/m^3] * [m^3/cm^3] = [kg/m^3] */
+        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                TVol[jNy][iNx] *= FACTOR;
+            }
+        }
+
+        return TVol;
+
+    } /* End of Grid_Aerosol::IWC */
+
+    Vector_2D Grid_Aerosol::Extinction( ) const
+    {
+
+        Vector_2D chi = IWC();
+        Vector_2D rE  = EffRadius();
+
+        const RealDouble a = 3.448E+00;
+        const RealDouble b = 2.431E-03;
+
+        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                chi[jNy][iNx] *= ( a + b / rE[jNy][iNx] );
+            }
+        }
+
+        return chi;
+
+    } /* End of Grid_Aerosol::Extinction */
+
+    Vector_1D Grid_Aerosol::xOD( const Vector_1D xE ) const
+    {
+
+        Vector_1D tau_x( Ny, 0.0E+00 );
+        Vector_2D chi = Extinction();
+
+        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                tau_x[jNy] += ( xE[iNx+1] - xE[iNx] ) * chi[jNy][iNx];
+            }
+        }
+
+        return tau_x;
+
+    } /* End of Grid_Aerosol::tau_x */
+
+    Vector_1D Grid_Aerosol::yOD( const Vector_1D yE ) const
+    {
+
+        Vector_1D tau_y( Nx, 0.0E+00 );
+        Vector_2D chi = Extinction();
+
+        for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+            for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+                tau_y[iNx] += ( yE[jNy+1] - yE[jNy] ) * chi[jNy][iNx];
+            }
+        }
+
+        return tau_y;
+
+    } /* End of Grid_Aerosol::tau_y */
 
     Vector_2D Grid_Aerosol::Radius( ) const
     {
