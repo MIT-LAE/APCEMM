@@ -240,6 +240,7 @@ namespace AIM
         Kernel_1D = k.Kernel_1D;
         beta = k.beta;
         f = k.f;
+        indices = k.indices;
 
     } /* End of Coagulation::Coagulation */
 
@@ -253,6 +254,7 @@ namespace AIM
         Kernel_1D = k.Kernel_1D;
         beta = k.beta;
         f = k.f;
+        indices = k.indices;
         return *this;
 
     } /* End of Coagulation::operator= */
@@ -307,11 +309,15 @@ namespace AIM
         UInt iBin, jBin, index;
         UInt size = bin_VCenters.size();
 
-        /* For manual search: */
-    //    UInt kBin;
-    //    bool notFound;
-
         Vector_2D v2d;
+        std::vector<std::vector<UInt> > v2d_index;
+        std::vector<UInt> v1d_index;
+
+        for ( iBin = 0; iBin < size; iBin++ ) {
+            indices.push_back( v2d_index );
+            for ( jBin = 0; jBin < size; jBin++ )
+                indices[iBin].push_back( v1d_index );
+        }
 
         for ( iBin = 0; iBin < size; iBin++ ) {
             f.push_back( v2d );
@@ -321,36 +327,74 @@ namespace AIM
                 /* Using std functions: */
                 index = std::distance( bin_VCenters.begin(), std::upper_bound( bin_VCenters.begin(), bin_VCenters.end(), vij ) ) - 1;
 
-                /* Manual search: */
-    //            notFound = 1;
-    //            kBin = 0;
-    //            while ( notFound ) {
-    //                if ( bin_VCenters[kBin] >= vij ) {
-    //                    index = kBin - 1;
-    //                    notFound = 0;
-    //                } else {
-    //                    kBin++;
-    //                }
-    //                if ( kBin > size - 1 ) {
-    //                    index = size - 1;
-    //                    notFound = 0;
-    //                }
-    //            }
-
-                if ( index < size - 1 ) {
-                    f[iBin][jBin][index]     = ( bin_VCenters[index + 1] - vij ) / ( bin_VCenters[index + 1] - bin_VCenters[index] ) * bin_VCenters[index] / vij;
-                    f[iBin][jBin][index + 1] = 1.0 - f[iBin][jBin][index];
-                } else if ( index >= size - 1 ) {
-                    f[iBin][jBin][size - 1] = 1.0;
+                if ( index < size-1 ) {
+                    f[iBin][jBin][index  ] = ( bin_VCenters[index+1] - vij ) / ( bin_VCenters[index+1] - bin_VCenters[index] ) * bin_VCenters[index] / vij;
+                    f[iBin][jBin][index+1] = 1.0 - f[iBin][jBin][index];
+                    indices[jBin][index  ].push_back( iBin );
+                    indices[jBin][index+1].push_back( iBin );
+                } else if ( index >= size-1 ) {
+                    index = size-1;
+                    f[iBin][jBin][index  ] = 1.0;
+                    indices[jBin][index  ].push_back( iBin );
                 }
-                
+
                 /* For debug purposes */
                 if ( 0 ) {
                     std::cout << "(iBin, jBin) = (" << iBin << ", " << jBin << ") , Index: " << index << ", ";
-                    std::cout << bin_VCenters[index] << " <= " << vij << " < " << bin_VCenters[index + 1] << "\n";
+                    std::cout << bin_VCenters[index] << " <= " << vij << " < " << bin_VCenters[index+1] << "\n";
 
                     std::cout << "(iBin, jBin) = (" << iBin << ", " << jBin << ") , Index    : " << index << ", f = " << f[iBin][jBin][index] << "\n";
-                    std::cout << "(iBin, jBin) = (" << iBin << ", " << jBin << ") , Index + 1: " << index + 1 << ", f = " << f[iBin][jBin][index + 1] << "\n";
+                    std::cout << "(iBin, jBin) = (" << iBin << ", " << jBin << ") , Index + 1: " << index+1 << ", f = " << f[iBin][jBin][index+1] << "\n";
+                }
+
+            }
+        }
+
+    } /* End of Coagulation::buildF */
+
+    void Coagulation::buildF( Vector_3D &bin_VCenters, const UInt jNy, const UInt iNx )
+    {
+
+        RealDouble vij;
+        UInt iBin, jBin, kBin, index;
+        UInt size = bin_VCenters.size();
+        Vector_1D bin_VCentersCopy( size, 0.0E+00 );
+
+        Vector_2D v2d;
+        std::vector<std::vector<UInt> > v2d_index;
+        std::vector<UInt> v1d_index;
+
+        for ( iBin = 0; iBin < size; iBin++ ) {
+            bin_VCentersCopy[iBin] = bin_VCenters[iBin][jNy][iNx];
+            for ( jBin = 0; jBin < size; jBin++ )
+                indices[iBin][jBin].clear();
+        }
+
+        for ( iBin = 0; iBin < size; iBin++ ) {
+            for ( jBin = 0; jBin < size; jBin++ ) {
+                for ( kBin = 0; kBin < size; kBin++ )
+                    f[iBin][jBin][kBin] = 0.0E+00;
+                vij = bin_VCentersCopy[iBin] + bin_VCentersCopy[jBin];
+                /* Using std functions: */
+                index = std::distance( bin_VCentersCopy.begin(), std::upper_bound( bin_VCentersCopy.begin(), bin_VCentersCopy.end(), vij ) ) - 1;
+                if ( index < size-1 ) {
+                    f[iBin][jBin][index  ] = ( bin_VCentersCopy[index+1] - vij ) / ( bin_VCentersCopy[index+1] - bin_VCentersCopy[index] ) * bin_VCentersCopy[index] / vij;
+                    f[iBin][jBin][index+1] = 1.0 - f[iBin][jBin][index];
+                    indices[jBin][index  ].push_back( iBin );
+                    indices[jBin][index+1].push_back( iBin );
+                } else if ( index >= size-1 ) {
+                    index = size-1;
+                    f[iBin][jBin][index  ] = 1.0;
+                    indices[jBin][index  ].push_back( iBin );
+                }
+
+                /* For debug purposes */
+                if ( 0 ) {
+                    std::cout << "(iBin, jBin) = (" << iBin << ", " << jBin << ") , Index: " << index << ", ";
+                    std::cout << bin_VCentersCopy[index] << " <= " << vij << " < " << bin_VCentersCopy[index+1] << "\n";
+
+                    std::cout << "(iBin, jBin) = (" << iBin << ", " << jBin << ") , Index    : " << index << ", f = " << f[iBin][jBin][index] << "\n";
+                    std::cout << "(iBin, jBin) = (" << iBin << ", " << jBin << ") , Index + 1: " << index+1 << ", f = " << f[iBin][jBin][index+1] << "\n";
                 }
 
             }
