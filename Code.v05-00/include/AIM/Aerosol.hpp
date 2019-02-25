@@ -124,8 +124,7 @@ class AIM::Grid_Aerosol
         Grid_Aerosol operator-( const Grid_Aerosol &rhs ) const;
 
         /* Coagulation */
-        void Coagulate( const RealDouble dt, const Coagulation &kernel, const UInt N = 2, const UInt SYM = 0 );
-        void Coagulate( const RealDouble dt, const Vector_2D &beta, const Vector_3D &f, const UInt N = 2, const UInt SYM = 0 );
+        void Coagulate( const RealDouble dt, Coagulation &kernel, const UInt N = 2, const UInt SYM = 0 );
 
         /* Ice crystal growth */
         void Grow( const RealDouble dt, Vector_2D &H2O, const Vector_2D T, const Vector_1D P, const UInt N = 2, const UInt SYM = 0 );
