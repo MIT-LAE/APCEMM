@@ -56,6 +56,27 @@ namespace physFunc
 
     } /* End of pSat_H2Os */
 
+    RealDouble dpSat_H2Os( const RealDouble T )
+    {
+
+        /* DESCRIPTION:
+         * Returns the derivative of the water solid saturation pressure with 
+         * respect to temperature in Pascal/K. */
+
+        /* INPUT PARAMETERS:
+         * - RealDouble T :: temperature expressed in K 
+         *
+         * OUTPUT PARAMETERS:
+         * - RealDouble :: dPsat/dT(T) in Pa/K */
+
+        /* pSat(T) = C * exp( g )
+         * dpSat(T)/dT = pSat(T) * g' */
+
+        return pSat_H2Os( T ) * ( 6024.5282 / ( T * T ) + 0.010613868 - \
+                                  2.0 * 1.3198825E-5 * T - 0.49382577 / T );
+
+    } /* End of dpSat_H2Os */
+
     RealDouble pSat_H2SO4( const RealDouble T )
     {
         

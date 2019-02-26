@@ -12,6 +12,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "Util/MetFunction.hpp"
+ 
 
 namespace met
 {
@@ -145,6 +146,53 @@ namespace met
         }
 
     } /* End of ISA */
+
+    RealDouble ComputeLapseRate( const RealDouble TEMP, const RealDouble RHi, \
+                                 const RealDouble DEPTH )
+    {
+
+        /* DESCRIPTION: Computes the temperature lapse rate from the 
+         * temperature and RH at flight level and the depth of the 
+         * supersaturated layer, assuming a constant background H2O 
+         * concentration */
+
+        /* INPUTS:
+         * RealDouble TEMP  : Temperature at flight level in [K]
+         * RealDouble RHi   : RH w.r.t. ice at flight level in [%]
+         * RealDouble DEPTH : Depth of the moist layer in [m] */
+
+        /* Solve pSat_H2Os(T)/T = x_star using a Newton-Raphson iteration 
+         * scheme */
+        UInt counter    = 0;
+        RealDouble T    = TEMP;
+        RealDouble Tpre = 0.0E+00;
+        RealDouble pSat = 0.0E+00;
+        RealDouble pSat_= 0.0E+00;
+
+        /* H2O concentration, assumed constant, computed from flight level
+         * conditions in molec/cm^3 */
+        const RealDouble H2O = RHi / RealDouble(100.0) * \
+            physFunc::pSat_H2Os( TEMP ) / physConst::kB / TEMP * 1.00E-06;
+
+        const RealDouble x_star = H2O * physConst::kB * 1.00E+06;
+
+        while ( counter < 100 ) {
+
+            Tpre = T;
+            counter += 1;
+
+            pSat = physFunc::pSat_H2Os( T ); 
+            pSat_= physFunc::dpSat_H2Os( T );
+            T = T - ( pSat / T - x_star ) / ( T * pSat_ - pSat ) * T * T;
+
+            if ( ABS( T - Tpre ) < 1.00E-03 )
+                break;
+
+        }
+
+        return ( TEMP - T ) / DEPTH;
+
+    } /* End of ComputeLapseRate */
 
 }
 

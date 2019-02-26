@@ -30,6 +30,9 @@ namespace physFunc
     RealDouble pSat_H2SO4( const RealDouble T );
     RealDouble pSat_HNO3( const RealDouble T , const RealDouble PPH2O );
 
+    /* Derivative of the saturation pressures wrt to the temperature [Pa/K] */
+    RealDouble dpSat_H2Os( const RealDouble T );
+
     /* Density of air [kg/m^3] */
     RealDouble rhoAir( const RealDouble T, const RealDouble P );
 

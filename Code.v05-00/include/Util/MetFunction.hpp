@@ -19,6 +19,9 @@
 
 #include "ForwardDecl.hpp"
 #include "PhysConstant.hpp"
+#include "PhysFunction.hpp"
+
+#define ABS(x)   ( ((x) >=  0 ) ?(x):(-x) ) 
 
 namespace met
 {
@@ -40,6 +43,11 @@ namespace met
               Vector_1D &temperature );
     void ISA( const RealDouble z, RealDouble &pressure );
     void ISA( const Vector_1D z, Vector_1D &pressure );
+
+
+
+    RealDouble ComputeLapseRate( const RealDouble TEMP, const RealDouble RHi, \
+                                 const RealDouble DEPTH );
 
 }
 
