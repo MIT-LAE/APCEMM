@@ -24,14 +24,16 @@ class Meteorology
     public:
 
         Meteorology( );
-        Meteorology( const bool loadFile, \
-                     const Mesh &m, \
-                     const double temperature_K,  \
-                     const double altitude, \
-                     const double LapseRate, \
-                     const bool DBG );
+        Meteorology( const bool loadFile,        \
+                     const Mesh &m,              \
+                     const double temperature_,  \
+                     const double altitude_,     \
+                     const double LapseRate_,    \
+                     const bool DBG = 0 );
         Meteorology( const Meteorology &met );
         ~Meteorology( );
+
+        void Update( const Mesh &m, const double dTrav_x, const double dTrav_y );
 
         double alt( unsigned int j ) const { return alt_[j]; }
         double press( unsigned int j ) const { return press_[j]; }
@@ -48,6 +50,11 @@ class Meteorology
 
         /* Load data from file? */
         const bool LOAD;
+
+        /* Ambient parameters */
+        const double TEMPERATURE;
+        const double ALTITUDE;
+        const double LAPSERATE;
 
         /* Assume that pressure only depends on the vertical coordinate */
         std::vector<double> alt_;

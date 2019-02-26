@@ -14,7 +14,10 @@
 #include "Core/Meteorology.hpp"
 
 Meteorology::Meteorology( ) :
-    LOAD( 0 )
+    LOAD( 0 ),
+    TEMPERATURE( 220 ),
+    ALTITUDE( 10.5E+03 ),
+    LAPSERATE( -3.0E-03 )
 {
 
     /* Default constructor */
@@ -27,7 +30,10 @@ Meteorology::Meteorology( const bool loadFile, \
                           const double altitude, \
                           const double LapseRate, \
                           const bool DBG ) : 
-    LOAD ( loadFile )
+    LOAD ( loadFile ),
+    TEMPERATURE( temperature_K ),
+    ALTITUDE( altitude ),
+    LAPSERATE( LapseRate )
 {
 
     /* Constructor */
@@ -80,7 +86,10 @@ Meteorology::Meteorology( const bool loadFile, \
 } /* End of Meteorology::Meteorology */
 
 Meteorology::Meteorology( const Meteorology &met ) :
-    LOAD( met.LOAD )
+    LOAD( met.LOAD ),
+    TEMPERATURE( met.TEMPERATURE ),
+    ALTITUDE( met.ALTITUDE ),
+    LAPSERATE( met.LAPSERATE )
 {
 
     alt_ = met.alt_;
@@ -96,5 +105,28 @@ Meteorology::~Meteorology( )
     /* Destructor */
 
 } /* End of Meteorology::~Meteorology */
+
+void Meteorology::Update( const Mesh &m, const double dTrav_x, const double dTrav_y )
+{
+
+    std::vector<double> X = m.x();
+    std::vector<double> Y = m.y();
+
+    for ( unsigned int iNy = 0; iNy < Y.size(); iNy++ )
+        alt_[iNy] = ALTITUDE + Y[iNy] + dTrav_y;
+    met::ISA( alt_, press_ );
+    /* User defined fields can be set here ! */
+    for ( unsigned int iNy = 0; iNy < Y.size(); iNy++ ) {
+        temp_[iNy][0] = TEMPERATURE + ( Y[iNy] + dTrav_y ) * LAPSERATE;
+        /* Unit check: Y [m] * LapseRate [K/m] */
+        H2O_[iNy][0] = 0.0E+00;
+        for ( unsigned int iNx = 1; iNx < X.size(); iNx++ ) {
+            temp_[iNy][iNx] = temp_[iNy][0];
+            H2O_[iNy][iNx]  = H2O_[iNy][0];
+        }
+    }
+
+
+} /* End of Meteorology::UpdateMet */
 
 /* End of Meteorology.cpp */
