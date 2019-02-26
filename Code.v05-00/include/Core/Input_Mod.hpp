@@ -123,6 +123,9 @@ class OptInput
         bool        TRANSPORT_TRANSPORT;
         bool        TRANSPORT_FILL;
         RealDouble  TRANSPORT_TIMESTEP;
+        bool        TRANSPORT_UPDRAFT;
+        RealDouble  TRANSPORT_UPDRAFT_TIMESCALE;
+        RealDouble  TRANSPORT_UPDRAFT_VELOCITY;
 
         /* ========================================== */
         /* ---- CHEMISTRY MENU ---------------------- */
@@ -141,7 +144,6 @@ class OptInput
         bool        AEROSOL_COAGULATION;
         RealDouble  AEROSOL_COAGULATION_TIMESTEP;
         bool        AEROSOL_ICE_GROWTH;
-        bool        AEROSOL_PLUME_UPDRAFT;
         
         /* ========================================== */
         /* ---- METEOROLOGY MENU -------------------- */

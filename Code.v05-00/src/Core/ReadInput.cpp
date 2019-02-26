@@ -2917,6 +2917,8 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     std::vector<std::string> tokens;
     std::string variable;
     double value;
+    std::string unit;
+    unsigned first, last;
 
     /* ==================================================== */
     /* Turn on Transport?                                   */
@@ -2991,6 +2993,113 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Could not convert string to double for " << variable << std::endl;
         exit(1);
     }
+    
+    /* ==================================================== */
+    /* Turn on plume updraft?                               */
+    /* ==================================================== */
+
+    variable = "Turn on plume updraft?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.TRANSPORT_UPDRAFT = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.TRANSPORT_UPDRAFT = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* ==================================================== */
+    /* Updraft timescale                                    */
+    /* ==================================================== */
+
+    variable = "Updraft timescale";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    try {
+        value = std::stod( tokens[0] );
+        if ( value > 0.0E+00 )
+            Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE = value;
+        else {
+            std::cout << " Wrong input for: " << variable << std::endl;
+            std::cout << " Timescale needs to be positive" << std::endl;
+            exit(1);
+        }
+    } catch(std::exception& e) {
+        std::cout << " Could not convert string to double for " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+
+    if ( unit.compare( "s" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( unit.compare( "min" ) == 0 ) {
+        /* Convert min to s */
+        Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE *= 60.0;
+    } else if ( unit.compare( "hr" ) == 0 ) {
+        /* Convert hr to s */
+        Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE *= 3600.0;
+    } else {
+        std::cout << " Unknown unit for variable 'Updraft timescale': ";
+        std::cout << unit << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Updraft velocity                                     */
+    /* ==================================================== */
+
+    variable = "Updraft velocity";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    try {
+        value = std::stod( tokens[0] );
+        Input_Opt.TRANSPORT_UPDRAFT_VELOCITY = value;
+    } catch(std::exception& e) {
+        std::cout << " Could not convert string to double for " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+
+    if ( unit.compare( "m/s" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( unit.compare( "cm/s" ) == 0 ) {
+        /* Convert cm/s to m/s */
+        Input_Opt.TRANSPORT_UPDRAFT_VELOCITY *= 1.0E-02;
+    } else if ( unit.compare( "mm/s" ) == 0 ) {
+        /* Convert mm/s to m/s */
+        Input_Opt.TRANSPORT_UPDRAFT_VELOCITY *= 1.00E-03;
+    } else {
+        std::cout << " Unknown unit for variable 'Updraft velocity': ";
+        std::cout << unit << std::endl;
+        exit(1);
+    }
 
     /* Return success */
     RC = SUCCESS;
@@ -3005,6 +3114,9 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " Turn on Transport?      : " << Input_Opt.TRANSPORT_TRANSPORT                      << std::endl;
     std::cout << "  => Fill Negative Values: " << Input_Opt.TRANSPORT_FILL                           << std::endl;
     std::cout << " Transport Timestep [min]: " << Input_Opt.TRANSPORT_TIMESTEP                       << std::endl;
+    std::cout << " Turn on plume updraft?  : " << Input_Opt.TRANSPORT_UPDRAFT                        << std::endl;
+    std::cout << "  => Updraft timescale[s]: " << Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE              << std::endl;
+    std::cout << "  => Updraft vel.   [m/s]: " << Input_Opt.TRANSPORT_UPDRAFT_VELOCITY               << std::endl;
 
 } /* End of Read_Transport_Menu */
 
@@ -3248,29 +3360,6 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
         exit(1);
     }
     
-    /* ==================================================== */
-    /* Turn on plume updraft?                               */
-    /* ==================================================== */
-
-    variable = "Turn on plume updraft?";
-    getline( inputFile, line, '\n' );
-    if ( VERBOSE )
-        std::cout << line << std::endl;
-    
-    /* Extract variable */
-    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
-    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
-         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.AEROSOL_PLUME_UPDRAFT = 1;
-    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
-              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.AEROSOL_PLUME_UPDRAFT = 0;
-    else {
-        std::cout << " Wrong input for: " << variable << std::endl;
-        exit(1);
-    }
-    
     /* Return success */
     RC = SUCCESS;
 
@@ -3285,7 +3374,6 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " Turn on coagulation?    : " << Input_Opt.AEROSOL_COAGULATION                      << std::endl;
     std::cout << "  => Coag. timestep [min]: " << Input_Opt.AEROSOL_COAGULATION_TIMESTEP             << std::endl;
     std::cout << " Turn on ice growth?     : " << Input_Opt.AEROSOL_ICE_GROWTH                       << std::endl;
-    std::cout << " Turn on plume updraft?  : " << Input_Opt.AEROSOL_PLUME_UPDRAFT                    << std::endl;
 
 } /* End of Read_Aerosol_Menu */
 
