@@ -58,15 +58,22 @@ Photolysis rates folder : /net/d04/data/fritzt/APCEMM_Data/J-Rates
 ------------------------+------------------------------------------------------
 %%% AEROSOL MENU %%%    :
 Turn on grav. settling? : T
-Turn on coagulation?    : F
+Turn on coagulation?    : T
  => Coag. timestep [min]: 60
 Turn on ice growth?     : T
 Turn on plume updraft?  : F
 ------------------------+------------------------------------------------------
 %%% METEOROLOGY MENU %%%:
-Initialize T from MET?  : F
-Initialize H2O form MET?: F
-Met file                : /path/to/met/input
+Do we have MET input?   : F
+ => Met file            : /path/to/met/input
+ => Init T from MET?    : F
+ => Init H2O form MET?  : F
+------------------------:
+Impose moist layer depth: T
+ => Moist layer depth[m]: 200
+--- OR -----------------:
+Impose temp. lapse rate : F
+ => Lapse rate [K/m]    : -3.0E-03
 ------------------------+------------------------------------------------------
 %%% DIAGNOSTIC MENU %%% :
 netCDF file name        : trac_avg.apcemm.hhmm
