@@ -307,12 +307,16 @@ void Solution::Initialize( char const *fileName, const Input &input, \
         H2O = met.H2O_;
     } else {
         /* Else use user-defined H2O profile */
+        RealDouble H2Oval = (input.relHumidity_w()/((double) 100.0) * \
+                          physFunc::pSat_H2Ol( input.temperature_K() ) / ( physConst::kB * input.temperature_K() )) / 1.00E+06;
         for ( unsigned int i = 0; i < size_x; i++ ) {
             for ( unsigned int j = 0; j < size_y; j++ ) {
-                H2O[j][i] = (input.relHumidity_w()/((double) 100.0) * \
-                                 physFunc::pSat_H2Ol( met.temp_[j][i] ) / ( physConst::kB * met.temp_[j][i] )) / 1.00E+06;
+                H2O[j][i] = H2Oval;
+//                H2O[j][i] = (input.relHumidity_w()/((double) 100.0) * \
+//                                 physFunc::pSat_H2Ol( met.temp_[j][i] ) / ( physConst::kB * met.temp_[j][i] )) / 1.00E+06;
                 /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
             }
+//            std::cout << "H2O[" << 0 << "][" << i << "] = " << H2O[0][i] << ", ";
         }
     }
 
@@ -339,10 +343,12 @@ void Solution::Initialize( char const *fileName, const Input &input, \
     /* Liquid/solid species */
     SetShape( SO4L , size_x, size_y, (double) AERFRAC[0]                          * stratData[0] );
     SetShape( SO4  , size_x, size_y, (double) ( 1.0 - AERFRAC[0] )                * stratData[0] );
-    
+
+    AERFRAC[6] = 0.0E+00;
+    SOLIDFRAC[6] = 0.0E+00;
     SetShape( H2OL , size_x, size_y, (double) AERFRAC[6]                          * stratData[6] );
     SetShape( H2OS , size_x, size_y, (double) SOLIDFRAC[6]                        * stratData[6] );
-    SetShape( H2O  , size_x, size_y, (double) ( 1.0 - AERFRAC[6] - SOLIDFRAC[6] ) * stratData[6] );
+//    SetShape( H2O  , size_x, size_y, (double) ( 1.0 - AERFRAC[6] - SOLIDFRAC[6] ) * stratData[6] );
     
     SetShape( HNO3L, size_x, size_y, (double) AERFRAC[1]                          * stratData[1] );
     SetShape( HNO3S, size_x, size_y, (double) SOLIDFRAC[1]                        * stratData[1] );
