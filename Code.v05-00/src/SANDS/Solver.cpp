@@ -161,7 +161,7 @@ namespace SANDS
     {
 
         // vH > 0 means left, < 0 means right
-        // vV > 0 means upwards, < 0 means downwards
+        // vV > 0 means downwards, < 0 means upwards
 
         for ( unsigned int iNx = 0; iNx < n_x; iNx++ ) {
             for ( unsigned int jNy = 0; jNy < n_y; jNy++ )
