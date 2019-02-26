@@ -285,7 +285,7 @@ namespace SANDS
                 if ( V[jNy][iNx] <= V0 ) {
                     /* */
                     V[jNy][iNx] = V0 * exp( V[jNy][iNx] / V0 - 1.0 );
-                    /* Mass of element lower than V0 in [#/cm^3*m^2] */
+                    /* Mass of element lower than V0 in [V]*[m^2] */
                     C += ( V[jNy][iNx] - Vlow ) *\
                          ( V0 - V[jNy][iNx] )   *\
                          cellAreas[jNy][iNx];
@@ -296,9 +296,11 @@ namespace SANDS
             }
         }
 
-        /* Correction factor. 
-         * If mass0 == mass, then correction factor is 0. */
-        C  = ( mass0 - mass ) / C;
+        if ( C != 0.0E+00 ) {
+            /* Correction factor.
+             * If mass0 == mass, then correction factor is 0. */
+            C  = ( mass0 - mass ) / C;
+        }
 
         /* If correction factor is not finite, set it to 0
          * This is unlikely to make a difference. */
