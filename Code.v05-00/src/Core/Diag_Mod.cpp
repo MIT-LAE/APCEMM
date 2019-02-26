@@ -2687,6 +2687,25 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
 
+            /* Saving ice aerosol effective radius
+             * Size: NY x NX */
+
+            strncpy( charSpc, "Effective radius", sizeof(charSpc) );
+            strncpy( charName, "Aerosol effective radius", sizeof(charName) );
+            strncpy( charUnit, "m", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            array = util::vect2double( Data.solidAerosol.EffRadius(), m.Ny(), m.Nx(), scalingFactor );
+#else
+            array = util::vect2float ( Data.solidAerosol.EffRadius(), m.Ny(), m.Nx(), scalingFactor );
+#endif /* SAVE_TO_DOUBLE */
+
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0], \
+                                         (const char*)charSpc,             \
+                                         yDim, xDim, outputType,           \
+                                         (const char*)charUnit,            \
+                                         (const char*)charName );
+
             /* Saving horizontal optical depth
              * Size: NY */
 
