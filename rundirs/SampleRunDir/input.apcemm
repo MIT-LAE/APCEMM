@@ -49,6 +49,9 @@ Total fuel flow [kg/s]  : 3.2
 Turn on Transport?      : T
  => Fill Negative Values: T
 Transport Timestep [min]: 10
+Turn on plume updraft?  : F
+ => Updraft timescale[s]: 3600
+ => Updraft vel. [cm/s] : 0
 ------------------------+------------------------------------------------------
 %%% CHEMISTRY MENU %%%  :
 Turn on Chemistry?      : T
@@ -61,7 +64,6 @@ Turn on grav. settling? : T
 Turn on coagulation?    : T
  => Coag. timestep [min]: 60
 Turn on ice growth?     : T
-Turn on plume updraft?  : F
 ------------------------+------------------------------------------------------
 %%% METEOROLOGY MENU %%%:
 Do we have MET input?   : F
