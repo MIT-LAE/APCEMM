@@ -16,6 +16,7 @@
 const unsigned int SUCCESS = 1;
 
 const bool VERBOSE = false;
+const char* EMPTY = "";
 const char* SPACE = " ";
 const char* TAB   = "\t";
 const char* COLON = ":";
@@ -88,7 +89,7 @@ void Read_Input_File( OptInput &Input_Opt )
 
         /* Print to the console? */
         if ( VERBOSE )
-            std::cout << line << std::endl;
+            std::cout << " " << line << std::endl;
 
         if ( strstr( line.c_str(), "SIMULATION MENU" ) != NULL ) {
 
@@ -162,10 +163,15 @@ void Read_Input_File( OptInput &Input_Opt )
 
             Read_PL_Menu( Input_Opt, RC );
 
-        } else if ( strstr( line.c_str(), "END OF FILE" ) != NULL )
+        } else if ( strstr( line.c_str(), "END OF FILE" ) != NULL ) {
+            std::cout << " " << line << std::endl;
             break;
+        }
                 
     }
+
+    getline( inputFile, line, '\n' );
+    std::cout << " " << line << std::endl;
 
     /* Close input file */
     inputFile.close();
@@ -3728,18 +3734,20 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     
     /* Store in values for variable */
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
-        try {
-            value = std::stoi( tokens[i] );
-            if ( value > 0 )
-                Input_Opt.TS_SPECIES.push_back( value );
-            else {
-                std::cout << " Wrong input for: " << variable << std::endl;
-                std::cout << " Index needs to be positive" << std::endl;
+        if ( strcmp(tokens[i].c_str(), EMPTY) != 0 ) {
+            try {
+                value = std::stoi( tokens[i] );
+                if ( value > 0 )
+                    Input_Opt.TS_SPECIES.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << " Index needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[i] << "' to int for " << variable << std::endl;
                 exit(1);
             }
-        } catch(std::exception& e) {
-            std::cout << " Could not convert string '" << tokens[i] << "' to int for " << variable << std::endl;
-            exit(1);
         }
     }
 
@@ -3826,18 +3834,20 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     
     /* Store in values for variable */
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
-        try {
-            value = std::stoi( tokens[i] );
-            if ( value > 0 )
-                Input_Opt.TS_AEROSOL.push_back( value );
-            else {
-                std::cout << " Wrong input for: " << variable << std::endl;
-                std::cout << " Index needs to be positive" << std::endl;
+        if ( strcmp(tokens[i].c_str(), EMPTY) != 0 ) {
+            try {
+                value = std::stoi( tokens[i] );
+                if ( value > 0 )
+                    Input_Opt.TS_AEROSOL.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << " Index needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[i] << "' to int for " << variable << std::endl;
                 exit(1);
             }
-        } catch(std::exception& e) {
-            std::cout << " Could not convert string '" << tokens[i] << "' to int for " << variable << std::endl;
-            exit(1);
         }
     }
 
@@ -3981,6 +3991,7 @@ void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     std::cout << " Turn on P/L diag?       : " << Input_Opt.PL_PL                                    << std::endl;
     std::cout << " Save O3 P/L?            : " << Input_Opt.PL_O3                                    << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
 
 } /* End of Read_PL_Menu */
 
