@@ -3304,48 +3304,36 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
 
     std::vector<std::string> tokens;
     std::string variable;
+    double value;
+    
+    /* ==================================================== */
+    /* Do we have MET input?                                */
+    /* ==================================================== */
 
-    /* ==================================================== */
-    /* Initialize T from MET?                               */
-    /* ==================================================== */
-    
-    variable = "Initialize T from MET?";
+    variable = "Do we have MET input?";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
     
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
+
     if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
-         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.MET_TEMP_INIT = 1;
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "y" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Y" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "yes" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "YES" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Yes" ) == 0 ) )
+        Input_Opt.MET_MET = 1;
     else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
-              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.MET_TEMP_INIT = 0;
-    else {
-        std::cout << " Wrong input for: " << variable << std::endl;
-        exit(1);
-    }
-    
-    /* ==================================================== */
-    /* Initialize H2O from MET?                             */
-    /* ==================================================== */
-    
-    variable = "Initialize H2O from MET?";
-    getline( inputFile, line, '\n' );
-    if ( VERBOSE )
-        std::cout << line << std::endl;
-    
-    /* Extract variable */
-    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
-    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
-         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.MET_H2O_INIT = 1;
-    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
-              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.MET_H2O_INIT = 0;
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "n" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "N" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "no" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "NO" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "No" ) == 0 ) ) 
+        Input_Opt.MET_MET = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
@@ -3359,12 +3347,157 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
+    Input_Opt.MET_FILENAME = tokens[0];
+
+    /* ==================================================== */
+    /* Initialize T from MET?                               */
+    /* ==================================================== */
+
+    variable = "Initialize T from MET?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.MET_TEMP_INIT = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.MET_TEMP_INIT = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Initialize H2O from MET?                             */
+    /* ==================================================== */
+
+    variable = "Initialize H2O from MET?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.MET_H2O_INIT = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.MET_H2O_INIT = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* Skip line */
+    getline( inputFile, line, '\n' );
+
+    /* ==================================================== */
+    /* Impose moist layer depth                             */
+    /* ==================================================== */
+
+    variable = "Impose moist layer depth?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.MET_FIXDEPTH = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.MET_FIXDEPTH = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* ==================================================== */
+    /* Moist layer depth                                    */
+    /* ==================================================== */
+
+    variable = "Moist layer depth [m]";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
     
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
-    Input_Opt.MET_FILENAME = tokens[0];
+    try {
+        value = std::stod( tokens[0] );
+        if ( value > 0.0E+00 )
+            Input_Opt.MET_DEPTH = value;
+        else {
+            std::cout << " Wrong input for: " << variable << std::endl;
+            std::cout << " Timestep needs to be positive" << std::endl;
+            exit(1);
+        }
+    } catch(std::exception& e) {
+        std::cout << " Could not convert string to double for " << variable << std::endl;
+        exit(1);
+    }
+
+    /* Skip line */
+    getline( inputFile, line, '\n' );
+
+    /* ==================================================== */
+    /* Impose temperature lapse rate                        */
+    /* ==================================================== */
+
+    variable = "Impose temperature lapse rate?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.MET_FIXLAPSERATE = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.MET_FIXLAPSERATE = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* ==================================================== */
+    /* Temperature lapse rate                               */
+    /* ==================================================== */
+
+    variable = "Temperature lapse rate [K/m]";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    try {
+        value = std::stod( tokens[0] );
+        Input_Opt.MET_LAPSERATE = value;
+    } catch(std::exception& e) {
+        std::cout << " Could not convert string to double for " << variable << std::endl;
+        exit(1);
+    }
+
 
     /* Return success */
     RC = SUCCESS;
@@ -3376,9 +3509,16 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     std::cout << " %%% METEOROLOGY MENU %%%:"                                                        << std::endl;
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
-    std::cout << " Initialize T from MET?  : " << Input_Opt.MET_TEMP_INIT                            << std::endl;
-    std::cout << " Initialize H2O from MET?: " << Input_Opt.MET_H2O_INIT                             << std::endl;
-    std::cout << " Met file                : " << Input_Opt.MET_FILENAME                             << std::endl;
+    std::cout << " Do we have MET input?   : " << Input_Opt.MET_MET                                  << std::endl;
+    std::cout << "  => Met file            : " << Input_Opt.MET_FILENAME                             << std::endl;
+    std::cout << "  => Init T from MET?    : " << Input_Opt.MET_TEMP_INIT                            << std::endl;
+    std::cout << "  => Init H2O from MET?  : " << Input_Opt.MET_H2O_INIT                             << std::endl;
+    std::cout << " ------------------------: " << std::endl;
+    std::cout << " Impose moist layer depth: " << Input_Opt.MET_FIXDEPTH                             << std::endl;
+    std::cout << "  => Moist layer depth[m]: " << Input_Opt.MET_DEPTH                                << std::endl;
+    std::cout << " ---- OR ----------------: " << std::endl;
+    std::cout << " Impose temp. lapse rate : " << Input_Opt.MET_FIXLAPSERATE                         << std::endl;
+    std::cout << "  => Lapse rate [K/m]    : " << Input_Opt.MET_LAPSERATE                            << std::endl;
 
 } /* End of Read_Meteorology_Menu */
 
@@ -5941,6 +6081,13 @@ void Are_Flags_Valid( const OptInput &Input_Opt )
                                              Input_Opt.PL_O3 ) ) {
         std::cout << " In Are_Flags_Valid:";
         std::cout << " CHEMISTRY is turned off while P&L rates output is turned on!" << std::endl;
+        std::cout << " Aborting!" << std::endl;
+        exit(-1);
+    }
+
+    if ( !Input_Opt.MET_MET && Input_Opt.MET_FIXDEPTH && Input_Opt.MET_FIXLAPSERATE ) {
+        std::cout << " In Are_Flags_Valid:";
+        std::cout << " MET is turned off and both FIXDEPTH and FIXLAPSERATE are turned on!" << std::endl;
         std::cout << " Aborting!" << std::endl;
         exit(-1);
     }

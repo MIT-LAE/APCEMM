@@ -147,9 +147,14 @@ class OptInput
         /* ---- METEOROLOGY MENU -------------------- */
         /* ========================================== */
 
+        bool        MET_MET;
+        std::string MET_FILENAME;
         bool        MET_TEMP_INIT;
         bool        MET_H2O_INIT;
-        std::string MET_FILENAME;
+        bool        MET_FIXDEPTH;
+        RealDouble  MET_DEPTH;
+        bool        MET_FIXLAPSERATE;
+        RealDouble  MET_LAPSERATE;
         
         /* ========================================== */
         /* ---- DIAGNOSTIC MENU --------------------- */
