@@ -312,11 +312,8 @@ void Solution::Initialize( char const *fileName, const Input &input, \
         for ( unsigned int i = 0; i < size_x; i++ ) {
             for ( unsigned int j = 0; j < size_y; j++ ) {
                 H2O[j][i] = H2Oval;
-//                H2O[j][i] = (input.relHumidity_w()/((double) 100.0) * \
-//                                 physFunc::pSat_H2Ol( met.temp_[j][i] ) / ( physConst::kB * met.temp_[j][i] )) / 1.00E+06;
                 /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
             }
-//            std::cout << "H2O[" << 0 << "][" << i << "] = " << H2O[0][i] << ", ";
         }
     }
 
