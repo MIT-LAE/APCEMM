@@ -17,6 +17,7 @@ Input::Input( unsigned int iCase,          \
               const Vector_2D &parameters, \
               const std::string fileName,  \
               const std::string fileName_ADJ ):
+    Case_          ( iCase                 ),
     simulationTime_( parameters[ 0][iCase] ),
     temperature_K_ ( parameters[ 1][iCase] ),
     relHumidity_w_ ( parameters[ 2][iCase] ),

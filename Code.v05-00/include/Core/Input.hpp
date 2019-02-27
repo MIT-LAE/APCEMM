@@ -21,6 +21,8 @@
 class Input
 {
 
+    UInt Case_;
+
     RealDouble simulationTime_;
 
     RealDouble temperature_K_;
@@ -64,6 +66,8 @@ class Input
                const std::string fileName_ADJ );
 
         ~Input();
+
+        UInt Case() const { return Case_; }
 
         RealDouble simulationTime() const { return simulationTime_; }
         RealDouble temperature_K() const { return temperature_K_; }
