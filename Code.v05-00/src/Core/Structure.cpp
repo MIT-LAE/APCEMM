@@ -335,7 +335,7 @@ void Solution::Initialize( char const *fileName, const Input &input, \
     SAD.assign( 2, 0.0 );
 
     STATE_PSC = STRAT_AER( input.temperature_K(), input.pressure_Pa(), airDens, input.latitude_deg(), \
-                           stratData, (2.0*XLIM)*(2.0*YLIM), KHETI_SLA, SOLIDFRAC, AERFRAC, RAD, RHO, KG, NDENS, SAD, DBG );
+                           stratData, (2.0*XLIM)*(YLIM_UP+YLIM_DOWN), KHETI_SLA, SOLIDFRAC, AERFRAC, RAD, RHO, KG, NDENS, SAD, DBG );
   
     /* Liquid/solid species */
     SetShape( SO4L , size_x, size_y, (double) AERFRAC[0]                          * stratData[0] );

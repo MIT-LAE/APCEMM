@@ -21,11 +21,12 @@ Mesh::Mesh( )
     nx = NX;
     ny = NY;
 
-    xlim = XLIM;
-    ylim = YLIM;
+    xlim      = XLIM;
+    ylim_up   = YLIM_UP;
+    ylim_down = YLIM_DOWN;
 
     hx_ = 2 * xlim / nx;
-    hy_ = 2 * ylim / ny;
+    hy_ = ( ylim_up + ylim_down ) / ny;
 
     /* Cell center x-coordinates */
     for ( unsigned int i = 0; i < nx; i++ ) {
@@ -40,7 +41,7 @@ Mesh::Mesh( )
     /* Cell center y-coordinates */
     for ( unsigned int j = 0; j < ny; j++ ) {
         y_.push_back( (double) 0.0 );
-        y_[j] = j * hy_ - ylim + hy_ / 2.0;
+        y_[j] = j * hy_ - ylim_down + hy_ / 2.0;
         y_e_.push_back( (double) 0.0 );
         y_e_[j] = y_[j] - hy_ / 2.0;
     }
@@ -69,7 +70,8 @@ Mesh::Mesh( const Mesh &m )
     y_e_ = m.y_e_;
     areas_ = m.areas_;
     xlim = m.xlim;
-    ylim = m.ylim;
+    ylim_up = m.ylim_up;
+    ylim_down = m.ylim_down;
     hx_ = m.hx_;
     hy_ = m.hy_;
     nx = m.nx;
@@ -92,7 +94,8 @@ Mesh& Mesh::operator=( const Mesh &m )
     y_e_ = m.y_e_;
     areas_ = m.areas_;
     xlim = m.xlim;
-    ylim = m.ylim;
+    ylim_up = m.ylim_up;
+    ylim_down = m.ylim_down;
     hx_ = m.hx_;
     hy_ = m.hy_;
     nx = m.nx;

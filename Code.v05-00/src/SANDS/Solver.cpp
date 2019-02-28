@@ -20,7 +20,8 @@ namespace SANDS
         n_x( NX ),
         n_y( NY ),
         xlim( XLIM ),
-        ylim( YLIM ),
+        ylim_up( YLIM_UP ),
+        ylim_down( YLIM_DOWN ),
         doFill( 1 ),
         fillOpt( 1 ),
         fillVal( 0.0E+00 ),
@@ -100,7 +101,7 @@ namespace SANDS
             ky.push_back( 0.0 );
             kyy.push_back( 0.0 );
             k = (i0%n_y) - n_y/2;
-            ky[j] = physConst::PI / ylim * k;
+            ky[j] = 2.0 * physConst::PI / ( ylim_down + ylim_up ) * k;
             kyy[j] = - ky[j] * ky[j];
             i0++;
         }

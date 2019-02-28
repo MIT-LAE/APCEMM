@@ -66,7 +66,7 @@ class Mesh
         /* Total area */
         RealDouble totArea_;
 
-        RealDouble xlim, ylim;
+        RealDouble xlim, ylim_up, ylim_down;
         RealDouble hx_, hy_;
         unsigned int nx, ny;
         std::vector<unsigned int> nCellMap;
