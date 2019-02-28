@@ -1543,6 +1543,7 @@ namespace AIM
                 for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
                     for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
                         pdf[iBin][jNy][iNx] = pdf[iBin][0][0];
+                        H2O[jNy][iNx] = H2O[0][0];
                         bin_VCenters[iBin][jNy][iNx] = bin_VCenters[iBin][0][0];
                     }
                 }
@@ -1555,18 +1556,21 @@ namespace AIM
                     for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
                         for ( UInt iNx = Nx_max; iNx < Nx; iNx++ ) {
                             pdf[iBin][jNy][iNx] = pdf[iBin][jNy][Nx-1-iNx];
+                            H2O[jNy][iNx] = H2O[jNy][Nx-1-iNx];
                             bin_VCenters[iBin][jNy][iNx] = bin_VCenters[iBin][jNy][Nx-1-iNx];
                         }
                     }
                     for ( UInt jNy = Ny_max; jNy < Ny; jNy++ ) {
                         for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
                             pdf[iBin][jNy][iNx] = pdf[iBin][Ny-1-jNy][iNx];
+                            H2O[jNy][iNx] = H2O[Ny-1-jNy][iNx];
                             bin_VCenters[iBin][jNy][iNx] = bin_VCenters[iBin][Ny-1-jNy][iNx];
                         }
                     }
                     for ( UInt jNy = Ny_max; jNy < Ny; jNy++ ) {
                         for ( UInt iNx = Nx_max; iNx < Nx; iNx++ ) {
                             pdf[iBin][jNy][iNx] = pdf[iBin][Ny-1-jNy][Nx-1-iNx];
+                            H2O[jNy][iNx] = H2O[Ny-1-jNy][Nx-1-iNx];
                             bin_VCenters[iBin][jNy][iNx] = bin_VCenters[iBin][Ny-1-jNy][Nx-1-iNx];
                         }
                     }
@@ -1577,6 +1581,7 @@ namespace AIM
                     for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
                         for ( UInt iNx = Nx_max; iNx < Nx; iNx++ ) {
                             pdf[iBin][jNy][iNx] = pdf[iBin][jNy][Nx-1-iNx];
+                            H2O[jNy][iNx] = H2O[jNy][Nx-1-iNx];
                             bin_VCenters[iBin][jNy][iNx] = bin_VCenters[iBin][jNy][Nx-1-iNx];
                         }
                     }
