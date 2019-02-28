@@ -26,7 +26,7 @@ FourierTransform_1D<float>::FourierTransform_1D( const unsigned int rows_ )
     out_IFFT = (scalar_type*)  fftwf_malloc( sizeof(scalar_type)  * rows  );
 
     /* Create FFT plan and compute the best FFT algorithm */
-    plan_FFT = fftwf_plan_dft_r2c_1d( rows, in_FFT, out_FFT, FFTW_EXHAUSTIVE );
+    plan_FFT = fftwf_plan_dft_r2c_1d( rows, in_FFT, out_FFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
@@ -36,7 +36,7 @@ FourierTransform_1D<float>::FourierTransform_1D( const unsigned int rows_ )
     }
 
     /* Create IFFT plan and compute the best IFFT algorithm */
-    plan_IFFT = fftwf_plan_dft_c2r_1d( rows, in_IFFT, out_IFFT, FFTW_EXHAUSTIVE );
+    plan_IFFT = fftwf_plan_dft_c2r_1d( rows, in_IFFT, out_IFFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
@@ -166,7 +166,7 @@ FourierTransform_1D<double>::FourierTransform_1D( const unsigned int rows_ )
     out_IFFT = (scalar_type*)  fftw_malloc( sizeof(scalar_type)  * rows  );
 
     /* Create FFT plan and compute the best FFT algorithm */
-    plan_FFT = fftw_plan_dft_r2c_1d( rows, in_FFT, out_FFT, FFTW_EXHAUSTIVE );
+    plan_FFT = fftw_plan_dft_r2c_1d( rows, in_FFT, out_FFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
@@ -176,7 +176,7 @@ FourierTransform_1D<double>::FourierTransform_1D( const unsigned int rows_ )
     }
 
     /* Create IFFT plan and compute the best IFFT algorithm */
-    plan_IFFT = fftw_plan_dft_c2r_1d( rows, in_IFFT, out_IFFT, FFTW_EXHAUSTIVE );
+    plan_IFFT = fftw_plan_dft_c2r_1d( rows, in_IFFT, out_IFFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
@@ -306,7 +306,7 @@ FourierTransform_1D<long double>::FourierTransform_1D( const unsigned int rows_ 
     out_IFFT = (scalar_type*)  fftwl_malloc( sizeof(scalar_type)  * rows  );
 
     /* Create FFT plan and compute the best FFT algorithm */
-    plan_FFT = fftwl_plan_dft_r2c_1d( rows, in_FFT, out_FFT, FFTW_EXHAUSTIVE );
+    plan_FFT = fftwl_plan_dft_r2c_1d( rows, in_FFT, out_FFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
@@ -316,7 +316,7 @@ FourierTransform_1D<long double>::FourierTransform_1D( const unsigned int rows_ 
     }
 
     /* Create IFFT plan and compute the best IFFT algorithm */
-    plan_IFFT = fftwl_plan_dft_c2r_1d( rows, in_IFFT, out_IFFT, FFTW_EXHAUSTIVE );
+    plan_IFFT = fftwl_plan_dft_c2r_1d( rows, in_IFFT, out_IFFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
@@ -448,7 +448,7 @@ FourierTransform_2D<float>::FourierTransform_2D( const unsigned int rows_, \
     out_IFFT = (scalar_type*)  fftwf_malloc( sizeof(scalar_type)  * rows * cols  );
 
     /* Create FFT plan and compute the best FFT algorithm */
-    plan_FFT = fftwf_plan_dft_r2c_2d( rows, cols, in_FFT, out_FFT, FFTW_EXHAUSTIVE );
+    plan_FFT = fftwf_plan_dft_r2c_2d( rows, cols, in_FFT, out_FFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
@@ -458,7 +458,7 @@ FourierTransform_2D<float>::FourierTransform_2D( const unsigned int rows_, \
     }
 
     /* Create IFFT plan and compute the best IFFT algorithm */
-    plan_IFFT = fftwf_plan_dft_c2r_2d( rows, cols, in_IFFT, out_IFFT, FFTW_EXHAUSTIVE );
+    plan_IFFT = fftwf_plan_dft_c2r_2d( rows, cols, in_IFFT, out_IFFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
@@ -581,7 +581,7 @@ FourierTransform_2D<double>::FourierTransform_2D( const unsigned int rows_, \
     out_IFFT = (scalar_type*)  fftw_malloc( sizeof(scalar_type)  * rows * cols  );
 
     /* Create FFT plan and compute the best FFT algorithm */
-    plan_FFT = fftw_plan_dft_r2c_2d( rows, cols, in_FFT, out_FFT, FFTW_EXHAUSTIVE );
+    plan_FFT = fftw_plan_dft_r2c_2d( rows, cols, in_FFT, out_FFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
@@ -591,7 +591,7 @@ FourierTransform_2D<double>::FourierTransform_2D( const unsigned int rows_, \
     }
 
     /* Create IFFT plan and compute the best IFFT algorithm */
-    plan_IFFT = fftw_plan_dft_c2r_2d( rows, cols, in_IFFT, out_IFFT, FFTW_EXHAUSTIVE );
+    plan_IFFT = fftw_plan_dft_c2r_2d( rows, cols, in_IFFT, out_IFFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
@@ -715,7 +715,7 @@ FourierTransform_2D<long double>::FourierTransform_2D( const unsigned int rows_,
     out_IFFT = (scalar_type*)  fftwl_malloc( sizeof(scalar_type)  * rows * cols  );
 
     /* Create FFT plan and compute the best FFT algorithm */
-    plan_FFT = fftwl_plan_dft_r2c_2d( rows, cols, in_FFT, out_FFT, FFTW_EXHAUSTIVE );
+    plan_FFT = fftwl_plan_dft_r2c_2d( rows, cols, in_FFT, out_FFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
@@ -725,7 +725,7 @@ FourierTransform_2D<long double>::FourierTransform_2D( const unsigned int rows_,
     }
 
     /* Create IFFT plan and compute the best IFFT algorithm */
-    plan_IFFT = fftwl_plan_dft_c2r_2d( rows, cols, in_IFFT, out_IFFT, FFTW_EXHAUSTIVE );
+    plan_IFFT = fftwl_plan_dft_c2r_2d( rows, cols, in_IFFT, out_IFFT, FFTW_PATIENT );
 
     /* Check that plan was successfully created. 
      * Otherwise exit. */
