@@ -105,8 +105,7 @@ namespace SANDS
             i0++;
         }
 
-    }
-
+    } /* End of Solver::AssignFreq */
     
     Vector_2D Solver::getDiffFactor( ) const
     {
@@ -218,6 +217,7 @@ namespace SANDS
         if ( shear != 0 )
             FFT_1D->ApplyShear( ShearFactor, V );
 
+        /* 3) Apply corrections */
         /* Fill negative values with fillVal */
         if ( doFill && fillOpt_ == 0 )
             Fill( V, fillVal );
@@ -274,10 +274,14 @@ namespace SANDS
         RealDouble Vlow = 0.0E+00;
         RealDouble V0   = 0.0E+00;
 
-        if ( V[0][0] > 0 )
-            V0 = V[0][0];
+        if ( V[n_y-1][n_x-1] > 0 )
+            V0 = V[n_y-1][n_x-1];
         else
-            V0 = -V[0][0];
+            V0 = -V[n_y-1][n_x-1];
+
+        if ( V0 <= 1.00E-100 )
+            V0 = 1.00E-100;
+
         Vlow = V0/1.0E+06;
 
         for ( UInt jNy = 0; jNy < n_y; jNy++ ) {
