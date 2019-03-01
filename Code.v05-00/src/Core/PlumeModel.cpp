@@ -29,6 +29,7 @@ static int SUCCESS     =  1;
 #endif /* OMP */
 
 #include "Util/ForwardDecl.hpp"
+#include "Util/MetFunction.hpp"
 #include "Core/Input_Mod.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
@@ -84,7 +85,10 @@ double SZA_CST[3];
 
 
 void DiffParam( double time, double &d_x, double &d_y );
-void AdvGlobal( double time, double &v_x, double &v_y, double &dTrav_x, double &dTrav_y );
+void AdvGlobal( const double time, const double T_UPDRAFT, \
+                const double V_UPDRAFT,                    \
+                double &v_x, double &v_y,                  \
+                double &dTrav_x, double &dTrav_y );
 Vector_1D BuildTime( const double tStart, const double tEnd, \
                      const double sunRise, const double sunSet, \
                      const double DYN_DT );
@@ -128,6 +132,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     #else
         const bool FILLNEG    = Input_Opt.TRANSPORT_FILL;
     #endif /* RINGS */
+    const bool UPDRAFT        = Input_Opt.TRANSPORT_UPDRAFT;
+    const double UPDRAFT_TIME = Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE;
+    const double UPDRAFT_VEL  = Input_Opt.TRANSPORT_UPDRAFT_VELOCITY;
 
     /* ======================================================================= */
     /* ---- Input options from the CHEMISTRY MENU ---------------------------- */
@@ -142,7 +149,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ---- Input options from the AEROSOL MENU ------------------------------ */
     /* ======================================================================= */
 
-    const bool UPDRAFT        = Input_Opt.AEROSOL_PLUME_UPDRAFT;
+    const bool GRAVSETTLING   = Input_Opt.AEROSOL_GRAVSETTLING;
     const bool COAG           = Input_Opt.AEROSOL_COAGULATION;
     const double COAG_DT      = Input_Opt.AEROSOL_COAGULATION_TIMESTEP;
     const bool ICE_GROWTH     = Input_Opt.AEROSOL_ICE_GROWTH;
@@ -150,10 +157,15 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
     /* ---- Input options from the METEOROLOGY MENU -------------------------- */
     /* ======================================================================= */
-    
+   
+    const bool MET_MET        = Input_Opt.MET_MET;
     const bool MET_TEM_INIT   = Input_Opt.MET_TEMP_INIT;
     const bool MET_H2O_INIT   = Input_Opt.MET_H2O_INIT;
     const char* MET_FILENAME  = Input_Opt.MET_FILENAME.c_str();
+    const bool MET_FIXDEPTH   = Input_Opt.MET_FIXDEPTH;
+    const double MET_DEPTH    = Input_Opt.MET_DEPTH;
+    const bool MET_FIXLAPSERATE=Input_Opt.MET_FIXLAPSERATE;
+    const double MET_LAPSERATE= Input_Opt.MET_LAPSERATE;
 
     /* ======================================================================= */
     /* ---- Input options from the DIAGNOSTIC MENU --------------------------- */
@@ -164,16 +176,28 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
     /* ---- Input options from the TIMESERIES MENU --------------------------- */
     /* ======================================================================= */
-    
+
+    std::string TS_FOLDER               = "Case" + std::to_string(input.Case());
+    TS_FOLDER                          += "/";
+    std::string TS_FILE1, TS_FILE2;
     const bool TS_SPEC                  = Input_Opt.TS_SPEC;
-    const char* TS_SPEC_FILENAME        = Input_Opt.TS_FILENAME.c_str();
+    TS_FILE1                            = TS_FOLDER + Input_Opt.TS_FILENAME;
+    const char* TS_SPEC_FILENAME        = TS_FILE1.c_str();
     const std::vector<int> TS_SPEC_LIST = Input_Opt.TS_SPECIES;
     const double TS_FREQ                = Input_Opt.TS_FREQ;
+
     const bool TS_AERO                  = Input_Opt.TS_AERO;
-    const char* TS_AERO_FILENAME        = Input_Opt.TS_AERO_FILENAME.c_str();
+    TS_FILE2                            = TS_FOLDER + Input_Opt.TS_AERO_FILENAME;
+    const char* TS_AERO_FILENAME        = TS_FILE2.c_str();
     const std::vector<int> TS_AERO_LIST = Input_Opt.TS_AEROSOL;
     const double TS_AERO_FREQ           = Input_Opt.TS_AERO_FREQ;
-    
+
+    if ( TS_SPEC )
+        std::cout << "\n Saving TS files to: " << TS_SPEC_FILENAME << std::endl;
+
+    if ( TS_AERO )
+        std::cout << "\n Saving TS_AERO files to: " << TS_AERO_FILENAME << std::endl;
+
     /* ======================================================================= */
     /* ---- Input options from the PROD & LOSS MENU -------------------------- */
     /* ======================================================================= */
@@ -270,6 +294,10 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 #endif /* H2O_MASS_CHECK */
 
+    Vector_2D totIceVol, totIceNum;
+    RealDouble mass_H2O, mass_ice, part;
+    const RealDouble UNITCONVERSION = physConst::RHO_ICE / MW_H2O * physConst::Na;
+
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
     /* --------------------------------- MESH -------------------------------- */
@@ -277,6 +305,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
     Mesh m;
+    const Vector_1D yE = m.y_edge();
 
     /* Get cell areas */
     const Vector_2D cellAreas = m.areas();
@@ -374,7 +403,17 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
 
-    Meteorology Met( LOAD_MET, m, temperature_K, 11.2E+03, -3.0E-03, printDEBUG );
+    /* If imposing a fixed moist layer depth, the temperature lapse rate gets
+     * overwritten */
+    RealDouble LAPSERATE = MET_LAPSERATE; /* [K/m] */
+
+    /* If a fixed depth of the moist layer is imposed, compute the temperature 
+     * lapse rate to have the prescribed RH at flight level and a 100% RH at 
+     * MET_DEPTH (expressed in m) */
+    if ( MET_FIXDEPTH )
+        LAPSERATE = met::ComputeLapseRate( temperature_K, relHumidity_i, MET_DEPTH );
+
+    Meteorology Met( LOAD_MET, m, temperature_K, 11.2E+03, LAPSERATE, printDEBUG );
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -580,7 +619,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     const bool TRANSPORT_PA = ( PA_MICROPHYSICS == 2 );
 
     Vector_1D vFall( Data.nBin_PA, 0.0E+00 );
-    if ( TRANSPORT_PA ) {
+    if ( TRANSPORT_PA && GRAVSETTLING ) {
         /* Compute settling velocities */
         vFall = AIM::SettlingVelocity( Data.solidAerosol.getBinCenters(), \
                                        temperature_K, pressure_Pa );
@@ -742,6 +781,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 
 
+    #pragma omp critical
+    {
     /* Timeseries diagnostics */
     if ( TS_SPEC ) {
         int hh = (int) (curr_Time_s - timeArray[0])/3600;
@@ -751,12 +792,14 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                       Data, m );
     }
 
+    std::cout << "Case: " << input.Case() << std::endl;
     if ( TS_AERO ) {
         int hh = (int) (curr_Time_s - timeArray[0])/3600;
         int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
         int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
         Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
                       Data, m, Met );
+    }
     }
 
     /* Prod & loss diagnostics */
@@ -874,7 +917,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
              * dTrav_y: distance traveled on the y-axis through advection [m]
              */
 
-            AdvGlobal( curr_Time_s - tInitial_s, vGlob_x, vGlob_y, dTrav_x, dTrav_y );
+            AdvGlobal( curr_Time_s - tInitial_s, UPDRAFT_TIME, UPDRAFT_VEL, \
+                       vGlob_x, vGlob_y, dTrav_x, dTrav_y );
 
         }
         else {
@@ -890,9 +934,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         Solver.UpdateDiff ( d_x, d_y );
         /* Assume no plume advection */
         Solver.UpdateAdv  ( 0.0E+00, 0.0E+00 );
+        /* Microphysics settling is considered for each bin independently */
         /* Update shear */
         Solver.UpdateShear( shear, m.y() );
-        /* Microphysics settling is considered for each bin independently */
 
         
         /* ======================================================================= */
@@ -947,9 +991,27 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                     Solver.Run( Data.solidAerosol.pdf[iBin_PA], cellAreas, 1 );
                     Solver.Run( iceVolume[iBin_PA], cellAreas, 1 );
- 
+
                 }
- 
+
+                /* Limit flux of ice particles through top boundary */
+                for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                    for ( jNy = 0; jNy < NY; jNy++ ) {
+                        if ( yE[jNy] > 400 ) {
+                            for ( iNx = 0; iNx < NX; iNx++ ) {
+                                Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
+                                iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
+                            }
+                        }
+                    }
+                }
+                for ( jNy = 0; jNy < NY; jNy++ ) {
+                    if ( yE[jNy] > 400 ) {
+                        for ( iNx = 0; iNx < NX; iNx++ )
+                            Data.H2O[jNy][iNx] = Data.H2O[jNy][0];
+                    }
+                }
+
                 /* Update centers of each bin */
                 Data.solidAerosol.UpdateCenters( iceVolume, Data.solidAerosol.pdf );
 
@@ -964,11 +1026,14 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 #endif /* TIME_IT */
 
-        /* Update temperature field and pressure at new location */
-        /*
-         * To be implemented
-         * Use dTrav_x and dTrav_y to update the temperature and pressure
-         */
+        /* ======================================================================= */
+        /* ----------------------------------------------------------------------- */
+        /* -------------------------- UPDATE METEOROLOGY ------------------------- */
+        /* ----------------------------------------------------------------------- */
+        /* ======================================================================= */
+
+        if ( ( dTrav_y != 0.0E+00 ) || ( dTrav_x != 0.0E+00 ) )
+            Met.Update( m, dTrav_x, dTrav_y );
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~ SO4 partitioning ~~~~~~~~~~~~~~ **/
@@ -1509,6 +1574,25 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 #endif /* TIME_IT */
 
+        /* Compute total water */
+        totIceVol = Data.solidAerosol.TotalVolume( );
+        totIceNum = Data.solidAerosol.TotalNumber( );
+        mass_H2O = 0.0E+00;
+        mass_ice = 0.0E+00;
+        part = 0.0E+00;
+        for ( iNx = 0; iNx < NX; iNx++ ) {
+            for ( jNy = 0; jNy < NY; jNy++ ) {
+                mass_H2O += ( Data.H2O[jNy][iNx] - Data.H2O[0][0] + \
+                              totIceVol[jNy][iNx] * UNITCONVERSION ) * \
+                            cellAreas[jNy][iNx];
+                mass_ice += ( totIceVol[jNy][iNx] * UNITCONVERSION ) * \
+                            cellAreas[jNy][iNx];
+                part += totIceNum[jNy][iNx] * cellAreas[jNy][iNx];
+            }
+        }
+        std::cout << "H2O : " << mass_H2O << std::endl;
+        std::cout << "ICE : " << mass_ice << std::endl;
+        std::cout << "PART: " << part << std::endl;
 
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
@@ -1517,31 +1601,49 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-        ITS_TIME_FOR_LIQ_COAGULATION = ( ( ( curr_Time_s - lastTimeLiqCoag ) >= LIQCOAG_TSTEP ) || LAST_STEP );
+        ITS_TIME_FOR_LIQ_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeLiqCoag ) >= LIQCOAG_TSTEP ) || LAST_STEP );
         /* Liquid aerosol coagulation */
-        if ( ITS_TIME_FOR_LIQ_COAGULATION && LIQ_MICROPHYSICS ) {
-            dtLiqCoag = ( curr_Time_s - lastTimeLiqCoag );
+        if ( ITS_TIME_FOR_LIQ_COAGULATION && COAG ) {
+            dtLiqCoag = ( curr_Time_s + dt - lastTimeLiqCoag );
             if ( printDEBUG )
                 std::cout << "\n DEBUG (Liquid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeLiqCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtLiqCoag << " s\n";
 
-            lastTimeLiqCoag = curr_Time_s;
-            /* TODO! No more symmetry + Fix bool!! */
-            /* Here we assume that the sulfate aerosol fields are symmetric around the X and Y axis */
-            Data.liquidAerosol.Coagulate( dtLiqCoag, Data.LA_Kernel, LA_MICROPHYSICS, (unsigned int) 2 );
+            lastTimeLiqCoag = curr_Time_s + dt;
+            /* If shear = 0, take advantage of the symmetry around the Y-axis */
+            Data.liquidAerosol.Coagulate( dtLiqCoag, Data.LA_Kernel, LA_MICROPHYSICS, ( shear == 0.0E+00 ) );
         }
 
-        ITS_TIME_FOR_ICE_COAGULATION = ( ( ( curr_Time_s - lastTimeIceCoag ) >= ICECOAG_TSTEP ) || LAST_STEP );
+        ITS_TIME_FOR_ICE_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeIceCoag ) >= ICECOAG_TSTEP ) || LAST_STEP );
         /* Solid aerosol coagulation */
-        if ( ITS_TIME_FOR_ICE_COAGULATION && ICE_MICROPHYSICS ) {
-            dtIceCoag = ( curr_Time_s - lastTimeIceCoag );
+        if ( ITS_TIME_FOR_ICE_COAGULATION && COAG ) {
+            dtIceCoag = ( curr_Time_s + dt - lastTimeIceCoag );
             if ( printDEBUG )
                 std::cout << "\n DEBUG (Solid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeIceCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceCoag << " s\n";
 
-            lastTimeIceCoag = curr_Time_s;
-            /* TODO! No more symmetry + Fix bool!! */
-            /* Here we assume that the solid aerosol fields are symmetric around the X axis */
+            lastTimeIceCoag = curr_Time_s + dt;
+            /* If shear = 0, take advantage of the symmetry around the Y-axis */
             Data.solidAerosol.Coagulate ( dtIceCoag, Data.PA_Kernel, PA_MICROPHYSICS, ( shear == 0.0E+00 ) );
         }
+
+        /* Compute total water */
+        totIceVol = Data.solidAerosol.TotalVolume( );
+        totIceNum = Data.solidAerosol.TotalNumber( );
+        mass_H2O = 0.0E+00;
+        mass_ice = 0.0E+00;
+        part = 0.0E+00;
+        for ( iNx = 0; iNx < NX; iNx++ ) {
+            for ( jNy = 0; jNy < NY; jNy++ ) {
+                mass_H2O += ( Data.H2O[jNy][iNx] - Data.H2O[0][0] + \
+                              totIceVol[jNy][iNx] * UNITCONVERSION ) * \
+                            cellAreas[jNy][iNx];
+                mass_ice += ( totIceVol[jNy][iNx] * UNITCONVERSION ) * \
+                            cellAreas[jNy][iNx];
+                part += totIceNum[jNy][iNx] * cellAreas[jNy][iNx];
+            }
+        }
+        std::cout << "H2O : " << mass_H2O << std::endl;
+        std::cout << "ICE : " << mass_ice << std::endl;
+        std::cout << "PART: " << part << std::endl;
 
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
@@ -1554,13 +1656,35 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         ITS_TIME_FOR_ICE_GROWTH = ( ( ( curr_Time_s - lastTimeIceGrowth ) >= 0 ) || LAST_STEP );
         /* Solid aerosol growth */
         if ( ITS_TIME_FOR_ICE_GROWTH && ICE_GROWTH ) {
-            dtIceGrowth = ( curr_Time_s - lastTimeIceGrowth );
+            dtIceGrowth = ( curr_Time_s + dt - lastTimeIceGrowth );
             if ( printDEBUG )
                 std::cout << "\n DEBUG (Solid Aerosol Growth): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last growth event was at: " << ( lastTimeIceGrowth - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceGrowth << " s\n";
  
-            lastTimeIceGrowth = curr_Time_s;
-            Data.solidAerosol.Grow( dtIceGrowth, Data.H2O, Met.Temp(), Met.Press(), PA_MICROPHYSICS, 0 );
+            lastTimeIceGrowth = curr_Time_s + dt;
+            /* If shear = 0, take advantage of the symmetry around the Y-axis */
+            Data.solidAerosol.Grow( dtIceGrowth, Data.H2O, Met.Temp(), Met.Press(), PA_MICROPHYSICS, ( shear == 0 ) );
         }
+
+        /* Compute total water */
+        totIceVol = Data.solidAerosol.TotalVolume( );
+        totIceNum = Data.solidAerosol.TotalNumber( );
+        mass_H2O = 0.0E+00;
+        mass_ice = 0.0E+00;
+        part = 0.0E+00;
+        for ( iNx = 0; iNx < NX; iNx++ ) {
+            for ( jNy = 0; jNy < NY; jNy++ ) {
+                mass_H2O += ( Data.H2O[jNy][iNx] - Data.H2O[0][0] + \
+                              totIceVol[jNy][iNx] * UNITCONVERSION ) * \
+                            cellAreas[jNy][iNx];
+                mass_ice += ( totIceVol[jNy][iNx] * UNITCONVERSION ) * \
+                            cellAreas[jNy][iNx];
+                part += totIceNum[jNy][iNx] * cellAreas[jNy][iNx];
+            }
+        }
+        std::cout << "H2O : " << mass_H2O << std::endl;
+        std::cout << "ICE : " << mass_ice << std::endl;
+        std::cout << "PART: " << part << std::endl;
+        std::cout << std::endl;
 
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
@@ -1681,6 +1805,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         curr_Time_s += dt;
         nTime++;
 
+        #pragma omp critical 
+        {
         /* Timeseries diagnostics */
         if ( TS_SPEC && \
            (( TS_FREQ == 0 ) || \
@@ -1700,6 +1826,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
             Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
                           Data, m, Met );
+        }
         }
 
     }
