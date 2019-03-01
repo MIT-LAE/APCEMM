@@ -15,12 +15,18 @@
 #define PARAMETERS_H_INCLUDED
 
 /* Grid parameters */
-#define NX                256         /* Number of grid cells in the x-direction */
-#define NY                256         /* Number of grid cells in the y-direction */
+#define NX                1024        /* Number of grid cells in the x-direction */
+//#define NX                256         /* Number of grid cells in the x-direction */
+#define NY                1024         /* Number of grid cells in the y-direction */
+//#define NY                256         /* Number of grid cells in the y-direction */
 #define NYH               NY/2 + 1
 #define NCELL             NX*NY       /* Number of grid cells */
-#define XLIM              6.5E+03     /* x-limits of the domain [m] */
-#define YLIM              6.5E+02     /* y-limits of the domain [m] */
+//#define XLIM              22.0E+03     /* x-limits of the domain [m] */
+#define XLIM              18.8E+03     /* x-limits of the domain [m] */
+//#define XLIM              3.0E+04     /* x-limits of the domain [m] */
+//#define YLIM              6.5E+02     /* y-limits of the domain [m] */
+#define YLIM_UP           6.5E+02     /* Upper y-limit of the domain [m] */
+#define YLIM_DOWN         9.0E+02     /* Lower y-limit of the domain [m] */
 
 /* Ring structure */
 #define NRING             15          /* Number of rings */
@@ -45,12 +51,12 @@
 /* Advection  */
 #define VX                0.0E+00     /* Steady-state horizontal advection velocity [m/s] */
 #define VY                0.0E+00     /* Steady-state vertical advection velocity [m/s] */
-#define SYNLIFT           0           /* Initial synoptic lifting? */
-#define T_SYN             3.6E+03     /* Timescale associated to synoptic lifting */
-#define V_SYN             5.0E-02     /* Velocity magnitude [m/s] */
+//T_SYN and V_SYN are now defined in the input file
+//#define T_SYN             3.6E+03     /* Timescale associated to synoptic lifting */
+//#define V_SYN             5.0E-02     /* Velocity magnitude [m/s] */
 #define SYNPROF           1           /* Time profile of the initial synoptic lifting [0,1]
                                        * 0: Step
-                                       * 1: Linear
+                                       * 1: Exponential
                                        */
 
 /* Chemistry parameters */
@@ -72,7 +78,7 @@
 #define LA_VRAT               1.50E+00    /* Size ratio between two consecutive bins */
 #define PA_R_LOW              5.00E-08    /* Ice/NAT lower bin radius [m] */
 #define PA_R_HIG              8.00E-05    /* Ice/NAT larger bin radius [m] */
-#define PA_VRAT               1.70E+00    /* Size ratio between two consecutive bins */
+#define PA_VRAT               1.30E+00    /* Size ratio between two consecutive bins */
 
 /* Early plume integration */
 #define VORTEX_SINKING        1           /* Consider vortex sinking? */
