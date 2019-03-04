@@ -95,7 +95,7 @@ Meteorology::Meteorology( const bool loadFile, \
 
         for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
             H2O_[jNy][0] = 0.0E+00;
-            for ( unsigned int iNx = 1; iNx < X.size(); iNx++ ) {
+            for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
                 temp_[jNy][iNx] = BACKGT \
                                + ( temperature_K - BACKGT ) \
                                * ( 1.0 - 0.5 * ( std::tanh( ( X[iNx] - LEFT ) / 2.0E+03 ) + 1.0 )) \
@@ -183,7 +183,7 @@ void Meteorology::Update( const Mesh &m, const double dTrav_x, const double dTra
 
     for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
         H2O_[jNy][0] = 0.0E+00;
-        for ( unsigned int iNx = 1; iNx < X.size(); iNx++ ) {
+        for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
             temp_[jNy][iNx] = BACKGT \
                            + ( TEMPERATURE - BACKGT ) \
                            * ( 1.0 - 0.5 * ( std::tanh( ( X[iNx] + dTrav_x - LEFT ) / 2.0E+03 ) + 1.0 )) \
