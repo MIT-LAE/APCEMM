@@ -29,6 +29,8 @@ class Meteorology
                      const double temperature_,  \
                      const double altitude_,     \
                      const double LapseRate_,    \
+                     const bool cstDepth_,       \
+                     const double depth_,        \
                      const bool DBG = 0 );
         Meteorology( const Meteorology &met );
         ~Meteorology( );
@@ -55,6 +57,8 @@ class Meteorology
         const double TEMPERATURE;
         const double ALTITUDE;
         const double LAPSERATE;
+        const bool CSTDEPTH;
+        const double DEPTH;
 
         /* Assume that pressure only depends on the vertical coordinate */
         std::vector<double> alt_;
