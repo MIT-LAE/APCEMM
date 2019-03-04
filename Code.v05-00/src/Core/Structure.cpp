@@ -114,6 +114,7 @@ void Solution::Initialize( char const *fileName, const Input &input, \
     else {
         std::string const currFunc("Structure::Initialize");
         std::cout << "ERROR: In " << currFunc << ": Can't read (" << fileName << ")" << std::endl;
+        exit(-1);
     }
 
     SpinUp( amb_Value, input, airDens, \
