@@ -90,7 +90,8 @@ Meteorology::Meteorology( const bool loadFile, \
             BOT = 200.0;
         else
             BOT = DEPTH;
-        LEFT = 7.50E+03;
+        //LEFT = 7.50E+03;
+        LEFT = 2.00E+03;
         RIGHT= LEFT;
 
         for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
@@ -98,8 +99,8 @@ Meteorology::Meteorology( const bool loadFile, \
             for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
                 temp_[jNy][iNx] = BACKGT \
                                + ( temperature_K - BACKGT ) \
-                               * ( 1.0 - 0.5 * ( std::tanh( ( X[iNx] - LEFT ) / 2.0E+03 ) + 1.0 )) \
-                               * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + RIGHT) / 2.0E+03 ) + 1.0 )) \
+                               * ( 1.0 - 0.5 * ( std::tanh( ( X[iNx] - LEFT ) / 1.0E+03 ) + 1.0 )) \
+                               * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + RIGHT) / 1.0E+03 ) + 1.0 )) \
                                * ( 1.0 - 0.5 * ( std::tanh( ( Y[jNy] - TOP  ) / 1.0E+02 ) + 1.0 )) \
                                * ( 0.0 + 0.5 * ( std::tanh( ( Y[jNy] + BOT  ) / 1.0E+02 ) + 1.0 )) \
                                + LapseRate * Y[jNy];
@@ -178,7 +179,8 @@ void Meteorology::Update( const Mesh &m, const double dTrav_x, const double dTra
         BOT = 200.0;
     else
         BOT = DEPTH;
-    LEFT = 7.50E+03;
+    //LEFT = 7.50E+03;
+    LEFT = 2.00E+03;
     RIGHT= LEFT;
 
     for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
@@ -186,8 +188,8 @@ void Meteorology::Update( const Mesh &m, const double dTrav_x, const double dTra
         for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
             temp_[jNy][iNx] = BACKGT \
                            + ( TEMPERATURE - BACKGT ) \
-                           * ( 1.0 - 0.5 * ( std::tanh( ( X[iNx] + dTrav_x - LEFT ) / 2.0E+03 ) + 1.0 )) \
-                           * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + dTrav_x + RIGHT) / 2.0E+03 ) + 1.0 )) \
+                           * ( 1.0 - 0.5 * ( std::tanh( ( X[iNx] + dTrav_x - LEFT ) / 1.0E+03 ) + 1.0 )) \
+                           * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + dTrav_x + RIGHT) / 1.0E+03 ) + 1.0 )) \
                            * ( 1.0 - 0.5 * ( std::tanh( ( Y[jNy] + dTrav_y - TOP  ) / 1.0E+02 ) + 1.0 )) \
                            * ( 0.0 + 0.5 * ( std::tanh( ( Y[jNy] + dTrav_y + BOT  ) / 1.0E+02 ) + 1.0 )) \
                            + LAPSERATE * ( Y[jNy] + dTrav_y );
