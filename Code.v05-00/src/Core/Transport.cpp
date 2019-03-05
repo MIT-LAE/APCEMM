@@ -135,7 +135,7 @@ void Transport( Solution& data, SANDS::Solver& Solver, \
     Solver.Run( data.ALD2    , cellAreas );
     Solver.Run( data.MCO3    , cellAreas );
     Solver.Run( data.CH2O    , cellAreas );
-    Solver.Run( data.H2O     , cellAreas );
+    Solver.Run( data.H2O     , cellAreas, 1 );
     Solver.Run( data.Br      , cellAreas );
     Solver.Run( data.NO      , cellAreas );
     Solver.Run( data.NO3     , cellAreas );
