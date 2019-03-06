@@ -1205,7 +1205,7 @@ namespace AIM
 
     } /* End of Grid_Aerosol::Coagulate */
 
-    void Grid_Aerosol::Grow( const RealDouble dt, Vector_2D &H2O, const Vector_2D T, const Vector_1D P, const UInt N, const UInt SYM )
+    void Grid_Aerosol::Grow( const RealDouble dt, Vector_2D &H2O, const Vector_2D &T, const Vector_1D &P, const UInt N, const UInt SYM )
     {
 
         /* DESCRIPTION:

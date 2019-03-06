@@ -127,7 +127,7 @@ class AIM::Grid_Aerosol
         void Coagulate( const RealDouble dt, Coagulation &kernel, const UInt N = 2, const UInt SYM = 0 );
 
         /* Ice crystal growth */
-        void Grow( const RealDouble dt, Vector_2D &H2O, const Vector_2D T, const Vector_1D P, const UInt N = 2, const UInt SYM = 0 );
+        void Grow( const RealDouble dt, Vector_2D &H2O, const Vector_2D &T, const Vector_1D &P, const UInt N = 2, const UInt SYM = 0 );
     
         /* Update bin centers - Used after aerosol transport */
         void UpdateCenters( const Vector_3D &iceV, const Vector_3D &PDF );
