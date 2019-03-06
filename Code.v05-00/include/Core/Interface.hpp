@@ -31,9 +31,9 @@
                                         liquid aerosols in s */
 
 /* SYMMETRIES */
-#define X_SYMMETRY              1    /* Is the problem symmetric 
+#define X_SYMMETRY              0    /* Is the problem symmetric
                                         around the x-axis? */
-#define Y_SYMMETRY              1    /* Is the problem symmetric 
+#define Y_SYMMETRY              0    /* Is the problem symmetric
                                         around the y-axis? */
 
 /* METEOROLOGICAL DATA */ 
