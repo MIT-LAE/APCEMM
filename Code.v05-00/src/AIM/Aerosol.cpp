@@ -1862,7 +1862,7 @@ namespace AIM
         if ( N > 0 ) {
             return Moment( 1, jNy, iNx ) / N;
         } else {
-            std::cout << "\nIn Grid_Aerosol::Radius: Number of particles is " << N << " <= 0\n";
+            //std::cout << "\nIn Grid_Aerosol::Radius: Number of particles is " << N << " <= 0\n";
             return 0;
         }
 
@@ -1876,7 +1876,7 @@ namespace AIM
         if ( m2 > 0 ) {
             return Moment( 3, jNy, iNx ) / m2;
         } else {
-            std::cout << "\nIn Grid_Aerosol::EffRadius: Second moment is " << m2 << " <= 0\n";
+            //std::cout << "\nIn Grid_Aerosol::EffRadius: Second moment is " << m2 << " <= 0\n";
             return 0;
         }
 
@@ -1890,7 +1890,7 @@ namespace AIM
         if ( N > 0 ) {
             return sqrt( Moment( 2, jNy, iNx ) / N - pow( Moment( 1, jNy, iNx ) / N, 2.0 ) );
         } else {
-            std::cout << "\nIn Grid_Aerosol::StdDev: Number of particles is " << N << " <= 0\n";
+            //std::cout << "\nIn Grid_Aerosol::StdDev: Number of particles is " << N << " <= 0\n";
             return 0;
         }
 
