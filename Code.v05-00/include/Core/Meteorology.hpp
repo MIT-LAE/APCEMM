@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include "Core/Mesh.hpp"
+#include "Util/PhysConstant.hpp"
 #include "Util/MetFunction.hpp"
 
 class Meteorology
@@ -25,6 +26,7 @@ class Meteorology
 
         Meteorology( );
         Meteorology( const bool loadFile,        \
+                     const double solarTime_h,   \
                      const Mesh &m,              \
                      const double temperature_,  \
                      const double altitude_,     \
@@ -35,7 +37,8 @@ class Meteorology
         Meteorology( const Meteorology &met );
         ~Meteorology( );
 
-        void Update( const Mesh &m, const double dTrav_x, const double dTrav_y );
+        void Update( const double solarTime_h, const Mesh &m, \
+                     const double dTrav_x, const double dTrav_y );
 
         double alt( unsigned int j ) const { return alt_[j]; }
         double press( unsigned int j ) const { return press_[j]; }
@@ -59,6 +62,11 @@ class Meteorology
         const double LAPSERATE;
         const bool CSTDEPTH;
         const double DEPTH;
+
+        double DIURNAL_AMPL;
+        double DIURNAL_PHASE;
+
+        double diurnalPert;
 
         /* Assume that pressure only depends on the vertical coordinate */
         std::vector<double> alt_;
