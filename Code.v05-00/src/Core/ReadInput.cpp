@@ -3419,7 +3419,7 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
          ( strcmp(tokens[0].c_str(), "yes" ) == 0 ) || \
          ( strcmp(tokens[0].c_str(), "YES" ) == 0 ) || \
          ( strcmp(tokens[0].c_str(), "Yes" ) == 0 ) )
-        Input_Opt.MET_MET = 1;
+        Input_Opt.MET_LOADMET = 1;
     else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
               ( strcmp(tokens[0].c_str(), "0" ) == 0 ) || \
               ( strcmp(tokens[0].c_str(), "n" ) == 0 ) || \
@@ -3427,7 +3427,7 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
               ( strcmp(tokens[0].c_str(), "no" ) == 0 ) || \
               ( strcmp(tokens[0].c_str(), "NO" ) == 0 ) || \
               ( strcmp(tokens[0].c_str(), "No" ) == 0 ) ) 
-        Input_Opt.MET_MET = 0;
+        Input_Opt.MET_LOADMET = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
@@ -3462,10 +3462,10 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
 
     if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
          ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.MET_TEMP_INIT = 1;
+        Input_Opt.MET_LOADTEMP = 1;
     else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
               ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.MET_TEMP_INIT = 0;
+        Input_Opt.MET_LOADTEMP = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
@@ -3485,10 +3485,10 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
 
     if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
          ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.MET_H2O_INIT = 1;
+        Input_Opt.MET_LOADH2O = 1;
     else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
               ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.MET_H2O_INIT = 0;
+        Input_Opt.MET_LOADH2O = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
@@ -3603,10 +3603,10 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     std::cout << " %%% METEOROLOGY MENU %%%:"                                                        << std::endl;
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
-    std::cout << " Do we have MET input?   : " << Input_Opt.MET_MET                                  << std::endl;
+    std::cout << " Do we have MET input?   : " << Input_Opt.MET_LOADMET                              << std::endl;
     std::cout << "  => Met file            : " << Input_Opt.MET_FILENAME                             << std::endl;
-    std::cout << "  => Init T from MET?    : " << Input_Opt.MET_TEMP_INIT                            << std::endl;
-    std::cout << "  => Init H2O from MET?  : " << Input_Opt.MET_H2O_INIT                             << std::endl;
+    std::cout << "  => Init T from MET?    : " << Input_Opt.MET_LOADTEMP                             << std::endl;
+    std::cout << "  => Init H2O from MET?  : " << Input_Opt.MET_LOADH2O                              << std::endl;
     std::cout << " ------------------------: " << std::endl;
     std::cout << " Impose moist layer depth: " << Input_Opt.MET_FIXDEPTH                             << std::endl;
     std::cout << "  => Moist layer depth[m]: " << Input_Opt.MET_DEPTH                                << std::endl;
@@ -6184,9 +6184,9 @@ void Are_Flags_Valid( const OptInput &Input_Opt )
         exit(-1);
     }
 
-    if ( !Input_Opt.MET_MET && Input_Opt.MET_FIXDEPTH && Input_Opt.MET_FIXLAPSERATE ) {
+    if ( !Input_Opt.MET_LOADMET && Input_Opt.MET_FIXDEPTH && Input_Opt.MET_FIXLAPSERATE ) {
         std::cout << " In Are_Flags_Valid:";
-        std::cout << " MET is turned off and both FIXDEPTH and FIXLAPSERATE are turned on!" << std::endl;
+        std::cout << " LOADMET is turned off and both FIXDEPTH and FIXLAPSERATE are turned on!" << std::endl;
         std::cout << " Aborting!" << std::endl;
         exit(-1);
     }
