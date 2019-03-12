@@ -29,7 +29,6 @@ static int SUCCESS     =  1;
 #endif /* OMP */
 
 #include "Util/ForwardDecl.hpp"
-#include "Util/MetFunction.hpp"
 #include "Core/Input_Mod.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
@@ -157,15 +156,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
     /* ---- Input options from the METEOROLOGY MENU -------------------------- */
     /* ======================================================================= */
-   
-    const bool MET_MET        = Input_Opt.MET_MET;
-    const bool MET_TEM_INIT   = Input_Opt.MET_TEMP_INIT;
-    const bool MET_H2O_INIT   = Input_Opt.MET_H2O_INIT;
-    const char* MET_FILENAME  = Input_Opt.MET_FILENAME.c_str();
-    const bool MET_FIXDEPTH   = Input_Opt.MET_FIXDEPTH;
-    const double MET_DEPTH    = Input_Opt.MET_DEPTH;
-    const bool MET_FIXLAPSERATE=Input_Opt.MET_FIXLAPSERATE;
-    const double MET_LAPSERATE= Input_Opt.MET_LAPSERATE;
+
+    /* Input options from the METEOROLOGY MENU are read in the Meteorology
+     * subroutine */
 
     /* ======================================================================= */
     /* ---- Input options from the DIAGNOSTIC MENU --------------------------- */
@@ -294,10 +287,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 #endif /* H2O_MASS_CHECK */
 
-    Vector_2D totIceVol, totIceNum;
-    RealDouble mass_H2O, mass_ice, part;
-    const RealDouble UNITCONVERSION = physConst::RHO_ICE / MW_H2O * physConst::Na;
-
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
     /* --------------------------------- MESH -------------------------------- */
@@ -305,6 +294,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
     Mesh m;
+    const Vector_1D xE = m.x_edge();
     const Vector_1D yE = m.y_edge();
 
     /* Get cell areas */
@@ -403,17 +393,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
 
-    /* If imposing a fixed moist layer depth, the temperature lapse rate gets
-     * overwritten */
-    RealDouble LAPSERATE = MET_LAPSERATE; /* [K/m] */
-
-    /* If a fixed depth of the moist layer is imposed, compute the temperature 
-     * lapse rate to have the prescribed RH at flight level and a 100% RH at 
-     * MET_DEPTH (expressed in m) */
-    if ( MET_FIXDEPTH )
-        LAPSERATE = met::ComputeLapseRate( temperature_K, relHumidity_i, MET_DEPTH );
-
-    Meteorology Met( LOAD_MET, m, temperature_K, 11.2E+03, LAPSERATE, printDEBUG );
+    Meteorology Met( Input_Opt, curr_Time_s / 3600.0, m,        \
+                     temperature_K, pressure_Pa, relHumidity_i, \
+                     printDEBUG );
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -457,6 +439,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Allocate shear */
     double shear;
+    int LASTINDEX_SHEAR;
 
     /* Initialize */
     d_x = 0;       /* [m2/s] */
@@ -467,6 +450,10 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     dTrav_y = 0;   /* [m]    */
 
     shear = input.shear();; /* [1/s] */
+    if ( shear >= 0.0E+00 )
+        LASTINDEX_SHEAR = NX-1;
+    else
+        LASTINDEX_SHEAR = 0;
 
     /* Fill with? */
     const double fillWith = 0.0E+00;
@@ -889,11 +876,13 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* Is transport turned on? */
         if ( TRANSPORT ) {
 
+            /* Compute diffusion parameters at mid time step */
+
             /* d_x: horizontal diffusion coefficient [m^2/s]
              * d_y: vertical diffusion coefficient [m^2/s]
              */
 
-            DiffParam( curr_Time_s - tInitial_s, d_x, d_y );
+            DiffParam( curr_Time_s - tInitial_s + dt/2.0, d_x, d_y );
 
         }
         else {
@@ -909,7 +898,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* Is plume updraft on? */
         if ( UPDRAFT ) {
 
-            /* Compute global advection velocities */
+            /* Compute global advection velocities at mid time step */
 
             /* vGlob_x > 0 means left, < 0 means right [m/s]
              * vGlob_y > 0 means upwards, < 0 means downwards [m/s]
@@ -917,7 +906,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
              * dTrav_y: distance traveled on the y-axis through advection [m]
              */
 
-            AdvGlobal( curr_Time_s - tInitial_s, UPDRAFT_TIME, UPDRAFT_VEL, \
+            AdvGlobal( curr_Time_s - tInitial_s + dt/2.0, UPDRAFT_TIME, UPDRAFT_VEL, \
                        vGlob_x, vGlob_y, dTrav_x, dTrav_y );
 
         }
@@ -997,7 +986,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                 /* Limit flux of ice particles through top boundary */
                 for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
                     for ( jNy = 0; jNy < NY; jNy++ ) {
-                        if ( yE[jNy] > 400 ) {
+                        if ( ( yE[jNy] > YLIM_UP - 200.0 ) && ( yE[jNy] > 400.0 ) ) {
                             for ( iNx = 0; iNx < NX; iNx++ ) {
                                 Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
                                 iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
@@ -1006,9 +995,27 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                     }
                 }
                 for ( jNy = 0; jNy < NY; jNy++ ) {
-                    if ( yE[jNy] > 400 ) {
+                    if ( ( yE[jNy] > YLIM_UP - 200.0 ) && ( yE[jNy] > 400.0 ) ) {
                         for ( iNx = 0; iNx < NX; iNx++ )
-                            Data.H2O[jNy][iNx] = Data.H2O[jNy][0];
+                            Data.H2O[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
+                    }
+                }
+
+                /* Limit flux of ice particles through left and right boundary */
+                for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                    for ( iNx = 0; iNx < NX; iNx++ ) {
+                        if ( ( xE[iNx] < -35.0E+03 ) || ( xE[iNx] > 35.0E+03 ) ) {
+                            for ( jNy = 0; jNy < NY; jNy++ ) {
+                                Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
+                                iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
+                            }
+                        }
+                    }
+                }
+                for ( iNx = 0; iNx < NX; iNx++ ) {
+                    if ( ( xE[iNx] < -35.0E+03 ) || ( xE[iNx] > 35.0E+03 ) ) {
+                        for ( jNy = 0; jNy < NY; jNy++ )
+                            Data.H2O[jNy][iNx] = Data.H2O[NY-1][iNx];
                     }
                 }
 
@@ -1032,8 +1039,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-        if ( ( dTrav_y != 0.0E+00 ) || ( dTrav_x != 0.0E+00 ) )
-            Met.Update( m, dTrav_x, dTrav_y );
+        /* Update met fields at mid time step */
+        Met.Update( ( curr_Time_s + dt/2 ) / 3600.0, m, dTrav_x, dTrav_y );
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~ SO4 partitioning ~~~~~~~~~~~~~~ **/
@@ -1574,26 +1581,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 #endif /* TIME_IT */
 
-        /* Compute total water */
-        totIceVol = Data.solidAerosol.TotalVolume( );
-        totIceNum = Data.solidAerosol.TotalNumber( );
-        mass_H2O = 0.0E+00;
-        mass_ice = 0.0E+00;
-        part = 0.0E+00;
-        for ( iNx = 0; iNx < NX; iNx++ ) {
-            for ( jNy = 0; jNy < NY; jNy++ ) {
-                mass_H2O += ( Data.H2O[jNy][iNx] - Data.H2O[0][0] + \
-                              totIceVol[jNy][iNx] * UNITCONVERSION ) * \
-                            cellAreas[jNy][iNx];
-                mass_ice += ( totIceVol[jNy][iNx] * UNITCONVERSION ) * \
-                            cellAreas[jNy][iNx];
-                part += totIceNum[jNy][iNx] * cellAreas[jNy][iNx];
-            }
-        }
-        std::cout << "H2O : " << mass_H2O << std::endl;
-        std::cout << "ICE : " << mass_ice << std::endl;
-        std::cout << "PART: " << part << std::endl;
-
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
         /* ------------------------ AEROSOL MICROPHYSICS ------------------------- */
@@ -1601,49 +1588,29 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-        ITS_TIME_FOR_LIQ_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeLiqCoag ) >= LIQCOAG_TSTEP ) || LAST_STEP );
+        ITS_TIME_FOR_LIQ_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeLiqCoag ) >= COAG_DT ) || LAST_STEP );
         /* Liquid aerosol coagulation */
         if ( ITS_TIME_FOR_LIQ_COAGULATION && COAG ) {
             dtLiqCoag = ( curr_Time_s + dt - lastTimeLiqCoag );
             if ( printDEBUG )
-                std::cout << "\n DEBUG (Liquid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeLiqCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtLiqCoag << " s\n";
+                std::cout << "\n DEBUG (Liquid Coagulation): Current time: " << ( curr_Time_s + dt - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeLiqCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtLiqCoag << " s\n";
 
             lastTimeLiqCoag = curr_Time_s + dt;
             /* If shear = 0, take advantage of the symmetry around the Y-axis */
             Data.liquidAerosol.Coagulate( dtLiqCoag, Data.LA_Kernel, LA_MICROPHYSICS, ( shear == 0.0E+00 ) );
         }
 
-        ITS_TIME_FOR_ICE_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeIceCoag ) >= ICECOAG_TSTEP ) || LAST_STEP );
+        ITS_TIME_FOR_ICE_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeIceCoag ) >= COAG_DT ) || LAST_STEP );
         /* Solid aerosol coagulation */
         if ( ITS_TIME_FOR_ICE_COAGULATION && COAG ) {
             dtIceCoag = ( curr_Time_s + dt - lastTimeIceCoag );
             if ( printDEBUG )
-                std::cout << "\n DEBUG (Solid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeIceCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceCoag << " s\n";
+                std::cout << "\n DEBUG (Solid Coagulation): Current time: " << ( curr_Time_s + dt - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeIceCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceCoag << " s\n";
 
             lastTimeIceCoag = curr_Time_s + dt;
             /* If shear = 0, take advantage of the symmetry around the Y-axis */
             Data.solidAerosol.Coagulate ( dtIceCoag, Data.PA_Kernel, PA_MICROPHYSICS, ( shear == 0.0E+00 ) );
         }
-
-        /* Compute total water */
-        totIceVol = Data.solidAerosol.TotalVolume( );
-        totIceNum = Data.solidAerosol.TotalNumber( );
-        mass_H2O = 0.0E+00;
-        mass_ice = 0.0E+00;
-        part = 0.0E+00;
-        for ( iNx = 0; iNx < NX; iNx++ ) {
-            for ( jNy = 0; jNy < NY; jNy++ ) {
-                mass_H2O += ( Data.H2O[jNy][iNx] - Data.H2O[0][0] + \
-                              totIceVol[jNy][iNx] * UNITCONVERSION ) * \
-                            cellAreas[jNy][iNx];
-                mass_ice += ( totIceVol[jNy][iNx] * UNITCONVERSION ) * \
-                            cellAreas[jNy][iNx];
-                part += totIceNum[jNy][iNx] * cellAreas[jNy][iNx];
-            }
-        }
-        std::cout << "H2O : " << mass_H2O << std::endl;
-        std::cout << "ICE : " << mass_ice << std::endl;
-        std::cout << "PART: " << part << std::endl;
 
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
@@ -1664,27 +1631,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             /* If shear = 0, take advantage of the symmetry around the Y-axis */
             Data.solidAerosol.Grow( dtIceGrowth, Data.H2O, Met.Temp(), Met.Press(), PA_MICROPHYSICS, ( shear == 0 ) );
         }
-
-        /* Compute total water */
-        totIceVol = Data.solidAerosol.TotalVolume( );
-        totIceNum = Data.solidAerosol.TotalNumber( );
-        mass_H2O = 0.0E+00;
-        mass_ice = 0.0E+00;
-        part = 0.0E+00;
-        for ( iNx = 0; iNx < NX; iNx++ ) {
-            for ( jNy = 0; jNy < NY; jNy++ ) {
-                mass_H2O += ( Data.H2O[jNy][iNx] - Data.H2O[0][0] + \
-                              totIceVol[jNy][iNx] * UNITCONVERSION ) * \
-                            cellAreas[jNy][iNx];
-                mass_ice += ( totIceVol[jNy][iNx] * UNITCONVERSION ) * \
-                            cellAreas[jNy][iNx];
-                part += totIceNum[jNy][iNx] * cellAreas[jNy][iNx];
-            }
-        }
-        std::cout << "H2O : " << mass_H2O << std::endl;
-        std::cout << "ICE : " << mass_ice << std::endl;
-        std::cout << "PART: " << part << std::endl;
-        std::cout << std::endl;
 
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
