@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include "Core/Mesh.hpp"
+#include "Core/Input_Mod.hpp"
 #include "Util/PhysConstant.hpp"
 #include "Util/MetFunction.hpp"
 
@@ -25,14 +26,12 @@ class Meteorology
     public:
 
         Meteorology( );
-        Meteorology( const bool loadFile,        \
+        Meteorology( const OptInput &USERINPUT,  \
                      const double solarTime_h,   \
                      const Mesh &m,              \
                      const double temperature_,  \
-                     const double altitude_,     \
-                     const double LapseRate_,    \
-                     const bool cstDepth_,       \
-                     const double depth_,        \
+                     const double relHumidity_i, \
+                     const double pressure_Pa,   \
                      const bool DBG = 0 );
         Meteorology( const Meteorology &met );
         ~Meteorology( );
@@ -53,20 +52,26 @@ class Meteorology
 
     protected:
 
-        /* Load data from file? */
-        const bool LOAD;
+        /* Met input type */
+        unsigned int TYPE;
 
         /* Ambient parameters */
         const double TEMPERATURE;
-        const double ALTITUDE;
-        const double LAPSERATE;
-        const bool CSTDEPTH;
-        const double DEPTH;
+        const double PRESSURE;
+        const double RHI;
+        double ALTITUDE;
 
+        /* Temperature lapse rate */
+        double LAPSERATE;
+
+        /* Diurnal temperature variations */
         double DIURNAL_AMPL;
         double DIURNAL_PHASE;
-
         double diurnalPert;
+
+        /* Non-uniformity length scales and temperature perturbations */
+        double DELTAT;
+        double TOP, BOT, LEFT, RIGHT;
 
         /* Assume that pressure only depends on the vertical coordinate */
         std::vector<double> alt_;

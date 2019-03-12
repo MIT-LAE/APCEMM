@@ -14,12 +14,10 @@
 #include "Core/Meteorology.hpp"
 
 Meteorology::Meteorology( ) :
-    LOAD( 0 ),
     TEMPERATURE( 220 ),
+    PRESSURE( 220.0E+02 ),
+    RHI( 0.0E+00 ),
     ALTITUDE( 10.5E+03 ),
-    LAPSERATE( -3.0E-03 ),
-    CSTDEPTH( 0 ),
-    DEPTH( 0.0E+00 ),
     DIURNAL_AMPL( 0.0E+00 ),
     DIURNAL_PHASE( 0.0E+00 )
 {
@@ -28,21 +26,16 @@ Meteorology::Meteorology( ) :
 
 } /* End of Meteorology::Meteorology */
 
-Meteorology::Meteorology( const bool loadFile,        \
+Meteorology::Meteorology( const OptInput &USERINPUT,  \
                           const double solarTime_h,   \
                           const Mesh &m,              \
                           const double temperature_K, \
-                          const double altitude,      \
-                          const double LapseRate,     \
-                          const bool cstDepth,        \
-                          const double depth,         \
+                          const double pressure_Pa,   \
+                          const double relHumidity_i, \
                           const bool DBG ) : 
-    LOAD ( loadFile ),
     TEMPERATURE( temperature_K ),
-    ALTITUDE( altitude ),
-    LAPSERATE( LapseRate ),
-    CSTDEPTH( cstDepth ),
-    DEPTH( depth )
+    PRESSURE( pressure_Pa ),
+    RHI( relHumidity_i )
 {
 
     /* Constructor */
@@ -58,7 +51,18 @@ Meteorology::Meteorology( const bool loadFile,        \
 
     for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ )
         H2O_.push_back( std::vector<double>( X.size(), 0.0E+00 ) );
-    
+
+    /* If imposing a fixed moist layer depth, the temperature lapse rate gets
+     * overwritten */
+    LAPSERATE = USERINPUT.MET_LAPSERATE; /* [K/m] */
+
+    /* If a fixed depth of the moist layer is imposed, compute the temperature 
+     * lapse rate to have the prescribed RH at flight level and a 100% RH at 
+     * MET_DEPTH (expressed in m) */
+    if ( USERINPUT.MET_FIXDEPTH )
+        LAPSERATE = met::ComputeLapseRate( TEMPERATURE, RHI, \
+                                           USERINPUT.MET_DEPTH );
+
     /* The diurnal temperature amplitude represents one-half of the 
      * diurnal temperature range, and the phase represents the hour
      * of maximum temperature. We define the diurnal temperature variation
@@ -74,63 +78,87 @@ Meteorology::Meteorology( const bool loadFile,        \
 
     diurnalPert = DIURNAL_AMPL * cos( 2.0E+00 * physConst::PI * ( solarTime_h - DIURNAL_PHASE ) / 24.0E+00 );
 
-    if ( LOAD ) {
+    if ( USERINPUT.MET_LOADMET ) {
 
-    /* !@#$ */
+        /* Met is loaded in */
+        TYPE = 0;
+
+        if ( USERINPUT.MET_LOADTEMP ) {
+            /* !@#$ */
+        }
+
+        if ( USERINPUT.MET_LOADH2O ) {
+            /* !@#$ */
+        }
 
     } else { 
 
+        met::ISA_pAlt( ALTITUDE, PRESSURE );
+
         for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ )
-            alt_[jNy] = altitude + Y[jNy];
+            alt_[jNy] = ALTITUDE + Y[jNy];
         met::ISA( alt_, press_ );
+
         /* User defined fields can be set here ! */
 
-//        /* X-invariant met field: */
-//        for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
-//            temp_[jNy][X.size()/2] = temperature_K + Y[jNy] * LapseRate + diurnalPert;
-//            /* Unit check: Y [m] * LapseRate [K/m] */
-//            H2O_[jNy][0] = 0.0E+00;
-//            for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
-//                if ( ( X[iNx] < -30.0E+03 ) || ( X[iNx] > 30.0E+03 ) ) {
-//                    /* Add a 1K depression in that region */
-//                    temp_[jNy][iNx] = temp_[jNy][X.size()/2] + 1;
-//                    H2O_[jNy][iNx]  = H2O_[jNy][X.size()/2];
-//                } else {
-//                    temp_[jNy][iNx] = temp_[jNy][X.size()/2];
-//                    H2O_[jNy][iNx]  = H2O_[jNy][X.size()/2];
-//                }
-//            }
-//        }
+        /* Set temperature input type if user-defined */
+        TYPE = 2;
 
-        /* RHi bubble centered on x = 0
-         * Add a ~0.5K depression to ambient air */
-        const double DELTAT = 1.0;
-        const double BACKGT = temperature_K + DELTAT + diurnalPert; /* [K] */
-        double TOP, BOT;
-        double LEFT, RIGHT;
 
-        TOP = 600.0;
-        if ( DEPTH == 0.0E+00 )
-            BOT = 200.0;
-        else
-            BOT = DEPTH;
-        //LEFT = 7.50E+03;
-        LEFT = 30.00E+03;
-        RIGHT= LEFT;
+        if ( TYPE == 1 ) {
+            /* (quasi-)X-invariant met field: */
 
-        for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
-            H2O_[jNy][0] = 0.0E+00;
-            for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
-                temp_[jNy][iNx] = BACKGT + LapseRate * Y[jNy] \
-                               + ( temperature_K - BACKGT )   \
-                               * ( 1.0 - 0.5 * ( std::tanh( ( X[iNx] - LEFT ) / 1.0E+03 ) + 1.0 )) \
-                               * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + RIGHT) / 1.0E+03 ) + 1.0 ));
-//                               * ( 1.0 - 0.5 * ( std::tanh( ( Y[jNy] - TOP  ) / 1.0E+02 ) + 1.0 )) \
-//                               * ( 0.0 + 0.5 * ( std::tanh( ( Y[jNy] + BOT  ) / 1.0E+02 ) + 1.0 ))
-                H2O_[jNy][iNx]  = H2O_[jNy][0];
+            DELTAT = 1.0; /* Add a ~1.0K depression far away */
+            for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
+                temp_[jNy][X.size()/2] = TEMPERATURE + Y[jNy] * LAPSERATE + diurnalPert;
+                /* Unit check: Y [m] * LapseRate [K/m] */
+                H2O_[jNy][0] = 0.0E+00;
+                for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
+                    if ( ( X[iNx] < -30.0E+03 ) || ( X[iNx] > 30.0E+03 ) ) {
+                        /* Add a 1K depression in that region */
+                        temp_[jNy][iNx] = temp_[jNy][X.size()/2] + DELTAT;
+                        H2O_[jNy][iNx]  = H2O_[jNy][X.size()/2];
+                    } else {
+                        temp_[jNy][iNx] = temp_[jNy][X.size()/2];
+                        H2O_[jNy][iNx]  = H2O_[jNy][X.size()/2];
+                    }
+                }
             }
-        }
 
+        } else if ( TYPE == 2 ) {
+
+            /* RHi bubble centered on x = 0
+             * Add a ~3.0K depression to ambient air */
+            DELTAT = 3.0;
+
+            TOP = 600.0;
+            if ( USERINPUT.MET_FIXDEPTH )
+                BOT = USERINPUT.MET_DEPTH;
+            else
+                BOT = 200.0;
+            LEFT = 30.00E+03;
+            RIGHT= LEFT;
+
+            for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
+                H2O_[jNy][0] = 0.0E+00;
+                for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
+                    temp_[jNy][iNx] = TEMPERATURE + DELTAT + diurnalPert + LAPSERATE * Y[jNy] \
+                                   - ( DELTAT ) \
+                                   * ( 1.0 - 0.5 * ( std::tanh( ( X[iNx] - LEFT ) / 1.0E+03 ) + 1.0 )) \
+                                   * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + RIGHT) / 1.0E+03 ) + 1.0 ));
+    //                               * ( 1.0 - 0.5 * ( std::tanh( ( Y[jNy] - TOP  ) / 1.0E+02 ) + 1.0 )) \
+    //                               * ( 0.0 + 0.5 * ( std::tanh( ( Y[jNy] + BOT  ) / 1.0E+02 ) + 1.0 ))
+                    H2O_[jNy][iNx]  = H2O_[jNy][0];
+                }
+            }
+
+        } else {
+
+            std::cout << " In Meteorology::Meteorology: Undefined value for user-input type: ";
+            std::cout << TYPE << std::endl;
+            exit(-1);
+
+        }
     }
 
     if ( DBG ) {
@@ -147,18 +175,26 @@ Meteorology::Meteorology( const bool loadFile,        \
 } /* End of Meteorology::Meteorology */
 
 Meteorology::Meteorology( const Meteorology &met ) :
-    LOAD( met.LOAD ),
     TEMPERATURE( met.TEMPERATURE ),
-    ALTITUDE( met.ALTITUDE ),
-    LAPSERATE( met.LAPSERATE ),
-    CSTDEPTH( met.CSTDEPTH ),
-    DEPTH( met.DEPTH )
+    PRESSURE( met.PRESSURE ),
+    RHI( met.RHI ),
+    ALTITUDE( met.ALTITUDE )
 {
 
-    alt_ = met.alt_;
-    press_ = met.press_;
-    temp_ = met.temp_;
-    H2O_ = met.H2O_;
+    TYPE          = met.TYPE;
+    LAPSERATE     = met.LAPSERATE;
+    DIURNAL_AMPL  = met.DIURNAL_AMPL;
+    DIURNAL_PHASE = met.DIURNAL_PHASE;
+    diurnalPert   = met.diurnalPert;
+    DELTAT        = met.DELTAT;
+    TOP           = met.TOP;
+    BOT           = met.BOT;
+    LEFT          = met.LEFT;
+    RIGHT         = met.RIGHT;
+    alt_          = met.alt_;
+    press_        = met.press_;
+    temp_         = met.temp_;
+    H2O_          = met.H2O_;
 
 } /* End of Meteorology::Meteorology */
 
@@ -184,50 +220,49 @@ void Meteorology::Update( const double solarTime_h, const Mesh &m, \
 
     /* User defined fields can be set here ! */
 
-    /* X-invariant met field: */
-//    for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
-//        temp_[jNy][X.size()/2] = TEMPERATURE + ( Y[jNy] + dTrav_y ) * LAPSERATE + diurnalPert;
-//        /* Unit check: Y [m] * LapseRate [K/m] */
-//        H2O_[jNy][0] = 0.0E+00;
-//        for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
-//            if ( ( X[iNx] < -30.0E+03 ) || ( X[iNx] > 30.0E+03 ) ) {
-//                /* Add a 1K depression in that region */
-//                temp_[jNy][iNx] = temp_[jNy][X.size()/2] + 1;
-//                H2O_[jNy][iNx]  = H2O_[jNy][X.size()/2];
-//            } else {
-//                temp_[jNy][iNx] = temp_[jNy][X.size()/2];
-//                H2O_[jNy][iNx]  = H2O_[jNy][X.size()/2];
-//            }
-//        }
-//    }
+    if ( TYPE == 1 ) {
         
-    /* RHi bubble centered on x = 0
-     * Add a ~0.5K depression to ambient air */
-    const double DELTAT = 1.0;
-    const double BACKGT = TEMPERATURE + DELTAT + diurnalPert; /* [K] */
-    double TOP, BOT;
-    double LEFT, RIGHT;
+        /* (quasi-)X-invariant met field: */
 
-    TOP = 600.0;
-    if ( DEPTH == 0.0E+00 )
-        BOT = 200.0;
-    else
-        BOT = DEPTH;
-    //LEFT = 7.50E+03;
-    LEFT = 30.00E+03;
-    RIGHT= LEFT;
-
-    for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
-        H2O_[jNy][0] = 0.0E+00;
-        for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
-            temp_[jNy][iNx] = BACKGT + LAPSERATE * ( Y[jNy] + dTrav_y ) \
-                           + ( TEMPERATURE - BACKGT ) \
-                           * ( 1.0 - 0.5 * ( std::tanh( ( X[iNx] + dTrav_x - LEFT ) / 1.0E+03 ) + 1.0 )) \
-                           * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + dTrav_x + RIGHT) / 1.0E+03 ) + 1.0 )); 
-//                           * ( 1.0 - 0.5 * ( std::tanh( ( Y[jNy] + dTrav_y - TOP  ) / 1.0E+02 ) + 1.0 )) \
-//                           * ( 0.0 + 0.5 * ( std::tanh( ( Y[jNy] + dTrav_y + BOT  ) / 1.0E+02 ) + 1.0 ))
-            H2O_[jNy][iNx]  = H2O_[jNy][0];
+        for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
+            temp_[jNy][X.size()/2] = TEMPERATURE + Y[jNy] * LAPSERATE + diurnalPert;
+            /* Unit check: Y [m] * LapseRate [K/m] */
+            H2O_[jNy][0] = 0.0E+00;
+            for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
+                if ( ( X[iNx] < -30.0E+03 ) || ( X[iNx] > 30.0E+03 ) ) {
+                    /* Add a 1K depression in that region */
+                    temp_[jNy][iNx] = temp_[jNy][X.size()/2] + DELTAT;
+                    H2O_[jNy][iNx]  = H2O_[jNy][X.size()/2];
+                } else {
+                    temp_[jNy][iNx] = temp_[jNy][X.size()/2];
+                    H2O_[jNy][iNx]  = H2O_[jNy][X.size()/2];
+                }
+            }
         }
+
+    } else if ( TYPE == 2 ) {
+
+        /* RHi bubble centered on x = 0 */
+
+        for ( unsigned int jNy = 0; jNy < Y.size(); jNy++ ) {
+            H2O_[jNy][0] = 0.0E+00;
+            for ( unsigned int iNx = 0; iNx < X.size(); iNx++ ) {
+                temp_[jNy][iNx] = TEMPERATURE + DELTAT + diurnalPert + LAPSERATE * Y[jNy] \
+                               - ( DELTAT ) \
+                               * ( 1.0 - 0.5 * ( std::tanh( ( X[iNx] - LEFT ) / 1.0E+03 ) + 1.0 )) \
+                               * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + RIGHT) / 1.0E+03 ) + 1.0 ));
+//                               * ( 1.0 - 0.5 * ( std::tanh( ( Y[jNy] - TOP  ) / 1.0E+02 ) + 1.0 )) \
+//                               * ( 0.0 + 0.5 * ( std::tanh( ( Y[jNy] + BOT  ) / 1.0E+02 ) + 1.0 ))
+                H2O_[jNy][iNx]  = H2O_[jNy][0];
+            }
+        }
+
+    } else {
+
+        std::cout << " In Meteorology::Meteorology: Undefined value for user-input type: ";
+        std::cout << TYPE << std::endl;
+        exit(-1);
+
     }
 
 
