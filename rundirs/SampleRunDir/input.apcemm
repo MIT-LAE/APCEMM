@@ -70,12 +70,14 @@ Do we have MET input?   : F
  => Met file            : /path/to/met/input
  => Init T from MET?    : F
  => Init H2O form MET?  : F
-------------------------:
+- OR -------------------:
 Impose moist layer depth: T
  => Moist layer depth[m]: 200
 --- OR -----------------:
 Impose temp. lapse rate : F
  => Lapse rate [K/m]    : -3.0E-03
+------------------------:
+Add diurnal variations? : T
 ------------------------+------------------------------------------------------
 %%% DIAGNOSTIC MENU %%% :
 netCDF file name        : trac_avg.apcemm.hhmm
