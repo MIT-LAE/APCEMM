@@ -68,7 +68,7 @@ double UpdateTime( double time, const double tStart, \
     }
 
     if ( ( LVL_TIMESTEP_REFINEMENT >= 1 ) && \
-       ( ( time - tStart ) < 3600.0 && ( time - tStart ) >= 0.0 ) {
+       ( ( time - tStart ) < 3600.0 && ( time - tStart ) >= 0.0 ) ) {
         if ( LVL_TIMESTEP_REFINEMENT == 2 ) {
             /* If default_TimeStep = 10 mins, then:
              * 0.0 - .5 - 1.0 - 1.5 - 2.0 - 2.5 - 3.0 - 3.5 - ... - 59.5 - 60.0 */
@@ -81,6 +81,7 @@ double UpdateTime( double time, const double tStart, \
             std::cout << "In UpdateTime:: Wrong value for LVL_TIMESTEP_REFINEMENT = ";
             std::cout << LVL_TIMESTEP_REFINEMENT << std::endl;
             exit(-1);
+        }
     } else
         timeStep = default_TimeStep;
 
