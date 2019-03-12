@@ -62,7 +62,8 @@ Photolysis rates folder : /net/d04/data/fritzt/APCEMM_Data/J-Rates
 ------------------------+------------------------------------------------------
 %%% AEROSOL MENU %%%    :
 Turn on grav. settling? : T
-Turn on coagulation?    : T
+Turn on solid coag.?    : T
+Turn on liquid coag.?   : F
  => Coag. timestep [min]: 60
 Turn on ice growth?     : T
 ------------------------+------------------------------------------------------

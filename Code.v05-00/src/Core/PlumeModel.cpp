@@ -151,7 +151,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
     const bool GRAVSETTLING   = Input_Opt.AEROSOL_GRAVSETTLING;
-    const bool COAG           = Input_Opt.AEROSOL_COAGULATION;
+    const bool ICE_COAG       = Input_Opt.AEROSOL_COAGULATION_SOLID;
+    const bool LIQ_COAG       = Input_Opt.AEROSOL_COAGULATION_LIQUID;
     const double COAG_DT      = Input_Opt.AEROSOL_COAGULATION_TIMESTEP;
     const bool ICE_GROWTH     = Input_Opt.AEROSOL_ICE_GROWTH;
     
@@ -1586,7 +1587,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         ITS_TIME_FOR_LIQ_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeLiqCoag ) >= COAG_DT ) || LAST_STEP );
         /* Liquid aerosol coagulation */
-        if ( ITS_TIME_FOR_LIQ_COAGULATION && COAG ) {
+        if ( ITS_TIME_FOR_LIQ_COAGULATION && LIQ_COAG ) {
             dtLiqCoag = ( curr_Time_s + dt - lastTimeLiqCoag );
             if ( printDEBUG )
                 std::cout << "\n DEBUG (Liquid Coagulation): Current time: " << ( curr_Time_s + dt - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeLiqCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtLiqCoag << " s\n";
@@ -1598,7 +1599,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         ITS_TIME_FOR_ICE_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeIceCoag ) >= COAG_DT ) || LAST_STEP );
         /* Solid aerosol coagulation */
-        if ( ITS_TIME_FOR_ICE_COAGULATION && COAG ) {
+        if ( ITS_TIME_FOR_ICE_COAGULATION && ICE_COAG ) {
             dtIceCoag = ( curr_Time_s + dt - lastTimeIceCoag );
             if ( printDEBUG )
                 std::cout << "\n DEBUG (Solid Coagulation): Current time: " << ( curr_Time_s + dt - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeIceCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceCoag << " s\n";

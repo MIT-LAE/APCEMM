@@ -142,7 +142,8 @@ class OptInput
         /* ========================================== */
 
         bool        AEROSOL_GRAVSETTLING;
-        bool        AEROSOL_COAGULATION;
+        bool        AEROSOL_COAGULATION_SOLID;
+        bool        AEROSOL_COAGULATION_LIQUID;
         RealDouble  AEROSOL_COAGULATION_TIMESTEP;
         bool        AEROSOL_ICE_GROWTH;
         

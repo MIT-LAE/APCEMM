@@ -3319,10 +3319,10 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     }
 
     /* ==================================================== */
-    /* Turn on coagulation?                                 */
+    /* Turn on solid coag.?                                 */
     /* ==================================================== */
 
-    variable = "Turn on coagulation?";
+    variable = "Turn on solid coag.?";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
@@ -3332,10 +3332,33 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
 
     if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
          ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.AEROSOL_COAGULATION = 1;
+        Input_Opt.AEROSOL_COAGULATION_SOLID = 1;
     else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
               ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.AEROSOL_COAGULATION = 0;
+        Input_Opt.AEROSOL_COAGULATION_SOLID = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Turn on liquid coag.?                                */
+    /* ==================================================== */
+
+    variable = "Turn on liquid coag.?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable range */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.AEROSOL_COAGULATION_LIQUID = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.AEROSOL_COAGULATION_LIQUID = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
@@ -3401,7 +3424,8 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " %%% AEROSOL MENU %%%    :"                                                        << std::endl;
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     std::cout << " Turn on grav. settling? : " << Input_Opt.AEROSOL_GRAVSETTLING                     << std::endl;
-    std::cout << " Turn on coagulation?    : " << Input_Opt.AEROSOL_COAGULATION                      << std::endl;
+    std::cout << " Turn on solid coag.?    : " << Input_Opt.AEROSOL_COAGULATION_SOLID                << std::endl;
+    std::cout << " Turn on liquid coag.?   : " << Input_Opt.AEROSOL_COAGULATION_LIQUID               << std::endl;
     std::cout << "  => Coag. timestep [min]: " << Input_Opt.AEROSOL_COAGULATION_TIMESTEP             << std::endl;
     std::cout << " Turn on ice growth?     : " << Input_Opt.AEROSOL_ICE_GROWTH                       << std::endl;
 
