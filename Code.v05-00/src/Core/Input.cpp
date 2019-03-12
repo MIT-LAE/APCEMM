@@ -21,26 +21,28 @@ Input::Input( unsigned int iCase,          \
     simulationTime_( parameters[ 0][iCase] ),
     temperature_K_ ( parameters[ 1][iCase] ),
     relHumidity_w_ ( parameters[ 2][iCase] ),
-    shear_         ( parameters[ 3][iCase] ),
-    longitude_deg_ ( parameters[ 4][iCase] ),
-    latitude_deg_  ( parameters[ 5][iCase] ),
-    pressure_Pa_   ( parameters[ 6][iCase] ),
-    emissionDOY_   ( parameters[ 7][iCase] ),
-    emissionTime_  ( parameters[ 8][iCase] ),
-    EI_NOx_        ( parameters[ 9][iCase] ),
-    EI_CO_         ( parameters[10][iCase] ),
-    EI_HC_         ( parameters[11][iCase] ),
-    EI_SO2_        ( parameters[12][iCase] ),
-    EI_SO2TOSO4_   ( parameters[13][iCase] ),
-    EI_Soot_       ( parameters[14][iCase] ),
-    sootRad_       ( parameters[15][iCase] ),
-    fuelFlow_      ( parameters[16][iCase] ),
-    backgNOx_      ( parameters[17][iCase] ),
-    backgHNO3_     ( parameters[18][iCase] ),
-    backgO3_       ( parameters[19][iCase] ),
-    backgCO_       ( parameters[20][iCase] ),
-    backgCH4_      ( parameters[21][iCase] ),
-    backgSO2_      ( parameters[22][iCase] ),
+    horizDiff_     ( parameters[ 3][iCase] ),
+    vertiDiff_     ( parameters[ 4][iCase] ),
+    shear_         ( parameters[ 5][iCase] ),
+    longitude_deg_ ( parameters[ 6][iCase] ),
+    latitude_deg_  ( parameters[ 7][iCase] ),
+    pressure_Pa_   ( parameters[ 8][iCase] ),
+    emissionDOY_   ( parameters[ 9][iCase] ),
+    emissionTime_  ( parameters[10][iCase] ),
+    EI_NOx_        ( parameters[11][iCase] ),
+    EI_CO_         ( parameters[12][iCase] ),
+    EI_HC_         ( parameters[13][iCase] ),
+    EI_SO2_        ( parameters[14][iCase] ),
+    EI_SO2TOSO4_   ( parameters[15][iCase] ),
+    EI_Soot_       ( parameters[16][iCase] ),
+    sootRad_       ( parameters[17][iCase] ),
+    fuelFlow_      ( parameters[18][iCase] ),
+    backgNOx_      ( parameters[19][iCase] ),
+    backgHNO3_     ( parameters[20][iCase] ),
+    backgO3_       ( parameters[21][iCase] ),
+    backgCO_       ( parameters[22][iCase] ),
+    backgCH4_      ( parameters[23][iCase] ),
+    backgSO2_      ( parameters[24][iCase] ),
     fileName_      ( fileName ),
     fileName_ADJ_  ( fileName_ADJ )
 {
@@ -90,6 +92,20 @@ Input::Input( unsigned int iCase,          \
         std::cout << " In Input::Input:";
         std::cout << " relHumidity_w takes an unrealisable value: relHumidity_w = ";
         std::cout << relHumidity_w_ << " [%]" << std::endl;
+        exit(-1);
+    }
+    
+    if ( horizDiff_ >= 4.00E+01 || horizDiff_ <= 5.00E+00 ) {
+        std::cout << " In Input::Input:";
+        std::cout << " horizDiff takes an odd value: horizDiff_ = ";
+        std::cout << horizDiff_ << " [m^2/s]" << std::endl;
+        exit(-1);
+    }
+
+    if ( vertiDiff_ >= 4.00E-01 || vertiDiff_ <= 5.00E-02 ) {
+        std::cout << " In Input::Input:";
+        std::cout << " vertiDiff takes an odd value: vertiDiff_ = ";
+        std::cout << vertiDiff_ << " [m^2/s]" << std::endl;
         exit(-1);
     }
 

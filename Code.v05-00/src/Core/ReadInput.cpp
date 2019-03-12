@@ -755,7 +755,185 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             exit(1);
         }
     }
+
+    /* ==================================================== */
+    /* Horiz. diffusion parameter                           */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Horiz. diffusion parameter";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_DH_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_DH_RANGE = 0;
+    }
     
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+    
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_DH_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_DH_RANGE = 0;
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_DH_UNIT.assign( unit );
+
+    /* Store in values for variable */
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_DH.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
+
+    /* ==================================================== */
+    /* Verti. diffusion parameter                           */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Verti. diffusion parameter";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_DV_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_DV_RANGE = 0;
+    }
+    
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+    
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_DV_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_DV_RANGE = 0;
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_DV_UNIT.assign( unit );
+
+    /* Store in values for variable */
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_DV.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
+
     /* ==================================================== */
     /* Shear                                                */
     /* ==================================================== */
@@ -2590,6 +2768,36 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             std::cout << std::endl;
         }
     }
+    std::cout << "  => Horiz. diff. [" << Input_Opt.PARAMETER_DH_UNIT << "]: ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_DH_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_DH[0] << "," << Input_Opt.PARAMETER_DH[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_DH[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_DH_RANGE )
+            std::cout << Input_Opt.PARAMETER_DH[0] << ":" << Input_Opt.PARAMETER_DH[1] << ":" << Input_Opt.PARAMETER_DH[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_DH.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_DH[i] << " ";
+            std::cout << std::endl;
+        }
+    }
+    std::cout << "  => Verti. diff. [" << Input_Opt.PARAMETER_DV_UNIT << "]: ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_DV_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_DV[0] << "," << Input_Opt.PARAMETER_DV[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_DV[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_DV_RANGE )
+            std::cout << Input_Opt.PARAMETER_DV[0] << ":" << Input_Opt.PARAMETER_DV[1] << ":" << Input_Opt.PARAMETER_DV[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_DV.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_DV[i] << " ";
+            std::cout << std::endl;
+        }
+    }
     std::cout << "  => Shear [" << Input_Opt.PARAMETER_SHEAR_UNIT << "]         : ";
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( Input_Opt.PARAMETER_SHEAR_RANGE )
@@ -4170,12 +4378,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- RELATIVE HUMIDITY ------------------------------------------------ */
         /* ---- Accepted units are: % (0-100, default), - (0-1)                    */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_RHW_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_RHW[0], \
@@ -4205,12 +4413,74 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
-        
+
+        /* ======================================================================= */
+        /* ---- HORIZONTAL DIFFUSION PARAMETER ----------------------------------- */
+        /* ---- Accepted units are: m^2/s (default)                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_DH_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_DH[0], \
+                                       Input_Opt.PARAMETER_DH[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_DH[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_DH_UNIT.compare( "m^2/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'Horiz. diffusion parameter': ";
+            std::cout << Input_Opt.PARAMETER_DH_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_DH_UNIT = "m^2/s";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- VERTICAL DIFFUSION PARAMETER ------------------------------------- */
+        /* ---- Accepted units are: m^2/s (default)                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_DV_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_DV[0], \
+                                       Input_Opt.PARAMETER_DV[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_DV[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_DV_UNIT.compare( "m^2/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'Vert. diffusion parameter': ";
+            std::cout << Input_Opt.PARAMETER_DV_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_DV_UNIT = "m^2/s";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
         /* ======================================================================= */
         /* ---- SHEAR ------------------------------------------------------------ */
         /* ---- Accepted units are: 1/s (default)                                  */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_SHEAR_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_SHEAR[0], \
@@ -4236,12 +4506,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
- 
+
         /* ======================================================================= */
         /* ---- LONGITUDE -------------------------------------------------------- */
         /* ---- Accepted units are: degree (default)                               */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_LONGITUDE_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_LONGITUDE[0], \
@@ -4272,7 +4542,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- LATITUDE --------------------------------------------------------- */
         /* ---- Accepted units are: degree (default)                               */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_LATITUDE_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_LATITUDE[0], \
@@ -4292,18 +4562,18 @@ Vector_2D CombVec( OptInput &Input_Opt )
 
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_LATITUDE_UNIT = "deg";
-        
+
         counter += 1;
         y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- PRESSURE --------------------------------------------------------- */
         /* ---- Accepted units are: Pa (default), hPa                              */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_PRESSURE_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_PRESSURE[0], \
@@ -4332,12 +4602,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- EMISSION DAY ----------------------------------------------------- */
         /* ---- Accepted units are: 1-365 (default)                                */
         /* ======================================================================= */
-       
+
         if ( Input_Opt.PARAMETER_EDAY_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand((int) Input_Opt.PARAMETER_EDAY[0], \
@@ -4364,12 +4634,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- EMISSION TIME ---------------------------------------------------- */
         /* ---- Accepted units are: 0-24 (default)                                 */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_ETIME_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_ETIME[0], \
@@ -5043,12 +5313,114 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
+        /* ======================================================================= */
+        /* ---- HORIZONTAL DIFFUSION PARAMETER ----------------------------------- */
+        /* ---- Accepted units are: m^2/s (default)                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_DH_RANGE ) {
+            currVal = Input_Opt.PARAMETER_DH[0];
+            while ( currVal <= Input_Opt.PARAMETER_DH[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_DH[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_DH.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_DH[i]);
+        }
+
+        if ( Input_Opt.PARAMETER_DH_UNIT.compare( "m^2/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'Horiz. diffusion parameter': ";
+            std::cout << Input_Opt.PARAMETER_DH_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_DH_UNIT = "m^2/s";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- VERTICAL DIFFUSION PARAMETER ------------------------------------- */
+        /* ---- Accepted units are: m^2/s (default)                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_DV_RANGE ) {
+            currVal = Input_Opt.PARAMETER_DV[0];
+            while ( currVal <= Input_Opt.PARAMETER_DV[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_DV[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_DV.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_DV[i]);
+        }
+
+        if ( Input_Opt.PARAMETER_DV_UNIT.compare( "m^2/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'Vert. diffusion parameter': ";
+            std::cout << Input_Opt.PARAMETER_DV_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_DV_UNIT = "m^2/s";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
+
         /* ======================================================================= */
         /* ---- SHEAR ------------------------------------------------------------ */
         /* ---- Accepted units are: 1/s (default)                                  */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_SHEAR_RANGE ) {
             currVal = Input_Opt.PARAMETER_SHEAR[0];
             while ( currVal <= Input_Opt.PARAMETER_SHEAR[2] ) {
@@ -5059,7 +5431,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_SHEAR.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_SHEAR[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_SHEAR_UNIT.compare( "1/s" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -5099,7 +5471,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- LONGITUDE -------------------------------------------------------- */
         /* ---- Accepted units are: degree (default)                               */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_LONGITUDE_RANGE ) {
             currVal = Input_Opt.PARAMETER_LONGITUDE[0];
             while ( currVal <= Input_Opt.PARAMETER_LONGITUDE[2] ) {
@@ -5110,7 +5482,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_LONGITUDE.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_LONGITUDE[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_LONGITUDE_UNIT.compare( "deg" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -5126,7 +5498,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5150,7 +5522,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- LATITUDE --------------------------------------------------------- */
         /* ---- Accepted units are: degree (default)                               */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_LATITUDE_RANGE ) {
             currVal = Input_Opt.PARAMETER_LATITUDE[0];
             while ( currVal <= Input_Opt.PARAMETER_LATITUDE[2] ) {
@@ -5161,7 +5533,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_LATITUDE.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_LATITUDE[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_LATITUDE_UNIT.compare( "deg" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -5172,12 +5544,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
 
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_LATITUDE_UNIT = "deg";
-        
+
         z.push_back( Vector_1D(cases.size() ) );
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5196,12 +5568,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- PRESSURE --------------------------------------------------------- */
         /* ---- Accepted units are: Pa (default), hPa                              */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_PRESSURE_RANGE ) {
             currVal = Input_Opt.PARAMETER_PRESSURE[0];
             while ( currVal <= Input_Opt.PARAMETER_PRESSURE[2] ) {
@@ -5231,7 +5603,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5250,12 +5622,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- EMISSION DAY ----------------------------------------------------- */
         /* ---- Accepted units are: 1-365 (default)                                */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EDAY_RANGE ) {
             currVal = Input_Opt.PARAMETER_EDAY[0];
             while ( currVal <= Input_Opt.PARAMETER_EDAY[2] ) {
@@ -5266,7 +5638,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EDAY.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EDAY[i]);
         }
-        
+
         if ( ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "1-365" ) == 0 ) || \
              ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "-" ) == 0 ) ) {
             /* Do nothing. Default unit */
@@ -5283,7 +5655,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5302,12 +5674,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- EMISSION TIME ---------------------------------------------------- */
         /* ---- Accepted units are: 0-24 (default)                                 */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_ETIME_RANGE ) {
             currVal = std::fmod( Input_Opt.PARAMETER_ETIME[0], 24.0 );
             while ( currVal <= Input_Opt.PARAMETER_ETIME[2] ) {
@@ -5318,7 +5690,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_ETIME.size(); i++ )
                 cases.push_back( std::fmod( Input_Opt.PARAMETER_ETIME[i], 24.0 ) );
         }
-        
+
         if ( ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "0-24" ) == 0 ) || \
              ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "hr" ) == 0 ) ) {
             /* Do nothing. Default unit */
@@ -5335,7 +5707,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5359,7 +5731,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_NOX ----------------------------------------------------------- */
         /* ---- Accepted units are: g/kg_fuel (default)                            */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_NOX_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_NOX[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_NOX[2] ) {
@@ -5370,7 +5742,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_NOX.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_NOX[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g/kg_fuel" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -5410,7 +5782,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_CO ------------------------------------------------------------ */
         /* ---- Accepted units are: g/kg_fuel (default)                            */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_CO_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_CO[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_CO[2] ) {
@@ -5421,7 +5793,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_CO.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_CO[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_CO_UNIT.compare( "g/kg_fuel" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -5437,7 +5809,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5461,7 +5833,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_UHC ----------------------------------------------------------- */
         /* ---- Accepted units are: g/kg_fuel (default)                            */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_UHC_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_UHC[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_UHC[2] ) {
@@ -5472,7 +5844,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_UHC.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_UHC[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_UHC_UNIT.compare( "g/kg_fuel" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -5512,7 +5884,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_SO2 ----------------------------------------------------------- */
         /* ---- Accepted units are: g/kg_fuel (default)                            */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_SO2_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_SO2[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_SO2[2] ) {
@@ -5523,7 +5895,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_SO2.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_SO2[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_SO2_UNIT.compare( "g/kg_fuel" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -5539,7 +5911,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5558,7 +5930,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- EI_SO2TOSO4 ------------------------------------------------------ */
         /* ---- Accepted units are: - (default), %                                 */
@@ -5574,7 +5946,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_SO2TOSO4.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_SO2TOSO4[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_SO2TOSO4_UNIT.compare( "-" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_EI_SO2TOSO4_UNIT.compare( "%" ) == 0 ) {
@@ -5594,7 +5966,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5618,7 +5990,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_SOOT ---------------------------------------------------------- */
         /* ---- Accepted units are: g/kg_fuel (default)                            */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_SOOT_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_SOOT[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_SOOT[2] ) {
@@ -5629,7 +6001,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_SOOT.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_SOOT[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_fuel" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -5669,7 +6041,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_SOOTRAD ------------------------------------------------------- */
         /* ---- Accepted units are: m (default), nm                                */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_SOOTRAD_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_SOOTRAD[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_SOOTRAD[2] ) {
@@ -5680,7 +6052,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_SOOTRAD.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_SOOTRAD[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_SOOTRAD_UNIT.compare( "m" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_EI_SOOTRAD_UNIT.compare( "nm" ) == 0 ) {
@@ -5724,7 +6096,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- TOTAL FUEL FLOW -------------------------------------------------- */
         /* ---- Accepted units are: kg/s (default)                                 */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_FF_RANGE ) {
             currVal = Input_Opt.PARAMETER_FF[0];
             while ( currVal <= Input_Opt.PARAMETER_FF[2] ) {
@@ -5735,7 +6107,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_FF.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_FF[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_FF_UNIT.compare( "kg/s" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -5751,7 +6123,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5775,7 +6147,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- BACKGROUND NOX MIXING RATIO -------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_NOX_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_NOX[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_NOX[2] ) {
@@ -5786,7 +6158,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_NOX.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_NOX[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_NOX_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_NOX_UNIT.compare( "ppt" ) == 0 ) {
@@ -5810,7 +6182,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5829,12 +6201,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- BACKGROUND HNO3 MIXING RATIO ------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_HNO3_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_HNO3[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_HNO3[2] ) {
@@ -5845,7 +6217,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_HNO3.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_HNO3[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_HNO3_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_HNO3_UNIT.compare( "ppt" ) == 0 ) {
@@ -5888,12 +6260,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- BACKGROUND O3 MIXING RATIO --------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_O3_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_O3[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_O3[2] ) {
@@ -5904,7 +6276,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_O3.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_O3[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_O3_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_O3_UNIT.compare( "ppt" ) == 0 ) {
@@ -5947,12 +6319,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- BACKGROUND CO MIXING RATIO --------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_CO_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_CO[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_CO[2] ) {
@@ -5963,7 +6335,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_CO.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_CO[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_CO_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_CO_UNIT.compare( "ppt" ) == 0 ) {
@@ -6006,12 +6378,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- BACKGROUND CH4 MIXING RATIO -------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_CH4_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_CH4[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_CH4[2] ) {
@@ -6022,7 +6394,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_CH4.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_CH4[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_CH4_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_CH4_UNIT.compare( "ppt" ) == 0 ) {
@@ -6065,12 +6437,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- BACKGROUND SO2 MIXING RATIO -------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_SO2_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_SO2[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_SO2[2] ) {
@@ -6081,7 +6453,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_SO2.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_SO2[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_SO2_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_SO2_UNIT.compare( "ppt" ) == 0 ) {
@@ -6123,7 +6495,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 y[j][i] = u[j][i];
             y[counter-1][i] = v[0][i];
         }
-    
+
         return y;
 
     }

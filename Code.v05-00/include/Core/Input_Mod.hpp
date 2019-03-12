@@ -55,6 +55,12 @@ class OptInput
         bool        PARAMETER_RHW_RANGE;
         std::string PARAMETER_RHW_UNIT;
         Vector_1D   PARAMETER_RHW;
+        bool        PARAMETER_DH_RANGE;
+        std::string PARAMETER_DH_UNIT;
+        Vector_1D   PARAMETER_DH;
+        bool        PARAMETER_DV_RANGE;
+        std::string PARAMETER_DV_UNIT;
+        Vector_1D   PARAMETER_DV;
         bool        PARAMETER_SHEAR_RANGE;
         std::string PARAMETER_SHEAR_UNIT;
         Vector_1D   PARAMETER_SHEAR;

@@ -28,6 +28,8 @@ class Input
     RealDouble temperature_K_;
     RealDouble pressure_Pa_;
     RealDouble relHumidity_w_;
+    RealDouble horizDiff_;
+    RealDouble vertiDiff_;
     RealDouble shear_;
 
     RealDouble longitude_deg_;
@@ -73,6 +75,8 @@ class Input
         RealDouble temperature_K() const { return temperature_K_; }
         RealDouble pressure_Pa() const { return pressure_Pa_; }
         RealDouble relHumidity_w() const { return relHumidity_w_; }
+        RealDouble horizDiff() const { return horizDiff_; }
+        RealDouble vertiDiff() const { return vertiDiff_; }
         RealDouble shear() const { return shear_; }
         
         RealDouble longitude_deg() const { return longitude_deg_; }
