@@ -748,9 +748,10 @@ namespace AIM
             }
 
             for ( UInt iBin = 0; iBin < bin_Centers.size(); iBin++ ) {
+                pdf[iBin][0][0] = nPart * exp( - 0.5 * ( ( log( bin_Centers[iBin] ) - log( mu ) ) / log( sigma ) ) * ( ( log( bin_Centers[iBin] ) - log( mu ) ) / log( sigma ) ) ) / ( sqrt( 2.0 * physConst::PI ) * log( sigma ) );
                 for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
                     for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                        pdf[iBin][jNy][iNx] = nPart * exp( - 0.5 * ( ( log( bin_Centers[iBin] ) - log( mu ) ) / log( sigma ) ) * ( ( log( bin_Centers[iBin] ) - log( mu ) ) / log( sigma ) ) ) / ( sqrt( 2.0 * physConst::PI ) * log( sigma ) );
+                        pdf[iBin][jNy][iNx] = pdf[iBin][0][0];
                     }
                 }
             }
@@ -760,9 +761,10 @@ namespace AIM
              * dn/d(ln(r)) = N / ( sqrt(2*\pi) * sigma ) * exp( - ( r - r_m ) ^ 2 / ( 2 * sigma ^2 )) */
 
             for ( UInt iBin = 0; iBin < bin_Centers.size(); iBin++ ) {
+                pdf[iBin][0][0] = nPart * exp( - 0.5 * ( ( bin_Centers[iBin] - mu ) / sigma ) * ( ( bin_Centers[iBin] - mu ) / sigma ) ) / ( sqrt( 2.0 * physConst::PI ) * sigma );
                 for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
                     for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                        pdf[iBin][jNy][iNx] = nPart * exp( - 0.5 * ( ( bin_Centers[iBin] - mu ) / sigma ) * ( ( bin_Centers[iBin] - mu ) / sigma ) ) / ( sqrt( 2.0 * physConst::PI ) * sigma );
+                        pdf[iBin][jNy][iNx] = pdf[iBin][0][0];
                     }
                 }
             }
@@ -776,9 +778,10 @@ namespace AIM
             }
             
             for ( UInt iBin = 0; iBin < bin_Centers.size(); iBin++ ) {
+                pdf[iBin][0][0] = nPart * alpha * pow( bin_Centers[iBin] / bin_Centers[0], -alpha );
                 for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
                     for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                        pdf[iBin][jNy][iNx] = nPart * alpha * pow( bin_Centers[iBin] / bin_Centers[0], -alpha );
+                        pdf[iBin][jNy][iNx] = pdf[iBin][0][0];
                     }
                 }
             }
@@ -800,9 +803,10 @@ namespace AIM
             }
             
             for ( UInt iBin = 0; iBin < bin_Centers.size(); iBin++ ) {
+                pdf[iBin][0][0] = nPart * gamma_ * pow( b_, (alpha+1) / gamma_ ) / boost::math::tgamma( (alpha+1) / gamma_ ) * pow( bin_Centers[iBin], alpha + 1 ) * exp( - b_ * pow( bin_Centers[iBin], gamma_ ) );
                 for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
                     for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                        pdf[iBin][jNy][iNx] = nPart * gamma_ * pow( b_, (alpha+1) / gamma_ ) / boost::math::tgamma( (alpha+1) / gamma_ ) * pow( bin_Centers[iBin], alpha + 1 ) * exp( - b_ * pow( bin_Centers[iBin], gamma_ ) );
+                        pdf[iBin][jNy][iNx] = pdf[iBin][0][0];
                     }
                 }
             }
