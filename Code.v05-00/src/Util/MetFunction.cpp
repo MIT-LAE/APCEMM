@@ -17,7 +17,7 @@
 namespace met
 {
 
-    void ISA( const RealDouble z, RealDouble &pressure, \
+    void ISA( const RealDouble &z, RealDouble &pressure, \
               RealDouble &temperature )
     {
         
@@ -48,7 +48,7 @@ namespace met
 
     } /* End of ISA */
     
-    void ISA( const Vector_1D z, Vector_1D &pressure, \
+    void ISA( const Vector_1D &z, Vector_1D &pressure, \
               Vector_1D &temperature )
     {
 
@@ -82,7 +82,7 @@ namespace met
 
     } /* End of ISA */
 
-    void ISA( const RealDouble z, RealDouble &pressure )
+    void ISA( const RealDouble &z, RealDouble &pressure )
     {
         
         /* DESCRIPTION: Implements the mathematical representation of the
@@ -113,7 +113,7 @@ namespace met
 
     } /* End of ISA */
     
-    void ISA( const Vector_1D z, Vector_1D &pressure )
+    void ISA( const Vector_1D &z, Vector_1D &pressure )
     {
 
         /* DESCRIPTION: Implements the mathematical representation of the
@@ -146,6 +146,82 @@ namespace met
         }
 
     } /* End of ISA */
+    
+    void ISA_pAlt( RealDouble &z, const RealDouble &pressure )
+    {
+
+        /* DESCRIPTION: Find altitude corresponding to the prescribed 
+         * pressure using dichotomy search algorithm */
+
+        /* INPUTS:
+         * RealDouble p : Pressure in Pa */
+
+        const UInt nLUT = 500;
+        const RealDouble zMAX = 50.0E+03;
+        const RealDouble DZ = zMAX / RealDouble( nLUT );
+        Vector_1D zLUT( nLUT, 0.0E+00 );
+        Vector_1D pLUT( nLUT, 0.0E+00 );
+
+        UInt i_z = 0;
+
+        for ( i_z = 1; i_z < nLUT; i_z++ )
+            zLUT[i_z] = zLUT[i_z-1] + DZ;
+
+        ISA( zLUT, pLUT );
+
+        i_z = 0;
+        while ( i_z < nLUT ) {
+            if ( pressure > pLUT[i_z] ) {
+                /* Then: 
+                 * pLUT[i_z-1] > pressure > pLUT[i_z]
+                 * */
+                break;
+            }
+            i_z += 1;
+        }
+        z = zLUT[i_z-1] + DZ * log( pressure / pLUT[i_z-1] ) / log( pLUT[i_z] / pLUT[i_z-1] );
+
+
+    } /* End of ISA_pAlt */
+
+    void ISA_pAlt( Vector_1D &z, const Vector_1D &pressure )
+    {
+
+        /* DESCRIPTION: Find altitude corresponding to the prescribed 
+         * pressure using dichotomy search algorithm */
+
+        /* INPUTS:
+         * Vector_1D p : Pressure in Pa */
+
+        const UInt nLUT = 500;
+        const RealDouble zMAX = 50.0E+03;
+        const RealDouble DZ = zMAX / RealDouble( nLUT );
+        Vector_1D zLUT( nLUT, 0.0E+00 );
+        Vector_1D pLUT( nLUT, 0.0E+00 );
+
+        UInt i_z = 0;
+
+        for ( i_z = 1; i_z < nLUT; i_z++ )
+            zLUT[i_z] = zLUT[i_z-1] + DZ;
+
+        ISA( zLUT, pLUT );
+
+        for ( UInt iN = 0; iN < z.size(); iN++ ) {
+            i_z = 0;
+            while ( i_z < nLUT ) {
+                if ( pressure[iN] > pLUT[i_z] ) {
+                    /* Then: 
+                     * pLUT[i_z-1] > pressure[iN] > pLUT[i_z]
+                     * */
+                    break;
+                }
+                i_z += 1;
+            }
+            z[iN] = zLUT[i_z-1] + DZ * log( pressure[iN] / pLUT[i_z-1] ) / log( pLUT[i_z] / pLUT[i_z-1] );
+        }
+
+
+    } /* End of ISA_pAlt */
 
     RealDouble ComputeLapseRate( const RealDouble TEMP, const RealDouble RHi, \
                                  const RealDouble DEPTH )

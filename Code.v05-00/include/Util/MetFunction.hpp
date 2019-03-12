@@ -37,13 +37,14 @@ namespace met
     const RealDouble ISA_P0 = 101325;
     const RealDouble ISA_T0 = 288.15;
 
-    void ISA( const RealDouble z, RealDouble &pressure, \
+    void ISA( const RealDouble &z, RealDouble &pressure, \
               RealDouble &temperature );
-    void ISA( const Vector_1D z, Vector_1D &pressure, \
+    void ISA( const Vector_1D &z, Vector_1D &pressure, \
               Vector_1D &temperature );
-    void ISA( const RealDouble z, RealDouble &pressure );
-    void ISA( const Vector_1D z, Vector_1D &pressure );
-
+    void ISA( const RealDouble &z, RealDouble &pressure );
+    void ISA( const Vector_1D &z, Vector_1D &pressure );
+    void ISA_pAlt( RealDouble &z, const RealDouble &pressure );
+    void ISA_pAlt( Vector_1D &z, const Vector_1D &pressure );
 
 
     RealDouble ComputeLapseRate( const RealDouble TEMP, const RealDouble RHi, \
