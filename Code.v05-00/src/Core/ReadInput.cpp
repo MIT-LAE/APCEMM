@@ -3592,6 +3592,32 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
         exit(1);
     }
 
+    /* Skip line */
+    getline( inputFile, line, '\n' );
+
+    /* ==================================================== */
+    /* Add diurnal variations?                              */
+    /* ==================================================== */
+
+    variable = "Diurnal variations?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.MET_DIURNAL = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.MET_DIURNAL = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
 
     /* Return success */
     RC = SUCCESS;
@@ -3607,12 +3633,14 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << "  => Met file            : " << Input_Opt.MET_FILENAME                             << std::endl;
     std::cout << "  => Init T from MET?    : " << Input_Opt.MET_LOADTEMP                             << std::endl;
     std::cout << "  => Init H2O from MET?  : " << Input_Opt.MET_LOADH2O                              << std::endl;
-    std::cout << " ------------------------: " << std::endl;
+    std::cout << " - OR -------------------: " << std::endl;
     std::cout << " Impose moist layer depth: " << Input_Opt.MET_FIXDEPTH                             << std::endl;
     std::cout << "  => Moist layer depth[m]: " << Input_Opt.MET_DEPTH                                << std::endl;
     std::cout << " ---- OR ----------------: " << std::endl;
     std::cout << " Impose temp. lapse rate : " << Input_Opt.MET_FIXLAPSERATE                         << std::endl;
     std::cout << "  => Lapse rate [K/m]    : " << Input_Opt.MET_LAPSERATE                            << std::endl;
+    std::cout << " ------------------------: " << std::endl;
+    std::cout << " Add diurnal variations  : " << Input_Opt.MET_DIURNAL                              << std::endl;
 
 } /* End of Read_Meteorology_Menu */
 

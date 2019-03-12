@@ -73,8 +73,14 @@ Meteorology::Meteorology( const OptInput &USERINPUT,  \
      * upper-air temperature estimated from radiosondes,J. Geophys.Res.,
      * 110, D09102, doi:10.1029/2004JD005526.*/
 
-    DIURNAL_AMPL  = 0.1 ; /* [K] */
-    DIURNAL_PHASE = 14.0; /* [hrs] */
+    if ( USERINPUT.MET_DIURNAL ) {
+        /* Based on values around 220 hPa */
+        DIURNAL_AMPL  = 0.1 ; /* [K] */
+        DIURNAL_PHASE = 14.0; /* [hrs] */
+    } else {
+        DIURNAL_AMPL  = 0.0 ; /* [K] */
+        DIURNAL_PHASE = 12.0; /* [hrs] */
+    }
 
     diurnalPert = DIURNAL_AMPL * cos( 2.0E+00 * physConst::PI * ( solarTime_h - DIURNAL_PHASE ) / 24.0E+00 );
 

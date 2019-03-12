@@ -116,6 +116,7 @@ OptInput::OptInput( ):
     MET_DEPTH( 0.0E+00 ),
     MET_FIXLAPSERATE( 0 ),
     MET_LAPSERATE( 0.0E+00 ),
+    MET_DIURNAL( 0 ),
     DIAG_FILENAME( "" ),
     TS_SPEC( 0 ),
     TS_FILENAME( "" ),

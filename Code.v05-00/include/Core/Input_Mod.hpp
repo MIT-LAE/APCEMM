@@ -157,6 +157,7 @@ class OptInput
         RealDouble  MET_DEPTH;
         bool        MET_FIXLAPSERATE;
         RealDouble  MET_LAPSERATE;
+        bool        MET_DIURNAL;
         
         /* ========================================== */
         /* ---- DIAGNOSTIC MENU --------------------- */
