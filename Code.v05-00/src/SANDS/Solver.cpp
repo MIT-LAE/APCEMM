@@ -201,8 +201,12 @@ namespace SANDS
             /* Update shear value [1/s] */
             shear = shear_;
             for ( unsigned int jNy = 0; jNy < n_y; jNy++ ) {
-                /* Compute horizonal velocity. V > 0 means that layer is going left */
-                V = shear * y[jNy];
+                /* Compute horizonal velocity. V > 0 means that layer is going left.
+                 * Since positive shear means that the plume is rotating 
+                 * clockwise when looking from behind the aircraft, add a negative sign.
+                 * If meteorological data is symmetric, that should not change the 
+                 * outcome */
+                V = - shear * y[jNy];
                 /* Computing frequencies */
                 for ( unsigned int iFreq = 0; iFreq < n_x; iFreq++ )
                     ShearFactor[jNy][iFreq] = exp( physConst::_1j * dt * V * kx[iFreq] ); 
