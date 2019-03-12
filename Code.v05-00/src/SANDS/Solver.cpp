@@ -29,8 +29,13 @@ namespace SANDS
         FFT_2D( NULL )
     {
 
-
         /* Constructor */
+
+        shear = 0.0E+00;
+        dH    = 0.0E+00;
+        dV    = 0.0E+00;
+        vH    = 0.0E+00;
+        vV    = 0.0E+00;
 
     } /* End of Solver::Solver */
 
@@ -47,6 +52,13 @@ namespace SANDS
 
         /* Initialize frequencies */
         AssignFreq();
+
+        /* Initialize shear, diffusion and advection parameters */
+        shear = 0.0E+00;
+        dH    = 0.0E+00;
+        dV    = 0.0E+00;
+        vH    = 0.0E+00;
+        vV    = 0.0E+00;
 
         /* Initialize diffusion and advection fields */
         Vector_1D  tempRow( n_x, 0.0E+00 );
@@ -134,38 +146,46 @@ namespace SANDS
 
     } /* End of Solver::UpdateTimeStep */
 
-    void Solver::UpdateDiff( const RealDouble dH, const RealDouble dV )
+    void Solver::UpdateDiff( const RealDouble dH_, const RealDouble dV_ )
     {
 
         // dH horizontal diffusion factor >= 0.0
         // dV vertical diffusion factor >= 0.0
 
-        if ( dH < 0.0 ) {
-            std::cout << "SANDS: Horizontal diffusion coefficient, dH, is negative: dH = " << dH << std::endl;
+        if ( dH_ < 0.0 ) {
+            std::cout << "SANDS: Horizontal diffusion coefficient, dH, is negative: dH = " << dH_ << std::endl;
             exit(-1);
         }
 
-        if ( dV < 0.0 ) {
-            std::cout << "SANDS: Vertical diffusion coefficient, dV, is negative: dV = " << dV << std::endl;
+        if ( dV_ < 0.0 ) {
+            std::cout << "SANDS: Vertical diffusion coefficient, dV, is negative: dV = " << dV_ << std::endl;
             exit(-1);
         }
 
-        for ( unsigned int iNx = 0; iNx < n_x; iNx++ ) {
-            for ( unsigned int jNy = 0; jNy < n_y; jNy++ )
-                DiffFactor[jNy][iNx] = exp( dt * ( dH * kxx[iNx] + dV * kyy[jNy] ) );
-        }    
+        if ( ( dH_ != dH ) || ( dV_ != dV ) ) {
+            dH = dH_;
+            dV = dV_;
+            for ( unsigned int iNx = 0; iNx < n_x; iNx++ ) {
+                for ( unsigned int jNy = 0; jNy < n_y; jNy++ )
+                    DiffFactor[jNy][iNx] = exp( dt * ( dH * kxx[iNx] + dV * kyy[jNy] ) );
+            }
+        }
 
     } /* End of Solver::UpdateDiff */
 
-    void Solver::UpdateAdv( const RealDouble vH, const RealDouble vV )
+    void Solver::UpdateAdv( const RealDouble vH_, const RealDouble vV_ )
     {
 
         // vH > 0 means left, < 0 means right
         // vV > 0 means downwards, < 0 means upwards
 
-        for ( unsigned int iNx = 0; iNx < n_x; iNx++ ) {
-            for ( unsigned int jNy = 0; jNy < n_y; jNy++ )
-                AdvFactor[jNy][iNx] = exp( physConst::_1j * dt * ( vH * kx[iNx] + vV * ky[jNy] ) );
+        if ( ( vH_ != vH ) || ( vV_ != vV ) ) {
+            vH = vH_;
+            vV = vV_;
+            for ( unsigned int iNx = 0; iNx < n_x; iNx++ ) {
+                for ( unsigned int jNy = 0; jNy < n_y; jNy++ )
+                    AdvFactor[jNy][iNx] = exp( physConst::_1j * dt * ( vH * kx[iNx] + vV * ky[jNy] ) );
+            }
         }
 
     } /* End of Solver::UpdateAdv */
@@ -177,10 +197,9 @@ namespace SANDS
          * This value is dependent on the layer considered. */
         RealDouble V = 0.0E+00;
 
-        /* Update shear value [1/s] */
-        shear = shear_;
-
-        if ( shear != 0.0E+00 ) {
+        if ( shear != shear_ ) {
+            /* Update shear value [1/s] */
+            shear = shear_;
             for ( unsigned int jNy = 0; jNy < n_y; jNy++ ) {
                 /* Compute horizonal velocity. V > 0 means that layer is going left */
                 V = shear * y[jNy];

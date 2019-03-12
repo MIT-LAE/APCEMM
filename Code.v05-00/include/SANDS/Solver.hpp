@@ -161,6 +161,8 @@ namespace SANDS
             UInt fillOpt;
             RealDouble fillVal;
             RealDouble dt;
+            RealDouble dH, dV;
+            RealDouble vH, vV;
             RealDouble shear;
 
         private:
