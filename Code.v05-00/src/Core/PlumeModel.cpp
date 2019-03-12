@@ -83,7 +83,8 @@ double TIME;              /* Current integration time (global) */
 double SZA_CST[3];
 
 
-void DiffParam( double time, double &d_x, double &d_y );
+void DiffParam( const double time, double &d_x, double &d_y, \
+                const double D_X, const double D_Y );
 void AdvGlobal( const double time, const double T_UPDRAFT, \
                 const double V_UPDRAFT,                    \
                 double &v_x, double &v_y,                  \
@@ -440,6 +441,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Allocate horizontal and vertical distance traveled */
     double dTrav_x, dTrav_y;
 
+    /* Allocate steady-state diffusion parameters */
+    double D_X, D_Y;
+
     /* Allocate shear */
     double shear;
     int LASTINDEX_SHEAR;
@@ -452,7 +456,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     dTrav_x = 0;   /* [m]    */
     dTrav_y = 0;   /* [m]    */
 
-    shear = input.shear();; /* [1/s] */
+    D_X   = input.horizDiff(); /* [m^2/s] */
+    D_Y   = input.vertiDiff(); /* [m^2/s] */
+    shear = input.shear();     /* [1/s] */
     if ( shear >= 0.0E+00 )
         LASTINDEX_SHEAR = NX-1;
     else
@@ -679,6 +685,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     
 #else
 
+    /* Initialization at the grid scale level */
+
     /* Allocate a gridcell's relative humidity */
     double relHumidity;
     double frac_gSO4 = 0.0E+00;
@@ -782,7 +790,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                       Data, m );
     }
 
-    std::cout << "Case: " << input.Case() << std::endl;
     if ( TS_AERO ) {
         int hh = (int) (curr_Time_s - timeArray[0])/3600;
         int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
@@ -885,7 +892,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
              * d_y: vertical diffusion coefficient [m^2/s]
              */
 
-            DiffParam( curr_Time_s - tInitial_s + dt/2.0, d_x, d_y );
+            DiffParam( curr_Time_s - tInitial_s + dt/2.0, d_x, d_y, D_X, D_Y );
 
         }
         else {
