@@ -50,7 +50,7 @@ Mesh::Mesh( )
 
     totArea_ = 0;
     for ( unsigned int jNy = 0; jNy < ny; jNy++ ) {
-        areas_.push_back( Real_1DVector( nx, 0.0 ) );
+        areas_.push_back( Vector_1D( nx, 0.0 ) );
         for ( unsigned int iNx = 0; iNx < nx; iNx++ ) {
             areas_[jNy][iNx] = ( y_e_[jNy+1] - y_e_[jNy] ) * \
                               ( x_e_[iNx+1] - x_e_[iNx] );

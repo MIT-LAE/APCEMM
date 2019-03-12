@@ -297,8 +297,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
     Mesh m;
-    const Vector_1D xE = m.x_edge();
-    const Vector_1D yE = m.y_edge();
+    const Vector_1D xE = m.xE();
+    const Vector_1D yE = m.yE();
 
     /* Get cell areas */
     const Vector_2D cellAreas = m.areas();

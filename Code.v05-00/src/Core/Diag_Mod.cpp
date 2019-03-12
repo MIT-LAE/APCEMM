@@ -2714,9 +2714,9 @@ bool Diag_TS_Phys( const char* rootName,                     \
             strncpy( charUnit, "-", sizeof(charUnit) );
 
 #if ( SAVE_TO_DOUBLE )
-            array = util::vect2double( Data.solidAerosol.xOD( m.x_edge() ), m.Ny(), scalingFactor );
+            array = util::vect2double( Data.solidAerosol.xOD( m.xE() ), m.Ny(), scalingFactor );
 #else
-            array = util::vect2float ( Data.solidAerosol.xOD( m.x_edge() ), m.Ny(), scalingFactor );
+            array = util::vect2float ( Data.solidAerosol.xOD( m.xE() ), m.Ny(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
             didSaveSucceed *= fileHandler.addVar( currFile, &(array)[0],   \
@@ -2733,9 +2733,9 @@ bool Diag_TS_Phys( const char* rootName,                     \
             strncpy( charUnit, "-", sizeof(charUnit) );
 
 #if ( SAVE_TO_DOUBLE )
-            array = util::vect2double( Data.solidAerosol.yOD( m.y_edge() ), m.Nx(), scalingFactor );
+            array = util::vect2double( Data.solidAerosol.yOD( m.yE() ), m.Nx(), scalingFactor );
 #else
-            array = util::vect2float ( Data.solidAerosol.yOD( m.y_edge() ), m.Nx(), scalingFactor );
+            array = util::vect2float ( Data.solidAerosol.yOD( m.yE() ), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
             didSaveSucceed *= fileHandler.addVar( currFile, &(array)[0],   \
