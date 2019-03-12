@@ -49,6 +49,7 @@ Total fuel flow [kg/s]  : 3.2
 Turn on Transport?      : T
  => Fill Negative Values: T
 Transport Timestep [min]: 10
+Particle flux correction: T
 Turn on plume updraft?  : F
  => Updraft timescale[s]: 3600
  => Updraft vel. [cm/s] : 0

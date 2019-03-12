@@ -131,6 +131,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     #else
         const bool FILLNEG    = Input_Opt.TRANSPORT_FILL;
     #endif /* RINGS */
+
+    const bool FLUX_CORRECTION= Input_Opt.TRANSPORT_PART_FLUX;
     const bool UPDRAFT        = Input_Opt.TRANSPORT_UPDRAFT;
     const double UPDRAFT_TIME = Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE;
     const double UPDRAFT_VEL  = Input_Opt.TRANSPORT_UPDRAFT_VELOCITY;
@@ -983,40 +985,34 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                 }
 
-                /* Limit flux of ice particles through top boundary */
-                for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                if ( FLUX_CORRECTION ) {
+
+                    /* Limit flux of ice particles through top boundary */
                     for ( jNy = 0; jNy < NY; jNy++ ) {
                         if ( ( yE[jNy] > YLIM_UP - 200.0 ) && ( yE[jNy] > 400.0 ) ) {
                             for ( iNx = 0; iNx < NX; iNx++ ) {
-                                Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
-                                iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
+                                for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                                    Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
+                                    iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
+                                }
+                                Data.H2O[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
                             }
                         }
                     }
-                }
-                for ( jNy = 0; jNy < NY; jNy++ ) {
-                    if ( ( yE[jNy] > YLIM_UP - 200.0 ) && ( yE[jNy] > 400.0 ) ) {
-                        for ( iNx = 0; iNx < NX; iNx++ )
-                            Data.H2O[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
-                    }
-                }
 
-                /* Limit flux of ice particles through left and right boundary */
-                for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                    /* Limit flux of ice particles through left and right boundary */
                     for ( iNx = 0; iNx < NX; iNx++ ) {
                         if ( ( xE[iNx] < -35.0E+03 ) || ( xE[iNx] > 35.0E+03 ) ) {
                             for ( jNy = 0; jNy < NY; jNy++ ) {
-                                Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
-                                iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
+                                for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                                    Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
+                                    iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
+                                }
+                                Data.H2O[jNy][iNx] = Data.H2O[NY-1][iNx];
                             }
                         }
                     }
-                }
-                for ( iNx = 0; iNx < NX; iNx++ ) {
-                    if ( ( xE[iNx] < -35.0E+03 ) || ( xE[iNx] > 35.0E+03 ) ) {
-                        for ( jNy = 0; jNy < NY; jNy++ )
-                            Data.H2O[jNy][iNx] = Data.H2O[NY-1][iNx];
-                    }
+
                 }
 
                 /* Update centers of each bin */

@@ -3001,6 +3001,29 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     }
     
     /* ==================================================== */
+    /* Particle flux correction                             */
+    /* ==================================================== */
+
+    variable = "Particle flux correction?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.TRANSPORT_PART_FLUX = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.TRANSPORT_PART_FLUX = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
     /* Turn on plume updraft?                               */
     /* ==================================================== */
 
@@ -3120,6 +3143,7 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " Turn on Transport?      : " << Input_Opt.TRANSPORT_TRANSPORT                      << std::endl;
     std::cout << "  => Fill Negative Values: " << Input_Opt.TRANSPORT_FILL                           << std::endl;
     std::cout << " Transport Timestep [min]: " << Input_Opt.TRANSPORT_TIMESTEP                       << std::endl;
+    std::cout << " Particle flux correction: " << Input_Opt.TRANSPORT_PART_FLUX                      << std::endl;
     std::cout << " Turn on plume updraft?  : " << Input_Opt.TRANSPORT_UPDRAFT                        << std::endl;
     std::cout << "  => Updraft timescale[s]: " << Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE              << std::endl;
     std::cout << "  => Updraft vel.   [m/s]: " << Input_Opt.TRANSPORT_UPDRAFT_VELOCITY               << std::endl;

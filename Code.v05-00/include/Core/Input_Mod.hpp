@@ -123,6 +123,7 @@ class OptInput
         bool        TRANSPORT_TRANSPORT;
         bool        TRANSPORT_FILL;
         RealDouble  TRANSPORT_TIMESTEP;
+        bool        TRANSPORT_PART_FLUX;
         bool        TRANSPORT_UPDRAFT;
         RealDouble  TRANSPORT_UPDRAFT_TIMESCALE;
         RealDouble  TRANSPORT_UPDRAFT_VELOCITY;
