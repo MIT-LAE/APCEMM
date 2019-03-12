@@ -252,7 +252,7 @@ namespace SANDS
 
     } /* End of Solver::Run */
 
-    void Solver::Fill( Real_2DVector &V, const RealDouble val, const RealDouble threshold )
+    void Solver::Fill( Vector_2D &V, const RealDouble val, const RealDouble threshold )
     {
 
         for ( unsigned int iNx = 0; iNx < n_x; iNx++ ) {
