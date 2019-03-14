@@ -471,6 +471,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     SANDS::Solver Solver;
     #pragma omp critical
     {
+        std::cout << " Initializing solver..." << std::endl;
         Solver.Initialize( /* Fill negative values */ FILLNEG, \
                            fillWith );
     }
@@ -1420,7 +1421,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                          * By default, run at least one grid cell per 
                          * horizontal layer */
                         if ( ( iNx == 0 ) || \
-                             ( log( std::abs( Data.CO2[jNy][iNx] - Data.CO2[jNy][0] ) / Data.CO2[NY/2][NX/2] ) / log(10) >= -6.0 ) || \
+                             ( log( std::abs( Data.CO2[jNy][iNx] - Data.CO2[jNy][0] ) / Data.CO2[NY/2][NX/2] ) / log(10) >= -4.0 ) || \
                              ( iceVolume_[jNy][iNx] * 1.0E+18 >= 1.00E-02 ) ) {
 
                             /* Convert data structure to KPP inputs (VAR and FIX) */
