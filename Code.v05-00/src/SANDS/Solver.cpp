@@ -54,11 +54,11 @@ namespace SANDS
         AssignFreq();
 
         /* Initialize shear, diffusion and advection parameters */
-        shear = 0.0E+00;
-        dH    = 0.0E+00;
-        dV    = 0.0E+00;
-        vH    = 0.0E+00;
-        vV    = 0.0E+00;
+        shear = -1.234E+56;
+        dH    = -1.234E+56;
+        dV    = -1.234E+56;
+        vH    = -1.234E+56;
+        vV    = -1.234E+56;
 
         /* Initialize diffusion and advection fields */
         Vector_1D  tempRow( n_x, 0.0E+00 );
