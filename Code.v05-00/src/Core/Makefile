@@ -165,6 +165,8 @@ Aircraft.o          : Aircraft.cpp
 
 Ambient.o           : Ambient.cpp
 
+BoxModel.o          : BoxModel.cpp
+
 BuildTime.o         : BuildTime.cpp
 
 Cluster.o           : Cluster.cpp
