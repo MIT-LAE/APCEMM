@@ -82,7 +82,7 @@ double TIME;              /* Current integration time (global) */
 /* Require this for adjoint integration */
 double SZA_CST[3];
 
-
+int BoxModel( const OptInput &Input_Opt, const Input &input );
 void DiffParam( const double time, double &d_x, double &d_y, \
                 const double D_X, const double D_Y );
 void AdvGlobal( const double time, const double T_UPDRAFT, \
@@ -112,6 +112,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* --- Input options from the SIMULATION MENU ---------------------------- */
     /* ======================================================================= */
 
+    const bool RUN_BOXMODEL   = Input_Opt.SIMULATION_BOXMODEL;
     const bool BUILD_LUT      = Input_Opt.SIMULATION_PARAMETER_SWEEP;
     const bool SAVE_FORWARD   = Input_Opt.SIMULATION_SAVE_FORWARD;
     const bool ADJOINT        = Input_Opt.SIMULATION_ADJOINT;
@@ -202,7 +203,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* TODO: Implement PL rates */
     const bool SAVE_PL   = Input_Opt.PL_PL;
     const bool SAVE_O3PL = Input_Opt.PL_O3;
-
 
     /* Define dynamic timestep in s */
     double DYN_DT;
@@ -344,6 +344,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             }
         }
     }
+
+    /* Run box model */
+    if ( RUN_BOXMODEL )
+        BoxModel( Input_Opt, input );
+
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */

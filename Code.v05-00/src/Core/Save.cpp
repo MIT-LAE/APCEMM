@@ -18,7 +18,7 @@ namespace output
 
     int Write( const char* outFile,                                              \
                const OptInput &Input_Opt,                                        \
-               const SpeciesArray &ringSpecies, const Ambient ambientData,       \
+               const SpeciesArray &ringSpecies, const Ambient &ambientData,      \
                const Cluster &ringCluster, const std::vector<double> &timeArray, \
                const Input &input,                                               \
                const double &airDens, const double &relHumidity_i,               \
@@ -3516,12 +3516,12 @@ namespace output
 
     } /* End of Write_MicroPhys */
 
-    int Write_Adjoint( const char* outputFile,                                     \
-                       const SpeciesArray &ringSpecies, const Ambient ambientData, \
-                       const Ambient adjointData,                                  \
-                       const std::vector<double> &ringArea, const double totArea,  \
-                       const std::vector<double> &timeArray,                       \
-                       const Input &input,                                         \
+    int Write_Adjoint( const char* outputFile,                                      \
+                       const SpeciesArray &ringSpecies, const Ambient &ambientData, \
+                       const Ambient &adjointData,                                  \
+                       const std::vector<double> &ringArea, const double totArea,   \
+                       const std::vector<double> &timeArray,                        \
+                       const Input &input,                                          \
                        const double &airDens, const double &relHumidity_i )
     {
 
@@ -3889,6 +3889,264 @@ namespace output
             return SAVE_SUCCESS;
 
     } /* End of Write_Adjoint */
+    
+    int Write_Box( const char* outputFile,               \
+                   const Ambient &boxData,               \
+                   const std::vector<double> &timeArray, \
+                   const Input &input,                   \
+                   const double &airDens,                \
+                   const double &relHumidity_i )
+    {
+
+        std::cout << " Starting to save box output!" << std::endl;
+        const bool doWrite = 1;
+        const bool doRead = 1;
+        const bool overWrite = 1;
+
+        int didSaveSucceed = 1;
+        time_t rawtime;
+        char buffer[80];
+
+        FileHandler fileHandler( outputFile, doWrite, doRead, overWrite );
+        NcFile currFile = fileHandler.openFile();
+        if ( !fileHandler.isFileOpen() ) {
+            std::cout << " File " << outputFile << " didn't open!" << "\n";
+            return SAVE_FAILURE;
+        } else {
+//            std::cout << "\n Starting saving to netCDF (file name: " << fileHandler.getFileName() <<  ") \n";
+            time( &rawtime );
+            strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
+
+            const NcDim *timeDim = fileHandler.addDim( currFile, "Time", long(timeArray.size()) );
+            didSaveSucceed *= fileHandler.addVar( currFile, &timeArray[0], "Time", timeDim, "float", "s", "Time");
+            
+            const NcDim *timeDim_midStep = fileHandler.addDim( currFile, "Time_mid", timeArray.size() - 1 );
+            Vector_1D time_midStep( timeArray.size()-1, 0.0E+00 );
+
+            for ( unsigned int iTime = 0; iTime < timeArray.size() - 1; iTime++ )
+                time_midStep[iTime] = 0.5 * (timeArray[iTime] + timeArray[iTime+1]);
+
+            didSaveSucceed *= fileHandler.addVar( currFile, &time_midStep[0], "Time_mid", timeDim_midStep, "float", "s", "Time at mid time-step");
+            
+            didSaveSucceed *= fileHandler.addAtt( currFile, "FileName", fileHandler.getFileName() );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Author", "Thibaud M. Fritz (fritzt@mit.edu)" );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Contact", "Thibaud M. Fritz (fritzt@mit.edu)" );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Generation Date", buffer );
+            didSaveSucceed *= fileHandler.addAtt( currFile, "Format", "NetCDF-4" );
+
+            double value = 0.0E+00;
+            value = input.temperature_K();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Temperature"    , 1, "float", "K"  , "Ambient Temperature" );
+            value = input.pressure_Pa() / 100.0;
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Pressure"       , 1, "float", "hPa", "Ambient Pressure" );
+            value = airDens;
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Air Density"    , 1, "float", "molecule / cm ^ 3", "Molecular density" );
+            value = input.relHumidity_w();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHW"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
+            value = relHumidity_i;
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHI"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
+            value = input.emissionDOY();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Day"   , 1, "int"  , "-"  , "Emission day" );
+            value = input.emissionTime();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Time"  , 1, "float", "hr"  , "Emission time" );
+            value = input.longitude_deg();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Longitude"      , 1, "float", "deg", "Longitude" );
+            value = input.latitude_deg();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Latitude"       , 1, "float", "deg", "Latitude" );
+            value = input.EI_NOx();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "NOx EI"         , 1, "float", "g/kg_fuel"  , "NOx Emission index" );
+            value = input.EI_CO();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "CO EI"          , 1, "float", "g/kg_fuel"  , "CO Emission index" );
+            value = input.EI_HC();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "HC EI"          , 1, "float", "g/kg_fuel"  , "HC Emission index" );
+            value = input.EI_SO2();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "SO2 EI"         , 1, "float", "g/kg_fuel"  , "SO2 Emission index" );
+            value = input.EI_Soot();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Soot EI"        , 1, "float", "g/kg_fuel"  , "Soot Emission index" );
+            value = input.sootRad();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Soot Radius"    , 1, "float", "g/kg_fuel"  , "Soot radius" );
+            value = input.fuelFlow();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Fuel flow"      , 1, "float", "kg/s"  , "Engine fuel flow" );
+            value = input.backgNOx();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background NOx" , 1, "float", "ppb"  , "Background NOx mixing ratio" );
+            value = input.backgHNO3();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background HNO3", 1, "float", "ppb"  , "Background HNO3 mixing ratio" );
+            value = input.backgO3();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background O3"  , 1, "float", "ppb"  , "Background O3 mixing ratio" );
+            value = input.backgCO();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background CO"  , 1, "float", "ppb"  , "Background CO mixing ratio" );
+            value = input.backgCH4();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background CH4" , 1, "float", "ppb"  , "Background CH4 mixing ratio" );
+            value = input.backgSO2();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Background SO2" , 1, "float", "ppb"  , "Background SO2 mixing ratio" );
+
+            didSaveSucceed *= fileHandler.addVar( currFile, &(boxData.cosSZA)[0], "CSZA", timeDim_midStep, "float", "-", "Cosine of the solar zenith angle" );
+
+            /* Define conversion factors */
+            #define TO_PPTH         1.0 / airDens * 1.0E+03 /* Conversion factor from molecule/cm^3 to PPTH */
+            #define TO_PPM          1.0 / airDens * 1.0E+06 /* Conversion factor from molecule/cm^3 to PPM  */
+            #define TO_PPB          1.0 / airDens * 1.0E+09 /* Conversion factor from molecule/cm^3 to PPB  */
+            #define TO_PPT          1.0 / airDens * 1.0E+12 /* Conversion factor from molecule/cm^3 to PPT  */
+
+            #if ( SAVE_TO_DOUBLE )
+                double* ambArray;
+                const char* outputType = "double";
+            #else
+                float* ambArray;
+                const char* outputType = "float";
+            #endif /* SAVE_TO_DOUBLE */
+
+            const unsigned int NT = timeArray.size();
+
+            /* Start saving species ... */
+
+            /* Define conversion factor */
+            double scalingFactor;
+            char charSpc[30];
+            char charName[50];
+            char charUnit[20];
+               
+            #if ( DO_SAVE_O3 )
+
+                scalingFactor = TO_PPB;
+                strncpy( charUnit, "ppb", sizeof(charUnit) );
+
+                #if ( SAVE_TO_DOUBLE )
+                    ambArray = util::vect2double( boxData.O3 , NT, scalingFactor );
+                #else
+                    ambArray = util::vect2float ( boxData.O3 , NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "O3_Ambient", sizeof(charSpc) );
+                strncpy( charName, "O3 ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] ambArray; ambArray = NULL;
+
+            #endif /* DO_SAVE_O3 */
+
+            #if ( DO_SAVE_NO )
+
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+
+                #if ( SAVE_TO_DOUBLE )
+                    ambArray = util::vect2double( boxData.NO , NT, scalingFactor );
+                #else
+                    ambArray = util::vect2float ( boxData.NO , NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "NO_Ambient", sizeof(charSpc) );
+                strncpy( charName, "NO ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] ambArray; ambArray = NULL;
+
+            #endif /* DO_SAVE_NO */
+
+            #if ( DO_SAVE_NO2 )
+
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+
+                #if ( SAVE_TO_DOUBLE )
+                    ambArray = util::vect2double( boxData.NO2, NT, scalingFactor );
+                #else
+                    ambArray = util::vect2float ( boxData.NO2, NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "NO2_Ambient", sizeof(charSpc) );
+                strncpy( charName, "NO2 ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] ambArray; ambArray = NULL;
+
+            #endif /* DO_SAVE_NO2 */
+
+            #if ( DO_SAVE_HNO2 )
+
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+
+                #if ( SAVE_TO_DOUBLE )
+                    ambArray = util::vect2double( boxData.HNO2, NT, scalingFactor );
+                #else
+                    ambArray = util::vect2float ( boxData.HNO2, NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "HNO2_Ambient", sizeof(charSpc) );
+                strncpy( charName, "HNO2 ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] ambArray; ambArray = NULL;
+
+            #endif /* DO_SAVE_HNO2 */
+
+            #if ( DO_SAVE_HNO3 )
+
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+
+                #if ( SAVE_TO_DOUBLE )
+                    ambArray = util::vect2double( boxData.HNO3, NT, scalingFactor );
+                #else
+                    ambArray = util::vect2float ( boxData.HNO3, NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "HNO3_Ambient", sizeof(charSpc) );
+                strncpy( charName, "HNO3 ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] ambArray; ambArray = NULL;
+
+            #endif /* DO_SAVE_HNO3 */
+
+            #if ( DO_SAVE_NOx )
+
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+                
+                std::vector<double> ambientNOx = util::add1D( boxData.NO, boxData.NO2 );
+                #if ( SAVE_TO_DOUBLE )
+                    ambArray = util::vect2double( ambientNOx, NT, scalingFactor );
+                #else
+                    ambArray = util::vect2float ( ambientNOx, NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "NOx_Ambient", sizeof(charSpc) );
+                strncpy( charName, "NOx ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] ambArray; ambArray = NULL;
+
+            #endif /* DO_SAVE_NOx */
+            
+
+            if ( didSaveSucceed == NC_SUCCESS ) {
+//                std::cout << " Done saving to netCDF!" << "\n";
+            } else if ( didSaveSucceed != NC_SUCCESS ) {
+                std::cout << "Error occured in saving data: didSaveSucceed: " << didSaveSucceed << "\n";
+                return SAVE_FAILURE;
+            }
+
+            fileHandler.closeFile( currFile );
+            if ( fileHandler.isFileOpen() ) {
+                std::cout << "File " << outputFile << " didn't close properly!" << "\n";
+                return SAVE_FAILURE;
+            }
+
+        }
+
+        return SAVE_SUCCESS;
+
+    } /* End of Write_Box */
+
 
 }
 
