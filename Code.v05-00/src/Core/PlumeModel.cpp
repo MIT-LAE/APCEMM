@@ -1011,7 +1011,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                     /* Limit flux of ice particles through left and right boundary */
                     for ( iNx = 0; iNx < NX; iNx++ ) {
-                        if ( ( xE[iNx] < -35.0E+03 ) || ( xE[iNx] > 35.0E+03 ) ) {
+                        if ( ( xE[iNx] < -XLIM + 5.0E+03 ) || ( xE[iNx] > XLIM - 5.0E+03 ) ) {
                             for ( jNy = 0; jNy < NY; jNy++ ) {
                                 for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
@@ -1421,7 +1421,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                          * By default, run at least one grid cell per 
                          * horizontal layer */
                         if ( ( iNx == 0 ) || \
-                             ( log( std::abs( Data.CO2[jNy][iNx] - Data.CO2[jNy][0] ) / Data.CO2[NY/2][NX/2] ) / log(10) >= -4.0 ) || \
+                             ( log10( std::abs( Data.CO2[jNy][iNx] - Data.CO2[jNy][0] ) / Data.CO2[NY/2][NX/2] ) >= -6.0 ) || \
                              ( iceVolume_[jNy][iNx] * 1.0E+18 >= 1.00E-02 ) ) {
 
                             /* Convert data structure to KPP inputs (VAR and FIX) */
@@ -1593,7 +1593,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-        ITS_TIME_FOR_LIQ_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeLiqCoag ) >= COAG_DT ) || LAST_STEP );
+        ITS_TIME_FOR_LIQ_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeLiqCoag ) >= COAG_DT * 60.0 ) || LAST_STEP );
         /* Liquid aerosol coagulation */
         if ( ITS_TIME_FOR_LIQ_COAGULATION && LIQ_COAG ) {
             dtLiqCoag = ( curr_Time_s + dt - lastTimeLiqCoag );
@@ -1605,7 +1605,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             Data.liquidAerosol.Coagulate( dtLiqCoag, Data.LA_Kernel, LA_MICROPHYSICS, ( shear == 0.0E+00 ) );
         }
 
-        ITS_TIME_FOR_ICE_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeIceCoag ) >= COAG_DT ) || LAST_STEP );
+        ITS_TIME_FOR_ICE_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeIceCoag ) >= COAG_DT * 60.0 ) || LAST_STEP );
         /* Solid aerosol coagulation */
         if ( ITS_TIME_FOR_ICE_COAGULATION && ICE_COAG ) {
             dtIceCoag = ( curr_Time_s + dt - lastTimeIceCoag );
