@@ -274,6 +274,8 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         amb_Value[ind_SO2] = input.backgSO2() / 1.0E+09;
     }
 
+    for ( unsigned int iSpec = 0; iSpec < amb_Value.size(); iSpec++ )
+        amb_Value[iSpec] *= airDens;
 
     /* Create ambient struture */
     Ambient ambientData( timeArray.size(), amb_Value, aer_Value, Vector_1D( 9, 0.0E+00 ) );
