@@ -12,6 +12,8 @@ Save forward results    : T
  => netCDF file name    : APCEMM_Case_*
 Turn on adjoint optim.  : T
  => netCDF file name    : APCEMM_ADJ_Case_*
+Run box model           : T
+ => netCDF file name    : APCEMM_BOX_Case_*
 ------------------------+------------------------------------------------------
 %%% PARAMETER SWEEP %%% : (Parameter sweep? needs to be set to "T")
 Parameter entries --->  : Format is either 200 220 240 or 200:20:240 (except

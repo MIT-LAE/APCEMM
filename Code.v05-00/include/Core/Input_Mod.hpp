@@ -41,6 +41,8 @@ class OptInput
         std::string SIMULATION_FORWARD_FILENAME;
         bool        SIMULATION_ADJOINT;
         std::string SIMULATION_ADJOINT_FILENAME;
+        bool        SIMULATION_BOXMODEL;
+        std::string SIMULATION_BOX_FILENAME;
 
         /* ========================================== */
         /* ---- PARAMETER MENU ---------------------- */

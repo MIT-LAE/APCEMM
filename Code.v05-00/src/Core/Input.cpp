@@ -13,10 +13,11 @@
 
 #include "Core/Input.hpp"
 
-Input::Input( unsigned int iCase,          \
-              const Vector_2D &parameters, \
-              const std::string fileName,  \
-              const std::string fileName_ADJ ):
+Input::Input( unsigned int iCase,             \
+              const Vector_2D &parameters,    \
+              const std::string fileName,     \
+              const std::string fileName_ADJ, \
+              const std::string fileName_BOX ):
     Case_          ( iCase                 ),
     simulationTime_( parameters[ 0][iCase] ),
     temperature_K_ ( parameters[ 1][iCase] ),
@@ -44,7 +45,8 @@ Input::Input( unsigned int iCase,          \
     backgCH4_      ( parameters[23][iCase] ),
     backgSO2_      ( parameters[24][iCase] ),
     fileName_      ( fileName ),
-    fileName_ADJ_  ( fileName_ADJ )
+    fileName_ADJ_  ( fileName_ADJ ),
+    fileName_BOX_  ( fileName_BOX )
 {
 
     /* Constructor */

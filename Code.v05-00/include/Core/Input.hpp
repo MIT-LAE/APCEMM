@@ -59,13 +59,15 @@ class Input
 
     std::string fileName_;
     std::string fileName_ADJ_;
+    std::string fileName_BOX_;
 
     public:
 
-        Input( unsigned int iCase,          \
-               const Vector_2D &parameters, \
-               const std::string fileName,  \
-               const std::string fileName_ADJ );
+        Input( unsigned int iCase,             \
+               const Vector_2D &parameters,    \
+               const std::string fileName,     \
+               const std::string fileName_ADJ, \
+               const std::string fileName_BOX );
 
         ~Input();
 
@@ -106,8 +108,10 @@ class Input
 
         std::string fileName() const { return fileName_; }
         std::string fileName_ADJ() const { return fileName_ADJ_; }
+        std::string fileName_BOX() const { return fileName_BOX_; }
         const char* fileName2char() const { return fileName_.c_str(); }
         const char* fileName_ADJ2char() const { return fileName_ADJ_.c_str(); }
+        const char* fileName_BOX2char() const { return fileName_BOX_.c_str(); }
 
 };
 

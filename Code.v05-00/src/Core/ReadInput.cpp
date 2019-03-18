@@ -425,6 +425,43 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
 
     tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
     Input_Opt.SIMULATION_ADJOINT_FILENAME = tokens[0];
+    
+    /* ==================================================== */
+    /* Run box model                                        */
+    /* ==================================================== */
+
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.SIMULATION_BOXMODEL = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.SIMULATION_BOXMODEL = 0;
+    else {
+        std::cout << " Wrong input for: " << "Adjoint Optimization" << std::endl;
+        exit(1);
+    }
+    
+    /* ==================================================== */
+    /* netCDF file name                                     */
+    /* ==================================================== */
+
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
+    Input_Opt.SIMULATION_BOX_FILENAME = tokens[0];
+
 
     /* Return success */
     RC = SUCCESS; 
@@ -447,6 +484,8 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_FORWARD_FILENAME              << std::endl;
     std::cout << " Turn on adjoint optim.  : " << Input_Opt.SIMULATION_ADJOINT                       << std::endl;
     std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_ADJOINT_FILENAME              << std::endl;
+    std::cout << " Run box model           : " << Input_Opt.SIMULATION_BOXMODEL                      << std::endl;
+    std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_BOX_FILENAME                  << std::endl;
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     
 } /* End of Read_Simulation_Menu */
