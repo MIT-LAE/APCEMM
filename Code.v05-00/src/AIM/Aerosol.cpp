@@ -1702,9 +1702,9 @@ namespace AIM
     {
 
         Vector_2D TVol = TotalVolume();
-        const RealDouble FACTOR = ( physConst::RHO_ICE * 1.0E+03 ) * 1.0E+06;
+        const RealDouble FACTOR = physConst::RHO_ICE * 1.0E+06;
 
-        /* Unit check: [m^3/cm^3] * [g/m^3] * [cm^3/m^3] = [g/m^3] */
+        /* Unit check: [m^3/cm^3] * [kg/m^3] * [cm^3/m^3] = [kg/m^3] */
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
             for ( UInt iNx = 0; iNx < Nx; iNx++ )
                 TVol[jNy][iNx] = TVol[jNy][iNx] * FACTOR;
@@ -1720,15 +1720,15 @@ namespace AIM
         Vector_2D chi = IWC();
         Vector_2D rE  = EffRadius();
 
-        const RealDouble a = 3.448E+00; /* [m^2/g] */
-        const RealDouble b = 2.431E-09; /* [m^3/g] */
+        const RealDouble a = 3.448E+00; /* [m^2/kg] */
+        const RealDouble b = 2.431E-03; /* [m^3/kg] */
 
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
             for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
                 if ( rE[jNy][iNx] > 1.00E-15 ) {
                     chi[jNy][iNx] = chi[jNy][iNx] * ( a + b / rE[jNy][iNx] );
                     /* Unit check: 
-                     * [1/m] = [g/m^3] * [m^2/g] */
+                     * [1/m] = [kg/m^3] * [m^2/kg] */
                 } else
                     chi[jNy][iNx] = 0.0E+00;
             }
