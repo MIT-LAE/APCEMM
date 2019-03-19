@@ -277,6 +277,9 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     for ( unsigned int iSpec = 0; iSpec < amb_Value.size(); iSpec++ )
         amb_Value[iSpec] *= airDens;
 
+    amb_Value[ind_H2O] = input.relHumidity_w() / ((double) 100.0) * \
+                         physFunc::pSat_H2Ol( input.temperature_K() ) / ( physConst::kB * input.temperature_K() ) / 1.00E+06;
+
     /* Create ambient struture */
     Ambient ambientData( timeArray.size(), amb_Value, aer_Value, Vector_1D( 9, 0.0E+00 ) );
 
