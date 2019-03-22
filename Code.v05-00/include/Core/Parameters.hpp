@@ -15,18 +15,28 @@
 #define PARAMETERS_H_INCLUDED
 
 /* Grid parameters */
-#define NX                1024        /* Number of grid cells in the x-direction */
-//#define NX                256         /* Number of grid cells in the x-direction */
-#define NY                1024         /* Number of grid cells in the y-direction */
-//#define NY                256         /* Number of grid cells in the y-direction */
+
+/* Choose grid for simulation */
+
+/* 1. Regular grid: */
+
+#define NX                256         /* Number of grid cells in the x-direction */
+#define NY                256         /* Number of grid cells in the y-direction */
+#define XLIM              3.0E+04     /* x-limits of the domain [m] */
+#define YLIM_UP           6.5E+02     /* Upper y-limit of the domain [m] */
+#define YLIM_DOWN         6.5E+02     /* Lower y-limit of the domain [m] */
+
+/* 2. Fine and extended grid for contrail simulation: */
+
+//#define NX                2048        /* Number of grid cells in the x-direction */
+//#define NY                512         /* Number of grid cells in the y-direction */
+//#define XLIM              40.0E+03     /* x-limits of the domain [m] */
+//#define YLIM_UP           8.0E+02     /* Upper y-limit of the domain [m] */
+//#define YLIM_DOWN         9.0E+02     /* Lower y-limit of the domain [m] */
+
+
 #define NYH               NY/2 + 1
 #define NCELL             NX*NY       /* Number of grid cells */
-//#define XLIM              22.0E+03     /* x-limits of the domain [m] */
-#define XLIM              18.8E+03     /* x-limits of the domain [m] */
-//#define XLIM              3.0E+04     /* x-limits of the domain [m] */
-//#define YLIM              6.5E+02     /* y-limits of the domain [m] */
-#define YLIM_UP           6.5E+02     /* Upper y-limit of the domain [m] */
-#define YLIM_DOWN         9.0E+02     /* Lower y-limit of the domain [m] */
 
 /* Ring structure */
 #define NRING             15          /* Number of rings */
@@ -36,12 +46,13 @@
 #define TROPP             2.0E+04     /* Pressure at the tropopause [Pa] */
 
 /* Diffusion */
-#define DH                1.5E+01     /* Steady-state horizontal diffusion parameter [m2/s] */
-#define DV                1.5E-01     /* Steady-state vertical diffusion parameter [m2/s] */
-#define DH0               1.7E+01     /* Initial horizontal diffusion parameter [m2/s] */
-#define DV0               2.0E-01     /* Initial vertical diffusion parameter [m2/s] */
-#define tH0               1.8E+02     /* Timescale of initial enhanced horizontal diffusion [s] */
-#define tV0               1.8E+02     /* Timescale of initial enhanced vertical diffusion [s] */
+/* The following parameters are now passed as user input parameters */
+//#define DH                1.5E+01     /* Steady-state horizontal diffusion parameter [m2/s] */
+//#define DV                1.5E-01     /* Steady-state vertical diffusion parameter [m2/s] */
+//#define DH0               1.7E+01     /* Initial horizontal diffusion parameter [m2/s] */
+//#define DV0               1.1E-01     /* Initial vertical diffusion parameter [m2/s] */
+#define tH0               7.8E+02     /* Timescale of initial enhanced horizontal diffusion [s] */
+#define tV0               7.8E+02     /* Timescale of initial enhanced vertical diffusion [s] */
 #define DPROF             1           /* Time profile of the initial diffusion parameter [0,1,2]
                                        * 0: Step
                                        * 1: Linear
