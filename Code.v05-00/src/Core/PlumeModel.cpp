@@ -720,14 +720,16 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::cout << std::setprecision(coutPrecision);
         std::cout << "\n ## ATMOSPHERIC COND.:";
         std::cout << "\n ##\n";
-        std::cout << " ## - Temperature: " << std::setw(txtWidth) << temperature_K          << " [  K]\n";
-        std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [hPa]\n";
-        std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [  %]\n";
-        std::cout << " ## - Shear      : " << std::setw(txtWidth) << input.shear()          << " [1/s]\n";
-        std::cout << " ## - Latitude   : " << std::setw(txtWidth) << input.latitude_deg()   << " [deg]\n";
-        std::cout << " ## - Longitude  : " << std::setw(txtWidth) << input.longitude_deg()  << " [deg]\n";
-        std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [ - ]\n";
-        std::cout << " ## - Emiss. time: " << std::setw(txtWidth) << input.emissionTime()   << " [hrs]\n";
+        std::cout << " ## - Temperature: " << std::setw(txtWidth) << temperature_K          << " [    K]\n";
+        std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [  hPa]\n";
+        std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [    %]\n";
+        std::cout << " ## - Horiz. Diff: " << std::setw(txtWidth) << input.horizDiff()      << " [ m2/s]\n";
+        std::cout << " ## - Verti. Diff: " << std::setw(txtWidth) << input.vertiDiff()      << " [ m2/s]\n";
+        std::cout << " ## - Shear      : " << std::setw(txtWidth) << input.shear()          << " [  1/s]\n";
+        std::cout << " ## - Latitude   : " << std::setw(txtWidth) << input.latitude_deg()   << " [  deg]\n";
+        std::cout << " ## - Longitude  : " << std::setw(txtWidth) << input.longitude_deg()  << " [  deg]\n";
+        std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [  -  ]\n";
+        std::cout << " ## - Emiss. time: " << std::setw(txtWidth) << input.emissionTime()   << " [  hrs]\n";
         std::cout << " ## - Emiss. day : " << std::setw(txtWidth-3) << input.emissionMonth() << "/" << input.emissionDay() << "\n";
 
         std::cout << "\n ## EMISSIONS:";
