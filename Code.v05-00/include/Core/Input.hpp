@@ -21,10 +21,16 @@
 class Input
 {
 
-        
+    UInt Case_;
+
+    RealDouble simulationTime_;
+
     RealDouble temperature_K_;
     RealDouble pressure_Pa_;
     RealDouble relHumidity_w_;
+    RealDouble horizDiff_;
+    RealDouble vertiDiff_;
+    RealDouble shear_;
 
     RealDouble longitude_deg_;
     RealDouble latitude_deg_;
@@ -53,30 +59,27 @@ class Input
 
     std::string fileName_;
     std::string fileName_ADJ_;
+    std::string fileName_BOX_;
 
     public:
 
-        Input( const RealDouble temperature_K, \
-               const RealDouble pressure_Pa,   \
-               const RealDouble relHumidity_w, \
-               const RealDouble long_deg,      \
-               const RealDouble lat_deg,       \
-               const unsigned int dayGMT,      \
-               const RealDouble emissionTime,  \
-               const Vector_1D emissionInput,  \
-               const Vector_1D backgMixRatio,  \
+        Input( unsigned int iCase,             \
+               const Vector_2D &parameters,    \
                const std::string fileName,     \
-               const std::string fileName_ADJ );
-        Input( unsigned int iCase,          \
-               const Vector_2D &parameters, \
-               const std::string fileName,  \
-               const std::string fileName_ADJ );
+               const std::string fileName_ADJ, \
+               const std::string fileName_BOX );
 
         ~Input();
 
+        UInt Case() const { return Case_; }
+
+        RealDouble simulationTime() const { return simulationTime_; }
         RealDouble temperature_K() const { return temperature_K_; }
         RealDouble pressure_Pa() const { return pressure_Pa_; }
         RealDouble relHumidity_w() const { return relHumidity_w_; }
+        RealDouble horizDiff() const { return horizDiff_; }
+        RealDouble vertiDiff() const { return vertiDiff_; }
+        RealDouble shear() const { return shear_; }
         
         RealDouble longitude_deg() const { return longitude_deg_; }
         RealDouble latitude_deg() const { return latitude_deg_; }
@@ -105,8 +108,10 @@ class Input
 
         std::string fileName() const { return fileName_; }
         std::string fileName_ADJ() const { return fileName_ADJ_; }
+        std::string fileName_BOX() const { return fileName_BOX_; }
         const char* fileName2char() const { return fileName_.c_str(); }
         const char* fileName_ADJ2char() const { return fileName_ADJ_.c_str(); }
+        const char* fileName_BOX2char() const { return fileName_BOX_.c_str(); }
 
 };
 

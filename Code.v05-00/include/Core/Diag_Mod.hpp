@@ -23,10 +23,30 @@
 #include "Core/FileHandler.hpp"
 #include "Core/Structure.hpp"
 #include "Core/Mesh.hpp"
+#include "Core/Meteorology.hpp"
 #include "Core/Util.hpp"
 
 static const int SAVE_SUCCESS = 1;
 static const int SAVE_FAILURE = 0;
+
+/* ================================================================== */
+/* ---- Timeseries Diagnostics -------------------------------------- */
+/* ================================================================== */
+
+/* Timeseries diagnostic files must be of the form:
+ *      *hhmmss.nc or *hhmm.nc */
+
+bool Diag_TS_Chem( const char* ROOTNAME,                     \
+                   const std::vector<int> speciesIndices,    \
+                   const int hh, const int mm, const int ss, \
+                   const Solution& Data, const Mesh& m );
+
+bool Diag_TS_Phys( const char* ROOTNAME,                     \
+                   const std::vector<int> aerosolIndices,    \
+                   const int hh, const int mm, const int ss, \
+                   const Solution& Data, const Mesh& m,      \
+                   const Meteorology &Met,                   \
+                   const int outputPDF = 0 );
 
 /* ================================================================== */
 /* ---- Prod & Loss Rates Diagnostics ------------------------------- */
@@ -41,17 +61,5 @@ static const int SAVE_FAILURE = 0;
 //              const int hh, const int mm, const int ss, \
 //              const Solution& Data,                     \
 //              const Mesh& m );
-
-/* ================================================================== */
-/* ---- Timeseries Diagnostics -------------------------------------- */
-/* ================================================================== */
-
-/* Timeseries diagnostic files must be of the form:
- *      *hhmmss.nc */
-
-bool Diag_TS( const char* ROOTNAME,                     \
-              const std::vector<int> speciesIndices,    \
-              const int hh, const int mm, const int ss, \
-              const Solution& Data, const Mesh& m );
 
 #endif /* DIAG_MOD_H_INCLUDED */

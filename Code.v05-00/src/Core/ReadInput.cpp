@@ -16,6 +16,7 @@
 const unsigned int SUCCESS = 1;
 
 const bool VERBOSE = false;
+const char* EMPTY = "";
 const char* SPACE = " ";
 const char* TAB   = "\t";
 const char* COLON = ":";
@@ -41,7 +42,7 @@ void Read_Input_File( OptInput &Input_Opt )
     if ( const char* simDir = std::getenv("APCEMM_runDir") )
         fullPath += simDir;
     else {
-        std::cout << " Simulation Directory is not defined!" << std::endl;
+        std::cout << " \nSimulation Directory is not defined!" << std::endl;
         const char* currDir = std::getenv("PWD");
         fullPath += currDir;
         std::cout << " Reading from PWD: " << currDir << std::endl;
@@ -88,41 +89,96 @@ void Read_Input_File( OptInput &Input_Opt )
 
         /* Print to the console? */
         if ( VERBOSE )
-            std::cout << line << std::endl;
+            std::cout << " " << line << std::endl;
 
         if ( strstr( line.c_str(), "SIMULATION MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read SIMULATION MENU ====== */
+            /* ================================ */
+
             Read_Simulation_Menu( Input_Opt, RC ); 
 
         } else if ( strstr( line.c_str(), "PARAMETER SWEEP" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read PARAMETER SWEEP ====== */
+            /* ================================ */
+
             Read_Parameters( Input_Opt, RC );
 
         } else if ( strstr( line.c_str(), "TRANSPORT MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read TRANSPORT MENU ======= */
+            /* ================================ */
+
             Read_Transport_Menu( Input_Opt, RC );
 
         } else if ( strstr( line.c_str(), "CHEMISTRY MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read CHEMISTRY MENU ======= */
+            /* ================================ */
+
             Read_Chemistry_Menu( Input_Opt, RC );
 
         } else if ( strstr( line.c_str(), "AEROSOL MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read AEROSOL MENU ========= */
+            /* ================================ */
+
             Read_Aerosol_Menu( Input_Opt, RC );
         
         } else if ( strstr( line.c_str(), "METEOROLOGY MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read METEOROLOGY MENU ===== */
+            /* ================================ */
+
             Read_Meteorology_Menu( Input_Opt, RC );
         
         } else if ( strstr( line.c_str(), "DIAGNOSTIC MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read DIAGNOSTIC MENU ====== */
+            /* ================================ */
+
             Read_Diagnostic_Menu( Input_Opt, RC );
         
         } else if ( strstr( line.c_str(), "TIMESERIES MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read TIMESERIES MENU ====== */
+            /* ================================ */
+
             Read_Timeseries_Menu( Input_Opt, RC );
 
         } else if ( strstr( line.c_str(), "PROD & LOSS MENU" ) != NULL ) {
+
+            /* ================================ */
+            /* ==== Read PROD&LOSS MENU ======= */
+            /* ================================ */
+
             Read_PL_Menu( Input_Opt, RC );
 
-        } else if ( strstr( line.c_str(), "END OF FILE" ) != NULL )
+        } else if ( strstr( line.c_str(), "END OF FILE" ) != NULL ) {
+            std::cout << " " << line << std::endl;
             break;
+        }
                 
     }
 
+    getline( inputFile, line, '\n' );
+    std::cout << " " << line << std::endl;
+
+    /* Close input file */
     inputFile.close();
+
+    /* Check that input files do not conflict.
+     * If a conflict is detected, abort! */
+    Are_Flags_Valid( Input_Opt );
 
     return;
 
@@ -369,6 +425,43 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
 
     tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
     Input_Opt.SIMULATION_ADJOINT_FILENAME = tokens[0];
+    
+    /* ==================================================== */
+    /* Run box model                                        */
+    /* ==================================================== */
+
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.SIMULATION_BOXMODEL = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.SIMULATION_BOXMODEL = 0;
+    else {
+        std::cout << " Wrong input for: " << "Adjoint Optimization" << std::endl;
+        exit(1);
+    }
+    
+    /* ==================================================== */
+    /* netCDF file name                                     */
+    /* ==================================================== */
+
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
+    Input_Opt.SIMULATION_BOX_FILENAME = tokens[0];
+
 
     /* Return success */
     RC = SUCCESS; 
@@ -391,6 +484,8 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_FORWARD_FILENAME              << std::endl;
     std::cout << " Turn on adjoint optim.  : " << Input_Opt.SIMULATION_ADJOINT                       << std::endl;
     std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_ADJOINT_FILENAME              << std::endl;
+    std::cout << " Run box model           : " << Input_Opt.SIMULATION_BOXMODEL                      << std::endl;
+    std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_BOX_FILENAME                  << std::endl;
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     
 } /* End of Read_Simulation_Menu */
@@ -422,7 +517,6 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     /* Skip menu header lines */
     getline( inputFile, line, '\n' );
     getline( inputFile, line, '\n' );
-    getline( inputFile, line, '\n' );
 
     /* Variable ranges can be defined in two ways:
      *  - min:step:max
@@ -430,6 +524,98 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
 
     /* However, for MC simulations the ranges should be defined as
      * min max or min:max */
+    
+    /* ==================================================== */
+    /* Plume processing time                                */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Plume process.";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_PLUMEPROCESS_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_PLUMEPROCESS_RANGE = 0;
+    }
+    
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_PLUMEPROCESS_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_PLUMEPROCESS_RANGE = 0;
+    }
+
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.assign( unit );
+    
+    /* Store in values for variable */
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value > 0.0E+00 )
+                Input_Opt.PARAMETER_PLUMEPROCESS.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
+   
+    /* Skip header line */
+    getline( inputFile, line, '\n' );
 
     /* ==================================================== */
     /* Temperature                                          */
@@ -609,6 +795,266 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
     }
 
+    /* ==================================================== */
+    /* Horiz. diffusion parameter                           */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Horiz. diffusion parameter";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_DH_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_DH_RANGE = 0;
+    }
+    
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+    
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_DH_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_DH_RANGE = 0;
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_DH_UNIT.assign( unit );
+
+    /* Store in values for variable */
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_DH.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
+
+    /* ==================================================== */
+    /* Verti. diffusion parameter                           */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Verti. diffusion parameter";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_DV_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_DV_RANGE = 0;
+    }
+    
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+    
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_DV_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_DV_RANGE = 0;
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_DV_UNIT.assign( unit );
+
+    /* Store in values for variable */
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            if ( value >= 0.0E+00 )
+                Input_Opt.PARAMETER_DV.push_back( value );
+            else {
+                std::cout << " Wrong input for: " << variable << std::endl;
+                std::cout << " Index needs to be positive" << std::endl;
+                exit(1);
+            }
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
+
+    /* ==================================================== */
+    /* Shear                                                */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Shear";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_SHEAR_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_SHEAR_RANGE = 0;
+    }
+    
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_SHEAR_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_SHEAR_RANGE = 0;
+    }
+
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_SHEAR_UNIT.assign( unit );
+
+    /* Store in values for variable */
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+        try {
+            value = std::stod( tokens[i] );
+            Input_Opt.PARAMETER_SHEAR.push_back( value );
+        } catch(std::exception& e) {
+            std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+            exit(1);
+        }
+    }
 
     /* Skipping line */
     getline( inputFile, line, '\n' );
@@ -2314,6 +2760,21 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     std::cout << " %%% PARAMETER SWEEP %%% :"                                                        << std::endl;
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
 
+    std::cout << "  => Plume process. [" << Input_Opt.PARAMETER_PLUMEPROCESS_UNIT << "] : ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_PLUMEPROCESS[0] << "," << Input_Opt.PARAMETER_PLUMEPROCESS[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_PLUMEPROCESS[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE )
+            std::cout << Input_Opt.PARAMETER_PLUMEPROCESS[0] << ":" << Input_Opt.PARAMETER_PLUMEPROCESS[1] << ":" << Input_Opt.PARAMETER_PLUMEPROCESS[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_PLUMEPROCESS.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_PLUMEPROCESS[i] << " ";
+            std::cout << std::endl;
+        }
+    }
     /* ---- Meteorological parameters --------------------- */
     std::cout << " Meteorological parameter:" << std::endl;
     std::cout << "  => Temperature [" << Input_Opt.PARAMETER_TEMPERATURE_UNIT << "]     : ";
@@ -2343,6 +2804,51 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         else {
             for ( unsigned int i = 0; i < Input_Opt.PARAMETER_RHW.size(); i++ )
                 std::cout << Input_Opt.PARAMETER_RHW[i] << " ";
+            std::cout << std::endl;
+        }
+    }
+    std::cout << "  => Horiz. diff. [" << Input_Opt.PARAMETER_DH_UNIT << "]: ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_DH_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_DH[0] << "," << Input_Opt.PARAMETER_DH[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_DH[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_DH_RANGE )
+            std::cout << Input_Opt.PARAMETER_DH[0] << ":" << Input_Opt.PARAMETER_DH[1] << ":" << Input_Opt.PARAMETER_DH[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_DH.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_DH[i] << " ";
+            std::cout << std::endl;
+        }
+    }
+    std::cout << "  => Verti. diff. [" << Input_Opt.PARAMETER_DV_UNIT << "]: ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_DV_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_DV[0] << "," << Input_Opt.PARAMETER_DV[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_DV[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_DV_RANGE )
+            std::cout << Input_Opt.PARAMETER_DV[0] << ":" << Input_Opt.PARAMETER_DV[1] << ":" << Input_Opt.PARAMETER_DV[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_DV.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_DV[i] << " ";
+            std::cout << std::endl;
+        }
+    }
+    std::cout << "  => Shear [" << Input_Opt.PARAMETER_SHEAR_UNIT << "]         : ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_SHEAR_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_SHEAR[0] << "," << Input_Opt.PARAMETER_SHEAR[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_SHEAR[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_SHEAR_RANGE )
+            std::cout << Input_Opt.PARAMETER_SHEAR[0] << ":" << Input_Opt.PARAMETER_SHEAR[1] << ":" << Input_Opt.PARAMETER_SHEAR[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_SHEAR.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_SHEAR[i] << " ";
             std::cout << std::endl;
         }
     }
@@ -2664,6 +3170,8 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     std::vector<std::string> tokens;
     std::string variable;
     double value;
+    std::string unit;
+    unsigned first, last;
 
     /* ==================================================== */
     /* Turn on Transport?                                   */
@@ -2712,10 +3220,10 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     }
     
     /* ==================================================== */
-    /* Convect timestep                                     */
+    /* Transport timestep                                   */
     /* ==================================================== */
 
-    variable = "Convect timestep";
+    variable = "Transport timestep";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
@@ -2738,6 +3246,136 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Could not convert string to double for " << variable << std::endl;
         exit(1);
     }
+    
+    /* ==================================================== */
+    /* Particle flux correction                             */
+    /* ==================================================== */
+
+    variable = "Particle flux correction?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.TRANSPORT_PART_FLUX = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.TRANSPORT_PART_FLUX = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Turn on plume updraft?                               */
+    /* ==================================================== */
+
+    variable = "Turn on plume updraft?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.TRANSPORT_UPDRAFT = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.TRANSPORT_UPDRAFT = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* ==================================================== */
+    /* Updraft timescale                                    */
+    /* ==================================================== */
+
+    variable = "Updraft timescale";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    try {
+        value = std::stod( tokens[0] );
+        if ( value > 0.0E+00 )
+            Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE = value;
+        else {
+            std::cout << " Wrong input for: " << variable << std::endl;
+            std::cout << " Timescale needs to be positive" << std::endl;
+            exit(1);
+        }
+    } catch(std::exception& e) {
+        std::cout << " Could not convert string to double for " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+
+    if ( unit.compare( "s" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( unit.compare( "min" ) == 0 ) {
+        /* Convert min to s */
+        Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE *= 60.0;
+    } else if ( unit.compare( "hr" ) == 0 ) {
+        /* Convert hr to s */
+        Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE *= 3600.0;
+    } else {
+        std::cout << " Unknown unit for variable 'Updraft timescale': ";
+        std::cout << unit << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Updraft velocity                                     */
+    /* ==================================================== */
+
+    variable = "Updraft velocity";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    try {
+        value = std::stod( tokens[0] );
+        Input_Opt.TRANSPORT_UPDRAFT_VELOCITY = value;
+    } catch(std::exception& e) {
+        std::cout << " Could not convert string to double for " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+
+    if ( unit.compare( "m/s" ) == 0 ) {
+        /* Do nothing. Default unit */
+    } else if ( unit.compare( "cm/s" ) == 0 ) {
+        /* Convert cm/s to m/s */
+        Input_Opt.TRANSPORT_UPDRAFT_VELOCITY *= 1.0E-02;
+    } else if ( unit.compare( "mm/s" ) == 0 ) {
+        /* Convert mm/s to m/s */
+        Input_Opt.TRANSPORT_UPDRAFT_VELOCITY *= 1.00E-03;
+    } else {
+        std::cout << " Unknown unit for variable 'Updraft velocity': ";
+        std::cout << unit << std::endl;
+        exit(1);
+    }
 
     /* Return success */
     RC = SUCCESS;
@@ -2751,7 +3389,11 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     std::cout << " Turn on Transport?      : " << Input_Opt.TRANSPORT_TRANSPORT                      << std::endl;
     std::cout << "  => Fill Negative Values: " << Input_Opt.TRANSPORT_FILL                           << std::endl;
-    std::cout << " Convect Timestep [min]  : " << Input_Opt.TRANSPORT_TIMESTEP                       << std::endl;
+    std::cout << " Transport Timestep [min]: " << Input_Opt.TRANSPORT_TIMESTEP                       << std::endl;
+    std::cout << " Particle flux correction: " << Input_Opt.TRANSPORT_PART_FLUX                      << std::endl;
+    std::cout << " Turn on plume updraft?  : " << Input_Opt.TRANSPORT_UPDRAFT                        << std::endl;
+    std::cout << "  => Updraft timescale[s]: " << Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE              << std::endl;
+    std::cout << "  => Updraft vel.   [m/s]: " << Input_Opt.TRANSPORT_UPDRAFT_VELOCITY               << std::endl;
 
 } /* End of Read_Transport_Menu */
 
@@ -2924,10 +3566,10 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     }
 
     /* ==================================================== */
-    /* Turn on coagulation?                                 */
+    /* Turn on solid coag.?                                 */
     /* ==================================================== */
 
-    variable = "Turn on coagulation?";
+    variable = "Turn on solid coag.?";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
@@ -2937,10 +3579,33 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
 
     if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
          ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.AEROSOL_COAGULATION = 1;
+        Input_Opt.AEROSOL_COAGULATION_SOLID = 1;
     else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
               ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.AEROSOL_COAGULATION = 0;
+        Input_Opt.AEROSOL_COAGULATION_SOLID = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Turn on liquid coag.?                                */
+    /* ==================================================== */
+
+    variable = "Turn on liquid coag.?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable range */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.AEROSOL_COAGULATION_LIQUID = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.AEROSOL_COAGULATION_LIQUID = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
@@ -2995,29 +3660,6 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
         exit(1);
     }
     
-    /* ==================================================== */
-    /* Turn on plume updraft?                               */
-    /* ==================================================== */
-
-    variable = "Turn on plume updraft?";
-    getline( inputFile, line, '\n' );
-    if ( VERBOSE )
-        std::cout << line << std::endl;
-    
-    /* Extract variable */
-    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
-    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
-         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.AEROSOL_PLUME_UPDRAFT = 1;
-    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
-              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.AEROSOL_PLUME_UPDRAFT = 0;
-    else {
-        std::cout << " Wrong input for: " << variable << std::endl;
-        exit(1);
-    }
-    
     /* Return success */
     RC = SUCCESS;
 
@@ -3029,10 +3671,10 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " %%% AEROSOL MENU %%%    :"                                                        << std::endl;
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     std::cout << " Turn on grav. settling? : " << Input_Opt.AEROSOL_GRAVSETTLING                     << std::endl;
-    std::cout << " Turn on coagulation?    : " << Input_Opt.AEROSOL_COAGULATION                      << std::endl;
+    std::cout << " Turn on solid coag.?    : " << Input_Opt.AEROSOL_COAGULATION_SOLID                << std::endl;
+    std::cout << " Turn on liquid coag.?   : " << Input_Opt.AEROSOL_COAGULATION_LIQUID               << std::endl;
     std::cout << "  => Coag. timestep [min]: " << Input_Opt.AEROSOL_COAGULATION_TIMESTEP             << std::endl;
     std::cout << " Turn on ice growth?     : " << Input_Opt.AEROSOL_ICE_GROWTH                       << std::endl;
-    std::cout << " Turn on plume updraft?  : " << Input_Opt.AEROSOL_PLUME_UPDRAFT                    << std::endl;
 
 } /* End of Read_Aerosol_Menu */
 
@@ -3051,48 +3693,36 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
 
     std::vector<std::string> tokens;
     std::string variable;
+    double value;
+    
+    /* ==================================================== */
+    /* Do we have MET input?                                */
+    /* ==================================================== */
 
-    /* ==================================================== */
-    /* Initialize T from MET?                               */
-    /* ==================================================== */
-    
-    variable = "Initialize T from MET?";
+    variable = "Do we have MET input?";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
     
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
+
     if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
-         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.MET_TEMP_INIT = 1;
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "y" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Y" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "yes" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "YES" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Yes" ) == 0 ) )
+        Input_Opt.MET_LOADMET = 1;
     else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
-              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.MET_TEMP_INIT = 0;
-    else {
-        std::cout << " Wrong input for: " << variable << std::endl;
-        exit(1);
-    }
-    
-    /* ==================================================== */
-    /* Initialize H2O from MET?                             */
-    /* ==================================================== */
-    
-    variable = "Initialize H2O from MET?";
-    getline( inputFile, line, '\n' );
-    if ( VERBOSE )
-        std::cout << line << std::endl;
-    
-    /* Extract variable */
-    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
-    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
-         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
-        Input_Opt.MET_H2O_INIT = 1;
-    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
-              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
-        Input_Opt.MET_H2O_INIT = 0;
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "n" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "N" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "no" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "NO" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "No" ) == 0 ) ) 
+        Input_Opt.MET_LOADMET = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
@@ -3106,12 +3736,183 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+    
+    tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
+    Input_Opt.MET_FILENAME = tokens[0];
+
+    /* ==================================================== */
+    /* Initialize T from MET?                               */
+    /* ==================================================== */
+
+    variable = "Initialize T from MET?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.MET_LOADTEMP = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.MET_LOADTEMP = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Initialize H2O from MET?                             */
+    /* ==================================================== */
+
+    variable = "Initialize H2O from MET?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.MET_LOADH2O = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.MET_LOADH2O = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* Skip line */
+    getline( inputFile, line, '\n' );
+
+    /* ==================================================== */
+    /* Impose moist layer depth                             */
+    /* ==================================================== */
+
+    variable = "Impose moist layer depth?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.MET_FIXDEPTH = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.MET_FIXDEPTH = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* ==================================================== */
+    /* Moist layer depth                                    */
+    /* ==================================================== */
+
+    variable = "Moist layer depth [m]";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
     
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
-    Input_Opt.MET_FILENAME = tokens[0];
+    try {
+        value = std::stod( tokens[0] );
+        if ( value > 0.0E+00 )
+            Input_Opt.MET_DEPTH = value;
+        else {
+            std::cout << " Wrong input for: " << variable << std::endl;
+            std::cout << " Timestep needs to be positive" << std::endl;
+            exit(1);
+        }
+    } catch(std::exception& e) {
+        std::cout << " Could not convert string to double for " << variable << std::endl;
+        exit(1);
+    }
+
+    /* Skip line */
+    getline( inputFile, line, '\n' );
+
+    /* ==================================================== */
+    /* Impose temperature lapse rate                        */
+    /* ==================================================== */
+
+    variable = "Impose temperature lapse rate?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.MET_FIXLAPSERATE = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.MET_FIXLAPSERATE = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+    
+    /* ==================================================== */
+    /* Temperature lapse rate                               */
+    /* ==================================================== */
+
+    variable = "Temperature lapse rate [K/m]";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+    
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    try {
+        value = std::stod( tokens[0] );
+        Input_Opt.MET_LAPSERATE = value;
+    } catch(std::exception& e) {
+        std::cout << " Could not convert string to double for " << variable << std::endl;
+        exit(1);
+    }
+
+    /* Skip line */
+    getline( inputFile, line, '\n' );
+
+    /* ==================================================== */
+    /* Add diurnal variations?                              */
+    /* ==================================================== */
+
+    variable = "Diurnal variations?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" ) == 0 ) )
+        Input_Opt.MET_DIURNAL = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" ) == 0 ) )
+        Input_Opt.MET_DIURNAL = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
 
     /* Return success */
     RC = SUCCESS;
@@ -3123,9 +3924,18 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     std::cout << " %%% METEOROLOGY MENU %%%:"                                                        << std::endl;
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
-    std::cout << " Initialize T from MET?  : " << Input_Opt.MET_TEMP_INIT                            << std::endl;
-    std::cout << " Initialize H2O from MET?: " << Input_Opt.MET_H2O_INIT                             << std::endl;
-    std::cout << " Met file                : " << Input_Opt.MET_FILENAME                             << std::endl;
+    std::cout << " Do we have MET input?   : " << Input_Opt.MET_LOADMET                              << std::endl;
+    std::cout << "  => Met file            : " << Input_Opt.MET_FILENAME                             << std::endl;
+    std::cout << "  => Init T from MET?    : " << Input_Opt.MET_LOADTEMP                             << std::endl;
+    std::cout << "  => Init H2O from MET?  : " << Input_Opt.MET_LOADH2O                              << std::endl;
+    std::cout << " - OR -------------------: " << std::endl;
+    std::cout << " Impose moist layer depth: " << Input_Opt.MET_FIXDEPTH                             << std::endl;
+    std::cout << "  => Moist layer depth[m]: " << Input_Opt.MET_DEPTH                                << std::endl;
+    std::cout << " ---- OR ----------------: " << std::endl;
+    std::cout << " Impose temp. lapse rate : " << Input_Opt.MET_FIXLAPSERATE                         << std::endl;
+    std::cout << "  => Lapse rate [K/m]    : " << Input_Opt.MET_LAPSERATE                            << std::endl;
+    std::cout << " ------------------------: " << std::endl;
+    std::cout << " Add diurnal variations  : " << Input_Opt.MET_DIURNAL                              << std::endl;
 
 } /* End of Read_Meteorology_Menu */
 
@@ -3247,18 +4057,20 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     
     /* Store in values for variable */
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
-        try {
-            value = std::stoi( tokens[i] );
-            if ( value > 0 )
-                Input_Opt.TS_SPECIES.push_back( value );
-            else {
-                std::cout << " Wrong input for: " << variable << std::endl;
-                std::cout << " Index needs to be positive" << std::endl;
+        if ( strcmp(tokens[i].c_str(), EMPTY) != 0 ) {
+            try {
+                value = std::stoi( tokens[i] );
+                if ( value > 0 )
+                    Input_Opt.TS_SPECIES.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << " Index needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[i] << "' to int for " << variable << std::endl;
                 exit(1);
             }
-        } catch(std::exception& e) {
-            std::cout << " Could not convert string '" << tokens[i] << "' to int for " << variable << std::endl;
-            exit(1);
         }
     }
 
@@ -3345,18 +4157,20 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     
     /* Store in values for variable */
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
-        try {
-            value = std::stoi( tokens[i] );
-            if ( value > 0 )
-                Input_Opt.TS_AEROSOL.push_back( value );
-            else {
-                std::cout << " Wrong input for: " << variable << std::endl;
-                std::cout << " Index needs to be positive" << std::endl;
+        if ( strcmp(tokens[i].c_str(), EMPTY) != 0 ) {
+            try {
+                value = std::stoi( tokens[i] );
+                if ( value > 0 )
+                    Input_Opt.TS_AEROSOL.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << " Index needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[i] << "' to int for " << variable << std::endl;
                 exit(1);
             }
-        } catch(std::exception& e) {
-            std::cout << " Could not convert string '" << tokens[i] << "' to int for " << variable << std::endl;
-            exit(1);
         }
     }
 
@@ -3378,7 +4192,7 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     else {
         try {
             value = std::stod( tokens[0] );
-            if ( value > 0.0E+00 )
+            if ( value >= 0.0E+00 )
                 Input_Opt.TS_AERO_FREQ = value;
             else {
                 std::cout << " Wrong input for: " << variable << std::endl;
@@ -3500,6 +4314,7 @@ void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
     std::cout << " Turn on P/L diag?       : " << Input_Opt.PL_PL                                    << std::endl;
     std::cout << " Save O3 P/L?            : " << Input_Opt.PL_O3                                    << std::endl;
+    std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
 
 } /* End of Read_PL_Menu */
 
@@ -3522,6 +4337,42 @@ Vector_2D CombVec( OptInput &Input_Opt )
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         /* Initialize seed */
         setSeed();
+        
+        /* ======================================================================= */
+        /* ---- PLUME PROCESSING TIME ( SIMULATION TIME ) ------------------------ */
+        /* ---- Accepted units are: hr (default)                                   */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_PLUMEPROCESS[0], \
+                                       Input_Opt.PARAMETER_PLUMEPROCESS[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_PLUMEPROCESS[0] );
+        }
+        
+        /* Do unit conversion to default unit */
+        if ( ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "0-24" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "hr" ) == 0 ) ) {
+            /* Do nothing. Default unit */
+        } else if ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "min" ) == 0 ) {
+            /* Convert from min to hr */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] /= 60.0;
+        } else {
+            std::cout << " Unknown unit for variable 'Plume Processing Time': ";
+            std::cout << Input_Opt.PARAMETER_PLUMEPROCESS_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_PLUMEPROCESS_UNIT = "hr";
+
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
 
         /* ======================================================================= */
         /* ---- TEMPERATURE ------------------------------------------------------ */
@@ -3561,16 +4412,17 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
 
+        counter += 1;
         y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- RELATIVE HUMIDITY ------------------------------------------------ */
         /* ---- Accepted units are: % (0-100, default), - (0-1)                    */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_RHW_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_RHW[0], \
@@ -3600,12 +4452,105 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
- 
+
+        /* ======================================================================= */
+        /* ---- HORIZONTAL DIFFUSION PARAMETER ----------------------------------- */
+        /* ---- Accepted units are: m^2/s (default)                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_DH_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_DH[0], \
+                                       Input_Opt.PARAMETER_DH[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_DH[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_DH_UNIT.compare( "m^2/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'Horiz. diffusion parameter': ";
+            std::cout << Input_Opt.PARAMETER_DH_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_DH_UNIT = "m^2/s";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- VERTICAL DIFFUSION PARAMETER ------------------------------------- */
+        /* ---- Accepted units are: m^2/s (default)                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_DV_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_DV[0], \
+                                       Input_Opt.PARAMETER_DV[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_DV[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_DV_UNIT.compare( "m^2/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'Vert. diffusion parameter': ";
+            std::cout << Input_Opt.PARAMETER_DV_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_DV_UNIT = "m^2/s";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- SHEAR ------------------------------------------------------------ */
+        /* ---- Accepted units are: 1/s (default)                                  */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_SHEAR_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_SHEAR[0], \
+                                       Input_Opt.PARAMETER_SHEAR[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_SHEAR[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_SHEAR_UNIT.compare( "1/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'Shear': ";
+            std::cout << Input_Opt.PARAMETER_SHEAR_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_SHEAR_UNIT = "1/s";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
         /* ======================================================================= */
         /* ---- LONGITUDE -------------------------------------------------------- */
         /* ---- Accepted units are: degree (default)                               */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_LONGITUDE_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_LONGITUDE[0], \
@@ -3636,7 +4581,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- LATITUDE --------------------------------------------------------- */
         /* ---- Accepted units are: degree (default)                               */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_LATITUDE_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_LATITUDE[0], \
@@ -3656,18 +4601,18 @@ Vector_2D CombVec( OptInput &Input_Opt )
 
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_LATITUDE_UNIT = "deg";
-        
+
         counter += 1;
         y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- PRESSURE --------------------------------------------------------- */
         /* ---- Accepted units are: Pa (default), hPa                              */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_PRESSURE_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_PRESSURE[0], \
@@ -3696,12 +4641,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- EMISSION DAY ----------------------------------------------------- */
         /* ---- Accepted units are: 1-365 (default)                                */
         /* ======================================================================= */
-       
+
         if ( Input_Opt.PARAMETER_EDAY_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand((int) Input_Opt.PARAMETER_EDAY[0], \
@@ -3711,7 +4656,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back( Input_Opt.PARAMETER_EDAY[0] );
         }
 
-        if ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "1-365" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "1-365" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "-" ) == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'Emission Day': ";
@@ -3727,12 +4673,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- EMISSION TIME ---------------------------------------------------- */
         /* ---- Accepted units are: 0-24 (default)                                 */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_ETIME_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_ETIME[0], \
@@ -3742,7 +4688,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back( Input_Opt.PARAMETER_ETIME[0] );
         }
 
-        if ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "0-24" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "0-24" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "hr" ) == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'Emission Time': ";
@@ -4253,6 +5200,45 @@ Vector_2D CombVec( OptInput &Input_Opt )
     } else {
 
         /* ======================================================================= */
+        /* ---- PLUME PROCESSING TIME ( SIMULATION TIME ) ------------------------ */
+        /* ---- Accepted units are: hr (default)                                   */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE ) {
+            currVal = Input_Opt.PARAMETER_PLUMEPROCESS[0];
+            while ( currVal <= Input_Opt.PARAMETER_PLUMEPROCESS[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_PLUMEPROCESS[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_PLUMEPROCESS.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_PLUMEPROCESS[i]);
+        }
+        nCases = cases.size();
+        
+        /* Do unit conversion to default unit */
+        if ( ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "0-24" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "hr" ) == 0 ) ) {
+            /* Do nothing. Default unit */
+        } else if ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "min" ) == 0 ) {
+            /* Convert from min to hr */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] /= 60.0;
+        } else {
+            std::cout << " Unknown unit for variable 'Plume Processing Time': ";
+            std::cout << Input_Opt.PARAMETER_PLUMEPROCESS_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_PLUMEPROCESS_UNIT = "hr";
+
+        y.push_back(Vector_1D(cases.size()));
+        for ( i = 0; i < cases.size(); i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
+        /* ======================================================================= */
         /* ---- TEMPERATURE ------------------------------------------------------ */
         /* ---- Accepted units are: Kelvin (default), Celsius, Fahrenheit          */
         /* ======================================================================= */
@@ -4267,7 +5253,6 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_TEMPERATURE.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_TEMPERATURE[i]);
         }
-        nCases = cases.size();
 
         /* Do unit conversion to default unit */
         if ( Input_Opt.PARAMETER_TEMPERATURE_UNIT.compare( "K" ) == 0 ) {
@@ -4289,9 +5274,28 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
 
-        y.push_back(Vector_1D(cases.size()));
+        z.push_back( Vector_1D(cases.size() ) );
         for ( i = 0; i < cases.size(); i++ )
-            y[counter-1][i] = cases[i];
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
         cases.clear();
 
         /* ======================================================================= */
@@ -4350,10 +5354,163 @@ Vector_2D CombVec( OptInput &Input_Opt )
         cases.clear();
 
         /* ======================================================================= */
+        /* ---- HORIZONTAL DIFFUSION PARAMETER ----------------------------------- */
+        /* ---- Accepted units are: m^2/s (default)                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_DH_RANGE ) {
+            currVal = Input_Opt.PARAMETER_DH[0];
+            while ( currVal <= Input_Opt.PARAMETER_DH[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_DH[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_DH.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_DH[i]);
+        }
+
+        if ( Input_Opt.PARAMETER_DH_UNIT.compare( "m^2/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'Horiz. diffusion parameter': ";
+            std::cout << Input_Opt.PARAMETER_DH_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_DH_UNIT = "m^2/s";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- VERTICAL DIFFUSION PARAMETER ------------------------------------- */
+        /* ---- Accepted units are: m^2/s (default)                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_DV_RANGE ) {
+            currVal = Input_Opt.PARAMETER_DV[0];
+            while ( currVal <= Input_Opt.PARAMETER_DV[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_DV[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_DV.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_DV[i]);
+        }
+
+        if ( Input_Opt.PARAMETER_DV_UNIT.compare( "m^2/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'Vert. diffusion parameter': ";
+            std::cout << Input_Opt.PARAMETER_DV_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_DV_UNIT = "m^2/s";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- SHEAR ------------------------------------------------------------ */
+        /* ---- Accepted units are: 1/s (default)                                  */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_SHEAR_RANGE ) {
+            currVal = Input_Opt.PARAMETER_SHEAR[0];
+            while ( currVal <= Input_Opt.PARAMETER_SHEAR[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_SHEAR[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_SHEAR.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_SHEAR[i]);
+        }
+
+        if ( Input_Opt.PARAMETER_SHEAR_UNIT.compare( "1/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'Shear': ";
+            std::cout << Input_Opt.PARAMETER_SHEAR_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_SHEAR_UNIT = "1/s";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
+
+        /* ======================================================================= */
         /* ---- LONGITUDE -------------------------------------------------------- */
         /* ---- Accepted units are: degree (default)                               */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_LONGITUDE_RANGE ) {
             currVal = Input_Opt.PARAMETER_LONGITUDE[0];
             while ( currVal <= Input_Opt.PARAMETER_LONGITUDE[2] ) {
@@ -4364,7 +5521,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_LONGITUDE.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_LONGITUDE[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_LONGITUDE_UNIT.compare( "deg" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -4380,7 +5537,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -4404,7 +5561,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- LATITUDE --------------------------------------------------------- */
         /* ---- Accepted units are: degree (default)                               */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_LATITUDE_RANGE ) {
             currVal = Input_Opt.PARAMETER_LATITUDE[0];
             while ( currVal <= Input_Opt.PARAMETER_LATITUDE[2] ) {
@@ -4415,7 +5572,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_LATITUDE.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_LATITUDE[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_LATITUDE_UNIT.compare( "deg" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -4426,12 +5583,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
 
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_LATITUDE_UNIT = "deg";
-        
+
         z.push_back( Vector_1D(cases.size() ) );
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -4450,12 +5607,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- PRESSURE --------------------------------------------------------- */
         /* ---- Accepted units are: Pa (default), hPa                              */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_PRESSURE_RANGE ) {
             currVal = Input_Opt.PARAMETER_PRESSURE[0];
             while ( currVal <= Input_Opt.PARAMETER_PRESSURE[2] ) {
@@ -4485,7 +5642,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -4504,12 +5661,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- EMISSION DAY ----------------------------------------------------- */
         /* ---- Accepted units are: 1-365 (default)                                */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EDAY_RANGE ) {
             currVal = Input_Opt.PARAMETER_EDAY[0];
             while ( currVal <= Input_Opt.PARAMETER_EDAY[2] ) {
@@ -4520,8 +5677,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EDAY.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EDAY[i]);
         }
-        
-        if ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "1-365" ) == 0 ) {
+
+        if ( ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "1-365" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EDAY_UNIT.compare( "-" ) == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'Emission Day': ";
@@ -4536,7 +5694,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -4555,12 +5713,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- EMISSION TIME ---------------------------------------------------- */
         /* ---- Accepted units are: 0-24 (default)                                 */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_ETIME_RANGE ) {
             currVal = std::fmod( Input_Opt.PARAMETER_ETIME[0], 24.0 );
             while ( currVal <= Input_Opt.PARAMETER_ETIME[2] ) {
@@ -4571,8 +5729,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_ETIME.size(); i++ )
                 cases.push_back( std::fmod( Input_Opt.PARAMETER_ETIME[i], 24.0 ) );
         }
-        
-        if ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "0-24" ) == 0 ) {
+
+        if ( ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "0-24" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_ETIME_UNIT.compare( "hr" ) == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'Emission Time': ";
@@ -4587,7 +5746,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -4611,7 +5770,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_NOX ----------------------------------------------------------- */
         /* ---- Accepted units are: g/kg_fuel (default)                            */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_NOX_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_NOX[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_NOX[2] ) {
@@ -4622,7 +5781,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_NOX.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_NOX[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g/kg_fuel" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -4662,7 +5821,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_CO ------------------------------------------------------------ */
         /* ---- Accepted units are: g/kg_fuel (default)                            */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_CO_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_CO[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_CO[2] ) {
@@ -4673,7 +5832,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_CO.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_CO[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_CO_UNIT.compare( "g/kg_fuel" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -4689,7 +5848,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -4713,7 +5872,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_UHC ----------------------------------------------------------- */
         /* ---- Accepted units are: g/kg_fuel (default)                            */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_UHC_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_UHC[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_UHC[2] ) {
@@ -4724,7 +5883,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_UHC.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_UHC[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_UHC_UNIT.compare( "g/kg_fuel" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -4764,7 +5923,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_SO2 ----------------------------------------------------------- */
         /* ---- Accepted units are: g/kg_fuel (default)                            */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_SO2_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_SO2[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_SO2[2] ) {
@@ -4775,7 +5934,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_SO2.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_SO2[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_SO2_UNIT.compare( "g/kg_fuel" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -4791,7 +5950,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -4810,7 +5969,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- EI_SO2TOSO4 ------------------------------------------------------ */
         /* ---- Accepted units are: - (default), %                                 */
@@ -4826,7 +5985,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_SO2TOSO4.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_SO2TOSO4[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_SO2TOSO4_UNIT.compare( "-" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_EI_SO2TOSO4_UNIT.compare( "%" ) == 0 ) {
@@ -4846,7 +6005,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -4870,7 +6029,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_SOOT ---------------------------------------------------------- */
         /* ---- Accepted units are: g/kg_fuel (default)                            */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_SOOT_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_SOOT[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_SOOT[2] ) {
@@ -4881,7 +6040,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_SOOT.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_SOOT[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_fuel" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -4921,7 +6080,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_SOOTRAD ------------------------------------------------------- */
         /* ---- Accepted units are: m (default), nm                                */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_SOOTRAD_RANGE ) {
             currVal = Input_Opt.PARAMETER_EI_SOOTRAD[0];
             while ( currVal <= Input_Opt.PARAMETER_EI_SOOTRAD[2] ) {
@@ -4932,7 +6091,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_EI_SOOTRAD.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_EI_SOOTRAD[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_EI_SOOTRAD_UNIT.compare( "m" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_EI_SOOTRAD_UNIT.compare( "nm" ) == 0 ) {
@@ -4976,7 +6135,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- TOTAL FUEL FLOW -------------------------------------------------- */
         /* ---- Accepted units are: kg/s (default)                                 */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_FF_RANGE ) {
             currVal = Input_Opt.PARAMETER_FF[0];
             while ( currVal <= Input_Opt.PARAMETER_FF[2] ) {
@@ -4987,7 +6146,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_FF.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_FF[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_FF_UNIT.compare( "kg/s" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
@@ -5003,7 +6162,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5027,7 +6186,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- BACKGROUND NOX MIXING RATIO -------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_NOX_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_NOX[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_NOX[2] ) {
@@ -5038,7 +6197,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_NOX.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_NOX[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_NOX_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_NOX_UNIT.compare( "ppt" ) == 0 ) {
@@ -5062,7 +6221,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -5081,12 +6240,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- BACKGROUND HNO3 MIXING RATIO ------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_HNO3_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_HNO3[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_HNO3[2] ) {
@@ -5097,7 +6256,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_HNO3.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_HNO3[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_HNO3_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_HNO3_UNIT.compare( "ppt" ) == 0 ) {
@@ -5140,12 +6299,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- BACKGROUND O3 MIXING RATIO --------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_O3_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_O3[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_O3[2] ) {
@@ -5156,7 +6315,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_O3.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_O3[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_O3_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_O3_UNIT.compare( "ppt" ) == 0 ) {
@@ -5199,12 +6358,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- BACKGROUND CO MIXING RATIO --------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_CO_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_CO[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_CO[2] ) {
@@ -5215,7 +6374,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_CO.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_CO[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_CO_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_CO_UNIT.compare( "ppt" ) == 0 ) {
@@ -5258,12 +6417,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- BACKGROUND CH4 MIXING RATIO -------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_CH4_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_CH4[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_CH4[2] ) {
@@ -5274,7 +6433,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_CH4.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_CH4[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_CH4_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_CH4_UNIT.compare( "ppt" ) == 0 ) {
@@ -5317,12 +6476,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = v[0][i];
         }
         cases.clear();
-        
+
         /* ======================================================================= */
         /* ---- BACKGROUND SO2 MIXING RATIO -------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_BACKG_SO2_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_SO2[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_SO2[2] ) {
@@ -5333,7 +6492,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_BACKG_SO2.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_BACKG_SO2[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_BACKG_SO2_UNIT.compare( "ppb" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_BACKG_SO2_UNIT.compare( "ppt" ) == 0 ) {
@@ -5375,7 +6534,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 y[j][i] = u[j][i];
             y[counter-1][i] = v[0][i];
         }
-        
+
         return y;
 
     }
@@ -5496,5 +6655,32 @@ Vector_2D Reshape_Vector( Vector_2D& vector_2D, int n_x, int n_y )
 
 } /* End of Reshape_Vector */
 
+void Are_Flags_Valid( const OptInput &Input_Opt )
+{
+
+    /* Are_Flags_Valid checks to make sure that flags are valid and
+     * do not conflict */
+
+    /* If chemistry is turned off and P&L chemistry rate output is turned on,
+     * print statement and exit... */
+    if ( !Input_Opt.CHEMISTRY_CHEMISTRY && ( Input_Opt.PL_PL || \
+                                             Input_Opt.PL_O3 ) ) {
+        std::cout << " In Are_Flags_Valid:";
+        std::cout << " CHEMISTRY is turned off while P&L rates output is turned on!" << std::endl;
+        std::cout << " Aborting!" << std::endl;
+        exit(-1);
+    }
+
+    if ( !Input_Opt.MET_LOADMET && Input_Opt.MET_FIXDEPTH && Input_Opt.MET_FIXLAPSERATE ) {
+        std::cout << " In Are_Flags_Valid:";
+        std::cout << " LOADMET is turned off and both FIXDEPTH and FIXLAPSERATE are turned on!" << std::endl;
+        std::cout << " Aborting!" << std::endl;
+        exit(-1);
+    }
+
+    /* Treatment of other conflicts goes here ... */
+
+
+} /* End of AreFlagsValid */
 
 /* End of Input_Reader.cpp */

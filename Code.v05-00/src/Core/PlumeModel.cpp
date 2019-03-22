@@ -35,6 +35,7 @@ static int SUCCESS     =  1;
 #include "Core/Input.hpp"
 #include "Core/Monitor.hpp"
 #include "SANDS/Solver.hpp"
+#include "AIM/Aerosol.hpp"
 #include "AIM/Coagulation.hpp"
 #include "AIM/Settling.hpp"
 #include "EPM/Integrate.hpp"
@@ -81,13 +82,18 @@ double TIME;              /* Current integration time (global) */
 /* Require this for adjoint integration */
 double SZA_CST[3];
 
-
-void DiffParam( double time, double &d_x, double &d_y );
-void AdvGlobal( double time, double &v_x, double &v_y, double &dTrav_x, double &dTrav_y );
+int BoxModel( const OptInput &Input_Opt, const Input &input );
+void DiffParam( const double time, double &d_x, double &d_y, \
+                const double D_X, const double D_Y );
+void AdvGlobal( const double time, const double T_UPDRAFT, \
+                const double V_UPDRAFT,                    \
+                double &v_x, double &v_y,                  \
+                double &dTrav_x, double &dTrav_y );
 Vector_1D BuildTime( const double tStart, const double tEnd, \
                      const double sunRise, const double sunSet, \
                      const double DYN_DT );
-void Transport( Solution& Data, SANDS::Solver& Solver );
+void Transport( Solution& Data, SANDS::Solver& Solver, \
+                const Vector_2D &cellAreas );
 
 
 int PlumeModel( const OptInput &Input_Opt, const Input &input )
@@ -106,6 +112,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* --- Input options from the SIMULATION MENU ---------------------------- */
     /* ======================================================================= */
 
+    const bool RUN_BOXMODEL   = Input_Opt.SIMULATION_BOXMODEL;
     const bool BUILD_LUT      = Input_Opt.SIMULATION_PARAMETER_SWEEP;
     const bool SAVE_FORWARD   = Input_Opt.SIMULATION_SAVE_FORWARD;
     const bool ADJOINT        = Input_Opt.SIMULATION_ADJOINT;
@@ -127,6 +134,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         const bool FILLNEG    = Input_Opt.TRANSPORT_FILL;
     #endif /* RINGS */
 
+    const bool FLUX_CORRECTION= Input_Opt.TRANSPORT_PART_FLUX;
+    const bool UPDRAFT        = Input_Opt.TRANSPORT_UPDRAFT;
+    const double UPDRAFT_TIME = Input_Opt.TRANSPORT_UPDRAFT_TIMESCALE;
+    const double UPDRAFT_VEL  = Input_Opt.TRANSPORT_UPDRAFT_VELOCITY;
+
     /* ======================================================================= */
     /* ---- Input options from the CHEMISTRY MENU ---------------------------- */
     /* ======================================================================= */
@@ -140,18 +152,18 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ---- Input options from the AEROSOL MENU ------------------------------ */
     /* ======================================================================= */
 
-    const bool UPDRAFT        = Input_Opt.AEROSOL_PLUME_UPDRAFT;
-    const bool COAG           = Input_Opt.AEROSOL_COAGULATION;
+    const bool GRAVSETTLING   = Input_Opt.AEROSOL_GRAVSETTLING;
+    const bool ICE_COAG       = Input_Opt.AEROSOL_COAGULATION_SOLID;
+    const bool LIQ_COAG       = Input_Opt.AEROSOL_COAGULATION_LIQUID;
     const double COAG_DT      = Input_Opt.AEROSOL_COAGULATION_TIMESTEP;
     const bool ICE_GROWTH     = Input_Opt.AEROSOL_ICE_GROWTH;
     
     /* ======================================================================= */
     /* ---- Input options from the METEOROLOGY MENU -------------------------- */
     /* ======================================================================= */
-    
-    const bool MET_TEM_INIT   = Input_Opt.MET_TEMP_INIT;
-    const bool MET_H2O_INIT   = Input_Opt.MET_H2O_INIT;
-    const char* MET_FILENAME  = Input_Opt.MET_FILENAME.c_str();
+
+    /* Input options from the METEOROLOGY MENU are read in the Meteorology
+     * subroutine */
 
     /* ======================================================================= */
     /* ---- Input options from the DIAGNOSTIC MENU --------------------------- */
@@ -162,16 +174,54 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
     /* ---- Input options from the TIMESERIES MENU --------------------------- */
     /* ======================================================================= */
+
+    std::string TS_FOLDER = "";
+
+    /* If timeseries output is desired for multiple cases at a time, uncomment
+     * the following lines */
+//    TS_FOLDER += "Case" + std::to_string(input.Case());
+//    TS_FOLDER += "/";
     
+    std::string TS_FILE1, TS_FILE2;
     const bool TS_SPEC                  = Input_Opt.TS_SPEC;
-    const char* TS_SPEC_FILENAME        = Input_Opt.TS_FILENAME.c_str();
+    TS_FILE1                            = TS_FOLDER + Input_Opt.TS_FILENAME;
+    const char* TS_SPEC_FILENAME        = TS_FILE1.c_str();
     const std::vector<int> TS_SPEC_LIST = Input_Opt.TS_SPECIES;
     const double TS_FREQ                = Input_Opt.TS_FREQ;
+
     const bool TS_AERO                  = Input_Opt.TS_AERO;
-    const char* TS_AERO_FILENAME        = Input_Opt.TS_AERO_FILENAME.c_str();
+    TS_FILE2                            = TS_FOLDER + Input_Opt.TS_AERO_FILENAME;
+    const char* TS_AERO_FILENAME        = TS_FILE2.c_str();
     const std::vector<int> TS_AERO_LIST = Input_Opt.TS_AEROSOL;
     const double TS_AERO_FREQ           = Input_Opt.TS_AERO_FREQ;
-    
+
+    if ( TS_SPEC )
+        std::cout << "\n Saving TS files to: " << TS_SPEC_FILENAME << std::endl;
+
+    if ( TS_AERO )
+        std::cout << "\n Saving TS_AERO files to: " << TS_AERO_FILENAME << std::endl;
+
+    if ( ( TS_SPEC || TS_AERO ) && ( TS_FOLDER.compare("") != 0 ) ) {
+
+        /* Create output directory for timeseries */
+        struct stat sb;
+        if ( !( stat( TS_FOLDER.c_str(), &sb ) == 0 \
+                    && S_ISDIR(sb.st_mode) ) ) {
+
+            /* Create directory */
+            const int dir_err = \
+                    mkdir( TS_FOLDER.c_str(), \
+                            S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+
+            if ( dir_err == -1 ) {
+                std::cout << " Could not create directory: ";
+                std::cout << TS_FOLDER << std::endl;
+                std::cout << " You may not have write permission" << std::endl;
+                exit(1);
+            }
+        }
+    }
+
     /* ======================================================================= */
     /* ---- Input options from the PROD & LOSS MENU -------------------------- */
     /* ======================================================================= */
@@ -179,7 +229,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* TODO: Implement PL rates */
     const bool SAVE_PL   = Input_Opt.PL_PL;
     const bool SAVE_O3PL = Input_Opt.PL_O3;
-
 
     /* Define dynamic timestep in s */
     double DYN_DT;
@@ -224,12 +273,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     unsigned int jNy = 0;
     
     int IERR;
-    bool LAST_STEP = 0;
-    bool ITS_TIME_FOR_LIQ_COAGULATION = 0;
-    double lastTimeLiqCoag, dtLiqCoag;
-    bool ITS_TIME_FOR_ICE_COAGULATION = 0;
-    double lastTimeIceCoag, dtIceCoag;
-
+    
 #ifdef TIME_IT
 
     Timer Stopwatch, Stopwatch_cumul;
@@ -243,23 +287,35 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 #if ( NOy_MASS_CHECK )
 
-    double mass_Ambient_NOy, mass_Emitted_NOy;
+    RealDouble mass_Ambient_NOy, mass_Emitted_NOy;
+
     #ifdef RINGS
-        double mass_Emitted_NOy_Rings;
+        RealDouble mass_Emitted_NOy_Rings;
     #endif /* RINGS */
 
 #endif /* NOy_MASS_CHECK */
 
 #if ( CO2_MASS_CHECK )
 
-    double mass_Ambient_CO2, mass_Emitted_CO2;
+    RealDouble mass_Ambient_CO2, mass_Emitted_CO2;
 
     #ifdef RINGS
-        double mass_Emitted_CO2_Rings;
+        RealDouble mass_Emitted_CO2_Rings;
     #endif /* RINGS */
 
 #endif /* CO2_MASS_CHECK */
 
+#if ( H2O_MASS_CHECK )
+
+    /* Conversion factor from ice volume [m^3] to [molecules] */
+    const RealDouble UNITCONVERSION = physConst::RHO_ICE / MW_H2O * physConst::Na;
+    /* Unit check: [kg/m^3] / [kg/mol] * [molec/mol] = [molec/m^3] */
+
+    RealDouble mass_Ambient_H2O, mass_H2O;
+ 
+    Vector_2D totIceVol;
+
+#endif /* H2O_MASS_CHECK */
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -268,6 +324,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
     Mesh m;
+    const Vector_1D xE = m.xE();
+    const Vector_1D yE = m.yE();
 
     /* Get cell areas */
     const Vector_2D cellAreas = m.areas();
@@ -292,24 +350,30 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
  
     /* Allocating noon-time photolysis rates. */
 
-    #pragma omp critical
-    {
-        ReadJRates( JRATE_FOLDER,  \
-            input.emissionMonth(), \
-            input.emissionDay(),   \
-            input.longitude_deg(), \
-            input.latitude_deg(),  \
-            pressure_Pa/100.0,     \
-            NOON_JRATES );
-    }
-
-    if ( printDEBUG ) {
-        std::cout << "\n DEBUG : \n";
-        for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ ) {
-            std::cout << "         NOON_JRATES[" << iPhotol << "] = ";
-            std::cout << NOON_JRATES[iPhotol] << "\n";
+    if ( CHEMISTRY ) {
+        #pragma omp critical
+        {
+            ReadJRates( JRATE_FOLDER,  \
+                input.emissionMonth(), \
+                input.emissionDay(),   \
+                input.longitude_deg(), \
+                input.latitude_deg(),  \
+                pressure_Pa/100.0,     \
+                NOON_JRATES );
+        }
+ 
+        if ( printDEBUG ) {
+            std::cout << "\n DEBUG : \n";
+            for ( unsigned int iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ ) {
+                std::cout << "         NOON_JRATES[" << iPhotol << "] = ";
+                std::cout << NOON_JRATES[iPhotol] << "\n";
+            }
         }
     }
+
+    /* Run box model */
+    if ( RUN_BOXMODEL )
+        BoxModel( Input_Opt, input );
 
 
     /* ======================================================================= */
@@ -322,16 +386,17 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
      *  - tEmission is the local emission time expressed in hours 
      *  (between 0.0 and 24.0)
      *  - tInitial is the local time at which the simulation starts in hours
-     *  - TSIMUL represents the simulation time (in hours)
+     *  - simulationTime represents the simulation time (in hours) (now read from
+     *    input file)
      *  - tFinal corresponds to the final time of the simulation expressed in hours
      */ 
 
     /* Define emission and simulation time */
-    const double tEmission_h = input.emissionTime(); /* [hr] */
-    const double tInitial_h  = tEmission_h;          /* [hr] */
-    const double tFinal_h    = tInitial_h + TSIMUL;  /* [hr] */
-    const double tInitial_s  = tInitial_h * 3600.0;  /* [s] */
-    const double tFinal_s    = tFinal_h   * 3600.0;  /* [s] */
+    const double tEmission_h = input.emissionTime();                 /* [hr] */
+    const double tInitial_h  = tEmission_h;                          /* [hr] */
+    const double tFinal_h    = tInitial_h + input.simulationTime();  /* [hr] */
+    const double tInitial_s  = tInitial_h * 3600.0;                  /* [s] */
+    const double tFinal_s    = tFinal_h   * 3600.0;                  /* [s] */
 
     /* Current time in [s] */
     double curr_Time_s = tInitial_s; /* [s] */
@@ -346,6 +411,16 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Time counter [-] */
     unsigned int nTime = 0;
 
+    bool LAST_STEP = 0;
+    bool ITS_TIME_FOR_LIQ_COAGULATION = 0;
+    bool ITS_TIME_FOR_ICE_COAGULATION = 0;
+    bool ITS_TIME_FOR_ICE_GROWTH      = 0;
+    double lastTimeLiqCoag   = curr_Time_s;
+    double lastTimeIceCoag   = curr_Time_s;
+    double lastTimeIceGrowth = curr_Time_s;
+    double dtLiqCoag   = 0.0E+00;
+    double dtIceCoag   = 0.0E+00;
+    double dtIceGrowth = 0.0E+00;
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -353,7 +428,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
 
-    Meteorology Met( LOAD_MET, m, temperature_K, 11.2E+03, -3.0E-03, printDEBUG );
+    Meteorology Met( Input_Opt, curr_Time_s / 3600.0, m,        \
+                     temperature_K, pressure_Pa, relHumidity_i, \
+                     printDEBUG );
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -380,26 +457,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Create ambient struture */
     Ambient ambientData( timeArray.size(), Data.getAmbient(), Data.getAerosol(), Data.getLiqSpecies() );
 
-
-
-    /* TODO: This needs to be removed... use diagnostic output */
-#if ( SAVE_LA_MICROPHYS )
-
-    bool ITS_TIME_TO_SAVE_LA_OUTPUT = 0;
-    std::vector<double> saveTime_LA;
-    std::vector<std::vector<std::vector<std::vector<double>>>> saveOutput_LA( 1, std::vector<std::vector<std::vector<double>>>( Data.nBin_LA, std::vector<std::vector<double>>( NY, std::vector<double>( NX, 0.0E+00 ))));
-
-#endif /* SAVE_LA_MICROPHYS */
-
-#if ( SAVE_PA_MICROPHYS )
-
-    bool ITS_TIME_TO_SAVE_PA_OUTPUT = 0;
-    std::vector<double> saveTime_PA;
-    std::vector<std::vector<std::vector<std::vector<double>>>> saveOutput_PA( 1, std::vector<std::vector<std::vector<double>>>( Data.nBin_PA, std::vector<std::vector<double>>( NY, std::vector<double>( NX, 0.0E+00 ))));
-
-#endif /* SAVE_PA_MICROPHYS */
-
-
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
     /* --------------------------- TRANSPORT SOLVER -------------------------- */
@@ -415,6 +472,29 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Allocate horizontal and vertical distance traveled */
     double dTrav_x, dTrav_y;
 
+    /* Allocate steady-state diffusion parameters */
+    double D_X, D_Y;
+
+    /* Allocate shear */
+    double shear;
+    int LASTINDEX_SHEAR;
+
+    /* Initialize */
+    d_x = 0;       /* [m2/s] */
+    d_y = 0;       /* [m2/s] */
+    vGlob_x = 0;   /* [m/s]  */
+    vGlob_y = 0;   /* [m/s]  */
+    dTrav_x = 0;   /* [m]    */
+    dTrav_y = 0;   /* [m]    */
+
+    D_X   = input.horizDiff(); /* [m^2/s] */
+    D_Y   = input.vertiDiff(); /* [m^2/s] */
+    shear = input.shear();     /* [1/s] */
+    if ( shear >= 0.0E+00 )
+        LASTINDEX_SHEAR = NX-1;
+    else
+        LASTINDEX_SHEAR = 0;
+
     /* Fill with? */
     const double fillWith = 0.0E+00;
 
@@ -422,6 +502,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     SANDS::Solver Solver;
     #pragma omp critical
     {
+        std::cout << " Initializing solver..." << std::endl;
         Solver.Initialize( /* Fill negative values */ FILLNEG, \
                            fillWith );
     }
@@ -566,7 +647,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     const bool TRANSPORT_PA = ( PA_MICROPHYSICS == 2 );
 
     Vector_1D vFall( Data.nBin_PA, 0.0E+00 );
-    if ( TRANSPORT_PA ) {
+    if ( TRANSPORT_PA && GRAVSETTLING ) {
         /* Compute settling velocities */
         vFall = AIM::SettlingVelocity( Data.solidAerosol.getBinCenters(), \
                                        temperature_K, pressure_Pa );
@@ -611,10 +692,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     ringCluster.ComputeRingAreas( cellAreas, mapRing2Mesh );
     const Vector_1D ringArea = ringCluster.getRingArea();
     const double totArea = std::accumulate( ringArea.begin(), ringArea.end(), 0 );
-
+ 
     /* Add emission into the grid */
-    Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing(), temperature_K, ( relHumidity_i > 100.0 ), \
-                      liquidAer, iceAer, Soot_den * areaPlume / ringArea[0] ); 
+    Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing(), \
+                      temperature_K, ( relHumidity_i > 100.0 ), \
+                      liquidAer, iceAer, Soot_den * areaPlume / ringArea[0], m, Met ); 
 
     /* Fill in variables species for initial time */
     ringSpecies.FillIn( Data, m, nTime );
@@ -623,14 +705,27 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     double tempArray[NVAR];
 
     /* Allocate a ring's relative humidity */
-    double relHumidity_Ring;
+    double relHumidity;
+    double frac_gSO4 = 0.0E+00;
+    double AerosolArea[NAERO];
+    double AerosolRadi[NAERO];
+    double IWC = 0;
 
-    /* Otherwise we do not have a ring structure and chemistry is solved on the grid */
+
+    /* Otherwise we do not have a ring structure and chemistry is solved on 
+     * the grid */
     
 #else
 
+    /* Initialization at the grid scale level */
+
     /* Allocate a gridcell's relative humidity */
     double relHumidity;
+    double frac_gSO4 = 0.0E+00;
+    double AerosolArea[NAERO];
+    double AerosolRadi[NAERO];
+    double IWC = 0;
+
 
 #endif /* RINGS */
 
@@ -651,13 +746,16 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::cout << std::setprecision(coutPrecision);
         std::cout << "\n ## ATMOSPHERIC COND.:";
         std::cout << "\n ##\n";
-        std::cout << " ## - Temperature: " << std::setw(txtWidth) << temperature_K          << " [  K]\n";
-        std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [hPa]\n";
-        std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [  %]\n";
-        std::cout << " ## - Latitude   : " << std::setw(txtWidth) << input.latitude_deg()   << " [deg]\n";
-        std::cout << " ## - Longitude  : " << std::setw(txtWidth) << input.longitude_deg()  << " [deg]\n";
-        std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [ - ]\n";
-        std::cout << " ## - Emiss. time: " << std::setw(txtWidth) << input.emissionTime()   << " [hrs]\n";
+        std::cout << " ## - Temperature: " << std::setw(txtWidth) << temperature_K          << " [    K]\n";
+        std::cout << " ## - Pressure   : " << std::setw(txtWidth) << pressure_Pa * 1.00E-02 << " [  hPa]\n";
+        std::cout << " ## - Rel. Hum. I: " << std::setw(txtWidth) << relHumidity_i          << " [    %]\n";
+        std::cout << " ## - Horiz. Diff: " << std::setw(txtWidth) << input.horizDiff()      << " [ m2/s]\n";
+        std::cout << " ## - Verti. Diff: " << std::setw(txtWidth) << input.vertiDiff()      << " [ m2/s]\n";
+        std::cout << " ## - Shear      : " << std::setw(txtWidth) << input.shear()          << " [  1/s]\n";
+        std::cout << " ## - Latitude   : " << std::setw(txtWidth) << input.latitude_deg()   << " [  deg]\n";
+        std::cout << " ## - Longitude  : " << std::setw(txtWidth) << input.longitude_deg()  << " [  deg]\n";
+        std::cout << " ## - Max CSZA   : " << std::setw(txtWidth) << sun->CSZA_max          << " [  -  ]\n";
+        std::cout << " ## - Emiss. time: " << std::setw(txtWidth) << input.emissionTime()   << " [  hrs]\n";
         std::cout << " ## - Emiss. day : " << std::setw(txtWidth-3) << input.emissionMonth() << "/" << input.emissionDay() << "\n";
 
         std::cout << "\n ## EMISSIONS:";
@@ -714,41 +812,29 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     }
 
 
-    double frac_gSO4 = 0.0E+00;
-    Vector_1D aerosolProp( 3, 0.0E+00 );
-    double AerosolArea[NAERO];
-    double AerosolRadi[NAERO];
-    double IWC = 0;
-    double kheti_sla[11];
 
-    lastTimeLiqCoag = curr_Time_s;
-    lastTimeIceCoag = curr_Time_s;
-
-    /* TODO: Remove this */
-#if ( SAVE_LA_MICROPHYS )
-
-    saveOutput_LA[0] = Data.liquidAerosol.pdf;
-    saveTime_LA.push_back( curr_Time_s );
-
-#endif /* SAVE_LA_MICROPHYS */
-
-#if ( SAVE_PA_MICROPHYS )
-
-    saveOutput_PA[0] = Data.solidAerosol.pdf;
-    saveTime_PA.push_back( curr_Time_s );
-
-#endif /* SAVE_PA_MICROPHYS */
-
-
+    #pragma omp critical
+    {
     /* Timeseries diagnostics */
     if ( TS_SPEC ) {
         int hh = (int) (curr_Time_s - timeArray[0])/3600;
         int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
         int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
-        Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, ss, Data, m );
+        Diag_TS_Chem( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, ss, \
+                      Data, m );
+    }
+
+    if ( TS_AERO ) {
+        int hh = (int) (curr_Time_s - timeArray[0])/3600;
+        int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
+        int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
+        Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
+                      Data, m, Met );
+    }
     }
 
     /* Prod & loss diagnostics */
+
 #ifdef RINGS
 
     /* Rates before chemistry is performed.
@@ -787,7 +873,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     }
 
 #endif /* RINGS */
-
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -835,11 +920,13 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* Is transport turned on? */
         if ( TRANSPORT ) {
 
+            /* Compute diffusion parameters at mid time step */
+
             /* d_x: horizontal diffusion coefficient [m^2/s]
              * d_y: vertical diffusion coefficient [m^2/s]
              */
 
-            DiffParam( curr_Time_s - tInitial_s, d_x, d_y );
+            DiffParam( curr_Time_s - tInitial_s + dt/2.0, d_x, d_y, D_X, D_Y );
 
         }
         else {
@@ -855,7 +942,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* Is plume updraft on? */
         if ( UPDRAFT ) {
 
-            /* Compute global advection velocities */
+            /* Compute global advection velocities at mid time step */
 
             /* vGlob_x > 0 means left, < 0 means right [m/s]
              * vGlob_y > 0 means upwards, < 0 means downwards [m/s]
@@ -863,7 +950,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
              * dTrav_y: distance traveled on the y-axis through advection [m]
              */
 
-            AdvGlobal( curr_Time_s - tInitial_s, vGlob_x, vGlob_y, dTrav_x, dTrav_y );
+            AdvGlobal( curr_Time_s - tInitial_s + dt/2.0, UPDRAFT_TIME, UPDRAFT_VEL, \
+                       vGlob_x, vGlob_y, dTrav_x, dTrav_y );
 
         }
         else {
@@ -876,10 +964,12 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         }
 
         /* Update diffusion and advection arrays */
-        Solver.UpdateDiff( d_x, d_y );
+        Solver.UpdateDiff ( d_x, d_y );
         /* Assume no plume advection */
-        Solver.UpdateAdv ( 0.0E+00, 0.0E+00 );
+        Solver.UpdateAdv  ( 0.0E+00, 0.0E+00 );
         /* Microphysics settling is considered for each bin independently */
+        /* Update shear */
+        Solver.UpdateShear( shear, m.y() );
 
         
         /* ======================================================================= */
@@ -897,30 +987,81 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         if ( TRANSPORT ) {
 
-            /* Advection and diffusion for gas phase species */
-            Transport( Data, Solver );
-
+            if ( CHEMISTRY ) {
+                /* Advection and diffusion of gas phase species */
+                Transport( Data, Solver, cellAreas );
+            } else {
+                /* Advection and diffusion of condensable species */
+                Solver.Run( Data.H2O, cellAreas, 1 );
+                Solver.Run( Data.HNO3, cellAreas, 1 );
+            }
+ 
             /* Advection and diffusion for aerosol particles */
             Solver.UpdateAdv ( 0.0E+00, 0.0E+00 );
-            Solver.Run( Data.sootDens );
+            Solver.Run( Data.sootDens, cellAreas );
             /* Monodisperse assumption for soot particles */
-            Solver.Run( Data.sootRadi );
-            Solver.Run( Data.sootArea );
+            Solver.Run( Data.sootRadi, cellAreas );
+            Solver.Run( Data.sootArea, cellAreas );
 
             /* We assume that sulfate aerosols do not settle */
             if ( TRANSPORT_LA ) {
                 /* Transport of liquid aerosols */
                 for ( unsigned int iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ )
-                    Solver.Run( Data.liquidAerosol.pdf[iBin_LA] );
+                    Solver.Run( Data.liquidAerosol.pdf[iBin_LA], cellAreas );
             }
 
             if ( TRANSPORT_PA ) {
                 /* Transport of solid aerosols */
+
+                /* Ice volume per bin (NBIN x NY x NX) in [m^3/cm^3 air] */
+                Vector_3D iceVolume = Data.solidAerosol.Volume();
+ 
                 for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                    /* Transport particle number and volume for each bin and 
+                     * recompute centers of each bin for each grid cell 
+                     * accordingly */
                     Solver.UpdateAdv ( 0.0E+00, vFall[iBin_PA] );
-                    Solver.Run( Data.solidAerosol.pdf[iBin_PA] );
+
+                    Solver.Run( Data.solidAerosol.pdf[iBin_PA], cellAreas, 1 );
+                    Solver.Run( iceVolume[iBin_PA], cellAreas, 1 );
+
                 }
+
+                if ( FLUX_CORRECTION ) {
+
+                    /* Limit flux of ice particles through top boundary */
+                    for ( jNy = 0; jNy < NY; jNy++ ) {
+                        if ( ( yE[jNy] > YLIM_UP - 200.0 ) && ( yE[jNy] > 400.0 ) ) {
+                            for ( iNx = 0; iNx < NX; iNx++ ) {
+                                for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                                    Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
+                                    iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
+                                }
+                                Data.H2O[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
+                            }
+                        }
+                    }
+
+                    /* Limit flux of ice particles through left and right boundary */
+                    for ( iNx = 0; iNx < NX; iNx++ ) {
+                        if ( ( xE[iNx] < -XLIM + 5.0E+03 ) || ( xE[iNx] > XLIM - 5.0E+03 ) ) {
+                            for ( jNy = 0; jNy < NY; jNy++ ) {
+                                for ( unsigned int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                                    Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
+                                    iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
+                                }
+                                Data.H2O[jNy][iNx] = Data.H2O[NY-1][iNx];
+                            }
+                        }
+                    }
+
+                }
+
+                /* Update centers of each bin */
+                Data.solidAerosol.UpdateCenters( iceVolume, Data.solidAerosol.pdf );
+
             }
+
         }
 
 #ifdef TIME_IT
@@ -930,11 +1071,14 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 #endif /* TIME_IT */
 
-        /* Update temperature field and pressure at new location */
-        /*
-         * To be implemented
-         * Use dTrav_x and dTrav_y to update the temperature and pressure
-         */
+        /* ======================================================================= */
+        /* ----------------------------------------------------------------------- */
+        /* -------------------------- UPDATE METEOROLOGY ------------------------- */
+        /* ----------------------------------------------------------------------- */
+        /* ======================================================================= */
+
+        /* Update met fields at mid time step */
+        Met.Update( ( curr_Time_s + dt/2 ) / 3600.0, m, dTrav_x, dTrav_y );
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~ SO4 partitioning ~~~~~~~~~~~~~~ **/
@@ -1028,11 +1172,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                         Data.getAerosolProp( AerosolRadi, AerosolArea, IWC, mapRing2Mesh[iRing] );
 
-                        relHumidity_Ring = VAR[ind_H2O] * \
-                                           physConst::kB * temperature_K * 1.00E+06 / \
-                                           physFunc::pSat_H2Ol( temperature_K );
-                        GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
-                                   Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, kheti_sla );
+                        relHumidity = VAR[ind_H2O] * \
+                                      physConst::kB * temperature_K * 1.00E+06 / \
+                                      physFunc::pSat_H2Ol( temperature_K );
+                        GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity, \
+                                   Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, &(Data.KHETI_SLA[0]) );
 
                         if ( printDEBUG ) {
                             std::cout << "\n DEBUG :  Heterogeneous chemistry rates (Ring:  " << iRing << ")\n";
@@ -1169,11 +1313,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                         HET[iSpec][2] = 0.0E+00;
                     }
 
-                    relHumidity_Ring = VAR[ind_H2O] * \
-                                       physConst::kB * temperature_K * 1.00E+06 / \
-                                       physFunc::pSat_H2Ol( temperature_K );
-                    GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity_Ring, \
-                               Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, kheti_sla );
+                    relHumidity = VAR[ind_H2O] * \
+                                  physConst::kB * temperature_K * 1.00E+06 / \
+                                  physFunc::pSat_H2Ol( temperature_K );
+                    GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity, \
+                               Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, &(Data.KHETI_SLA[0]) );
 
                     if ( printDEBUG ) {
                         std::cout << "\n DEBUG :   Heterogeneous chemistry rates (Ambient)\n";
@@ -1300,73 +1444,104 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             /* Is chemistry turned on? */
             if ( CHEMISTRY ) {
 
+                Vector_2D iceVolume_ = Data.solidAerosol.TotalVolume();
                 for ( iNx = 0; iNx < NX; iNx++ ) {
                     for ( jNy = 0; jNy < NY; jNy++ ) {
 
-                        /* Convert data structure to KPP inputs (VAR and FIX) */
-                        Data.getData( VAR, FIX, iNx, jNy );
+                        /* Trick to perform chemistry at the grid cell but 
+                         * only run cells where we either have ice particles 
+                         * or emissions (using CO2 as ~tracer).
+                         * By default, run at least one grid cell per 
+                         * horizontal layer */
+                        if ( ( iNx == 0 ) || \
+                             ( log10( std::abs( Data.CO2[jNy][iNx] - Data.CO2[jNy][0] ) / Data.CO2[NY/2][NX/2] ) >= -6.0 ) || \
+                             ( iceVolume_[jNy][iNx] * 1.0E+18 >= 1.00E-02 ) ) {
 
-                        /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
-                        /* ~~~~ Chemical rates ~~~~ */
-                        /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+                            /* Convert data structure to KPP inputs (VAR and FIX) */
+                            Data.getData( VAR, FIX, iNx, jNy );
 
-                        /* Update heterogeneous chemistry reaction rates */
-                        if ( HETCHEM ) {
+                            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+                            /* ~~~~ Chemical rates ~~~~ */
+                            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-                            for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
-                                HET[iSpec][0] = 0.0E+00;
-                                HET[iSpec][1] = 0.0E+00;
-                                HET[iSpec][2] = 0.0E+00;
+                            /* Update heterogeneous chemistry reaction rates */
+                            if ( HETCHEM ) {
+
+                                for ( unsigned int iSpec = 0; iSpec < NSPEC; iSpec++ ) {
+                                    HET[iSpec][0] = 0.0E+00;
+                                    HET[iSpec][1] = 0.0E+00;
+                                    HET[iSpec][2] = 0.0E+00;
+                                }
+
+                                relHumidity = VAR[ind_H2O] * \
+                                              physConst::kB * Met.temp(jNy,iNx) * 1.00E+06 / \
+                                              physFunc::pSat_H2Ol( Met.temp(jNy,iNx) );
+                                AerosolArea[0] = Data.solidAerosol.Moment( 2, jNy, iNx );
+                                AerosolRadi[0] = std::max( std::min( Data.solidAerosol.Radius( jNy, iNx ), 1.00E-04 ), 1.00E-10 );
+
+                                AerosolArea[1] = Data.liquidAerosol.Moment( 2, jNy, iNx );
+                                AerosolRadi[1] = std::max( std::min( Data.liquidAerosol.Radius( jNy, iNx ), 1.00E-06 ), 1.00E-10 );
+
+                                AerosolArea[2] = 0.0E+00;
+                                AerosolRadi[2] = 1.0E-07;
+
+                                AerosolArea[3] = Data.sootArea[jNy][iNx];
+                                AerosolRadi[3] = std::max( std::min( Data.sootRadi[jNy][iNx], 1.00E-08 ), 1.00E-10 );
+
+                                IWC         = Data.solidAerosol.Moment( 3, jNy, iNx ) * physConst::RHO_ICE; /* [kg/cm^3] */
+                                GC_SETHET( Met.temp(jNy,iNx), Met.press(jNy), airDens, relHumidity, \
+                                           Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, &(Data.KHETI_SLA[0]) );
                             }
 
-                            relHumidity = VAR[ind_H2O] * \
-                                          physConst::kB * Met.temp(jNy,iNx) * 1.00E+06 / \
-                                          physFunc::pSat_H2Ol( Met.temp(jNy,iNx) );
-                            GC_SETHET( Met.temp(jNy,iNx), Met.press(jNy), airDens, relHumidity, \
-                                       Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, kheti_sla );
-                        }
+                            /* Update reaction rates */
+                            for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
+                                RCONST[iReact] = 0.0E+00;
 
-                        /* Update reaction rates */
-                        for ( unsigned int iReact = 0; iReact < NREACT; iReact++ )
-                            RCONST[iReact] = 0.0E+00;
+                            Update_RCONST( Met.temp(jNy,iNx), Met.press(jNy), airDens, VAR[ind_H2O] );
 
-                        Update_RCONST( Met.temp(jNy,iNx), Met.press(jNy), airDens, VAR[ind_H2O] );
+                            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+                            /* ~~~~~ Integration ~~~~~~ */
+                            /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-                        /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
-                        /* ~~~~~ Integration ~~~~~~ */
-                        /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
+                            IERR = INTEGRATE( VAR, curr_Time_s, curr_Time_s + dt, \
+                                              ATOL, RTOL, STEPMIN );
 
-                        IERR = INTEGRATE( VAR, curr_Time_s, curr_Time_s + dt, \
-                                          ATOL, RTOL, STEPMIN );
+                            if ( IERR < 0 ) {
+                                /* Integration failed */
 
-                        if ( IERR < 0 ) {
-                            /* Integration failed */
+                                std::cout << "Integration failed";
+                                #ifdef OMP
+                                    std::cout << " on " << omp_get_thread_num();
+                                #endif /* OMP */
+                                std::cout << " for grid cell = (" << jNy << ", " << iNx << ") at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
 
-                            std::cout << "Integration failed";
-                            #ifdef OMP
-                                std::cout << " on " << omp_get_thread_num();
-                            #endif /* OMP */
-                            std::cout << " for grid cell = (" << jNy << ", " << iNx << ") at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
-
-                            if ( printDEBUG ) {
-                                std::cout << " ~~~ Printing reaction rates:\n";
-                                for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
-                                    std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                                if ( printDEBUG ) {
+                                    std::cout << " ~~~ Printing reaction rates:\n";
+                                    for ( unsigned int iReact = 0; iReact < NREACT; iReact++ ) {
+                                        std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
+                                    }
+                                    std::cout << " ~~~ Printing concentrations:\n";
+                                    for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
+                                        std::cout << "Species " << iSpec << ": " << VAR[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                                    }
                                 }
-                                std::cout << " ~~~ Printing concentrations:\n";
-                                for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ ) {
-                                    std::cout << "Species " << iSpec << ": " << VAR[iSpec]/airDens*1.0E+09 << " [ppb]\n";
-                                }
+
+                                /* Clear dynamically allocated variable(s) */
+                                if ( sun != NULL )
+                                    sun->~SZA();
+                                return KPP_FAIL;
                             }
 
-                            /* Clear dynamically allocated variable(s) */
-                            if ( sun != NULL )
-                                sun->~SZA();
-                            return KPP_FAIL;
-                        }
+                            /* Convert KPP output back to data structure */
+                            Data.applyData( VAR, iNx, jNy );
 
-                        /* Convert KPP output back to data structure */
-                        Data.applyData( VAR, iNx, jNy );
+                        } else {
+                            /* If ambient, then copy except from H2O */
+                            relHumidity = Data.H2O[jNy][iNx];
+                            Data.getData( VAR, FIX, 0, jNy );
+                            Data.applyData( VAR, iNx, jNy );
+                            Data.H2O[jNy][iNx] = relHumidity;
+                        }
                     }
                 }
 
@@ -1390,7 +1565,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                                   physConst::kB * temperature_K * 1.00E+06 / \
                                   physFunc::pSat_H2Ol( temperature_K );
                     GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity, \
-                               Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, kheti_sla );
+                               Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, &(Data.KHETI_SLA[0]) );
                 }
 
                 /* Update reaction rates */
@@ -1444,7 +1619,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
 #endif /* TIME_IT */
 
-
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
         /* ------------------------ AEROSOL MICROPHYSICS ------------------------- */
@@ -1452,71 +1626,49 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-        ITS_TIME_FOR_LIQ_COAGULATION = ( ( ( curr_Time_s - lastTimeLiqCoag ) >= LIQCOAG_TSTEP ) || LAST_STEP );
+        ITS_TIME_FOR_LIQ_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeLiqCoag ) >= COAG_DT * 60.0 ) || LAST_STEP );
         /* Liquid aerosol coagulation */
-        if ( ITS_TIME_FOR_LIQ_COAGULATION && LIQ_MICROPHYSICS ) {
-            dtLiqCoag = ( curr_Time_s - lastTimeLiqCoag );
+        if ( ITS_TIME_FOR_LIQ_COAGULATION && LIQ_COAG ) {
+            dtLiqCoag = ( curr_Time_s + dt - lastTimeLiqCoag );
             if ( printDEBUG )
-                std::cout << "\n DEBUG (Liquid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeLiqCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtLiqCoag << " s\n";
+                std::cout << "\n DEBUG (Liquid Coagulation): Current time: " << ( curr_Time_s + dt - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeLiqCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtLiqCoag << " s\n";
 
-            lastTimeLiqCoag = curr_Time_s;
-            /* Here we assume that the sulfate aerosol fields are symmetric around the X and Y axis */
-            Data.liquidAerosol.Coagulate( dtLiqCoag, Data.LA_Kernel, LA_MICROPHYSICS, (unsigned int) 2 );
+            lastTimeLiqCoag = curr_Time_s + dt;
+            /* If shear = 0, take advantage of the symmetry around the Y-axis */
+            Data.liquidAerosol.Coagulate( dtLiqCoag, Data.LA_Kernel, LA_MICROPHYSICS, ( shear == 0.0E+00 ) );
         }
 
-        ITS_TIME_FOR_ICE_COAGULATION = ( ( ( curr_Time_s - lastTimeIceCoag ) >= ICECOAG_TSTEP ) || LAST_STEP );
+        ITS_TIME_FOR_ICE_COAGULATION = ( ( ( curr_Time_s + dt - lastTimeIceCoag ) >= COAG_DT * 60.0 ) || LAST_STEP );
         /* Solid aerosol coagulation */
-        if ( ITS_TIME_FOR_ICE_COAGULATION && ICE_MICROPHYSICS ) {
-            dtIceCoag = ( curr_Time_s - lastTimeIceCoag );
+        if ( ITS_TIME_FOR_ICE_COAGULATION && ICE_COAG ) {
+            dtIceCoag = ( curr_Time_s + dt - lastTimeIceCoag );
             if ( printDEBUG )
-                std::cout << "\n DEBUG (Solid Coagulation): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeIceCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceCoag << " s\n";
+                std::cout << "\n DEBUG (Solid Coagulation): Current time: " << ( curr_Time_s + dt - tInitial_s ) / 3600.0 << " hr. Last coagulation event was at: " << ( lastTimeIceCoag - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceCoag << " s\n";
 
-            lastTimeIceCoag = curr_Time_s;
-            /* Here we assume that the solid aerosol fields are symmetric around the X axis */
-            Data.solidAerosol.Coagulate ( dtIceCoag, Data.PA_Kernel, PA_MICROPHYSICS, (unsigned int) ( 2 - ( relHumidity_i > 100.0 ) ) );
+            lastTimeIceCoag = curr_Time_s + dt;
+            /* If shear = 0, take advantage of the symmetry around the Y-axis */
+            Data.solidAerosol.Coagulate ( dtIceCoag, Data.PA_Kernel, PA_MICROPHYSICS, ( shear == 0.0E+00 ) );
         }
 
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
-        /* ------------------------ ICE CRYSTAL GROWTH --------------------------- */
+        /* ------------------------ AEROSOL MICROPHYSICS ------------------------- */
+        /* ------------------------- ICE CRYSTAL GROWTH -------------------------- */
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-        if ( ICE_GROWTH ) {} 
-
-#if ( SAVE_LA_MICROPHYS )
-
-        ITS_TIME_TO_SAVE_LA_OUTPUT = ( ( ( curr_Time_s - saveTime_LA.back() ) >= SAVE_LA_DT ) || LAST_STEP );
-        /* Save liquid aerosol at current time */
-        if ( ITS_TIME_TO_SAVE_LA_OUTPUT ) {
+        /* TODO: For now perform growth at every time step */
+        ITS_TIME_FOR_ICE_GROWTH = ( ( ( curr_Time_s - lastTimeIceGrowth ) >= 0 ) || LAST_STEP );
+        /* Solid aerosol growth */
+        if ( ITS_TIME_FOR_ICE_GROWTH && ICE_GROWTH ) {
+            dtIceGrowth = ( curr_Time_s + dt - lastTimeIceGrowth );
             if ( printDEBUG )
-                std::cout << "\n DEBUG (Save Liquid Aerosols): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last time liquid aerosols were saved: " << ( saveTime_LA.back() - tInitial_s ) / 3600.0 << " hr\n";
-
-            if ( LAST_STEP )
-                saveTime_LA.push_back( curr_Time_s + dt );
-            else
-                saveTime_LA.push_back( curr_Time_s );
-            saveOutput_LA.push_back( Data.liquidAerosol.pdf );
+                std::cout << "\n DEBUG (Solid Aerosol Growth): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last growth event was at: " << ( lastTimeIceGrowth - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceGrowth << " s\n";
+ 
+            lastTimeIceGrowth = curr_Time_s + dt;
+            /* If shear = 0, take advantage of the symmetry around the Y-axis */
+            Data.solidAerosol.Grow( dtIceGrowth, Data.H2O, Met.Temp(), Met.Press(), PA_MICROPHYSICS, ( shear == 0 ) );
         }
-
-#endif /* SAVE_LA_MICROPHYS */
-
-#if ( SAVE_PA_MICROPHYS )
-
-        ITS_TIME_TO_SAVE_PA_OUTPUT = ( ( ( curr_Time_s - saveTime_PA.back() ) >= SAVE_PA_DT ) || LAST_STEP );
-        /* Save solid aerosol at current time */
-        if ( ITS_TIME_TO_SAVE_PA_OUTPUT ) {
-            if ( printDEBUG )
-                std::cout << "\n DEBUG (Save Solid Aerosols): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last time solid aerosols were saved: " << ( saveTime_PA.back() - tInitial_s ) / 3600.0 << " hr\n";
-
-            if ( LAST_STEP )
-                saveTime_PA.push_back( curr_Time_s + dt );
-            else
-                saveTime_PA.push_back( curr_Time_s );
-            saveOutput_PA.push_back( Data.solidAerosol.pdf );
-        }
-
-#endif /* SAVE_PA_MICROPHYS */
 
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
@@ -1550,7 +1702,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         /* Print to console */
         std::cout << "\n\n    " << " *** NOy mass check: ";
-        std::cout << "\n    " << " ~~> Emitted NOy: " << std::setw(6) << mass_Emitted_NOy * 1.0E+06 / physConst::Na * MW_N * 1.0E+06 << " [g(N)/km] ";
+        std::cout << "\n    " << " ~~> Emitted NOy: " << std::setw(6) << mass_Emitted_NOy * 1.0E+06 / physConst::Na * MW_N * 1.0E+06 << " [g(N)/km] " << std::endl;
         /*                                                               [molec/cm3 * m2] * [m3/cm3]/ [molec/mole]  * [kg/mole]*[g/kg*m/km] = [g/km] */
 
 #ifdef RINGS
@@ -1587,7 +1739,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         std::cout << "\n\n    " << " *** CO2 mass check: ";
 
-        std::cout << "\n    " << " ~~> Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / physConst::Na * MW_CO2 * 1.0E+03 << " [kg/km]   ";
+        std::cout << "\n    " << " ~~> Emitted CO2: " << std::setw(6) << mass_Emitted_CO2 * 1.0E+06 / physConst::Na * MW_CO2 * 1.0E+03 << " [kg/km]   " << std::endl;
         /*                                                               [molec/cm3 * m2] * [m3/cm3]/ [molec/mole]  *[kg/mole]*[m/km] = [kg/km] */
 
 #ifdef RINGS
@@ -1600,6 +1752,28 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 #endif /* RINGS */
 
 #endif /* CO2_MASS_CHECK */
+
+#if ( H2O_MASS_CHECK )
+
+        mass_Ambient_H2O = ambientData.H2O[nTime+1];
+        totIceVol = Data.solidAerosol.TotalVolume( );
+
+        /* Compute total water */
+        mass_H2O = 0;
+        for ( iNx = 0; iNx < NX; iNx++ ) {
+            for ( jNy = 0; jNy < NY; jNy++ ) {
+                mass_H2O += ( ( Data.H2O[jNy][iNx] - mass_Ambient_H2O ) + \
+                              totIceVol[jNy][iNx] * UNITCONVERSION ) * \
+                            cellAreas[jNy][iNx];
+            }
+        }
+
+        std::cout << "\n\n    " << " *** H2O mass check: ";
+
+        std::cout << "\n    " << " ~~> H2O: " << std::setw(6) << mass_H2O      * 1.0E+06 / physConst::Na * MW_H2O * 1.0E+03 << " [kg/km]   " << std::endl;
+        /*                                                      [molec/cm3*m2] * [m3/cm3]/ [molec/mole]  *[kg/mole]*[m/km] = [kg/km] */
+
+#endif /* H2O_MASS_CHECK */
 
 #ifdef TIME_IT
 
@@ -1615,6 +1789,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         curr_Time_s += dt;
         nTime++;
 
+        #pragma omp critical 
+        {
         /* Timeseries diagnostics */
         if ( TS_SPEC && \
            (( TS_FREQ == 0 ) || \
@@ -1622,7 +1798,19 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
            int hh = (int) (curr_Time_s - timeArray[0])/3600;
            int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
            int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
-           Diag_TS( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, ss, Data, m );
+           Diag_TS_Chem( TS_SPEC_FILENAME, TS_SPEC_LIST, hh, mm, ss, \
+                         Data, m );
+        }
+
+        if ( TS_AERO && \
+           (( TS_AERO_FREQ == 0 ) || \
+            ( std::fmod((curr_Time_s - timeArray[0])/60.0, TS_AERO_FREQ) == 0.0E+00 )) ) {
+            int hh = (int) (curr_Time_s - timeArray[0])/3600;
+            int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
+            int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
+            Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
+                          Data, m, Met );
+        }
         }
 
     }
@@ -1680,32 +1868,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         return SAVE_FAIL;
     }
 #endif /* RINGS */
-
-    #if ( SAVE_LA_MICROPHYS )
-
-    isSaved = output::Write_MicroPhys( OUT_FILE_LA, saveOutput_LA, saveTime_LA, \
-                                       Data.liquidAerosol.getBinCenters(), \
-                                       m.x(), m.y(), temperature_K, pressure_Pa, 0.0, \
-                                       relHumidity_w, relHumidity_i );
-    if ( isSaved == output::SAVE_FAILURE ) {
-        std::cout << " Saving liquid aerosol's properties failed...\n";
-        return SAVE_FAIL;
-    }
-
-    #endif /* SAVE_LA_MICROPHYS */
-
-    #if ( SAVE_PA_MICROPHYS )
-
-    isSaved = output::Write_MicroPhys( OUT_FILE_PA, saveOutput_PA, saveTime_PA, \
-                                       Data.solidAerosol.getBinCenters(), \
-                                       m.x(), m.y(), temperature_K, pressure_Pa, 0.0, \
-                                       relHumidity_w, relHumidity_i );
-    if ( isSaved == output::SAVE_FAILURE ) {
-        std::cout << " Saving solid aerosol's properties failed...\n";
-        return SAVE_FAIL;
-    }
-
-    #endif /* SAVE_PA_MICROPHYS */
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -1908,7 +2070,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                               physConst::kB * temperature_K * 1.00E+06 / \
                               physFunc::pSat_H2Ol( temperature_K );
                 GC_SETHET( temperature_K, pressure_Pa, airDens, relHumidity, \
-                           Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, kheti_sla );
+                           Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, &(Data.KHETI_SLA[0]) );
 
                 if ( printDEBUG ) {
                     std::cout << "\n DEBUG :   Heterogeneous chemistry rates (Ambient)\n";

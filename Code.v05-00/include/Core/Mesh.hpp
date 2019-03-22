@@ -18,15 +18,11 @@
 #include <iomanip>
 #include <vector>
 
+#include "Util/ForwardDecl.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
 #include "Core/Cluster.hpp"
 #include "Core/Ring.hpp"
-
-typedef double RealDouble;
-typedef std::vector<RealDouble> Real_1DVector;
-typedef std::vector<Real_1DVector> Real_2DVector;
-
 
 class Mesh
 {
@@ -37,11 +33,11 @@ class Mesh
         Mesh( const Mesh &m );
         Mesh& operator=( const Mesh &m );
         void Ring2Mesh( Cluster &c );
-        Real_1DVector x( ) const { return x_; }
-        Real_1DVector y( ) const { return y_; }
-        Real_1DVector x_edge( ) const { return x_e_; }
-        Real_1DVector y_edge( ) const { return y_e_; }
-        Real_2DVector areas( ) const { return areas_; }
+        const Vector_1D& x( ) const { return x_; }
+        const Vector_1D& y( ) const { return y_; }
+        const Vector_1D& xE( ) const { return x_e_; }
+        const Vector_1D& yE( ) const { return y_e_; }
+        const Vector_2D& areas( ) const { return areas_; }
         RealDouble totArea( ) const { return totArea_; }
         RealDouble hx( ) const { return hx_; }
         RealDouble hy( ) const { return hy_; }
@@ -55,18 +51,18 @@ class Mesh
     private:
 
         /* Cell center coordinates */
-        Real_1DVector x_, y_;
+        Vector_1D x_, y_;
 
         /* Cell edges */
-        Real_1DVector x_e_, y_e_;
+        Vector_1D x_e_, y_e_;
 
         /* Cell areas */
-        Real_2DVector areas_;
+        Vector_2D areas_;
 
         /* Total area */
         RealDouble totArea_;
 
-        RealDouble xlim, ylim;
+        RealDouble xlim, ylim_up, ylim_down;
         RealDouble hx_, hy_;
         unsigned int nx, ny;
         std::vector<unsigned int> nCellMap;

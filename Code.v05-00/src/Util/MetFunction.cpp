@@ -12,11 +12,12 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "Util/MetFunction.hpp"
+ 
 
 namespace met
 {
 
-    void ISA( const RealDouble z, RealDouble &pressure, \
+    void ISA( const RealDouble &z, RealDouble &pressure, \
               RealDouble &temperature )
     {
         
@@ -47,7 +48,7 @@ namespace met
 
     } /* End of ISA */
     
-    void ISA( const Vector_1D z, Vector_1D &pressure, \
+    void ISA( const Vector_1D &z, Vector_1D &pressure, \
               Vector_1D &temperature )
     {
 
@@ -81,7 +82,7 @@ namespace met
 
     } /* End of ISA */
 
-    void ISA( const RealDouble z, RealDouble &pressure )
+    void ISA( const RealDouble &z, RealDouble &pressure )
     {
         
         /* DESCRIPTION: Implements the mathematical representation of the
@@ -112,7 +113,7 @@ namespace met
 
     } /* End of ISA */
     
-    void ISA( const Vector_1D z, Vector_1D &pressure )
+    void ISA( const Vector_1D &z, Vector_1D &pressure )
     {
 
         /* DESCRIPTION: Implements the mathematical representation of the
@@ -145,6 +146,129 @@ namespace met
         }
 
     } /* End of ISA */
+    
+    void ISA_pAlt( RealDouble &z, const RealDouble &pressure )
+    {
+
+        /* DESCRIPTION: Find altitude corresponding to the prescribed 
+         * pressure using dichotomy search algorithm */
+
+        /* INPUTS:
+         * RealDouble p : Pressure in Pa */
+
+        const UInt nLUT = 500;
+        const RealDouble zMAX = 50.0E+03;
+        const RealDouble DZ = zMAX / RealDouble( nLUT );
+        Vector_1D zLUT( nLUT, 0.0E+00 );
+        Vector_1D pLUT( nLUT, 0.0E+00 );
+
+        UInt i_z = 0;
+
+        for ( i_z = 1; i_z < nLUT; i_z++ )
+            zLUT[i_z] = zLUT[i_z-1] + DZ;
+
+        ISA( zLUT, pLUT );
+
+        i_z = 0;
+        while ( i_z < nLUT ) {
+            if ( pressure > pLUT[i_z] ) {
+                /* Then: 
+                 * pLUT[i_z-1] > pressure > pLUT[i_z]
+                 * */
+                break;
+            }
+            i_z += 1;
+        }
+        z = zLUT[i_z-1] + DZ * log( pressure / pLUT[i_z-1] ) / log( pLUT[i_z] / pLUT[i_z-1] );
+
+
+    } /* End of ISA_pAlt */
+
+    void ISA_pAlt( Vector_1D &z, const Vector_1D &pressure )
+    {
+
+        /* DESCRIPTION: Find altitude corresponding to the prescribed 
+         * pressure using dichotomy search algorithm */
+
+        /* INPUTS:
+         * Vector_1D p : Pressure in Pa */
+
+        const UInt nLUT = 500;
+        const RealDouble zMAX = 50.0E+03;
+        const RealDouble DZ = zMAX / RealDouble( nLUT );
+        Vector_1D zLUT( nLUT, 0.0E+00 );
+        Vector_1D pLUT( nLUT, 0.0E+00 );
+
+        UInt i_z = 0;
+
+        for ( i_z = 1; i_z < nLUT; i_z++ )
+            zLUT[i_z] = zLUT[i_z-1] + DZ;
+
+        ISA( zLUT, pLUT );
+
+        for ( UInt iN = 0; iN < z.size(); iN++ ) {
+            i_z = 0;
+            while ( i_z < nLUT ) {
+                if ( pressure[iN] > pLUT[i_z] ) {
+                    /* Then: 
+                     * pLUT[i_z-1] > pressure[iN] > pLUT[i_z]
+                     * */
+                    break;
+                }
+                i_z += 1;
+            }
+            z[iN] = zLUT[i_z-1] + DZ * log( pressure[iN] / pLUT[i_z-1] ) / log( pLUT[i_z] / pLUT[i_z-1] );
+        }
+
+
+    } /* End of ISA_pAlt */
+
+    RealDouble ComputeLapseRate( const RealDouble TEMP, const RealDouble RHi, \
+                                 const RealDouble DEPTH )
+    {
+
+        /* DESCRIPTION: Computes the temperature lapse rate from the 
+         * temperature and RH at flight level and the depth of the 
+         * supersaturated layer, assuming a constant background H2O 
+         * concentration */
+
+        /* INPUTS:
+         * RealDouble TEMP  : Temperature at flight level in [K]
+         * RealDouble RHi   : RH w.r.t. ice at flight level in [%]
+         * RealDouble DEPTH : Depth of the moist layer in [m] */
+
+        /* Solve pSat_H2Os(T)/T = x_star using a Newton-Raphson iteration 
+         * scheme */
+        UInt counter    = 0;
+        RealDouble T    = TEMP;
+        RealDouble Tpre = 0.0E+00;
+        RealDouble pSat = 0.0E+00;
+        RealDouble pSat_= 0.0E+00;
+
+        /* H2O concentration, assumed constant, computed from flight level
+         * conditions in molec/cm^3 */
+        const RealDouble H2O = RHi / RealDouble(100.0) * \
+            physFunc::pSat_H2Os( TEMP ) / physConst::kB / TEMP * 1.00E-06;
+
+        const RealDouble x_star = H2O * physConst::kB * 1.00E+06;
+
+        while ( counter < 100 ) {
+
+            Tpre = T;
+            counter += 1;
+
+            pSat = physFunc::pSat_H2Os( T ); 
+            pSat_= physFunc::dpSat_H2Os( T );
+            T = T - ( pSat / T - x_star ) / ( T * pSat_ - pSat ) * T * T;
+
+            if ( ABS( T - Tpre ) < 1.00E-03 )
+                break;
+
+        }
+
+        return ( TEMP - T ) / DEPTH;
+
+    } /* End of ComputeLapseRate */
 
 }
 

@@ -31,9 +31,9 @@
                                         liquid aerosols in s */
 
 /* SYMMETRIES */
-#define X_SYMMETRY              1    /* Is the problem symmetric 
+#define X_SYMMETRY              0    /* Is the problem symmetric
                                         around the x-axis? */
-#define Y_SYMMETRY              1    /* Is the problem symmetric 
+#define Y_SYMMETRY              0    /* Is the problem symmetric
                                         around the y-axis? */
 
 /* METEOROLOGICAL DATA */ 
@@ -51,45 +51,47 @@
 /* OUTPUT MICROPHYSICS */
 /* Save solid aerosol gridded bins? */
 /* At each time step, the array is NX*NY*nBin_PA */
-#define SAVE_PA_MICROPHYS       0
+// This has been removed and can now be handled using timeseries output
+//#define SAVE_PA_MICROPHYS       0
 /* Time interval at which solid aerosol properties are saved 
  * (in seconds) */
-#define SAVE_PA_DT              3600
-
-const char* const OUT_FILE_PA = "data/IceAerosol.nc";
+//#define SAVE_PA_DT              3600
+//
+//const char* const OUT_FILE_PA = "data/IceAerosol.nc";
 
 /* If ice microphysics is not performed, make sure that we do not 
  * output it */
-#if ( !ICE_MICROPHYSICS )
-
-    #undef SAVE_PA_MICROPHYS 
-    #define SAVE_PA_MICROPHYS  0
-
-#endif
+//#if ( !ICE_MICROPHYSICS )
+//
+//    #undef SAVE_PA_MICROPHYS 
+//    #define SAVE_PA_MICROPHYS  0
+//
+//#endif
 
 /* Save liquid aerosol gridded bins? */
 /* At each time step, the array is NX*NY*nBin_LA */
-#define SAVE_LA_MICROPHYS       0
+// This has been removed and can now be handled using timeseries output
+//#define SAVE_LA_MICROPHYS       0
 /* Time interval at which liquid aerosol properties are saved 
  * (in seconds) */
-#define SAVE_LA_DT              3600
-
-const char* const OUT_FILE_LA = "data/LiqAerosol.nc";
+//#define SAVE_LA_DT              3600
+//
+//const char* const OUT_FILE_LA = "data/LiqAerosol.nc";
 
 /* If liquid microphysics is not performed, make sure that we do not 
  * output it */
-#if ( !LIQ_MICROPHYSICS )
-
-    #undef SAVE_LA_MICROPHYS
-    #define SAVE_LA_MICROPHYS   0
-
-#endif
+//#if ( !LIQ_MICROPHYSICS )
+//
+//    #undef SAVE_LA_MICROPHYS
+//    #define SAVE_LA_MICROPHYS   0
+//
+//#endif
 
 
 /* MASS CHECK */
 #define NOy_MASS_CHECK          0    /* NOy mass check? */
 #define CO2_MASS_CHECK          0    /* CO2 mass check? */
-#define H2O_MASS_CHECK          1    /* H2O mass check? */
+#define H2O_MASS_CHECK          0    /* H2O mass check? */
 
 /* DEBUG */
 /* DEBUG is now specified in Makefile header */

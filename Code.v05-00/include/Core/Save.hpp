@@ -35,7 +35,7 @@ namespace output
 
     int Write( const char* outFile,                                              \
                const OptInput &Input_Opt,                                        \
-               const SpeciesArray &ringSpecies, const Ambient ambientData,       \
+               const SpeciesArray &ringSpecies, const Ambient &ambientData,      \
                const Cluster &ringCluster, const std::vector<double> &timeArray, \
                const Input &input,                                               \
                const double &airDens, const double &relHumidity_i,               \
@@ -48,12 +48,18 @@ namespace output
                          const double temperature_K, const double pressure_Pa, const double lapseRate,       \
                          const double relHumidity_w, const double relHumidity_i );
     int Write_Adjoint( const char* outputFile,                                       \
-                       const SpeciesArray &ringSpecies, const Ambient ambientData,   \
-                       const Ambient adjointData,                                    \
+                       const SpeciesArray &ringSpecies, const Ambient &ambientData,  \
+                       const Ambient &adjointData,                                   \
                        const std::vector<double> &ringArea, const double totArea,    \
                        const std::vector<double> &timeArray,                         \
                        const Input &input,                                           \
                        const double &airDens, const double &relHumidity_i );
+    int Write_Box( const char* outputFile,               \
+                   const Ambient &boxData,               \
+                   const std::vector<double> &timeArray, \
+                   const Input &input,                   \
+                   const double &airDens,                \
+                   const double &relHumidity_i );
 
 }
 

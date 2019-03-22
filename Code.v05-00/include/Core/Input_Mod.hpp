@@ -41,17 +41,31 @@ class OptInput
         std::string SIMULATION_FORWARD_FILENAME;
         bool        SIMULATION_ADJOINT;
         std::string SIMULATION_ADJOINT_FILENAME;
+        bool        SIMULATION_BOXMODEL;
+        std::string SIMULATION_BOX_FILENAME;
 
         /* ========================================== */
         /* ---- PARAMETER MENU ---------------------- */
         /* ========================================== */
 
+        bool        PARAMETER_PLUMEPROCESS_RANGE;
+        std::string PARAMETER_PLUMEPROCESS_UNIT;
+        Vector_1D   PARAMETER_PLUMEPROCESS;
         bool        PARAMETER_TEMPERATURE_RANGE;
         std::string PARAMETER_TEMPERATURE_UNIT;
         Vector_1D   PARAMETER_TEMPERATURE;
         bool        PARAMETER_RHW_RANGE;
         std::string PARAMETER_RHW_UNIT;
         Vector_1D   PARAMETER_RHW;
+        bool        PARAMETER_DH_RANGE;
+        std::string PARAMETER_DH_UNIT;
+        Vector_1D   PARAMETER_DH;
+        bool        PARAMETER_DV_RANGE;
+        std::string PARAMETER_DV_UNIT;
+        Vector_1D   PARAMETER_DV;
+        bool        PARAMETER_SHEAR_RANGE;
+        std::string PARAMETER_SHEAR_UNIT;
+        Vector_1D   PARAMETER_SHEAR;
         bool        PARAMETER_LATITUDE_RANGE;
         std::string PARAMETER_LATITUDE_UNIT;
         Vector_1D   PARAMETER_LATITUDE;
@@ -117,6 +131,10 @@ class OptInput
         bool        TRANSPORT_TRANSPORT;
         bool        TRANSPORT_FILL;
         RealDouble  TRANSPORT_TIMESTEP;
+        bool        TRANSPORT_PART_FLUX;
+        bool        TRANSPORT_UPDRAFT;
+        RealDouble  TRANSPORT_UPDRAFT_TIMESCALE;
+        RealDouble  TRANSPORT_UPDRAFT_VELOCITY;
 
         /* ========================================== */
         /* ---- CHEMISTRY MENU ---------------------- */
@@ -132,18 +150,24 @@ class OptInput
         /* ========================================== */
 
         bool        AEROSOL_GRAVSETTLING;
-        bool        AEROSOL_COAGULATION;
+        bool        AEROSOL_COAGULATION_SOLID;
+        bool        AEROSOL_COAGULATION_LIQUID;
         RealDouble  AEROSOL_COAGULATION_TIMESTEP;
         bool        AEROSOL_ICE_GROWTH;
-        bool        AEROSOL_PLUME_UPDRAFT;
         
         /* ========================================== */
         /* ---- METEOROLOGY MENU -------------------- */
         /* ========================================== */
 
-        bool        MET_TEMP_INIT;
-        bool        MET_H2O_INIT;
+        bool        MET_LOADMET;
         std::string MET_FILENAME;
+        bool        MET_LOADTEMP;
+        bool        MET_LOADH2O;
+        bool        MET_FIXDEPTH;
+        RealDouble  MET_DEPTH;
+        bool        MET_FIXLAPSERATE;
+        RealDouble  MET_LAPSERATE;
+        bool        MET_DIURNAL;
         
         /* ========================================== */
         /* ---- DIAGNOSTIC MENU --------------------- */

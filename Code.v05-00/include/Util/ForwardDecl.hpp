@@ -52,10 +52,5 @@ typedef std::vector<ComplexlDouble> Vector_1Dcl;
 typedef std::vector<Vector_1Dcl> Vector_2Dcl;
 typedef std::vector<Vector_2Dcl> Vector_3Dcl;
 typedef std::vector<Vector_3Dcl> Vector_4Dcl;
-// !@#$, update to be consistent..
-typedef std::vector<RealDouble> Real_1DVector;
-typedef std::vector<ComplexDouble> Complex_1DVector;
-typedef std::vector<Real_1DVector> Real_2DVector;
-typedef std::vector<Complex_1DVector> Complex_2DVector;
 
 #endif /* FORWARDDECL_H_INCLUDED */

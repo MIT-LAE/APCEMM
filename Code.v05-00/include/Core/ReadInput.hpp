@@ -43,5 +43,7 @@ Vector_2D Copy_interleaved( Vector_2D& m, int n );
 Vector_2D Reshape_Vector( Vector_2D& vector_2D, int n_x, int n_y );
 Vector_2D CombVec( OptInput &Input_Opt );
 
+void Are_Flags_Valid( const OptInput &Input_Opt );
+
 #endif /* INPUT_READER_H_INCLUDED */
 

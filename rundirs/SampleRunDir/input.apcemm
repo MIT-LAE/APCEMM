@@ -12,20 +12,26 @@ Save forward results    : T
  => netCDF file name    : APCEMM_Case_*
 Turn on adjoint optim.  : T
  => netCDF file name    : APCEMM_ADJ_Case_*
+Run box model           : T
+ => netCDF file name    : APCEMM_BOX_Case_*
 ------------------------+------------------------------------------------------
 %%% PARAMETER SWEEP %%% : (Parameter sweep? needs to be set to "T")
 Parameter entries --->  : Format is either 200 220 240 or 200:20:240 (except
                         : for MC runs where it should be 200 240 or 200:240)
+ => Plume process. [hr] : 2:2:24
 Meteorological parameter:
  => Temperature [K]     : 200 220 240
  => R.Hum. wrt water [%]: 30
+ => Horiz. diff. [m^2/s]: 15.0
+ => Verti. diff. [m^2/s]: 0.15
+ => Shear [1/s]         : 0.005
 Geographical location   :
  => LON [deg]           : -15
  => LAT [deg]           : +60
  => Pressure [hPa]      : 200:20:300
 Time of emission        :
  => Emission day [1-365]: 81
- => Emission time [0-24]: 8
+ => Emission time [hr]  : 8
 Background mix. ratios  :
  => NOx  [ppt]          : 50:50:200
  => HNO3 [ppt]          : 81.5
@@ -46,7 +52,11 @@ Total fuel flow [kg/s]  : 3.2
 %%% TRANSPORT MENU %%%  :
 Turn on Transport?      : T
  => Fill Negative Values: T
-Convect Timestep [min]  : 10
+Transport Timestep [min]: 10
+Particle flux correction: T
+Turn on plume updraft?  : F
+ => Updraft timescale[s]: 3600
+ => Updraft vel. [cm/s] : 0
 ------------------------+------------------------------------------------------
 %%% CHEMISTRY MENU %%%  :
 Turn on Chemistry?      : T
@@ -56,15 +66,24 @@ Photolysis rates folder : /net/d04/data/fritzt/APCEMM_Data/J-Rates
 ------------------------+------------------------------------------------------
 %%% AEROSOL MENU %%%    :
 Turn on grav. settling? : T
-Turn on coagulation?    : F
+Turn on solid coag.?    : T
+Turn on liquid coag.?   : F
  => Coag. timestep [min]: 60
 Turn on ice growth?     : T
-Turn on plume updraft?  : F
 ------------------------+------------------------------------------------------
 %%% METEOROLOGY MENU %%%:
-Initialize T from MET?  : F
-Initialize H2O form MET?: F
-Met file                : /path/to/met/input
+Do we have MET input?   : F
+ => Met file            : /path/to/met/input
+ => Init T from MET?    : F
+ => Init H2O form MET?  : F
+- OR -------------------:
+Impose moist layer depth: T
+ => Moist layer depth[m]: 200
+--- OR -----------------:
+Impose temp. lapse rate : F
+ => Lapse rate [K/m]    : -3.0E-03
+------------------------:
+Add diurnal variations? : T
 ------------------------+------------------------------------------------------
 %%% DIAGNOSTIC MENU %%% :
 netCDF file name        : trac_avg.apcemm.hhmm

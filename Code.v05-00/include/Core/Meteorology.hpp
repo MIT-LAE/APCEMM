@@ -15,7 +15,10 @@
 #define METEOROLOGY_H_INCLUDED
 
 #include <iostream>
+#include "Util/ForwardDecl.hpp"
 #include "Core/Mesh.hpp"
+#include "Core/Input_Mod.hpp"
+#include "Util/PhysConstant.hpp"
 #include "Util/MetFunction.hpp"
 
 class Meteorology
@@ -24,34 +27,59 @@ class Meteorology
     public:
 
         Meteorology( );
-        Meteorology( const bool loadFile, \
-                     const Mesh &m, \
-                     const double temperature_K,  \
-                     const double altitude, \
-                     const double LapseRate, \
-                     const bool DBG );
+        Meteorology( const OptInput &USERINPUT,      \
+                     const RealDouble solarTime_h,   \
+                     const Mesh &m,                  \
+                     const RealDouble temperature_,  \
+                     const RealDouble relHumidity_i, \
+                     const RealDouble pressure_Pa,   \
+                     const bool DBG = 0 );
         Meteorology( const Meteorology &met );
         ~Meteorology( );
 
-        double alt( unsigned int j ) const { return alt_[j]; }
-        double press( unsigned int j ) const { return press_[j]; }
+        void Update( const RealDouble solarTime_h, const Mesh &m, \
+                     const RealDouble dTrav_x, const RealDouble dTrav_y );
 
-        double temp( unsigned int j, unsigned int i) const { return temp_[j][i]; }
-        double H2O( unsigned int j, unsigned int i) const { return H2O_[j][i]; }
+        RealDouble alt( UInt j ) const { return alt_[j]; }
+        RealDouble press( UInt j ) const { return press_[j]; }
+
+        RealDouble temp( UInt j, UInt i) const { return temp_[j][i]; }
+        RealDouble H2O( UInt j, UInt i) const { return H2O_[j][i]; }
+
+        const Vector_2D& Temp() const { return temp_; }
+        const Vector_1D& Press() const { return press_; }
 
         friend class Solution;
 
     protected:
 
-        /* Load data from file? */
-        const bool LOAD;
+        /* Met input type */
+        UInt TYPE;
+
+        /* Ambient parameters */
+        const RealDouble TEMPERATURE;
+        const RealDouble PRESSURE;
+        const RealDouble RHI;
+        RealDouble ALTITUDE;
+
+        /* Temperature lapse rate */
+        RealDouble LAPSERATE;
+
+        /* Diurnal temperature variations */
+        RealDouble DIURNAL_AMPL;
+        RealDouble DIURNAL_PHASE;
+        RealDouble diurnalPert;
+
+        /* Non-uniformity length scales and temperature perturbations */
+        RealDouble DELTAT;
+        RealDouble TOP, BOT, LEFT, RIGHT;
 
         /* Assume that pressure only depends on the vertical coordinate */
-        std::vector<double> alt_;
-        std::vector<double> press_;
+        Vector_1D alt_;
+        Vector_1D press_;
         /* Temperature and humidity fields can potentially be 2D fields */
-        std::vector<std::vector<double>> temp_;
-        std::vector<std::vector<double>> H2O_;
+        Vector_2D temp_;
+        Vector_2D H2O_;
 
 
 };

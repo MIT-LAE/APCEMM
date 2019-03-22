@@ -15,7 +15,8 @@
 #include <cmath>
 #include "Core/Parameters.hpp"
 
-void DiffParam( double time, double &d_x, double &d_y )
+void DiffParam( const double time, double &d_x, double &d_y, \
+                const double D_X, const double D_Y )
 {
 
     /* DiffParam:
@@ -31,21 +32,21 @@ void DiffParam( double time, double &d_x, double &d_y )
     
      if ( DPROF == 0 ) {
         if ( time <= tH0 )
-            d_x = DH0;
+            d_x = 1.13 * D_X;
         else
-            d_x = DH;
+            d_x = D_X;
         if ( time <= tV0 )
-            d_y = DV0;
+            d_y = 7.0 * D_Y;
         else
-            d_y = DV0;
+            d_y = D_Y;
     }
     else if ( DPROF == 1 ) {
-        d_x = std::max( DH, DH0 + (DH - DH0) * time / tH0 );
-        d_y = std::max( DV, DV0 + (DV - DV0) * time / tV0 );
+        d_x = std::max( D_X, 1.13 * D_X + (D_X - 1.13 * D_X) * time / tH0 );
+        d_y = std::max( D_Y, 7.00 * D_Y + (D_Y - 7.00 * D_Y) * time / tV0 );
     }
-    else if (DPROF == 2 ) {
-        d_x = DH + (DH0 - DH) * exp( -time / tH0 );
-        d_y = DV + (DV0 - DV) * exp( -time / tV0 );
+    else if ( DPROF == 2 ) {
+        d_x = D_X + (1.13 * D_X - D_X) * exp( -time / tH0 );
+        d_y = D_Y + (7.00 * D_Y - D_Y) * exp( -time / tV0 );
     }
     else {
         std::string const currFile("DiffParam.cpp");

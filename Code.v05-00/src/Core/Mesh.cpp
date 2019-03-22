@@ -21,11 +21,12 @@ Mesh::Mesh( )
     nx = NX;
     ny = NY;
 
-    xlim = XLIM;
-    ylim = YLIM;
+    xlim      = XLIM;
+    ylim_up   = YLIM_UP;
+    ylim_down = YLIM_DOWN;
 
     hx_ = 2 * xlim / nx;
-    hy_ = 2 * ylim / ny;
+    hy_ = ( ylim_up + ylim_down ) / ny;
 
     /* Cell center x-coordinates */
     for ( unsigned int i = 0; i < nx; i++ ) {
@@ -40,7 +41,7 @@ Mesh::Mesh( )
     /* Cell center y-coordinates */
     for ( unsigned int j = 0; j < ny; j++ ) {
         y_.push_back( (double) 0.0 );
-        y_[j] = j * hy_ - ylim + hy_ / 2.0;
+        y_[j] = j * hy_ - ylim_down + hy_ / 2.0;
         y_e_.push_back( (double) 0.0 );
         y_e_[j] = y_[j] - hy_ / 2.0;
     }
@@ -49,7 +50,7 @@ Mesh::Mesh( )
 
     totArea_ = 0;
     for ( unsigned int jNy = 0; jNy < ny; jNy++ ) {
-        areas_.push_back( Real_1DVector( nx, 0.0 ) );
+        areas_.push_back( Vector_1D( nx, 0.0 ) );
         for ( unsigned int iNx = 0; iNx < nx; iNx++ ) {
             areas_[jNy][iNx] = ( y_e_[jNy+1] - y_e_[jNy] ) * \
                               ( x_e_[iNx+1] - x_e_[iNx] );
@@ -69,7 +70,8 @@ Mesh::Mesh( const Mesh &m )
     y_e_ = m.y_e_;
     areas_ = m.areas_;
     xlim = m.xlim;
-    ylim = m.ylim;
+    ylim_up = m.ylim_up;
+    ylim_down = m.ylim_down;
     hx_ = m.hx_;
     hy_ = m.hy_;
     nx = m.nx;
@@ -92,7 +94,8 @@ Mesh& Mesh::operator=( const Mesh &m )
     y_e_ = m.y_e_;
     areas_ = m.areas_;
     xlim = m.xlim;
-    ylim = m.ylim;
+    ylim_up = m.ylim_up;
+    ylim_down = m.ylim_down;
     hx_ = m.hx_;
     hy_ = m.hy_;
     nx = m.nx;
@@ -231,34 +234,61 @@ void Mesh::Ring2Mesh( Cluster &c )
                         if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( y_[jNy] >= 0 ) ) {
                             RingMeshMap[iRing][jNy][iNx] = 1;
                             indList[iRing].push_back( std::make_pair(iNx, jNy) );
-                            RingMeshMap[iRing+1][(NY - 1) - jNy][iNx] = 1;
-                            indList[iRing+1].push_back( std::make_pair(iNx, (NY - 1) - jNy) );
                             val++;
                         }
                     }
                 }
-                iRing++;
-            }
-            else if ( ( iRing > 0 ) && ( iRing < nRing ) ) {
+            } else if ( iRing == 1 ) {
                 hAxis = RingV[iRing].getHAxis();
                 vAxis = RingV[iRing].getVAxis();
-                hAxis_in = RingV[iRing-2].getHAxis();
-                vAxis_in = RingV[iRing-2].getVAxis();
+                /* Use symmetry */
                 for ( unsigned int iNx = 0; iNx < nx_max; iNx++ ) {
-                    xRatio    = ( x_[iNx]  /  hAxis    ) * ( x_[iNx]  /  hAxis    );
-                    xRatio_in = ( x_[iNx]  /  hAxis_in ) * ( x_[iNx]  /  hAxis_in );
+                    xRatio = ( x_[iNx]  /  hAxis ) * ( x_[iNx]  /  hAxis );
                     for ( unsigned int jNy = 0; jNy < ny_max; jNy++ ) {
-                        /* If point is within the region and out of the smaller region */
-                        if ( ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( xRatio_in + ( y_[jNy] / vAxis_in ) * ( y_[jNy] / vAxis_in ) > 1 ) ) && ( y_[jNy] >= 0 ) ) {
+                        /* If point is within the region */
+                        if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( y_[jNy] < 0 ) ) {
                             RingMeshMap[iRing][jNy][iNx] = 1;
                             indList[iRing].push_back( std::make_pair(iNx, jNy) );
-                            RingMeshMap[iRing+1][(NY - 1) - jNy][iNx] = 1;
-                            indList[iRing+1].push_back( std::make_pair(iNx, (NY - 1) - jNy) );
                             val++;
                         }
                     }
                 }
-                iRing++;
+            } else if ( ( iRing > 1 ) && ( iRing < nRing ) ) {
+                if ( iRing % 2 ) {
+                    hAxis = RingV[iRing].getHAxis();
+                    vAxis = RingV[iRing].getVAxis();
+                    hAxis_in = RingV[iRing-2].getHAxis();
+                    vAxis_in = RingV[iRing-2].getVAxis();
+                    for ( unsigned int iNx = 0; iNx < nx_max; iNx++ ) {
+                        xRatio    = ( x_[iNx]  /  hAxis    ) * ( x_[iNx]  /  hAxis    );
+                        xRatio_in = ( x_[iNx]  /  hAxis_in ) * ( x_[iNx]  /  hAxis_in );
+                        for ( unsigned int jNy = 0; jNy < ny_max; jNy++ ) {
+                            /* If point is within the region and out of the smaller region */
+                            if ( ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( xRatio_in + ( y_[jNy] / vAxis_in ) * ( y_[jNy] / vAxis_in ) > 1 ) ) && ( y_[jNy] >= 0 ) ) {
+                                RingMeshMap[iRing][jNy][iNx] = 1;
+                                indList[iRing].push_back( std::make_pair(iNx, jNy) );
+                                val++;
+                            }
+                        }
+                    }
+                } else {
+                    hAxis = RingV[iRing].getHAxis();
+                    vAxis = RingV[iRing].getVAxis();
+                    hAxis_in = RingV[iRing-2].getHAxis();
+                    vAxis_in = RingV[iRing-2].getVAxis();
+                    for ( unsigned int iNx = 0; iNx < nx_max; iNx++ ) {
+                        xRatio    = ( x_[iNx]  /  hAxis    ) * ( x_[iNx]  /  hAxis    );
+                        xRatio_in = ( x_[iNx]  /  hAxis_in ) * ( x_[iNx]  /  hAxis_in );
+                        for ( unsigned int jNy = 0; jNy < ny_max; jNy++ ) {
+                            /* If point is within the region and out of the smaller region */
+                            if ( ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( xRatio_in + ( y_[jNy] / vAxis_in ) * ( y_[jNy] / vAxis_in ) > 1 ) ) && ( y_[jNy] < 0 ) ) {
+                                RingMeshMap[iRing][jNy][iNx] = 1;
+                                indList[iRing].push_back( std::make_pair(iNx, jNy) );
+                                val++;
+                            }
+                        }
+                    }
+                }
             }
             else {
                 hAxis = RingV[nRing-1].getHAxis();

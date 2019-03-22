@@ -56,8 +56,8 @@ namespace AIM
 
         if ( DBG ) {
             for ( UInt iBin = 0; iBin < binCenters.size(); iBin++ ) {
-                std::cout << physFunc::slip_flowCorrection( physFunc::Kn( binCenters[iBin], T, P ) ) << "\n";
-                std::cout << " Bin radius: " << binCenters[iBin] << " [m/s] => Fall speed: " << vFall[iBin] << " [m/s]\n";
+                std::cout << " Bin radius: " << binCenters[iBin] << " [m] => Corr. factor: " << physFunc::slip_flowCorrection( physFunc::Kn( binCenters[iBin], T, P ) ) << " [-]\n";
+                std::cout << " Bin radius: " << binCenters[iBin] << " [m] => Fall speed  : " << vFall[iBin] << " [m/s]\n";
             }
         }
 
