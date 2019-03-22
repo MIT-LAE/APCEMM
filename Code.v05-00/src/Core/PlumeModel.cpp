@@ -175,8 +175,13 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ---- Input options from the TIMESERIES MENU --------------------------- */
     /* ======================================================================= */
 
-    std::string TS_FOLDER               = "Case" + std::to_string(input.Case());
-    TS_FOLDER                          += "/";
+    std::string TS_FOLDER = "";
+
+    /* If timeseries output is desired for multiple cases at a time, uncomment
+     * the following lines */
+//    TS_FOLDER += "Case" + std::to_string(input.Case());
+//    TS_FOLDER += "/";
+    
     std::string TS_FILE1, TS_FILE2;
     const bool TS_SPEC                  = Input_Opt.TS_SPEC;
     TS_FILE1                            = TS_FOLDER + Input_Opt.TS_FILENAME;
@@ -195,6 +200,27 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     if ( TS_AERO )
         std::cout << "\n Saving TS_AERO files to: " << TS_AERO_FILENAME << std::endl;
+
+    if ( ( TS_SPEC || TS_AERO ) && ( TS_FOLDER.compare("") != 0 ) ) {
+
+        /* Create output directory for timeseries */
+        struct stat sb;
+        if ( !( stat( TS_FOLDER.c_str(), &sb ) == 0 \
+                    && S_ISDIR(sb.st_mode) ) ) {
+
+            /* Create directory */
+            const int dir_err = \
+                    mkdir( TS_FOLDER.c_str(), \
+                            S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+
+            if ( dir_err == -1 ) {
+                std::cout << " Could not create directory: ";
+                std::cout << TS_FOLDER << std::endl;
+                std::cout << " You may not have write permission" << std::endl;
+                exit(1);
+            }
+        }
+    }
 
     /* ======================================================================= */
     /* ---- Input options from the PROD & LOSS MENU -------------------------- */
