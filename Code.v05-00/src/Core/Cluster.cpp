@@ -146,11 +146,11 @@ void Cluster::ComputeRingAreas( const Vector_2D &cellAreas, const Vector_3D &wei
 
     RealDouble currRingArea;
     UInt iNx, jNy, iRing;
-    Vector_1D ringAreas ( nR, 0.0E+00 );
 
-    for ( jNy = 0; jNy < cellAreas.size(); jNy++ ) {
-        for ( iNx = 0; iNx < cellAreas[0].size(); iNx++ ) {
-            for ( iRing = 0; iRing < nR; iRing++ ) {
+    for ( iRing = 0; iRing < nR; iRing++ ) {
+        ringAreas.push_back( 0.0E+00 );
+        for ( jNy = 0; jNy < cellAreas.size(); jNy++ ) {
+            for ( iNx = 0; iNx < cellAreas[0].size(); iNx++ ) {
                 if ( weights[iRing][jNy][iNx] != 0.0E+00 )
                     ringAreas[iRing] += cellAreas[jNy][iNx];
             }
