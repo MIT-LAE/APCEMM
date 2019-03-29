@@ -41,11 +41,10 @@ class Mesh
         RealDouble totArea( ) const { return totArea_; }
         RealDouble hx( ) const { return hx_; }
         RealDouble hy( ) const { return hy_; }
-        unsigned int Nx() const { return nx; }
-        unsigned int Ny() const { return ny; }
-        std::vector<std::vector<std::vector<bool> > > map( ) const { return RingMeshMap; }
-        std::vector<std::vector<std::pair<unsigned int, unsigned int> > > list() const { return indList; }
-        std::vector<unsigned int> nMap( ) const { return nCellMap; }
+        UInt Nx() const { return nx; }
+        UInt Ny() const { return ny; }
+        const Vector_3D& map( ) const { return RingMeshMap; }
+        std::vector<UInt> nMap( ) const { return nCellMap; }
         void Debug() const;
 
     private:
@@ -61,13 +60,14 @@ class Mesh
 
         /* Total area */
         RealDouble totArea_;
+        /* Cell area */
+        RealDouble cellArea_;
 
         RealDouble xlim, ylim_up, ylim_down;
         RealDouble hx_, hy_;
-        unsigned int nx, ny;
-        std::vector<unsigned int> nCellMap;
-        std::vector<std::vector<std::pair<unsigned int, unsigned int> > > indList;
-        std::vector<std::vector<std::vector<bool> > > RingMeshMap;
+        UInt nx, ny;
+        std::vector<UInt> nCellMap;
+        Vector_3D RingMeshMap;
 
 };
 
