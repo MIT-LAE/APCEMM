@@ -13,7 +13,7 @@
 
 #include "Core/Species.hpp"
 
-static const double ZERO = 1.00E-50;
+static const RealDouble ZERO = 1.00E-50;
 
 SpeciesArray::SpeciesArray( )
 {
@@ -21,7 +21,7 @@ SpeciesArray::SpeciesArray( )
 
 } /* End of SpeciesArray::SpeciesArray */
 
-SpeciesArray::SpeciesArray( const unsigned int nRing_, const unsigned int nTime_, const bool halfRing_ )
+SpeciesArray::SpeciesArray( const UInt nRing_, const UInt nTime_, const bool halfRing_ )
 {
 
     /* Constructor */
@@ -30,9 +30,9 @@ SpeciesArray::SpeciesArray( const unsigned int nRing_, const unsigned int nTime_
     nTime = nTime_;
     halfRing = halfRing_;
 
-    std::vector<double> v1d = std::vector<double>( nRing, 0.0 );
+    Vector_1D v1d( nRing, 0.0E+00 );
 
-    for ( unsigned int i = 0; i < nTime; i++ ) {
+    for ( UInt i = 0; i < nTime; i++ ) {
         CO2.push_back( v1d );
         PPN.push_back( v1d );
         BrNO2.push_back( v1d );
@@ -530,8 +530,8 @@ SpeciesArray& SpeciesArray::operator+( const SpeciesArray &sp )
         return *this;
     }
 
-    for ( unsigned int iRing = 0; iRing < nRing; iRing++ ) {
-        for ( unsigned int iTime = 0; iTime < nTime; iTime++ ) {
+    for ( UInt iRing = 0; iRing < nRing; iRing++ ) {
+        for ( UInt iTime = 0; iTime < nTime; iTime++ ) {
 
             CO2[iTime][iRing]      += sp.CO2[iTime][iRing];
             PPN[iTime][iRing]      += sp.PPN[iTime][iRing];
@@ -708,8 +708,8 @@ SpeciesArray& SpeciesArray::operator-( const SpeciesArray &sp )
         return *this;
     }
 
-    for ( unsigned int iRing = 0; iRing < nRing; iRing++ ) {
-        for ( unsigned int iTime = 0; iTime < nTime; iTime++ ) {
+    for ( UInt iRing = 0; iRing < nRing; iRing++ ) {
+        for ( UInt iTime = 0; iTime < nTime; iTime++ ) {
 
             CO2[iTime][iRing]      -= sp.CO2[iTime][iRing];
             PPN[iTime][iRing]      -= sp.PPN[iTime][iRing];
@@ -879,324 +879,187 @@ SpeciesArray::~SpeciesArray( )
 
 } /* End of SpeciesArray::~SpeciesArray */
 
-void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
+void SpeciesArray::FillIn( Solution &Data, const Vector_3D &weights, \
+                           const Vector_2D &cellAreas, const Vector_1D& ringArea, \
+                           UInt nCounter )
 {
 
-    std::vector<std::vector<std::vector<bool> > > map = m.map();
-    std::vector<unsigned int> nMap = m.nMap();
-    std::vector<std::vector<std::pair<unsigned int, unsigned int>>> indList = m.list();
+    Vector_1D properties_LA( 4, 0.0E+00 );
+    Vector_1D properties_PA( 4, 0.0E+00 );
 
-    std::vector<double> properties_LA( 4, 0.0E+00 );
-    std::vector<double> properties_PA( 4, 0.0E+00 );
+    UInt jNy, iNx, iRing;
+    RealDouble w = 0.0E+00;
+    RealDouble totW = 0.0E+00;
 
-    unsigned int i, j;
-    unsigned int nCell;
-    for ( unsigned int iRing = 0; iRing < nRing; iRing++ ) {
-        
-        for ( unsigned int iList = 0; iList < indList[iRing].size(); iList++ ) {
-            i = indList[iRing][iList].first;
-            j = indList[iRing][iList].second;
-        
-            /* Sum concentrations over rings */
-                
-            CO2[nCounter][iRing]      += Data.CO2[j][i];
-            PPN[nCounter][iRing]      += Data.PPN[j][i];
-            BrNO2[nCounter][iRing]    += Data.BrNO2[j][i];
-            IEPOX[nCounter][iRing]    += Data.IEPOX[j][i];
-            PMNN[nCounter][iRing]     += Data.PMNN[j][i];
-            N2O[nCounter][iRing]      += Data.N2O[j][i];
-            N[nCounter][iRing]        += Data.N[j][i];
-            PAN[nCounter][iRing]      += Data.PAN[j][i];
-            ALK4[nCounter][iRing]     += Data.ALK4[j][i];
-            MAP[nCounter][iRing]      += Data.MAP[j][i];
-            MPN[nCounter][iRing]      += Data.MPN[j][i];
-            Cl2O2[nCounter][iRing]    += Data.Cl2O2[j][i];
-            ETP[nCounter][iRing]      += Data.ETP[j][i];
-            HNO2[nCounter][iRing]     += Data.HNO2[j][i];
-            C3H8[nCounter][iRing]     += Data.C3H8[j][i];
-            RA3P[nCounter][iRing]     += Data.RA3P[j][i];
-            RB3P[nCounter][iRing]     += Data.RB3P[j][i];
-            OClO[nCounter][iRing]     += Data.OClO[j][i];
-            ClNO2[nCounter][iRing]    += Data.ClNO2[j][i];
-            ISOP[nCounter][iRing]     += Data.ISOP[j][i];
-            HNO4[nCounter][iRing]     += Data.HNO4[j][i];
-            MAOP[nCounter][iRing]     += Data.MAOP[j][i];
-            MP[nCounter][iRing]       += Data.MP[j][i];
-            ClOO[nCounter][iRing]     += Data.ClOO[j][i];
-            RP[nCounter][iRing]       += Data.RP[j][i];
-            BrCl[nCounter][iRing]     += Data.BrCl[j][i];
-            PP[nCounter][iRing]       += Data.PP[j][i];
-            PRPN[nCounter][iRing]     += Data.PRPN[j][i];
-            SO4[nCounter][iRing]      += Data.SO4[j][i];
-            Br2[nCounter][iRing]      += Data.Br2[j][i];
-            ETHLN[nCounter][iRing]    += Data.ETHLN[j][i];
-            MVKN[nCounter][iRing]     += Data.MVKN[j][i];
-            R4P[nCounter][iRing]      += Data.R4P[j][i];
-            C2H6[nCounter][iRing]     += Data.C2H6[j][i];
-            RIP[nCounter][iRing]      += Data.RIP[j][i];
-            VRP[nCounter][iRing]      += Data.VRP[j][i];
-            ATOOH[nCounter][iRing]    += Data.ATOOH[j][i];
-            IAP[nCounter][iRing]      += Data.IAP[j][i];
-            DHMOB[nCounter][iRing]    += Data.DHMOB[j][i];
-            MOBA[nCounter][iRing]     += Data.MOBA[j][i];
-            MRP[nCounter][iRing]      += Data.MRP[j][i];
-            N2O5[nCounter][iRing]     += Data.N2O5[j][i];
-            ISNOHOO[nCounter][iRing]  += Data.ISNOHOO[j][i];
-            ISNP[nCounter][iRing]     += Data.ISNP[j][i];
-            ISOPNB[nCounter][iRing]   += Data.ISOPNB[j][i];
-            IEPOXOO[nCounter][iRing]  += Data.IEPOXOO[j][i];
-            MACRNO2[nCounter][iRing]  += Data.MACRNO2[j][i];
-            ROH[nCounter][iRing]      += Data.ROH[j][i];
-            MOBAOO[nCounter][iRing]   += Data.MOBAOO[j][i];
-            DIBOO[nCounter][iRing]    += Data.DIBOO[j][i];
-            PMN[nCounter][iRing]      += Data.PMN[j][i];
-            ISNOOB[nCounter][iRing]   += Data.ISNOOB[j][i];
-            INPN[nCounter][iRing]     += Data.INPN[j][i];
-            H[nCounter][iRing]        += Data.H[j][i];
-            BrNO3[nCounter][iRing]    += Data.BrNO3[j][i];
-            PRPE[nCounter][iRing]     += Data.PRPE[j][i];
-            MVKOO[nCounter][iRing]    += Data.MVKOO[j][i];
-            Cl2[nCounter][iRing]      += Data.Cl2[j][i];
-            ISOPND[nCounter][iRing]   += Data.ISOPND[j][i];
-            HOBr[nCounter][iRing]     += Data.HOBr[j][i];
-            A3O2[nCounter][iRing]     += Data.A3O2[j][i];
-            PROPNN[nCounter][iRing]   += Data.PROPNN[j][i];
-            GLYX[nCounter][iRing]     += Data.GLYX[j][i];
-            MAOPO2[nCounter][iRing]   += Data.MAOPO2[j][i];
-            CH4[nCounter][iRing]      += Data.CH4[j][i];
-            GAOO[nCounter][iRing]     += Data.GAOO[j][i];
-            B3O2[nCounter][iRing]     += Data.B3O2[j][i];
-            ACET[nCounter][iRing]     += Data.ACET[j][i];
-            MACRN[nCounter][iRing]    += Data.MACRN[j][i];
-            CH2OO[nCounter][iRing]    += Data.CH2OO[j][i];
-            MGLYOO[nCounter][iRing]   += Data.MGLYOO[j][i];
-            VRO2[nCounter][iRing]     += Data.VRO2[j][i];
-            MGLOO[nCounter][iRing]    += Data.MGLOO[j][i];
-            MACROO[nCounter][iRing]   += Data.MACROO[j][i];
-            PO2[nCounter][iRing]      += Data.PO2[j][i];
-            CH3CHOO[nCounter][iRing]  += Data.CH3CHOO[j][i];
-            MAN2[nCounter][iRing]     += Data.MAN2[j][i];
-            ISNOOA[nCounter][iRing]   += Data.ISNOOA[j][i];
-            H2O2[nCounter][iRing]     += Data.H2O2[j][i];
-            PRN1[nCounter][iRing]     += Data.PRN1[j][i];
-            ETO2[nCounter][iRing]     += Data.ETO2[j][i];
-            KO2[nCounter][iRing]      += Data.KO2[j][i];
-            RCO3[nCounter][iRing]     += Data.RCO3[j][i];
-            HC5OO[nCounter][iRing]    += Data.HC5OO[j][i];
-            GLYC[nCounter][iRing]     += Data.GLYC[j][i];
-            ClNO3[nCounter][iRing]    += Data.ClNO3[j][i];
-            RIO2[nCounter][iRing]     += Data.RIO2[j][i];
-            R4N1[nCounter][iRing]     += Data.R4N1[j][i];
-            HOCl[nCounter][iRing]     += Data.HOCl[j][i];
-            ATO2[nCounter][iRing]     += Data.ATO2[j][i];
-            HNO3[nCounter][iRing]     += Data.HNO3[j][i];
-            ISN1[nCounter][iRing]     += Data.ISN1[j][i];
-            MAO3[nCounter][iRing]     += Data.MAO3[j][i];
-            MRO2[nCounter][iRing]     += Data.MRO2[j][i];
-            INO2[nCounter][iRing]     += Data.INO2[j][i];
-            HAC[nCounter][iRing]      += Data.HAC[j][i];
-            HC5[nCounter][iRing]      += Data.HC5[j][i];
-            MGLY[nCounter][iRing]     += Data.MGLY[j][i];
-            ISOPNBO2[nCounter][iRing] += Data.ISOPNBO2[j][i];
-            ISOPNDO2[nCounter][iRing] += Data.ISOPNDO2[j][i];
-            R4O2[nCounter][iRing]     += Data.R4O2[j][i];
-            R4N2[nCounter][iRing]     += Data.R4N2[j][i];
-            BrO[nCounter][iRing]      += Data.BrO[j][i];
-            RCHO[nCounter][iRing]     += Data.RCHO[j][i];
-            MEK[nCounter][iRing]      += Data.MEK[j][i];
-            ClO[nCounter][iRing]      += Data.ClO[j][i];
-            MACR[nCounter][iRing]     += Data.MACR[j][i];
-            SO2[nCounter][iRing]      += Data.SO2[j][i];
-            MVK[nCounter][iRing]      += Data.MVK[j][i];
-            ALD2[nCounter][iRing]     += Data.ALD2[j][i];
-            MCO3[nCounter][iRing]     += Data.MCO3[j][i];
-            CH2O[nCounter][iRing]     += Data.CH2O[j][i];
-            H2O[nCounter][iRing]      += Data.H2O[j][i];
-            Br[nCounter][iRing]       += Data.Br[j][i];
-            NO[nCounter][iRing]       += Data.NO[j][i];
-            NO3[nCounter][iRing]      += Data.NO3[j][i];
-            Cl[nCounter][iRing]       += Data.Cl[j][i];
-            O[nCounter][iRing]        += Data.O[j][i];
-            O1D[nCounter][iRing]      += Data.O1D[j][i];
-            O3[nCounter][iRing]       += Data.O3[j][i];
-            HO2[nCounter][iRing]      += Data.HO2[j][i];
-            NO2[nCounter][iRing]      += Data.NO2[j][i];
-            OH[nCounter][iRing]       += Data.OH[j][i];
-            HBr[nCounter][iRing]      += Data.HBr[j][i];
-            HCl[nCounter][iRing]      += Data.HCl[j][i];
-            CO[nCounter][iRing]       += Data.CO[j][i];
-            MO2[nCounter][iRing]      += Data.MO2[j][i];
+    for ( iRing = 0; iRing < nRing; iRing++ ) {
 
-            SO4L[nCounter][iRing]     += Data.SO4L[j][i];
-            H2OL[nCounter][iRing]     += Data.H2OL[j][i];
-            HNO3L[nCounter][iRing]    += Data.HNO3L[j][i];
-            HClL[nCounter][iRing]     += Data.HClL[j][i];
-            HOClL[nCounter][iRing]    += Data.HOClL[j][i];
-            HBrL[nCounter][iRing]     += Data.HBrL[j][i];
-            HOBrL[nCounter][iRing]    += Data.HOBrL[j][i];
-            H2OS[nCounter][iRing]     += Data.H2OS[j][i];
-            HNO3S[nCounter][iRing]    += Data.HNO3S[j][i];
-
-            sootDens[nCounter][iRing] += Data.sootDens[j][i];
-            sootRadi[nCounter][iRing] += Data.sootRadi[j][i];
-            sootArea[nCounter][iRing] += Data.sootArea[j][i];
-
+        /* Precompute total weights */
+        totW = 0.0E+00;
+        for ( jNy = 0; jNy < Data.CO2.size(); jNy++ ) {
+            for ( iNx = 0; iNx < Data.CO2[0].size(); iNx++ )
+                totW += weights[iRing][jNy][iNx];
         }
-        
-        nCell = indList[iRing].size();
-    
-        /* Divide by number of cells in each ring */
-        CO2[nCounter][iRing]      /= nCell;
-        PPN[nCounter][iRing]      /= nCell;
-        BrNO2[nCounter][iRing]    /= nCell;
-        IEPOX[nCounter][iRing]    /= nCell;
-        PMNN[nCounter][iRing]     /= nCell;
-        N2O[nCounter][iRing]      /= nCell;
-        N[nCounter][iRing]        /= nCell;
-        PAN[nCounter][iRing]      /= nCell;
-        ALK4[nCounter][iRing]     /= nCell;
-        MAP[nCounter][iRing]      /= nCell;
-        MPN[nCounter][iRing]      /= nCell;
-        Cl2O2[nCounter][iRing]    /= nCell;
-        ETP[nCounter][iRing]      /= nCell;
-        HNO2[nCounter][iRing]     /= nCell;
-        C3H8[nCounter][iRing]     /= nCell;
-        RA3P[nCounter][iRing]     /= nCell;
-        RB3P[nCounter][iRing]     /= nCell;
-        OClO[nCounter][iRing]     /= nCell;
-        ClNO2[nCounter][iRing]    /= nCell;
-        ISOP[nCounter][iRing]     /= nCell;
-        HNO4[nCounter][iRing]     /= nCell;
-        MAOP[nCounter][iRing]     /= nCell;
-        MP[nCounter][iRing]       /= nCell;
-        ClOO[nCounter][iRing]     /= nCell;
-        RP[nCounter][iRing]       /= nCell;
-        BrCl[nCounter][iRing]     /= nCell;
-        PP[nCounter][iRing]       /= nCell;
-        PRPN[nCounter][iRing]     /= nCell;
-        SO4[nCounter][iRing]      /= nCell;
-        Br2[nCounter][iRing]      /= nCell;
-        ETHLN[nCounter][iRing]    /= nCell;
-        MVKN[nCounter][iRing]     /= nCell;
-        R4P[nCounter][iRing]      /= nCell;
-        C2H6[nCounter][iRing]     /= nCell;
-        RIP[nCounter][iRing]      /= nCell;
-        VRP[nCounter][iRing]      /= nCell;
-        ATOOH[nCounter][iRing]    /= nCell;
-        IAP[nCounter][iRing]      /= nCell;
-        DHMOB[nCounter][iRing]    /= nCell;
-        MOBA[nCounter][iRing]     /= nCell;
-        MRP[nCounter][iRing]      /= nCell;
-        N2O5[nCounter][iRing]     /= nCell;
-        ISNOHOO[nCounter][iRing]  /= nCell;
-        ISNP[nCounter][iRing]     /= nCell;
-        ISOPNB[nCounter][iRing]   /= nCell;
-        IEPOXOO[nCounter][iRing]  /= nCell;
-        MACRNO2[nCounter][iRing]  /= nCell;
-        ROH[nCounter][iRing]      /= nCell;
-        MOBAOO[nCounter][iRing]   /= nCell;
-        DIBOO[nCounter][iRing]    /= nCell;
-        PMN[nCounter][iRing]      /= nCell;
-        ISNOOB[nCounter][iRing]   /= nCell;
-        INPN[nCounter][iRing]     /= nCell;
-        H[nCounter][iRing]        /= nCell;
-        BrNO3[nCounter][iRing]    /= nCell;
-        PRPE[nCounter][iRing]     /= nCell;
-        MVKOO[nCounter][iRing]    /= nCell;
-        Cl2[nCounter][iRing]      /= nCell;
-        ISOPND[nCounter][iRing]   /= nCell;
-        HOBr[nCounter][iRing]     /= nCell;
-        A3O2[nCounter][iRing]     /= nCell;
-        PROPNN[nCounter][iRing]   /= nCell;
-        GLYX[nCounter][iRing]     /= nCell;
-        MAOPO2[nCounter][iRing]   /= nCell;
-        CH4[nCounter][iRing]      /= nCell;
-        GAOO[nCounter][iRing]     /= nCell;
-        B3O2[nCounter][iRing]     /= nCell;
-        ACET[nCounter][iRing]     /= nCell;
-        MACRN[nCounter][iRing]    /= nCell;
-        CH2OO[nCounter][iRing]    /= nCell;
-        MGLYOO[nCounter][iRing]   /= nCell;
-        VRO2[nCounter][iRing]     /= nCell;
-        MGLOO[nCounter][iRing]    /= nCell;
-        MACROO[nCounter][iRing]   /= nCell;
-        PO2[nCounter][iRing]      /= nCell;
-        CH3CHOO[nCounter][iRing]  /= nCell;
-        MAN2[nCounter][iRing]     /= nCell;
-        ISNOOA[nCounter][iRing]   /= nCell;
-        H2O2[nCounter][iRing]     /= nCell;
-        PRN1[nCounter][iRing]     /= nCell;
-        ETO2[nCounter][iRing]     /= nCell;
-        KO2[nCounter][iRing]      /= nCell;
-        RCO3[nCounter][iRing]     /= nCell;
-        HC5OO[nCounter][iRing]    /= nCell;
-        GLYC[nCounter][iRing]     /= nCell;
-        ClNO3[nCounter][iRing]    /= nCell;
-        RIO2[nCounter][iRing]     /= nCell;
-        R4N1[nCounter][iRing]     /= nCell;
-        HOCl[nCounter][iRing]     /= nCell;
-        ATO2[nCounter][iRing]     /= nCell;
-        HNO3[nCounter][iRing]     /= nCell;
-        ISN1[nCounter][iRing]     /= nCell;
-        MAO3[nCounter][iRing]     /= nCell;
-        MRO2[nCounter][iRing]     /= nCell;
-        INO2[nCounter][iRing]     /= nCell;
-        HAC[nCounter][iRing]      /= nCell;
-        HC5[nCounter][iRing]      /= nCell;
-        MGLY[nCounter][iRing]     /= nCell;
-        ISOPNBO2[nCounter][iRing] /= nCell;
-        ISOPNDO2[nCounter][iRing] /= nCell;
-        R4O2[nCounter][iRing]     /= nCell;
-        R4N2[nCounter][iRing]     /= nCell;
-        BrO[nCounter][iRing]      /= nCell;
-        RCHO[nCounter][iRing]     /= nCell;
-        MEK[nCounter][iRing]      /= nCell;
-        ClO[nCounter][iRing]      /= nCell;
-        MACR[nCounter][iRing]     /= nCell;
-        SO2[nCounter][iRing]      /= nCell;
-        MVK[nCounter][iRing]      /= nCell;
-        ALD2[nCounter][iRing]     /= nCell;
-        MCO3[nCounter][iRing]     /= nCell;
-        CH2O[nCounter][iRing]     /= nCell;
-        H2O[nCounter][iRing]      /= nCell;
-        Br[nCounter][iRing]       /= nCell;
-        NO[nCounter][iRing]       /= nCell;
-        NO3[nCounter][iRing]      /= nCell;
-        Cl[nCounter][iRing]       /= nCell;
-        O[nCounter][iRing]        /= nCell;
-        O1D[nCounter][iRing]      /= nCell;
-        O3[nCounter][iRing]       /= nCell;
-        HO2[nCounter][iRing]      /= nCell;
-        NO2[nCounter][iRing]      /= nCell;
-        OH[nCounter][iRing]       /= nCell;
-        HBr[nCounter][iRing]      /= nCell;
-        HCl[nCounter][iRing]      /= nCell;
-        CO[nCounter][iRing]       /= nCell;
-        MO2[nCounter][iRing]      /= nCell;
-            
-        SO4L[nCounter][iRing]     /= nCell;
-        H2OL[nCounter][iRing]     /= nCell;
-        HNO3L[nCounter][iRing]    /= nCell;
-        HClL[nCounter][iRing]     /= nCell;
-        HOClL[nCounter][iRing]    /= nCell;
-        HBrL[nCounter][iRing]     /= nCell;
-        HOBrL[nCounter][iRing]    /= nCell;
-        H2OS[nCounter][iRing]     /= nCell;
-        HNO3S[nCounter][iRing]    /= nCell;
+        for ( jNy = 0; jNy < Data.CO2.size(); jNy++ ) {
+            for ( iNx = 0; iNx < Data.CO2[0].size(); iNx++ ) {
 
-        sootDens[nCounter][iRing] /= nCell;
-        sootRadi[nCounter][iRing] /= nCell;
-        sootArea[nCounter][iRing] /= nCell;
+                w = weights[iRing][jNy][iNx] / totW;
 
-        properties_LA = Data.liquidAerosol.Average( indList[iRing] );
+                CO2[nCounter][iRing]      += Data.CO2[jNy][iNx]      * w;
+                PPN[nCounter][iRing]      += Data.PPN[jNy][iNx]      * w;
+                BrNO2[nCounter][iRing]    += Data.BrNO2[jNy][iNx]    * w;
+                IEPOX[nCounter][iRing]    += Data.IEPOX[jNy][iNx]    * w;
+                PMNN[nCounter][iRing]     += Data.PMNN[jNy][iNx]     * w;
+                N2O[nCounter][iRing]      += Data.N2O[jNy][iNx]      * w;
+                N[nCounter][iRing]        += Data.N[jNy][iNx]        * w;
+                PAN[nCounter][iRing]      += Data.PAN[jNy][iNx]      * w;
+                ALK4[nCounter][iRing]     += Data.ALK4[jNy][iNx]     * w;
+                MAP[nCounter][iRing]      += Data.MAP[jNy][iNx]      * w;
+                MPN[nCounter][iRing]      += Data.MPN[jNy][iNx]      * w;
+                Cl2O2[nCounter][iRing]    += Data.Cl2O2[jNy][iNx]    * w;
+                ETP[nCounter][iRing]      += Data.ETP[jNy][iNx]      * w;
+                HNO2[nCounter][iRing]     += Data.HNO2[jNy][iNx]     * w;
+                C3H8[nCounter][iRing]     += Data.C3H8[jNy][iNx]     * w;
+                RA3P[nCounter][iRing]     += Data.RA3P[jNy][iNx]     * w;
+                RB3P[nCounter][iRing]     += Data.RB3P[jNy][iNx]     * w;
+                OClO[nCounter][iRing]     += Data.OClO[jNy][iNx]     * w;
+                ClNO2[nCounter][iRing]    += Data.ClNO2[jNy][iNx]    * w;
+                ISOP[nCounter][iRing]     += Data.ISOP[jNy][iNx]     * w;
+                HNO4[nCounter][iRing]     += Data.HNO4[jNy][iNx]     * w;
+                MAOP[nCounter][iRing]     += Data.MAOP[jNy][iNx]     * w;
+                MP[nCounter][iRing]       += Data.MP[jNy][iNx]       * w;
+                ClOO[nCounter][iRing]     += Data.ClOO[jNy][iNx]     * w;
+                RP[nCounter][iRing]       += Data.RP[jNy][iNx]       * w;
+                BrCl[nCounter][iRing]     += Data.BrCl[jNy][iNx]     * w;
+                PP[nCounter][iRing]       += Data.PP[jNy][iNx]       * w;
+                PRPN[nCounter][iRing]     += Data.PRPN[jNy][iNx]     * w;
+                SO4[nCounter][iRing]      += Data.SO4[jNy][iNx]      * w;
+                Br2[nCounter][iRing]      += Data.Br2[jNy][iNx]      * w;
+                ETHLN[nCounter][iRing]    += Data.ETHLN[jNy][iNx]    * w;
+                MVKN[nCounter][iRing]     += Data.MVKN[jNy][iNx]     * w;
+                R4P[nCounter][iRing]      += Data.R4P[jNy][iNx]      * w;
+                C2H6[nCounter][iRing]     += Data.C2H6[jNy][iNx]     * w;
+                RIP[nCounter][iRing]      += Data.RIP[jNy][iNx]      * w;
+                VRP[nCounter][iRing]      += Data.VRP[jNy][iNx]      * w;
+                ATOOH[nCounter][iRing]    += Data.ATOOH[jNy][iNx]    * w;
+                IAP[nCounter][iRing]      += Data.IAP[jNy][iNx]      * w;
+                DHMOB[nCounter][iRing]    += Data.DHMOB[jNy][iNx]    * w;
+                MOBA[nCounter][iRing]     += Data.MOBA[jNy][iNx]     * w;
+                MRP[nCounter][iRing]      += Data.MRP[jNy][iNx]      * w;
+                N2O5[nCounter][iRing]     += Data.N2O5[jNy][iNx]     * w;
+                ISNOHOO[nCounter][iRing]  += Data.ISNOHOO[jNy][iNx]  * w;
+                ISNP[nCounter][iRing]     += Data.ISNP[jNy][iNx]     * w;
+                ISOPNB[nCounter][iRing]   += Data.ISOPNB[jNy][iNx]   * w;
+                IEPOXOO[nCounter][iRing]  += Data.IEPOXOO[jNy][iNx]  * w;
+                MACRNO2[nCounter][iRing]  += Data.MACRNO2[jNy][iNx]  * w;
+                ROH[nCounter][iRing]      += Data.ROH[jNy][iNx]      * w;
+                MOBAOO[nCounter][iRing]   += Data.MOBAOO[jNy][iNx]   * w;
+                DIBOO[nCounter][iRing]    += Data.DIBOO[jNy][iNx]    * w;
+                PMN[nCounter][iRing]      += Data.PMN[jNy][iNx]      * w;
+                ISNOOB[nCounter][iRing]   += Data.ISNOOB[jNy][iNx]   * w;
+                INPN[nCounter][iRing]     += Data.INPN[jNy][iNx]     * w;
+                H[nCounter][iRing]        += Data.H[jNy][iNx]        * w;
+                BrNO3[nCounter][iRing]    += Data.BrNO3[jNy][iNx]    * w;
+                PRPE[nCounter][iRing]     += Data.PRPE[jNy][iNx]     * w;
+                MVKOO[nCounter][iRing]    += Data.MVKOO[jNy][iNx]    * w;
+                Cl2[nCounter][iRing]      += Data.Cl2[jNy][iNx]      * w;
+                ISOPND[nCounter][iRing]   += Data.ISOPND[jNy][iNx]   * w;
+                HOBr[nCounter][iRing]     += Data.HOBr[jNy][iNx]     * w;
+                A3O2[nCounter][iRing]     += Data.A3O2[jNy][iNx]     * w;
+                PROPNN[nCounter][iRing]   += Data.PROPNN[jNy][iNx]   * w;
+                GLYX[nCounter][iRing]     += Data.GLYX[jNy][iNx]     * w;
+                MAOPO2[nCounter][iRing]   += Data.MAOPO2[jNy][iNx]   * w;
+                CH4[nCounter][iRing]      += Data.CH4[jNy][iNx]      * w;
+                GAOO[nCounter][iRing]     += Data.GAOO[jNy][iNx]     * w;
+                B3O2[nCounter][iRing]     += Data.B3O2[jNy][iNx]     * w;
+                ACET[nCounter][iRing]     += Data.ACET[jNy][iNx]     * w;
+                MACRN[nCounter][iRing]    += Data.MACRN[jNy][iNx]    * w;
+                CH2OO[nCounter][iRing]    += Data.CH2OO[jNy][iNx]    * w;
+                MGLYOO[nCounter][iRing]   += Data.MGLYOO[jNy][iNx]   * w;
+                VRO2[nCounter][iRing]     += Data.VRO2[jNy][iNx]     * w;
+                MGLOO[nCounter][iRing]    += Data.MGLOO[jNy][iNx]    * w;
+                MACROO[nCounter][iRing]   += Data.MACROO[jNy][iNx]   * w;
+                PO2[nCounter][iRing]      += Data.PO2[jNy][iNx]      * w;
+                CH3CHOO[nCounter][iRing]  += Data.CH3CHOO[jNy][iNx]  * w;
+                MAN2[nCounter][iRing]     += Data.MAN2[jNy][iNx]     * w;
+                ISNOOA[nCounter][iRing]   += Data.ISNOOA[jNy][iNx]   * w;
+                H2O2[nCounter][iRing]     += Data.H2O2[jNy][iNx]     * w;
+                PRN1[nCounter][iRing]     += Data.PRN1[jNy][iNx]     * w;
+                ETO2[nCounter][iRing]     += Data.ETO2[jNy][iNx]     * w;
+                KO2[nCounter][iRing]      += Data.KO2[jNy][iNx]      * w;
+                RCO3[nCounter][iRing]     += Data.RCO3[jNy][iNx]     * w;
+                HC5OO[nCounter][iRing]    += Data.HC5OO[jNy][iNx]    * w;
+                GLYC[nCounter][iRing]     += Data.GLYC[jNy][iNx]     * w;
+                ClNO3[nCounter][iRing]    += Data.ClNO3[jNy][iNx]    * w;
+                RIO2[nCounter][iRing]     += Data.RIO2[jNy][iNx]     * w;
+                R4N1[nCounter][iRing]     += Data.R4N1[jNy][iNx]     * w;
+                HOCl[nCounter][iRing]     += Data.HOCl[jNy][iNx]     * w;
+                ATO2[nCounter][iRing]     += Data.ATO2[jNy][iNx]     * w;
+                HNO3[nCounter][iRing]     += Data.HNO3[jNy][iNx]     * w;
+                ISN1[nCounter][iRing]     += Data.ISN1[jNy][iNx]     * w;
+                MAO3[nCounter][iRing]     += Data.MAO3[jNy][iNx]     * w;
+                MRO2[nCounter][iRing]     += Data.MRO2[jNy][iNx]     * w;
+                INO2[nCounter][iRing]     += Data.INO2[jNy][iNx]     * w;
+                HAC[nCounter][iRing]      += Data.HAC[jNy][iNx]      * w;
+                HC5[nCounter][iRing]      += Data.HC5[jNy][iNx]      * w;
+                MGLY[nCounter][iRing]     += Data.MGLY[jNy][iNx]     * w;
+                ISOPNBO2[nCounter][iRing] += Data.ISOPNBO2[jNy][iNx] * w;
+                ISOPNDO2[nCounter][iRing] += Data.ISOPNDO2[jNy][iNx] * w;
+                R4O2[nCounter][iRing]     += Data.R4O2[jNy][iNx]     * w;
+                R4N2[nCounter][iRing]     += Data.R4N2[jNy][iNx]     * w;
+                BrO[nCounter][iRing]      += Data.BrO[jNy][iNx]      * w;
+                RCHO[nCounter][iRing]     += Data.RCHO[jNy][iNx]     * w;
+                MEK[nCounter][iRing]      += Data.MEK[jNy][iNx]      * w;
+                ClO[nCounter][iRing]      += Data.ClO[jNy][iNx]      * w;
+                MACR[nCounter][iRing]     += Data.MACR[jNy][iNx]     * w;
+                SO2[nCounter][iRing]      += Data.SO2[jNy][iNx]      * w;
+                MVK[nCounter][iRing]      += Data.MVK[jNy][iNx]      * w;
+                ALD2[nCounter][iRing]     += Data.ALD2[jNy][iNx]     * w;
+                MCO3[nCounter][iRing]     += Data.MCO3[jNy][iNx]     * w;
+                CH2O[nCounter][iRing]     += Data.CH2O[jNy][iNx]     * w;
+                H2O[nCounter][iRing]      += Data.H2O[jNy][iNx]      * w;
+                Br[nCounter][iRing]       += Data.Br[jNy][iNx]       * w;
+                NO[nCounter][iRing]       += Data.NO[jNy][iNx]       * w;
+                NO3[nCounter][iRing]      += Data.NO3[jNy][iNx]      * w;
+                Cl[nCounter][iRing]       += Data.Cl[jNy][iNx]       * w;
+                O[nCounter][iRing]        += Data.O[jNy][iNx]        * w;
+                O1D[nCounter][iRing]      += Data.O1D[jNy][iNx]      * w;
+                O3[nCounter][iRing]       += Data.O3[jNy][iNx]       * w;
+                HO2[nCounter][iRing]      += Data.HO2[jNy][iNx]      * w;
+                NO2[nCounter][iRing]      += Data.NO2[jNy][iNx]      * w;
+                OH[nCounter][iRing]       += Data.OH[jNy][iNx]       * w;
+                HBr[nCounter][iRing]      += Data.HBr[jNy][iNx]      * w;
+                HCl[nCounter][iRing]      += Data.HCl[jNy][iNx]      * w;
+                CO[nCounter][iRing]       += Data.CO[jNy][iNx]       * w;
+                MO2[nCounter][iRing]      += Data.MO2[jNy][iNx]      * w;
+
+                SO4L[nCounter][iRing]     += Data.SO4L[jNy][iNx]     * w;
+                H2OL[nCounter][iRing]     += Data.H2OL[jNy][iNx]     * w;
+                HNO3L[nCounter][iRing]    += Data.HNO3L[jNy][iNx]    * w;
+                HClL[nCounter][iRing]     += Data.HClL[jNy][iNx]     * w;
+                HOClL[nCounter][iRing]    += Data.HOClL[jNy][iNx]    * w;
+                HBrL[nCounter][iRing]     += Data.HBrL[jNy][iNx]     * w;
+                HOBrL[nCounter][iRing]    += Data.HOBrL[jNy][iNx]    * w;
+                H2OS[nCounter][iRing]     += Data.H2OS[jNy][iNx]     * w;
+                HNO3S[nCounter][iRing]    += Data.HNO3S[jNy][iNx]    * w;
+
+                sootDens[nCounter][iRing] += Data.sootDens[jNy][iNx] * w;
+                sootRadi[nCounter][iRing] += Data.sootRadi[jNy][iNx] * w;
+                sootArea[nCounter][iRing] += Data.sootArea[jNy][iNx] * w;
+
+            }
+        }
+
+        properties_LA = Data.liquidAerosol.Average( weights[iRing], \
+                                                    totW );
         sulfDens[nCounter][iRing] = properties_LA[0];
         sulfRadi[nCounter][iRing] = properties_LA[1];
         sulfArea[nCounter][iRing] = properties_LA[2];
-        
-        properties_PA = Data.solidAerosol.Average( indList[iRing] );
-        iceDens[nCounter][iRing]  = properties_PA[0];
-        iceRadi[nCounter][iRing]  = properties_PA[1];
-        iceArea[nCounter][iRing]  = properties_PA[2];
+
+        properties_PA = Data.solidAerosol.Average( weights[iRing], \
+                                                   totW );
+        iceDens[nCounter][iRing] = properties_PA[0];
+        iceRadi[nCounter][iRing] = properties_PA[1];
+        iceArea[nCounter][iRing] = properties_PA[2];
 
     } 
 
@@ -1211,11 +1074,11 @@ void SpeciesArray::FillIn( Solution &Data, Mesh &m, unsigned int nCounter )
 
 } /* End of SpeciesArray::FillIn */
 
-void SpeciesArray::FillIn( double varArray[], unsigned int iTime, unsigned int iRing )
+void SpeciesArray::FillIn( RealDouble varArray[], UInt iTime, UInt iRing )
 {
 
     /* Ensure positiveness */
-    for ( unsigned int i = 0; i < NVAR; i++ ) {
+    for ( UInt i = 0; i < NVAR; i++ ) {
         if ( varArray[i] <= 0.0 ) {
             varArray[i] = ZERO;
         }
@@ -1352,7 +1215,7 @@ void SpeciesArray::FillIn( double varArray[], unsigned int iTime, unsigned int i
 
 } /* End of SpeciesArray::FillIn */
 
-void SpeciesArray::getData( double varArray[], double fixArray[], unsigned int iTime, unsigned int iRing )
+void SpeciesArray::getData( RealDouble varArray[], RealDouble fixArray[], UInt iTime, UInt iRing )
 {
 
     varArray[  0] = CO2[iTime][iRing];
@@ -1492,7 +1355,7 @@ void SpeciesArray::getData( double varArray[], double fixArray[], unsigned int i
     fixArray[  7] = RCOOH;
 
     /* Ensure positiveness */
-    for ( unsigned int i = 0; i < NVAR; i++ ) {
+    for ( UInt i = 0; i < NVAR; i++ ) {
         if ( varArray[i] <= 0.0 ) {
             varArray[i] = ZERO;
         }
@@ -1500,13 +1363,13 @@ void SpeciesArray::getData( double varArray[], double fixArray[], unsigned int i
 
 } /* End of SpeciesArray::getData */
 
-std::vector<double> SpeciesArray::RingAverage( const std::vector<double> ringArea, const double totArea, \
-                                               const unsigned int iNt ) const
+Vector_1D SpeciesArray::RingAverage( const Vector_1D ringArea, const RealDouble totArea, \
+                                     const UInt iNt ) const
 {
 
-    std::vector<double> ringAverage( NVAR, 0.0E+00 );
-    unsigned int iRing;
-    double area;
+    Vector_1D ringAverage( NVAR, 0.0E+00 );
+    UInt iRing;
+    RealDouble area;
 
     for ( iRing = 0; iRing < nRing; iRing++ ) {
         area = ringArea[iRing] / totArea;
@@ -1643,13 +1506,13 @@ std::vector<double> SpeciesArray::RingAverage( const std::vector<double> ringAre
 
 } /* End of SpeciesArray::RingAverage */
 
-std::vector<std::vector<double>> SpeciesArray::RingAverage( const std::vector<double> ringArea, \
-                                                            const double totArea ) const
+Vector_2D SpeciesArray::RingAverage( const Vector_1D ringArea, \
+                                     const RealDouble totArea ) const
 {
 
-    std::vector<std::vector<double>> ringAverage( nTime, std::vector<double>( NVAR, 0.0E+00 ) );
-    unsigned int iRing, iTime;
-    double area;
+    Vector_2D ringAverage( nTime, Vector_1D( NVAR, 0.0E+00 ) );
+    UInt iRing, iTime;
+    RealDouble area;
 
     for ( iRing = 0; iRing < nRing; iRing++ ) {
         area = ringArea[iRing] / totArea;
@@ -1787,26 +1650,5 @@ std::vector<std::vector<double>> SpeciesArray::RingAverage( const std::vector<do
     return ringAverage;
 
 } /* End of SpeciesArray::RingAverage */
-
-unsigned int SpeciesArray::getnRing() const
-{
-
-    return nRing;
-
-} /* End of SpeciesArray::getnRing */
-
-unsigned int SpeciesArray::getnTime() const
-{
-
-    return nTime;
-
-} /* End of SpeciesArray::getnTime */
-
-bool SpeciesArray::gethalfRing() const
-{
-
-    return halfRing;
-
-} /* End of SpeciesArray::gethalfRing */
 
 /* End of Species.cpp */

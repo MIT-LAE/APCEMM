@@ -1912,22 +1912,23 @@ namespace AIM
 
     } /* End of Grid_Aerosol::updatePdf */
 
-    Vector_1D Grid_Aerosol::Average( const std::vector<std::pair<unsigned int, unsigned int> > &indexList ) const
+    Vector_1D Grid_Aerosol::Average( const Vector_2D &weights,   \
+                                     const RealDouble &totalWeight ) const
     {
 
         Vector_1D out( 4, 0.0E+00 );
 
         Vector_1D PDF( nBin, 0.0E+00 );
 
-        unsigned int iNx, jNy;
+        unsigned int iBin, iNx, jNy;
+        RealDouble w = 0.0E+00;
 
-        for ( unsigned int iBin = 0; iBin < nBin; iBin++ ) {
-            for ( unsigned int iList = 0; iList < indexList.size(); iList++ ) {
-                iNx = indexList[iList].first;
-                jNy = indexList[iList].second;
-                PDF[iBin] += pdf[iBin][jNy][iNx];
+        for ( jNy = 0; jNy < Ny; jNy++ ) {
+            for ( iNx = 0; iNx < Nx; iNx++ ) {
+                w = weights[jNy][iNx] / totalWeight;
+                for ( iBin = 0; iBin < nBin; iBin++ )
+                    PDF[iBin] += pdf[iBin][jNy][iNx] * w;
             }
-            PDF[iBin] /= ( indexList.size() );
         }
 
         out[0] = Moment( 0, PDF );
@@ -1945,31 +1946,35 @@ namespace AIM
 
     } /* End of Grid_Aerosol::Average */
 
-    void Grid_Aerosol::addPDF( const Aerosol aerosol, const std::vector<std::pair<unsigned int, unsigned int> > &indexList ) 
+    void Grid_Aerosol::addPDF( const Aerosol &aerosol, const Vector_2D &weights )
     {
 
         Vector_1D AerPDF = aerosol.getPDF();
 
-        unsigned int iNx, jNy;
-        for ( unsigned int iBin = 0; iBin < nBin; iBin++ ) {
-            for ( unsigned int iList = 0; iList < indexList.size(); iList++ ) {
-                iNx = indexList[iList].first;
-                jNy = indexList[iList].second;
-                pdf[iBin][jNy][iNx] += AerPDF[iBin];
+        unsigned int iBin, iNx, jNy;
+
+        for ( jNy = 0; jNy < Ny; jNy++ ) {
+            for ( iNx = 0; iNx < Nx; iNx++ ) {
+                if ( weights[jNy][iNx] != 0.0E+00 ) {
+                    for ( iBin = 0; iBin < nBin; iBin++ )
+                        pdf[iBin][jNy][iNx] += AerPDF[iBin];
+                }
             }
         }
 
     } /* End of Grid_Aerosol::addPDF */
 
-    void Grid_Aerosol::addPDF( const Vector_1D PDF, const std::vector<std::pair<unsigned int, unsigned int> > &indexList ) 
+    void Grid_Aerosol::addPDF( const Vector_1D &PDF, const Vector_2D &weights ) 
     {
 
-        unsigned int iNx, jNy;
-        for ( unsigned int iBin = 0; iBin < nBin; iBin++ ) {
-            for ( unsigned int iList = 0; iList < indexList.size(); iList++ ) {
-                iNx = indexList[iList].first;
-                jNy = indexList[iList].second;
-                pdf[iBin][jNy][iNx] += PDF[iBin];
+        unsigned int iBin, iNx, jNy;
+
+        for ( jNy = 0; jNy < Ny; jNy++ ) {
+            for ( iNx = 0; iNx < Nx; iNx++ ) {
+                if ( weights[jNy][iNx] != 0.0E+00 ) {
+                    for ( iBin = 0; iBin < nBin; iBin++ )
+                        pdf[iBin][jNy][iNx] += PDF[iBin];
+                }
             }
         }
 

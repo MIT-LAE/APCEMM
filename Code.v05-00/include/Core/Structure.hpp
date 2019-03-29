@@ -65,18 +65,17 @@ class Solution
                         const unsigned int i = 0, \
                         const unsigned int j = 0 );
         void applyRing( double varArray[], double tempArray[], \
-                        const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, \
-                        const unsigned int iRing );
-        void applyAmbient( double varArray[], \
-                           const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh, \
-                           const unsigned int ambIndex );
-        void addEmission( const Emission &EI, const Aircraft &ac, \
-                          const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> &map, \
-                          const std::vector<std::vector<double>> cellAreas, bool halfRing, \
-                          double temperature, bool set2Saturation, \
-                          AIM::Aerosol &liqAer, AIM::Aerosol &iceAer, \
-                          const double Soot_Den, \
-                          const Mesh &m, const Meteorology &met );
+                        const Vector_2Dui &mapIndices, const UInt iRing );
+        void applyAmbient( double varArray[],             \
+                           const Vector_2Dui &mapIndices, \
+                           const UInt iRing );
+        void addEmission( const Emission &EI, const Aircraft &AC,        \
+                          const Mesh &m,                                 \
+                          bool halfRing,                                 \
+                          const double temperature, bool set2Saturation, \
+                          AIM::Aerosol &liqAer, AIM::Aerosol &iceAer,    \
+                          const double Soot_Den,                         \
+                          const Meteorology &met );
         std::vector<double> getAmbient( ) const;
         std::vector<double> getLiqSpecies() const;
         std::vector<std::vector<double> > getAerosol( ) const;
@@ -84,7 +83,7 @@ class Solution
         std::vector<double> getAerosolRadi( ) const;
         std::vector<double> getAerosolArea( ) const;
         void getAerosolProp( double ( &radi )[4], double ( &area )[4], double &IWC, \
-                             const std::vector<std::pair<unsigned int, unsigned int>> &indexList ) const;
+                             const Vector_2D &weights ) const;
         int SpinUp( std::vector<double> &amb_Value, \
                     const Input &input,             \
                     const double airDens,           \
