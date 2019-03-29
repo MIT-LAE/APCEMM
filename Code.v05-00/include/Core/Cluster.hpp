@@ -19,6 +19,7 @@
 #include <vector>
 #include <cmath>
 #include "Core/Ring.hpp"
+#include "Util/ForwardDecl.hpp"
 
 class Cluster
 {
@@ -26,28 +27,32 @@ class Cluster
     public:
 
         Cluster( );
-        Cluster( unsigned int n, bool sRing, double sigma1, double sigma2, double d1, double d2 );
+        Cluster( const UInt n, const bool sRing,                   \
+                 const RealDouble sigma1, const RealDouble sigma2, \
+                 const RealDouble d1, const RealDouble d2 );
         Cluster( const Cluster& cl );
         Cluster& operator=( const Cluster& cl );
         ~Cluster( );
-        void ComputeRingAreas( const std::vector<std::vector<double>> cellAreas, std::vector<std::vector<std::pair<unsigned int, unsigned int>>> map );
-        unsigned int getnRing() const;
-        bool halfRing() const;
-        std::vector<Ring> getRings() const; 
-        std::vector<int> getRingIndex() const;
-        std::vector<double> getRingArea( ) const;
+
+        void ComputeRingAreas( const Vector_2D &cellAreas, const Vector_3D &weights );
+        const UInt getnRing() const { return nR; }
+        const bool halfRing() const { return semiRing; }
+        const std::vector<Ring>& getRings() const { return Rings; }
+        const std::vector<int>& getRingIndex() const { return ringIndices; }
+        const Vector_1D& getRingArea( ) const { return ringAreas; }
+
         void PrintRings() const;
         void Debug() const;
 
     protected:
 
-        unsigned int nR;
+        UInt nR;
         bool semiRing;
-        double sigmaX, sigmaY;
-        double dH, dV;
+        RealDouble sigmaX, sigmaY;
+        RealDouble dH, dV;
         std::vector<Ring> Rings;
         std::vector<int> ringIndices;
-        std::vector<double> ringAreas;
+        Vector_1D ringAreas;
 
 };
 

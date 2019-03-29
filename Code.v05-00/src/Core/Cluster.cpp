@@ -23,10 +23,17 @@ Cluster::Cluster( )
     sigmaY = 0;
     dH = 0;
     dV = 0;
+    for ( UInt iR = 0; iR < nR; iR++ ) {
+        Rings.push_back( Ring() );
+        ringIndices.push_back( iR );
+        ringAreas.push_back( 0.0E+00 );
+    }
 
 } /* End of Cluster::Cluster */
 
-Cluster::Cluster( unsigned int n, bool sRing, double sigma1, double sigma2, double d1, double d2 )
+Cluster::Cluster( const UInt n, const bool sRing,                   \
+                  const RealDouble sigma1, const RealDouble sigma2, \
+                  const RealDouble d1, const RealDouble d2 )
 {
 
     /* Constructor */
@@ -47,7 +54,7 @@ Cluster::Cluster( unsigned int n, bool sRing, double sigma1, double sigma2, doub
     if ( dV <= 0.0 )
         dV = 0.15;
 
-    std::vector<double> ringSizes;
+    Vector_1D ringSizes;
     if ( !semiRing )
         ringSizes = {0.0, 0.25, 1.0, 2.0, 4.0, 6.0, 8.0, 12.0, 16.0, 20.0, 25.0, 30.0, 35.0, 40.0, 48.0};
     else {
@@ -57,8 +64,8 @@ Cluster::Cluster( unsigned int n, bool sRing, double sigma1, double sigma2, doub
     }
 
     /* Create rings */
-    double sigmaXRing, sigmaYRing;
-    for ( unsigned int iRing = 0; iRing < nR; iRing++ ) {
+    RealDouble sigmaXRing, sigmaYRing;
+    for ( UInt iRing = 0; iRing < nR; iRing++ ) {
         
         /* Add new element */
         Rings.push_back( Ring() );
@@ -94,13 +101,15 @@ Cluster::Cluster( const Cluster& cl )
 {
 
     /* Constructor */
-    nR = cl.nR;
-    semiRing = cl.semiRing;
-    sigmaX = cl.sigmaX;
-    sigmaY = cl.sigmaY;
-    dH = cl.dH;
-    dV = cl.dV;
-    Rings = cl.Rings;
+    nR          = cl.nR;
+    semiRing    = cl.semiRing;
+    sigmaX      = cl.sigmaX;
+    sigmaY      = cl.sigmaY;
+    dH          = cl.dH;
+    dV          = cl.dV;
+    Rings       = cl.Rings;
+    ringIndices = cl.ringIndices;
+    ringAreas   = cl.ringAreas;
 
 } /* End of Cluster::Cluster */
 
@@ -110,13 +119,15 @@ Cluster& Cluster::operator=( const Cluster &cl )
     if ( &cl == this )
         return *this;
 
-    nR = cl.nR;
+    nR       = cl.nR;
     semiRing = cl.semiRing;
-    sigmaX = cl.sigmaX;
-    sigmaY = cl.sigmaY;
-    dH = cl.dH;
-    dV = cl.dV;
-    Rings = cl.Rings;
+    sigmaX   = cl.sigmaX;
+    sigmaY   = cl.sigmaY;
+    dH       = cl.dH;
+    dV       = cl.dV;
+    Rings    = cl.Rings;
+    ringIndices = cl.ringIndices;
+    ringAreas= cl.ringAreas;
 
     return *this;
     
@@ -130,64 +141,28 @@ Cluster::~Cluster( )
 
 } /* End of Cluster::~Cluster */
         
-void Cluster::ComputeRingAreas( const std::vector<std::vector<double>> cellAreas, const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> map ) 
+void Cluster::ComputeRingAreas( const Vector_2D &cellAreas, const Vector_3D &weights ) 
 {
 
-    double currRingArea;
-    unsigned int i, j;
+    RealDouble currRingArea;
+    UInt iNx, jNy, iRing;
+    Vector_1D ringAreas ( nR, 0.0E+00 );
 
-    for ( unsigned int iRing = 0; iRing < nR; iRing++ ) {
-        currRingArea = 0;
-        for ( unsigned iList = 0; iList < map[iRing].size(); iList++ ) {
-            i = map[iRing][iList].first;
-            j = map[iRing][iList].second;
-            currRingArea += cellAreas[j][i];
+    for ( jNy = 0; jNy < cellAreas.size(); jNy++ ) {
+        for ( iNx = 0; iNx < cellAreas[0].size(); iNx++ ) {
+            for ( iRing = 0; iRing < nR; iRing++ ) {
+                if ( weights[iRing][jNy][iNx] != 0.0E+00 )
+                    ringAreas[iRing] += cellAreas[jNy][iNx];
+            }
         }
-        ringAreas.push_back( currRingArea );
     }
 
-
 } /* End of Cluster::ComputeRingAreas */
-
-unsigned int Cluster::getnRing( ) const
-{
-
-    return nR;
-
-} /* End of Cluster::nRing */
-
-bool Cluster::halfRing( ) const
-{
-
-    return semiRing;
-
-} /* End of Cluster::halfRing */
-
-std::vector<Ring> Cluster::getRings( ) const
-{
-
-    return Rings;
-
-} /* End of Cluster::getRings */
-
-std::vector<int> Cluster::getRingIndex( ) const
-{
-
-    return ringIndices;
-
-} /* End of Cluster::getRingIndex */
-
-std::vector<double> Cluster::getRingArea( ) const
-{
-
-    return ringAreas;
-
-} /* End of Cluster::getRingArea */
 
 void Cluster::PrintRings() const
 {
 
-    for ( unsigned int i = 0; i < nR; i++ )
+    for ( UInt i = 0; i < nR; i++ )
         std::cout << "Ring's horizontal and vertical axis: " << Rings[i].getHAxis() << ", " << Rings[i].getVAxis() << " [m]" << std::endl;
 
 } /* End of Cluster::PrintRings */
@@ -210,7 +185,7 @@ void Cluster::Debug() const
     std::setw(15);
     std::cout << "Vertical dimension";
     std::cout << std::endl;
-    for ( unsigned int i = 0; i < nR; i++ ) {
+    for ( UInt i = 0; i < nR; i++ ) {
         std::setw(7);
         std::cout << "     ";
         std::setw(15);
