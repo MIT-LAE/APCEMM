@@ -33,6 +33,7 @@ class Mesh
         Mesh( const Mesh &m );
         Mesh& operator=( const Mesh &m );
         void Ring2Mesh( Cluster &c );
+        void MapWeights( );
         const Vector_1D& x( ) const { return x_; }
         const Vector_1D& y( ) const { return y_; }
         const Vector_1D& xE( ) const { return x_e_; }
@@ -43,9 +44,12 @@ class Mesh
         RealDouble hy( ) const { return hy_; }
         UInt Nx() const { return nx; }
         UInt Ny() const { return ny; }
-        const Vector_3D& map( ) const { return RingMeshMap; }
-        std::vector<UInt> nMap( ) const { return nCellMap; }
+        const Vector_3D& map( ) const { return weights; }
+        const Vector_1Dui& nMap( ) const { return nCellMap; }
+        const Vector_2Dui& mapIndex( ) const { return mapIndex_; }
         void Debug() const;
+
+        Vector_3D weights;
 
     private:
 
@@ -66,8 +70,8 @@ class Mesh
         RealDouble xlim, ylim_up, ylim_down;
         RealDouble hx_, hy_;
         UInt nx, ny;
-        std::vector<UInt> nCellMap;
-        Vector_3D RingMeshMap;
+        Vector_1Dui nCellMap;
+        Vector_2Dui mapIndex_;
 
 };
 

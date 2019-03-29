@@ -83,7 +83,8 @@ Mesh::Mesh( const Mesh &m )
     nx          = m.nx;
     ny          = m.ny;
     nCellMap    = m.nCellMap;
-    RingMeshMap = m.RingMeshMap;
+    weights     = m.weights;
+    mapIndex_   = m.mapIndex_;
 
 } /* End of Mesh::Mesh */
 
@@ -108,7 +109,8 @@ Mesh& Mesh::operator=( const Mesh &m )
     nx          = m.nx;
     ny          = m.ny;
     nCellMap    = m.nCellMap;
-    RingMeshMap = m.RingMeshMap;
+    weights     = m.weights;
+    mapIndex_   = m.mapIndex_;
 
     return *this;
 
@@ -155,11 +157,13 @@ void Mesh::Ring2Mesh( Cluster &c )
     /* For rings and ambient */
     for ( UInt iRing = 0; iRing < nRing + 1; iRing++ ) {
         nCellMap.push_back( 0 );
-        RingMeshMap.push_back( v2d );
+        weights.push_back( v2d );
         for ( UInt iNy = 0; iNy < NY; iNy++ ) {
-            RingMeshMap[iRing].push_back( v1d );
+            weights[iRing].push_back( v1d );
         }
     }
+    for ( UInt iNy = 0; iNy < NY; iNy++ )
+        mapIndex_.push_back( Vector_1Dui( NX, 0 ) );
 
     std::vector<Ring> RingV;
     RingV = c.getRings();
@@ -191,7 +195,8 @@ void Mesh::Ring2Mesh( Cluster &c )
                     for ( UInt jNy = 0; jNy < ny_max; jNy++ ) {
                         /* If point is within the region and out of the smaller region */
                         if ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) {
-                            RingMeshMap[iRing][jNy][iNx] = 1.0E+00;
+                            weights[iRing][jNy][iNx] = 1.0E+00;
+                            mapIndex_[jNy][iNx] = iRing;
                             val++;
                         }
                     }
@@ -208,7 +213,8 @@ void Mesh::Ring2Mesh( Cluster &c )
                     for ( UInt jNy = 0; jNy < ny_max; jNy++ ) {
                         /* If point is within the region */
                         if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( xRatio_in + ( y_[jNy] / vAxis_in ) * ( y_[jNy] / vAxis_in ) > 1 ) ) {
-                            RingMeshMap[iRing][jNy][iNx] = 1.0E+00;
+                            weights[iRing][jNy][iNx] = 1.0E+00;
+                            mapIndex_[jNy][iNx] = iRing;
                             val++;
                         }
                     }
@@ -222,7 +228,8 @@ void Mesh::Ring2Mesh( Cluster &c )
                     for ( UInt jNy = 0; jNy < ny_max; jNy++ ) {
                         /* If point is within the region and out of the smaller region */
                         if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) > 1 ) ) {
-                            RingMeshMap[iRing][jNy][iNx] = 1.0E+00;
+                            weights[iRing][jNy][iNx] = 1.0E+00;
+                            mapIndex_[jNy][iNx] = iRing;
                             val++;
                         }
                     }
@@ -239,7 +246,8 @@ void Mesh::Ring2Mesh( Cluster &c )
                     for ( UInt jNy = 0; jNy < ny_max; jNy++ ) {
                         /* If point is within the region */
                         if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( y_[jNy] >= 0 ) ) {
-                            RingMeshMap[iRing][jNy][iNx] = 1.0E+00;
+                            weights[iRing][jNy][iNx] = 1.0E+00;
+                            mapIndex_[jNy][iNx] = iRing;
                             val++;
                         }
                     }
@@ -253,7 +261,8 @@ void Mesh::Ring2Mesh( Cluster &c )
                     for ( UInt jNy = 0; jNy < ny_max; jNy++ ) {
                         /* If point is within the region */
                         if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( y_[jNy] < 0 ) ) {
-                            RingMeshMap[iRing][jNy][iNx] = 1.0E+00;
+                            weights[iRing][jNy][iNx] = 1.0E+00;
+                            mapIndex_[jNy][iNx] = iRing;
                             val++;
                         }
                     }
@@ -271,7 +280,8 @@ void Mesh::Ring2Mesh( Cluster &c )
                         for ( UInt jNy = 0; jNy < ny_max; jNy++ ) {
                             /* If point is within the region and out of the smaller region */
                             if ( ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( xRatio_in + ( y_[jNy] / vAxis_in ) * ( y_[jNy] / vAxis_in ) > 1 ) ) && ( y_[jNy] >= 0 ) ) {
-                                RingMeshMap[iRing][jNy][iNx] = 1.0E+00;
+                                weights[iRing][jNy][iNx] = 1.0E+00;
+                                mapIndex_[jNy][iNx] = iRing;
                                 val++;
                             }
                         }
@@ -288,7 +298,8 @@ void Mesh::Ring2Mesh( Cluster &c )
                         for ( UInt jNy = 0; jNy < ny_max; jNy++ ) {
                             /* If point is within the region and out of the smaller region */
                             if ( ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( xRatio_in + ( y_[jNy] / vAxis_in ) * ( y_[jNy] / vAxis_in ) > 1 ) ) && ( y_[jNy] < 0 ) ) {
-                                RingMeshMap[iRing][jNy][iNx] = 1;
+                                weights[iRing][jNy][iNx] = 1;
+                                mapIndex_[jNy][iNx] = iRing;
                                 val++;
                             }
                         }
@@ -303,7 +314,8 @@ void Mesh::Ring2Mesh( Cluster &c )
                     for ( UInt jNy = 0; jNy < ny_max; jNy++ ) {
                         /* If point is out of the smaller region */
                         if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) > 1 ) ) {
-                            RingMeshMap[iRing][jNy][iNx] = 1.0E+00;
+                            weights[iRing][jNy][iNx] = 1.0E+00;
+                            mapIndex_[jNy][iNx] = iRing;
                             val++;
                         }
                     }
@@ -351,7 +363,8 @@ void Mesh::Ring2Mesh( Cluster &c )
         /* Do region 2 */
         for ( UInt iNx = 0; iNx < nx_max; iNx++ ) {
             for ( UInt jNy = ny_max; jNy < NY; jNy++ ) {
-                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][(NY - 1) - jNy][iNx];
+                weights[iRing][jNy][iNx] = weights[iRing][(NY - 1) - jNy][iNx];
+                mapIndex_[jNy][iNx] = mapIndex_[(NY - 1) - jNy][iNx];
             }
         }
         
@@ -361,14 +374,16 @@ void Mesh::Ring2Mesh( Cluster &c )
         /* 3 */
         for ( UInt iNx = nx_max; iNx < NX; iNx++ ) {
             for ( UInt jNy = 0; jNy < ny_max; jNy++ ) {
-                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][jNy][(NX - 1) - iNx];
+                weights[iRing][jNy][iNx] = weights[iRing][jNy][(NX - 1) - iNx];
+                mapIndex_[jNy][iNx] = mapIndex_[jNy][(NX - 1) - iNx];
             }
         }
        
         /* 4 */
         for ( UInt iNx = nx_max; iNx < NX; iNx++ ) {
             for ( UInt jNy = ny_max; jNy < NY; jNy++ ) {
-                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][(NY - 1) - jNy][(NX - 1) - iNx];
+                weights[iRing][jNy][iNx] = weights[iRing][(NY - 1) - jNy][(NX - 1) - iNx];
+                mapIndex_[jNy][iNx] = mapIndex_[(NY - 1) - jNy][(NX - 1 ) - iNx];
             }
         }
         
@@ -381,7 +396,8 @@ void Mesh::Ring2Mesh( Cluster &c )
         /* 2 and 4 */
         for ( UInt iNx = 0; iNx < NX; iNx++ ) {
             for ( UInt jNy = ny_max; jNy < NY; jNy++ ) {
-                RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][(NY - 1) - jNy][iNx];
+                weights[iRing][jNy][iNx] = weights[iRing][(NY - 1) - jNy][iNx];
+                mapIndex_[jNy][iNx] = mapIndex_[(NY - 1) - jNy][iNx];
             }
         }
         
@@ -395,7 +411,8 @@ void Mesh::Ring2Mesh( Cluster &c )
         if ( !c.halfRing() ) {
             for ( UInt iNx = nx_max; iNx < NX; iNx++ ) {
                 for ( UInt jNy = 0; jNy < NY; jNy++ ) {
-                    RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][jNy][(NX - 1) - iNx];
+                    weights[iRing][jNy][iNx] = weights[iRing][jNy][(NX - 1) - iNx];
+                    mapIndex_[jNy][iNx] = mapIndex_[jNy][(NX - 1) - iNx];
                 }
             }
 
@@ -404,8 +421,9 @@ void Mesh::Ring2Mesh( Cluster &c )
             if ( iRing < nRing ) {
                 for ( UInt iNx = nx_max; iNx < NX; iNx++ ) {
                     for ( UInt jNy = 0; jNy < NY; jNy++ ) {
-                        RingMeshMap[iRing-1][jNy][iNx] = RingMeshMap[iRing-1][jNy][(NX - 1) - iNx];
-                        RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][jNy][(NX - 1) - iNx];
+                        weights[iRing-1][jNy][iNx] = weights[iRing-1][jNy][(NX - 1) - iNx];
+                        weights[iRing][jNy][iNx]   = weights[iRing][jNy][(NX - 1) - iNx];
+                        mapIndex_[jNy][iNx] = mapIndex_[jNy][(NX - 1) - iNx];
                     }
                 }
 
@@ -415,7 +433,8 @@ void Mesh::Ring2Mesh( Cluster &c )
             else {
                 for ( UInt iNx = nx_max; iNx < NX; iNx++ ) {
                     for ( UInt jNy = 0; jNy < NY; jNy++ ) {
-                        RingMeshMap[iRing][jNy][iNx] = RingMeshMap[iRing][jNy][(NX - 1) - iNx];
+                        weights[iRing][jNy][iNx] = weights[iRing][jNy][(NX - 1) - iNx];
+                        mapIndex_[jNy][iNx] = mapIndex_[jNy][(NX - 1) - iNx];
                     }
                 }
 
@@ -429,6 +448,28 @@ void Mesh::Ring2Mesh( Cluster &c )
 
 
 } /* End of Mesh::Ring2Mesh */
+
+void Mesh::MapWeights( )
+{
+
+    UInt jNy, iNx, iRing;
+    UInt nRing = weights.size(); // This is actually equal to nRing+1
+
+    RealDouble max = 0.0E+00;
+    for ( jNy = 0; jNy < NY; jNy++ ) {
+        for ( iNx = 0; iNx < NX; iNx++ ) {
+            max = weights[0][jNy][iNx];
+            mapIndex_[jNy][iNx] = 0;
+            for ( iRing = 1; iRing < nRing; iRing++ ) {
+                if ( weights[iRing][jNy][iNx] > max ) {
+                    max = weights[iRing][jNy][iNx];
+                    mapIndex_[jNy][iNx] = iRing;
+                }
+            }
+        }
+    }
+
+} /* End of Mesh::MapWeights */
 
 void Mesh::Debug( ) const
 {
