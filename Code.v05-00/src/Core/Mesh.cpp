@@ -180,10 +180,10 @@ void Mesh::Ring2Mesh( Cluster &c )
 
     RealDouble hAxis, vAxis, hAxis_in, vAxis_in;
     RealDouble xRatio, xRatio_in;
-    UInt val;
+    UInt nCell;
 
     for ( UInt iRing = 0; iRing < nRing + 1; iRing++ ) {
-        val = 0;
+        nCell = 0;
         if ( !c.halfRing() ) {
             /* Full rings */
             if ( iRing == 0 ) {
@@ -197,7 +197,7 @@ void Mesh::Ring2Mesh( Cluster &c )
                         if ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) {
                             weights[iRing][jNy][iNx] = 1.0E+00;
                             mapIndex_[jNy][iNx] = iRing;
-                            val++;
+                            nCell++;
                         }
                     }
                 }
@@ -215,7 +215,7 @@ void Mesh::Ring2Mesh( Cluster &c )
                         if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( xRatio_in + ( y_[jNy] / vAxis_in ) * ( y_[jNy] / vAxis_in ) > 1 ) ) {
                             weights[iRing][jNy][iNx] = 1.0E+00;
                             mapIndex_[jNy][iNx] = iRing;
-                            val++;
+                            nCell++;
                         }
                     }
                 }
@@ -230,7 +230,7 @@ void Mesh::Ring2Mesh( Cluster &c )
                         if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) > 1 ) ) {
                             weights[iRing][jNy][iNx] = 1.0E+00;
                             mapIndex_[jNy][iNx] = iRing;
-                            val++;
+                            nCell++;
                         }
                     }
                 }
@@ -248,7 +248,7 @@ void Mesh::Ring2Mesh( Cluster &c )
                         if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( y_[jNy] >= 0 ) ) {
                             weights[iRing][jNy][iNx] = 1.0E+00;
                             mapIndex_[jNy][iNx] = iRing;
-                            val++;
+                            nCell++;
                         }
                     }
                 }
@@ -263,7 +263,7 @@ void Mesh::Ring2Mesh( Cluster &c )
                         if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( y_[jNy] < 0 ) ) {
                             weights[iRing][jNy][iNx] = 1.0E+00;
                             mapIndex_[jNy][iNx] = iRing;
-                            val++;
+                            nCell++;
                         }
                     }
                 }
@@ -282,7 +282,7 @@ void Mesh::Ring2Mesh( Cluster &c )
                             if ( ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( xRatio_in + ( y_[jNy] / vAxis_in ) * ( y_[jNy] / vAxis_in ) > 1 ) ) && ( y_[jNy] >= 0 ) ) {
                                 weights[iRing][jNy][iNx] = 1.0E+00;
                                 mapIndex_[jNy][iNx] = iRing;
-                                val++;
+                                nCell++;
                             }
                         }
                     }
@@ -300,7 +300,7 @@ void Mesh::Ring2Mesh( Cluster &c )
                             if ( ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) <= 1 ) && ( xRatio_in + ( y_[jNy] / vAxis_in ) * ( y_[jNy] / vAxis_in ) > 1 ) ) && ( y_[jNy] < 0 ) ) {
                                 weights[iRing][jNy][iNx] = 1;
                                 mapIndex_[jNy][iNx] = iRing;
-                                val++;
+                                nCell++;
                             }
                         }
                     }
@@ -316,23 +316,23 @@ void Mesh::Ring2Mesh( Cluster &c )
                         if ( ( xRatio + ( y_[jNy] / vAxis ) * ( y_[jNy] / vAxis ) > 1 ) ) {
                             weights[iRing][jNy][iNx] = 1.0E+00;
                             mapIndex_[jNy][iNx] = iRing;
-                            val++;
+                            nCell++;
                         }
                     }
                 }
             }
         } 
 
-        if ( val != 0 ) {
+        if ( nCell != 0 ) {
             if ( !c.halfRing() ) {
-                nCellMap[iRing] = val;
+                nCellMap[iRing] = nCell;
             } else {
                 if ( iRing < nRing ) {
-                    nCellMap[iRing-1] = val;
-                    nCellMap[iRing]   = val;
+                    nCellMap[iRing-1] = nCell;
+                    nCellMap[iRing]   = nCell;
                 } 
                 else {
-                    nCellMap[iRing] = val;
+                    nCellMap[iRing] = nCell;
                 }
             }
             /* Map should be such that \iint w dA = A_ring
@@ -341,7 +341,7 @@ void Mesh::Ring2Mesh( Cluster &c )
              * \sum w_ij = A_ring / A_ij = # of grid cell in ring */
         }
         else {
-            std::cout << "Ring " << iRing << " has no cell in it (nMap = 0)!!" << std::endl;
+            std::cout << "Ring " << iRing << " has no cell in it (nCell = 0)!!" << std::endl;
             exit(-1);
         }
 
