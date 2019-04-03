@@ -34,8 +34,8 @@ class SpeciesArray
         SpeciesArray& operator+( const SpeciesArray &sp );
         SpeciesArray& operator-( const SpeciesArray &sp );
         ~SpeciesArray( );
-        void FillIn( Solution &Data, const Vector_3D &weights, \
-                     const Vector_2D &cellAreas, const Vector_1D& ringArea, \
+        void FillIn( Solution &Data,             \
+                     const Vector_3D &weights,   \
                      UInt nCounter );
         void FillIn( RealDouble varArray[], UInt iTime, UInt iRing );
         void getData( RealDouble varArray[], RealDouble fixArray[], UInt iTime, UInt iRing );

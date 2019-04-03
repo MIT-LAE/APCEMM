@@ -879,8 +879,8 @@ SpeciesArray::~SpeciesArray( )
 
 } /* End of SpeciesArray::~SpeciesArray */
 
-void SpeciesArray::FillIn( Solution &Data, const Vector_3D &weights, \
-                           const Vector_2D &cellAreas, const Vector_1D& ringArea, \
+void SpeciesArray::FillIn( Solution &Data,             \
+                           const Vector_3D &weights,   \
                            UInt nCounter )
 {
 
