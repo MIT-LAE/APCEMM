@@ -72,7 +72,7 @@ Cluster::Cluster( const UInt n, const bool sRing,                   \
         ringIndices.push_back( iRing );
 
         /* X and Y axis */
-        sigmaXRing = sqrt( sigmaX * sigmaX + 16*dH*3600.0*ringSizes[iRing] );
+        sigmaXRing = sqrt( sigmaX * sigmaX + 20*16*dH*3600.0*ringSizes[iRing] );
         sigmaYRing = sqrt( sigmaY * sigmaY + 16*dV*3600.0*ringSizes[iRing] );
 
         /* Assign X and Y axis to current ring */
