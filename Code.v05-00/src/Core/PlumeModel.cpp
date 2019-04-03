@@ -680,26 +680,28 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Compute Grid to Ring mapping */        
     m.Ring2Mesh( ringCluster );
-
-    /* Get mapping */
-    const std::vector<std::vector<std::pair<unsigned int, unsigned int>>> mapRing2Mesh = m.list();
+    Vector_2Dui mapIndices = m.mapIndex();
 
     /* Print ring to mesh mapping? */
     if ( DEBUG_MAPPING )
         m.Debug();
 
-    /* Compute ring areas */
-    ringCluster.ComputeRingAreas( cellAreas, mapRing2Mesh );
+    /* Compute ring areas
+     * Note: The rings are only affected by shear and NOT diffusion. 
+     * When shear is applied to a N-D potato, it does NOT modify its area. Think of
+     * shear as advection in infinitesimal layers, each having a different velocity. 
+     * We can thus compute the ring areas initially, once and for all. */
+    ringCluster.ComputeRingAreas( cellAreas, m.weights );
     const Vector_1D ringArea = ringCluster.getRingArea();
     const double totArea = std::accumulate( ringArea.begin(), ringArea.end(), 0 );
  
     /* Add emission into the grid */
-    Data.addEmission( EI, aircraft, mapRing2Mesh, cellAreas, ringCluster.halfRing(), \
+    Data.addEmission( EI, aircraft, m, ringCluster.halfRing(),  \
                       temperature_K, ( relHumidity_i > 100.0 ), \
-                      liquidAer, iceAer, Soot_den * areaPlume / ringArea[0], m, Met ); 
+                      liquidAer, iceAer, Soot_den * areaPlume / ringArea[0], Met ); 
 
     /* Fill in variables species for initial time */
-    ringSpecies.FillIn( Data, m, nTime );
+    ringSpecies.FillIn( Data, m.weights, nTime );
 
     /* Allocate an additional array for KPP */
     double tempArray[NVAR];
@@ -997,7 +999,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             }
  
             /* Advection and diffusion for aerosol particles */
-            Solver.UpdateAdv ( 0.0E+00, 0.0E+00 );
             Solver.Run( Data.sootDens, cellAreas );
             /* Monodisperse assumption for soot particles */
             Solver.Run( Data.sootRadi, cellAreas );
@@ -1062,6 +1063,36 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
             }
 
+#ifdef RINGS
+
+            /* If using rings and shear is non zero, then stretch rings to capture the
+             * asymmetric expansion of the plume */
+            if ( shear != 0.0E+00 ) {
+
+                /* Rings do NOT get diffused, nor advected. They only get distorted 
+                 * through shear */
+
+                /* Update diffusion and advection arrays */
+                Solver.UpdateDiff ( 0.0E+00, 0.0E+00 );
+                /* Assume no plume advection */
+                Solver.UpdateAdv  ( 0.0E+00, 0.0E+00 );
+                /* Update shear */
+                Solver.UpdateShear( shear, m.y() );
+
+                /* Do not apply any filling option: -1 */
+                for ( iRing = 0; iRing < nRing + 1; iRing++ )
+                    Solver.Run( m.weights[iRing], cellAreas, -1 );
+
+                /* Recompute the map to mesh mapping, i.e. for each grid cell, 
+                 * find the corresponding ring */
+                m.MapWeights();
+
+                mapIndices = m.mapIndex();
+
+            }
+
+#endif /* RINGS */
+
         }
 
 #ifdef TIME_IT
@@ -1077,8 +1108,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-        /* Update met fields at mid time step */
-        Met.Update( ( curr_Time_s + dt/2 ) / 3600.0, m, dTrav_x, dTrav_y );
+        /* Met only matters for contrail evolution */
+        if ( TRANSPORT_PA ) {
+            /* Update met fields at mid time step */
+            Met.Update( ( curr_Time_s + dt/2 ) / 3600.0, m, dTrav_x, dTrav_y );
+        }
 
         /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
         /** ~~~~~~~~~~~~~~~ SO4 partitioning ~~~~~~~~~~~~~~ **/
@@ -1143,7 +1177,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         #ifdef RINGS
 
             /* Fill in variables species for current time */
-            ringSpecies.FillIn( Data, m, nTime + 1 );
+            ringSpecies.FillIn( Data, m.weights, \
+                                nTime + 1 );
 
             /* Is chemistry turned on? */
             if ( CHEMISTRY ) {
@@ -1156,6 +1191,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                     for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ )
                         tempArray[iSpec] = VAR[iSpec];
+
 
                     /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
                     /* ~~~~ Chemical rates ~~~~ */
@@ -1170,7 +1206,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                             HET[iSpec][2] = 0.0E+00;
                         }
 
-                        Data.getAerosolProp( AerosolRadi, AerosolArea, IWC, mapRing2Mesh[iRing] );
+                        Data.getAerosolProp( AerosolRadi, AerosolArea, IWC,  \
+                                             m.weights[iRing] );
 
                         relHumidity = VAR[ind_H2O] * \
                                       physConst::kB * temperature_K * 1.00E+06 / \
@@ -1216,9 +1253,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                     Update_RCONST( temperature_K, pressure_Pa, airDens, VAR[ind_H2O] );
 
                     if ( SAVE_PL ) {
-        
+
                         double familyRate[NFAM];
-                        
+
                         for ( unsigned int iFam = 0; iFam < NFAM; iFam++ )
                             familyRate[iFam] = 0.0E+00;
 
@@ -1227,7 +1264,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                          * NRING x (NT-1) x NFAM in [molec/cm^3/s]
                          * into the "forward" output file at a frequency specified by 
                          * the input file "input.apcemm" */
-       
+
                         /* Compute family rates */
                         ComputeFamilies( VAR, FIX, RCONST, familyRate );
 
@@ -1235,11 +1272,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                             plumeRates[nTime][iRing][iFam] = familyRate[iFam];
 
                     } else {
-                        
+
                         if ( SAVE_O3PL ) {
-                        
+
                             double familyRate[NFAM];
-                            
+
                             for ( unsigned int iFam = 0; iFam < NFAM; iFam++ )
                                 familyRate[iFam] = 0.0E+00;
 
@@ -1248,7 +1285,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                              * NRING x (NT-1) x NFAM in [molec/cm^3/s]
                              * into the "forward" output file at a frequency specified by 
                              * the input file "input.apcemm" */
-           
+
                             /* Compute family rates */
                             ComputeFamilies( VAR, FIX, RCONST, familyRate );
 
@@ -1293,12 +1330,15 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                     ringSpecies.FillIn( VAR, nTime + 1, iRing );
 
-                    Data.applyRing( VAR, tempArray, mapRing2Mesh, iRing );
+                    Data.applyRing( VAR, tempArray, mapIndices, iRing );
 
                 }
 
                 /* Ambient chemistry */
                 ambientData.getData( VAR, FIX, aerArray, nTime );
+
+                for ( unsigned int iSpec = 0; iSpec < NVAR; iSpec++ )
+                    tempArray[iSpec] = VAR[iSpec];
 
                 /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
                 /* ~~~~ Chemical rates ~~~~ */
@@ -1434,7 +1474,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                 ambientData.FillIn( VAR, nTime + 1 );
 
-                Data.applyAmbient( VAR, mapRing2Mesh, nRing );
+                Data.applyRing( VAR, tempArray, mapIndices, iRing );
 
             }
 
