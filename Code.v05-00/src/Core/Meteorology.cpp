@@ -108,7 +108,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         /* User defined fields can be set here ! */
 
         /* Set temperature input type if user-defined */
-        TYPE = 1;
+        TYPE = 2;
 
 
         if ( TYPE == 1 ) {
@@ -234,7 +234,8 @@ void Meteorology::Update( const RealDouble solarTime_h, const Mesh &m, \
         /* (quasi-)X-invariant met field: */
 
         for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
-            temp_[jNy][X.size()/2] = TEMPERATURE + Y[jNy] * LAPSERATE + diurnalPert;
+            temp_[jNy][X.size()/2] = TEMPERATURE \
+                                   + diurnalPert + LAPSERATE * ( Y[jNy] + dTrav_y );
             /* Unit check: Y [m] * LapseRate [K/m] */
             H2O_[jNy][0] = 0.0E+00;
             for ( UInt iNx = 0; iNx < X.size(); iNx++ ) {
@@ -256,7 +257,8 @@ void Meteorology::Update( const RealDouble solarTime_h, const Mesh &m, \
         for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
             H2O_[jNy][0] = 0.0E+00;
             for ( UInt iNx = 0; iNx < X.size(); iNx++ ) {
-                temp_[jNy][iNx] = TEMPERATURE + DELTAT + diurnalPert + LAPSERATE * Y[jNy] \
+                temp_[jNy][iNx] = TEMPERATURE \
+                               +  DELTAT + diurnalPert + LAPSERATE * ( Y[jNy] + dTrav_y ) \
                                - ( DELTAT ) \
                                * ( 1.0 - 0.5 * ( std::tanh( ( X[iNx] - LEFT ) / 1.0E+03 ) + 1.0 )) \
                                * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + RIGHT) / 1.0E+03 ) + 1.0 ));
