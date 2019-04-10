@@ -3572,6 +3572,8 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHW"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
             value = relHumidity_i;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHI"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
+            value = input.shear();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Shear"          , 1, "float", "1/s", "Ambient wind shear" );
             value = input.emissionDOY();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Day"   , 1, "int"  , "-"  , "Emission day" );
             value = input.emissionTime();
@@ -3976,6 +3978,8 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHW"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
             value = relHumidity_i;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHI"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
+            value = input.shear();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Shear"          , 1, "float", "1/s", "Ambient wind shear" );
             value = input.emissionDOY();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Day"   , 1, "int"  , "-"  , "Emission day" );
             value = input.emissionTime();
