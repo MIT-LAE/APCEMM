@@ -907,13 +907,15 @@ void Solution::applyRing( double varArray[], double tempArray[], \
                 Cl[jNy][iNx]       *= varArray[116] / tempArray[116];
 
                 /* Make sure that O does not become NaN */
-                if ( isinf( varArray[117] / tempArray[117] ) )
+                if ( isinf( varArray[117] / tempArray[117] ) || 
+                     varArray[117] / tempArray[117] >= 1.0E+20 )
                     O[jNy][iNx]     = varArray[117];
                 else
                     O[jNy][iNx]    *= varArray[117] / tempArray[117];
 
                 /* Make sure that O1D does not become NaN */
-                if ( isinf( varArray[118] / tempArray[118] ) )
+                if ( isinf( varArray[118] / tempArray[118] ) ||
+                     varArray[118] / tempArray[118] >= 1.0E+20 )
                     O1D[jNy][iNx]   = varArray[118];
                 else
                     O1D[jNy][iNx]  *= varArray[118] / tempArray[118];
