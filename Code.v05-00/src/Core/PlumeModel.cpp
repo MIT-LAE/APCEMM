@@ -1942,7 +1942,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                              /* Debug? */ DEBUG_ADJOINT,          \
                              /* 2nd try? */ 0 );
 
-        if ( IERR == 2 ) {
+        if ( IERR == -2 ) {
             /* Integration succeeded but convergence was poor. Try again with
              * new initial direction */
 
