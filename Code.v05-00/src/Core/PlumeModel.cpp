@@ -1970,6 +1970,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                     std::cout << "\n Sticking to original optimization solution.\n";
                 #endif /* OMP */
             }
+            IERR = 0;
 
         }
 
