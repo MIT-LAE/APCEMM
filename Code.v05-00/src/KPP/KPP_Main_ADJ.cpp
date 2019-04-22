@@ -263,7 +263,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
         printf(" Initial adjoint integration failed\n");
         /* New attempt or discard this run if second attempt by setting METRIC to
          * something large */
-        IERR = -2;
+        IERR = -10;
         return IERR;
     }
 
@@ -570,7 +570,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
 
                 j++;
 
-                if ( ( METRIC > METRIC_prev ) && ( METRIC < 2.0 * METRIC_ABS_MIN ) \
+                if ( ( METRIC > METRIC_prev ) && ( METRIC > 2.0 * METRIC_ABS_MIN ) \
                         && ( VAR_INIT[ind_NO] > 0.0E+00 ) \
                         && ( VAR_INIT[ind_NO2] > 0.0E+00 ) \
                         && ( VAR_INIT[ind_O3] > 0.0E+00 ) \
@@ -651,8 +651,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                 free( dirold ); dirold = NULL;
                 /* New attempt or discard this run if second attempt by setting METRIC to
                  * something large */
-                IERR = -2;
-                METRIC = 1.00E+40;
+                IERR = -10;
+                *METRIC_OUT = 1.00E+40;
                 return IERR;
             }
             
@@ -720,8 +720,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                 free( dirold ); dirold = NULL;
                 /* New attempt or discard this run if second attempt by setting METRIC to
                  * something large */
-                IERR = -2;
-                METRIC = 1.00E+40;
+                IERR = -10;
+                *METRIC_OUT = 1.00E+40;
                 return IERR;
             }
 
@@ -850,8 +850,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             free( dirold ); dirold = NULL;
             /* New attempt or discard this run if second attempt by setting METRIC to
              * something large */
-            IERR = -2;
-            METRIC = 1.00E+40;
+            IERR = -10;
+            *METRIC_OUT = 1.00E+40;
             return IERR;
         }
                 
@@ -912,8 +912,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
             free( dirold ); dirold = NULL;
             /* New attempt or discard this run if second attempt by setting METRIC to
              * something large */
-            IERR = -2;
-            METRIC = 1.00E+40;
+            IERR = -10;
+            *METRIC_OUT = 1.00E+40;
             return IERR;
         }
                 
@@ -958,8 +958,8 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
         }
 
         /* If NOx delta remains too large, restart another optimization procedure */
-        if ( ABS( (VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT ) > 5.00E-02 )
-            IERR = -2;
+        if ( ABS( (VAR_RUN[ind_NO] + VAR_RUN[ind_NO2] - finalPlume[ind_NO] - finalPlume[ind_NO2])/airDens*TOPPT ) > 1.00E-02 )
+            IERR = -10;
 
         *METRIC_OUT = METRIC_ABS_MIN;
     }
