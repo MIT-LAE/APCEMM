@@ -20,42 +20,85 @@ Vortex::Vortex( )
 
 } /* End of Vortex::Vortex */
 
-Vortex::Vortex( double temperature_K, double pressure_Pa, double n_BV, double span, double mass, double vFlight ) 
+Vortex::Vortex( RealDouble temperature_K, RealDouble pressure_Pa,  \
+                RealDouble N_BV, RealDouble span, RealDouble mass, \
+                RealDouble vFlight ) 
 {
+
+    /* This function uses a parametric model to estimate the initial depth, 
+     * width and maximum and mean downward displacements, delta_zw_ and
+     * delta_z1_.
+     *
+     * The parametrization is taken from:
+     * Schumann, U. "A contrail cirrus prediction model." Geoscientific Model Development 5.3 (2012): 543-580.
+     *
+     * INPUT: 
+     * - temperature_K: ambient temperature expressed in K
+     * - pressure_Pa  : ambient pressure expressed in Pa
+     * - N_BV         : Brunt-Väisala frequency expressed in s^-1
+     * - span         : aircraft span in m
+     * - mass         : aircraft mass in kg
+     * - vFlight      : aircraft velocity in m/s
+     *
+     * The function computes:
+     * - b_       : wake vortex separation in m
+     * - gamma_   : initial circulation in m^2/s
+     * - t_       : effective time scale in s
+     * - w_       : initial velocity scale in m/s
+     * - eps_star_: normalized dissipation rate
+     * - delta_zw_: maximum sinking in m
+     * - delta_z1_: initial sinking in m
+     * - D1       : initial contrail depth in m
+     * */
 
     /* Constructor */
 
-    double rho = pressure_Pa / ( temperature_K * physConst::R_Air );
+    RealDouble rho = pressure_Pa / ( temperature_K * physConst::R_Air );
 
     /* Wake vortex separation, [ m ] */
-    b = physConst::PI * span / 4;
+    b_ = physConst::PI * span / 4;
+
     /* Initial circulation, [ m ^ 2 / s ] */
-    gamma = 4 * mass * physConst::g / ( physConst::PI * span * rho * vFlight );
+    gamma_ = 4 * mass * physConst::g / ( physConst::PI * span * rho * vFlight );
+    
     /* Effective time scale, [ s ] */
-    t = 2 * physConst::PI * b * b / gamma;
+    t_ = 2 * physConst::PI * b_ * b_ / gamma_;
+    
     /* Initial velocity scale, [ m / s ] */
-    w = gamma / ( 2 * physConst::PI * b );
+    w_ = gamma_ / ( 2 * physConst::PI * b_ );
+    
     /* Normalized dissipation rate, [ - ] */
-    eps_star = pow( physConst::EPSILON * b, double(1.0/3.0) ) / w;
+    eps_star_ = pow( physConst::EPSILON * b_, RealDouble(1.0/3.0) ) / w_;
 
-    if ( n_BV <= 0 ) {
-        std::cout << "In Vortex::Vortex: Brunt-Vaisala frequency takes negative value, n_BV = " << n_BV << " [s^-1]\n";
-        n_BV = 1.3E-02;
+    if ( N_BV <= 0 ) {
+        std::cout << "In Vortex::Vortex: Brunt-Vaisala frequency takes negative value, N_BV = " << N_BV << " [s^-1]\n";
+        N_BV = 1.3E-02;
     }
 
-    if ( n_BV * t >= n_BVt_threshold ) {
-        delta_zw = 1.49 * w / n_BV;
-    } else if ( eps_star < eps_threshold ) {
-        delta_zw = b * ( 1.88 + 7.68 * ( 1.0 - 4.07 * eps_star + 5.67 * eps_star * eps_star ) * ( 0.79 - n_BV * t ));
+    /* Allocate input to class */
+    N_BV_ = N_BV;
+
+    if ( N_BV_ * t_ >= N_BVt_threshold ) {
+
+        /* Strongly stratified conditions */
+        delta_zw_ = 1.49 * w_ / N_BV_;
+
+    } else if ( eps_star_ < eps_threshold ) {
+
+        /* Weakly stratified conditions */
+        delta_zw_ = b_ * ( 1.88 + 7.68 * ( 1.0 - 4.07 * eps_star_ + 5.67 * eps_star_ * eps_star_ ) * ( 0.79 - N_BV_ * t_ ));
+
     } else {
-        std::cout << "In Vortex::Vortex:: Neither n_BV * t >= " << n_BVt_threshold << " nor eps* < " << eps_threshold << " are valid\n";
+
+        std::cout << "In Vortex::Vortex:: Neither N_BV * t >= " << N_BVt_threshold << " nor eps* < " << eps_threshold << " are valid\n";
         std::cout << "Setting delta_zw to " << delta_zw_default << "\n";
-        delta_zw = delta_zw_default;
+        delta_zw_ = delta_zw_default;
+
     }
 
-    delta_z1 = Cz1 * delta_zw;
+    delta_z1_ = Cz1 * delta_zw_;
 
-    D_1 = CD_0 * delta_zw;
+    D_1_ = CD_0 * delta_zw_;
 
 
 } /* End of Vortex::Vortex */
@@ -70,14 +113,14 @@ Vortex::~Vortex( )
 Vortex::Vortex( const Vortex &v )
 {
 
-    b = v.b;
-    gamma = v.gamma;
-    t = v.t;
-    w = v.w;
-    eps_star = v.eps_star;
-    delta_zw = v.delta_zw;
-    delta_z1 = v.delta_z1;
-    D_1 = v.D_1;
+    b_        = v.b_;
+    gamma_    = v.gamma_;
+    t_        = v.t_;
+    w_        = v.w_;
+    eps_star_ = v.eps_star_;
+    delta_zw_ = v.delta_zw_;
+    delta_z1_ = v.delta_z1_;
+    D_1_      = v.D_1_;
 
 } /* End of Vortex::Vortex */
 
@@ -87,72 +130,16 @@ Vortex& Vortex::operator=( const Vortex &v )
     if ( &v == this )
         return *this;
 
-    b = v.b;
-    gamma = v.gamma;
-    t = v.t;
-    w = v.w;
-    eps_star = v.eps_star;
-    delta_zw = v.delta_zw;
-    delta_z1 = v.delta_z1;
-    D_1 = v.D_1;
+    b_        = v.b_;
+    gamma_    = v.gamma_;
+    t_        = v.t_;
+    w_        = v.w_;
+    eps_star_ = v.eps_star_;
+    delta_zw_ = v.delta_zw_;
+    delta_z1_ = v.delta_z1_;
+    D_1_      = v.D_1_;
     return *this;
 
 } /* End of Vortex::operator= */
-
-double Vortex::getb() const
-{
-
-    return b;
-
-} /* End of Vortex::getb */
-
-double Vortex::getgamma() const
-{
-
-    return gamma;
-
-} /* End of Vortex::getgamma */
-
-double Vortex::gett() const
-{
-
-    return t;
-
-} /* End of Vortex::gett */
-
-double Vortex::getw() const
-{
-
-    return w;
-
-} /* End of Vortex::getw */
-
-double Vortex::geteps() const
-{
-
-    return eps_star;
-
-} /* End of Vortex::geteps */
-
-double Vortex::getdeltazw() const
-{
-
-    return delta_zw;
-
-} /* End of Vortex::getdeltazw */
-
-double Vortex::getdeltaz1() const
-{
-
-    return delta_z1;
-
-} /* End of Vortex::getdeltaz1 */
-
-double Vortex::getD1() const
-{
-
-    return D_1;
-
-} /* End of Vortex::getD1 */
 
 /* End of Vortex.cpp */

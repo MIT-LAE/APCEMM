@@ -545,7 +545,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         aircraft.Debug();
 
     /* Aggregate emissions from engine and fuel characteristics */
-    const Emission EI( aircraft.getEngine(), JetA );
+    const Emission EI( aircraft.engine(), JetA );
 
     /* Print Emission Debug? */
     if ( DEBUG_EI_INPUT )
@@ -595,15 +595,23 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
      * If 3 or more engines, we assume that the plumes originating from the same wing have mixed. */
 
     areaPlume *= 2;
-    if ( aircraft.getEngNumber() != 2 ) {
-        Ice_den  *= aircraft.getEngNumber() / 2.0;
-        liquidAer.scalePdf( aircraft.getEngNumber() / 2.0 );
-        iceAer.scalePdf( aircraft.getEngNumber() / 2.0 );
-        Soot_den *= aircraft.getEngNumber() / 2.0;
+    if ( aircraft.EngNumber() != 2 ) {
+        Ice_den  *= aircraft.EngNumber() / 2.0;
+        liquidAer.scalePdf( aircraft.EngNumber() / 2.0 );
+        iceAer.scalePdf( aircraft.EngNumber() / 2.0 );
+        Soot_den *= aircraft.EngNumber() / 2.0;
     }
 
-    double semiYaxis = 0.5*aircraft.getVortexdeltaz1();
-    double semiXaxis = areaPlume/(physConst::PI*0.5*aircraft.getVortexdeltaz1());
+    /* Apply ice particle vortex losses using parameterization from 
+     * large-eddy simulations */
+    /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not just
+     * user-specified input */
+    const double iceNumFrac = aircraft.VortexLosses( EI.getSoot(), EI.getSootRad(), \
+                                                     Input_Opt.MET_DEPTH );
+    iceAer.scalePdf( iceNumFrac );
+
+    const double semiYaxis = 0.5*aircraft.deltaz1();
+    const double semiXaxis = areaPlume/(physConst::PI*0.5*aircraft.deltaz1());
 
 
     /* Liquid aerosol considerations */
@@ -666,7 +674,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     unsigned int iRing = 0;
 
     /* Create cluster of rings */
-    Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), semiXaxis, semiYaxis, 0.0, 0.0 );
+    Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), semiXaxis, semiYaxis );
 
     /* Number of rings */
     const unsigned int nRing = ringCluster.getnRing();
@@ -762,23 +770,23 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
         std::cout << "\n ## EMISSIONS:";
         std::cout << "\n ##\n";
-        std::cout << " ## - E_CO2 = " << std::setw(txtWidth+3) << EI.getCO2() * aircraft.getFuelFlow() / aircraft.getVFlight()           << " [kg(CO2)/km]"\
+        std::cout << " ## - E_CO2 = " << std::setw(txtWidth+3) << EI.getCO2() * aircraft.FuelFlow() / aircraft.VFlight()           << " [kg(CO2)/km]"\
             " ( EI  = " << std::setw(txtWidth) << EI.getCO2() * 1.00E-03 << " [kg/kg_fuel] )\n";
-        std::cout << " ## - E_CO  = " << std::setw(txtWidth+3) << EI.getCO()  * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(CO) /km]"\
+        std::cout << " ## - E_CO  = " << std::setw(txtWidth+3) << EI.getCO()  * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 << " [ g(CO) /km]"\
             " ( EI  = " << std::setw(txtWidth) << EI.getCO()             << " [ g/kg_fuel] )\n";
-        std::cout << " ## - E_CH4 = " << std::setw(txtWidth+3) << EI.getCH4() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+06 << " [mg(CH4)/km]"\
+        std::cout << " ## - E_CH4 = " << std::setw(txtWidth+3) << EI.getCH4() * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+06 << " [mg(CH4)/km]"\
             " ( EI  = " << std::setw(txtWidth) << EI.getCH4() * 1.00E+03 << " [mg/kg_fuel] )\n";
         std::cout << " ## - E_NOx = " << std::setw(txtWidth+3) << ( EI.getNO() / MW_NO + EI.getNO2() / MW_NO2 + EI.getHNO2() / MW_HNO2 ) * MW_N \
-                                                  * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(N)  /km]"\
+                                                  * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 << " [ g(N)  /km]"\
             " ( EI  = " << std::setw(txtWidth) << EI.getNOx()            << " [ g/kg_fuel] )\n";
-        std::cout << " ## - E_SO2 = " << std::setw(txtWidth+3) << EI.getSO2() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(SO2)/km]"\
+        std::cout << " ## - E_SO2 = " << std::setw(txtWidth+3) << EI.getSO2() * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 << " [ g(SO2)/km]"\
             " ( EI  = " << std::setw(txtWidth) << EI.getSO2()            << " [ g/kg_fuel] )\n";
         std::cout << " ##                                   ( FSC = " << std::setw(txtWidth) << JetA.getFSC() << " [-]          )\n";
-        std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 << " [ g(Soo)/km]"\
+        std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 << " [ g(Soo)/km]"\
             " ( EI  = " << std::setw(txtWidth) << EI.getSoot()* 1.00E+03 << " [mg/kg_fuel] )\n";
-        std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.getFuelFlow() / aircraft.getVFlight() * 1.0E+03 / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) << " [ #(Soo)/km]"\
+        std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) << " [ #(Soo)/km]"\
             " ( GMD = " << std::setw(txtWidth) << 2.0 * EI.getSootRad() * 1.0E+09 << " [nm]         )\n";
-        std::cout << " ## - Fflow = " << std::setw(txtWidth+3) << aircraft.getFuelFlow() << " [      kg/s]\n";
+        std::cout << " ## - Fflow = " << std::setw(txtWidth+3) << aircraft.FuelFlow() << " [      kg/s]\n";
 
         std::cout << "\n ## AEROSOLS:";
         std::cout << "\n ##\n";
@@ -1133,7 +1141,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-        /* Compute the cosize of solar zenith angle midway through the integration step */
+        /* Compute the cosine of solar zenith angle midway through the integration step */
         sun->Update( curr_Time_s + dt/2 );
 
         /* Store cosine of solar zenith angle */
@@ -1184,7 +1192,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             if ( CHEMISTRY ) {
 
                 /* In-ring chemistry */
-                for ( iRing = 0; iRing < nRing ; iRing++ ) {
+                for ( iRing = 0; iRing < nRing; iRing++ ) {
 
                     /* Convert ring structure to KPP inputs (VAR and FIX) */
                     ringSpecies.getData( VAR, FIX, nTime + 1, iRing );
@@ -2059,7 +2067,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             /* ----------------------------------------------------------------------- */
             /* ======================================================================= */
 
-            /* Compute the cosize of solar zenith angle midway through the integration step */
+            /* Compute the cosine of solar zenith angle midway through the integration step */
             sun->Update( curr_Time_s + dt/2 );
 
             /* Store cosine of solar zenith angle */

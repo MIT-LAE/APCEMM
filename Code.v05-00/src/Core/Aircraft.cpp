@@ -24,42 +24,46 @@ Aircraft::Aircraft( const char *aircraftName, double temperature_K, double press
 {
     /* Constructor */
 
-    Name = aircraftName;
+    Name_ = aircraftName;
 
-    if ( Name.compare( "B747" ) >= 0 ) {
+    if ( Name_.compare( "B747" ) >= 0 ) {
         /* Flight characteristics */
-        vFlight_ms = 250.0;
-        machNumber = vFlight_ms / sqrt( physConst::GAMMA_Air * physConst::R_Air * temperature_K );
+        vFlight_ms_ = 250.0;
+        machNumber_ = vFlight_ms_ \
+                    / sqrt( physConst::GAMMA_Air * physConst::R_Air * temperature_K );
 
         /* Engine characteristics */
         const char *engineName = "GEnx-2B67B";
-        engine = Engine( engineName, temperature_K, pressure_Pa, relHumidity_w, machNumber );
-        engNumber = 4;
+        engine_ = Engine( engineName, temperature_K, pressure_Pa, \
+                          relHumidity_w, machNumber_ );
+        engNumber_ = 4;
 
         /* Dimensions */
-        wingSpan = 69.8; /* [m] */
+        wingspan_ = 69.8; /* [m] */
 
         /* Weight */
-        MTOW = 404.810E+03; /* [kg] */
-        currMass = 0.9 * MTOW; /* [kg] */
+        MTOW_ = 404.810E+03; /* [kg] */
+        currMass_ = 0.9 * MTOW_; /* [kg] */
 
     }
 
-    vortex = Vortex( temperature_K, pressure_Pa, 1.3E-02, wingSpan, currMass, vFlight_ms  );
+    vortex_ = Vortex( temperature_K, pressure_Pa, 1.3E-02, wingspan_, \
+                      currMass_, vFlight_ms_ );
 
 } /* End of Aircraft::Aircraft */
 
 Aircraft::Aircraft( const Aircraft &ac )
 {
 
-    Name = ac.Name;
-    vFlight_ms = ac.vFlight_ms;
-    machNumber = ac.machNumber;
-    wingSpan = ac.wingSpan;
-    MTOW = ac.MTOW;
-    currMass = ac.currMass;
-    engine = ac.engine;
-    engNumber = ac.engNumber;
+    Name_       = ac.Name_;
+    vFlight_ms_ = ac.vFlight_ms_;
+    machNumber_ = ac.machNumber_;
+    wingspan_   = ac.wingspan_;
+    MTOW_       = ac.MTOW_;
+    currMass_   = ac.currMass_;
+    engine_     = ac.engine_;
+    engNumber_  = ac.engNumber_;
+    vortex_     = ac.vortex_;
 
 } /* End of Aircraft::Aircraft */
 
@@ -69,105 +73,124 @@ Aircraft& Aircraft::operator=( const Aircraft &ac )
     if ( &ac == this )
         return *this;
 
-    Name = ac.Name;
-    vFlight_ms = ac.vFlight_ms;
-    machNumber = ac.machNumber;
-    wingSpan = ac.wingSpan;
-    MTOW = ac.MTOW;
-    currMass = ac.currMass;
-    engine = ac.engine;
-    engNumber = ac.engNumber;
+    Name_       = ac.Name_;
+    vFlight_ms_ = ac.vFlight_ms_;
+    machNumber_ = ac.machNumber_;
+    wingspan_   = ac.wingspan_;
+    MTOW_       = ac.MTOW_;
+    currMass_   = ac.currMass_;
+    engine_     = ac.engine_;
+    engNumber_  = ac.engNumber_;
+    vortex_     = ac.vortex_;
     return *this;
 
 } /* End of Aircraft::operator= */
+
 Aircraft::~Aircraft( )
 {
     /* Destructor */
 
 } /* End of Aircraft::~Aircraft */
 
-std::string Aircraft::getName() const
+double Aircraft::VortexLosses( const double EI_Soot, const double EI_SootRad, \
+                               const double wetDepth )
 {
 
-    return Name;
+    /* This function computes the fraction of contrail ice particles lost in
+     * the vortex sinking phase because of turbulent sublimation.
+     * This fraction is computed according to a parameterization derived from
+     * large-eddy simulations and described in: 
+     * Unterstrasser, Simon. "Properties of young contrails–a parametrisation based on large-eddy simulations."
+     * Atmospheric Chemistry and Physics 16.4 (2016): 2059-2082.
+     * */
 
-} /* End of Aircraft::getName */
+    /* Debug flag? */
+    const bool DEBUG = 0;
 
-double Aircraft::getVFlight() const
-{
+    /* Compute volume and mass of soot particles emitted */
+    const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 );
+    const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03;
 
-    return vFlight_ms;
+    /* Declare and initialize remaining fraction of ice crystals */
+    double iceNumFrac = 0.0E+00;
 
-} /* End of Aircraft::getVFlight */
+    /* Declare and initialize each length scales */
+    double z_Atm   = 0.0E+00;
+    double z_Emit  = 0.0E+00;
+    double z_Desc  = 0.0E+00;
+    double z_Delta = 0.0E+00;
 
-double Aircraft::getMach() const
-{
+    /* Exponents */
+    const double gamma_Atm  = 0.18;
+    const double gamma_Emit = 0.18;
 
-    return machNumber;
+    /* Fitting coefficients */
+    const double beta_0  = +0.40;
+    const double beta_1  = +1.19;
+    const double alpha_0 = -1.35;
 
-} /* End of Aircraft::getMach */
+    /* Scaling for particle number */
+    const double EIice_ref = 2.8E+14; /* [#/kg_fuel] */
 
-double Aircraft::getWingSpan() const
-{
+    /* Number of particles emitted */
+    const double EIice     = EI_Soot / massParticle; /* [#/kg_fuel] */
 
-    return wingSpan;
+    /* z_Atm = Depth of the supersaturated layer */
+    z_Atm  = wetDepth;
 
-} /* End of Aircraft::getWingSpan */
+    /* z_Desc = Vertical displacement of the wake vortex */
+    z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 );
 
-double Aircraft::getMTOW() const
-{
+    /* z_Emit = ... 
+     * z_Emit is not implemented yet as z_Emit << z_Desc */
+    z_Emit = 0.0E+00;
 
-    return MTOW;
+    /* ==================================== */
+    /* ... Parameterization starts here ... */
+    /* ==================================== */
 
-} /* End of Aircraft::getMTOW */
+    const double alpha_Atm  = +1.70 * pow( EIice / EIice_ref, -gamma_Atm  );
+    const double alpha_Emit = +1.15 * pow( EIice / EIice_ref, -gamma_Emit );\
+    const double alpha_Desc = -0.60;
 
-double Aircraft::getCurrMass() const
-{
+    /* Combine each length scale into a single variable, zDelta, expressed in m. */
+    z_Delta = + alpha_Atm  * z_Atm  \
+              + alpha_Emit * z_Emit \
+              + alpha_Desc * z_Desc;
 
-    return currMass;
+    iceNumFrac = beta_0 + beta_1 / physConst::PI * atan( alpha_0 + z_Delta / 1.0E+02 );
 
-} /* End of Aircraft::currMass */
 
-Engine Aircraft::getEngine() const
-{
+    if ( DEBUG ) {
+        std::cout << "----------------- DEBUG -----------------" << std::endl;
+        std::cout << "In Aircraft::VortexLosses: " << std::endl;
+        std::cout << "alpha_Atm  = " << alpha_Atm  << std::endl;
+        std::cout << "alpha_Emit = " << alpha_Emit << std::endl;
+        std::cout << "alpha_Desc = " << alpha_Desc << std::endl;
+        std::cout << "z_Atm      = " << z_Atm   << " [m]" << std::endl;
+        std::cout << "z_Emit     = " << z_Emit  << " [m]" << std::endl;
+        std::cout << "z_Desc     = " << z_Desc  << " [m]" << std::endl;
+        std::cout << "z_Delta    = " << z_Delta << " [m]" << std::endl;
+        std::cout << "rem. frac. = " << iceNumFrac << " [-]" << std::endl;
+    }
 
-    return engine;
+    if ( ( iceNumFrac < 0.1E+00 ) || ( iceNumFrac > 1.0E+00 ) ) {
+        /* If we lose more than 90% of the initial number of ice
+         * crystals, then print warning */
+        std::cout << "In Aircraft::VortexLosses: ";
+        std::cout << "iceNumFrac = " << iceNumFrac << std::endl;
+        iceNumFrac = std::min( std::max( iceNumFrac, 0.0E+00 ), 1.0E+00 );
+    }
 
-} /* End of Aircraft::getEngine */
+    return iceNumFrac;
 
-double Aircraft::getFuelFlow() const
-{
-
-    return engine.getFuelFlow() * engNumber;
-
-} /* End of Aircraft::getFuelFlow() */
-
-unsigned int Aircraft::getEngNumber() const
-{
-
-    return engNumber;
-
-} /* End of Aircraft::getEngNumber */
-
-double Aircraft::getVortexdeltaz1() const
-{
-
-    return vortex.getdeltaz1();
-
-} /* End of Aircraft::getVortexDeltaz1 */
-
-double Aircraft::getVortexdeltazw() const
-{
-
-    return vortex.getdeltazw();
-
-} /* End of Aircraft::getVortexDeltazw */
+} /* End of Aircraft::VortexLosses */
 
 void Aircraft::setEI_NOx(const double NOx)
 {
 
     if ( NOx > 0.0E+00 )
-        engine.setEI_NOx(NOx);
+        engine_.setEI_NOx(NOx);
 
 } /* End of Aircraft::setEI_NOx */
 
@@ -175,7 +198,7 @@ void Aircraft::setEI_CO(const double CO)
 {
 
     if ( CO > 0.0E+00 )
-        engine.setEI_CO(CO);
+        engine_.setEI_CO(CO);
 
 } /* End of Aircraft::setEI_CO */
 
@@ -183,7 +206,7 @@ void Aircraft::setEI_HC(const double HC)
 {
 
     if ( HC > 0.0E+00 )
-        engine.setEI_HC(HC);
+        engine_.setEI_HC(HC);
 
 } /* End of Aircraft::setEI_HC */
 
@@ -191,7 +214,7 @@ void Aircraft::setEI_Soot(const double Soot)
 {
 
     if ( Soot > 0.0E+00 )
-        engine.setEI_Soot(Soot);
+        engine_.setEI_Soot(Soot);
 
 } /* End of Aircraft::setEI_Soot */
 
@@ -199,7 +222,7 @@ void Aircraft::setSootRad(const double sootRad)
 {
 
     if ( sootRad > 0.0E+00 )
-        engine.setSootRad(sootRad);
+        engine_.setSootRad(sootRad);
 
 } /* End of Aircraft::setSootRad */
 
@@ -207,7 +230,7 @@ void Aircraft::setFuelFlow(const double ff)
 {
 
     if ( ff > 0.0E+00 )
-        engine.setFuelFlow(ff / engNumber);
+        engine_.setFuelFlow(ff / engNumber_);
 
 
 } /* End of Aircraft::setFuelFlow */
@@ -229,35 +252,35 @@ void Aircraft::Debug( ) const
     std::cout << "Value";
     std::cout << std::setw(12);
     std::cout << "Units" << "\n";
-    std::cout << "  -Aircraft Name          : " << Name << "\n";
-    std::cout << "  -Aircraft Engine Number : " << engNumber << "\n";
-    std::cout << "  -Aircraft Flight Speed  : " << vFlight_ms << "         [ m/s ]" << "\n";
-    std::cout << "  -Aircraft Mach Number   : " << machNumber << "     [ - ]" << "\n";
-    std::cout << "  -Aircraft WingSpan      : " << wingSpan << "        [ m ]" << "\n";
-    std::cout << "  -Aircraft MTOW          : " << MTOW << "  [ kg ]" << "\n";
-    std::cout << "  -Aircraft Current Mass  : " << currMass << "  [ kg ]" << "\n";
+    std::cout << "  -Aircraft Name          : " << Name_ << "\n";
+    std::cout << "  -Aircraft Engine Number : " << engNumber_ << "\n";
+    std::cout << "  -Aircraft Flight Speed  : " << vFlight_ms_ << "         [ m/s ]" << "\n";
+    std::cout << "  -Aircraft Mach Number   : " << machNumber_ << "     [ - ]" << "\n";
+    std::cout << "  -Aircraft Wingspan      : " << wingspan_ << "        [ m ]" << "\n";
+    std::cout << "  -Aircraft MTOW          : " << MTOW_ << "  [ kg ]" << "\n";
+    std::cout << "  -Aircraft Current Mass  : " << currMass_ << "  [ kg ]" << "\n";
     std::cout << " --- \n";
-    std::cout << "      +Engine Name        : " << engine.getName() << "\n";
-    std::cout << "      +Engine EI NOx      : " << engine.getEI_NOx() << "      [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI NO       : " << engine.getEI_NO() << "      [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI NO2      : " << engine.getEI_NO2() << "      [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI HNO2     : " << engine.getEI_HNO2() << "     [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI CO       : " << engine.getEI_CO() << "      [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI HC       : " << engine.getEI_HC() << "   [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI Soot     : " << engine.getEI_Soot() << "        [ g/kg ]" << "\n";
-    std::cout << "      +Engine SootRad     : " << engine.getSootRad() << "       [ m ]" << "\n";
-    std::cout << "      +Engine FuelFlow    : " << engine.getFuelFlow() << "         [ kg/s ]" << "\n";
-    std::cout << "      +Engine theta       : " << engine.getTheta() << "     [ - ]" << "\n";
-    std::cout << "      +Engine delta       : " << engine.getDelta() << "     [ - ]" << "\n";
+    std::cout << "      +Engine Name        : " << engine_.getName() << "\n";
+    std::cout << "      +Engine EI NOx      : " << engine_.getEI_NOx() << "      [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI NO       : " << engine_.getEI_NO() << "      [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI NO2      : " << engine_.getEI_NO2() << "      [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI HNO2     : " << engine_.getEI_HNO2() << "     [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI CO       : " << engine_.getEI_CO() << "      [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI HC       : " << engine_.getEI_HC() << "   [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI Soot     : " << engine_.getEI_Soot() << "        [ g/kg ]" << "\n";
+    std::cout << "      +Engine SootRad     : " << engine_.getSootRad() << "       [ m ]" << "\n";
+    std::cout << "      +Engine FuelFlow    : " << engine_.getFuelFlow() << "         [ kg/s ]" << "\n";
+    std::cout << "      +Engine theta       : " << engine_.getTheta() << "     [ - ]" << "\n";
+    std::cout << "      +Engine delta       : " << engine_.getDelta() << "     [ - ]" << "\n";
     std::cout << " --- \n";
-    std::cout << "      +Wake vortex separation : " << vortex.getb() << "   [ m ]" << "\n";
-    std::cout << "      +Initial circulation    : " << vortex.getgamma() << "   [ m^2/s ]" << "\n";
-    std::cout << "      +Wake eff. time scale   : " << vortex.gett() << "    [ s ]" << "\n";
-    std::cout << "      +Initial velocity scale : " << vortex.getw() << "   [ m/s ]" << "\n";
-    std::cout << "      +Normalized dissip. rate: " << vortex.geteps() << " [ - ]" << "\n";
-    std::cout << "      +Max. downwash displace.: " << vortex.getdeltazw() << "   [ m ]" << "\n";
-    std::cout << "      +Mean downwash displace.: " << vortex.getdeltaz1() << "   [ m ]" << "\n";
-    std::cout << "      +Initial contrail depth : " << vortex.getD1() << "   [ m ]" << "\n";
+    std::cout << "      +Wake vortex separation : " << vortex_.b() << "   [ m ]" << "\n";
+    std::cout << "      +Initial circulation    : " << vortex_.gamma() << "   [ m^2/s ]" << "\n";
+    std::cout << "      +Wake eff. time scale   : " << vortex_.t() << "    [ s ]" << "\n";
+    std::cout << "      +Initial velocity scale : " << vortex_.w() << "   [ m/s ]" << "\n";
+    std::cout << "      +Normalized dissip. rate: " << vortex_.eps_star() << " [ - ]" << "\n";
+    std::cout << "      +Max. downwash displace.: " << vortex_.delta_zw() << "   [ m ]" << "\n";
+    std::cout << "      +Mean downwash displace.: " << vortex_.delta_z1() << "   [ m ]" << "\n";
+    std::cout << "      +Initial contrail depth : " << vortex_.D1() << "   [ m ]" << "\n";
     std::cout << "\n";
     std::cout << "\n";
 

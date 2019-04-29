@@ -1098,8 +1098,8 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
     double E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
     double E_Soot;
     const double rad = EI.getSootRad();
-    const double fuelPerDist = AC.getFuelFlow() / AC.getVFlight();
-    /* Unit check:  [kg/m]   =   [kg fuel/s]    /     [m/s] */
+    const double fuelPerDist = AC.FuelFlow() / AC.VFlight();
+    /* Unit check:  [kg/m]   =   [kg fuel/s] /     [m/s] */
     E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
     /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg]  ) * [kg fuel/m] * [molec/mol]
      *     = [molec/m]

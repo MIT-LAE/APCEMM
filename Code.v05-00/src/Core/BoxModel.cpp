@@ -320,7 +320,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         aircraft.Debug();
 
     /* Aggregate emissions from engine and fuel characteristics */
-    const Emission EI( aircraft.getEngine(), JetA );
+    const Emission EI( aircraft.engine(), JetA );
 
     /* Print Emission Debug? */
     if ( DEBUG_EI_INPUT )
@@ -330,7 +330,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     double E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
     double E_Soot;
     const double rad = EI.getSootRad();
-    const double fuelPerDist = aircraft.getFuelFlow() / aircraft.getVFlight();
+    const double fuelPerDist = aircraft.FuelFlow() / aircraft.VFlight();
     /* Unit check:  [kg/m]   =   [kg fuel/s]    /     [m/s] */
     E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * fuelPerDist * physConst::Na / BOX_AREA * 1.0E-06;
     /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg]  ) * [kg fuel/m] * [molec/mol]   / [m^2]    * [m^3/cm^3]
