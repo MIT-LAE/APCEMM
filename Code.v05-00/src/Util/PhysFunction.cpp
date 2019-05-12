@@ -412,11 +412,10 @@ namespace physFunc
          * OUTPUT PARAMETERS:
          * - RealDouble :: Particle Stokes number */
 
-        if ( r_1 >= r_2 ) {
+        if ( r_1 >= r_2 )
             return vFall( r_2, rho_2, T, P ) * std::abs( vFall( r_1, rho_1, T, P ) - vFall( r_2, rho_2, T, P ) ) / ( r_1 * physConst::g );
-        } else {
+        else
             return vFall( r_1, rho_1, T, P ) * std::abs( vFall( r_2, rho_2, T, P ) - vFall( r_1, rho_1, T, P ) ) / ( r_2 * physConst::g );
-        }
 
     } /* End of Stokes_p */
 
@@ -456,6 +455,7 @@ namespace physFunc
 
         RealDouble s;
         RealDouble E_V, E_A;
+
         if ( r_1 >= r_2 ) {
             /* r_M = r_1 and r_m = r_2 */
             s = Stokes_p( r_2, rho_2, r_1, rho_1, T, P );
@@ -564,7 +564,7 @@ namespace physFunc
         /* alpha represents the deposition coefficient for H2O molecules impinging on the 
          * surface. It is experimentally derived */
 
-        RealDouble alpha = 0.5;
+        static const RealDouble alpha = 0.5;
 
         return DiffCoef_H2O( T, P ) \
             / ( r / ( r + lambda( T, P ) ) \
@@ -592,7 +592,7 @@ namespace physFunc
         /* alpha represents the deposition coefficient for H2SO4 molecules impinging on the 
          * surface. It is experimentally derived */
 
-        RealDouble alpha = 1.0;
+        static const RealDouble alpha = 1.0;
 
         return DiffCoef_H2SO4( T, P ) \
             / ( r / ( r + lambda( T, P ) ) \
@@ -620,7 +620,7 @@ namespace physFunc
         /* alpha represents the deposition coefficient for HNO3 molecules impinging on the 
          * surface. It is experimentally derived */
 
-        RealDouble alpha = 1.0;
+        static const RealDouble alpha = 1.0;
 
         return DiffCoef_HNO3( T, P ) \
             / ( r / ( r + lambda( T, P ) ) \
@@ -649,8 +649,8 @@ namespace physFunc
 
         /* alpha_T is experimentally derived */
 
-        RealDouble k_a = 2.50E-02; /* [J / (m s K)] */
-        RealDouble alpha_T = 0.7;
+        static const RealDouble k_a = 2.50E-02; /* [J / (m s K)] */
+        static const RealDouble alpha_T = 0.7;
 
         return k_a \
             / ( r / ( r + 2.16E-07 ) \
@@ -690,7 +690,7 @@ namespace physFunc
          * (J. Picot et al., Large-eddy simulation of contrail evolution in the vortex phase 
          * and its interaction with atmospheric turbulence, Atmospheric Chemistry and Physics, 2015)*/
 
-        RealDouble a_k = 5.00E-10; /* [m] */
+        static const RealDouble a_k = 5.00E-10; /* [m] */
 
         return exp( a_k / r );
 
