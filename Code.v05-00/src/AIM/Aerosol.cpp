@@ -527,8 +527,8 @@ namespace AIM
     void Aerosol::scalePdf( RealDouble scalFactor )
     {
 
-        if ( scalFactor <= 0 ) {
-            std::cout << "\nIn Aerosol::scalePdf: scaling factor is negative ( " << scalFactor << " <= 0 )\n";
+        if ( scalFactor < 0 ) {
+            std::cout << "\nIn Aerosol::scalePdf: scaling factor is negative ( " << scalFactor << " < 0 )\n";
         }
 
         for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
