@@ -27,9 +27,10 @@ class Cluster
     public:
 
         Cluster( );
-        Cluster( const UInt n, const bool sRing,                   \
-                 const RealDouble sigma1, const RealDouble sigma2, \
-                 const RealDouble d1 = 0.0E+00,                    \
+        Cluster( const UInt n, const bool sRing,    \
+                 const RealDouble sigma1 = 0.0E+00, \
+                 const RealDouble sigma2 = 0.0E+00, \
+                 const RealDouble d1 = 0.0E+00,     \
                  const RealDouble d2 = 0.0E+00 );
         Cluster( const Cluster& cl );
         Cluster& operator=( const Cluster& cl );

@@ -674,7 +674,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     unsigned int iRing = 0;
 
     /* Create cluster of rings */
-    Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), semiXaxis, semiYaxis );
+    //Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), semiXaxis, semiYaxis );
+    Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ) );
 
     /* Number of rings */
     const unsigned int nRing = ringCluster.getnRing();
