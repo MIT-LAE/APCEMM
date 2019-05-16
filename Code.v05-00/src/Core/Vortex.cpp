@@ -113,6 +113,7 @@ Vortex::~Vortex( )
 Vortex::Vortex( const Vortex &v )
 {
 
+    N_BV_     = v.N_BV_;
     b_        = v.b_;
     gamma_    = v.gamma_;
     t_        = v.t_;
@@ -130,6 +131,7 @@ Vortex& Vortex::operator=( const Vortex &v )
     if ( &v == this )
         return *this;
 
+    N_BV_     = v.N_BV_;
     b_        = v.b_;
     gamma_    = v.gamma_;
     t_        = v.t_;
