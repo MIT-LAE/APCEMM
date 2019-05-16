@@ -602,13 +602,15 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         Soot_den *= aircraft.EngNumber() / 2.0;
     }
 
-    /* Apply ice particle vortex losses using parameterization from 
-     * large-eddy simulations */
-    /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not just
-     * user-specified input */
-    const double iceNumFrac = aircraft.VortexLosses( EI.getSoot(), EI.getSootRad(), \
-                                                     Input_Opt.MET_DEPTH );
-    iceAer.scalePdf( iceNumFrac );
+    if ( iceAer.Moment() != 0 ) {
+        /* Apply ice particle vortex losses using parameterization from 
+         * large-eddy simulations */
+        /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not just
+         * user-specified input */
+        const double iceNumFrac = aircraft.VortexLosses( EI.getSoot(), EI.getSootRad(), \
+                                                         Input_Opt.MET_DEPTH );
+        iceAer.scalePdf( iceNumFrac );
+    }
 
     const double semiYaxis = 0.5*aircraft.deltaz1();
     const double semiXaxis = areaPlume/(physConst::PI*0.5*aircraft.deltaz1());
