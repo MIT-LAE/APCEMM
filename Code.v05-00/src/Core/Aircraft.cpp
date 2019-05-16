@@ -139,7 +139,10 @@ double Aircraft::VortexLosses( const double EI_Soot, const double EI_SootRad, \
     z_Atm  = wetDepth;
 
     /* z_Desc = Vertical displacement of the wake vortex */
-    z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 );
+    if ( vortex_.N_BV() < 1.0E-05 )
+        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * 1.3E-02        ), 0.5 );
+    else
+        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 );
 
     /* z_Emit = ... 
      * z_Emit is not implemented yet as z_Emit << z_Desc */
@@ -161,8 +164,13 @@ double Aircraft::VortexLosses( const double EI_Soot, const double EI_SootRad, \
     iceNumFrac = beta_0 + beta_1 / physConst::PI * atan( alpha_0 + z_Delta / 1.0E+02 );
 
 
-    if ( DEBUG ) {
-        std::cout << "----------------- DEBUG -----------------" << std::endl;
+    if ( ( DEBUG ) || ( iceNumFrac < 0.05E+00 ) || ( iceNumFrac > 1.0E+00 ) ) {
+        /* If DEBUG is on or if we lose more than 90% of the initial number of 
+         * ice crystals, then print diagnostic */
+#pragma omp critical
+        {
+        if ( DEBUG )
+            std::cout << "----------------- DEBUG -----------------" << std::endl;
         std::cout << "In Aircraft::VortexLosses: " << std::endl;
         std::cout << "alpha_Atm  = " << alpha_Atm  << std::endl;
         std::cout << "alpha_Emit = " << alpha_Emit << std::endl;
@@ -170,17 +178,17 @@ double Aircraft::VortexLosses( const double EI_Soot, const double EI_SootRad, \
         std::cout << "z_Atm      = " << z_Atm   << " [m]" << std::endl;
         std::cout << "z_Emit     = " << z_Emit  << " [m]" << std::endl;
         std::cout << "z_Desc     = " << z_Desc  << " [m]" << std::endl;
+        std::cout << " -> Gamma  = " << vortex_.gamma() << " [m^2/s]" << std::endl;
+        std::cout << " -> N_BV   = " << vortex_.N_BV()  << " [1/s]" << std::endl;
         std::cout << "z_Delta    = " << z_Delta << " [m]" << std::endl;
         std::cout << "rem. frac. = " << iceNumFrac << " [-]" << std::endl;
+        }
     }
 
-    if ( ( iceNumFrac < 0.1E+00 ) || ( iceNumFrac > 1.0E+00 ) ) {
-        /* If we lose more than 90% of the initial number of ice
-         * crystals, then print warning */
-        std::cout << "In Aircraft::VortexLosses: ";
-        std::cout << "iceNumFrac = " << iceNumFrac << std::endl;
-        iceNumFrac = std::min( std::max( iceNumFrac, 0.0E+00 ), 1.0E+00 );
-    }
+    iceNumFrac = std::min( std::max( iceNumFrac, 0.0E+00 ), 1.0E+00 );
+
+    if ( iceNumFrac == 0.0E+00 )
+        std::cout << "Contrail has fully melted because of vortex-sinking losses" << std::endl;
 
     return iceNumFrac;
 
@@ -252,35 +260,66 @@ void Aircraft::Debug( ) const
     std::cout << "Value";
     std::cout << std::setw(12);
     std::cout << "Units" << "\n";
-    std::cout << "  -Aircraft Name          : " << Name_ << "\n";
-    std::cout << "  -Aircraft Engine Number : " << engNumber_ << "\n";
-    std::cout << "  -Aircraft Flight Speed  : " << vFlight_ms_ << "         [ m/s ]" << "\n";
-    std::cout << "  -Aircraft Mach Number   : " << machNumber_ << "     [ - ]" << "\n";
-    std::cout << "  -Aircraft Wingspan      : " << wingspan_ << "        [ m ]" << "\n";
-    std::cout << "  -Aircraft MTOW          : " << MTOW_ << "  [ kg ]" << "\n";
-    std::cout << "  -Aircraft Current Mass  : " << currMass_ << "  [ kg ]" << "\n";
+    std::cout << "  -Aircraft Name          : ";
+    std::cout << std::setw(10) << Name_ << "\n";
+    std::cout << "  -Aircraft Engine Number : ";
+    std::cout << std::setw(10) << engNumber_ << "\n";
+    std::cout << "  -Aircraft Flight Speed  : ";
+    std::cout << std::setw(10) << vFlight_ms_ << " [ m/s ]" << "\n";
+    std::cout << "  -Aircraft Mach Number   : ";
+    std::cout << std::setw(10) << machNumber_ << " [ - ]" << "\n";
+    std::cout << "  -Aircraft Wingspan      : ";
+    std::cout << std::setw(10) << wingspan_ << " [ m ]" << "\n";
+    std::cout << "  -Aircraft MTOW          : ";
+    std::cout << std::setw(10) << MTOW_ << " [ kg ]" << "\n";
+    std::cout << "  -Aircraft Current Mass  : ";
+    std::cout << std::setw(10) << currMass_ << " [ kg ]" << "\n";
     std::cout << " --- \n";
-    std::cout << "      +Engine Name        : " << engine_.getName() << "\n";
-    std::cout << "      +Engine EI NOx      : " << engine_.getEI_NOx() << "      [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI NO       : " << engine_.getEI_NO() << "      [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI NO2      : " << engine_.getEI_NO2() << "      [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI HNO2     : " << engine_.getEI_HNO2() << "     [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI CO       : " << engine_.getEI_CO() << "      [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI HC       : " << engine_.getEI_HC() << "   [ g/kg ]" << "\n";
-    std::cout << "      +Engine EI Soot     : " << engine_.getEI_Soot() << "        [ g/kg ]" << "\n";
-    std::cout << "      +Engine SootRad     : " << engine_.getSootRad() << "       [ m ]" << "\n";
-    std::cout << "      +Engine FuelFlow    : " << engine_.getFuelFlow() << "         [ kg/s ]" << "\n";
-    std::cout << "      +Engine theta       : " << engine_.getTheta() << "     [ - ]" << "\n";
-    std::cout << "      +Engine delta       : " << engine_.getDelta() << "     [ - ]" << "\n";
+
+    std::cout << "      +Engine Name        : ";
+    std::cout << std::setw(10) << engine_.getName() << "\n";
+    std::cout << "      +Engine EI NOx      : ";
+    std::cout << std::setw(10) << engine_.getEI_NOx() << " [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI NO       : ";
+    std::cout << std::setw(10) << engine_.getEI_NO() << " [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI NO2      : ";
+    std::cout << std::setw(10) << engine_.getEI_NO2() << " [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI HNO2     : ";
+    std::cout << std::setw(10) << engine_.getEI_HNO2() << " [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI CO       : ";
+    std::cout << std::setw(10) << engine_.getEI_CO() << " [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI HC       : ";
+    std::cout << std::setw(10) << engine_.getEI_HC() << " [ g/kg ]" << "\n";
+    std::cout << "      +Engine EI Soot     : ";
+    std::cout << std::setw(10) << engine_.getEI_Soot() << " [ g/kg ]" << "\n";
+    std::cout << "      +Engine SootRad     : ";
+    std::cout << std::setw(10) << engine_.getSootRad() << " [ m ]" << "\n";
+    std::cout << "      +Engine FuelFlow    : ";
+    std::cout << std::setw(10) << engine_.getFuelFlow() << " [ kg/s ]" << "\n";
+    std::cout << "      +Engine theta       : ";
+    std::cout << std::setw(10) << engine_.getTheta() << " [ - ]" << "\n";
+    std::cout << "      +Engine delta       : ";
+    std::cout << std::setw(10) << engine_.getDelta() << " [ - ]" << "\n";
     std::cout << " --- \n";
-    std::cout << "      +Wake vortex separation : " << vortex_.b() << "   [ m ]" << "\n";
-    std::cout << "      +Initial circulation    : " << vortex_.gamma() << "   [ m^2/s ]" << "\n";
-    std::cout << "      +Wake eff. time scale   : " << vortex_.t() << "    [ s ]" << "\n";
-    std::cout << "      +Initial velocity scale : " << vortex_.w() << "   [ m/s ]" << "\n";
-    std::cout << "      +Normalized dissip. rate: " << vortex_.eps_star() << " [ - ]" << "\n";
-    std::cout << "      +Max. downwash displace.: " << vortex_.delta_zw() << "   [ m ]" << "\n";
-    std::cout << "      +Mean downwash displace.: " << vortex_.delta_z1() << "   [ m ]" << "\n";
-    std::cout << "      +Initial contrail depth : " << vortex_.D1() << "   [ m ]" << "\n";
+
+    std::cout << "      +Brunt-Vaisala frequency : ";
+    std::cout << std::setw(10) << vortex_.N_BV() << " [ Hz ]" << "\n";
+    std::cout << "      +Wake vortex separation  : ";
+    std::cout << std::setw(10) << vortex_.b() << " [ m ]" << "\n";
+    std::cout << "      +Initial circulation     : ";
+    std::cout << std::setw(10) << vortex_.gamma() << " [ m^2/s ]" << "\n";
+    std::cout << "      +Wake eff. time scale    : ";
+    std::cout << std::setw(10) << vortex_.t() << " [ s ]" << "\n";
+    std::cout << "      +Initial velocity scale  : ";
+    std::cout << std::setw(10) << vortex_.w() << " [ m/s ]" << "\n";
+    std::cout << "      +Normalized dissip. rate : ";
+    std::cout << std::setw(10) << vortex_.eps_star() << " [ - ]" << "\n";
+    std::cout << "      +Max. downwash displace. : ";
+    std::cout << std::setw(10) << vortex_.delta_zw() << " [ m ]" << "\n";
+    std::cout << "      +Mean downwash displace. : ";
+    std::cout << std::setw(10) << vortex_.delta_z1() << " [ m ]" << "\n";
+    std::cout << "      +Initial contrail depth  : ";
+    std::cout << std::setw(10) << vortex_.D1() << " [ m ]" << "\n";
     std::cout << "\n";
     std::cout << "\n";
 
