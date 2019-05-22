@@ -21,59 +21,95 @@
 
 #include "Core/Engine.hpp"
 #include "Core/Vortex.hpp"
+#include "Util/PhysConstant.hpp"
 
 class Aircraft 
 {
     public:
 
+        /* Constructors */
+
         Aircraft( );
-        Aircraft( const char *aircraftName, double temperature_K, double pressure_Pa, double relHumidity_w );
-        Aircraft( const Aircraft &ac );
-        Aircraft& operator=( const Aircraft &ac ); 
+        Aircraft( const char *aircraftName, RealDouble temperature_K, \
+                  RealDouble pressure_Pa, RealDouble relHumidity_w );
+
+        /* Destructor */
+
         ~Aircraft( );
+
+        /* Copy */
+
+        Aircraft( const Aircraft &ac );
+
+        /* Copy */
+
+        Aircraft& operator=( const Aircraft &ac ); 
+
+        /* Debug */
         void Debug( ) const;
-        std::string getName() const;
-        double getVFlight() const;
-        double getMach() const;
-        double getWingSpan() const;
-        double getMTOW() const;
-        double getCurrMass() const;
-        Engine getEngine() const;
-        double getFuelFlow() const;
-        unsigned int getEngNumber() const;
-        double getVortexdeltaz1() const;
-        double getVortexdeltazw() const;
-        void setEI_NOx(const double NOx);
-        void setEI_CO(const double CO);
-        void setEI_HC(const double HC);
-        void setEI_Soot(const double Soot);
-        void setSootRad(const double sootRad);
-        void setFuelFlow(const double ff);
+
+        /* Compute vortex losses */
+
+        RealDouble VortexLosses( const RealDouble EI_Soot, const RealDouble EI_SootRad, \
+                             const RealDouble wetDepth );
+
+        /* Getters: */
+
+        /* Aircraft name */
+        std::string Name() const { return Name_; }
+        /* Flight velocity */
+        RealDouble VFlight() const { return vFlight_ms_; }
+        /* Mach number */
+        RealDouble Mach() const { return machNumber_; }
+        /* Wingspan */
+        RealDouble Wingspan() const { return wingspan_; }
+        /* Max take-off weight */
+        RealDouble MTOW() const { return MTOW_; }
+        /* Current mass */
+        RealDouble currMass() const { return currMass_; }
+        /* Fuel flow */
+        RealDouble FuelFlow() const { return engine_.getFuelFlow() * engNumber_; }
+        /* Engine number */
+        UInt EngNumber() const { return engNumber_; }
+        /* Mean vertical displacement */
+        RealDouble deltaz1() const { return vortex_.delta_z1(); }
+        /* Maximum vertical displacement */
+        RealDouble deltazw() const { return vortex_.delta_zw(); }
+        /* Engine */
+        Engine engine() const { return engine_; }
+
+        /* Setters for engine properties */
+        void setEI_NOx(const RealDouble NOx);
+        void setEI_CO(const RealDouble CO);
+        void setEI_HC(const RealDouble HC);
+        void setEI_Soot(const RealDouble Soot);
+        void setSootRad(const RealDouble sootRad);
+        void setFuelFlow(const RealDouble ff);
 
         /* Engine */
-        Engine engine;
+        Engine engine_;
 
     protected:
 
         /* Aircraft name */
-        std::string Name;
+        std::string Name_;
 
         /* Flight speed & mach Number */
-        double vFlight_ms;
-        double machNumber;
+        RealDouble vFlight_ms_;
+        RealDouble machNumber_;
 
         /* Dimensions */
-        double wingSpan; /* [m] */
+        RealDouble wingspan_; /* [m] */
 
         /* Weight */
-        double MTOW; /* [kg] */
-        double currMass; /* [kg] */
+        RealDouble MTOW_; /* [kg] */
+        RealDouble currMass_; /* [kg] */
 
         /* Number of engines */
-        unsigned int engNumber;
+        UInt engNumber_;
 
         /* Vortex */
-        Vortex vortex;
+        Vortex vortex_;
 
     private:
 

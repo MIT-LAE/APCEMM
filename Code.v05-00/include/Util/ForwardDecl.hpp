@@ -52,5 +52,7 @@ typedef std::vector<ComplexlDouble> Vector_1Dcl;
 typedef std::vector<Vector_1Dcl> Vector_2Dcl;
 typedef std::vector<Vector_2Dcl> Vector_3Dcl;
 typedef std::vector<Vector_3Dcl> Vector_4Dcl;
+typedef std::vector<UInt> Vector_1Dui;
+typedef std::vector<Vector_1Dui> Vector_2Dui;
 
 #endif /* FORWARDDECL_H_INCLUDED */

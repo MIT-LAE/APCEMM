@@ -215,7 +215,7 @@ namespace SANDS
 
     } /* End of Solver::UpdateShear */
 
-    void Solver::Run( Vector_2D &V, const Vector_2D &cellAreas, const UInt fillOpt_ )
+    void Solver::Run( Vector_2D &V, const Vector_2D &cellAreas, const int fillOpt_ )
     {
 
         RealDouble mass0 = 0.0E+00;
@@ -243,11 +243,11 @@ namespace SANDS
 
         /* 3) Apply corrections */
         /* Fill negative values with fillVal */
-        if ( doFill && fillOpt_ == 0 )
+        if ( doFill && ( fillOpt_ == 0 ) )
             Fill( V, fillVal );
  
         /* Apply correction scheme to get rid of Gibbs oscillations */
-        if ( doFill && fillOpt_ == 1 )
+        if ( doFill && ( fillOpt_ == 1 ) )
             ScinoccaCorr( V, mass0, cellAreas );
 
     } /* End of Solver::Run */

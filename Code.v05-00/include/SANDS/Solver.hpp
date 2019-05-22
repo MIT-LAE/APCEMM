@@ -115,11 +115,11 @@ namespace SANDS
              *
              * @param V (2D vector)         : Field to be diffused 
              * @param cellAreas (2D vector) : Cell areas in m^2
-             * @param fillOpt_ (UInt)       : Fill option
+             * @param fillOpt_ (int)        : Fill option
              */
 
             void Run( Vector_2D &V, const Vector_2D &cellAreas, \
-                      const UInt fillOpt_ = 0 );
+                      const int fillOpt_ = 0 );
 
             /**
              * Fill value below threshold with value

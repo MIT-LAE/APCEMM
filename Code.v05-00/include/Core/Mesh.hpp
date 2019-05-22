@@ -33,6 +33,7 @@ class Mesh
         Mesh( const Mesh &m );
         Mesh& operator=( const Mesh &m );
         void Ring2Mesh( Cluster &c );
+        void MapWeights( );
         const Vector_1D& x( ) const { return x_; }
         const Vector_1D& y( ) const { return y_; }
         const Vector_1D& xE( ) const { return x_e_; }
@@ -41,12 +42,14 @@ class Mesh
         RealDouble totArea( ) const { return totArea_; }
         RealDouble hx( ) const { return hx_; }
         RealDouble hy( ) const { return hy_; }
-        unsigned int Nx() const { return nx; }
-        unsigned int Ny() const { return ny; }
-        std::vector<std::vector<std::vector<bool> > > map( ) const { return RingMeshMap; }
-        std::vector<std::vector<std::pair<unsigned int, unsigned int> > > list() const { return indList; }
-        std::vector<unsigned int> nMap( ) const { return nCellMap; }
+        UInt Nx() const { return nx; }
+        UInt Ny() const { return ny; }
+        const Vector_3D& map( ) const { return weights; }
+        const Vector_1Dui& nMap( ) const { return nCellMap; }
+        const Vector_2Dui& mapIndex( ) const { return mapIndex_; }
         void Debug() const;
+
+        Vector_3D weights;
 
     private:
 
@@ -61,13 +64,14 @@ class Mesh
 
         /* Total area */
         RealDouble totArea_;
+        /* Cell area */
+        RealDouble cellArea_;
 
         RealDouble xlim, ylim_up, ylim_down;
         RealDouble hx_, hy_;
-        unsigned int nx, ny;
-        std::vector<unsigned int> nCellMap;
-        std::vector<std::vector<std::pair<unsigned int, unsigned int> > > indList;
-        std::vector<std::vector<std::vector<bool> > > RingMeshMap;
+        UInt nx, ny;
+        Vector_1Dui nCellMap;
+        Vector_2Dui mapIndex_;
 
 };
 

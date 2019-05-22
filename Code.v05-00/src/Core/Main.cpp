@@ -148,11 +148,11 @@ int main( int , char* )
 
         std::string fullPath, fullPath_ADJ, fullPath_BOX;
         std::stringstream ss, ss_ADJ, ss_BOX;
-        ss     << std::setw(5) << std::setfill('0') << jCase;
+        ss     << std::setw(6) << std::setfill('0') << jCase;
         std::string file     = Input_Opt.SIMULATION_FORWARD_FILENAME + ss.str();
-        ss_ADJ << std::setw(5) << std::setfill('0') << jCase;
+        ss_ADJ << std::setw(6) << std::setfill('0') << jCase;
         std::string file_ADJ = Input_Opt.SIMULATION_ADJOINT_FILENAME + ss_ADJ.str();
-        ss_BOX << std::setw(5) << std::setfill('0') << jCase;
+        ss_BOX << std::setw(6) << std::setfill('0') << jCase;
         std::string file_BOX = Input_Opt.SIMULATION_BOX_FILENAME + ss_BOX.str();
 
         if ( Input_Opt.SIMULATION_OUTPUT_FOLDER.back() == '/' ) {

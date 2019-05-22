@@ -48,6 +48,9 @@ class OptInput
         /* ---- PARAMETER MENU ---------------------- */
         /* ========================================== */
 
+        bool        PARAMETER_FILEINPUT;
+        std::string PARAMETER_FILENAME;
+        int         PARAMETER_FILECASES;
         bool        PARAMETER_PLUMEPROCESS_RANGE;
         std::string PARAMETER_PLUMEPROCESS_UNIT;
         Vector_1D   PARAMETER_PLUMEPROCESS;

@@ -3572,6 +3572,8 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHW"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
             value = relHumidity_i;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHI"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
+            value = input.shear();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Shear"          , 1, "float", "1/s", "Ambient wind shear" );
             value = input.emissionDOY();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Day"   , 1, "int"  , "-"  , "Emission day" );
             value = input.emissionTime();
@@ -3869,7 +3871,38 @@ namespace output
                 delete[] adjArray; adjArray = NULL;
 
             #endif /* DO_SAVE_NOx */
+
+            #if DO_SAVE_NOy
             
+                scalingFactor = TO_PPT;
+                strncpy( charUnit, "ppt", sizeof(charUnit) );
+
+                for ( unsigned int iNt = 0; iNt < NT; iNt++ )
+                    plumeData[iNt] = ringAverage[iNt][ind_NO] + ringAverage[iNt][ind_NO2] + ringAverage[iNt][ind_NO3] + ringAverage[iNt][ind_HNO2] + ringAverage[iNt][ind_HNO3] + ringAverage[iNt][ind_HNO4] + 2 * ringAverage[iNt][ind_N2O5] + ringAverage[iNt][ind_PAN] + ringAverage[iNt][ind_BrNO2] + ringAverage[iNt][ind_BrNO3] + ringAverage[iNt][ind_ClNO2] + ringAverage[iNt][ind_ClNO3] + ringAverage[iNt][ind_PPN] + ringAverage[iNt][ind_N] + ringAverage[iNt][ind_MPN] + ringAverage[iNt][ind_PROPNN] + ringAverage[iNt][ind_PRPN] + ringAverage[iNt][ind_R4N1] + ringAverage[iNt][ind_PRN1] + ringAverage[iNt][ind_R4N2]; 
+
+                std::vector<double> ambientNOy = util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D( util::add1D(util::add1D( util::add1D( util::add1D( util::add1D( ambientData.NO, ambientData.NO2 ), ambientData.NO3 ), ambientData.HNO2 ), ambientData.HNO3 ), ambientData.HNO4 ), ambientData.N2O5 ), ambientData.N2O5 ), ambientData.PAN ), ambientData.BrNO2 ), ambientData.BrNO3 ), ambientData.ClNO2 ), ambientData.ClNO3 ), ambientData.PPN ), ambientData.N ), ambientData.MPN ), ambientData.PROPNN ), ambientData.PRPN ), ambientData.R4N1 ), ambientData.PRN1 ), ambientData.R4N2 );
+                #if ( SAVE_TO_DOUBLE )
+                    spcArray = util::vect2double( plumeData , NT, scalingFactor );
+                    ambArray = util::vect2double( ambientNOy, NT, scalingFactor );
+                #else
+                    spcArray = util::vect2float ( plumeData , NT, scalingFactor );
+                    ambArray = util::vect2float ( ambientNOy, NT, scalingFactor );
+                #endif /* SAVE_TO_DOUBLE */
+
+
+                strncpy( charSpc, "NOy_Plume", sizeof(charSpc) );
+                strncpy( charName, "NOy plume-averaged mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(spcArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                strncpy( charSpc, "NOy_Ambient", sizeof(charSpc) );
+                strncpy( charName, "NOy ambient mixing ratio", sizeof(charName) );
+                didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
+
+                delete[] spcArray; spcArray = NULL;
+                delete[] ambArray; ambArray = NULL;
+                delete[] adjArray; adjArray = NULL;
+
+            #endif /* DO_SAVE_NOy */
 
             if ( didSaveSucceed == NC_SUCCESS ) {
 //                std::cout << " Done saving to netCDF!" << "\n";
@@ -3945,6 +3978,8 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHW"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t water" );
             value = relHumidity_i;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "RHI"            , 1, "float", "-"  , "Ambient Rel. Humidity w.r.t ice" );
+            value = input.shear();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Shear"          , 1, "float", "1/s", "Ambient wind shear" );
             value = input.emissionDOY();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Day"   , 1, "int"  , "-"  , "Emission day" );
             value = input.emissionTime();

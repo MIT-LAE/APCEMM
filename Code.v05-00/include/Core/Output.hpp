@@ -23,10 +23,10 @@
 #define DO_SAVE_PMNN                    0 /* Save PMNN     */
 #define DO_SAVE_N2O                     0 /* Save N2O      */
 #define DO_SAVE_N                       0 /* Save N        */
-#define DO_SAVE_PAN                     1 /* Save PAN      */
+#define DO_SAVE_PAN                     0 /* Save PAN      */
 #define DO_SAVE_ALK4                    0 /* Save ALK4     */
 #define DO_SAVE_MAP                     0 /* Save MAP      */
-#define DO_SAVE_MPN                     1 /* Save MPN      */
+#define DO_SAVE_MPN                     0 /* Save MPN      */
 #define DO_SAVE_Cl2O2                   0 /* Save Cl2O2    */
 #define DO_SAVE_ETP                     0 /* Save ETP      */
 #define DO_SAVE_HNO2                    1 /* Save HNO2     */
@@ -82,7 +82,7 @@
 #define DO_SAVE_PROPNN                  0 /* Save PROPNN   */
 #define DO_SAVE_GLYX                    0 /* Save GLYX     */
 #define DO_SAVE_MAOPO2                  0 /* Save MAOPO2   */
-#define DO_SAVE_CH4                     1 /* Save CH4      */
+#define DO_SAVE_CH4                     0 /* Save CH4      */
 #define DO_SAVE_GAOO                    0 /* Save GAOO     */
 #define DO_SAVE_B3O2                    0 /* Save B3O2     */
 #define DO_SAVE_ACET                    0 /* Save ACET     */
@@ -96,7 +96,7 @@
 #define DO_SAVE_CH3CHOO                 0 /* Save CH3CHOO  */
 #define DO_SAVE_MAN2                    0 /* Save MAN2     */
 #define DO_SAVE_ISNOOA                  0 /* Save ISNOOA   */
-#define DO_SAVE_H2O2                    1 /* Save H2O2     */
+#define DO_SAVE_H2O2                    0 /* Save H2O2     */
 #define DO_SAVE_PRN1                    0 /* Save PRN1     */
 #define DO_SAVE_ETO2                    0 /* Save ETO2     */
 #define DO_SAVE_KO2                     0 /* Save KO2      */
@@ -128,29 +128,29 @@
 #define DO_SAVE_MEK                     0 /* Save MEK      */
 #define DO_SAVE_ClO                     0 /* Save ClO      */
 #define DO_SAVE_MACR                    0 /* Save MACR     */
-#define DO_SAVE_SO2                     1 /* Save SO2      */
+#define DO_SAVE_SO2                     0 /* Save SO2      */
 #define DO_SAVE_MVK                     0 /* Save MVK      */
 #define DO_SAVE_ALD2                    0 /* Save ALD2     */
 #define DO_SAVE_MCO3                    0 /* Save MCO3     */
 #define DO_SAVE_CH2O                    0 /* Save CH2O     */
-#define DO_SAVE_H2O                     1 /* Save H2O      */
+#define DO_SAVE_H2O                     0 /* Save H2O      */
 #define DO_SAVE_H2O_S                   0 /* Save H2O_S    */
 #define DO_SAVE_H2O_L                   0 /* Save H2O_L    */
 #define DO_SAVE_Br                      0 /* Save Br       */
 #define DO_SAVE_NO                      1 /* Save NO       */
-#define DO_SAVE_NO3                     1 /* Save NO3      */
+#define DO_SAVE_NO3                     0 /* Save NO3      */
 #define DO_SAVE_Cl                      0 /* Save Cl       */
 #define DO_SAVE_O                       0 /* Save O        */
 #define DO_SAVE_O1D                     0 /* Save O1D      */
 #define DO_SAVE_O3                      1 /* Save O3       */
-#define DO_SAVE_HO2                     1 /* Save HO2      */
+#define DO_SAVE_HO2                     0 /* Save HO2      */
 #define DO_SAVE_NO2                     1 /* Save NO2      */
-#define DO_SAVE_OH                      1 /* Save OH       */
+#define DO_SAVE_OH                      0 /* Save OH       */
 #define DO_SAVE_HBr                     0 /* Save HBr      */
 #define DO_SAVE_HBr_L                   0 /* Save HBr_L    */
 #define DO_SAVE_HCl                     0 /* Save HCl      */
 #define DO_SAVE_HCl_L                   0 /* Save HCl_L    */
-#define DO_SAVE_CO                      1 /* Save CO       */
+#define DO_SAVE_CO                      0 /* Save CO       */
 #define DO_SAVE_MO2                     0 /* Save MO2      */
 
 #endif /* OUTPUT_H_INCLUDED */
