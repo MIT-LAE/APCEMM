@@ -15,10 +15,14 @@ Turn on adjoint optim.  : T
 Run box model           : T
  => netCDF file name    : APCEMM_BOX_Case_*
 ------------------------+------------------------------------------------------
-%%% PARAMETER SWEEP %%% : (Parameter sweep? needs to be set to "T")
+%%% PARAMETER SWEEP %%% : Parameter sweep? needs to be set to "T". Inputs can
+                          either be passed through a file or declared here.
+Input file?             : F
+ => File name           : /path/to/input/parameters.txt
+------------------------+
 Parameter entries --->  : Format is either 200 220 240 or 200:20:240 (except
                         : for MC runs where it should be 200 240 or 200:240)
- => Plume process. [hr] : 2:2:24
+ => Plume process. [hr] : 24
 Meteorological parameter:
  => Temperature [K]     : 200 220 240
  => R.Hum. wrt water [%]: 30
@@ -76,13 +80,13 @@ Do we have MET input?   : F
  => Met file            : /path/to/met/input
  => Init T from MET?    : F
  => Init H2O form MET?  : F
-- OR -------------------:
+- OR -------------------+
 Impose moist layer depth: T
  => Moist layer depth[m]: 200
---- OR -----------------:
+--- OR -----------------+
 Impose temp. lapse rate : F
  => Lapse rate [K/m]    : -3.0E-03
-------------------------:
+------------------------+
 Add diurnal variations? : T
 ------------------------+------------------------------------------------------
 %%% DIAGNOSTIC MENU %%% :

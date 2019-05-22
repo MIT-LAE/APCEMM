@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <vector>
 #include <cmath>
+#include <iomanip>
 
 #include "Core/Input_Mod.hpp"
 #include "Util/ForwardDecl.hpp"
