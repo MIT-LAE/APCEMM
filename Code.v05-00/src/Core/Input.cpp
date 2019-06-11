@@ -90,7 +90,7 @@ Input::Input( unsigned int iCase,             \
         exit(-1);
     }
 
-    if ( relHumidity_w_ >= 9.50E+01 || pressure_Pa_ <= 0.00E+00 ) {
+    if ( relHumidity_w_ >= 9.50E+01 || relHumidity_w_ <= 0.00E+00 ) {
         std::cout << " In Input::Input:";
         std::cout << " relHumidity_w takes an unrealisable value: relHumidity_w = ";
         std::cout << relHumidity_w_ << " [%]" << std::endl;
