@@ -782,6 +782,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::cout << " ## - E_NOx = " << std::setw(txtWidth+3) << ( EI.getNO() / MW_NO + EI.getNO2() / MW_NO2 + EI.getHNO2() / MW_HNO2 ) * MW_N \
                                                   * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 << " [ g(N)  /km]"\
             " ( EI  = " << std::setw(txtWidth) << EI.getNOx()            << " [ g/kg_fuel] )\n";
+        std::cout << " ## - E_NOx = " << std::setw(txtWidth+3) << ( EI.getNO() / MW_NO + EI.getNO2() / MW_NO2 + EI.getHNO2() / MW_HNO2 ) * MW_NO2 \
+                                                  * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 << " [ g(NO2)/km]\n";
         std::cout << " ## - E_SO2 = " << std::setw(txtWidth+3) << EI.getSO2() * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 << " [ g(SO2)/km]"\
             " ( EI  = " << std::setw(txtWidth) << EI.getSO2()            << " [ g/kg_fuel] )\n";
         std::cout << " ##                                   ( FSC = " << std::setw(txtWidth) << JetA.getFSC() << " [-]          )\n";
