@@ -786,7 +786,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                                                   * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 << " [ g(N)  /km]\n";
         std::cout << " ## - E_SO2 = " << std::setw(txtWidth+3) << EI.getSO2() * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 << " [ g(SO2)/km]"\
             " ( EI  = " << std::setw(txtWidth) << EI.getSO2()            << " [ g/kg_fuel]      )\n";
-        std::cout << " ##                                   ( FSC = " << std::setw(txtWidth) << JetA.getFSC() << " [-]          )\n";
+        std::cout << " ##                                   ( FSC = " << std::setw(txtWidth) << JetA.getFSC() << " [-]               )\n";
         std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 << " [ g(Soo)/km]"\
             " ( EI  = " << std::setw(txtWidth) << EI.getSoot()* 1.00E+03 << " [mg/kg_fuel]      )\n";
         std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) << " [ #(Soo)/km]"\
