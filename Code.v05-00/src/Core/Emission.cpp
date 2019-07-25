@@ -147,11 +147,11 @@ void Emission::Populate_withEngine( const Engine &engine )
 {
 
     /* Gaseous species */
-    /*** Engine characteristics */
-    NOx  = engine.getEI_NOx();
-    NO   = engine.getEI_NO();
-    NO2  = engine.getEI_NO2();
-    HNO2 = engine.getEI_HNO2();
+    /* Engine characteristics */
+    NOx  = engine.getEI_NOx();  /* g(NO2) /kg */
+    NO   = engine.getEI_NO();   /* g(NO)  /kg */
+    NO2  = engine.getEI_NO2();  /* g(NO2) /kg */
+    HNO2 = engine.getEI_HNO2(); /* g(HNO2)/kg */
     CO   = engine.getEI_CO();
     HC   = engine.getEI_HC();
 

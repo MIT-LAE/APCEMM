@@ -44,7 +44,7 @@ Background mix. ratios  :
  => CH4  [ppm]          : 1.76
  => SO2  [ppt]          : 7.25
 Emission indices        :
- => NOx  [g/kg_fuel]    : 10
+ => NOx  [g(NO2)/kg_f]  : 10
  => CO   [g/kg_fuel]    : 1
  => UHC  [g/kg_fuel]    : 0.6
  => SO2  [g/kg_fuel]    : 1.0

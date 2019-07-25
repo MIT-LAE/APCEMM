@@ -6263,7 +6263,15 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back( Input_Opt.PARAMETER_EI_NOX[0] );
         }
 
-        if ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g/kg_fuel" )      == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g/kg_f" )         == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g/kg" )           == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "gNO2/kg_fuel" )   == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "gNO2/kg_f" )      == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "gNO2/kg" )        == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g(NO2)/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g(NO2)/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g(NO2)/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'EI_NOX': ";
@@ -6294,7 +6302,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back( Input_Opt.PARAMETER_EI_CO[0] );
         }
 
-        if ( Input_Opt.PARAMETER_EI_CO_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EI_CO_UNIT.compare( "g/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_CO_UNIT.compare( "g/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_CO_UNIT.compare( "g/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'EI_CO': ";
@@ -6325,7 +6335,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back( Input_Opt.PARAMETER_EI_UHC[0] );
         }
 
-        if ( Input_Opt.PARAMETER_EI_UHC_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EI_UHC_UNIT.compare( "g/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_UHC_UNIT.compare( "g/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_UHC_UNIT.compare( "g/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'EI_UHC': ";
@@ -6356,7 +6368,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back( Input_Opt.PARAMETER_EI_SO2[0] );
         }
 
-        if ( Input_Opt.PARAMETER_EI_SO2_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EI_SO2_UNIT.compare( "g/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SO2_UNIT.compare( "g/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SO2_UNIT.compare( "g/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'EI_SO2': ";
@@ -6422,7 +6436,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back( Input_Opt.PARAMETER_EI_SOOT[0] );
         }
 
-        if ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'EI_SOOT': ";
@@ -6488,7 +6504,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back( Input_Opt.PARAMETER_FF[0] );
         }
 
-        if ( Input_Opt.PARAMETER_FF_UNIT.compare( "kg/s" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_FF_UNIT.compare( "kg_fuel/s" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_FF_UNIT.compare( "kg_f/s" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_FF_UNIT.compare( "kg/s" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'FF': ";
@@ -7955,7 +7973,15 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back(Input_Opt.PARAMETER_EI_NOX[i]);
         }
 
-        if ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g/kg_fuel" )      == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g/kg_f" )         == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g/kg" )           == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "gNO2/kg_fuel" )   == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "gNO2/kg_f" )      == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "gNO2/kg" )        == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g(NO2)/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g(NO2)/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_NOX_UNIT.compare( "g(NO2)/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'EI_NOX': ";
@@ -8006,7 +8032,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back(Input_Opt.PARAMETER_EI_CO[i]);
         }
 
-        if ( Input_Opt.PARAMETER_EI_CO_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EI_CO_UNIT.compare( "g/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_CO_UNIT.compare( "g/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_CO_UNIT.compare( "g/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'EI_CO': ";
@@ -8057,7 +8085,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back(Input_Opt.PARAMETER_EI_UHC[i]);
         }
 
-        if ( Input_Opt.PARAMETER_EI_UHC_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EI_UHC_UNIT.compare( "g/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_UHC_UNIT.compare( "g/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_UHC_UNIT.compare( "g/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'EI_UHC': ";
@@ -8108,7 +8138,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back(Input_Opt.PARAMETER_EI_SO2[i]);
         }
 
-        if ( Input_Opt.PARAMETER_EI_SO2_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EI_SO2_UNIT.compare( "g/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SO2_UNIT.compare( "g/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SO2_UNIT.compare( "g/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'EI_SO2': ";
@@ -8214,7 +8246,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back(Input_Opt.PARAMETER_EI_SOOT[i]);
         }
 
-        if ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_fuel" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'EI_SOOT': ";
@@ -8320,7 +8354,9 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back(Input_Opt.PARAMETER_FF[i]);
         }
 
-        if ( Input_Opt.PARAMETER_FF_UNIT.compare( "kg/s" ) == 0 ) {
+        if ( ( Input_Opt.PARAMETER_FF_UNIT.compare( "kg_fuel/s" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_FF_UNIT.compare( "kg_f/s" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_FF_UNIT.compare( "kg/s" )      == 0 ) ) {
             /* Do nothing. Default unit */
         } else {
             std::cout << " Unknown unit for variable 'FF': ";

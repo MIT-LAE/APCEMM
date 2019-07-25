@@ -215,10 +215,21 @@ Engine::Engine( const char *engineName, double tempe_K, double pres_Pa, double r
 
     EI_NOx *= exp( H ) * pow( pow( delta, 1.02 ) / pow( theta, 3.3 ), 0.5 );
 
-    /* Computing NOx partitioning */
-    EI_NO   = NOxtoNO   * EI_NOx;
+    /* EI_NO in g(NO)/kg:
+     * NOxtoNO is in mole of NO per mole of N
+     * EI_NO = NOxtoNO * EI_NOx / MW_NO2 * MW_NO */
+    EI_NO   = NOxtoNO   * EI_NOx / MW_NO2 * MW_NO;
+
     EI_NO2  = NOxtoNO2  * EI_NOx;
-    EI_HNO2 = NOxtoHNO2 * EI_NOx;
+
+    EI_HNO2 = NOxtoHNO2 * EI_NOx / MW_NO2 * MW_HNO2;
+
+
+    // OLD CODE
+    ///* Computing NOx partitioning */
+    //EI_NO   = NOxtoNO   * EI_NOx;
+    //EI_NO2  = NOxtoNO2  * EI_NOx;
+    //EI_HNO2 = NOxtoHNO2 * EI_NOx;
 
 
     /** Computing engine CO emission index **/
@@ -485,10 +496,17 @@ double Engine::getDelta() const
 
 void Engine::setEI_NOx(const double NOx)
 {
+    /* EI_NOx is in g(NO2)/kg */
     EI_NOx  = NOx;
-    EI_NO   = NOxtoNO   * EI_NOx;
+
+    /* EI_NO in g(NO)/kg:
+     * NOxtoNO is in mole of NO per mole of N
+     * EI_NO = NOxtoNO * EI_NOx / MW_NO2 * MW_NO */
+    EI_NO   = NOxtoNO   * EI_NOx / MW_NO2 * MW_NO;
+
     EI_NO2  = NOxtoNO2  * EI_NOx;
-    EI_HNO2 = NOxtoHNO2 * EI_NOx;
+
+    EI_HNO2 = NOxtoHNO2 * EI_NOx / MW_NO2 * MW_HNO2;
 
 } /* End of Engine::setEI_NOx */
 
