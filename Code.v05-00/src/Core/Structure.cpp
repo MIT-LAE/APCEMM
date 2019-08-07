@@ -1101,10 +1101,12 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
     const double fuelPerDist = AC.FuelFlow() / AC.VFlight();
     /* Unit check:  [kg/m]   =   [kg fuel/s] /     [m/s] */
     E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg]  ) * [kg fuel/m] * [molec/mol]
+    /*     = [g(CO2)/kg f]/ ( [kg/mol]* [g/kg]  ) * [kg fuel/m] * [molec/mol]
      *     = [molec/m]
      */
     E_NO   = EI.getNO()   / ( MW_NO   * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    /*     = [g(NO)/kg f] / ( g(NO)/mol         ) * [kg fuel/m] * [molec/mol]
+     *     = [molec/m] */
     E_NO2  = EI.getNO2()  / ( MW_NO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
     E_HNO2 = EI.getHNO2() / ( MW_HNO2 * 1.0E+03 ) * fuelPerDist * physConst::Na;
     E_CO   = EI.getCO()   / ( MW_CO   * 1.0E+03 ) * fuelPerDist * physConst::Na;

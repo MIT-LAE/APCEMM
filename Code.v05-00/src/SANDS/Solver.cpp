@@ -281,30 +281,31 @@ namespace SANDS
          *     | V                     ,  otherwise 
          *
          * Ensure that mass is conserved by applying correction
-         * V_new = | W + C * ( W - V_low ) * ( V0 - W ),  if W <= V0
+         * V_new = | W + C * ( W - V_low ) * ( V0 - W ),  if V_low <= W <= V0
          *         | W                                 ,  otherwise 
          *
          * In order for mass to be conserved, we need to have:
          * mass0 = \iint V dA = \iint V_new dA
-         *       = \iint W dA + \iint_{W <= V0} C * ( W - V_low ) * ( V0 - W ) dA
-         *       = mass    + C \iint_{W <= V0} ( W - V_low ) * ( V0 - W ) dA
+         *       = \iint W dA + \iint_{Vlow <= W <= V0} C * ( W - V_low ) * ( V0 - W ) dA
+         *       = mass    + C \iint_{Vlow <= W <= V0} ( W - V_low ) * ( V0 - W ) dA
          * and thus,
-         * C = (mass0 - mass) / \iint_{W <= V0} ( W - V_low ) * ( V0 - W ) dA
+         * C = (mass0 - mass) / \iint_{Vlow <= W <= V0} ( W - V_low ) * ( V0 - W ) dA
          * 
          */
 
-        RealDouble mass = 0.0E+00;
-        RealDouble C    = 0.0E+00;
-        RealDouble Vlow = 0.0E+00;
-        RealDouble V0   = 0.0E+00;
+        RealDouble mass    = 0.0E+00;
+        RealDouble C       = 0.0E+00;
+        RealDouble Vlow    = 0.0E+00;
+        RealDouble V0      = 0.0E+00;
+        RealDouble negMass = 0.0E+00;
 
         if ( V[n_y-1][n_x-1] > 0 )
             V0 = V[n_y-1][n_x-1];
         else
             V0 = -V[n_y-1][n_x-1];
 
-        if ( V0 <= 1.00E-100 )
-            V0 = 1.00E-100;
+        if ( V0 <= 1.00E-70 )
+            V0 = 1.00E-70;
 
         Vlow = V0/1.0E+06;
 
@@ -313,21 +314,25 @@ namespace SANDS
                 if ( V[jNy][iNx] <= V0 ) {
                     /* */
                     V[jNy][iNx] = V0 * exp( V[jNy][iNx] / V0 - 1.0 );
-                    /* Mass of element lower than V0 in [V]*[m^2] */
-                    C += ( V[jNy][iNx] - Vlow ) *\
-                         ( V0 - V[jNy][iNx] )   *\
-                         cellAreas[jNy][iNx];
+
+                    if ( V[jNy][iNx] >= Vlow ) {
+                        /* Mass of element between Vlow and V0 in [V]*[m^2] */
+                        C += ( V[jNy][iNx] - Vlow ) *\
+                             ( V0 - V[jNy][iNx] )   *\
+                             cellAreas[jNy][iNx];
+                    }
                 }
-                /* Mass of element after removal of negative values 
+
+                /* Mass of element after removal of low values ( <= V0 )
                  * in [V]*[m^2] */
                 mass += V[jNy][iNx] * cellAreas[jNy][iNx];
             }
         }
 
         if ( C != 0.0E+00 ) {
-            /* Correction factor.
+            /* Correction factor. C should always be <= 0
              * If mass0 == mass, then correction factor is 0. */
-            C  = ( mass0 - mass ) / C;
+            C = ( mass0 - mass ) / C;
         }
 
         /* If correction factor is not finite, set it to 0
@@ -337,14 +342,69 @@ namespace SANDS
 
         for ( UInt jNy = 0; jNy < n_y; jNy++ ) {
             for ( UInt iNx = 0; iNx < n_x; iNx++ ) {
-                if ( V[jNy][iNx] <= V0 ) {
-                    /* Apply correction */
+                if ( ( V[jNy][iNx] <= V0 ) && ( V[jNy][iNx] >= Vlow ) ) {
+
+                    /* Apply correction, this can yield negative values,
+                     * especially if Vlow + C * V0^2 < 0 */
                     V[jNy][iNx] += C * ( V[jNy][iNx] - Vlow ) \
                                      * ( V0 - V[jNy][iNx] );
-                    /* We still want positive values */
-                    if ( V[jNy][iNx] < 0.0E+00 )
-                        V[jNy][iNx] = 0.0E+00;
+
+                    /* We still want positive values, compute negative mass */
+                    if ( V[jNy][iNx] < 0.0E+00 ) {
+                        negMass     -= V[jNy][iNx] * cellAreas[jNy][iNx];
+                        V[jNy][iNx]  = 0.0E+00;
+                    }
+
                 }
+            }
+        }
+
+        if ( negMass > 0.0E+00 ) {
+
+            /* The following lines aim to correct for the mass that has been
+             * removed by clipping negative values.
+             * If this correction were not applied, exact mass correction would not
+             * be ensured. */
+            bool success     = 0;
+            UInt counter     = 0;
+            UInt guess       = n_y*n_x;
+            RealDouble tArea = 0.0E+00;
+
+            while ( !success ) {
+                counter = 0;
+                tArea   = 0.0E+00;
+                for ( UInt jNy = 0; jNy < n_y; jNy++ ) {
+                    for ( UInt iNx = 0; iNx < n_x; iNx++ ) {
+                        if ( V[jNy][iNx] > negMass / ( guess * cellAreas[jNy][iNx] ) ) {
+                            counter += 1;
+                            tArea   += cellAreas[jNy][iNx];
+                        }
+                    }
+                }
+
+                if ( counter >= guess )
+                    success = 1;
+                else
+                    guess  -= (int) n_y*n_x/16;
+
+
+                if ( guess <= 0 ) {
+                    tArea = 0.0E+00;
+                    break;
+                }
+
+            }
+
+            if ( tArea > 0.0E+00 ) {
+                for ( UInt jNy = 0; jNy < n_y; jNy++ ) {
+                    for ( UInt iNx = 0; iNx < n_x; iNx++ ) {
+                        if ( V[jNy][iNx] > negMass / ( guess * cellAreas[jNy][iNx] ) )
+                            V[jNy][iNx] -= negMass / tArea;
+                    }
+                }
+            } else {
+                /* For debugging purposes, uncomment the following line */
+                // std::cout << "tArea = " << tArea << " (dil: " << negMass / cellAreas[1][1] << ")" << std::endl;
             }
         }
 
