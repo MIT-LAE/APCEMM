@@ -97,18 +97,20 @@ Input::Input( unsigned int iCase,             \
         exit(-1);
     }
     
-    if ( horizDiff_ >= 4.00E+01 || horizDiff_ <= 1.00E+00 ) {
+    if ( horizDiff_ >= 4.00E+01 || horizDiff_ < 1.00E+00 ) {
         std::cout << " In Input::Input:";
         std::cout << " horizDiff takes an odd value: horizDiff_ = ";
         std::cout << horizDiff_ << " [m^2/s]" << std::endl;
-        exit(-1);
+        if ( horizDiff_ < 0.00E+00 )
+            exit(-1);
     }
 
-    if ( vertiDiff_ >= 4.00E-01 || vertiDiff_ <= 1.00E-02 ) {
+    if ( vertiDiff_ >= 4.00E-01 || vertiDiff_ < 1.00E-02 ) {
         std::cout << " In Input::Input:";
         std::cout << " vertiDiff takes an odd value: vertiDiff_ = ";
         std::cout << vertiDiff_ << " [m^2/s]" << std::endl;
-        exit(-1);
+        if ( vertiDiff_ < 0.00E+00 )
+            exit(-1);
     }
 
     if ( shear_ >= 5.0E-02 || shear_ < -5.0E-02 ) {
