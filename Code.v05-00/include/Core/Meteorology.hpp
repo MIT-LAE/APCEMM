@@ -15,6 +15,13 @@
 #define METEOROLOGY_H_INCLUDED
 
 #include <iostream>
+#ifdef OMP
+    #include "omp.h"
+#endif /* OMP */
+
+/* Include Parameters.hpp for multithreading option */
+#include "Core/Parameters.hpp"
+
 #include "Util/ForwardDecl.hpp"
 #include "Core/Mesh.hpp"
 #include "Core/Input_Mod.hpp"

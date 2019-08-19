@@ -218,27 +218,40 @@ void Meteorology::Update( const RealDouble solarTime_h, const Mesh &m, \
                           const RealDouble dTrav_x, const RealDouble dTrav_y )
 {
 
+    UInt iNx = 0;
+    UInt jNy = 0;
+
     Vector_1D X = m.x();
     Vector_1D Y = m.y();
 
-    for ( UInt jNy = 0; jNy < Y.size(); jNy++ )
+    diurnalPert = DIURNAL_AMPL * cos( 2.0E+00 * physConst::PI * ( solarTime_h - DIURNAL_PHASE ) / 24.0E+00 );
+
+#pragma omp parallel for                \
+            if      ( !PARALLEL_CASES ) \
+            default ( shared          ) \
+            private ( jNy             ) \
+            schedule( dynamic, 1      )
+    for ( jNy = 0; jNy < Y.size(); jNy++ )
         alt_[jNy] = ALTITUDE + Y[jNy] + dTrav_y;
     met::ISA( alt_, press_ );
     
-    diurnalPert = DIURNAL_AMPL * cos( 2.0E+00 * physConst::PI * ( solarTime_h - DIURNAL_PHASE ) / 24.0E+00 );
-
     /* User defined fields can be set here ! */
 
     if ( TYPE == 1 ) {
         
         /* (quasi-)X-invariant met field: */
 
-        for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
+#pragma omp parallel for                \
+            if      ( !PARALLEL_CASES ) \
+            default ( shared          ) \
+            private ( iNx, jNy        ) \
+            schedule( dynamic, 1      )
+        for ( jNy = 0; jNy < Y.size(); jNy++ ) {
             temp_[jNy][X.size()/2] = TEMPERATURE \
                                    + diurnalPert + LAPSERATE * ( Y[jNy] + dTrav_y );
             /* Unit check: Y [m] * LapseRate [K/m] */
             H2O_[jNy][0] = 0.0E+00;
-            for ( UInt iNx = 0; iNx < X.size(); iNx++ ) {
+            for ( iNx = 0; iNx < X.size(); iNx++ ) {
                 if ( ( X[iNx] < -LEFT ) || ( X[iNx] > RIGHT ) ) {
                     /* Add a 1K depression in that region */
                     temp_[jNy][iNx] = temp_[jNy][X.size()/2] + DELTAT;
@@ -254,9 +267,14 @@ void Meteorology::Update( const RealDouble solarTime_h, const Mesh &m, \
 
         /* RHi bubble centered on x = 0 */
 
-        for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
+#pragma omp parallel for                \
+            if      ( !PARALLEL_CASES ) \
+            default ( shared          ) \
+            private ( iNx, jNy        ) \
+            schedule( dynamic, 1      )
+        for ( jNy = 0; jNy < Y.size(); jNy++ ) {
             H2O_[jNy][0] = 0.0E+00;
-            for ( UInt iNx = 0; iNx < X.size(); iNx++ ) {
+            for ( iNx = 0; iNx < X.size(); iNx++ ) {
                 temp_[jNy][iNx] = TEMPERATURE \
                                +  DELTAT + diurnalPert + LAPSERATE * ( Y[jNy] + dTrav_y ) \
                                - ( DELTAT ) \
@@ -275,7 +293,6 @@ void Meteorology::Update( const RealDouble solarTime_h, const Mesh &m, \
         exit(-1);
 
     }
-
 
 } /* End of Meteorology::UpdateMet */
 
