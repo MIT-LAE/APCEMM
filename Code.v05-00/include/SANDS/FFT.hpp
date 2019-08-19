@@ -16,6 +16,12 @@
 
 #include <iostream>
 #include <cstdlib>
+#ifdef OMP
+    #include "omp.h"
+#endif /* OMP */
+
+/* Include Parameters.hpp for multithreading option */
+#include <Core/Parameters.hpp>
 
 #include <Util/ForwardDecl.hpp>
 #include <fftw3.h>
@@ -55,7 +61,7 @@ class FourierTransform_2D {};
 template <>
 class FourierTransform_1D<float>
 {
-    
+
     /* Typedefs */
     typedef float scalar_type;
     typedef fftwf_complex complex_type;
@@ -65,10 +71,10 @@ class FourierTransform_1D<float>
         /** 
          * Constructor
          *
-         * @param rows_ (unsigned int) : number of rows 
+         * @param rows_ (UInt) : number of rows 
          */
 
-        FourierTransform_1D( const unsigned int rows_ );
+        FourierTransform_1D( const UInt rows_ );
 
         /**
          * Destructor 
@@ -88,81 +94,81 @@ class FourierTransform_1D<float>
          * @param out (1D complex) : output to the FFT
          */
 
-        virtual void Forward( scalar_type* in, complex_type* out ) const;
-        
-        /**
-         * Performs forward 1D Fourier transform of real-valued data
-         * Takes scalar 1D vector as an input and outputs a complex array
-         *
-         * Reuses the FFT plan.
-         *
-         * @param V   (1D scalar)  : input to the FFT
-         * @param out (1D complex) : output to the FFT
-         */
-
-        virtual void Forward( const Vector_1Df &V, complex_type* out ) const;
-
-        /**
-         * Performs backward 1D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a real-valued array
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows
-         *
-         * @param in  (1D complex) : input to the IFFT
-         * @param out (1D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, scalar_type* out ) const;
-        
-        /**
-         * Performs backward 1D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a 1D real-valued vector
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows
-         *
-         * @param in (1D complex) : input to the IFFT
-         * @param V  (1D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, Vector_1Df &V ) const;
-
-        /** 
-         * Scales the input array by 1 / rows 
-         *
-         * @param in (1D scalar) : array to be scaled
-         */
-
-        virtual void Scale( scalar_type* in ) const;
-        
-        /**
-         * Performs backward 1D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a 1D real-valued vector
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows
-         *
-         * @param in (2D complex) : Advection array corresponding to shear
-         * @param V  (2D scalar)  : vector to be "sheared"
-         */
+//        virtual void Forward( scalar_type* in, complex_type* out ) const;
+//
+//        /**
+//         * Performs forward 1D Fourier transform of real-valued data
+//         * Takes scalar 1D vector as an input and outputs a complex array
+//         *
+//         * Reuses the FFT plan.
+//         *
+//         * @param V   (1D scalar)  : input to the FFT
+//         * @param out (1D complex) : output to the FFT
+//         */
+//
+//        virtual void Forward( const Vector_1Df &V, complex_type* out ) const;
+//
+//        /**
+//         * Performs backward 1D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a real-valued array
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows
+//         *
+//         * @param in  (1D complex) : input to the IFFT
+//         * @param out (1D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, scalar_type* out ) const;
+//
+//        /**
+//         * Performs backward 1D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a 1D real-valued vector
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows
+//         *
+//         * @param in (1D complex) : input to the IFFT
+//         * @param V  (1D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, Vector_1Df &V ) const;
+//
+//        /** 
+//         * Scales the input array by 1 / rows 
+//         *
+//         * @param in (1D scalar) : array to be scaled
+//         */
+//
+//        virtual void Scale( scalar_type* in ) const;
+//
+//        /**
+//         * Performs backward 1D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a 1D real-valued vector
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows
+//         *
+//         * @param in (2D complex) : Advection array corresponding to shear
+//         * @param V  (2D scalar)  : vector to be "sheared"
+//         */
 
         virtual void ApplyShear( const Vector_2Dcf &shearFactor, \
                                  Vector_2Df &V ) const;
 
         /* Rows of real and complex data */
-        const unsigned int rows;
+        const UInt rows;
         /* Rows in the complex spectrum */
-        const unsigned int rowsC;
+        const UInt rowsC;
 
         /* Scaling factor */
-        const unsigned int fftScaling;
+        const UInt fftScaling;
 
     private:
-    
+
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;
         complex_type *in_IFFT, *out_FFT;
@@ -177,7 +183,7 @@ class FourierTransform_1D<float>
 template <>
 class FourierTransform_1D<double>
 {
-    
+
     /* Typedefs */
     typedef double scalar_type;
     typedef fftw_complex complex_type;
@@ -187,10 +193,10 @@ class FourierTransform_1D<double>
         /** 
          * Constructor
          *
-         * @param rows_ (unsigned int) : number of rows 
+         * @param rows_ (UInt) : number of rows 
          */
 
-        FourierTransform_1D( const unsigned int rows_ );
+        FourierTransform_1D( const UInt rows_ );
 
         /**
          * Destructor 
@@ -210,81 +216,81 @@ class FourierTransform_1D<double>
          * @param out (1D complex) : output to the FFT
          */
 
-        virtual void Forward( scalar_type* in, complex_type* out ) const;
-        
-        /**
-         * Performs forward 1D Fourier transform of real-valued data
-         * Takes scalar 1D vector as an input and outputs a complex array
-         *
-         * Reuses the FFT plan.
-         *
-         * @param V   (1D scalar)  : input to the FFT
-         * @param out (1D complex) : output to the FFT
-         */
-
-        virtual void Forward( const Vector_1D &V, complex_type* out ) const;
-
-        /**
-         * Performs backward 1D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a real-valued array
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows
-         *
-         * @param in  (1D complex) : input to the IFFT
-         * @param out (1D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, scalar_type* out ) const;
-        
-        /**
-         * Performs backward 1D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a 1D real-valued vector
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows
-         *
-         * @param in (1D complex) : input to the IFFT
-         * @param V  (1D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, Vector_1D &V ) const;
-
-        /** 
-         * Scales the input array by 1 / rows 
-         *
-         * @param in (1D scalar) : array to be scaled
-         */
-
-        virtual void Scale( scalar_type* in ) const;
-        
-        /**
-         * Performs backward 1D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a 1D real-valued vector
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows
-         *
-         * @param in (2D complex) : Advection array corresponding to shear
-         * @param V  (2D scalar)  : vector to be "sheared"
-         */
+//        virtual void Forward( scalar_type* in, complex_type* out ) const;
+//
+//        /**
+//         * Performs forward 1D Fourier transform of real-valued data
+//         * Takes scalar 1D vector as an input and outputs a complex array
+//         *
+//         * Reuses the FFT plan.
+//         *
+//         * @param V   (1D scalar)  : input to the FFT
+//         * @param out (1D complex) : output to the FFT
+//         */
+//
+//        virtual void Forward( const Vector_1D &V, complex_type* out ) const;
+//
+//        /**
+//         * Performs backward 1D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a real-valued array
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows
+//         *
+//         * @param in  (1D complex) : input to the IFFT
+//         * @param out (1D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, scalar_type* out ) const;
+//
+//        /**
+//         * Performs backward 1D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a 1D real-valued vector
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows
+//         *
+//         * @param in (1D complex) : input to the IFFT
+//         * @param V  (1D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, Vector_1D &V ) const;
+//
+//        /** 
+//         * Scales the input array by 1 / rows 
+//         *
+//         * @param in (1D scalar) : array to be scaled
+//         */
+//
+//        virtual void Scale( scalar_type* in ) const;
+//
+//        /**
+//         * Performs backward 1D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a 1D real-valued vector
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows
+//         *
+//         * @param in (2D complex) : Advection array corresponding to shear
+//         * @param V  (2D scalar)  : vector to be "sheared"
+//         */
 
         virtual void ApplyShear( const Vector_2Dc &shearFactor, \
                                  Vector_2D &V ) const;
 
         /* Rows of real and complex data */
-        const unsigned int rows;
+        const UInt rows;
         /* Rows in the complex spectrum */
-        const unsigned int rowsC;
+        const UInt rowsC;
 
         /* Scaling factor */
-        const unsigned int fftScaling;
+        const UInt fftScaling;
 
     private:
-    
+
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;
         complex_type *in_IFFT, *out_FFT;
@@ -299,7 +305,7 @@ class FourierTransform_1D<double>
 template <>
 class FourierTransform_1D<long double>
 {
-    
+
     /* Typedefs */
     typedef long double scalar_type;
     typedef fftwl_complex complex_type;
@@ -309,10 +315,10 @@ class FourierTransform_1D<long double>
         /** 
          * Constructor
          *
-         * @param rows_ (unsigned int) : number of rows 
+         * @param rows_ (UInt) : number of rows 
          */
 
-        FourierTransform_1D( const unsigned int rows_ );
+        FourierTransform_1D( const UInt rows_ );
 
         /**
          * Destructor 
@@ -332,81 +338,81 @@ class FourierTransform_1D<long double>
          * @param out (1D complex) : output to the FFT
          */
 
-        virtual void Forward( scalar_type* in, complex_type* out ) const;
-        
-        /**
-         * Performs forward 1D Fourier transform of real-valued data
-         * Takes scalar 1D vector as an input and outputs a complex array
-         *
-         * Reuses the FFT plan.
-         *
-         * @param V   (1D scalar)  : input to the FFT
-         * @param out (1D complex) : output to the FFT
-         */
-
-        virtual void Forward( const Vector_1Dl &V, complex_type* out ) const;
-
-        /**
-         * Performs backward 1D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a real-valued array
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows
-         *
-         * @param in  (1D complex) : input to the IFFT
-         * @param out (1D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, scalar_type* out ) const;
-        
-        /**
-         * Performs backward 1D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a 1D real-valued vector
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows
-         *
-         * @param in (1D complex) : input to the IFFT
-         * @param V  (1D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, Vector_1Dl &Vl ) const;
-
-        /** 
-         * Scales the input array by 1 / rows 
-         *
-         * @param in (1D scalar) : array to be scaled
-         */
-
-        virtual void Scale( scalar_type* in ) const;
-        
-        /**
-         * Performs backward 1D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a 1D real-valued vector
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows
-         *
-         * @param in (2D complex) : Advection array corresponding to shear
-         * @param V  (2D scalar)  : vector to be "sheared"
-         */
+//        virtual void Forward( scalar_type* in, complex_type* out ) const;
+//
+//        /**
+//         * Performs forward 1D Fourier transform of real-valued data
+//         * Takes scalar 1D vector as an input and outputs a complex array
+//         *
+//         * Reuses the FFT plan.
+//         *
+//         * @param V   (1D scalar)  : input to the FFT
+//         * @param out (1D complex) : output to the FFT
+//         */
+//
+//        virtual void Forward( const Vector_1Dl &V, complex_type* out ) const;
+//
+//        /**
+//         * Performs backward 1D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a real-valued array
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows
+//         *
+//         * @param in  (1D complex) : input to the IFFT
+//         * @param out (1D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, scalar_type* out ) const;
+//
+//        /**
+//         * Performs backward 1D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a 1D real-valued vector
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows
+//         *
+//         * @param in (1D complex) : input to the IFFT
+//         * @param V  (1D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, Vector_1Dl &Vl ) const;
+//
+//        /** 
+//         * Scales the input array by 1 / rows 
+//         *
+//         * @param in (1D scalar) : array to be scaled
+//         */
+//
+//        virtual void Scale( scalar_type* in ) const;
+//
+//        /**
+//         * Performs backward 1D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a 1D real-valued vector
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows
+//         *
+//         * @param in (2D complex) : Advection array corresponding to shear
+//         * @param V  (2D scalar)  : vector to be "sheared"
+//         */
 
         virtual void ApplyShear( const Vector_2Dcl &shearFactor, \
                                  Vector_2Dl &V ) const;
 
         /* Rows of real and complex data */
-        const unsigned int rows;
+        const UInt rows;
         /* Rows in the complex spectrum */
-        const unsigned int rowsC;
+        const UInt rowsC;
 
         /* Scaling factor */
-        const unsigned int fftScaling;
+        const UInt fftScaling;
 
     private:
-    
+
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;
         complex_type *in_IFFT, *out_FFT;
@@ -431,11 +437,11 @@ class FourierTransform_2D<float>
         /** 
          * Constructor
          *
-         * @param rows_ (unsigned int) : number of rows 
-         * @param cols_ (unsigned int) : number of columns 
+         * @param rows_ (UInt) : number of rows 
+         * @param cols_ (UInt) : number of columns 
          */
 
-        FourierTransform_2D( const unsigned int rows_, const unsigned int cols_ );
+        FourierTransform_2D( const UInt rows_, const UInt cols_ );
 
         /**
          * Destructor 
@@ -455,80 +461,80 @@ class FourierTransform_2D<float>
          * @param out (1D complex) : output to the FFT
          */
 
-        virtual void Forward( scalar_type* in, complex_type* out ) const;
-        
-        /**
-         * Performs forward 2D Fourier transform of real-valued data
-         * Takes scalar 2D vector as an input and outputs a complex array
-         *
-         * Reuses the FFT plan.
-         *
-         * @param V   (2D scalar)  : input to the FFT
-         * @param out (1D complex) : output to the FFT
-         */
-
-        virtual void Forward( const Vector_2Df &V, complex_type* out ) const;
-
-        /**
-         * Performs backward 2D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a real-valued array
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows * cols
-         *
-         * @param in  (1D complex) : input to the IFFT
-         * @param out (1D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, scalar_type* out ) const;
-        
-        /**
-         * Performs backward 2D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a 2D real-valued vector
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows * cols
-         *
-         * @param in (1D complex) : input to the IFFT
-         * @param V  (2D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, Vector_2Df &V ) const;
-
-        /** 
-         * Scales the input array by 1 / (rows * cols) 
-         *
-         * @param in (1D scalar) : array to be scaled
-         */
-
-        virtual void Scale( scalar_type* in ) const;
-
-        /** 
-         * Solves the 2D diffusion-advection equation
-         *
-         * @param DiffFactor (2D scalar)  : diffusion factor for the 2D spectral solver 
-         * @param AdvFactor  (2D complex) : advection factor for the 2D spectral solver 
-         * @param V          (2D scalar)  : vector to be transported
-         */
+//        virtual void Forward( scalar_type* in, complex_type* out ) const;
+//
+//        /**
+//         * Performs forward 2D Fourier transform of real-valued data
+//         * Takes scalar 2D vector as an input and outputs a complex array
+//         *
+//         * Reuses the FFT plan.
+//         *
+//         * @param V   (2D scalar)  : input to the FFT
+//         * @param out (1D complex) : output to the FFT
+//         */
+//
+//        virtual void Forward( const Vector_2Df &V, complex_type* out ) const;
+//
+//        /**
+//         * Performs backward 2D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a real-valued array
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows * cols
+//         *
+//         * @param in  (1D complex) : input to the IFFT
+//         * @param out (1D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, scalar_type* out ) const;
+//
+//        /**
+//         * Performs backward 2D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a 2D real-valued vector
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows * cols
+//         *
+//         * @param in (1D complex) : input to the IFFT
+//         * @param V  (2D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, Vector_2Df &V ) const;
+//
+//        /** 
+//         * Scales the input array by 1 / (rows * cols) 
+//         *
+//         * @param in (1D scalar) : array to be scaled
+//         */
+//
+//        virtual void Scale( scalar_type* in ) const;
+//
+//        /** 
+//         * Solves the 2D diffusion-advection equation
+//         *
+//         * @param DiffFactor (2D scalar)  : diffusion factor for the 2D spectral solver 
+//         * @param AdvFactor  (2D complex) : advection factor for the 2D spectral solver 
+//         * @param V          (2D scalar)  : vector to be transported
+//         */
 
         void SANDS( const Vector_2Df &DiffFactor, \
                     const Vector_2Dcf &AdvFactor, \
                     Vector_2Df &V ) const;
-    
+
         /* Rows of real and complex data */
-        const unsigned int rows;
+        const UInt rows;
         /* Columns of real data only */
-        const unsigned int cols;
+        const UInt cols;
         /* Columns in the complex spectrum */
-        const unsigned int colsC;
+        const UInt colsC;
 
         /* Scaling factor */
-        const unsigned int fftScaling;
+        const UInt fftScaling;
 
     private:
-    
+
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;
         complex_type *in_IFFT, *out_FFT;
@@ -553,11 +559,11 @@ class FourierTransform_2D<double>
         /** 
          * Constructor
          *
-         * @param rows_ (unsigned int) : number of rows 
-         * @param cols_ (unsigned int) : number of columns 
+         * @param rows_ (UInt) : number of rows 
+         * @param cols_ (UInt) : number of columns 
          */
 
-        FourierTransform_2D( const unsigned int rows_, const unsigned int cols_ );
+        FourierTransform_2D( const UInt rows_, const UInt cols_ );
 
         /**
          * Destructor 
@@ -577,80 +583,80 @@ class FourierTransform_2D<double>
          * @param out (1D complex) : output to the FFT
          */
 
-        virtual void Forward( scalar_type* in, complex_type* out ) const;
-        
-        /**
-         * Performs forward 2D Fourier transform of real-valued data
-         * Takes scalar 2D vector as an input and outputs a complex array
-         *
-         * Reuses the FFT plan.
-         *
-         * @param V   (2D scalar)  : input to the FFT
-         * @param out (1D complex) : output to the FFT
-         */
-
-        virtual void Forward( const Vector_2D &V, complex_type* out ) const;
-
-        /**
-         * Performs backward 2D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a real-valued array
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows * cols
-         *
-         * @param in  (1D complex) : input to the IFFT
-         * @param out (1D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, scalar_type* out ) const;
-        
-        /**
-         * Performs backward 2D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a 2D real-valued vector
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows * cols
-         *
-         * @param in (1D complex) : input to the IFFT
-         * @param V  (2D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, Vector_2D &V ) const;
-
-        /** 
-         * Scales the input array by 1 / (rows * cols) 
-         *
-         * @param in (1D scalar) : array to be scaled
-         */
-
-        virtual void Scale( scalar_type* in ) const;
-
-        /** 
-         * Solves the 2D diffusion-advection equation
-         *
-         * @param DiffFactor (2D scalar)  : diffusion factor for the 2D spectral solver 
-         * @param AdvFactor  (2D complex) : advection factor for the 2D spectral solver 
-         * @param V          (2D scalar)  : vector to be transported
-         */
+//        virtual void Forward( scalar_type* in, complex_type* out ) const;
+//
+//        /**
+//         * Performs forward 2D Fourier transform of real-valued data
+//         * Takes scalar 2D vector as an input and outputs a complex array
+//         *
+//         * Reuses the FFT plan.
+//         *
+//         * @param V   (2D scalar)  : input to the FFT
+//         * @param out (1D complex) : output to the FFT
+//         */
+//
+//        virtual void Forward( const Vector_2D &V, complex_type* out ) const;
+//
+//        /**
+//         * Performs backward 2D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a real-valued array
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows * cols
+//         *
+//         * @param in  (1D complex) : input to the IFFT
+//         * @param out (1D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, scalar_type* out ) const;
+//
+//        /**
+//         * Performs backward 2D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a 2D real-valued vector
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows * cols
+//         *
+//         * @param in (1D complex) : input to the IFFT
+//         * @param V  (2D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, Vector_2D &V ) const;
+//
+//        /** 
+//         * Scales the input array by 1 / (rows * cols) 
+//         *
+//         * @param in (1D scalar) : array to be scaled
+//         */
+//
+//        virtual void Scale( scalar_type* in ) const;
+//
+//        /** 
+//         * Solves the 2D diffusion-advection equation
+//         *
+//         * @param DiffFactor (2D scalar)  : diffusion factor for the 2D spectral solver 
+//         * @param AdvFactor  (2D complex) : advection factor for the 2D spectral solver 
+//         * @param V          (2D scalar)  : vector to be transported
+//         */
 
         void SANDS( const Vector_2D &DiffFactor, \
                     const Vector_2Dc &AdvFactor, \
                     Vector_2D &V ) const;
-    
+
         /* Rows of real and complex data */
-        const unsigned int rows;
+        const UInt rows;
         /* Columns of real data only */
-        const unsigned int cols;
+        const UInt cols;
         /* Columns in the complex spectrum */
-        const unsigned int colsC;
+        const UInt colsC;
 
         /* Scaling factor */
-        const unsigned int fftScaling;
+        const UInt fftScaling;
 
     private:
-    
+
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;
         complex_type *in_IFFT, *out_FFT;
@@ -676,11 +682,11 @@ class FourierTransform_2D<long double>
         /** 
          * Constructor
          *
-         * @param rows_ (unsigned int) : number of rows 
-         * @param cols_ (unsigned int) : number of columns 
+         * @param rows_ (UInt) : number of rows 
+         * @param cols_ (UInt) : number of columns 
          */
 
-        FourierTransform_2D( const unsigned int rows_, const unsigned int cols_ );
+        FourierTransform_2D( const UInt rows_, const UInt cols_ );
 
         /**
          * Destructor 
@@ -700,80 +706,80 @@ class FourierTransform_2D<long double>
          * @param out (1D complex) : output to the FFT
          */
 
-        virtual void Forward( scalar_type* in, complex_type* out ) const;
-        
-        /**
-         * Performs forward 2D Fourier transform of real-valued data
-         * Takes scalar 2D vector as an input and outputs a complex array
-         *
-         * Reuses the FFT plan.
-         *
-         * @param V   (2D scalar)  : input to the FFT
-         * @param out (1D complex) : output to the FFT
-         */
-
-        virtual void Forward( const Vector_2Dl &V, complex_type* out ) const;
-
-        /**
-         * Performs backward 2D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a real-valued array
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows * cols
-         *
-         * @param in  (1D complex) : input to the IFFT
-         * @param out (1D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, scalar_type* out ) const;
-        
-        /**
-         * Performs backward 2D Fourier transform of real-valued data
-         * Takes complex array as an input and outputs a 2D real-valued vector
-         *
-         * Reuses the IFFT plan.
-         *
-         * Results are scaled by rows * cols
-         *
-         * @param in (1D complex) : input to the IFFT
-         * @param V  (2D scalar)  : output to the IFFT
-         */
-
-        virtual void Backward( complex_type* in, Vector_2Dl &V ) const;
-
-        /** 
-         * Scales the input array by 1 / (rows * cols) 
-         *
-         * @param in (1D scalar) : array to be scaled
-         */
-
-        virtual void Scale( scalar_type* in ) const;
-
-        /** 
-         * Solves the 2D diffusion-advection equation
-         *
-         * @param DiffFactor (2D scalar)  : diffusion factor for the 2D spectral solver 
-         * @param AdvFactor  (2D complex) : advection factor for the 2D spectral solver 
-         * @param V          (2D scalar)  : vector to be transported
-         */
+//        virtual void Forward( scalar_type* in, complex_type* out ) const;
+//
+//        /**
+//         * Performs forward 2D Fourier transform of real-valued data
+//         * Takes scalar 2D vector as an input and outputs a complex array
+//         *
+//         * Reuses the FFT plan.
+//         *
+//         * @param V   (2D scalar)  : input to the FFT
+//         * @param out (1D complex) : output to the FFT
+//         */
+//
+//        virtual void Forward( const Vector_2Dl &V, complex_type* out ) const;
+//
+//        /**
+//         * Performs backward 2D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a real-valued array
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows * cols
+//         *
+//         * @param in  (1D complex) : input to the IFFT
+//         * @param out (1D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, scalar_type* out ) const;
+//
+//        /**
+//         * Performs backward 2D Fourier transform of real-valued data
+//         * Takes complex array as an input and outputs a 2D real-valued vector
+//         *
+//         * Reuses the IFFT plan.
+//         *
+//         * Results are scaled by rows * cols
+//         *
+//         * @param in (1D complex) : input to the IFFT
+//         * @param V  (2D scalar)  : output to the IFFT
+//         */
+//
+//        virtual void Backward( complex_type* in, Vector_2Dl &V ) const;
+//
+//        /** 
+//         * Scales the input array by 1 / (rows * cols) 
+//         *
+//         * @param in (1D scalar) : array to be scaled
+//         */
+//
+//        virtual void Scale( scalar_type* in ) const;
+//
+//        /** 
+//         * Solves the 2D diffusion-advection equation
+//         *
+//         * @param DiffFactor (2D scalar)  : diffusion factor for the 2D spectral solver 
+//         * @param AdvFactor  (2D complex) : advection factor for the 2D spectral solver 
+//         * @param V          (2D scalar)  : vector to be transported
+//         */
 
         void SANDS( const Vector_2Dl &DiffFactor, \
                     const Vector_2Dcl &AdvFactor, \
                     Vector_2Dl &V ) const;
-    
+
         /* Rows of real and complex data */
-        const unsigned int rows;
+        const UInt rows;
         /* Columns of real data only */
-        const unsigned int cols;
+        const UInt cols;
         /* Columns in the complex spectrum */
-        const unsigned int colsC;
+        const UInt colsC;
 
         /* Scaling factor */
-        const unsigned int fftScaling;
+        const UInt fftScaling;
 
     private:
-    
+
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;
         complex_type *in_IFFT, *out_FFT;
