@@ -30,35 +30,35 @@ Mesh::Mesh( )
 
     /* Cell center x-coordinates */
     for ( UInt i = 0; i < nx; i++ ) {
-        x_.push_back( (RealDouble) 0.0 );
-        x_[i] = i * hx_ - xlim + hx_ / 2.0;
-        x_e_.push_back( (RealDouble) 0.0 );
-        x_e_[i] = x_[i] - hx_ / 2.0;
+        x_.push_back( i * hx_ - xlim + hx_ / 2.0 );
+        x_e_.push_back( x_[i] - hx_ / 2.0 );
+        if ( i > 0 )
+            dx_.push_back( x_e_[i] - x_e_[i-1] );
     }
-    x_e_.push_back( (RealDouble) 0.0 );
-    x_e_[nx] = x_e_[nx-1] + hx_;
+    x_e_.push_back( x_e_[nx-1] + hx_ );
+    dx_.push_back( x_e_[nx] - x_e_[nx-1] );
     
     /* Cell center y-coordinates */
     for ( UInt j = 0; j < ny; j++ ) {
-        y_.push_back( (RealDouble) 0.0 );
-        y_[j] = j * hy_ - ylim_down + hy_ / 2.0;
-        y_e_.push_back( (RealDouble) 0.0 );
-        y_e_[j] = y_[j] - hy_ / 2.0;
+        y_.push_back( j * hy_ - ylim_down + hy_ / 2.0 );
+        y_e_.push_back( y_[j] - hy_ / 2.0 );
+        if ( j > 0 )
+            dy_.push_back( y_e_[j] - y_e_[j-1] );
     }
-    y_e_.push_back( (RealDouble) 0.0 );
-    y_e_[ny] = y_e_[ny-1] + hy_;
+    y_e_.push_back( y_e_[ny-1] + hy_ );
+    dy_.push_back( y_e_[nx] - y_e_[nx-1] );
 
     totArea_ = 0;
     /* TO CHANGE if mesh is non-uniform */
-    cellArea_ = ( y_e_[1] - y_e_[0] ) * ( x_e_[1] - x_e_[0] );
+    cellArea_ = dy_[0] * dx_[0]; 
+    //        = ( y_e_[1] - y_e_[0] ) * ( x_e_[1] - x_e_[0] );
     totArea_  = ny * nx * cellArea_;
     for ( UInt jNy = 0; jNy < ny; jNy++ ) {
         areas_.push_back( Vector_1D( nx, 0.0 ) );
         for ( UInt iNx = 0; iNx < nx; iNx++ ) {
             areas_[jNy][iNx] = cellArea_;
-            //areas_[jNy][iNx] = ( y_e_[jNy+1] - y_e_[jNy] ) * \
-            //                  ( x_e_[iNx+1] - x_e_[iNx] );
-            ///* Comes down to hx_ * hy_, if mesh is cartesian uniform */
+            //areas_[jNy][iNx] = dy_[jNy] * dx_[iNx];
+            //* Comes down to hx_ * hy_, if mesh is cartesian uniform */
             //totArea_ += areas_[jNy][iNx];
         }
     }
@@ -328,7 +328,6 @@ void Mesh::Ring2Mesh( Cluster &c )
                 nCellMap[iRing] = nCell;
             } else {
                 if ( iRing < nRing ) {
-                    nCellMap[iRing-1] = nCell;
                     nCellMap[iRing]   = nCell;
                 } 
                 else {
