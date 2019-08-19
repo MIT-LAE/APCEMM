@@ -71,10 +71,14 @@ class FourierTransform_1D<float>
         /** 
          * Constructor
          *
-         * @param rows_ (UInt) : number of rows 
+         * @param WISDOM (bool)    : Use FFTW_WISDOM?
+         * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
+         * @param rows_ (UInt)     : number of rows 
          */
 
-        FourierTransform_1D( const UInt rows_ );
+        FourierTransform_1D( const bool WISDOM,    \
+                             const char* FFTW_DIR, \
+                             const UInt rows_ );
 
         /**
          * Destructor 
@@ -193,10 +197,14 @@ class FourierTransform_1D<double>
         /** 
          * Constructor
          *
-         * @param rows_ (UInt) : number of rows 
+         * @param WISDOM (bool)    : Use FFTW_WISDOM?
+         * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
+         * @param rows_ (UInt)     : number of rows 
          */
 
-        FourierTransform_1D( const UInt rows_ );
+        FourierTransform_1D( const bool WISDOM,    \
+                             const char* FFTW_DIR, \
+                             const UInt rows_ );
 
         /**
          * Destructor 
@@ -315,10 +323,14 @@ class FourierTransform_1D<long double>
         /** 
          * Constructor
          *
-         * @param rows_ (UInt) : number of rows 
+         * @param WISDOM (bool)    : Use FFTW_WISDOM?
+         * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
+         * @param rows_ (UInt)     : number of rows 
          */
 
-        FourierTransform_1D( const UInt rows_ );
+        FourierTransform_1D( const bool WISDOM,    \
+                             const char* FFTW_DIR, \
+                             const UInt rows_ );
 
         /**
          * Destructor 
@@ -437,11 +449,16 @@ class FourierTransform_2D<float>
         /** 
          * Constructor
          *
-         * @param rows_ (UInt) : number of rows 
-         * @param cols_ (UInt) : number of columns 
+         * @param WISDOM (bool)    : Use FFTW_WISDOM?
+         * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
+         * @param rows_ (UInt)     : number of rows 
+         * @param cols_ (UInt)     : number of columns 
          */
 
-        FourierTransform_2D( const UInt rows_, const UInt cols_ );
+        FourierTransform_2D( const bool WISDOM,    \
+                             const char* FFTW_DIR, \
+                             const UInt rows_,     \
+                             const UInt cols_ );
 
         /**
          * Destructor 
@@ -559,11 +576,16 @@ class FourierTransform_2D<double>
         /** 
          * Constructor
          *
-         * @param rows_ (UInt) : number of rows 
-         * @param cols_ (UInt) : number of columns 
+         * @param WISDOM (bool)    : Use FFTW_WISDOM?
+         * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
+         * @param rows_ (UInt)     : number of rows 
+         * @param cols_ (UInt)     : number of columns 
          */
 
-        FourierTransform_2D( const UInt rows_, const UInt cols_ );
+        FourierTransform_2D( const bool WISDOM,    \
+                             const char* FFTW_DIR, \
+                             const UInt rows_,     \
+                             const UInt cols_ );
 
         /**
          * Destructor 
@@ -682,11 +704,16 @@ class FourierTransform_2D<long double>
         /** 
          * Constructor
          *
-         * @param rows_ (UInt) : number of rows 
-         * @param cols_ (UInt) : number of columns 
+         * @param WISDOM (bool)    : Use FFTW_WISDOM?
+         * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
+         * @param rows_ (UInt)     : number of rows 
+         * @param cols_ (UInt)     : number of columns 
          */
 
-        FourierTransform_2D( const UInt rows_, const UInt cols_ );
+        FourierTransform_2D( const bool WISDOM,    \
+                             const char* FFTW_DIR, \
+                             const UInt rows_,     \
+                             const UInt cols_ );
 
         /**
          * Destructor 

@@ -50,12 +50,16 @@ namespace SANDS
              *
              * Initialize 2D solver
              *
-             * @param fill (bool)      : Fill negative values?
+             * @param WISDOM (bool)    : Use FFTW_WISDOM? (default = 0)
+             * @param FFTW_DIR (char*) : Path to storage for FFTW (default = "")
+             * @param fill (bool)      : Fill negative values? (default = 1)
              * @param fillVal (double) : Fill with? (default = 0.0E+00) 
              * @param fillOpt (int)    : Fill option
              */
 
-            void Initialize( const bool fill = 1, \
+            void Initialize( const bool WISDOM = 0,                \
+                             const char* FFTW_DIR = "",            \
+                             const bool fill = 1,                  \
                              const RealDouble fillValue = 0.0E+00, \
                              const UInt fillOpt_ = 1 );
 

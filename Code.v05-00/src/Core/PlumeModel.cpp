@@ -117,6 +117,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     const bool SAVE_FORWARD   = Input_Opt.SIMULATION_SAVE_FORWARD;
     const bool ADJOINT        = Input_Opt.SIMULATION_ADJOINT;
     const char* BACKG_FILENAME= Input_Opt.SIMULATION_INPUT_BACKG_COND.c_str();
+    const bool USE_WISDOM     = Input_Opt.SIMULATION_USE_FFTW_WISDOM;
+    const char* FFTW_DIR      = Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION.c_str();
 
     /* ======================================================================= */
     /* ---- Input options from the TRANSPORT MENU ---------------------------- */
@@ -507,8 +509,10 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     #pragma omp critical
     {
         std::cout << "\n Initializing solver..." << std::endl;
-        Solver.Initialize( /* Fill negative values */ FILLNEG, \
-                           fillWith );
+        Solver.Initialize( /* Use FFTW wisdom?     */ USE_WISDOM, \
+                           /* FFTW Directory       */ FFTW_DIR,   \
+                           /* Fill negative values */ FILLNEG,    \
+                           /* Fill with this value */ fillWith );
     }
 
 

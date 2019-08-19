@@ -13,7 +13,9 @@
 
 #include "SANDS/FFT.hpp"
 
-FourierTransform_1D<float>::FourierTransform_1D( const UInt rows_ )
+FourierTransform_1D<float>::FourierTransform_1D( const bool WISDOM,    \
+                                                 const char* FFTW_DIR, \
+                                                 const UInt rows_ )
     :   rows( rows_ ),
         rowsC( rows_/2 + 1 ),
         fftScaling( rows_ )
@@ -22,7 +24,7 @@ FourierTransform_1D<float>::FourierTransform_1D( const UInt rows_ )
     UInt nThreads = 0;
     int wisdomExists = 0;
 
-    std::string fileName = "/net/d04/data/fritzt/APCEMM_Data/";
+    std::string fileName = FFTW_DIR;
     std::string fileName_FFT, fileName_IFFT;
 
     fileName += "FFTW_1Dplan_" + std::to_string(rows);
@@ -56,7 +58,8 @@ FourierTransform_1D<float>::FourierTransform_1D( const UInt rows_ )
     fileName_FFT  = fileName + "_FFT.pl";
     fileName_IFFT = fileName + "_IFFT.pl";
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
 
     /* Create FFT plan and compute the best FFT algorithm */
     if ( wisdomExists )
@@ -71,12 +74,13 @@ FourierTransform_1D<float>::FourierTransform_1D( const UInt rows_ )
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_FFT.c_str() );
     }
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
 
     /* Create IFFT plan and compute the best IFFT algorithm */
     if ( wisdomExists )
@@ -91,7 +95,7 @@ FourierTransform_1D<float>::FourierTransform_1D( const UInt rows_ )
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_IFFT.c_str() );
     }
@@ -233,7 +237,9 @@ void FourierTransform_1D<float>::ApplyShear( const Vector_2Dcf &shearFactor, \
 
 } /* End of FourierTransform_1D<float>::ApplyShear */
 
-FourierTransform_1D<double>::FourierTransform_1D( const UInt rows_ )
+FourierTransform_1D<double>::FourierTransform_1D( const bool WISDOM,    \
+                                                  const char* FFTW_DIR, \
+                                                  const UInt rows_ )
     :   rows( rows_ ),
         rowsC( rows_/2 + 1 ),
         fftScaling( rows_ )
@@ -242,7 +248,7 @@ FourierTransform_1D<double>::FourierTransform_1D( const UInt rows_ )
     UInt nThreads = 0;
     int wisdomExists = 0;
 
-    std::string fileName = "/net/d04/data/fritzt/APCEMM_Data/";
+    std::string fileName = FFTW_DIR;
     std::string fileName_FFT, fileName_IFFT; 
 
     fileName += "FFTW_1Dplan_" + std::to_string(rows);
@@ -278,7 +284,8 @@ FourierTransform_1D<double>::FourierTransform_1D( const UInt rows_ )
     fileName_FFT  = fileName + "_FFT.pl";
     fileName_IFFT = fileName + "_IFFT.pl";
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
 
     /* Create FFT plan and compute the best FFT algorithm */
     if ( wisdomExists )
@@ -293,12 +300,13 @@ FourierTransform_1D<double>::FourierTransform_1D( const UInt rows_ )
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_FFT.c_str() );
     }
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
 
     /* Create IFFT plan and compute the best IFFT algorithm */
     if ( wisdomExists )
@@ -313,7 +321,7 @@ FourierTransform_1D<double>::FourierTransform_1D( const UInt rows_ )
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_IFFT.c_str() );
     }
@@ -455,7 +463,9 @@ void FourierTransform_1D<double>::ApplyShear( const Vector_2Dc &shearFactor, \
 
 } /* End of FourierTransform_1D<double>::ApplyShear */
 
-FourierTransform_1D<long double>::FourierTransform_1D( const UInt rows_ )
+FourierTransform_1D<long double>::FourierTransform_1D( const bool WISDOM,    \
+                                                       const char* FFTW_DIR, \
+                                                       const UInt rows_ )
     :   rows( rows_ ),
         rowsC( rows_/2 + 1 ),
         fftScaling( rows_ )
@@ -464,7 +474,7 @@ FourierTransform_1D<long double>::FourierTransform_1D( const UInt rows_ )
     UInt nThreads = 0;
     int wisdomExists = 0;
 
-    std::string fileName = "/net/d04/data/fritzt/APCEMM_Data/";
+    std::string fileName = FFTW_DIR;
     std::string fileName_FFT, fileName_IFFT; 
 
     fileName += "FFTW_1Dplan_" + std::to_string(rows);
@@ -498,7 +508,8 @@ FourierTransform_1D<long double>::FourierTransform_1D( const UInt rows_ )
     fileName_FFT  = fileName + "_FFT.pl";
     fileName_IFFT = fileName + "_IFFT.pl";
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
 
     /* Create FFT plan and compute the best FFT algorithm */
     if ( wisdomExists )
@@ -513,12 +524,13 @@ FourierTransform_1D<long double>::FourierTransform_1D( const UInt rows_ )
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_FFT.c_str() );
     }
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
 
     /* Create IFFT plan and compute the best IFFT algorithm */
     if ( wisdomExists )
@@ -533,7 +545,7 @@ FourierTransform_1D<long double>::FourierTransform_1D( const UInt rows_ )
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_IFFT.c_str() );
     }
@@ -675,8 +687,10 @@ void FourierTransform_1D<long double>::ApplyShear( const Vector_2Dcl &shearFacto
 
 } /* End of FourierTransform_1D<long double>::ApplyShear */
 
-FourierTransform_2D<float>::FourierTransform_2D( const UInt rows_, \
-                                                 const UInt cols_ )
+FourierTransform_2D<float>::FourierTransform_2D( const bool WISDOM,    \
+                                                 const char* FFTW_DIR, \
+                                                 const UInt rows_,     \
+                                                 const UInt cols_)
     :   rows( rows_ ),
         cols( cols_ ),
         colsC( cols_/2 + 1 ),
@@ -686,7 +700,7 @@ FourierTransform_2D<float>::FourierTransform_2D( const UInt rows_, \
     UInt nThreads = 0;
     int wisdomExists = 0;
 
-    std::string fileName = "/net/d04/data/fritzt/APCEMM_Data/";
+    std::string fileName = FFTW_DIR;
     std::string fileName_FFT, fileName_IFFT; 
 
     fileName += "FFTW_2Dplan_" + std::to_string(rows) \
@@ -721,7 +735,8 @@ FourierTransform_2D<float>::FourierTransform_2D( const UInt rows_, \
     fileName_FFT  = fileName + "_FFT.pl";
     fileName_IFFT = fileName + "_IFFT.pl";
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
 
     /* Create FFT plan and compute the best FFT algorithm */
     if ( wisdomExists )
@@ -736,12 +751,13 @@ FourierTransform_2D<float>::FourierTransform_2D( const UInt rows_, \
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_FFT.c_str() );
     }
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
 
     /* Create IFFT plan and compute the best IFFT algorithm */
     if ( wisdomExists )
@@ -756,7 +772,7 @@ FourierTransform_2D<float>::FourierTransform_2D( const UInt rows_, \
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_IFFT.c_str() );
     }
@@ -905,7 +921,9 @@ void FourierTransform_2D<float>::SANDS( const Vector_2Df &diffFactor, \
 
 } /* End of FourierTransform_2D<float>::SANDS */
 
-FourierTransform_2D<double>::FourierTransform_2D( const UInt rows_, \
+FourierTransform_2D<double>::FourierTransform_2D( const bool WISDOM,    \
+                                                  const char* FFTW_DIR, \
+                                                  const UInt rows_,     \
                                                   const UInt cols_ )
     :   rows( rows_ ),
         cols( cols_ ),
@@ -916,7 +934,7 @@ FourierTransform_2D<double>::FourierTransform_2D( const UInt rows_, \
     UInt nThreads = 0;
     int wisdomExists = 0;
 
-    std::string fileName = "/net/d04/data/fritzt/APCEMM_Data/";
+    std::string fileName = FFTW_DIR;
     std::string fileName_FFT, fileName_IFFT; 
 
     fileName += "FFTW_2Dplan_" + std::to_string(rows) \
@@ -953,7 +971,8 @@ FourierTransform_2D<double>::FourierTransform_2D( const UInt rows_, \
     fileName_FFT  = fileName + "_FFT.pl";
     fileName_IFFT = fileName + "_IFFT.pl";
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
 
     /* Create FFT plan and compute the best FFT algorithm */
     if ( wisdomExists )
@@ -968,12 +987,13 @@ FourierTransform_2D<double>::FourierTransform_2D( const UInt rows_, \
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_FFT.c_str() );
     }
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
 
     /* Create IFFT plan and compute the best IFFT algorithm */
     if ( wisdomExists )
@@ -988,7 +1008,7 @@ FourierTransform_2D<double>::FourierTransform_2D( const UInt rows_, \
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_IFFT.c_str() );
     }
@@ -1138,7 +1158,9 @@ void FourierTransform_2D<double>::SANDS( const Vector_2D &diffFactor, \
 } /* End of FourierTransform_2D<double>::SANDS */
 
 
-FourierTransform_2D<long double>::FourierTransform_2D( const UInt rows_, \
+FourierTransform_2D<long double>::FourierTransform_2D( const bool WISDOM,    \
+                                                       const char* FFTW_DIR, \
+                                                       const UInt rows_,     \
                                                        const UInt cols_ )
     :   rows( rows_ ),
         cols( cols_ ),
@@ -1149,7 +1171,7 @@ FourierTransform_2D<long double>::FourierTransform_2D( const UInt rows_, \
     UInt nThreads = 0;
     int wisdomExists = 0;
 
-    std::string fileName = "/net/d04/data/fritzt/APCEMM_Data/";
+    std::string fileName = FFTW_DIR;
     std::string fileName_FFT, fileName_IFFT; 
 
     fileName += "FFTW_2Dplan_" + std::to_string(rows) \
@@ -1184,7 +1206,8 @@ FourierTransform_2D<long double>::FourierTransform_2D( const UInt rows_, \
     fileName_FFT  = fileName + "_FFT.pl";
     fileName_IFFT = fileName + "_IFFT.pl";
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
 
     /* Create FFT plan and compute the best FFT algorithm */
     if ( wisdomExists )
@@ -1199,12 +1222,13 @@ FourierTransform_2D<long double>::FourierTransform_2D( const UInt rows_, \
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_FFT.c_str() );
     }
 
-    wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
+    if ( WISDOM )
+        wisdomExists = fftw_import_wisdom_from_filename( fileName_IFFT.c_str() );
 
     /* Create IFFT plan and compute the best IFFT algorithm */
     if ( wisdomExists )
@@ -1219,7 +1243,7 @@ FourierTransform_2D<long double>::FourierTransform_2D( const UInt rows_, \
         exit(-1);
     }
 
-    if ( wisdomExists == 0 ) {
+    if ( WISDOM && ( wisdomExists == 0 ) ) {
         /* Export wisdom from FFTW plan */
         fftw_export_wisdom_to_filename( fileName_IFFT.c_str() );
     }

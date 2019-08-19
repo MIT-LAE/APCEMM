@@ -39,12 +39,20 @@ namespace SANDS
 
     } /* End of Solver::Solver */
 
-    void Solver::Initialize( const bool fill_, const RealDouble fillVal_, \
+    void Solver::Initialize( const bool USE_FFTW_WISDOM, \
+                             const char* FFTW_DIR,       \
+                             const bool fill_,           \
+                             const RealDouble fillVal_,  \
                              const UInt fillOpt_ )
     {
     
-        FFT_1D = new FourierTransform_1D<RealDouble>( n_x );
-        FFT_2D = new FourierTransform_2D<RealDouble>( n_x, n_y );
+        FFT_1D = new FourierTransform_1D<RealDouble>( USE_FFTW_WISDOM, \
+                                                      FFTW_DIR,        \
+                                                      n_x );
+        FFT_2D = new FourierTransform_2D<RealDouble>( USE_FFTW_WISDOM, \
+                                                      FFTW_DIR,        \
+                                                      n_x,             \
+                                                      n_y );
 
         doFill  = fill_;
         fillOpt = fillOpt_;
