@@ -143,6 +143,10 @@ LDLIBS = -Wl,--rpath-link,$(MATLAB_LIBBIN),$\
 LINK := $(LINK) $(LDLIBS) -lstdc++ -lmx -lmat
 
 LINK_FFTW := -lfftw3 -lfftw3f -lfftw3l
+ifeq ($(shell [[ "$(OMP)" =~ $(REGEXP) ]] && echo true),true)
+	LINK_FFTW += -lfftw3_omp
+endif
+
 
 # Create linker command to create the APCEMM executable
 LINK := $(LINK) -Wl,--start-group -lUtil -lSands $(LINK_FFTW) -lKpp -lEpm -lAim -lnetcdf_c++ -Wl,--end-group
