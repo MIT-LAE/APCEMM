@@ -7,6 +7,8 @@ Parameter sweep?        : T
 Output folder           : /path/to/output/folder
  => Overwrite? if exists: F
 Run directory           : ./
+Use FFTW WISDOM?        : T
+ => Dir w/ w permission : /path/to/directory/with/write/permission
 Input backgrd condition : /net/d04/data/fritzt/APCEMM_Data/init.txt
 Save forward results    : T
  => netCDF file name    : APCEMM_Case_*

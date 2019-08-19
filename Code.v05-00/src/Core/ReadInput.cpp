@@ -396,6 +396,86 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     Input_Opt.SIMULATION_RUN_DIRECTORY = tokens[0];
     
     /* ==================================================== */
+    /* Use FFTW WISDOM?                                     */
+    /* ==================================================== */
+
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable range */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "TRUE" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "true" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "True" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "YES" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Y" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "y" )    == 0 ) )
+        Input_Opt.SIMULATION_USE_FFTW_WISDOM = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "f" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "FALSE" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "false" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "False" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "NO" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "No" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "no" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "N" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "n" )     == 0 ) )
+        Input_Opt.SIMULATION_USE_FFTW_WISDOM = 0;
+    else {
+        std::cout << " Wrong input for: " << "Use FFTW WISDOM?" << std::endl;
+        exit(1);
+    }
+    
+    /* ==================================================== */
+    /* Directory with write permission                      */
+    /* ==================================================== */
+
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION = tokens[0];
+
+    /* Check that folder exists and that user has write permissions */
+    if ( Input_Opt.SIMULATION_USE_FFTW_WISDOM ) {
+
+        /* Create output directory */
+        struct stat sb;
+        if ( !( stat( Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION.c_str(), &sb) == 0 \
+                    && S_ISDIR(sb.st_mode) ) ) {
+
+            /* Create directory */
+            const int dir_err = \
+                    mkdir( Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION.c_str(), \
+                            S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+
+            if ( dir_err == -1 ) {
+                std::cout << " Could not create directory: ";
+                std::cout << Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION << std::endl;
+                std::cout << " You may not have write permission" << std::endl;
+                std::cout << " Turning SIMULATION_USE_FFTW_WISDOM off" << std::endl;
+                Input_Opt.SIMULATION_USE_FFTW_WISDOM = 0;
+            }
+
+        }
+
+    } else {
+        Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION = "";
+    }
+    
+    /* ==================================================== */
     /* Input background condition                           */
     /* ==================================================== */
 
@@ -587,6 +667,8 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " Output folder           : " << Input_Opt.SIMULATION_OUTPUT_FOLDER                 << std::endl;
     std::cout << "  => Overwrite? if exists: " << Input_Opt.SIMULATION_OVERWRITE                     << std::endl;
     std::cout << " Run directory           : " << Input_Opt.SIMULATION_RUN_DIRECTORY                 << std::endl;
+    std::cout << " Use FFTW WISDOM?        : " << Input_Opt.SIMULATION_USE_FFTW_WISDOM               << std::endl;
+    std::cout << " => Dir w/ w permission  : " << Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION  << std::endl;
     std::cout << " Input backgrd condition : " << Input_Opt.SIMULATION_INPUT_BACKG_COND              << std::endl;
     std::cout << " Save Forward results    : " << Input_Opt.SIMULATION_SAVE_FORWARD                  << std::endl;
     std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_FORWARD_FILENAME              << std::endl;
