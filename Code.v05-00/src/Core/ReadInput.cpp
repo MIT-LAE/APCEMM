@@ -471,9 +471,11 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
 
         }
 
-    } else {
+        if ( Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION.back() != '/' )
+            Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION += '/';
+
+    } else
         Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION = "";
-    }
     
     /* ==================================================== */
     /* Input background condition                           */
