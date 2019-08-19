@@ -272,11 +272,9 @@ FourierTransform_1D<double>::FourierTransform_1D( const bool WISDOM,    \
     if ( !PARALLEL_CASES ) {
         int nThreads = omp_get_max_threads();
 
-        std::cout << "\nNumber of processors for 1D FFT: " << nThreads << " (on " << omp_get_thread_num() << ")" << std::endl;
         /* All plans subsequently created with any planner routine will use 
          * that many threads */
         fftw_plan_with_nthreads( nThreads );
-        std::cout << "\nNumber of processors for 1D FFT: " << nThreads << " (on " << omp_get_thread_num() << ")" << std::endl;
 
         fileName += "_" + std::to_string(nThreads);
     }
@@ -959,11 +957,9 @@ FourierTransform_2D<double>::FourierTransform_2D( const bool WISDOM,    \
     if ( !PARALLEL_CASES ) {
         nThreads = omp_get_max_threads();
 
-        std::cout << "\nNumber of processors for 2D FFT: " << nThreads << " (on " << omp_get_thread_num() << ")" << std::endl;
         /* All plans subsequently created with any planner routine will use 
          * that many threads */
         fftw_plan_with_nthreads( nThreads );
-        std::cout << "\nNumber of processors for 2D FFT: " << nThreads << " (on " << omp_get_thread_num() << ")" << std::endl;
 
         fileName += "_" + std::to_string(nThreads);
     }
