@@ -19,6 +19,9 @@
 #include <complex>
 #include <fftw3.h>
 #include <fstream>
+#ifdef OMP
+    #include "omp.h"
+#endif /* OMP */
 
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
@@ -129,7 +132,8 @@ namespace SANDS
              * @param threshold (double) : Threshold (default = 0.0)
              */
 
-            void Fill( Vector_2D &V, const RealDouble val, const RealDouble threshold = 0.0 );
+            void Fill( Vector_2D &V, const RealDouble val, \
+                       const RealDouble threshold = 0.0 );
             
             /**
              * Apply correction scheme to get rid of Gibbs oscillations
@@ -139,7 +143,8 @@ namespace SANDS
              * @param cellAreas (2D vector) : Cell areas in m^2
              */
     
-            void ScinoccaCorr( Vector_2D &V, const RealDouble mass0, const Vector_2D &cellAreas );
+            void ScinoccaCorr( Vector_2D &V, const RealDouble mass0, \
+                               const Vector_2D &cellAreas );
 
             /** 
              * Returns the 2D diffusion field 
