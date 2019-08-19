@@ -1034,8 +1034,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
     
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
 
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -1156,8 +1157,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
     
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
 
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -1275,8 +1277,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
     
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -1394,8 +1397,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
     
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -1513,8 +1517,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
     
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -1632,8 +1637,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
     
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
 
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -1735,8 +1741,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
     
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -1834,8 +1841,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
     
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -1933,8 +1941,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
     
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -2056,8 +2065,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -2175,8 +2185,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -2297,8 +2308,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -2416,8 +2428,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -2535,8 +2548,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -2655,8 +2669,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -2774,8 +2789,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -2893,8 +2909,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -3016,8 +3033,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -3138,8 +3156,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -3257,8 +3276,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -3376,8 +3396,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -3495,8 +3516,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -3614,8 +3636,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -3733,8 +3756,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -3852,8 +3876,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
    
     if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
     }
     
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
