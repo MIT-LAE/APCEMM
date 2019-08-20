@@ -1078,15 +1078,16 @@ namespace AIM
         Vector_3D v_new = v;
 
         /* Allocate variables */
-        Vector_1D P( nBin, 0.0E+00 );
-        Vector_1D L( nBin, 0.0E+00 );
+        RealDouble P[nBin];
+        RealDouble L[nBin];
 
         /* Total volume and number per grid cell */
         RealDouble totVol, nPart;
 
         /* Description of the algorithm:
          * \frac{dv}{dt}[iBin] = P - L * v[iBin] 
-         * Production     P = sum of all the bins (smaller than iBin) that coagulate into a particle of size iBin
+         * Production     P = sum of all the bins (smaller than iBin) that
+         *                    coagulate into a particle of size iBin
          * Loss L * v[iBin] = sum of all the bins that coagulate with iBin 
          *
          * Scheme 1:
@@ -1096,17 +1097,13 @@ namespace AIM
          * v_new = ( v + P * dt ) / ( 1.0 + L ) 
          * The latter is mass-conserving */
 
-#pragma omp parallel for                                                      \
-        default ( shared                                                    ) \
-        private ( iNx, jNy, iBin, jBin, kBin, kBin_, totVol, nPart          ) \
-        private ( P, L                                                      ) \
-        schedule( dynamic, 1                                                ) \
-        if      ( !PARALLEL_CASES                                           )
         for ( jNy = 0; jNy < Ny_max; jNy++ ) {
+
             for ( iNx = 0; iNx < Nx_max; iNx++ ) {
 
                 /* Total aerosol volume */
                 totVol = 0.0E+00;
+
                 for ( iBin = 0; iBin < nBin; iBin++ )
                     totVol += v[iBin][jNy][iNx]; /* [m^3/cm^3] */
 
@@ -1114,9 +1111,21 @@ namespace AIM
                     /* Only run coagulation where aerosol volume is greater
                      * than 0.1 um^3/cm^3 */
 
-                    /* Update kernel (updates kernel.f and kernel.indices) */
+#pragma omp master
+                    {
+                    /* Update kernel (updates kernel.f and kernel.indices).
+                     * This needs to be performed in serial as the class
+                     * kernel is specific to the grid cell (jNy, iNx) */
                     kernel.buildF( bin_VCenters, jNy, iNx );
+                    }
 
+#pragma omp barrier
+
+#pragma omp parallel for                                                      \
+                    default ( shared                                        ) \
+                    private ( iBin, jBin, kBin, kBin_, nPart                ) \
+                    schedule( dynamic, 1                                    ) \
+                    if      ( !PARALLEL_CASES                               )
                     for ( iBin = 0; iBin < nBin; iBin++ ) {
 
                         /* Reset P and L values */
@@ -1162,6 +1171,7 @@ namespace AIM
 
                         if ( v[iBin][jNy][iNx] > 0.0E+00 )
                             pdf[iBin][jNy][iNx] *= v_new[iBin][jNy][iNx] / v[iBin][jNy][iNx];
+
 
                     }
                 }
@@ -1343,12 +1353,21 @@ namespace AIM
         Vector_3D iceVol  = Volume( );
         Vector_2D totH2O  = H2O;
 
+        /* Vector containing Kelvin factors evaluated at each bin center */
+        Vector_1D kFactor( nBin, 0.0E+00 );
+
+#pragma omp parallel if( !PARALLEL_CASES ) default( shared )
+        {
+
+        /* All declarations here are enforced as thread private */
+
         RealDouble partVol  = 0.0E+00;
         RealDouble icePart_ = 0.0E+00;
         RealDouble iceVol_  = 0.0E+00;
 
         /* Declare and initialize growth rates per bin. */
-        Vector_1D kGrowth( nBin, 0.0E+00 );
+        RealDouble kGrowth[nBin];
+
         /* Declare and initialize aggregated growth rates */
         RealDouble totkGrowth_1 = 0.0E+00;
         RealDouble totkGrowth_2 = 0.0E+00;
@@ -1365,23 +1384,17 @@ namespace AIM
         RealDouble locP = 0.0E+00;
         /* Declare and initialize total ice concentration */
         RealDouble totH2Oi = 0.0E+00;
-        /* Vector containing Kelvin factors evaluated at each bin center */
-        Vector_1D kFactor( nBin, 0.0E+00 );
 
         /* Compute Kelvin factor */
-#pragma omp parallel for                                                      \
-        default ( shared                                                    ) \
+#pragma omp for                                                               \
         private ( iBin                                                      ) \
-        schedule( dynamic, 1                                                ) \
-        if      ( !PARALLEL_CASES                                           )
+        schedule( dynamic, 1                                                )
         for ( iBin = 0; iBin < nBin; iBin++ )
             kFactor[iBin] = physFunc::Kelvin( bin_Centers[iBin] );
 
-#pragma omp parallel for                                                      \
-        default ( shared                                                    ) \
+#pragma omp for                                                               \
         private ( iNx, jNy, iBin                                            ) \
-        schedule( dynamic, 1                                                ) \
-        if      ( !PARALLEL_CASES                                           )
+        schedule( dynamic, 1                                                )
         for ( jNy = 0; jNy < Ny_max; jNy++ ) {
             for ( iNx = 0; iNx < Nx_max; iNx++ ) {
                 for ( iBin = 0; iBin < nBin; iBin++ ) {
@@ -1392,14 +1405,11 @@ namespace AIM
             }
         }
 
-
-#pragma omp parallel for                                                      \
-        default ( shared                                                    ) \
+#pragma omp for                                                               \
         private ( iNx, jNy, iBin, jBin, locP, locT, pSat, nSat              ) \
         private ( kGrowth, totkGrowth_1, totkGrowth_2, totH2Oi              ) \
         private ( partVol, icePart_, iceVol_                                ) \
-        schedule( dynamic, 1                                                ) \
-        if      ( !PARALLEL_CASES                                           )
+        schedule( dynamic, 1                                                )
         for ( jNy = 0; jNy < Ny_max; jNy++ ) {
 
             /* Store local pressure.
@@ -1619,6 +1629,8 @@ namespace AIM
                 }
             }
         }
+
+        } /* pragma omp parallel */
 
         if ( N == 1 ) {
 
