@@ -117,6 +117,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     const bool SAVE_FORWARD   = Input_Opt.SIMULATION_SAVE_FORWARD;
     const bool ADJOINT        = Input_Opt.SIMULATION_ADJOINT;
     const char* BACKG_FILENAME= Input_Opt.SIMULATION_INPUT_BACKG_COND.c_str();
+    const bool THREADED_FFT   = Input_Opt.SIMULATION_THREADED_FFT;
     const bool USE_WISDOM     = Input_Opt.SIMULATION_USE_FFTW_WISDOM;
     const char* FFTW_DIR      = Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION.c_str();
 
@@ -126,7 +127,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     const bool TRANSPORT          = Input_Opt.TRANSPORT_TRANSPORT;
     const RealDouble TRANSPORT_DT = Input_Opt.TRANSPORT_TIMESTEP;
- 
+
     #ifdef RINGS
         /* The RINGS option requires that negative values are filled with
          * positive values. Otherwise, chemistry spits out garbage.
@@ -159,7 +160,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     const bool LIQ_COAG      = Input_Opt.AEROSOL_COAGULATION_LIQUID;
     const RealDouble COAG_DT = Input_Opt.AEROSOL_COAGULATION_TIMESTEP;
     const bool ICE_GROWTH    = Input_Opt.AEROSOL_ICE_GROWTH;
-    
+
     /* ======================================================================= */
     /* ---- Input options from the METEOROLOGY MENU -------------------------- */
     /* ======================================================================= */
@@ -170,7 +171,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
     /* ---- Input options from the DIAGNOSTIC MENU --------------------------- */
     /* ======================================================================= */
-    
+
     const char* DIAG_FILENAME = Input_Opt.DIAG_FILENAME.c_str();
 
     /* ======================================================================= */
@@ -183,7 +184,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
      * the following lines */
 //    TS_FOLDER += "Case" + std::to_string(input.Case());
 //    TS_FOLDER += "/";
-    
+
     std::string TS_FILE1, TS_FILE2;
     const bool TS_SPEC                  = Input_Opt.TS_SPEC;
     TS_FILE1                            = TS_FOLDER + Input_Opt.TS_FILENAME;
@@ -235,7 +236,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Define dynamic timestep in s */
     RealDouble DYN_DT;
 
-    /* If either TRANSPORT or CHEMISTRY is set to 0, then pick the non-zero 
+    /* If either TRANSPORT or CHEMISTRY is set to 0, then pick the non-zero
      * timestep.
      * If both are non-zero, then pick the smallest timestep.
      *
@@ -261,7 +262,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     }
 
     /* Assign parameters */
-    
+
     RealDouble temperature_K = input.temperature_K();
     RealDouble pressure_Pa   = input.pressure_Pa();
     RealDouble relHumidity_w = input.relHumidity_w();
@@ -273,9 +274,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Grid indices */
     UInt iNx = 0;
     UInt jNy = 0;
-    
+
     int IERR;
-    
+
 #ifdef TIME_IT
 
     Timer Stopwatch, Stopwatch_cumul;
@@ -284,7 +285,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     unsigned long KPP_clock_cumul = 0;
     unsigned long clock_cumul = 0;
     bool reset = 1;
-    
+
 #endif /* TIME_IT */
 
 #if ( NOy_MASS_CHECK )
@@ -314,7 +315,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Unit check: [kg/m^3] / [kg/mol] * [molec/mol] = [molec/m^3] */
 
     RealDouble mass_Ambient_H2O, mass_H2O;
- 
+
     Vector_2D totIceVol;
 
 #endif /* H2O_MASS_CHECK */
@@ -343,7 +344,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Define sun parameters, this include sunrise and sunset hours and updates
      * the local solar zenith angle. */
-    SZA *sun = new SZA( input.latitude_deg(), input.emissionDOY() ); 
+    SZA *sun = new SZA( input.latitude_deg(), input.emissionDOY() );
 
     /* Initialize noon time photolysis rates
      * The data is after the quantum yield has been applied and represents
@@ -352,7 +353,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
      * those by the cosine of the solar zenith angle, when positive. */
     for ( UInt iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
         NOON_JRATES[iPhotol] = 0.0E+00;
- 
+
     /* Allocating noon-time photolysis rates. */
 
     if ( CHEMISTRY ) {
@@ -366,7 +367,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                 pressure_Pa/100.0,     \
                 NOON_JRATES );
         }
- 
+
         if ( printDEBUG ) {
             std::cout << "\n DEBUG : \n";
             for ( UInt iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ ) {
@@ -387,14 +388,14 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
 
-    /*  
-     *  - tEmission is the local emission time expressed in hours 
+    /*
+     *  - tEmission is the local emission time expressed in hours
      *  (between 0.0 and 24.0)
      *  - tInitial is the local time at which the simulation starts in hours
      *  - simulationTime represents the simulation time (in hours) (now read from
      *    input file)
      *  - tFinal corresponds to the final time of the simulation expressed in hours
-     */ 
+     */
 
     /* Define emission and simulation time */
     const RealDouble tEmission_h = input.emissionTime();                 /* [hr] */
@@ -509,9 +510,10 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     #pragma omp critical
     {
         std::cout << "\n Initializing solver..." << std::endl;
-        Solver.Initialize( /* Use FFTW wisdom?     */ USE_WISDOM, \
-                           /* FFTW Directory       */ FFTW_DIR,   \
-                           /* Fill negative values */ FILLNEG,    \
+        Solver.Initialize( /* Use threaded FFT?    */ THREADED_FFT, \
+                           /* Use FFTW wisdom?     */ USE_WISDOM,   \
+                           /* FFTW Directory       */ FFTW_DIR,     \
+                           /* Fill negative values */ FILLNEG,      \
                            /* Fill with this value */ fillWith );
     }
 
@@ -524,7 +526,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
     /* Emission
-     * The emissions is a combination of 
+     * The emissions is a combination of
      * engine-fuel characteristics.
      * - CO2, H2O and FSC are fuel characteristics
      * - NOx, CO, HC and Soot are engine dependent.
@@ -539,15 +541,14 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     char const *aircraftName("B747-800");
     Aircraft aircraft( aircraftName, temperature_K, pressure_Pa, relHumidity_w );
 
-    if ( BUILD_LUT ) {
-        aircraft.setEI_NOx( input.EI_NOx() );
-        aircraft.setEI_CO( input.EI_CO() );
-        aircraft.setEI_HC( input.EI_HC() );
-        aircraft.setEI_Soot( input.EI_Soot() );
-        aircraft.setSootRad( input.sootRad() );
-        aircraft.setFuelFlow( input.fuelFlow() );
-        JetA.setFSC( input.EI_SO2() * (RealDouble) 500.0 );
-    }
+    /* Overwrite engine conditions with input parameters */
+    aircraft.setEI_NOx( input.EI_NOx() );
+    aircraft.setEI_CO( input.EI_CO() );
+    aircraft.setEI_HC( input.EI_HC() );
+    aircraft.setEI_Soot( input.EI_Soot() );
+    aircraft.setSootRad( input.sootRad() );
+    aircraft.setFuelFlow( input.fuelFlow() );
+    JetA.setFSC( input.EI_SO2() * (RealDouble) 500.0 );
 
     /* Print AC Debug? */
     if ( DEBUG_AC_INPUT )
@@ -558,7 +559,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Print Emission Debug? */
     if ( DEBUG_EI_INPUT )
-        EI.Debug(); 
+        EI.Debug();
 
 
     /* ======================================================================= */
@@ -580,8 +581,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Initialize tolerances */
     for( UInt i = 0; i < NVAR; i++ ) {
-        RTOL[i] = KPP_RTOLS; 
-        ATOL[i] = KPP_ATOLS; 
+        RTOL[i] = KPP_RTOLS;
+        ATOL[i] = KPP_ATOLS;
     }
 
 
@@ -599,7 +600,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
     RealDouble Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol;
-    RealDouble areaPlume; 
+    RealDouble areaPlume;
     AIM::Aerosol liquidAer, iceAer;
     EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, VAR, FIX, \
                     aerArray, aircraft, EI, Ice_rad, Ice_den, Soot_den,  \
@@ -619,7 +620,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     }
 
     if ( iceAer.Moment() != 0 ) {
-        /* Apply ice particle vortex losses using parameterization from 
+        /* Apply ice particle vortex losses using parameterization from
          * large-eddy simulations */
         /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not just
          * user-specified input */
@@ -695,6 +696,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Create cluster of rings */
     //Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), semiXaxis, semiYaxis );
     Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ) );
+    Cluster ringCluster( NRING, 0 );
 
     /* Number of rings */
     const UInt nRing = ringCluster.getnRing();
@@ -726,7 +728,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /* Add emission into the grid */
     Data.addEmission( EI, aircraft, m, ringCluster.halfRing(),  \
                       temperature_K, ( relHumidity_i > 100.0 ), \
-                      liquidAer, iceAer, Soot_den * areaPlume / ringArea[0], Met ); 
+                      liquidAer, iceAer, Soot_den * areaPlume / ringArea[0], Met );
 
     /* Fill in variables species for initial time */
     ringSpecies.FillIn( Data, m.weights, nTime );
@@ -738,9 +740,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     RealDouble AerosolArea[NAERO];
     RealDouble AerosolRadi[NAERO];
 
-    /* Otherwise we do not have a ring structure and chemistry is solved on 
+    /* Otherwise we do not have a ring structure and chemistry is solved on
      * the grid */
-    
+
 #else
 
     /* Initialization at the grid scale level */
@@ -753,13 +755,13 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     Vector_2Dui mapIndices = m.mapIndex();
 
     /* Compute ring areas
-     * Note: The rings are only affected by shear and NOT diffusion. 
+     * Note: The rings are only affected by shear and NOT diffusion.
      * When shear is applied to a N-D potato, it does NOT modify its area. Think of
-     * shear as advection in infinitesimal layers, each having a different velocity. 
+     * shear as advection in infinitesimal layers, each having a different velocity.
      * We can thus compute the ring areas initially, once and for all. */
     ringCluster.ComputeRingAreas( cellAreas, m.weights );
     const Vector_1D ringArea = ringCluster.getRingArea();
- 
+
     /* Add emission into the grid */
     Data.addEmission( EI, aircraft, m, ringCluster.halfRing(),  \
                       temperature_K, ( relHumidity_i > 100.0 ), \
@@ -876,7 +878,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Rates before chemistry is performed.
      * Chemistry is performed NT-1 times, the size is thus:
-     * (NT-1) x NRING x NFAM 
+     * (NT-1) x NRING x NFAM
      * and
      * (NT-1) x NFAM for ambient conditions */
 
@@ -894,7 +896,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     // TODO!!
     if ( SAVE_PL ) {
 
-        /* If chemistry is performed at the grid cell level, then the 
+        /* If chemistry is performed at the grid cell level, then the
          * rates are stored as:
          * NY x NX x NFAM in [molec/cm^3/s]
          * into netCDF files at a frequency specified by the input file */
@@ -1007,7 +1009,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* Microphysics settling is considered for each bin independently */
         /* Update shear */
         Solver.UpdateShear( shear, m.y() );
-        
+
 
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
@@ -1031,7 +1033,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                 /* Advection and diffusion of condensable species */
                 Solver.Run( Data.H2O, cellAreas, 1 );
             }
- 
+
             /* Advection and diffusion for aerosol particles */
             Solver.Run( Data.sootDens, cellAreas );
             /* Monodisperse assumption for soot particles */
@@ -1050,10 +1052,10 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                 /* Ice volume per bin (NBIN x NY x NX) in [m^3/cm^3 air] */
                 Vector_3D iceVolume = Data.solidAerosol.Volume();
- 
+
                 for ( UInt iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
-                    /* Transport particle number and volume for each bin and 
-                     * recompute centers of each bin for each grid cell 
+                    /* Transport particle number and volume for each bin and
+                     * recompute centers of each bin for each grid cell
                      * accordingly */
                     Solver.UpdateAdv ( 0.0E+00, vFall[iBin_PA] );
 
@@ -1115,7 +1117,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
              * asymmetric expansion of the plume */
             if ( shear != 0.0E+00 ) {
 
-                /* Rings do NOT get diffused, nor advected. They only get distorted 
+                /* Rings do NOT get diffused, nor advected. They only get distorted
                  * through shear */
 
                 /* Update diffusion and advection arrays */
@@ -1129,7 +1131,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                 for ( iRing = 0; iRing < nRing + 1; iRing++ )
                     Solver.Run( m.weights[iRing], cellAreas, -1 );
 
-                /* Recompute the map to mesh mapping, i.e. for each grid cell, 
+                /* Recompute the map to mesh mapping, i.e. for each grid cell,
                  * find the corresponding ring */
                 m.MapWeights();
 
@@ -1303,7 +1305,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                         /* If chemistry is performed within each rings, then the rates
                          * are stored as:
                          * NRING x (NT-1) x NFAM in [molec/cm^3/s]
-                         * into the "forward" output file at a frequency specified by 
+                         * into the "forward" output file at a frequency specified by
                          * the input file "input.apcemm" */
 
                         /* Compute family rates */
@@ -1324,7 +1326,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                             /* If chemistry is performed within each rings, then the rates
                              * are stored as:
                              * NRING x (NT-1) x NFAM in [molec/cm^3/s]
-                             * into the "forward" output file at a frequency specified by 
+                             * into the "forward" output file at a frequency specified by
                              * the input file "input.apcemm" */
 
                             /* Compute family rates */
@@ -1443,18 +1445,18 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                 Update_RCONST( temperature_K, pressure_Pa, airDens, VAR[ind_H2O] );
 
                 if ( SAVE_PL ) {
-    
+
                     RealDouble familyRate[NFAM];
-                    
+
                     for ( UInt iFam = 0; iFam < NFAM; iFam++ )
                         familyRate[iFam] = 0.0E+00;
 
                     /* If chemistry is performed within each rings, then the rates
                      * are stored as:
                      * NRING x (NT-1) x NFAM in [molec/cm^3/s]
-                     * into the "forward" output file at a frequency specified by 
+                     * into the "forward" output file at a frequency specified by
                      * the input file "input.apcemm" */
-   
+
                     /* Compute family rates */
                     ComputeFamilies( VAR, FIX, RCONST, familyRate );
 
@@ -1462,20 +1464,20 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                         ambientRates[nTime][iFam] = familyRate[iFam];
 
                 } else {
-                    
+
                     if ( SAVE_O3PL ) {
-                    
+
                         RealDouble familyRate[NFAM];
-                        
+
                         for ( UInt iFam = 0; iFam < NFAM; iFam++ )
                             familyRate[iFam] = 0.0E+00;
 
                         /* If chemistry is performed within each rings, then the rates
                          * are stored as:
                          * NRING x (NT-1) x NFAM in [molec/cm^3/s]
-                         * into the "forward" output file at a frequency specified by 
+                         * into the "forward" output file at a frequency specified by
                          * the input file "input.apcemm" */
-       
+
                         /* Compute family rates */
                         ComputeFamilies( VAR, FIX, RCONST, familyRate );
 
@@ -1538,8 +1540,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             default ( shared                   ) \
             private ( iNx, jNy                 ) \
             private ( relHumidity, IWC         ) \
-            schedule( dynamic, 1               ) \
-            collapse( 2 )
+            schedule( dynamic, 1               )
                 for ( iNx = 0; iNx < NX; iNx++ ) {
                     for ( jNy = 0; jNy < NY; jNy++ ) {
 
@@ -1771,7 +1772,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             dtIceGrowth = ( curr_Time_s + dt - lastTimeIceGrowth );
             if ( printDEBUG )
                 std::cout << "\n DEBUG (Solid Aerosol Growth): Current time: " << ( curr_Time_s - tInitial_s ) / 3600.0 << " hr. Last growth event was at: " << ( lastTimeIceGrowth - tInitial_s ) / 3600.0 << " hr. Running for " << dtIceGrowth << " s\n";
- 
+
             lastTimeIceGrowth = curr_Time_s + dt;
             /* If shear = 0, take advantage of the symmetry around the Y-axis */
             Data.solidAerosol.Grow( dtIceGrowth, Data.H2O, Met.Temp(), Met.Press(), PA_MICROPHYSICS, ( shear == 0 ) );
@@ -1807,7 +1808,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         schedule ( dynamic, 1         ) \
         if       ( !PARALLEL_CASES    )
         for ( iNx = 0; iNx < NX; iNx++ ) {
-            for ( jNy = 0; jNy < NY; jNy++ ) { 
+            for ( jNy = 0; jNy < NY; jNy++ ) {
                 mass_Emitted_NOy += ( Data.NO[jNy][iNx]     + Data.NO2[jNy][iNx]   \
                                     + Data.NO3[jNy][iNx]    + Data.HNO2[jNy][iNx]  \
                                     + Data.HNO3[jNy][iNx]   + Data.HNO4[jNy][iNx]  \
@@ -1855,7 +1856,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                                       + ringSpecies.PRN1[nTime+1][iRing]   \
                                       + ringSpecies.R4N2[nTime+1][iRing]   \
                                       + 2*ringSpecies.N2O[nTime+1][iRing]  \
-                                      - mass_Ambient_NOy ) * ringArea[iRing]; 
+                                      - mass_Ambient_NOy ) * ringArea[iRing];
         }
         /* How much of this emitted mass is still in the rings? FR = Fraction in rings */
         std::cout << "(FR: " << 100 * mass_Emitted_NOy_Rings / mass_Emitted_NOy << " %)";
@@ -1869,7 +1870,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* CO2 is not an exactly conserved quantity because of the oxidation CO and other compounds (unless chemistry is turned off) */
 
         mass_Ambient_CO2 = ambientData.CO2[nTime+1];
-        
+
         /* Compute emitted */
         mass_Emitted_CO2 = 0;
 #pragma omp parallel for                \
@@ -1896,7 +1897,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             mass_Emitted_CO2_Rings = 0;
             for ( iRing = 0; iRing < nRing; iRing++ ) {
                 mass_Emitted_CO2_Rings += ( ringSpecies.CO2[nTime+1][iRing] \
-                                          - mass_Ambient_CO2 ) * ringArea[iRing]; 
+                                          - mass_Ambient_CO2 ) * ringArea[iRing];
             }
             /* How much of this emitted mass is still in the rings? FR = Fraction in rings */
             std::cout << "(FR: " << 100 * mass_Emitted_CO2_Rings / mass_Emitted_CO2 << " %)\n";
@@ -1972,7 +1973,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         }
 
     }
-    
+
     /* ===================================================================== */
     /* --------------------------------------------------------------------- */
     /* ------------------------ TIME LOOP ENDS HERE ------------------------ */
@@ -2045,7 +2046,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     if ( ADJOINT ) {
         #ifdef OMP
-            #pragma omp critical 
+            #pragma omp critical
             { std::cout << "\n\n ## ON THREAD " << omp_get_thread_num() << ": Starting adjoint calculation...\n"; }
         #else
             std::cout << "\n\n Starting adjoint calculation...\n";
@@ -2128,12 +2129,12 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             ATOL[i] = KPPADJ_ATOLS;
         }
 
-        /* Tolerances for calculating adjoints are 
-         * used for controlling adjoint truncation 
+        /* Tolerances for calculating adjoints are
+         * used for controlling adjoint truncation
          * error and for solving the linear adjoint
          * equations by iterations.
          * Note: Adjoints typically span many orders
-         * of magnitude and a careful tuning of 
+         * of magnitude and a careful tuning of
          * ATOL_adj may be necessary */
 
         for( UInt i = 0; i < NADJ; i++ ) {
@@ -2179,20 +2180,20 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         /* ------------------------ TIME LOOP STARTS HERE ------------------------ */
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
-        
+
         while ( curr_Time_s < tFinal_s ) {
-            
+
             if ( printDEBUG ) {
                 /* Print message */
                 std::cout << "\n";
                 std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size();
-                #ifdef OMP 
+                #ifdef OMP
                     std::cout << " ( on thread " << omp_get_thread_num() << " )";
                 #endif /* OMP */
                 std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]";
             }
 
-            dt = timeArray[nTime+1] - timeArray[nTime]; 
+            dt = timeArray[nTime+1] - timeArray[nTime];
 
             /* ======================================================================= */
             /* ----------------------------------------------------------------------- */
@@ -2228,7 +2229,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             /* ============================================================= */
             /* ------------------------------------------------------------- */
             /* -------------------------- RUN KPP -------------------------- */
-            /* ------------------- The Kinetics Pre-Processor -------------- */ 
+            /* ------------------- The Kinetics Pre-Processor -------------- */
             /* ------------------------------------------------------------- */
             /* ============================================================= */
 
@@ -2311,7 +2312,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                     std::cout << " on " << omp_get_thread_num();
                 #endif /* OMP */
                 std::cout << " for ambient conditions at time t = " << curr_Time_s/3600.0 << " ( nTime = " << nTime << " )\n";
-                    
+
                 if ( printDEBUG ) {
                     std::cout << " ~~~ Printing reaction rates:\n";
                     for ( UInt iReact = 0; iReact < NREACT; iReact++ ) {
@@ -2330,12 +2331,12 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             }
 
             adjointData.FillIn( nTime + 1 );
-            
+
             curr_Time_s += dt;
             nTime++;
 
         }
-        
+
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
         /* ------------------------- TIME LOOP ENDS HERE ------------------------- */
