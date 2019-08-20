@@ -39,19 +39,22 @@ namespace SANDS
 
     } /* End of Solver::Solver */
 
-    void Solver::Initialize( const bool USE_FFTW_WISDOM, \
-                             const char* FFTW_DIR,       \
-                             const bool fill_,           \
-                             const RealDouble fillVal_,  \
+    void Solver::Initialize( const bool MULTITHREADED_FFT, \
+                             const bool USE_FFTW_WISDOM,   \
+                             const char* FFTW_DIR,         \
+                             const bool fill_,             \
+                             const RealDouble fillVal_,    \
                              const UInt fillOpt_ )
     {
     
-        FFT_1D = new FourierTransform_1D<RealDouble>( USE_FFTW_WISDOM, \
-                                                      FFTW_DIR,        \
+        FFT_1D = new FourierTransform_1D<RealDouble>( MULTITHREADED_FFT, \
+                                                      USE_FFTW_WISDOM,   \
+                                                      FFTW_DIR,          \
                                                       n_x );
-        FFT_2D = new FourierTransform_2D<RealDouble>( USE_FFTW_WISDOM, \
-                                                      FFTW_DIR,        \
-                                                      n_x,             \
+        FFT_2D = new FourierTransform_2D<RealDouble>( MULTITHREADED_FFT, \
+                                                      USE_FFTW_WISDOM,   \
+                                                      FFTW_DIR,          \
+                                                      n_x,               \
                                                       n_y );
 
         doFill  = fill_;
@@ -98,7 +101,7 @@ namespace SANDS
 
         UInt i0;
         int k;
-     
+
         /* The domain extends from -xlim to xlim
          * The length of the interval is thus 2*xlim */
     
@@ -238,7 +241,7 @@ namespace SANDS
 #pragma omp parallel for               \
             if     ( !PARALLEL_CASES ) \
             default( shared          ) \
-            private( iNx, jNy        ) \
+            private( iNx, jNy, V     ) \
             schedule( dynamic, 1     )
             for ( jNy = 0; jNy < n_y; jNy++ ) {
 
@@ -302,7 +305,6 @@ namespace SANDS
         /* Apply correction scheme to get rid of Gibbs oscillations */
         if ( doFill && ( fillOpt_ == 1 ) )
             ScinoccaCorr( V, mass0, cellAreas );
-
 
     } /* End of Solver::Run */
 
@@ -376,9 +378,10 @@ namespace SANDS
 
         Vlow = V0/1.0E+06;
 
-#pragma omp parallel for                 \
-            if       ( !PARALLEL_CASES ) \
-            default  ( shared          ) \
+#pragma omp parallel default(shared) if ( !PARALLEL_CASES )
+        {
+
+#pragma omp for                          \
             reduction( +:C             ) \
             reduction( +:mass          ) \
             private  ( iNx, jNy        ) \
@@ -403,6 +406,8 @@ namespace SANDS
             }
         }
 
+#pragma omp single 
+        {
         if ( C != 0.0E+00 ) {
             /* Correction factor. C should always be <= 0
              * If mass0 == mass, then correction factor is 0. */
@@ -413,11 +418,12 @@ namespace SANDS
          * This is unlikely to make a difference. */
         if ( !std::isfinite(C) || std::isnan(C) )
             C = 0.0E+00;
+        }
 
-#pragma omp parallel for                 \
-            if       ( !PARALLEL_CASES ) \
-            default  ( shared          ) \
-            reduction( +:negMass       )  \
+#pragma omp barrier
+
+#pragma omp for                          \
+            reduction( +:negMass       ) \
             private  ( iNx, jNy        ) \
             schedule ( dynamic, 1      )
         for ( jNy = 0; jNy < n_y; jNy++ ) {
@@ -439,6 +445,8 @@ namespace SANDS
             }
         }
 
+        } /* End of pragma omp parallel */
+
         if ( negMass > 0.0E+00 ) {
 
             /* The following lines aim to correct for the mass that has been
@@ -453,7 +461,7 @@ namespace SANDS
             while ( !success ) {
                 counter = 0;
                 tArea   = 0.0E+00;
-                /* TODO: Parallelize this block */
+
                 for ( UInt jNy = 0; jNy < n_y; jNy++ ) {
                     for ( UInt iNx = 0; iNx < n_x; iNx++ ) {
                         if ( V[jNy][iNx] > negMass / ( guess * cellAreas[jNy][iNx] ) ) {
@@ -478,11 +486,6 @@ namespace SANDS
 
             if ( tArea > 0.0E+00 ) {
 
-#pragma omp parallel for                 \
-            if       ( !PARALLEL_CASES ) \
-            default  ( shared          ) \
-            private  ( iNx, jNy        ) \
-            schedule ( dynamic, 1      )
                 for ( jNy = 0; jNy < n_y; jNy++ ) {
                     for ( iNx = 0; iNx < n_x; iNx++ ) {
                         if ( V[jNy][iNx] > negMass / ( guess * cellAreas[jNy][iNx] ) )

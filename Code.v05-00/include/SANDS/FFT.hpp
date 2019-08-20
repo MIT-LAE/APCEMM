@@ -71,13 +71,15 @@ class FourierTransform_1D<float>
         /** 
          * Constructor
          *
+         * @param MULTITHREAD_FFT  : Use threaded FFT?
          * @param WISDOM (bool)    : Use FFTW_WISDOM?
          * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
          * @param rows_ (UInt)     : number of rows 
          */
 
-        FourierTransform_1D( const bool WISDOM,    \
-                             const char* FFTW_DIR, \
+        FourierTransform_1D( const bool MULTITHREADED_FFT, \
+                             const bool WISDOM,            \
+                             const char* FFTW_DIR,         \
                              const UInt rows_ );
 
         /**
@@ -173,6 +175,9 @@ class FourierTransform_1D<float>
 
     private:
 
+        /* Switch for threaded FFT? */
+        const bool THREADED_FFT;
+
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;
         complex_type *in_IFFT, *out_FFT;
@@ -197,13 +202,15 @@ class FourierTransform_1D<double>
         /** 
          * Constructor
          *
+         * @param MULTITHREAD_FFT  : Use threaded FFT?
          * @param WISDOM (bool)    : Use FFTW_WISDOM?
          * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
          * @param rows_ (UInt)     : number of rows 
          */
 
-        FourierTransform_1D( const bool WISDOM,    \
-                             const char* FFTW_DIR, \
+        FourierTransform_1D( const bool MULTITHREADED_FFT, \
+                             const bool WISDOM,            \
+                             const char* FFTW_DIR,         \
                              const UInt rows_ );
 
         /**
@@ -299,6 +306,9 @@ class FourierTransform_1D<double>
 
     private:
 
+        /* Switch for threaded FFT? */
+        const bool THREADED_FFT;
+
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;
         complex_type *in_IFFT, *out_FFT;
@@ -323,13 +333,15 @@ class FourierTransform_1D<long double>
         /** 
          * Constructor
          *
+         * @param MULTITHREAD_FFT  : Use threaded FFT?
          * @param WISDOM (bool)    : Use FFTW_WISDOM?
          * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
          * @param rows_ (UInt)     : number of rows 
          */
 
-        FourierTransform_1D( const bool WISDOM,    \
-                             const char* FFTW_DIR, \
+        FourierTransform_1D( const bool MULTITHREADED_FFT, \
+                             const bool WISDOM,            \
+                             const char* FFTW_DIR,         \
                              const UInt rows_ );
 
         /**
@@ -425,6 +437,9 @@ class FourierTransform_1D<long double>
 
     private:
 
+        /* Switch for threaded FFT? */
+        const bool THREADED_FFT;
+
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;
         complex_type *in_IFFT, *out_FFT;
@@ -449,15 +464,17 @@ class FourierTransform_2D<float>
         /** 
          * Constructor
          *
+         * @param MULTITHREAD_FFT  : Use threaded FFT?
          * @param WISDOM (bool)    : Use FFTW_WISDOM?
          * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
          * @param rows_ (UInt)     : number of rows 
          * @param cols_ (UInt)     : number of columns 
          */
 
-        FourierTransform_2D( const bool WISDOM,    \
-                             const char* FFTW_DIR, \
-                             const UInt rows_,     \
+        FourierTransform_2D( const bool MULTITHREADED_FFT, \
+                             const bool WISDOM,            \
+                             const char* FFTW_DIR,         \
+                             const UInt rows_,             \
                              const UInt cols_ );
 
         /**
@@ -552,6 +569,9 @@ class FourierTransform_2D<float>
 
     private:
 
+        /* Switch for threaded FFT? */
+        const bool THREADED_FFT;
+
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;
         complex_type *in_IFFT, *out_FFT;
@@ -576,15 +596,17 @@ class FourierTransform_2D<double>
         /** 
          * Constructor
          *
+         * @param MULTITHREAD_FFT  : Use threaded FFT?
          * @param WISDOM (bool)    : Use FFTW_WISDOM?
          * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
          * @param rows_ (UInt)     : number of rows 
          * @param cols_ (UInt)     : number of columns 
          */
 
-        FourierTransform_2D( const bool WISDOM,    \
-                             const char* FFTW_DIR, \
-                             const UInt rows_,     \
+        FourierTransform_2D( const bool MULTITHREADED_FFT, \
+                             const bool WISDOM,            \
+                             const char* FFTW_DIR,         \
+                             const UInt rows_,             \
                              const UInt cols_ );
 
         /**
@@ -679,6 +701,9 @@ class FourierTransform_2D<double>
 
     private:
 
+        /* Switch for threaded FFT? */
+        const bool THREADED_FFT;
+
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;
         complex_type *in_IFFT, *out_FFT;
@@ -704,15 +729,17 @@ class FourierTransform_2D<long double>
         /** 
          * Constructor
          *
+         * @param MULTITHREAD_FFT  : Use threaded FFT?
          * @param WISDOM (bool)    : Use FFTW_WISDOM?
          * @param FFTW_DIR (char*) : Path to storage for FFTW plans?
          * @param rows_ (UInt)     : number of rows 
          * @param cols_ (UInt)     : number of columns 
          */
 
-        FourierTransform_2D( const bool WISDOM,    \
-                             const char* FFTW_DIR, \
-                             const UInt rows_,     \
+        FourierTransform_2D( const bool MULTITHREADED_FFT, \
+                             const bool WISDOM,            \
+                             const char* FFTW_DIR,         \
+                             const UInt rows_,             \
                              const UInt cols_ );
 
         /**
@@ -806,6 +833,9 @@ class FourierTransform_2D<long double>
         const UInt fftScaling;
 
     private:
+
+        /* Switch for threaded FFT? */
+        const bool THREADED_FFT;
 
         /* Pointer to arrays for fftw_plans */
         scalar_type  *in_FFT , *out_IFFT;

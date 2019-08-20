@@ -13,12 +13,14 @@
 
 #include "SANDS/FFT.hpp"
 
-FourierTransform_1D<float>::FourierTransform_1D( const bool WISDOM,    \
-                                                 const char* FFTW_DIR, \
+FourierTransform_1D<float>::FourierTransform_1D( const bool MULTITHREADED_FFT, \
+                                                 const bool WISDOM,            \
+                                                 const char* FFTW_DIR,         \
                                                  const UInt rows_ )
     :   rows( rows_ ),
         rowsC( rows_/2 + 1 ),
-        fftScaling( rows_ )
+        fftScaling( rows_ ),
+        THREADED_FFT( MULTITHREADED_FFT )
 {
 
     UInt nThreads = 0;
@@ -29,7 +31,7 @@ FourierTransform_1D<float>::FourierTransform_1D( const bool WISDOM,    \
 
     fileName += "FFTW_1Dplan_" + std::to_string(rows);
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Performing the one-time initialization required to use threads with
          * FFTW */
         int Success = fftw_init_threads();
@@ -45,7 +47,7 @@ FourierTransform_1D<float>::FourierTransform_1D( const bool WISDOM,    \
     in_IFFT  = (complex_type*) fftwf_malloc( sizeof(complex_type) * rowsC );
     out_IFFT = (scalar_type*)  fftwf_malloc( sizeof(scalar_type)  * rows  );
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         int nThreads = omp_get_max_threads();
 
         /* All plans subsequently created with any planner routine will use 
@@ -119,7 +121,7 @@ FourierTransform_1D<float>::~FourierTransform_1D()
     fftwf_free( out_IFFT ); 
     out_IFFT = NULL;
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Cleanup and get rid of all memory allocated by FFTW */
         fftw_cleanup_threads();
     }
@@ -140,8 +142,10 @@ FourierTransform_1D<float>::~FourierTransform_1D()
 //    UInt i = 0;
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ )
 //        in_FFT[i] = (scalar_type) V[i];
 //
@@ -169,8 +173,10 @@ FourierTransform_1D<float>::~FourierTransform_1D()
 //    Scale( out_IFFT );
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ )
 //        V[i] = out_IFFT[i];
 //
@@ -185,8 +191,10 @@ FourierTransform_1D<float>::~FourierTransform_1D()
 //    /* Scale output */
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ ) 
 //        in[i] /= fftScaling;
 //
@@ -196,6 +204,8 @@ void FourierTransform_1D<float>::ApplyShear( const Vector_2Dcf &shearFactor, \
                                              Vector_2Df &V ) const
 {
 
+    /* It turns out that this function is much faster when running in serial */
+
     UInt i = 0;
     UInt j = 0;
 
@@ -203,9 +213,11 @@ void FourierTransform_1D<float>::ApplyShear( const Vector_2Dcf &shearFactor, \
     for ( j = 0; j < V.size(); j++ ) {
 
         /* Storing horizontal layer */
-#pragma omp parallel for       \
-        private ( i          ) \
-        schedule( dynamic, 1 )
+//#pragma omp parallel for       \
+//        default ( shared     ) \
+//        private ( i          ) \
+//        schedule( dynamic, 1 ) \
+//        if ( !PARALLEL_CASES )
         for ( i = 0; i < V[0].size(); i++ )
             in_FFT[i] = (scalar_type) V[j][i];
 
@@ -213,9 +225,11 @@ void FourierTransform_1D<float>::ApplyShear( const Vector_2Dcf &shearFactor, \
         fftwf_execute_dft_r2c( plan_FFT, in_FFT, out_FFT );
 
         /* Convolve and scale the frequencies */
-#pragma omp parallel for       \
-        private ( i          ) \
-        schedule( dynamic, 1 )
+//#pragma omp parallel for       \
+//        default ( shared     ) \
+//        private ( i          ) \
+//        schedule( dynamic, 1 ) \
+//        if ( !PARALLEL_CASES )
         for ( i = 0; i < rowsC; i++ ) {
             in_IFFT[i][REAL] = ( out_FFT[i][REAL] * shearFactor[j][i].real() \
                                - out_FFT[i][IMAG] * shearFactor[j][i].imag() );
@@ -227,9 +241,11 @@ void FourierTransform_1D<float>::ApplyShear( const Vector_2Dcf &shearFactor, \
         fftwf_execute_dft_c2r( plan_IFFT, in_IFFT, out_IFFT );
 
         /* Apply results back into original 2D vector */
-#pragma omp parallel for       \
-        private ( i          ) \
-        schedule( dynamic, 1 )
+//#pragma omp parallel for       \
+//        default ( shared     ) \
+//        private ( i          ) \
+//        schedule( dynamic, 1 ) \
+//        if ( !PARALLEL_CASES )
         for ( i = 0; i < V[0].size(); i++ )
             V[j][i] = out_IFFT[i] / fftScaling;
 
@@ -237,12 +253,14 @@ void FourierTransform_1D<float>::ApplyShear( const Vector_2Dcf &shearFactor, \
 
 } /* End of FourierTransform_1D<float>::ApplyShear */
 
-FourierTransform_1D<double>::FourierTransform_1D( const bool WISDOM,    \
-                                                  const char* FFTW_DIR, \
+FourierTransform_1D<double>::FourierTransform_1D( const bool MULTITHREADED_FFT, \
+                                                  const bool WISDOM,            \
+                                                  const char* FFTW_DIR,         \
                                                   const UInt rows_ )
     :   rows( rows_ ),
         rowsC( rows_/2 + 1 ),
-        fftScaling( rows_ )
+        fftScaling( rows_ ),
+        THREADED_FFT( MULTITHREADED_FFT )
 {
 
     UInt nThreads = 0;
@@ -253,7 +271,7 @@ FourierTransform_1D<double>::FourierTransform_1D( const bool WISDOM,    \
 
     fileName += "FFTW_1Dplan_" + std::to_string(rows);
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Performing the one-time initialization required to use threads with
          * FFTW */
         int Success = fftw_init_threads();
@@ -269,7 +287,7 @@ FourierTransform_1D<double>::FourierTransform_1D( const bool WISDOM,    \
     in_IFFT  = (complex_type*) fftw_malloc( sizeof(complex_type) * rowsC );
     out_IFFT = (scalar_type*)  fftw_malloc( sizeof(scalar_type)  * rows  );
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         int nThreads = omp_get_max_threads();
 
         /* All plans subsequently created with any planner routine will use 
@@ -281,6 +299,7 @@ FourierTransform_1D<double>::FourierTransform_1D( const bool WISDOM,    \
 
     fileName_FFT  = fileName + "_FFT.pl";
     fileName_IFFT = fileName + "_IFFT.pl";
+    std::cout << fileName_FFT << std::endl;
 
     if ( WISDOM )
         wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
@@ -343,7 +362,7 @@ FourierTransform_1D<double>::~FourierTransform_1D()
     fftw_free( out_IFFT ); 
     out_IFFT = NULL;
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Cleanup and get rid of all memory allocated by FFTW */
         fftw_cleanup_threads();
     }
@@ -364,8 +383,10 @@ FourierTransform_1D<double>::~FourierTransform_1D()
 //    UInt i = 0;
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ )
 //        in_FFT[i] = (scalar_type) V[i];
 //
@@ -393,8 +414,10 @@ FourierTransform_1D<double>::~FourierTransform_1D()
 //    Scale( out_IFFT );
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ )
 //        V[i] = out_IFFT[i];
 //
@@ -409,8 +432,10 @@ FourierTransform_1D<double>::~FourierTransform_1D()
 //    /* Scale output */
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ ) 
 //        in[i] /= fftScaling;
 //
@@ -420,6 +445,8 @@ void FourierTransform_1D<double>::ApplyShear( const Vector_2Dc &shearFactor, \
                                               Vector_2D &V ) const
 {
 
+    /* It turns out that this function is much faster when running in serial */
+
     UInt i = 0;
     UInt j = 0;
 
@@ -427,9 +454,11 @@ void FourierTransform_1D<double>::ApplyShear( const Vector_2Dc &shearFactor, \
     for ( j = 0; j < V.size(); j++ ) {
 
         /* Storing horizontal layer */
-#pragma omp parallel for       \
-        private ( i          ) \
-        schedule( dynamic, 1 )
+//#pragma omp parallel for       \
+//        default ( shared     ) \
+//        private ( i          ) \
+//        schedule( dynamic, 1 ) \
+//        if ( !PARALLEL_CASES )
         for ( i = 0; i < V[0].size(); i++ )
             in_FFT[i] = (scalar_type) V[j][i];
 
@@ -437,9 +466,11 @@ void FourierTransform_1D<double>::ApplyShear( const Vector_2Dc &shearFactor, \
         fftw_execute_dft_r2c( plan_FFT, in_FFT, out_FFT );
 
         /* Convolve and scale the frequencies */
-#pragma omp parallel for       \
-        private ( i          ) \
-        schedule( dynamic, 1 )
+//#pragma omp parallel for       \
+//        default ( shared     ) \
+//        private ( i          ) \
+//        schedule( dynamic, 1 ) \
+//        if ( !PARALLEL_CASES )
         for ( i = 0; i < rowsC; i++ ) {
             in_IFFT[i][REAL] = ( out_FFT[i][REAL] * shearFactor[j][i].real() \
                                - out_FFT[i][IMAG] * shearFactor[j][i].imag() );
@@ -451,9 +482,11 @@ void FourierTransform_1D<double>::ApplyShear( const Vector_2Dc &shearFactor, \
         fftw_execute_dft_c2r( plan_IFFT, in_IFFT, out_IFFT );
 
         /* Apply results back into original 2D vector */
-#pragma omp parallel for       \
-        private ( i          ) \
-        schedule( dynamic, 1 )
+//#pragma omp parallel for       \
+//        default ( shared     ) \
+//        private ( i          ) \
+//        schedule( dynamic, 1 ) \
++/        if ( !PARALLEL_CASES )
         for ( i = 0; i < V[0].size(); i++ )
             V[j][i] = out_IFFT[i] / fftScaling;
 
@@ -461,12 +494,14 @@ void FourierTransform_1D<double>::ApplyShear( const Vector_2Dc &shearFactor, \
 
 } /* End of FourierTransform_1D<double>::ApplyShear */
 
-FourierTransform_1D<long double>::FourierTransform_1D( const bool WISDOM,    \
-                                                       const char* FFTW_DIR, \
+FourierTransform_1D<long double>::FourierTransform_1D( const bool MULTITHREADED_FFT, \
+                                                       const bool WISDOM,            \
+                                                       const char* FFTW_DIR,         \
                                                        const UInt rows_ )
     :   rows( rows_ ),
         rowsC( rows_/2 + 1 ),
-        fftScaling( rows_ )
+        fftScaling( rows_ ),
+        THREADED_FFT( MULTITHREADED_FFT )
 {
 
     UInt nThreads = 0;
@@ -477,7 +512,7 @@ FourierTransform_1D<long double>::FourierTransform_1D( const bool WISDOM,    \
 
     fileName += "FFTW_1Dplan_" + std::to_string(rows);
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Performing the one-time initialization required to use threads with
          * FFTW */
         int Success = fftw_init_threads();
@@ -493,7 +528,7 @@ FourierTransform_1D<long double>::FourierTransform_1D( const bool WISDOM,    \
     in_IFFT  = (complex_type*) fftwl_malloc( sizeof(complex_type) * rowsC );
     out_IFFT = (scalar_type*)  fftwl_malloc( sizeof(scalar_type)  * rows  );
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         int nThreads = omp_get_max_threads();
 
         /* All plans subsequently created with any planner routine will use 
@@ -567,7 +602,7 @@ FourierTransform_1D<long double>::~FourierTransform_1D()
     fftwl_free( out_IFFT ); 
     out_IFFT = NULL;
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Cleanup and get rid of all memory allocated by FFTW */
         fftw_cleanup_threads();
     }
@@ -588,8 +623,10 @@ FourierTransform_1D<long double>::~FourierTransform_1D()
 //    UInt i = 0;
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ )
 //        in_FFT[i] = (scalar_type) V[i];
 //
@@ -617,8 +654,10 @@ FourierTransform_1D<long double>::~FourierTransform_1D()
 //    Scale( out_IFFT );
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ )
 //        V[i] = out_IFFT[i];
 //
@@ -633,8 +672,10 @@ FourierTransform_1D<long double>::~FourierTransform_1D()
 //    /* Scale output */
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ ) 
 //        in[i] /= fftScaling;
 //
@@ -644,6 +685,8 @@ void FourierTransform_1D<long double>::ApplyShear( const Vector_2Dcl &shearFacto
                                                    Vector_2Dl &V ) const
 {
 
+    /* It turns out that this function is much faster when running in serial */
+
     UInt i = 0;
     UInt j = 0;
 
@@ -651,9 +694,11 @@ void FourierTransform_1D<long double>::ApplyShear( const Vector_2Dcl &shearFacto
     for ( j = 0; j < V.size(); j++ ) {
 
         /* Storing horizontal layer */
-#pragma omp parallel for       \
-        private ( i          ) \
-        schedule( dynamic, 1 )
+//#pragma omp parallel for       \
+//        default ( shared     ) \
+//        private ( i          ) \
+//        schedule( dynamic, 1 ) \
+//        if ( !PARALLEL_CASES )
         for ( i = 0; i < V[0].size(); i++ )
             in_FFT[i] = (scalar_type) V[j][i];
 
@@ -661,9 +706,11 @@ void FourierTransform_1D<long double>::ApplyShear( const Vector_2Dcl &shearFacto
         fftwl_execute_dft_r2c( plan_FFT, in_FFT, out_FFT );
 
         /* Convolve and scale the frequencies */
-#pragma omp parallel for       \
-        private ( i          ) \
-        schedule( dynamic, 1 )
+//#pragma omp parallel for       \
+//        default ( shared     ) \
+//        private ( i          ) \
+//        schedule( dynamic, 1 ) \
+//        if ( !PARALLEL_CASES )
         for ( i = 0; i < rowsC; i++ ) {
             in_IFFT[i][REAL] = ( out_FFT[i][REAL] * shearFactor[j][i].real() \
                                - out_FFT[i][IMAG] * shearFactor[j][i].imag() );
@@ -675,9 +722,11 @@ void FourierTransform_1D<long double>::ApplyShear( const Vector_2Dcl &shearFacto
         fftwl_execute_dft_c2r( plan_IFFT, in_IFFT, out_IFFT );
 
         /* Apply results back into original 2D vector */
-#pragma omp parallel for       \
-        private ( i          ) \
-        schedule( dynamic, 1 )
+//#pragma omp parallel for       \
+//        default ( shared     ) \
+//        private ( i          ) \
+//        schedule( dynamic, 1 ) \
+//        if ( !PARALLEL_CASES )
         for ( i = 0; i < V[0].size(); i++ )
             V[j][i] = out_IFFT[i] / fftScaling;
 
@@ -685,14 +734,16 @@ void FourierTransform_1D<long double>::ApplyShear( const Vector_2Dcl &shearFacto
 
 } /* End of FourierTransform_1D<long double>::ApplyShear */
 
-FourierTransform_2D<float>::FourierTransform_2D( const bool WISDOM,    \
-                                                 const char* FFTW_DIR, \
-                                                 const UInt rows_,     \
+FourierTransform_2D<float>::FourierTransform_2D( const bool MULTITHREADED_FFT, \
+                                                 const bool WISDOM,            \
+                                                 const char* FFTW_DIR,         \
+                                                 const UInt rows_,             \
                                                  const UInt cols_)
     :   rows( rows_ ),
         cols( cols_ ),
         colsC( cols_/2 + 1 ),
-        fftScaling( cols_ * rows_ )
+        fftScaling( cols_ * rows_ ),
+        THREADED_FFT( MULTITHREADED_FFT )
 {
 
     UInt nThreads = 0;
@@ -704,7 +755,7 @@ FourierTransform_2D<float>::FourierTransform_2D( const bool WISDOM,    \
     fileName += "FFTW_2Dplan_" + std::to_string(rows) \
                              + "_" + std::to_string(cols);
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Performing the one-time initialization required to use threads with
          * FFTW */
         int Success = fftw_init_threads();
@@ -720,7 +771,7 @@ FourierTransform_2D<float>::FourierTransform_2D( const bool WISDOM,    \
     in_IFFT  = (complex_type*) fftwf_malloc( sizeof(complex_type) * rows * colsC );
     out_IFFT = (scalar_type*)  fftwf_malloc( sizeof(scalar_type)  * rows * cols  );
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         int nThreads = omp_get_max_threads();
 
         /* All plans subsequently created with any planner routine will use 
@@ -794,7 +845,7 @@ FourierTransform_2D<float>::~FourierTransform_2D()
     fftwf_free( out_IFFT ); 
     out_IFFT = NULL;
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Cleanup and get rid of all memory allocated by FFTW */
         fftw_cleanup_threads();
     }
@@ -816,8 +867,10 @@ FourierTransform_2D<float>::~FourierTransform_2D()
 //    UInt j = 0;
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i, j       ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ ) {
 //        for ( j = 0; j < cols; j++ )
 //            in_FFT[i * cols + j] = (scalar_type) V[j][i];
@@ -848,8 +901,10 @@ FourierTransform_2D<float>::~FourierTransform_2D()
 //    Scale( out_IFFT );
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i, j       ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ ) {
 //        for ( j = 0; j < cols; j++ )
 //            V[j][i] = out_IFFT[i * cols + j];
@@ -866,8 +921,10 @@ FourierTransform_2D<float>::~FourierTransform_2D()
 //    /* Scale output */
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < cols * rows; i++ ) 
 //        in[i] /= fftScaling;
 //
@@ -878,12 +935,16 @@ void FourierTransform_2D<float>::SANDS( const Vector_2Df &diffFactor, \
                                         Vector_2Df &V ) const
 {
 
+    /* It turns out that this function is much faster when running in serial */
+
     UInt i = 0;
     UInt j = 0;
 
-#pragma omp parallel for   \
-    private ( i, j       ) \
-    schedule( dynamic, 1 )
+//#pragma omp parallel for   \
+//    default ( shared     ) \
+//    private ( i, j       ) \
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
     for ( i = 0; i < rows; i++ ) {
         for ( j = 0; j < cols; j++ )
             in_FFT[i * cols + j] = (scalar_type) V[j][i];
@@ -893,9 +954,11 @@ void FourierTransform_2D<float>::SANDS( const Vector_2Df &diffFactor, \
     fftwf_execute_dft_r2c( plan_FFT, in_FFT, out_FFT );
 
     /* Convolve and scale the frequencies */
-#pragma omp parallel for   \
-    private ( i, j       ) \
-    schedule( dynamic, 1 )
+//#pragma omp parallel for   \
+//    default ( shared     ) \
+//    private ( i, j       ) \
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
     for ( i = 0; i < rows; i++ ) {
         for ( j = 0; j < colsC; j++ ) {
             in_IFFT[i * colsC + j][REAL] = ( out_FFT[i * colsC + j][REAL] * advFactor[j][i].real() \
@@ -908,25 +971,28 @@ void FourierTransform_2D<float>::SANDS( const Vector_2Df &diffFactor, \
     /* Computes backward DFT */
     fftwf_execute_dft_c2r( plan_IFFT, in_IFFT, out_IFFT );
 
-#pragma omp parallel for   \
-    private ( i, j       ) \
-    schedule( dynamic, 1 )
+//#pragma omp parallel for   \
+//    default ( shared     ) \
+//    private ( i, j       ) \
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
     for ( i = 0; i < rows; i++ ) {
-        for ( j = 0; j < cols; j++ ) {
+        for ( j = 0; j < cols; j++ )
             V[j][i] = out_IFFT[i * cols + j] / fftScaling;
-        }
     }
 
 } /* End of FourierTransform_2D<float>::SANDS */
 
-FourierTransform_2D<double>::FourierTransform_2D( const bool WISDOM,    \
-                                                  const char* FFTW_DIR, \
-                                                  const UInt rows_,     \
+FourierTransform_2D<double>::FourierTransform_2D( const bool MULTITHREADED_FFT, \
+                                                  const bool WISDOM,            \
+                                                  const char* FFTW_DIR,         \
+                                                  const UInt rows_,             \
                                                   const UInt cols_ )
     :   rows( rows_ ),
         cols( cols_ ),
         colsC( cols_/2 + 1 ),
-        fftScaling( cols_ * rows_ )
+        fftScaling( cols_ * rows_ ),
+        THREADED_FFT( MULTITHREADED_FFT )
 {
 
     UInt nThreads = 0;
@@ -938,7 +1004,7 @@ FourierTransform_2D<double>::FourierTransform_2D( const bool WISDOM,    \
     fileName += "FFTW_2Dplan_" + std::to_string(rows) \
                              + "_" + std::to_string(cols);
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Performing the one-time initialization required to use threads with
          * FFTW */
         int Success = fftw_init_threads();
@@ -954,7 +1020,7 @@ FourierTransform_2D<double>::FourierTransform_2D( const bool WISDOM,    \
     in_IFFT  = (complex_type*) fftw_malloc( sizeof(complex_type) * rows * colsC );
     out_IFFT = (scalar_type*)  fftw_malloc( sizeof(scalar_type)  * rows * cols  );
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         nThreads = omp_get_max_threads();
 
         /* All plans subsequently created with any planner routine will use 
@@ -1028,7 +1094,7 @@ FourierTransform_2D<double>::~FourierTransform_2D()
     fftw_free( out_IFFT ); 
     out_IFFT = NULL;
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Cleanup and get rid of all memory allocated by FFTW */
         fftw_cleanup_threads();
     }
@@ -1050,8 +1116,10 @@ FourierTransform_2D<double>::~FourierTransform_2D()
 //    UInt j = 0;
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i, j       ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ ) {
 //        for ( j = 0; j < cols; j++ )
 //            in_FFT[i * cols + j] = (scalar_type) V[j][i];
@@ -1082,8 +1150,10 @@ FourierTransform_2D<double>::~FourierTransform_2D()
 //    Scale( out_IFFT );
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i, j       ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ ) {
 //        for ( j = 0; j < cols; j++ )
 //            V[j][i] = out_IFFT[i * cols + j];
@@ -1100,8 +1170,10 @@ FourierTransform_2D<double>::~FourierTransform_2D()
 //    /* Scale output */
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < cols * rows; i++ ) 
 //        in[i] /= fftScaling;
 //
@@ -1112,12 +1184,16 @@ void FourierTransform_2D<double>::SANDS( const Vector_2D &diffFactor, \
                                          Vector_2D &V ) const
 {
 
+    /* It turns out that this function is much faster when running in serial */
+
     UInt i = 0;
     UInt j = 0;
 
-#pragma omp parallel for   \
-    private ( i, j       ) \
-    schedule( dynamic, 1 )
+//#pragma omp parallel for   \
+//    default ( shared     ) \
+//    private ( i, j       ) \
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
     for ( i = 0; i < rows; i++ ) {
         for ( j = 0; j < cols; j++ )
             in_FFT[i * cols + j] = (scalar_type) V[j][i];
@@ -1127,9 +1203,11 @@ void FourierTransform_2D<double>::SANDS( const Vector_2D &diffFactor, \
     fftw_execute_dft_r2c( plan_FFT, in_FFT, out_FFT );
 
     /* Convolve and scale the frequencies */
-#pragma omp parallel for   \
-    private ( i, j       ) \
-    schedule( dynamic, 1 )
+//#pragma omp parallel for   \
+//    default ( shared     ) \
+//    private ( i, j       ) \
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
     for ( i = 0; i < rows; i++ ) {
         for ( j = 0; j < colsC; j++ ) {
             in_IFFT[i * colsC + j][REAL] = ( out_FFT[i * colsC + j][REAL] * advFactor[j][i].real() \
@@ -1142,26 +1220,29 @@ void FourierTransform_2D<double>::SANDS( const Vector_2D &diffFactor, \
     /* Computes backward DFT */
     fftw_execute_dft_c2r( plan_IFFT, in_IFFT, out_IFFT );
 
-#pragma omp parallel for   \
-    private ( i, j       ) \
-    schedule( dynamic, 1 )
+//#pragma omp parallel for   \
+//    default ( shared     ) \
+//    private ( i, j       ) \
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
     for ( i = 0; i < rows; i++ ) {
-        for ( j = 0; j < cols; j++ ) {
+        for ( j = 0; j < cols; j++ )
             V[j][i] = out_IFFT[i * cols + j] / fftScaling;
-        }
     }
 
 } /* End of FourierTransform_2D<double>::SANDS */
 
 
-FourierTransform_2D<long double>::FourierTransform_2D( const bool WISDOM,    \
-                                                       const char* FFTW_DIR, \
-                                                       const UInt rows_,     \
+FourierTransform_2D<long double>::FourierTransform_2D( const bool MULTITHREADED_FFT, \
+                                                       const bool WISDOM,            \
+                                                       const char* FFTW_DIR,         \
+                                                       const UInt rows_,             \
                                                        const UInt cols_ )
     :   rows( rows_ ),
         cols( cols_ ),
         colsC( cols_/2 + 1 ),
-        fftScaling( cols_ * rows_ )
+        fftScaling( cols_ * rows_ ),
+        THREADED_FFT( MULTITHREADED_FFT )
 {
 
     UInt nThreads = 0;
@@ -1173,7 +1254,7 @@ FourierTransform_2D<long double>::FourierTransform_2D( const bool WISDOM,    \
     fileName += "FFTW_2Dplan_" + std::to_string(rows) \
                              + "_" + std::to_string(cols);
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Performing the one-time initialization required to use threads with
          * FFTW */
         int Success = fftw_init_threads();
@@ -1189,7 +1270,7 @@ FourierTransform_2D<long double>::FourierTransform_2D( const bool WISDOM,    \
     in_IFFT  = (complex_type*) fftwl_malloc( sizeof(complex_type) * rows * colsC );
     out_IFFT = (scalar_type*)  fftwl_malloc( sizeof(scalar_type)  * rows * cols  );
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         int nThreads = omp_get_max_threads();
 
         /* All plans subsequently created with any planner routine will use 
@@ -1263,7 +1344,7 @@ FourierTransform_2D<long double>::~FourierTransform_2D()
     fftwl_free( out_IFFT ); 
     out_IFFT = NULL;
 
-    if ( !PARALLEL_CASES ) {
+    if ( THREADED_FFT ) {
         /* Cleanup and get rid of all memory allocated by FFTW */
         fftw_cleanup_threads();
     }
@@ -1285,8 +1366,10 @@ FourierTransform_2D<long double>::~FourierTransform_2D()
 //    UInt j = 0;
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i, j       ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ ) {
 //        for ( j = 0; j < cols; j++ )
 //            in_FFT[i * cols + j] = (scalar_type) V[j][i];
@@ -1317,8 +1400,10 @@ FourierTransform_2D<long double>::~FourierTransform_2D()
 //    Scale( out_IFFT );
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i, j       ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < rows; i++ ) {
 //        for ( j = 0; j < cols; j++ )
 //            V[j][i] = out_IFFT[i * cols + j];
@@ -1335,8 +1420,10 @@ FourierTransform_2D<long double>::~FourierTransform_2D()
 //    /* Scale output */
 //
 //#pragma omp parallel for   \
+//    default ( shared     ) \
 //    private ( i          ) \
-//    schedule( dynamic, 1 )
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
 //    for ( i = 0; i < cols * rows; i++ ) 
 //        in[i] /= fftScaling;
 //
@@ -1347,12 +1434,16 @@ void FourierTransform_2D<long double>::SANDS( const Vector_2Dl &diffFactor, \
                                               Vector_2Dl &V ) const
 {
 
+    /* It turns out that this function is much faster when running in serial */
+
     UInt i = 0;
     UInt j = 0;
 
-#pragma omp parallel for   \
-    private ( i, j       ) \
-    schedule( dynamic, 1 )
+//#pragma omp parallel for   \
+//    default ( shared     ) \
+//    private ( i, j       ) \
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
     for ( i = 0; i < rows; i++ ) {
         for ( j = 0; j < cols; j++ )
             in_FFT[i * cols + j] = (scalar_type) V[j][i];
@@ -1362,9 +1453,11 @@ void FourierTransform_2D<long double>::SANDS( const Vector_2Dl &diffFactor, \
     fftwl_execute_dft_r2c( plan_FFT, in_FFT, out_FFT );
 
     /* Convolve and scale the frequencies */
-#pragma omp parallel for   \
-    private ( i, j       ) \
-    schedule( dynamic, 1 )
+//#pragma omp parallel for   \
+//    default ( shared     ) \
+//    private ( i, j       ) \
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
     for ( i = 0; i < rows; i++ ) {
         for ( j = 0; j < colsC; j++ ) {
             in_IFFT[i * colsC + j][REAL] = ( out_FFT[i * colsC + j][REAL] * advFactor[j][i].real() \
@@ -1377,13 +1470,14 @@ void FourierTransform_2D<long double>::SANDS( const Vector_2Dl &diffFactor, \
     /* Computes backward DFT */
     fftwl_execute_dft_c2r( plan_IFFT, in_IFFT, out_IFFT );
 
-#pragma omp parallel for   \
-    private ( i, j       ) \
-    schedule( dynamic, 1 )
+//#pragma omp parallel for   \
+//    default ( shared     ) \
+//    private ( i, j       ) \
+//    schedule( dynamic, 1 ) \
+//    if ( !PARALLEL_CASES )
     for ( i = 0; i < rows; i++ ) {
-        for ( j = 0; j < cols; j++ ) {
+        for ( j = 0; j < cols; j++ )
             V[j][i] = out_IFFT[i * cols + j] / fftScaling;
-        }
     }
 
 } /* End of FourierTransform_2D<long double>::SANDS */
