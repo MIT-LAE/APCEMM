@@ -299,7 +299,6 @@ FourierTransform_1D<double>::FourierTransform_1D( const bool MULTITHREADED_FFT, 
 
     fileName_FFT  = fileName + "_FFT.pl";
     fileName_IFFT = fileName + "_IFFT.pl";
-    std::cout << fileName_FFT << std::endl;
 
     if ( WISDOM )
         wisdomExists = fftw_import_wisdom_from_filename( fileName_FFT.c_str() );
