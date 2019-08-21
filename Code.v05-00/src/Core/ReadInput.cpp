@@ -6590,11 +6590,6 @@ Vector_2D CombVec( OptInput &Input_Opt )
              ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_f" )    == 0 ) || \
              ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
-        } else if ( ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "mg/kg_fuel" ) == 0 ) || \
-                    ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "mg/kg_f" )    == 0 ) || \
-                    ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "mg/kg" )      == 0 ) ) {
-            for ( i = 0; i < cases.size(); i++ )
-                cases[i] /= 1.00E+03;
         } else {
             std::cout << " Unknown unit for variable 'EI_SOOT': ";
             std::cout << Input_Opt.PARAMETER_EI_SOOT_UNIT << std::endl;
