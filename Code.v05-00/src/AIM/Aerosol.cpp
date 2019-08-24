@@ -2208,7 +2208,8 @@ namespace AIM
 
     } /* End of Grid_Aerosol::Average */
 
-    void Grid_Aerosol::addPDF( const Aerosol &aerosol, const Vector_2D &weights )
+    void Grid_Aerosol::addPDF( const Aerosol &aerosol, const Vector_2D &weights, \
+                               const Vector_2D &cellAreas, const RealDouble nCell )
     {
 
         UInt iNx  = 0;
@@ -2226,14 +2227,16 @@ namespace AIM
             for ( jNy = 0; jNy < Ny; jNy++ ) {
                 for ( iNx = 0; iNx < Nx; iNx++ ) {
                     if ( weights[jNy][iNx] != 0.0E+00 )
-                        pdf[iBin][jNy][iNx] += AerPDF[iBin];
+                        pdf[iBin][jNy][iNx] += AerPDF[iBin] \
+                                               / ( nCell * cellAreas[jNy][iNx] );
                 }
             }
         }
 
     } /* End of Grid_Aerosol::addPDF */
 
-    void Grid_Aerosol::addPDF( const Vector_1D &PDF, const Vector_2D &weights ) 
+    void Grid_Aerosol::addPDF( const Vector_1D &PDF, const Vector_2D &weights, \
+                               const Vector_2D &cellAreas, const RealDouble nCell )
     {
 
         UInt iNx  = 0;
@@ -2249,7 +2252,8 @@ namespace AIM
             for ( jNy = 0; jNy < Ny; jNy++ ) {
                 for ( iNx = 0; iNx < Nx; iNx++ ) {
                     if ( weights[jNy][iNx] != 0.0E+00 )
-                        pdf[iBin][jNy][iNx] += PDF[iBin];
+                        pdf[iBin][jNy][iNx] += PDF[iBin] \
+                                               / ( nCell * cellAreas[jNy][iNx] );
                 }
             }
         }

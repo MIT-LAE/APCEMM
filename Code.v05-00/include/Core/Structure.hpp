@@ -84,9 +84,9 @@ class Solution
                           const Mesh &m,                                     \
                           bool halfRing,                                     \
                           const RealDouble temperature, bool set2Saturation, \
-                          AIM::Aerosol &liqAer, AIM::Aerosol &iceAer,        \
+                          AIM::Aerosol liqAer, AIM::Aerosol iceAer,          \
                           const RealDouble Soot_Den,                         \
-                          const Meteorology &met );
+                          const Meteorology &met, const RealDouble areaPlume );
 
         Vector_1D getAmbient( ) const;
         Vector_1D getLiqSpecies() const;
