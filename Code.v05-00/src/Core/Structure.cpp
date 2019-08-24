@@ -1085,9 +1085,9 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                             const Mesh &m,                                 \
                             bool halfRing,                                 \
                             const double temperature, bool set2Saturation, \
-                            AIM::Aerosol &liqAer, AIM::Aerosol &iceAer,    \
+                            AIM::Aerosol liqAer, AIM::Aerosol iceAer,      \
                             const double Soot_Den,                         \
-                            const Meteorology &met )
+                            const Meteorology &met, const RealDouble areaPlume )
 {
     /* TODO: Release as Gaussian instead of top-hat? */
 
@@ -1133,6 +1133,15 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
     Vector_3D weights    = m.weights;
     Vector_1Dui nCellMap = m.nMap();
     unsigned int nCell   = 0;
+    
+    /* Apply area scaling for aerosols before releasing into the grid
+     * *Aer are initially in #/cm^3
+     * Scaling them the initial plume area such that they are now in #*m^2/cm^3
+     * When applying them to the grid, they are scaled by the total ring area
+     * in Grid_Aerosol::addPDF */
+    liqAer.scalePdf( areaPlume );
+    iceAer.scalePdf( areaPlume );
+
 
     if ( !halfRing ) {
         /* Full rings */
@@ -1164,8 +1173,8 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                             H2O[jNy][iNx] = physFunc::pSat_H2Os( met.temp_[jNy][iNx] ) / ( physConst::kB * met.temp_[jNy][iNx] * 1.00E+06 ); /* [molec / cm^3] */
                     } else {
                         /* If subsaturated, then emit water and soot */
-                        H2O[jNy][iNx]+= ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        sootDens[jNy][iNx] = Soot_Den;
+                        H2O[jNy][iNx]      += ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+                        sootDens[jNy][iNx] += ( Soot_Den * areaPlume / ( nCell * cellAreas[jNy][iNx] ) );
                         sootRadi[jNy][iNx] = rad;
                         sootArea[jNy][iNx] = 4.0 * physConst::PI * rad * rad * sootDens[jNy][iNx];
                     }
@@ -1177,16 +1186,19 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
         }
     
         if ( ( std::isfinite(iceAer.Moment()) ) && ( iceAer.Moment() > 0.0E+00 ) )
-            solidAerosol.addPDF( iceAer, weights[innerRing] );
+            solidAerosol.addPDF( iceAer, weights[innerRing], cellAreas, nCell );
         if ( ( std::isfinite(liqAer.Moment()) ) && ( liqAer.Moment() > 0.0E+00 ) )
-            liquidAerosol.addPDF( liqAer, weights[innerRing] );
+            liquidAerosol.addPDF( liqAer, weights[innerRing], cellAreas, nCell );
 
 
     } else {
         /* Half rings */
 
         for ( innerRing = 0; innerRing <= 1; innerRing++ ) {
-            nCell     = nCellMap[innerRing];
+            /* Concentrations should be identical whether it is half-rings or
+             * full rings. Therefore, make sure that nCell is doubled when
+             * using half-rings! */
+            nCell     = 2.0 * nCellMap[innerRing];
             for ( jNy = 0; jNy < NY; jNy++ ) {
                 for ( iNx = 0; iNx < NX; iNx++ ) {
                     w = weights[innerRing][jNy][iNx];
@@ -1212,8 +1224,8 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                             H2O[jNy][iNx] = physFunc::pSat_H2Os( met.temp_[jNy][iNx] ) / ( physConst::kB * met.temp_[jNy][iNx] * 1.00E+06 ); /* [molec / cm^3] */
                         } else {
                             /* If subsaturated, then emit water and soot */
-                            H2O[jNy][iNx]+= ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                            sootDens[jNy][iNx] = Soot_Den;
+                            H2O[jNy][iNx]      += ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+                            sootDens[jNy][iNx] += ( Soot_Den * areaPlume / ( nCell * cellAreas[jNy][iNx] ) );
                             sootRadi[jNy][iNx] = rad;
                             sootArea[jNy][iNx] = 4.0 * physConst::PI * rad * rad * sootDens[jNy][iNx];
                         }
@@ -1224,9 +1236,9 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
             }
 
             if ( ( std::isfinite(iceAer.Moment()) ) && ( iceAer.Moment() > 0.0E+00 ) )
-                solidAerosol.addPDF( iceAer, weights[innerRing] );
+                solidAerosol.addPDF( iceAer, weights[innerRing], cellAreas, nCell );
             if ( ( std::isfinite(liqAer.Moment()) ) && ( liqAer.Moment() > 0.0E+00 ) )
-                liquidAerosol.addPDF( liqAer, weights[innerRing] );
+                liquidAerosol.addPDF( liqAer, weights[innerRing], cellAreas, nCell );
 
         }
 

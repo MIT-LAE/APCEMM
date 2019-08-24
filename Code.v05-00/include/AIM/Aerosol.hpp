@@ -157,8 +157,10 @@ class AIM::Grid_Aerosol
         void updatePdf( Vector_3D pdf_ );
         Vector_1D Average( const Vector_2D &weights,   \
                            const RealDouble &totWeight ) const;
-        void addPDF( const Aerosol &PDF, const Vector_2D &weights );
-        void addPDF( const Vector_1D &PDF, const Vector_2D &weights );
+        void addPDF( const Aerosol &PDF, const Vector_2D &weights,  \
+                     const Vector_2D &cellAreas, const RealDouble nCell );
+        void addPDF( const Vector_1D &PDF, const Vector_2D &weights, \
+                     const Vector_2D &cellAreas, const RealDouble nCell );
 
         /* gets */
         Vector_1D getBinCenters() const;
