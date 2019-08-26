@@ -28,24 +28,24 @@
 
 /* 2. Reduced regular grid for non-zero shear: */
 
-#define NX                512         /* Number of grid cells in the x-direction */
-#define NY                256         /* Number of grid cells in the y-direction */
-#define XLIM              3.00E+04    /* x-limits of the domain [m] */
-#define YLIM_UP           6.50E+02    /* Upper y-limit of the domain [m] */
-#define YLIM_DOWN         6.50E+02    /* Lower y-limit of the domain [m] */
-
-/* 3. Fine regular grid for non-zero shear: */
-
-//#define NX                1024        /* Number of grid cells in the x-direction */
+//#define NX                512         /* Number of grid cells in the x-direction */
 //#define NY                256         /* Number of grid cells in the y-direction */
-//#define XLIM              6.00E+04    /* x-limits of the domain [m] */
+//#define XLIM              3.00E+04    /* x-limits of the domain [m] */
 //#define YLIM_UP           6.50E+02    /* Upper y-limit of the domain [m] */
 //#define YLIM_DOWN         6.50E+02    /* Lower y-limit of the domain [m] */
 
+/* 3. Fine regular grid for non-zero shear: */
+
+#define NX                1024        /* Number of grid cells in the x-direction */
+#define NY                256         /* Number of grid cells in the y-direction */
+#define XLIM              6.00E+04    /* x-limits of the domain [m] */
+#define YLIM_UP           6.50E+02    /* Upper y-limit of the domain [m] */
+#define YLIM_DOWN         6.50E+02    /* Lower y-limit of the domain [m] */
+
 /* 4. Fine and extended grid for contrail simulation: */
 
-//#define NX                2048        /* Number of grid cells in the x-direction */
-//#define NY                512         /* Number of grid cells in the y-direction */
+//#define NX                1024        /* Number of grid cells in the x-direction */
+//#define NY                256         /* Number of grid cells in the y-direction */
 //#define XLIM              4.00E+04    /* x-limits of the domain [m] */
 //#define YLIM_UP           8.00E+02    /* Upper y-limit of the domain [m] */
 //#define YLIM_DOWN         9.00E+02    /* Lower y-limit of the domain [m] */
@@ -55,8 +55,8 @@
 
 
 /* Coarse aerosol representation */
-#define LA_VRAT               2.00E+00    /* Size ratio between two consecutive bins */
-#define PA_VRAT               2.00E+00    /* Size ratio between two consecutive bins */
+#define LA_VRAT               1.50E+00    /* Size ratio between two consecutive bins */
+#define PA_VRAT               1.50E+00    /* Size ratio between two consecutive bins */
 
 /* Fine aerosol representation */
 //#define LA_VRAT               1.50E+00    /* Size ratio between two consecutive bins */

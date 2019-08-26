@@ -447,7 +447,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Set solution arrays to ambient data */
     Data.Initialize( BACKG_FILENAME, \
-                     input, airDens, Met, \
+                     input, airDens, Input_Opt, Met, \
                      printDEBUG );
 
     /* Print Background Debug? */
@@ -677,7 +677,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Create cluster of rings */
     //Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), semiXaxis, semiYaxis );
-    Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ) );
+    Cluster ringCluster( NRING, ( 0 ) );
 
     /* Number of rings */
     const unsigned int nRing = ringCluster.getnRing();
@@ -705,11 +705,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     ringCluster.ComputeRingAreas( cellAreas, m.weights );
     const Vector_1D ringArea = ringCluster.getRingArea();
     const double totArea = std::accumulate( ringArea.begin(), ringArea.end(), 0 );
- 
-    /* Add emission into the grid */
+
+    	/* Add emission into the grid */
     Data.addEmission( EI, aircraft, m, ringCluster.halfRing(),  \
-                      temperature_K, ( relHumidity_i > 100.0 ), \
-                      liquidAer, iceAer, Soot_den * areaPlume / ringArea[0], Met ); 
+      		     temperature_K, ( relHumidity_i > 100.0 ), \
+		     liquidAer, iceAer, Soot_den * areaPlume / ringArea[0], Met, CHEMISTRY );
 
     /* Fill in variables species for initial time */
     ringSpecies.FillIn( Data, m.weights, nTime );
@@ -1008,7 +1008,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             } else {
                 /* Advection and diffusion of condensable species */
                 Solver.Run( Data.H2O, cellAreas, 1 );
-                Solver.Run( Data.HNO3, cellAreas, 1 );
             }
  
             /* Advection and diffusion for aerosol particles */

@@ -80,7 +80,7 @@ void Solution::Print( const std::vector<std::vector<double> >& vector_2D, \
 } /* End of Solution::Print */
 
 void Solution::Initialize( char const *fileName, const Input &input, \
-                           const double airDens,                    \
+                           const double airDens, const OptInput &inputOpt,  \
                            const Meteorology &met, const bool DBG )
 {
 
@@ -167,6 +167,7 @@ void Solution::Initialize( char const *fileName, const Input &input, \
 
 
     /* Gaseous species */
+    if ( inputOpt.CHEMISTRY_CHEMISTRY ) {
     SetShape( CO2      , size_x , size_y, amb_Value[  0] * airDens );
     SetShape( PPN      , size_x , size_y, amb_Value[  1] * airDens );
     SetShape( BrNO2    , size_x , size_y, amb_Value[  2] * airDens );
@@ -302,7 +303,148 @@ void Solution::Initialize( char const *fileName, const Input &input, \
     SetShape( N2       , size_x , size_y, amb_Value[132] * airDens );
     SetShape( O2       , size_x , size_y, amb_Value[133] * airDens );
     SetShape( RCOOH    , size_x , size_y, amb_Value[134] * airDens );
+    SetShape( NIT  , size_x, size_y, (double) 0.0 );
+    SetShape( NAT  , size_x, size_y, (double) 0.0 );
+    } else {
+    SetShape( CO2      , 1 , 1, amb_Value[  0] * airDens );
+    SetShape( PPN      , 1 , 1, amb_Value[  1] * airDens );
+    SetShape( BrNO2    , 1 , 1, amb_Value[  2] * airDens );
+    SetShape( IEPOX    , 1 , 1, amb_Value[  3] * airDens );
+    SetShape( PMNN     , 1 , 1, amb_Value[  4] * airDens );
+    SetShape( N2O      , 1 , 1, amb_Value[  5] * airDens );
+    SetShape( N        , 1 , 1, amb_Value[  6] * airDens );
+    SetShape( PAN      , 1 , 1, amb_Value[  7] * airDens );
+    SetShape( ALK4     , 1 , 1, amb_Value[  8] * airDens );
+    SetShape( MAP      , 1 , 1, amb_Value[  9] * airDens );
+    SetShape( MPN      , 1 , 1, amb_Value[ 10] * airDens );
+    SetShape( Cl2O2    , 1 , 1, amb_Value[ 11] * airDens );
+    SetShape( ETP      , 1 , 1, amb_Value[ 12] * airDens );
+    SetShape( HNO2     , 1 , 1, amb_Value[ 13] * airDens );
+    SetShape( C3H8     , 1 , 1, amb_Value[ 14] * airDens );
+    SetShape( RA3P     , 1 , 1, amb_Value[ 15] * airDens );
+    SetShape( RB3P     , 1 , 1, amb_Value[ 16] * airDens );
+    SetShape( OClO     , 1 , 1, amb_Value[ 17] * airDens );
+    SetShape( ClNO2    , 1 , 1, amb_Value[ 18] * airDens );
+    SetShape( ISOP     , 1 , 1, amb_Value[ 19] * airDens );
+    SetShape( HNO4     , 1 , 1, amb_Value[ 20] * airDens );
+    SetShape( MAOP     , 1 , 1, amb_Value[ 21] * airDens );
+    SetShape( MP       , 1 , 1, amb_Value[ 22] * airDens );
+    SetShape( ClOO     , 1 , 1, amb_Value[ 23] * airDens );
+    SetShape( RP       , 1 , 1, amb_Value[ 24] * airDens );
+    SetShape( BrCl     , 1 , 1, amb_Value[ 25] * airDens );
+    SetShape( PP       , 1 , 1, amb_Value[ 26] * airDens );
+    SetShape( PRPN     , 1 , 1, amb_Value[ 27] * airDens );
+    SetShape( SO4      , 1 , 1, amb_Value[ 28] * airDens );
+    SetShape( Br2      , 1 , 1, amb_Value[ 29] * airDens );
+    SetShape( ETHLN    , 1 , 1, amb_Value[ 30] * airDens );
+    SetShape( MVKN     , 1 , 1, amb_Value[ 31] * airDens );
+    SetShape( R4P      , 1 , 1, amb_Value[ 32] * airDens );
+    SetShape( C2H6     , 1 , 1, amb_Value[ 33] * airDens );
+    SetShape( RIP      , 1 , 1, amb_Value[ 34] * airDens );
+    SetShape( VRP      , 1 , 1, amb_Value[ 35] * airDens );
+    SetShape( ATOOH    , 1 , 1, amb_Value[ 36] * airDens );
+    SetShape( IAP      , 1 , 1, amb_Value[ 37] * airDens );
+    SetShape( DHMOB    , 1 , 1, amb_Value[ 38] * airDens );
+    SetShape( MOBA     , 1 , 1, amb_Value[ 39] * airDens );
+    SetShape( MRP      , 1 , 1, amb_Value[ 40] * airDens );
+    SetShape( N2O5     , 1 , 1, amb_Value[ 41] * airDens );
+    SetShape( ISNOHOO  , 1 , 1, amb_Value[ 42] * airDens );
+    SetShape( ISNP     , 1 , 1, amb_Value[ 43] * airDens );
+    SetShape( ISOPNB   , 1 , 1, amb_Value[ 44] * airDens );
+    SetShape( IEPOXOO  , 1 , 1, amb_Value[ 45] * airDens );
+    SetShape( MACRNO2  , 1 , 1, amb_Value[ 46] * airDens );
+    SetShape( ROH      , 1 , 1, amb_Value[ 47] * airDens );
+    SetShape( MOBAOO   , 1 , 1, amb_Value[ 48] * airDens );
+    SetShape( DIBOO    , 1 , 1, amb_Value[ 49] * airDens );
+    SetShape( PMN      , 1 , 1, amb_Value[ 50] * airDens );
+    SetShape( ISNOOB   , 1 , 1, amb_Value[ 51] * airDens );
+    SetShape( INPN     , 1 , 1, amb_Value[ 52] * airDens );
+    SetShape( H        , 1 , 1, amb_Value[ 53] * airDens );
+    SetShape( BrNO3    , 1 , 1, amb_Value[ 54] * airDens );
+    SetShape( PRPE     , 1 , 1, amb_Value[ 55] * airDens );
+    SetShape( MVKOO    , 1 , 1, amb_Value[ 56] * airDens );
+    SetShape( Cl2      , 1 , 1, amb_Value[ 57] * airDens );
+    SetShape( ISOPND   , 1 , 1, amb_Value[ 58] * airDens );
+    SetShape( HOBr     , 1 , 1, amb_Value[ 59] * airDens );
+    SetShape( A3O2     , 1 , 1, amb_Value[ 60] * airDens );
+    SetShape( PROPNN   , 1 , 1, amb_Value[ 61] * airDens );
+    SetShape( GLYX     , 1 , 1, amb_Value[ 62] * airDens );
+    SetShape( MAOPO2   , 1 , 1, amb_Value[ 63] * airDens );
+    SetShape( CH4      , 1 , 1, amb_Value[ 64] * airDens );
+    SetShape( GAOO     , 1 , 1, amb_Value[ 65] * airDens );
+    SetShape( B3O2     , 1 , 1, amb_Value[ 66] * airDens );
+    SetShape( ACET     , 1 , 1, amb_Value[ 67] * airDens );
+    SetShape( MACRN    , 1 , 1, amb_Value[ 68] * airDens );
+    SetShape( CH2OO    , 1 , 1, amb_Value[ 69] * airDens );
+    SetShape( MGLYOO   , 1 , 1, amb_Value[ 70] * airDens );
+    SetShape( VRO2     , 1 , 1, amb_Value[ 71] * airDens );
+    SetShape( MGLOO    , 1 , 1, amb_Value[ 72] * airDens );
+    SetShape( MACROO   , 1 , 1, amb_Value[ 73] * airDens );
+    SetShape( PO2      , 1 , 1, amb_Value[ 74] * airDens );
+    SetShape( CH3CHOO  , 1 , 1, amb_Value[ 75] * airDens );
+    SetShape( MAN2     , 1 , 1, amb_Value[ 76] * airDens );
+    SetShape( ISNOOA   , 1 , 1, amb_Value[ 77] * airDens );
+    SetShape( H2O2     , 1 , 1, amb_Value[ 78] * airDens );
+    SetShape( PRN1     , 1 , 1, amb_Value[ 79] * airDens );
+    SetShape( ETO2     , 1 , 1, amb_Value[ 80] * airDens );
+    SetShape( KO2      , 1 , 1, amb_Value[ 81] * airDens );
+    SetShape( RCO3     , 1 , 1, amb_Value[ 82] * airDens );
+    SetShape( HC5OO    , 1 , 1, amb_Value[ 83] * airDens );
+    SetShape( GLYC     , 1 , 1, amb_Value[ 84] * airDens );
+    SetShape( ClNO3    , 1 , 1, amb_Value[ 85] * airDens );
+    SetShape( RIO2     , 1 , 1, amb_Value[ 86] * airDens );
+    SetShape( R4N1     , 1 , 1, amb_Value[ 87] * airDens );
+    SetShape( HOCl     , 1 , 1, amb_Value[ 88] * airDens );
+    SetShape( ATO2     , 1 , 1, amb_Value[ 89] * airDens );
+    SetShape( HNO3     , 1 , 1, amb_Value[ 90] * airDens );
+    SetShape( ISN1     , 1 , 1, amb_Value[ 91] * airDens );
+    SetShape( MAO3     , 1 , 1, amb_Value[ 92] * airDens );
+    SetShape( MRO2     , 1 , 1, amb_Value[ 93] * airDens );
+    SetShape( INO2     , 1 , 1, amb_Value[ 94] * airDens );
+    SetShape( HAC      , 1 , 1, amb_Value[ 95] * airDens );
+    SetShape( HC5      , 1 , 1, amb_Value[ 96] * airDens );
+    SetShape( MGLY     , 1 , 1, amb_Value[ 97] * airDens );
+    SetShape( ISOPNBO2 , 1 , 1, amb_Value[ 98] * airDens );
+    SetShape( ISOPNDO2 , 1 , 1, amb_Value[ 99] * airDens );
+    SetShape( R4O2     , 1 , 1, amb_Value[100] * airDens );
+    SetShape( R4N2     , 1 , 1, amb_Value[101] * airDens );
+    SetShape( BrO      , 1 , 1, amb_Value[102] * airDens );
+    SetShape( RCHO     , 1 , 1, amb_Value[103] * airDens );
+    SetShape( MEK      , 1 , 1, amb_Value[104] * airDens );
+    SetShape( ClO      , 1 , 1, amb_Value[105] * airDens );
+    SetShape( MACR     , 1 , 1, amb_Value[106] * airDens );
+    SetShape( SO2      , 1 , 1, amb_Value[107] * airDens );
+    SetShape( MVK      , 1 , 1, amb_Value[108] * airDens );
+    SetShape( ALD2     , 1 , 1, amb_Value[109] * airDens );
+    SetShape( MCO3     , 1 , 1, amb_Value[110] * airDens );
+    SetShape( CH2O     , 1 , 1, amb_Value[111] * airDens );
+    SetShape( H2O      , size_x , size_y, amb_Value[112] * airDens );
+    SetShape( Br       , 1 , 1, amb_Value[113] * airDens );
+    SetShape( NO       , 1 , 1, amb_Value[114] * airDens );
+    SetShape( NO3      , 1 , 1, amb_Value[115] * airDens );
+    SetShape( Cl       , 1 , 1, amb_Value[116] * airDens );
+    SetShape( O        , 1 , 1, amb_Value[117] * airDens );
+    SetShape( O1D      , 1 , 1, amb_Value[118] * airDens );
+    SetShape( O3       , 1 , 1, amb_Value[119] * airDens );
+    SetShape( HO2      , 1 , 1, amb_Value[120] * airDens );
+    SetShape( NO2      , 1 , 1, amb_Value[121] * airDens );
+    SetShape( OH       , 1 , 1, amb_Value[122] * airDens );
+    SetShape( HBr      , 1 , 1, amb_Value[123] * airDens );
+    SetShape( HCl      , 1 , 1, amb_Value[124] * airDens );
+    SetShape( CO       , 1 , 1, amb_Value[125] * airDens );
+    SetShape( MO2      , 1 , 1, amb_Value[126] * airDens );
+    SetShape( ACTA     , 1 , 1, amb_Value[127] * airDens );
+    SetShape( EOH      , 1 , 1, amb_Value[128] * airDens );
+    SetShape( H2       , 1 , 1, amb_Value[129] * airDens );
+    SetShape( HCOOH    , 1 , 1, amb_Value[130] * airDens );
+    SetShape( MOH      , 1 , 1, amb_Value[131] * airDens );
+    SetShape( N2       , 1 , 1, amb_Value[132] * airDens );
+    SetShape( O2       , 1 , 1, amb_Value[133] * airDens );
+    SetShape( RCOOH    , 1 , 1, amb_Value[134] * airDens );
+    SetShape( NIT      , 1 , 1, (double) 0.0 );
+    SetShape( NAT      , 1 , 1, (double) 0.0 );
 
+    }
     if ( LOAD_MET ) {
         /* Use meteorological input? */
         H2O = met.H2O_;
@@ -317,10 +459,7 @@ void Solution::Initialize( char const *fileName, const Input &input, \
             }
         }
     }
-
-    SetShape( NIT  , size_x, size_y, (double) 0.0 );
-    SetShape( NAT  , size_x, size_y, (double) 0.0 );
-    
+ 
     std::vector<double> stratData{ SO4[0][0], HNO3[0][0], HCl[0][0], HOCl[0][0], HBr[0][0], HOBr[0][0],
                                    H2O[0][0], ClNO3[0][0], BrNO3[0][0], NIT[0][0], NAT[0][0] };
    
@@ -1087,7 +1226,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                             const double temperature, bool set2Saturation, \
                             AIM::Aerosol &liqAer, AIM::Aerosol &iceAer,    \
                             const double Soot_Den,                         \
-                            const Meteorology &met )
+                            const Meteorology &met, bool CHEMISTRY )
 {
     /* TODO: Release as Gaussian instead of top-hat? */
 
@@ -1099,30 +1238,33 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
     double E_Soot;
     const double rad = EI.getSootRad();
     const double fuelPerDist = AC.FuelFlow() / AC.VFlight();
-    /* Unit check:  [kg/m]   =   [kg fuel/s] /     [m/s] */
-    E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    /*     = [g(CO2)/kg f]/ ( [kg/mol]* [g/kg]  ) * [kg fuel/m] * [molec/mol]
-     *     = [molec/m]
-     */
-    E_NO   = EI.getNO()   / ( MW_NO   * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    /*     = [g(NO)/kg f] / ( g(NO)/mol         ) * [kg fuel/m] * [molec/mol]
-     *     = [molec/m] */
-    E_NO2  = EI.getNO2()  / ( MW_NO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    E_HNO2 = EI.getHNO2() / ( MW_HNO2 * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    E_CO   = EI.getCO()   / ( MW_CO   * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    E_CH4  = EI.getCH4()  / ( MW_CH4  * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    E_C2H6 = EI.getC2H6() / ( MW_C2H6 * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    E_PRPE = EI.getPRPE() / ( MW_PRPE * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    E_ALK4 = EI.getALK4() / ( MW_ALK4 * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    E_CH2O = EI.getCH2O() / ( MW_CH2O * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    E_ALD2 = EI.getALD2() / ( MW_ALD2 * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    E_GLYX = EI.getGLYX() / ( MW_GLYX * 1.0E+03 ) * fuelPerDist * physConst::Na;
-    E_MGLY = EI.getMGLY() / ( MW_MGLY * 1.0E+03 ) * fuelPerDist * physConst::Na;
+
+    if ( CHEMISTRY ) {
+	/* Unit check:  [kg/m]   =   [kg fuel/s] /     [m/s] */
+	E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	/*     = [g(CO2)/kg f]/ ( [kg/mol]* [g/kg]  ) * [kg fuel/m] * [molec/mol]
+	*     = [molec/m]
+	*/
+	E_NO   = EI.getNO()   / ( MW_NO   * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	/*     = [g(NO)/kg f] / ( g(NO)/mol         ) * [kg fuel/m] * [molec/mol]
+	*     = [molec/m] */
+	E_NO2  = EI.getNO2()  / ( MW_NO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	E_HNO2 = EI.getHNO2() / ( MW_HNO2 * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	E_CO   = EI.getCO()   / ( MW_CO   * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	E_CH4  = EI.getCH4()  / ( MW_CH4  * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	E_C2H6 = EI.getC2H6() / ( MW_C2H6 * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	E_PRPE = EI.getPRPE() / ( MW_PRPE * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	E_ALK4 = EI.getALK4() / ( MW_ALK4 * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	E_CH2O = EI.getCH2O() / ( MW_CH2O * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	E_ALD2 = EI.getALD2() / ( MW_ALD2 * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	E_GLYX = EI.getGLYX() / ( MW_GLYX * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	E_MGLY = EI.getMGLY() / ( MW_MGLY * 1.0E+03 ) * fuelPerDist * physConst::Na;
+	E_SO2  = ( 1.0 - SO2TOSO4 ) * \
+	    EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
+    }
     if ( !set2Saturation ) {
         E_H2O  = EI.getH2O()  / ( MW_H2O  * 1.0E+03 ) * fuelPerDist * physConst::Na;
     }
-    E_SO2  = ( 1.0 - SO2TOSO4 ) * \
-             EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
 
     E_Soot = EI.getSoot() / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * rad * rad * rad ) * fuelPerDist;
     /*     = [g_soot/kg_fuel]/ (                        * [kg_soot/m^3]       * [g/kg]   * [m^3]           ) * [kg_fuel/m]
@@ -1145,19 +1287,22 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
 
                 /* Initially weights are either 0 or 1 */
                 if ( w != 0.0E+00 ) {
-                    CO2[jNy][iNx]  += ( E_CO2  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    NO[jNy][iNx]   += ( E_NO   * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    NO2[jNy][iNx]  += ( E_NO2  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    HNO2[jNy][iNx] += ( E_HNO2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    CO[jNy][iNx]   += ( E_CO   * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    CH4[jNy][iNx]  += ( E_CH4  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    C2H6[jNy][iNx] += ( E_C2H6 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    PRPE[jNy][iNx] += ( E_PRPE * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    ALK4[jNy][iNx] += ( E_ALK4 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    CH2O[jNy][iNx] += ( E_CH2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    ALD2[jNy][iNx] += ( E_ALD2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    GLYX[jNy][iNx] += ( E_GLYX * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                    MGLY[jNy][iNx] += ( E_MGLY * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+		    if ( CHEMISTRY ) {
+			CO2[jNy][iNx]  += ( E_CO2  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			NO[jNy][iNx]   += ( E_NO   * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			NO2[jNy][iNx]  += ( E_NO2  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			HNO2[jNy][iNx] += ( E_HNO2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			CO[jNy][iNx]   += ( E_CO   * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			CH4[jNy][iNx]  += ( E_CH4  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			C2H6[jNy][iNx] += ( E_C2H6 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			PRPE[jNy][iNx] += ( E_PRPE * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			ALK4[jNy][iNx] += ( E_ALK4 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			CH2O[jNy][iNx] += ( E_CH2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			ALD2[jNy][iNx] += ( E_ALD2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			GLYX[jNy][iNx] += ( E_GLYX * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			MGLY[jNy][iNx] += ( E_MGLY * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+                        SO2[jNy][iNx]  += ( E_SO2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+		    }
                     if ( set2Saturation ) {
                         /* If supersaturated, then set water vapor to saturation and no bare soot particles
                          * as they are all covered with ice */
@@ -1169,7 +1314,6 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                         sootRadi[jNy][iNx] = rad;
                         sootArea[jNy][iNx] = 4.0 * physConst::PI * rad * rad * sootDens[jNy][iNx];
                     }
-                    SO2[jNy][iNx]  += ( E_SO2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
                 }
 
             }
@@ -1193,19 +1337,22 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
 
                     /* Initially weights are either 0 or 1 */
                     if ( w != 0.0E+00 ) {
-                        CO2[jNy][iNx]  += ( E_CO2  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        NO[jNy][iNx]   += ( E_NO   * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        NO2[jNy][iNx]  += ( E_NO2  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        HNO2[jNy][iNx] += ( E_HNO2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        CO[jNy][iNx]   += ( E_CO   * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        CH4[jNy][iNx]  += ( E_CH4  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        C2H6[jNy][iNx] += ( E_C2H6 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        PRPE[jNy][iNx] += ( E_PRPE * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        ALK4[jNy][iNx] += ( E_ALK4 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        CH2O[jNy][iNx] += ( E_CH2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        ALD2[jNy][iNx] += ( E_ALD2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        GLYX[jNy][iNx] += ( E_GLYX * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-                        MGLY[jNy][iNx] += ( E_MGLY * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			if ( CHEMISTRY ) {
+			    CO2[jNy][iNx]  += ( E_CO2  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    NO[jNy][iNx]   += ( E_NO   * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    NO2[jNy][iNx]  += ( E_NO2  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    HNO2[jNy][iNx] += ( E_HNO2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    CO[jNy][iNx]   += ( E_CO   * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    CH4[jNy][iNx]  += ( E_CH4  * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    C2H6[jNy][iNx] += ( E_C2H6 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    PRPE[jNy][iNx] += ( E_PRPE * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    ALK4[jNy][iNx] += ( E_ALK4 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    CH2O[jNy][iNx] += ( E_CH2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    ALD2[jNy][iNx] += ( E_ALD2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    GLYX[jNy][iNx] += ( E_GLYX * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			    MGLY[jNy][iNx] += ( E_MGLY * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+                            SO2[jNy][iNx]  += ( E_SO2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+			}
                         if ( set2Saturation ) {
                             /* If supersaturated, then set water vapor to saturation and no
                              * bare soot particles as they are all covered with ice */
@@ -1217,8 +1364,6 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                             sootRadi[jNy][iNx] = rad;
                             sootArea[jNy][iNx] = 4.0 * physConst::PI * rad * rad * sootDens[jNy][iNx];
                         }
-                        SO2[jNy][iNx]  += ( E_SO2 * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
-
                     }
                 }
             }

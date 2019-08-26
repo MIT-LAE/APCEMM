@@ -35,6 +35,7 @@
 #include "Core/Engine.hpp"
 #include "Core/LiquidAer.hpp"
 #include "Core/SZA.hpp"
+#include "Core/Input_Mod.hpp"
 #include "AIM/Aerosol.hpp"
 #include "Core/Meteorology.hpp"
 
@@ -57,6 +58,7 @@ class Solution
         void Initialize( char const *fileName, \
                          const Input &input,   \
                          const double airDens, \
+			 const OptInput &inputOpt, \
                          const Meteorology &met, const bool DBG );
         void getData( double varArray[], double fixArray[], \
                       const unsigned int i = 0, \
@@ -75,7 +77,7 @@ class Solution
                           const double temperature, bool set2Saturation, \
                           AIM::Aerosol &liqAer, AIM::Aerosol &iceAer,    \
                           const double Soot_Den,                         \
-                          const Meteorology &met );
+                          const Meteorology &met, bool Chemistry );
         std::vector<double> getAmbient( ) const;
         std::vector<double> getLiqSpecies() const;
         std::vector<std::vector<double> > getAerosol( ) const;
