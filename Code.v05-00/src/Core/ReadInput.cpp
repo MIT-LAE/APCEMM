@@ -734,7 +734,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         if ( f.is_open() ) {
 
             /* Read header line and find fields */
-            f >> currLine;
+            getline( f, currLine, '\n' );
             tokens = Split_Line( currLine, COMMA );
 
             std::cout << "\n Reading parameter input file..." << std::endl;

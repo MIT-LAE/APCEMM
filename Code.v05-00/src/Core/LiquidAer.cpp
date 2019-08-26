@@ -237,6 +237,11 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     IS_VALID = ( ( IS_POLAR ) && ( IS_STRAT ) && ( pressure_Pa > PSC_PMIN ) && ( pressure_Pa < PSC_PMAX) );
     IS_VALID = ( IS_VALID || PSC_FULL );
 
+    if ( DBG ) {
+        std::cout << "IS_POLAR : " << IS_POLAR << "\n";
+        std::cout << "IS_STRAT : " << IS_STRAT << "\n";
+        std::cout << "IS_VALID : " << IS_VALID << "\n";
+    }
 
     /* Available NO3 mass */
     KG_NO3 = Data[id_HNO3] * 1.0E+06 / physConst::Na * Area * MW_NIT + Data[id_NIT];
@@ -651,7 +656,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     }
 
     /* Convert sticking coefficients into premultiplying factors */
-    KHET_COMMON = 0.25E+00 * physFunc::thermalSpeed( temperature_K, 1.0E-03 );
+    KHET_COMMON = 0.25E+00 * sqrt( 8 * physConst::R * 1.0E+07 * temperature_K / physConst::PI );
 
     /* N2O5 + H2O/HCl */
     KHET_SPECIFIC= KHET_COMMON / sqrt(MW_N2O5 * 1.0E+03);
@@ -680,17 +685,17 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     KHETI_SLA[10]= GAMMA_BOX[10]*KHET_SPECIFIC;
 
     if ( DBG ) {
-        std::cout << "KHETI_SLA[ 0] : " << KHETI_SLA[0] << "\n";
-        std::cout << "KHETI_SLA[ 1] : " << KHETI_SLA[1] << "\n";
-        std::cout << "KHETI_SLA[ 2] : " << KHETI_SLA[2] << "\n";
-        std::cout << "KHETI_SLA[ 3] : " << KHETI_SLA[3] << "\n";
-        std::cout << "KHETI_SLA[ 4] : " << KHETI_SLA[4] << "\n";
-        std::cout << "KHETI_SLA[ 5] : " << KHETI_SLA[5] << "\n";
-        std::cout << "KHETI_SLA[ 6] : " << KHETI_SLA[6] << "\n";
-        std::cout << "KHETI_SLA[ 7] : " << KHETI_SLA[7] << "\n";
-        std::cout << "KHETI_SLA[ 8] : " << KHETI_SLA[8] << "\n";
-        std::cout << "KHETI_SLA[ 9] : " << KHETI_SLA[9] << "\n";
-        std::cout << "KHETI_SLA[10] : " << KHETI_SLA[10] << "\n";
+        std::cout << "KHETI_SLA[ 0] : " << KHETI_SLA[0] << " (GAMMA_BOX[ 0] : " << GAMMA_BOX[0] << ")\n";
+        std::cout << "KHETI_SLA[ 1] : " << KHETI_SLA[1] << " (GAMMA_BOX[ 1] : " << GAMMA_BOX[1] << ")\n";
+        std::cout << "KHETI_SLA[ 2] : " << KHETI_SLA[2] << " (GAMMA_BOX[ 2] : " << GAMMA_BOX[2] << ")\n";
+        std::cout << "KHETI_SLA[ 3] : " << KHETI_SLA[3] << " (GAMMA_BOX[ 3] : " << GAMMA_BOX[3] << ")\n";
+        std::cout << "KHETI_SLA[ 4] : " << KHETI_SLA[4] << " (GAMMA_BOX[ 4] : " << GAMMA_BOX[4] << ")\n";
+        std::cout << "KHETI_SLA[ 5] : " << KHETI_SLA[5] << " (GAMMA_BOX[ 5] : " << GAMMA_BOX[5] << ")\n";
+        std::cout << "KHETI_SLA[ 6] : " << KHETI_SLA[6] << " (GAMMA_BOX[ 6] : " << GAMMA_BOX[6] << ")\n";
+        std::cout << "KHETI_SLA[ 7] : " << KHETI_SLA[7] << " (GAMMA_BOX[ 7] : " << GAMMA_BOX[7] << ")\n";
+        std::cout << "KHETI_SLA[ 8] : " << KHETI_SLA[8] << " (GAMMA_BOX[ 8] : " << GAMMA_BOX[8] << ")\n";
+        std::cout << "KHETI_SLA[ 9] : " << KHETI_SLA[9] << " (GAMMA_BOX[ 9] : " << GAMMA_BOX[9] << ")\n";
+        std::cout << "KHETI_SLA[10] : " << KHETI_SLA[10] << " (GAMMA_BOX[10] : " << GAMMA_BOX[10] << ")\n";
     }
 
     RAD_AER[1]   = RAD_AER_BOX;   /* [m]       */

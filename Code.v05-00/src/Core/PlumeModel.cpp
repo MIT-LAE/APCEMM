@@ -708,9 +708,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     	/* Add emission into the grid */
     Data.addEmission( EI, aircraft, m, ringCluster.halfRing(),  \
-      		     temperature_K, ( relHumidity_i > 100.0 ), \
-		     liquidAer, iceAer, Soot_den * areaPlume / ringArea[0], Met, CHEMISTRY );
-
+                      temperature_K, ( relHumidity_i > 100.0 ), \
+                      liquidAer, iceAer, Soot_den, Met, areaPlume, CHEMISTRY );
     /* Fill in variables species for initial time */
     ringSpecies.FillIn( Data, m.weights, nTime );
 

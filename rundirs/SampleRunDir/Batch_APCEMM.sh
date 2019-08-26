@@ -78,6 +78,7 @@
 #                           environments
 #  21 Oct 2018 - T. Fritz - Pipe output to log
 #  11 Dec 2018 - T. Fritz - Created run directories
+#  11 Aug 2019 - T. Fritz - Properly returns exit value
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -131,18 +132,24 @@ echo 'Host computer: ' `hostname`
 echo 'Initiation date and time: ' `date +%c`
 srun -c $OMP_NUM_THREADS time -p $exepath 2>&1 | tee $log
 
+didSucceed=$?
+
 # Echo end
 echo ''
 echo 'Run ended at ' `date +%c`
 
 # Report additional information if job was killed because of memory limit
-oom_check $?
+oom_check $didSucceed
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Clean up
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # Clear variable
 unset id
 unset log
 unset APCEMM_runDir
 unset exepath
+
+exit $didSucceed
+

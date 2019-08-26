@@ -71,13 +71,13 @@ class Solution
         void applyAmbient( double varArray[],             \
                            const Vector_2Dui &mapIndices, \
                            const UInt iRing );
-        void addEmission( const Emission &EI, const Aircraft &AC,        \
-                          const Mesh &m,                                 \
-                          bool halfRing,                                 \
-                          const double temperature, bool set2Saturation, \
-                          AIM::Aerosol &liqAer, AIM::Aerosol &iceAer,    \
-                          const double Soot_Den,                         \
-                          const Meteorology &met, bool Chemistry );
+        void addEmission( const Emission &EI, const Aircraft &AC,            \
+                          const Mesh &m,                                     \
+                          bool halfRing,                                     \
+                          const RealDouble temperature, bool set2Saturation, \
+                          AIM::Aerosol liqAer, AIM::Aerosol iceAer,          \
+                          const RealDouble Soot_Den,                         \
+                          const Meteorology &met, const RealDouble areaPlume, const bool CHEMISTRY );
         std::vector<double> getAmbient( ) const;
         std::vector<double> getLiqSpecies() const;
         std::vector<std::vector<double> > getAerosol( ) const;
