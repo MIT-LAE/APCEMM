@@ -125,11 +125,9 @@ Mesh::~Mesh( )
 
 void Mesh::Ring2Mesh( Cluster &c )
 {
-    
-    UInt nRing = c.getnRing();
 
-    Vector_2D v2d;
-    Vector_1D v1d( NX, 0.0E+00 );
+    UInt maxRing = 0;
+    UInt nRing   = c.getnRing();
 
     UInt nx_max, ny_max;
 
@@ -143,30 +141,42 @@ void Mesh::Ring2Mesh( Cluster &c )
 
     /* Assert that NX and NY are multiples of 2! */
 #if Y_SYMMETRY
+
+    std::cout << "Mesh::Ring2Mesh: Symmetry around the Y-axis is assumed!";
+    std::cout << std::endl;
     nx_max = std::ceil(NX/2);
+
 #else
+
     nx_max = NX;
+
 #endif /* Y_SYMMETRY */
 
 #if X_SYMMETRY
-    ny_max = std::ceil(NY/2);
-#else
-    ny_max = NY;
-#endif /* X_SYMMETRY */
 
-    /* For rings and ambient */
-    for ( UInt iRing = 0; iRing < nRing + 1; iRing++ ) {
-        nCellMap.push_back( 0 );
-        weights.push_back( v2d );
-        for ( UInt iNy = 0; iNy < NY; iNy++ ) {
-            weights[iRing].push_back( v1d );
-        }
-    }
-    for ( UInt iNy = 0; iNy < NY; iNy++ )
-        mapIndex_.push_back( Vector_1Dui( NX, 0 ) );
+    std::cout << "Mesh::Ring2Mesh: Symmetry around the X-axis is assumed!";
+    std::cout << std::endl;
+    ny_max = std::ceil(NY/2);
+
+#else
+
+    ny_max = NY;
+
+#endif /* X_SYMMETRY */
 
     std::vector<Ring> RingV;
     RingV = c.getRings();
+
+    RealDouble hAxis, vAxis, hAxis_in, vAxis_in;
+    RealDouble xRatio, xRatio_in;
+    UInt nCell;
+
+#ifdef RINGS
+
+    /* If using ring structures, then the rings have to fit in the domain
+     * In case we do not want to perform chemistry in the ring structure, we
+     * only care about the most inner ring in which emissions are released */
+
     if ( RingV[nRing - 1].getHAxis() > x_[NX - 1] ) {
         std::cout << "The largest ring's horizontal axis is larger than the grid's dimensions!\n";
         std::cout << "Horizontal axis: " << RingV[nRing-1].getHAxis() << " >= " << x_[NX - 1] << std::endl;
@@ -178,11 +188,38 @@ void Mesh::Ring2Mesh( Cluster &c )
         exit(-1);
     }
 
-    RealDouble hAxis, vAxis, hAxis_in, vAxis_in;
-    RealDouble xRatio, xRatio_in;
-    UInt nCell;
+    /* We have nRing rings and the additional represent background conditions */
+    maxRing = nRing + 1;
 
-    for ( UInt iRing = 0; iRing < nRing + 1; iRing++ ) {
+#else
+
+    /* In this scenario, chemistry and microphysics are performed at the
+     * grid-scale level.
+     * We thus only care about the most inner ring to release emissions */
+
+    if ( c.halfRing() )
+        maxRing = 2;
+    else
+        maxRing = 1;
+
+#endif /* RINGS */
+
+    Vector_2D v2d;
+    Vector_1D v1d( NX, 0.0E+00 );
+
+    /* For rings and ambient */
+    for ( UInt iRing = 0; iRing < maxRing; iRing++ ) {
+        nCellMap.push_back( 0 );
+        weights.push_back( v2d );
+        for ( UInt iNy = 0; iNy < NY; iNy++ ) {
+            weights[iRing].push_back( v1d );
+        }
+    }
+    for ( UInt iNy = 0; iNy < NY; iNy++ )
+        mapIndex_.push_back( Vector_1Dui( NX, 0 ) );
+
+
+    for ( UInt iRing = 0; iRing < maxRing; iRing++ ) {
         nCell = 0;
         if ( !c.halfRing() ) {
             /* Full rings */
@@ -324,15 +361,13 @@ void Mesh::Ring2Mesh( Cluster &c )
         } 
 
         if ( nCell != 0 ) {
-            if ( !c.halfRing() ) {
+            if ( !c.halfRing() )
                 nCellMap[iRing] = nCell;
-            } else {
-                if ( iRing < nRing ) {
-                    nCellMap[iRing]   = nCell;
-                } 
-                else {
+            else {
+                if ( iRing < nRing )
                     nCellMap[iRing] = nCell;
-                }
+                else
+                    nCellMap[iRing] = nCell;
             }
             /* Map should be such that \iint w dA = A_ring
              * <=> \sum w_ij A_ij = A_ring 
@@ -426,7 +461,6 @@ void Mesh::Ring2Mesh( Cluster &c )
                     }
                 }
 
-                nCellMap[iRing-1] *= 2;
                 nCellMap[iRing] *= 2;
             }
             else {
