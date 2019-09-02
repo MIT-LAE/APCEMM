@@ -694,8 +694,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     UInt iRing = 0;
 
     /* Create cluster of rings */
-    //Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ), semiXaxis, semiYaxis );
-    Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ) );
+    //Cluster ringCluster( NRING, ( relHumidity_i > 100.0 ) );
     Cluster ringCluster( NRING, 0 );
 
     /* Number of rings */
@@ -752,7 +751,6 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Compute Grid to Ring mapping */
     m.Ring2Mesh( ringCluster );
-    Vector_2Dui mapIndices = m.mapIndex();
 
     /* Compute ring areas
      * Note: The rings are only affected by shear and NOT diffusion.
@@ -1068,11 +1066,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                     /* Limit flux of ice particles through top boundary */
 
-#pragma omp parallel for                \
-            if      ( !PARALLEL_CASES ) \
-            default ( shared          ) \
-            private ( iNx, jNy        ) \
-            schedule( dynamic, 1      )
+#pragma omp parallel for                        \
+                    if      ( !PARALLEL_CASES ) \
+                    default ( shared          ) \
+                    private ( iNx, jNy        ) \
+                    schedule( dynamic, 1      )
                     for ( jNy = 0; jNy < NY; jNy++ ) {
                         if ( ( yE[jNy] > YLIM_UP - 200.0 ) && ( yE[jNy] > 400.0 ) ) {
                             for ( iNx = 0; iNx < NX; iNx++ ) {
@@ -1087,11 +1085,11 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                     /* Limit flux of ice particles through left and right boundary */
 
-#pragma omp parallel for                \
-            if      ( !PARALLEL_CASES ) \
-            default ( shared          ) \
-            private ( iNx, jNy        ) \
-            schedule( dynamic, 1      )
+#pragma omp parallel for                        \
+                    if      ( !PARALLEL_CASES ) \
+                    default ( shared          ) \
+                    private ( iNx, jNy        ) \
+                    schedule( dynamic, 1      )
                     for ( iNx = 0; iNx < NX; iNx++ ) {
                         if ( ( xE[iNx] < -XLIM + 5.0E+03 ) || ( xE[iNx] > XLIM - 5.0E+03 ) ) {
                             for ( jNy = 0; jNy < NY; jNy++ ) {
@@ -1356,7 +1354,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                         if ( printDEBUG ) {
                             std::cout << " ~~~ Printing reaction rates:\n";
-                            for ( UInt int iReact = 0; iReact < NREACT; iReact++ ) {
+                            for ( UInt iReact = 0; iReact < NREACT; iReact++ ) {
                                 std::cout << "Reaction " << iReact << ": " << RCONST[iReact] << " [molec/cm^3/s]\n";
                             }
                             std::cout << " ~~~ Printing concentrations:\n";
@@ -1535,12 +1533,12 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                 Vector_2D iceVolume_ = Data.solidAerosol.TotalVolume();
 
-#pragma omp parallel for                         \
-            if      ( !PARALLEL_CASES          ) \
-            default ( shared                   ) \
-            private ( iNx, jNy                 ) \
-            private ( relHumidity, IWC         ) \
-            schedule( dynamic, 1               )
+#pragma omp parallel for                             \
+                if       ( !PARALLEL_CASES         ) \
+                default ( shared                   ) \
+                private ( iNx, jNy                 ) \
+                private ( relHumidity, IWC         ) \
+                schedule( dynamic, 1               )
                 for ( iNx = 0; iNx < NX; iNx++ ) {
                     for ( jNy = 0; jNy < NY; jNy++ ) {
 
@@ -1588,8 +1586,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                                            * physConst::RHO_ICE; /* [kg/cm^3] */
 
                             GC_SETHET( Met.temp(jNy,iNx), Met.press(jNy), \
-                                       airDens, relHumidity, \
-                                       Data.STATE_PSC, VAR, AerosolArea, \
+                                       Met.airDens(jNy,iNx), relHumidity, \
+                                       Data.STATE_PSC, VAR, AerosolArea,  \
                                        AerosolRadi, IWC, &(Data.KHETI_SLA[0]) );
                         }
 
@@ -1603,7 +1601,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
                         /* Update reaction rates */
                         Update_RCONST( Met.temp(jNy,iNx), Met.press(jNy), \
-                                       airDens, VAR[ind_H2O] );
+                                       Met.airDens(jNy,iNx), VAR[ind_H2O] );
 
                         /* ================================================= */
                         /* ============= Chemical integration ============== */
@@ -2106,9 +2104,13 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             return KPPADJ_FAIL;
         }
 
+        /* Apply optimized initial conditions to concentration array */
+        for ( UInt iSpec = 0; iSpec < NVAR; iSpec++ )
+            VAR[iSpec] = VAR_OPT[iSpec];
+
         /* Create ambient struture */
         Ambient adjointData( timeArray.size(), Data.getAmbient(), Data.getAerosol(), Data.getLiqSpecies() );
-        adjointData.FillIn( VAR_OPT, 0 );
+        adjointData.FillIn( 0 );
 
 
         /* Perform forward integration with optimized initial conditions */
