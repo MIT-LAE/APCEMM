@@ -344,6 +344,10 @@ void Solution::Initialize( char const *fileName,      \
     SetShape( HBrL     , actualX , actualY , (RealDouble) 0.0E+00     );
     SetShape( HOBrL    , actualX , actualY , (RealDouble) 0.0E+00     );
 
+    /* Tracers */
+    SetShape( SO4T     , actualX , actualY , amb_Value[ 28] * airDens );
+
+
     if ( Input_Opt.MET_LOADMET ) {
         /* Use meteorological input? */
         H2O = met.H2O_;
@@ -530,9 +534,6 @@ void Solution::Initialize( char const *fileName,      \
         std::cout << " DEBUG : Comparing PDF's effective radius to actual effective radius:\n";
         std::cout << "         " << solidAerosol.EffRadius( 0, 0 ) * 1.00E+09 << " v " << PA_rEff << " [nm]\n";
     }
-
-    /* Tracers */
-    SetShape( SO4T , size_x, size_y, (RealDouble) amb_Value[ 28] * airDens );
 
 } /* End of Solution::Initialize */
 
