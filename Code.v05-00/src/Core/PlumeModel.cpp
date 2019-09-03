@@ -452,8 +452,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     /*     [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K]           ) * [m3/cm3] */
 
     /* Set solution arrays to ambient data */
-    Data.Initialize( BACKG_FILENAME, \
+    Data.Initialize( BACKG_FILENAME,      \
                      input, airDens, Met, \
+                     Input_Opt,           \
                      printDEBUG );
 
     /* Print Background Debug? */

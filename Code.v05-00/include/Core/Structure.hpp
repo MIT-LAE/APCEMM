@@ -26,6 +26,7 @@
 #include "Core/Parameters.hpp"
 #include "Util/ForwardDecl.hpp"
 #include "Core/Input.hpp"
+#include "Core/Input_Mod.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "KPP/KPP_Global.h"
 #include "KPP/KPP.hpp"
@@ -61,10 +62,11 @@ class Solution
                     const UInt i_max = 1,       \
                     const UInt j_max = 1 ) const;
 
-        void Initialize( char const *fileName,     \
-                         const Input &input,       \
-                         const RealDouble airDens, \
-                         const Meteorology &met,   \
+        void Initialize( char const *fileName,      \
+                         const Input &input,        \
+                         const RealDouble airDens,  \
+                         const Meteorology &met,    \
+                         const OptInput &Input_Opt, \
                          const bool DBG );
 
         void getData( const UInt i = 0, \
@@ -171,6 +173,8 @@ class Solution
         const UInt nAer;
         const UInt size_x;
         const UInt size_y;
+
+        bool reducedSize;
 
 };
 
