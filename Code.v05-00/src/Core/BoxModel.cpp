@@ -303,7 +303,10 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
 
     /* Define aircraft */
     char const *aircraftName("B747-800");
-    Aircraft aircraft( aircraftName, temperature_K, pressure_Pa, relHumidity_w );
+    RealDouble aircraftMass = input.aircraftMass();
+    Aircraft aircraft( aircraftName, aircraftMass, \
+                       temperature_K, pressure_Pa, \
+                       relHumidity_w );
 
     if ( BUILD_LUT ) {
         aircraft.setEI_NOx( input.EI_NOx() );

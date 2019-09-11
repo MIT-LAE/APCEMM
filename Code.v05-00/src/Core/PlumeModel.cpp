@@ -540,7 +540,9 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
 
     /* Define aircraft */
     char const *aircraftName("B747-800");
-    Aircraft aircraft( aircraftName, temperature_K, pressure_Pa, relHumidity_w );
+    RealDouble aircraftMass = input.aircraftMass();
+    Aircraft aircraft( aircraftName, aircraftMass, \
+                       temperature_K, pressure_Pa, relHumidity_w );
 
     /* Overwrite engine conditions with input parameters */
     aircraft.setEI_NOx( input.EI_NOx() );
@@ -818,6 +820,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         std::cout << " ## - E_Soo = " << std::setw(txtWidth+3) << EI.getSoot() * aircraft.FuelFlow() / aircraft.VFlight() * 1.0E+03 / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) << " [ #(Soo)/km]"\
             " ( GMD = " << std::setw(txtWidth) << 2.0 * EI.getSootRad() * 1.0E+09 << " [nm]              )\n";
         std::cout << " ## - Fflow = " << std::setw(txtWidth+3) << aircraft.FuelFlow() << " [      kg/s]\n";
+        std::cout << " ## - AMass = " << std::setw(txtWidth+3) << input.aircraftMass() << " [      kg  ]\n";
 
         std::cout << "\n ## AEROSOLS:";
         std::cout << "\n ##\n";
