@@ -13,5 +13,5 @@ The development of APCEMM in C++ started in September 2018.
 This repository contains multiple branches. Each branch pertains to a specific function.
 
 * The __master__ branch always contains the most up-to-date and stable version. New code should never be added to that branch directly. Instead, a new branch, forked from master, should be created.
-* The __dev*__ branch(es) contain(s) in-development code for future versions.
+* The __dev*__ and __feature/*__ branches contain in-development code for future versions.
 

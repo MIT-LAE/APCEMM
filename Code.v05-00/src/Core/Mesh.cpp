@@ -30,35 +30,35 @@ Mesh::Mesh( )
 
     /* Cell center x-coordinates */
     for ( UInt i = 0; i < nx; i++ ) {
-        x_.push_back( (RealDouble) 0.0 );
-        x_[i] = i * hx_ - xlim + hx_ / 2.0;
-        x_e_.push_back( (RealDouble) 0.0 );
-        x_e_[i] = x_[i] - hx_ / 2.0;
+        x_.push_back( i * hx_ - xlim + hx_ / 2.0 );
+        x_e_.push_back( x_[i] - hx_ / 2.0 );
+        if ( i > 0 )
+            dx_.push_back( x_e_[i] - x_e_[i-1] );
     }
-    x_e_.push_back( (RealDouble) 0.0 );
-    x_e_[nx] = x_e_[nx-1] + hx_;
+    x_e_.push_back( x_e_[nx-1] + hx_ );
+    dx_.push_back( x_e_[nx] - x_e_[nx-1] );
     
     /* Cell center y-coordinates */
     for ( UInt j = 0; j < ny; j++ ) {
-        y_.push_back( (RealDouble) 0.0 );
-        y_[j] = j * hy_ - ylim_down + hy_ / 2.0;
-        y_e_.push_back( (RealDouble) 0.0 );
-        y_e_[j] = y_[j] - hy_ / 2.0;
+        y_.push_back( j * hy_ - ylim_down + hy_ / 2.0 );
+        y_e_.push_back( y_[j] - hy_ / 2.0 );
+        if ( j > 0 )
+            dy_.push_back( y_e_[j] - y_e_[j-1] );
     }
-    y_e_.push_back( (RealDouble) 0.0 );
-    y_e_[ny] = y_e_[ny-1] + hy_;
+    y_e_.push_back( y_e_[ny-1] + hy_ );
+    dy_.push_back( y_e_[nx] - y_e_[nx-1] );
 
     totArea_ = 0;
     /* TO CHANGE if mesh is non-uniform */
-    cellArea_ = ( y_e_[1] - y_e_[0] ) * ( x_e_[1] - x_e_[0] );
+    cellArea_ = dy_[0] * dx_[0]; 
+    //        = ( y_e_[1] - y_e_[0] ) * ( x_e_[1] - x_e_[0] );
     totArea_  = ny * nx * cellArea_;
     for ( UInt jNy = 0; jNy < ny; jNy++ ) {
         areas_.push_back( Vector_1D( nx, 0.0 ) );
         for ( UInt iNx = 0; iNx < nx; iNx++ ) {
             areas_[jNy][iNx] = cellArea_;
-            //areas_[jNy][iNx] = ( y_e_[jNy+1] - y_e_[jNy] ) * \
-            //                  ( x_e_[iNx+1] - x_e_[iNx] );
-            ///* Comes down to hx_ * hy_, if mesh is cartesian uniform */
+            //areas_[jNy][iNx] = dy_[jNy] * dx_[iNx];
+            //* Comes down to hx_ * hy_, if mesh is cartesian uniform */
             //totArea_ += areas_[jNy][iNx];
         }
     }
@@ -125,11 +125,9 @@ Mesh::~Mesh( )
 
 void Mesh::Ring2Mesh( Cluster &c )
 {
-    
-    UInt nRing = c.getnRing();
 
-    Vector_2D v2d;
-    Vector_1D v1d( NX, 0.0E+00 );
+    UInt maxRing = 0;
+    UInt nRing   = c.getnRing();
 
     UInt nx_max, ny_max;
 
@@ -143,30 +141,42 @@ void Mesh::Ring2Mesh( Cluster &c )
 
     /* Assert that NX and NY are multiples of 2! */
 #if Y_SYMMETRY
+
+    std::cout << "Mesh::Ring2Mesh: Symmetry around the Y-axis is assumed!";
+    std::cout << std::endl;
     nx_max = std::ceil(NX/2);
+
 #else
+
     nx_max = NX;
+
 #endif /* Y_SYMMETRY */
 
 #if X_SYMMETRY
-    ny_max = std::ceil(NY/2);
-#else
-    ny_max = NY;
-#endif /* X_SYMMETRY */
 
-    /* For rings and ambient */
-    for ( UInt iRing = 0; iRing < nRing + 1; iRing++ ) {
-        nCellMap.push_back( 0 );
-        weights.push_back( v2d );
-        for ( UInt iNy = 0; iNy < NY; iNy++ ) {
-            weights[iRing].push_back( v1d );
-        }
-    }
-    for ( UInt iNy = 0; iNy < NY; iNy++ )
-        mapIndex_.push_back( Vector_1Dui( NX, 0 ) );
+    std::cout << "Mesh::Ring2Mesh: Symmetry around the X-axis is assumed!";
+    std::cout << std::endl;
+    ny_max = std::ceil(NY/2);
+
+#else
+
+    ny_max = NY;
+
+#endif /* X_SYMMETRY */
 
     std::vector<Ring> RingV;
     RingV = c.getRings();
+
+    RealDouble hAxis, vAxis, hAxis_in, vAxis_in;
+    RealDouble xRatio, xRatio_in;
+    UInt nCell;
+
+#ifdef RINGS
+
+    /* If using ring structures, then the rings have to fit in the domain
+     * In case we do not want to perform chemistry in the ring structure, we
+     * only care about the most inner ring in which emissions are released */
+
     if ( RingV[nRing - 1].getHAxis() > x_[NX - 1] ) {
         std::cout << "The largest ring's horizontal axis is larger than the grid's dimensions!\n";
         std::cout << "Horizontal axis: " << RingV[nRing-1].getHAxis() << " >= " << x_[NX - 1] << std::endl;
@@ -178,11 +188,38 @@ void Mesh::Ring2Mesh( Cluster &c )
         exit(-1);
     }
 
-    RealDouble hAxis, vAxis, hAxis_in, vAxis_in;
-    RealDouble xRatio, xRatio_in;
-    UInt nCell;
+    /* We have nRing rings and the additional represent background conditions */
+    maxRing = nRing + 1;
 
-    for ( UInt iRing = 0; iRing < nRing + 1; iRing++ ) {
+#else
+
+    /* In this scenario, chemistry and microphysics are performed at the
+     * grid-scale level.
+     * We thus only care about the most inner ring to release emissions */
+
+    if ( c.halfRing() )
+        maxRing = 2;
+    else
+        maxRing = 1;
+
+#endif /* RINGS */
+
+    Vector_2D v2d;
+    Vector_1D v1d( NX, 0.0E+00 );
+
+    /* For rings and ambient */
+    for ( UInt iRing = 0; iRing < maxRing; iRing++ ) {
+        nCellMap.push_back( 0 );
+        weights.push_back( v2d );
+        for ( UInt iNy = 0; iNy < NY; iNy++ ) {
+            weights[iRing].push_back( v1d );
+        }
+    }
+    for ( UInt iNy = 0; iNy < NY; iNy++ )
+        mapIndex_.push_back( Vector_1Dui( NX, 0 ) );
+
+
+    for ( UInt iRing = 0; iRing < maxRing; iRing++ ) {
         nCell = 0;
         if ( !c.halfRing() ) {
             /* Full rings */
@@ -324,16 +361,13 @@ void Mesh::Ring2Mesh( Cluster &c )
         } 
 
         if ( nCell != 0 ) {
-            if ( !c.halfRing() ) {
+            if ( !c.halfRing() )
                 nCellMap[iRing] = nCell;
-            } else {
-                if ( iRing < nRing ) {
-                    nCellMap[iRing-1] = nCell;
-                    nCellMap[iRing]   = nCell;
-                } 
-                else {
+            else {
+                if ( iRing < nRing )
                     nCellMap[iRing] = nCell;
-                }
+                else
+                    nCellMap[iRing] = nCell;
             }
             /* Map should be such that \iint w dA = A_ring
              * <=> \sum w_ij A_ij = A_ring 
@@ -427,7 +461,6 @@ void Mesh::Ring2Mesh( Cluster &c )
                     }
                 }
 
-                nCellMap[iRing-1] *= 2;
                 nCellMap[iRing] *= 2;
             }
             else {
