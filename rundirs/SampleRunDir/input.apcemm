@@ -55,6 +55,7 @@ Emission indices        :
  => Soot [g/kg_fuel]    : 0.02
  => Soot Radius [m]     : 20.0E-09
 Total fuel flow [kg/s]  : 3.2
+Aircraft mass [kg]      : 2.00E+05
 ------------------------+------------------------------------------------------
 %%% TRANSPORT MENU %%%  :
 Turn on Transport?      : T
