@@ -20,7 +20,9 @@ Aircraft::Aircraft( )
 
 } /* End of Aircraft::Aircraft */
 
-Aircraft::Aircraft( const char *aircraftName, double temperature_K, double pressure_Pa, double relHumidity_w )
+Aircraft::Aircraft( const char *aircraftName, RealDouble aircraftMass, \
+                    RealDouble temperature_K, RealDouble pressure_Pa,  \
+                    RealDouble relHumidity_w )
 {
     /* Constructor */
 
@@ -42,8 +44,15 @@ Aircraft::Aircraft( const char *aircraftName, double temperature_K, double press
         wingspan_ = 69.8; /* [m] */
 
         /* Weight */
-        MTOW_ = 404.810E+03; /* [kg] */
-        currMass_ = 0.9 * MTOW_; /* [kg] */
+        if ( aircraftMass > 0.0E+00 ) {
+            currMass_ = aircraftMass;
+        } else {
+            std::cout << " In Aircraft::Aircraft:";
+            std::cout << " aircraftMass = " << aircraftMass;
+            MTOW_ = 404.810E+03; /* [kg] */
+            currMass_ = 0.9 * MTOW_; /* [kg] */
+            std::cout << " Setting currMass to " << currMass_ << std::endl;
+        }
 
     }
 
@@ -92,8 +101,9 @@ Aircraft::~Aircraft( )
 
 } /* End of Aircraft::~Aircraft */
 
-double Aircraft::VortexLosses( const double EI_Soot, const double EI_SootRad, \
-                               const double wetDepth )
+RealDouble Aircraft::VortexLosses( const RealDouble EI_Soot,    \
+                                   const RealDouble EI_SootRad, \
+                                   const RealDouble wetDepth )
 {
 
     /* This function computes the fraction of contrail ice particles lost in
@@ -108,32 +118,37 @@ double Aircraft::VortexLosses( const double EI_Soot, const double EI_SootRad, \
     const bool DEBUG = 0;
 
     /* Compute volume and mass of soot particles emitted */
-    const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 );
-    const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03;
+    const RealDouble volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 );
+    const RealDouble massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03;
 
     /* Declare and initialize remaining fraction of ice crystals */
-    double iceNumFrac = 0.0E+00;
+    RealDouble iceNumFrac = 0.0E+00;
 
     /* Declare and initialize each length scales */
-    double z_Atm   = 0.0E+00;
-    double z_Emit  = 0.0E+00;
-    double z_Desc  = 0.0E+00;
-    double z_Delta = 0.0E+00;
+    RealDouble z_Atm   = 0.0E+00;
+    RealDouble z_Emit  = 0.0E+00;
+    RealDouble z_Desc  = 0.0E+00;
+    RealDouble z_Delta = 0.0E+00;
 
     /* Exponents */
-    const double gamma_Atm  = 0.18;
-    const double gamma_Emit = 0.18;
+    const RealDouble gamma_Atm  = 0.18;
+    const RealDouble gamma_Emit = 0.18;
 
     /* Fitting coefficients */
-    const double beta_0  = +0.40;
-    const double beta_1  = +1.19;
-    const double alpha_0 = -1.35;
+    const RealDouble beta_0  = +0.45;
+    const RealDouble beta_1  = +1.19;
+    const RealDouble alpha_0 = -1.35;
+    /* After reaching out to S. Unterstrasser, the beta_0 coefficient should
+     * be 0.45 instead of 0.40. The paper contains a typo and equation (10a)
+     * should be:
+     * \beta_0 = 0.45
+     */
 
     /* Scaling for particle number */
-    const double EIice_ref = 2.8E+14; /* [#/kg_fuel] */
+    const RealDouble EIice_ref = 2.8E+14; /* [#/kg_fuel] */
 
     /* Number of particles emitted */
-    const double EIice     = EI_Soot / massParticle; /* [#/kg_fuel] */
+    const RealDouble EIice     = EI_Soot / massParticle; /* [#/kg_fuel] */
 
     /* z_Atm = Depth of the supersaturated layer */
     z_Atm  = wetDepth;
@@ -144,17 +159,16 @@ double Aircraft::VortexLosses( const double EI_Soot, const double EI_SootRad, \
     else
         z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 );
 
-    /* z_Emit = ... 
-     * z_Emit is not implemented yet as z_Emit << z_Desc */
-    z_Emit = 0.0E+00;
+    /* z_Emit = ... */
+    z_Emit = 90;
 
     /* ==================================== */
     /* ... Parameterization starts here ... */
     /* ==================================== */
 
-    const double alpha_Atm  = +1.70 * pow( EIice / EIice_ref, -gamma_Atm  );
-    const double alpha_Emit = +1.15 * pow( EIice / EIice_ref, -gamma_Emit );\
-    const double alpha_Desc = -0.60;
+    const RealDouble alpha_Atm  = +1.70 * pow( EIice_ref / EIice, gamma_Atm  );
+    const RealDouble alpha_Emit = +1.15 * pow( EIice_ref / EIice, gamma_Emit );
+    const RealDouble alpha_Desc = -0.60;
 
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
     z_Delta = + alpha_Atm  * z_Atm  \
@@ -162,7 +176,6 @@ double Aircraft::VortexLosses( const double EI_Soot, const double EI_SootRad, \
               + alpha_Desc * z_Desc;
 
     iceNumFrac = beta_0 + beta_1 / physConst::PI * atan( alpha_0 + z_Delta / 1.0E+02 );
-
 
     if ( ( DEBUG ) || ( iceNumFrac < 0.1E+00 ) || ( iceNumFrac > 1.0E+00 ) ) {
         /* If DEBUG is on or if we lose more than 90% of the initial number of 
@@ -174,18 +187,21 @@ double Aircraft::VortexLosses( const double EI_Soot, const double EI_SootRad, \
         std::cout << "In Aircraft::VortexLosses: " << std::endl;
         std::cout << "alpha_Atm  = " << alpha_Atm  << std::endl;
         std::cout << "alpha_Emit = " << alpha_Emit << std::endl;
+        std::cout << "EIice      = " << EIice      << " [#/kg_fuel]" << std::endl;
+        std::cout << "EIice*     = " << EIice / EIice_ref << " [#/kg_fuel]" << std::endl;
         std::cout << "alpha_Desc = " << alpha_Desc << std::endl;
-        std::cout << "z_Atm      = " << z_Atm   << " [m]" << std::endl;
-        std::cout << "z_Emit     = " << z_Emit  << " [m]" << std::endl;
-        std::cout << "z_Desc     = " << z_Desc  << " [m]" << std::endl;
+        std::cout << "z_Atm      = " << z_Atm  / 1.0E+02 << " [100m]" << std::endl;
+        std::cout << "z_Emit     = " << z_Emit / 1.0E+02 << " [100m]" << std::endl;
+        std::cout << "z_Desc     = " << z_Desc / 1.0E+02 << " [100m]" << std::endl;
         std::cout << " -> Gamma  = " << vortex_.gamma() << " [m^2/s]" << std::endl;
         std::cout << " -> N_BV   = " << vortex_.N_BV() << " [Hz]" << std::endl;
-        std::cout << "z_Delta    = " << z_Delta << " [m]" << std::endl;
+        std::cout << "z_Delta    = " << z_Delta / 1.0E+02 << " [100m]" << std::endl;
         std::cout << "rem. frac. = " << iceNumFrac << " [-]" << std::endl;
         }
     }
 
     iceNumFrac = std::min( std::max( iceNumFrac, 0.0E+00 ), 1.0E+00 );
+
 
     if ( iceNumFrac == 0.0E+00 )
         std::cout << "Contrail has fully melted because of vortex-sinking losses" << std::endl;
@@ -194,7 +210,7 @@ double Aircraft::VortexLosses( const double EI_Soot, const double EI_SootRad, \
 
 } /* End of Aircraft::VortexLosses */
 
-void Aircraft::setEI_NOx(const double NOx)
+void Aircraft::setEI_NOx(const RealDouble NOx)
 {
 
     if ( NOx > 0.0E+00 )
@@ -202,7 +218,7 @@ void Aircraft::setEI_NOx(const double NOx)
 
 } /* End of Aircraft::setEI_NOx */
 
-void Aircraft::setEI_CO(const double CO)
+void Aircraft::setEI_CO(const RealDouble CO)
 {
 
     if ( CO > 0.0E+00 )
@@ -210,7 +226,7 @@ void Aircraft::setEI_CO(const double CO)
 
 } /* End of Aircraft::setEI_CO */
 
-void Aircraft::setEI_HC(const double HC)
+void Aircraft::setEI_HC(const RealDouble HC)
 {
 
     if ( HC > 0.0E+00 )
@@ -218,7 +234,7 @@ void Aircraft::setEI_HC(const double HC)
 
 } /* End of Aircraft::setEI_HC */
 
-void Aircraft::setEI_Soot(const double Soot)
+void Aircraft::setEI_Soot(const RealDouble Soot)
 {
 
     if ( Soot > 0.0E+00 )
@@ -226,7 +242,7 @@ void Aircraft::setEI_Soot(const double Soot)
 
 } /* End of Aircraft::setEI_Soot */
 
-void Aircraft::setSootRad(const double sootRad)
+void Aircraft::setSootRad(const RealDouble sootRad)
 {
 
     if ( sootRad > 0.0E+00 )
@@ -234,7 +250,7 @@ void Aircraft::setSootRad(const double sootRad)
 
 } /* End of Aircraft::setSootRad */
 
-void Aircraft::setFuelFlow(const double ff)
+void Aircraft::setFuelFlow(const RealDouble ff)
 {
 
     if ( ff > 0.0E+00 )
