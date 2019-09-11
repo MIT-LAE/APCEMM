@@ -81,7 +81,7 @@ class Solution
 
         void applyAmbient( const Vector_2Dui &mapIndices, \
                            const UInt iRing );
-
+        
         void addEmission( const Emission &EI, const Aircraft &AC,            \
                           const Mesh &m,                                     \
                           bool halfRing,                                     \

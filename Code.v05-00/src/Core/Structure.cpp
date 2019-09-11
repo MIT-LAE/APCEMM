@@ -1126,12 +1126,12 @@ void Solution::applyAmbient( const Vector_2Dui &mapIndices, \
 } /* End of Solution::applyAmbient */
 
 
-void Solution::addEmission( const Emission &EI, const Aircraft &AC,            \
-                            const Mesh &m,                                     \
-                            bool halfRing,                                     \
-                            const RealDouble temperature, bool set2Saturation, \
-                            AIM::Aerosol liqAer, AIM::Aerosol iceAer,          \
-                            const RealDouble Soot_Den,                         \
+void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
+                            const Mesh &m,                                 \
+                            bool halfRing,                                 \
+                            const double temperature, bool set2Saturation, \
+                            AIM::Aerosol liqAer, AIM::Aerosol iceAer,      \
+                            const double Soot_Den,                         \
                             const Meteorology &met, const RealDouble areaPlume )
 {
     /* TODO: Release as Gaussian instead of top-hat? */
@@ -1230,7 +1230,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,            \
                             H2O[jNy][iNx] = physFunc::pSat_H2Os( met.temp_[jNy][iNx] ) / ( physConst::kB * met.temp_[jNy][iNx] * 1.00E+06 ); /* [molec / cm^3] */
                     } else {
                         /* If subsaturated, then emit water and soot */
-                        H2O[jNy][iNx]      += ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) );
+                        H2O[jNy][iNx]      += ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
                         sootDens[jNy][iNx] += ( Soot_Den * areaPlume / ( nCell * cellAreas[jNy][iNx] ) );
                         sootRadi[jNy][iNx] = rad;
                         sootArea[jNy][iNx] = 4.0 * physConst::PI * rad * rad * sootDens[jNy][iNx];

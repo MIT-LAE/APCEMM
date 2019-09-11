@@ -2223,10 +2223,10 @@ namespace AIM
         private  ( iNx, jNy, iBin                                           ) \
         schedule ( dynamic, 1                                               ) \
         if       ( !PARALLEL_CASES                                          )
-        for ( iBin = 0; iBin < nBin; iBin++ ) {
-            for ( jNy = 0; jNy < Ny; jNy++ ) {
-                for ( iNx = 0; iNx < Nx; iNx++ ) {
-                    if ( weights[jNy][iNx] != 0.0E+00 )
+        for ( jNy = 0; jNy < Ny; jNy++ ) {
+            for ( iNx = 0; iNx < Nx; iNx++ ) {
+                if ( weights[jNy][iNx] != 0.0E+00 ) {
+                    for ( iBin = 0; iBin < nBin; iBin++ )
                         pdf[iBin][jNy][iNx] += AerPDF[iBin] \
                                                / ( nCell * cellAreas[jNy][iNx] );
                 }
@@ -2248,10 +2248,10 @@ namespace AIM
         private  ( iNx, jNy, iBin                                           ) \
         schedule ( dynamic, 1                                               ) \
         if       ( !PARALLEL_CASES                                          )
-        for ( iBin = 0; iBin < nBin; iBin++ ) {
-            for ( jNy = 0; jNy < Ny; jNy++ ) {
-                for ( iNx = 0; iNx < Nx; iNx++ ) {
-                    if ( weights[jNy][iNx] != 0.0E+00 )
+        for ( jNy = 0; jNy < Ny; jNy++ ) {
+            for ( iNx = 0; iNx < Nx; iNx++ ) {
+                if ( weights[jNy][iNx] != 0.0E+00 ) {
+                    for ( iBin = 0; iBin < nBin; iBin++ )
                         pdf[iBin][jNy][iNx] += PDF[iBin] \
                                                / ( nCell * cellAreas[jNy][iNx] );
                 }
