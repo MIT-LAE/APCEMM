@@ -129,6 +129,9 @@ class OptInput
         bool        PARAMETER_FF_RANGE;
         std::string PARAMETER_FF_UNIT;
         Vector_1D   PARAMETER_FF;
+        bool        PARAMETER_AMASS_RANGE;
+        std::string PARAMETER_AMASS_UNIT;
+        Vector_1D   PARAMETER_AMASS;
         
         /* ========================================== */
         /* ---- TRANSPORT MENU ---------------------- */

@@ -786,6 +786,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     int iEISoot       = -1;
     int iEISootRad    = -1;
     int itotFuelFlow  = -1;
+    int iaircraftMass = -1;
 
     /* ==================================================== */
     /* Read parameters from file?                           */
@@ -1016,7 +1017,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
                     std::cout << std::left << std::setw(40) << " Found Total fuel flow field at index " << std::setw(4) << i;
                     std::cout << std::right << std::setw(12) << "  (" << tokens[i].c_str() << ")" << std::endl;
                     itotFuelFlow = i;
-                } else
+                } else if ( ( strcmp( tokens[i].c_str(), "aircraft mass" ) == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "ac mass" )       == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "acmass" )        == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "amass" )         == 0 ) ) {
+                    std::cout << std::left << std::setw(40) << " Found Aircraft mass field at index " << std::setw(4) << i;
+                    std::cout << std::right << std::setw(12) << "  (" << tokens[i].c_str() << ")" << std::endl;
+                    iaircraftMass = i;
+                } else 
                     std::cout << " Ignoring field: " << tokens[i] << std::endl;
             }
 
@@ -1074,6 +1082,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
                             fileInput[17].push_back( std::stod( tokens[i] ) );
                         else if ( itotFuelFlow == i )
                             fileInput[18].push_back( std::stod( tokens[i] ) );
+                        else if ( iaircraftMass == i )
+                            fileInput[19].push_back( std::stod( tokens[i] ) );
                         else if ( ibNOx == i )
                             fileInput[19].push_back( std::stod( tokens[i] ) );
                         else if ( ibHNO3 == i )
@@ -2473,10 +2483,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibNOx != -1 ) ) {
         /* Found background NOx in parameter input file */
         Input_Opt.PARAMETER_BACKG_NOX_RANGE = 0;
-        if ( fileInput[19].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[19].size(); i++ ) {
-                if ( fileInput[19][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_NOX.push_back( fileInput[19][i] );
+        if ( fileInput[20].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[20].size(); i++ ) {
+                if ( fileInput[20][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_NOX.push_back( fileInput[20][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -2594,10 +2604,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibHNO3 != -1 ) ) {
         /* Found background HNO3 in parameter input file */
         Input_Opt.PARAMETER_BACKG_HNO3_RANGE = 0;
-        if ( fileInput[20].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[20].size(); i++ ) {
-                if ( fileInput[20][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_HNO3.push_back( fileInput[20][i] );
+        if ( fileInput[21].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[21].size(); i++ ) {
+                if ( fileInput[21][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_HNO3.push_back( fileInput[21][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -2716,10 +2726,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibO3 != -1 ) ) {
         /* Found background O3 in parameter input file */
         Input_Opt.PARAMETER_BACKG_O3_RANGE = 0;
-        if ( fileInput[21].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[21].size(); i++ ) {
-                if ( fileInput[21][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_O3.push_back( fileInput[21][i] );
+        if ( fileInput[22].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[22].size(); i++ ) {
+                if ( fileInput[22][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_O3.push_back( fileInput[22][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -2837,10 +2847,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibCO != -1 ) ) {
         /* Found background CO in parameter input file */
         Input_Opt.PARAMETER_BACKG_CO_RANGE = 0;
-        if ( fileInput[22].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[22].size(); i++ ) {
-                if ( fileInput[22][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_CO.push_back( fileInput[22][i] );
+        if ( fileInput[23].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[23].size(); i++ ) {
+                if ( fileInput[23][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_CO.push_back( fileInput[23][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -2958,10 +2968,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibCH4 != -1 ) ) {
         /* Found background CH4 in parameter input file */
         Input_Opt.PARAMETER_BACKG_CH4_RANGE = 0;
-        if ( fileInput[23].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[23].size(); i++ ) {
-                if ( fileInput[23][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_CH4.push_back( fileInput[23][i] );
+        if ( fileInput[24].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[24].size(); i++ ) {
+                if ( fileInput[24][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_CH4.push_back( fileInput[24][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -3079,10 +3089,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibSO2 != -1 ) ) {
         /* Found background SO2 in parameter input file */
         Input_Opt.PARAMETER_BACKG_SO2_RANGE = 0;
-        if ( fileInput[24].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[24].size(); i++ ) {
-                if ( fileInput[24][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_SO2.push_back( fileInput[24][i] );
+        if ( fileInput[25].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[25].size(); i++ ) {
+                if ( fileInput[25][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_SO2.push_back( fileInput[25][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -4097,6 +4107,126 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
     }
+    
+    /* ==================================================== */
+    /* Aircraft mass                                        */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Aircraft mass";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_AMASS_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_AMASS_RANGE = 0;
+    }
+   
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+    
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_AMASS_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_AMASS_RANGE = 0;
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_AMASS_UNIT.assign( unit );
+
+    if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( itotFuelFlow != -1 ) ) {
+        /* Found Fuel flow in parameter input file */
+        Input_Opt.PARAMETER_AMASS_RANGE = 0;
+        if ( fileInput[19].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[19].size(); i++ ) {
+                if ( fileInput[19][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_AMASS.push_back( fileInput[19][i] );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            }
+        } else {
+            try {
+                value = std::stod( tokens[0] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_AMASS.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[0] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    } else {
+        /* Store in values for variable */
+        for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+            try {
+                value = std::stod( tokens[i] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_AMASS.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    }
+
 
     /* If we found NOx flow, convert to EI */
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( iNOxFlow != -1 ) ) {
@@ -4517,6 +4647,23 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         else {
             for ( unsigned int i = 0; i < Input_Opt.PARAMETER_FF.size(); i++ )
                 std::cout << Input_Opt.PARAMETER_FF[i] << " ";
+            std::cout << std::endl;
+        }
+    }
+
+    /* ---- Aircraft mass ------------------------------- */
+    std::cout << "  Aircraft mass [" << Input_Opt.PARAMETER_AMASS_UNIT << "] : ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_AMASS_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_AMASS[0] << "," << Input_Opt.PARAMETER_AMASS[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_AMASS[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_AMASS_RANGE )
+            std::cout << Input_Opt.PARAMETER_AMASS[0] << ":" << Input_Opt.PARAMETER_AMASS[1] << ":" << Input_Opt.PARAMETER_AMASS[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_AMASS.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_AMASS[i] << " ";
             std::cout << std::endl;
         }
     }
@@ -6707,6 +6854,44 @@ Vector_2D CombVec( OptInput &Input_Opt )
         cases.clear();
 
         /* ======================================================================= */
+        /* ---- AIRCRAFT MASS ---------------------------------------------------- */
+        /* ---- Accepted units are: kg (default), tonnes                           */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_AMASS_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_AMASS[0], \
+                                       Input_Opt.PARAMETER_AMASS[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_AMASS[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "kg" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else if ( ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "to" )      == 0 ) || \
+                    ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "tonne " )  == 0 ) || \
+                    ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "tonnes " ) == 0 ) ) {
+            /* Convert tonnes to kg */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] *= 1.00E+03;
+        } else {
+            std::cout << " Unknown unit for variable 'AMASS': ";
+            std::cout << Input_Opt.PARAMETER_AMASS_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_AMASS_UNIT = "kg";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
+
+        /* ======================================================================= */
         /* ---- BACKGROUND NOX MIXING RATIO -------------------------------------- */
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
@@ -7329,6 +7514,26 @@ Vector_2D CombVec( OptInput &Input_Opt )
             std::cout << " In CombVec:";
             std::cout << " PARAMETER_FF has the wrong shape: ";
             std::cout << Input_Opt.PARAMETER_FF.size() << std::endl;
+        }
+
+        counter += 1;
+
+        /* ======================================================================= */
+        /* ---- AIRCRAFT MASS ---------------------------------------------------- */
+        /* ---- Assumed units are: kg                                              */
+        /* ======================================================================= */
+
+        y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
+        if ( Input_Opt.PARAMETER_AMASS.size() == Input_Opt.PARAMETER_FILECASES ) {
+            for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                y[counter-1][i] = Input_Opt.PARAMETER_AMASS[i];
+        } else if ( Input_Opt.PARAMETER_AMASS.size() == 1 ) {
+            for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                y[counter-1][i] = Input_Opt.PARAMETER_AMASS[0];
+        } else {
+            std::cout << " In CombVec:";
+            std::cout << " PARAMETER_AMASS has the wrong shape: ";
+            std::cout << Input_Opt.PARAMETER_AMASS.size() << std::endl;
         }
 
         counter += 1;
@@ -8555,6 +8760,63 @@ Vector_2D CombVec( OptInput &Input_Opt )
 
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_FF_UNIT = "kg/s";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- AIRCRAFT MASS ---------------------------------------------------- */
+        /* ---- Accepted units are: kg (default), tonnes                           */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_AMASS_RANGE ) {
+            currVal = Input_Opt.PARAMETER_AMASS[0];
+            while ( currVal <= Input_Opt.PARAMETER_AMASS[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_AMASS[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_AMASS.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_AMASS[i]);
+        }
+
+        if ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "kg" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else if ( ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "to" )      == 0 ) || \
+                    ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "tonne " )  == 0 ) || \
+                    ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "tonnes " ) == 0 ) ) {
+            /* Convert tonnes to kg */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] *= 1.00E+03;
+        } else {
+            std::cout << " Unknown unit for variable 'AMASS': ";
+            std::cout << Input_Opt.PARAMETER_AMASS_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_AMASS_UNIT = "kg";
 
         z.push_back( Vector_1D(cases.size() ) );
         for ( i = 0; i < cases.size(); i++ )
