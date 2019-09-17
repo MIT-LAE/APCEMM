@@ -32,7 +32,7 @@ std::string line;
 void Read_Input_File( OptInput &Input_Opt )
 {
 
-    /* Read\_Input\_File is the driver program for reading 
+    /* Read\_Input\_File is the driver program for reading
      * APCEMM input file "input.apcemm" from disk */
 
     std::string TOPTITLE;
@@ -50,12 +50,12 @@ void Read_Input_File( OptInput &Input_Opt )
         std::cout << " For future runs, make sure that the variable";
         std::cout << " 'APCEMM_runDir' is exported" << std::endl;
     }
-   
+
     fullPath += FILESEP;
     fullPath += FILENAME;
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Read\_Input\_File begins here ! 
+    // Read\_Input\_File begins here !
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /* Echo output */
@@ -64,7 +64,7 @@ void Read_Input_File( OptInput &Input_Opt )
     std::cout << HEADER << std::endl;
 
     /* Assume success */
-    RC = SUCCESS; 
+    RC = SUCCESS;
 
     /* Open file */
     std::cout << "\n Reading from: " << fullPath << "\n" << std::endl;
@@ -77,7 +77,7 @@ void Read_Input_File( OptInput &Input_Opt )
 
     /* Read TOPTITLE */
     getline( inputFile, TOPTITLE, '\n' );
-        
+
     /* Print to the console? */
     if ( VERBOSE )
         std::cout << TOPTITLE << std::endl;
@@ -97,7 +97,7 @@ void Read_Input_File( OptInput &Input_Opt )
             /* ==== Read SIMULATION MENU ====== */
             /* ================================ */
 
-            Read_Simulation_Menu( Input_Opt, RC ); 
+            Read_Simulation_Menu( Input_Opt, RC );
 
         } else if ( strstr( line.c_str(), "PARAMETER SWEEP" ) != NULL ) {
 
@@ -130,7 +130,7 @@ void Read_Input_File( OptInput &Input_Opt )
             /* ================================ */
 
             Read_Aerosol_Menu( Input_Opt, RC );
-        
+
         } else if ( strstr( line.c_str(), "METEOROLOGY MENU" ) != NULL ) {
 
             /* ================================ */
@@ -138,7 +138,7 @@ void Read_Input_File( OptInput &Input_Opt )
             /* ================================ */
 
             Read_Meteorology_Menu( Input_Opt, RC );
-        
+
         } else if ( strstr( line.c_str(), "DIAGNOSTIC MENU" ) != NULL ) {
 
             /* ================================ */
@@ -146,7 +146,7 @@ void Read_Input_File( OptInput &Input_Opt )
             /* ================================ */
 
             Read_Diagnostic_Menu( Input_Opt, RC );
-        
+
         } else if ( strstr( line.c_str(), "TIMESERIES MENU" ) != NULL ) {
 
             /* ================================ */
@@ -167,7 +167,7 @@ void Read_Input_File( OptInput &Input_Opt )
             std::cout << " " << line << std::endl;
             break;
         }
-                
+
     }
 
     getline( inputFile, line, '\n' );
@@ -187,7 +187,7 @@ void Read_Input_File( OptInput &Input_Opt )
 std::vector<std::string> Split_Line( std::string line2split, const std::string delimiter )
 {
 
-    /* DESCRIPTION: Function Split\_Line separates a string into substrings 
+    /* DESCRIPTION: Function Split\_Line separates a string into substrings
      * according to the delimiter */
 
     std::vector<std::string> substring;
@@ -213,7 +213,7 @@ std::vector<std::string> Split_Line( std::string line2split, const std::string d
 
 void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
 {
-    
+
     /* DESCRIPTION: Function Read\_Simulation\_Menu reads the SIMULATION MENU
      * section of the APCEMM input file. */
 
@@ -233,7 +233,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-   
+
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -336,7 +336,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -349,7 +349,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-   
+
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -389,12 +389,134 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
     Input_Opt.SIMULATION_RUN_DIRECTORY = tokens[0];
-    
+
+    /* ==================================================== */
+    /* Use threaded FFT?                                    */
+    /* ==================================================== */
+
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable range */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "TRUE" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "true" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "True" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "YES" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Y" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "y" )    == 0 ) )
+        Input_Opt.SIMULATION_THREADED_FFT = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "f" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "FALSE" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "false" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "False" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "NO" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "No" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "no" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "N" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "n" )     == 0 ) )
+        Input_Opt.SIMULATION_THREADED_FFT = 0;
+    else {
+        std::cout << " Wrong input for: " << "Use threaded FFT?" << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Use FFTW WISDOM?                                     */
+    /* ==================================================== */
+
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable range */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "TRUE" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "true" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "True" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "YES" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Y" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "y" )    == 0 ) )
+        Input_Opt.SIMULATION_USE_FFTW_WISDOM = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "f" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "FALSE" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "false" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "False" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "NO" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "No" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "no" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "N" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "n" )     == 0 ) )
+        Input_Opt.SIMULATION_USE_FFTW_WISDOM = 0;
+    else {
+        std::cout << " Wrong input for: " << "Use FFTW WISDOM?" << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Directory with write permission                      */
+    /* ==================================================== */
+
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION = tokens[0];
+
+    /* Check that folder exists and that user has write permissions */
+    if ( Input_Opt.SIMULATION_USE_FFTW_WISDOM ) {
+
+        /* Create output directory */
+        struct stat sb;
+        if ( !( stat( Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION.c_str(), &sb) == 0 \
+                    && S_ISDIR(sb.st_mode) ) ) {
+
+            /* Create directory */
+            const int dir_err = \
+                    mkdir( Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION.c_str(), \
+                            S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+
+            if ( dir_err == -1 ) {
+                std::cout << " Could not create directory: ";
+                std::cout << Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION << std::endl;
+                std::cout << " You may not have write permission" << std::endl;
+                std::cout << " Turning SIMULATION_USE_FFTW_WISDOM off" << std::endl;
+                Input_Opt.SIMULATION_USE_FFTW_WISDOM = 0;
+            }
+
+        }
+
+        if ( Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION.back() != '/' )
+            Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION += '/';
+
+    } else
+        Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION = "";
+
     /* ==================================================== */
     /* Input background condition                           */
     /* ==================================================== */
@@ -402,12 +524,12 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
     Input_Opt.SIMULATION_INPUT_BACKG_COND = tokens[0];
-    
+
     /* ==================================================== */
     /* Save forward results                                 */
     /* ==================================================== */
@@ -415,7 +537,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -447,7 +569,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Wrong input for: " << "Save forward results" << std::endl;
         exit(1);
     }
-    
+
     /* ==================================================== */
     /* netCDF file name                                     */
     /* ==================================================== */
@@ -455,13 +577,13 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
     tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
     Input_Opt.SIMULATION_FORWARD_FILENAME = tokens[0];
-    
+
     /* ==================================================== */
     /* Adjoint Optimization                                 */
     /* ==================================================== */
@@ -469,7 +591,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -501,7 +623,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Wrong input for: " << "Adjoint Optimization" << std::endl;
         exit(1);
     }
-    
+
     /* ==================================================== */
     /* netCDF file name                                     */
     /* ==================================================== */
@@ -509,13 +631,13 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
     tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
     Input_Opt.SIMULATION_ADJOINT_FILENAME = tokens[0];
-    
+
     /* ==================================================== */
     /* Run box model                                        */
     /* ==================================================== */
@@ -523,7 +645,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -555,7 +677,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Wrong input for: " << "Run box model" << std::endl;
         exit(1);
     }
-    
+
     /* ==================================================== */
     /* netCDF file name                                     */
     /* ==================================================== */
@@ -563,7 +685,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -572,7 +694,7 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
 
 
     /* Return success */
-    RC = SUCCESS; 
+    RC = SUCCESS;
 
     /* ==================================================== */
     /* Print to screen                                      */
@@ -587,6 +709,9 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " Output folder           : " << Input_Opt.SIMULATION_OUTPUT_FOLDER                 << std::endl;
     std::cout << "  => Overwrite? if exists: " << Input_Opt.SIMULATION_OVERWRITE                     << std::endl;
     std::cout << " Run directory           : " << Input_Opt.SIMULATION_RUN_DIRECTORY                 << std::endl;
+    std::cout << " Use threaded FFT?       : " << Input_Opt.SIMULATION_THREADED_FFT               << std::endl;
+    std::cout << " Use FFTW WISDOM?        : " << Input_Opt.SIMULATION_USE_FFTW_WISDOM               << std::endl;
+    std::cout << " => Dir w/ w permission  : " << Input_Opt.SIMULATION_DIRECTORY_W_WRITE_PERMISSION  << std::endl;
     std::cout << " Input backgrd condition : " << Input_Opt.SIMULATION_INPUT_BACKG_COND              << std::endl;
     std::cout << " Save Forward results    : " << Input_Opt.SIMULATION_SAVE_FORWARD                  << std::endl;
     std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_FORWARD_FILENAME              << std::endl;
@@ -595,14 +720,14 @@ void Read_Simulation_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " Run box model           : " << Input_Opt.SIMULATION_BOXMODEL                      << std::endl;
     std::cout << "  => netCDF file name    : " << Input_Opt.SIMULATION_BOX_FILENAME                  << std::endl;
     std::cout << " ------------------------+------------------------------------------------------ " << std::endl;
-    
+
 } /* End of Read_Simulation_Menu */
 
 void Read_Parameters( OptInput &Input_Opt, bool &RC )
 {
-    
+
     /* DESCRIPTION: Function Read\_Parameters reads the PARAMETER SWEEP
-     * section of the APCEMM input file. 
+     * section of the APCEMM input file.
      *
      * If Parameter Sweep? is turned off in SIMULATION MENU, only the
      * first element of each parameter is considered */
@@ -622,6 +747,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     std::size_t found;
     double value;
 
+    bool FIRST_PARAM_SWEEP = 1;
+
     /* Skip menu header lines */
     getline( inputFile, line, '\n' );
 
@@ -631,7 +758,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
 
     /* However, for MC simulations the ranges should be defined as
      * min max or min:max */
-    
+
     /* Indices for parameter input file */
     int iPlumeProcess = -1;
     int iTemperature  = -1;
@@ -659,15 +786,16 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     int iEISoot       = -1;
     int iEISootRad    = -1;
     int itotFuelFlow  = -1;
-    
+    int iaircraftMass = -1;
+
     /* ==================================================== */
     /* Read parameters from file?                           */
     /* ==================================================== */
-   
+
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -707,11 +835,11 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    Vector_2D fileInput( 25, Vector_1D( 0, 0.0E+00 ) ); 
+    Vector_2D fileInput( 25, Vector_1D( 0, 0.0E+00 ) );
 
     if ( Input_Opt.PARAMETER_FILEINPUT == 1 ) {
         std::ifstream f(tokens[0].c_str());
@@ -889,6 +1017,13 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
                     std::cout << std::left << std::setw(40) << " Found Total fuel flow field at index " << std::setw(4) << i;
                     std::cout << std::right << std::setw(12) << "  (" << tokens[i].c_str() << ")" << std::endl;
                     itotFuelFlow = i;
+                } else if ( ( strcmp( tokens[i].c_str(), "aircraft mass" ) == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "ac mass" )       == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "acmass" )        == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "amass" )         == 0 ) ) {
+                    std::cout << std::left << std::setw(40) << " Found Aircraft mass field at index " << std::setw(4) << i;
+                    std::cout << std::right << std::setw(12) << "  (" << tokens[i].c_str() << ")" << std::endl;
+                    iaircraftMass = i;
                 } else 
                     std::cout << " Ignoring field: " << tokens[i] << std::endl;
             }
@@ -947,6 +1082,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
                             fileInput[17].push_back( std::stod( tokens[i] ) );
                         else if ( itotFuelFlow == i )
                             fileInput[18].push_back( std::stod( tokens[i] ) );
+                        else if ( iaircraftMass == i )
+                            fileInput[19].push_back( std::stod( tokens[i] ) );
                         else if ( ibNOx == i )
                             fileInput[19].push_back( std::stod( tokens[i] ) );
                         else if ( ibHNO3 == i )
@@ -1021,7 +1158,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_PLUMEPROCESS_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -1032,10 +1169,12 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_PLUMEPROCESS_RANGE = 0;
     }
-    
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
 
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -1050,7 +1189,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             Input_Opt.PARAMETER_PLUMEPROCESS_RANGE = 0;
     }
 
-    /* Find unit in between "[" and "]" */ 
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -1102,7 +1241,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
     }
-   
+
     /* Skip header line */
     getline( inputFile, line, '\n' );
 
@@ -1143,7 +1282,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_TEMPERATURE_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -1154,10 +1293,12 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_TEMPERATURE_RANGE = 0;
     }
-    
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
 
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -1172,7 +1313,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             Input_Opt.PARAMETER_TEMPERATURE_RANGE = 0;
     }
 
-    /* Find unit in between "[" and "]" */ 
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -1224,7 +1365,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
     }
-    
+
     /* ==================================================== */
     /* Relative humidity                                    */
     /* ==================================================== */
@@ -1262,7 +1403,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_RHW_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -1273,12 +1414,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_RHW_RANGE = 0;
     }
-    
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -1290,8 +1433,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_RHW_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -1381,7 +1524,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_DH_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -1392,12 +1535,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_DH_RANGE = 0;
     }
-    
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -1409,8 +1554,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_DH_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -1500,7 +1645,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_DV_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -1511,12 +1656,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_DV_RANGE = 0;
     }
-    
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -1528,8 +1675,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_DV_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -1619,7 +1766,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_SHEAR_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -1630,10 +1777,12 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_SHEAR_RANGE = 0;
     }
-    
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
 
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
@@ -1648,7 +1797,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             Input_Opt.PARAMETER_SHEAR_RANGE = 0;
     }
 
-    /* Find unit in between "[" and "]" */ 
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -1684,7 +1833,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
 
     /* Skipping line */
     getline( inputFile, line, '\n' );
-    
+
     /* ==================================================== */
     /* Longitude                                            */
     /* ==================================================== */
@@ -1722,7 +1871,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_LONGITUDE_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -1733,12 +1882,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_LONGITUDE_RANGE = 0;
     }
-    
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -1750,8 +1901,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_LONGITUDE_RANGE = 0;
     }
-   
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -1821,7 +1972,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_LATITUDE_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -1832,12 +1983,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_LATITUDE_RANGE = 0;
     }
-    
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -1849,8 +2002,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_LATITUDE_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -1882,7 +2035,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
     }
-    
+
     /* ==================================================== */
     /* Pressure                                             */
     /* ==================================================== */
@@ -1920,7 +2073,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_PRESSURE_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -1931,12 +2084,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_PRESSURE_RANGE = 0;
     }
-    
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -1948,8 +2103,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_PRESSURE_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -2002,7 +2157,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
     }
 
-    
+
     /* Skipping line */
     getline( inputFile, line, '\n' );
 
@@ -2043,7 +2198,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_EDAY_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -2054,12 +2209,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EDAY_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -2071,8 +2228,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_EDAY_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -2162,7 +2319,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_ETIME_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -2173,12 +2330,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_ETIME_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -2190,8 +2349,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_ETIME_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -2284,7 +2443,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_BACKG_NOX_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -2295,12 +2454,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_NOX_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -2312,8 +2473,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_BACKG_NOX_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -2322,10 +2483,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibNOx != -1 ) ) {
         /* Found background NOx in parameter input file */
         Input_Opt.PARAMETER_BACKG_NOX_RANGE = 0;
-        if ( fileInput[19].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[19].size(); i++ ) {
-                if ( fileInput[19][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_NOX.push_back( fileInput[19][i] );
+        if ( fileInput[20].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[20].size(); i++ ) {
+                if ( fileInput[20][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_NOX.push_back( fileInput[20][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -2403,7 +2564,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_BACKG_HNO3_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -2414,12 +2575,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_HNO3_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -2431,8 +2594,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_BACKG_HNO3_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -2441,10 +2604,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibHNO3 != -1 ) ) {
         /* Found background HNO3 in parameter input file */
         Input_Opt.PARAMETER_BACKG_HNO3_RANGE = 0;
-        if ( fileInput[20].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[20].size(); i++ ) {
-                if ( fileInput[20][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_HNO3.push_back( fileInput[20][i] );
+        if ( fileInput[21].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[21].size(); i++ ) {
+                if ( fileInput[21][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_HNO3.push_back( fileInput[21][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -2484,7 +2647,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
     }
-    
+
     /* ==================================================== */
     /* O3 mixing ratio                                      */
     /* ==================================================== */
@@ -2522,7 +2685,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_BACKG_O3_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -2533,12 +2696,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_O3_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -2550,9 +2715,9 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_BACKG_O3_RANGE = 0;
     }
-    
-    
-    /* Find unit in between "[" and "]" */ 
+
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -2561,10 +2726,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibO3 != -1 ) ) {
         /* Found background O3 in parameter input file */
         Input_Opt.PARAMETER_BACKG_O3_RANGE = 0;
-        if ( fileInput[21].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[21].size(); i++ ) {
-                if ( fileInput[21][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_O3.push_back( fileInput[21][i] );
+        if ( fileInput[22].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[22].size(); i++ ) {
+                if ( fileInput[22][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_O3.push_back( fileInput[22][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -2642,7 +2807,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_BACKG_CO_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -2653,12 +2818,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_CO_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -2670,8 +2837,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_BACKG_CO_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -2680,10 +2847,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibCO != -1 ) ) {
         /* Found background CO in parameter input file */
         Input_Opt.PARAMETER_BACKG_CO_RANGE = 0;
-        if ( fileInput[22].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[22].size(); i++ ) {
-                if ( fileInput[22][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_CO.push_back( fileInput[22][i] );
+        if ( fileInput[23].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[23].size(); i++ ) {
+                if ( fileInput[23][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_CO.push_back( fileInput[23][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -2761,7 +2928,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_BACKG_CH4_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -2772,12 +2939,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_CH4_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -2789,8 +2958,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_BACKG_CH4_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -2799,10 +2968,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibCH4 != -1 ) ) {
         /* Found background CH4 in parameter input file */
         Input_Opt.PARAMETER_BACKG_CH4_RANGE = 0;
-        if ( fileInput[23].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[23].size(); i++ ) {
-                if ( fileInput[23][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_CH4.push_back( fileInput[23][i] );
+        if ( fileInput[24].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[24].size(); i++ ) {
+                if ( fileInput[24][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_CH4.push_back( fileInput[24][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -2880,7 +3049,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_BACKG_SO2_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -2891,12 +3060,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_BACKG_SO2_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -2908,8 +3079,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_BACKG_SO2_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -2918,10 +3089,10 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibSO2 != -1 ) ) {
         /* Found background SO2 in parameter input file */
         Input_Opt.PARAMETER_BACKG_SO2_RANGE = 0;
-        if ( fileInput[24].size() > 0 ) {
-            for ( unsigned int i = 0; i < fileInput[24].size(); i++ ) {
-                if ( fileInput[24][i] >= 0.0E+00 )
-                    Input_Opt.PARAMETER_BACKG_SO2.push_back( fileInput[24][i] );
+        if ( fileInput[25].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[25].size(); i++ ) {
+                if ( fileInput[25][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BACKG_SO2.push_back( fileInput[25][i] );
                 else {
                     std::cout << " Wrong input for: " << variable << std::endl;
                     std::cout << variable << " needs to be positive" << std::endl;
@@ -2961,11 +3132,11 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
     }
-   
+
 
     /* Skipping line */
     getline( inputFile, line, '\n' );
-    
+
     /* ==================================================== */
     /* NOx emission index                                   */
     /* ==================================================== */
@@ -3003,7 +3174,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_EI_NOX_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -3014,12 +3185,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_NOX_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -3031,8 +3204,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_EI_NOX_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -3040,8 +3213,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
 
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ( iEINOx != -1 ) || ( iNOxFlow != -1 ) ) ) {
         /* Found EI NOx in parameter input file
-         * If we found NOx flow, we are storing the NOx flow in 
-         * PARAMETER_EI_NOX for now but convert to EI once we have data for 
+         * If we found NOx flow, we are storing the NOx flow in
+         * PARAMETER_EI_NOX for now but convert to EI once we have data for
          * fuel flow */
         Input_Opt.PARAMETER_EI_NOX_RANGE = 0;
         if ( fileInput[11].size() > 0 ) {
@@ -3125,7 +3298,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_EI_CO_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -3136,12 +3309,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_CO_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -3153,8 +3328,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_EI_CO_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -3244,7 +3419,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_EI_UHC_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -3255,12 +3430,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_UHC_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -3272,8 +3449,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_EI_UHC_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -3363,7 +3540,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_EI_SO2_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -3374,12 +3551,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_SO2_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -3391,8 +3570,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_EI_SO2_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -3482,7 +3661,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_EI_SO2TOSO4_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -3493,12 +3672,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_SO2TOSO4_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -3511,7 +3692,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             Input_Opt.PARAMETER_EI_SO2TOSO4_RANGE = 0;
     }
 
-    /* Find unit in between "[" and "]" */ 
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -3601,7 +3782,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_EI_SOOT_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -3612,12 +3793,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_SOOT_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -3629,8 +3812,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_EI_SOOT_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -3720,7 +3903,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_EI_SOOTRAD_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -3731,12 +3914,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_EI_SOOTRAD_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -3748,8 +3933,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_EI_SOOTRAD_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -3839,7 +4024,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
         Input_Opt.PARAMETER_FF_RANGE = 1;
-    } 
+    }
     else {
         /* Extract variable range */
         tokens = Split_Line( subline, SPACE );
@@ -3850,12 +4035,14 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
         Input_Opt.PARAMETER_FF_RANGE = 0;
     }
-   
-    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
-        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
-        exit(1);
+
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) && ( FIRST_PARAM_SWEEP ) ) {
+        std::cout << " Multiple cases need to be run through APCEMM while the 'Parameter sweep?' argument is turned off!" << std::endl;
+        std::cout << " These cases will be run in serial!" << std::endl;
+        std::cout << " To enable the processing of multiple cases simultaneously, turn on the 'Parameter sweep' input!" << std::endl;
+        FIRST_PARAM_SWEEP = 0;
     }
-    
+
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( tokens.size() > 2 ) {
             std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
@@ -3867,8 +4054,8 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         } else if ( tokens.size() == 1 )
             Input_Opt.PARAMETER_FF_RANGE = 0;
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -3920,6 +4107,126 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             }
         }
     }
+    
+    /* ==================================================== */
+    /* Aircraft mass                                        */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Aircraft mass";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_AMASS_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_AMASS_RANGE = 0;
+    }
+   
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+    
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_AMASS_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_AMASS_RANGE = 0;
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_AMASS_UNIT.assign( unit );
+
+    if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( itotFuelFlow != -1 ) ) {
+        /* Found Fuel flow in parameter input file */
+        Input_Opt.PARAMETER_AMASS_RANGE = 0;
+        if ( fileInput[19].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[19].size(); i++ ) {
+                if ( fileInput[19][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_AMASS.push_back( fileInput[19][i] );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            }
+        } else {
+            try {
+                value = std::stod( tokens[0] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_AMASS.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[0] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    } else {
+        /* Store in values for variable */
+        for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+            try {
+                value = std::stod( tokens[i] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_AMASS.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    }
+
 
     /* If we found NOx flow, convert to EI */
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( iNOxFlow != -1 ) ) {
@@ -3938,7 +4245,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
 
 
     /* Return success */
-    RC = SUCCESS; 
+    RC = SUCCESS;
 
     /* ==================================================== */
     /* Print to screen                                      */
@@ -4344,11 +4651,28 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
     }
 
+    /* ---- Aircraft mass ------------------------------- */
+    std::cout << "  Aircraft mass [" << Input_Opt.PARAMETER_AMASS_UNIT << "] : ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_AMASS_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_AMASS[0] << "," << Input_Opt.PARAMETER_AMASS[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_AMASS[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_AMASS_RANGE )
+            std::cout << Input_Opt.PARAMETER_AMASS[0] << ":" << Input_Opt.PARAMETER_AMASS[1] << ":" << Input_Opt.PARAMETER_AMASS[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_AMASS.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_AMASS[i] << " ";
+            std::cout << std::endl;
+        }
+    }
+
 } /* End of Read_Parameters */
 
 void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
 {
-    
+
     /* DESCRIPTION: Function Read\_Transport\_Menu reads the TRANSPORT MENU
      * section of the APCEMM input file. */
 
@@ -4373,7 +4697,7 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-   
+
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4414,7 +4738,7 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-   
+
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4446,7 +4770,7 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
     }
-    
+
     /* ==================================================== */
     /* Transport timestep                                   */
     /* ==================================================== */
@@ -4455,7 +4779,7 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4474,7 +4798,7 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Could not convert string to double for " << variable << std::endl;
         exit(1);
     }
-    
+
     /* ==================================================== */
     /* Particle flux correction                             */
     /* ==================================================== */
@@ -4524,10 +4848,10 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
+
     if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
          ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
          ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
@@ -4556,7 +4880,7 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
     }
-    
+
     /* ==================================================== */
     /* Updraft timescale                                    */
     /* ==================================================== */
@@ -4565,7 +4889,7 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4582,8 +4906,8 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Could not convert string to double for " << variable << std::endl;
         exit(1);
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -4610,7 +4934,7 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4621,8 +4945,8 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Could not convert string to double for " << variable << std::endl;
         exit(1);
     }
-    
-    /* Find unit in between "[" and "]" */ 
+
+    /* Find unit in between "[" and "]" */
     first = line.find("[");
     last  = line.find("]");
     unit = line.substr( first+1, last-first-1 );
@@ -4663,7 +4987,7 @@ void Read_Transport_Menu( OptInput &Input_Opt, bool &RC )
 
 void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
 {
-    
+
     /* DESCRIPTION: Function Read\_Chemistry\_Menu reads the CHEMISTRY MENU
      * section of the APCEMM input file. */
 
@@ -4686,7 +5010,7 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-   
+
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4733,7 +5057,7 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-   
+
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4765,7 +5089,7 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
     }
-    
+
     /* ==================================================== */
     /* Chemistry Timestep                                   */
     /* ==================================================== */
@@ -4774,7 +5098,7 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4802,7 +5126,7 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4827,7 +5151,7 @@ void Read_Chemistry_Menu( OptInput &Input_Opt, bool &RC )
 
 void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
 {
-    
+
     /* DESCRIPTION: Function Read\_Aerosol\_Menu reads the AEROSOL MENU
      * section of the APCEMM input file. */
 
@@ -4850,7 +5174,7 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-   
+
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4891,7 +5215,7 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-   
+
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4964,7 +5288,7 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
     }
-    
+
     /* ==================================================== */
     /* Coagulation Timestep                                 */
     /* ==================================================== */
@@ -4973,7 +5297,7 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -4999,10 +5323,10 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
+
     if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
          ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
          ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
@@ -5031,7 +5355,7 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
     }
-    
+
     /* Return success */
     RC = SUCCESS;
 
@@ -5052,7 +5376,7 @@ void Read_Aerosol_Menu( OptInput &Input_Opt, bool &RC )
 
 void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
 {
-    
+
     /* DESCRIPTION: Function Read\_Meteorology\_Menu reads the METEOROLOGY MENU
      * section of the APCEMM input file. */
 
@@ -5066,7 +5390,7 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     std::vector<std::string> tokens;
     std::string variable;
     double value;
-    
+
     /* ==================================================== */
     /* Do we have MET input?                                */
     /* ==================================================== */
@@ -5075,7 +5399,7 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -5119,7 +5443,7 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
 
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
+
     tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
     Input_Opt.MET_FILENAME = tokens[0];
 
@@ -5248,7 +5572,7 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
     }
-    
+
     /* ==================================================== */
     /* Moist layer depth                                    */
     /* ==================================================== */
@@ -5257,7 +5581,7 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -5318,7 +5642,7 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
     }
-    
+
     /* ==================================================== */
     /* Temperature lapse rate                               */
     /* ==================================================== */
@@ -5327,7 +5651,7 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -5411,7 +5735,7 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
 
 void Read_Diagnostic_Menu( OptInput &Input_Opt, bool &RC )
 {
-    
+
     /* DESCRIPTION: Function Read\_Diagnostic\_Menu reads the DIAGNOSTIC MENU
      * section of the APCEMM input file. */
 
@@ -5433,13 +5757,13 @@ void Read_Diagnostic_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
     tokens[0].erase(std::remove(tokens[0].begin(), tokens[0].end(), '*'), tokens[0].end());
     Input_Opt.DIAG_FILENAME = tokens[0];
-    
+
     /* Skip line */
     getline( inputFile, line, '\n' );
 
@@ -5460,7 +5784,7 @@ void Read_Diagnostic_Menu( OptInput &Input_Opt, bool &RC )
 
 void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
 {
-    
+
     /* DESCRIPTION: Function Read\_Timeseries\_Menu reads the TIMESERIES MENU
      * section of the APCEMM input file. */
 
@@ -5474,19 +5798,19 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     std::vector<std::string> tokens;
     std::string variable;
     int value;
-    
+
     /* ==================================================== */
     /* Save species timeseries?                             */
     /* ==================================================== */
-    
+
     variable = "Save species timeseries?";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
+
     if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
          ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
          ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
@@ -5524,7 +5848,7 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -5534,15 +5858,15 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     /* ==================================================== */
     /* Species to include                                   */
     /* ==================================================== */
-   
+
     variable = "Species to include";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
+
     /* Store in values for variable */
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         if ( strcmp(tokens[i].c_str(), EMPTY) != 0 ) {
@@ -5570,10 +5894,10 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-   
+
     if ( ( strcmp(tokens[0].c_str(), "-") == 0 ) || \
          ( strcmp(tokens[0].c_str(), "Inf") == 0 ) )
         Input_Opt.TS_FREQ = 0.0E+00;
@@ -5596,15 +5920,15 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     /* ==================================================== */
     /* Save aerosol timeseries?                             */
     /* ==================================================== */
-    
+
     variable = "Save aerosol timeseries?";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
+
     if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
          ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
          ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
@@ -5642,7 +5966,7 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -5652,15 +5976,15 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     /* ==================================================== */
     /* Aerosol to include                                   */
     /* ==================================================== */
-   
+
     variable = "Aerosol to include";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
+
     /* Store in values for variable */
     for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         if ( strcmp(tokens[i].c_str(), EMPTY) != 0 ) {
@@ -5688,10 +6012,10 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-    
+
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
-    
+
     if ( ( strcmp(tokens[0].c_str(), "-") == 0 ) || \
          ( strcmp(tokens[0].c_str(), "Inf") == 0 ) )
         Input_Opt.TS_AERO_FREQ = 0.0E+00;
@@ -5713,7 +6037,7 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
 
     /* Return success */
     RC = SUCCESS;
-    
+
     /* ==================================================== */
     /* Print to screen                                      */
     /* ==================================================== */
@@ -5740,7 +6064,7 @@ void Read_Timeseries_Menu( OptInput &Input_Opt, bool &RC )
 
 void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
 {
-    
+
     /* DESCRIPTION: Function Read\_PL\_Menu reads the PROD & LOSS MENU
      * section of the APCEMM input file. */
 
@@ -5753,16 +6077,16 @@ void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
 
     std::vector<std::string> tokens;
     std::string variable;
-    
+
     /* ==================================================== */
     /* Turn on P/L diag?                                    */
     /* ==================================================== */
-    
+
     variable = "Turn on P/L diag?";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-   
+
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -5798,12 +6122,12 @@ void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
     /* ==================================================== */
     /* Save O3 P/L?                                         */
     /* ==================================================== */
-    
+
     variable = "Save O3 P/L?";
     getline( inputFile, line, '\n' );
     if ( VERBOSE )
         std::cout << line << std::endl;
-   
+
     /* Extract variable range */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
@@ -5846,7 +6170,7 @@ void Read_PL_Menu( OptInput &Input_Opt, bool &RC )
 
     /* Return success */
     RC = SUCCESS;
-    
+
     /* ==================================================== */
     /* Print to screen                                      */
     /* ==================================================== */
@@ -5866,7 +6190,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
     const bool print = 0;
 
     unsigned int counter = 1;
-    unsigned int nCases;  
+    unsigned int nCases;
 
     unsigned int i, j;
 
@@ -5880,7 +6204,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
 
         /* Initialize seed */
         setSeed();
-        
+
         /* ======================================================================= */
         /* ---- PLUME PROCESSING TIME ( SIMULATION TIME ) ------------------------ */
         /* ---- Accepted units are: hr (default)                                   */
@@ -5894,7 +6218,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( Input_Opt.PARAMETER_PLUMEPROCESS[0] );
         }
-        
+
         /* Do unit conversion to default unit */
         if ( ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "0-24" ) == 0 ) || \
              ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "hr" ) == 0 ) ) {
@@ -5930,7 +6254,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( Input_Opt.PARAMETER_TEMPERATURE[0] );
         }
-        
+
         /* Do unit conversion to default unit */
         if ( Input_Opt.PARAMETER_TEMPERATURE_UNIT.compare( "K" ) == 0 ) {
             /* Do nothing. Default unit */
@@ -6440,6 +6764,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
              ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_f" )    == 0 ) || \
              ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
+        } else if ( ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "mg/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "mg/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "mg/kg" )      == 0 ) ) {
+            /* Convert mg to g */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] /= 1.00E+03;
         } else {
             std::cout << " Unknown unit for variable 'EI_SOOT': ";
             std::cout << Input_Opt.PARAMETER_EI_SOOT_UNIT << std::endl;
@@ -6459,7 +6789,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- EI_SOOTRAD ------------------------------------------------------- */
         /* ---- Accepted units are: m (default), nm                                */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_EI_SOOTRAD_RANGE ) {
             for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
                 cases.push_back( fRand(Input_Opt.PARAMETER_EI_SOOTRAD[0], \
@@ -6522,6 +6852,44 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
             y[counter-1][i] = cases[i];
         cases.clear();
+
+        /* ======================================================================= */
+        /* ---- AIRCRAFT MASS ---------------------------------------------------- */
+        /* ---- Accepted units are: kg (default), tonnes                           */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_AMASS_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_AMASS[0], \
+                                       Input_Opt.PARAMETER_AMASS[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_AMASS[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "kg" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else if ( ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "to" )      == 0 ) || \
+                    ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "tonne " )  == 0 ) || \
+                    ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "tonnes " ) == 0 ) ) {
+            /* Convert tonnes to kg */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] *= 1.00E+03;
+        } else {
+            std::cout << " Unknown unit for variable 'AMASS': ";
+            std::cout << Input_Opt.PARAMETER_AMASS_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_AMASS_UNIT = "kg";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
 
         /* ======================================================================= */
         /* ---- BACKGROUND NOX MIXING RATIO -------------------------------------- */
@@ -6784,7 +7152,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- TEMPERATURE ------------------------------------------------------ */
         /* ---- Assumed units are: Kelvin                                          */
         /* ======================================================================= */
-        
+
         y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
         if ( Input_Opt.PARAMETER_TEMPERATURE.size() == Input_Opt.PARAMETER_FILECASES ) {
             for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
@@ -6799,12 +7167,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
         }
 
         counter += 1;
-        
+
         /* ======================================================================= */
         /* ---- RELATIVE HUMIDITY ------------------------------------------------ */
         /* ---- Assumed units are: %                                               */
         /* ======================================================================= */
-        
+
         y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
         if ( Input_Opt.PARAMETER_RHW.size() == Input_Opt.PARAMETER_FILECASES ) {
             for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
@@ -6824,7 +7192,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- HORIZONTAL DIFFUSION PARAMETER ----------------------------------- */
         /* ---- Assumed units are: m^2/s                                           */
         /* ======================================================================= */
-        
+
         y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
         if ( Input_Opt.PARAMETER_DH.size() == Input_Opt.PARAMETER_FILECASES ) {
             for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
@@ -7134,7 +7502,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- TOTAL FUEL FLOW -------------------------------------------------- */
         /* ---- Assumed units are: kg/s                                            */
         /* ======================================================================= */
-        
+
         y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
         if ( Input_Opt.PARAMETER_FF.size() == Input_Opt.PARAMETER_FILECASES ) {
             for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
@@ -7151,10 +7519,30 @@ Vector_2D CombVec( OptInput &Input_Opt )
         counter += 1;
 
         /* ======================================================================= */
+        /* ---- AIRCRAFT MASS ---------------------------------------------------- */
+        /* ---- Assumed units are: kg                                              */
+        /* ======================================================================= */
+
+        y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
+        if ( Input_Opt.PARAMETER_AMASS.size() == Input_Opt.PARAMETER_FILECASES ) {
+            for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                y[counter-1][i] = Input_Opt.PARAMETER_AMASS[i];
+        } else if ( Input_Opt.PARAMETER_AMASS.size() == 1 ) {
+            for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                y[counter-1][i] = Input_Opt.PARAMETER_AMASS[0];
+        } else {
+            std::cout << " In CombVec:";
+            std::cout << " PARAMETER_AMASS has the wrong shape: ";
+            std::cout << Input_Opt.PARAMETER_AMASS.size() << std::endl;
+        }
+
+        counter += 1;
+
+        /* ======================================================================= */
         /* ---- BACKGROUND NOX MIXING RATIO -------------------------------------- */
         /* ---- Assumed units are: ppt                                             */
         /* ======================================================================= */
-        
+
         y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
         if ( Input_Opt.PARAMETER_BACKG_NOX.size() == Input_Opt.PARAMETER_FILECASES ) {
             for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
@@ -7230,7 +7618,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- BACKGROUND O3 MIXING RATIO --------------------------------------- */
         /* ---- Assumed units are: ppb                                             */
         /* ======================================================================= */
-        
+
         y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
         if ( Input_Opt.PARAMETER_BACKG_O3.size() == Input_Opt.PARAMETER_FILECASES ) {
             for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
@@ -7268,7 +7656,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- BACKGROUND CO MIXING RATIO --------------------------------------- */
         /* ---- Assumed units are: ppb                                             */
         /* ======================================================================= */
-        
+
         y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
         if ( Input_Opt.PARAMETER_BACKG_CO.size() == Input_Opt.PARAMETER_FILECASES ) {
             for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
@@ -7377,7 +7765,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         }
 
         counter += 1;
-        
+
         if ( VERBOSE ) {
             for ( i = 0; i < y.size(); i++ ) {
                 for ( j = 0; j < y[i].size(); j++ )
@@ -7406,7 +7794,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 cases.push_back(Input_Opt.PARAMETER_PLUMEPROCESS[i]);
         }
         nCases = cases.size();
-        
+
         /* Do unit conversion to default unit */
         if ( ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "0-24" ) == 0 ) || \
              ( Input_Opt.PARAMETER_PLUMEPROCESS_UNIT.compare( "hr" ) == 0 ) ) {
@@ -7493,7 +7881,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- RELATIVE HUMIDITY ------------------------------------------------ */
         /* ---- Accepted units are: % (0-100, default), - (0-1)                    */
         /* ======================================================================= */
-        
+
         if ( Input_Opt.PARAMETER_RHW_RANGE ) {
             currVal = Input_Opt.PARAMETER_RHW[0];
             while ( currVal <= Input_Opt.PARAMETER_RHW[2] ) {
@@ -7504,7 +7892,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_RHW.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_RHW[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_RHW_UNIT.compare( "%" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_RHW_UNIT.compare( "-" ) == 0 ) {
@@ -7814,7 +8202,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_PRESSURE.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_PRESSURE[i]);
         }
-        
+
         if ( Input_Opt.PARAMETER_PRESSURE_UNIT.compare( "Pa" ) == 0 ) {
             /* Do nothing. Default unit */
         } else if ( Input_Opt.PARAMETER_PRESSURE_UNIT.compare( "hPa" ) == 0 ) {
@@ -8250,6 +8638,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
              ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg_f" )    == 0 ) || \
              ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "g/kg" )      == 0 ) ) {
             /* Do nothing. Default unit */
+        } else if ( ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "mg/kg_fuel" ) == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "mg/kg_f" )    == 0 ) || \
+             ( Input_Opt.PARAMETER_EI_SOOT_UNIT.compare( "mg/kg" )      == 0 ) ) {
+            /* Convert mg to g */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] /= 1.00E+03;
         } else {
             std::cout << " Unknown unit for variable 'EI_SOOT': ";
             std::cout << Input_Opt.PARAMETER_EI_SOOT_UNIT << std::endl;
@@ -8366,6 +8760,63 @@ Vector_2D CombVec( OptInput &Input_Opt )
 
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_FF_UNIT = "kg/s";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- AIRCRAFT MASS ---------------------------------------------------- */
+        /* ---- Accepted units are: kg (default), tonnes                           */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_AMASS_RANGE ) {
+            currVal = Input_Opt.PARAMETER_AMASS[0];
+            while ( currVal <= Input_Opt.PARAMETER_AMASS[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_AMASS[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_AMASS.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_AMASS[i]);
+        }
+
+        if ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "kg" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else if ( ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "to" )      == 0 ) || \
+                    ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "tonne " )  == 0 ) || \
+                    ( Input_Opt.PARAMETER_AMASS_UNIT.compare( "tonnes " ) == 0 ) ) {
+            /* Convert tonnes to kg */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] *= 1.00E+03;
+        } else {
+            std::cout << " Unknown unit for variable 'AMASS': ";
+            std::cout << Input_Opt.PARAMETER_AMASS_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_AMASS_UNIT = "kg";
 
         z.push_back( Vector_1D(cases.size() ) );
         for ( i = 0; i < cases.size(); i++ )
@@ -8548,7 +8999,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
         nCases *= cases.size();
-        
+
         u = Copy_blocked(y,z[0].size());
         v = Copy_interleaved(z,y[0].size());
 
@@ -8760,7 +9211,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
 
 Vector_2D Copy_blocked( Vector_2D& m, int n )
 {
-    
+
     Vector_2D b;
     const unsigned int mr = m.size();
     const unsigned int mc = m[0].size();
@@ -8824,7 +9275,7 @@ Vector_2D Copy_interleaved( Vector_2D& m, int n )
 
 Vector_2D Reshape_Vector( Vector_2D& vector_2D, int n_x, int n_y )
 {
-    
+
     Vector_2D output;
     int size_x = vector_2D.size();
     int size_y = vector_2D[0].size();

@@ -33,6 +33,7 @@
 #include "Core/Input.hpp"
 
 static int DIR_FAIL = -9;
+int PARALLEL_CASES;
 
 void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
@@ -120,14 +121,11 @@ int main( int , char* )
     {
         #ifdef OMP 
             const char* numberprocs = std::getenv("SLURM_CPUS_ON_NODE");
-            if ( nCases > 1 ) {
+            if ( nCases > 1 )
                 std::cout << "\n Running model for " << nCases << " cases on ";
-                std::cout << numberprocs << " processors." << std::endl; 
-            }
-            else {
+            else
                 std::cout << "\n Running model for " << nCases << " case on ";
-                std::cout << numberprocs << " processors." << std::endl; 
-            }
+            std::cout << numberprocs << " processors." << std::endl;
         #else
             if ( nCases > 1 )
                 std::cout << "\n Running model for " << nCases << " cases." << std::endl; 
@@ -136,12 +134,13 @@ int main( int , char* )
         #endif /* OMP */
     }
 
+    PARALLEL_CASES = Input_Opt.SIMULATION_PARAMETER_SWEEP;
 
     /* ====================================================================== */
     /* ---- CASE LOOP STARTS HERE ------------------------------------------- */
     /* ====================================================================== */
 
-    #pragma omp parallel for schedule(dynamic, 1) shared(Input_Opt, parameters, nCases)
+    #pragma omp parallel for schedule(dynamic, 1) shared(Input_Opt, parameters, nCases) if( PARALLEL_CASES )
     for ( iCase = 0; iCase < nCases; iCase++ ) {
 
         unsigned int jCase = iOFFSET + iCase;

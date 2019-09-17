@@ -38,12 +38,13 @@ Input::Input( unsigned int iCase,             \
     EI_Soot_       ( parameters[16][iCase] ),
     sootRad_       ( parameters[17][iCase] ),
     fuelFlow_      ( parameters[18][iCase] ),
-    backgNOx_      ( parameters[19][iCase] ),
-    backgHNO3_     ( parameters[20][iCase] ),
-    backgO3_       ( parameters[21][iCase] ),
-    backgCO_       ( parameters[22][iCase] ),
-    backgCH4_      ( parameters[23][iCase] ),
-    backgSO2_      ( parameters[24][iCase] ),
+    aircraftMass_  ( parameters[19][iCase] ),
+    backgNOx_      ( parameters[20][iCase] ),
+    backgHNO3_     ( parameters[21][iCase] ),
+    backgO3_       ( parameters[22][iCase] ),
+    backgCO_       ( parameters[23][iCase] ),
+    backgCH4_      ( parameters[24][iCase] ),
+    backgSO2_      ( parameters[25][iCase] ),
     fileName_      ( fileName ),
     fileName_ADJ_  ( fileName_ADJ ),
     fileName_BOX_  ( fileName_BOX )
@@ -173,6 +174,13 @@ Input::Input( unsigned int iCase,             \
         std::cout << " In Input::Input:";
         std::cout << " fuelFlow takes an unrealisable value: fuelFlow = ";
         std::cout << fuelFlow_ << " [kg/s]" << std::endl;
+        exit(-1);
+    }
+
+    if ( aircraftMass_ < 50.0E+03 ) {
+        std::cout << " In Input::Input:";
+        std::cout << " aircraftMass takes an unrealisable value: aircraftMass = ";
+        std::cout << aircraftMass_ << " [kg]" << std::endl;
         exit(-1);
     }
     

@@ -15,6 +15,13 @@
 #define METEOROLOGY_H_INCLUDED
 
 #include <iostream>
+#ifdef OMP
+    #include "omp.h"
+#endif /* OMP */
+
+/* Include Parameters.hpp for multithreading option */
+#include "Core/Parameters.hpp"
+
 #include "Util/ForwardDecl.hpp"
 #include "Core/Mesh.hpp"
 #include "Core/Input_Mod.hpp"
@@ -45,8 +52,9 @@ class Meteorology
         RealDouble alt( UInt j ) const { return alt_[j]; }
         RealDouble press( UInt j ) const { return press_[j]; }
 
-        RealDouble temp( UInt j, UInt i) const { return temp_[j][i]; }
-        RealDouble H2O( UInt j, UInt i) const { return H2O_[j][i]; }
+        RealDouble temp( UInt j, UInt i ) const { return temp_[j][i]; }
+        RealDouble airDens( UInt j, UInt i ) const { return airDens_[j][i]; }
+        RealDouble H2O( UInt j, UInt i ) const { return H2O_[j][i]; }
 
         const Vector_2D& Temp() const { return temp_; }
         const Vector_1D& Press() const { return press_; }
@@ -85,8 +93,11 @@ class Meteorology
         /* Assume that pressure only depends on the vertical coordinate */
         Vector_1D alt_;
         Vector_1D press_;
-        /* Temperature and humidity fields can potentially be 2D fields */
+
+        /* Temperature, air density and humidity fields can potentially be
+         * 2D fields */
         Vector_2D temp_;
+        Vector_2D airDens_;
         Vector_2D H2O_;
 
 };

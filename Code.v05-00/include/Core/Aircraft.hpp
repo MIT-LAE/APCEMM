@@ -30,8 +30,9 @@ class Aircraft
         /* Constructors */
 
         Aircraft( );
-        Aircraft( const char *aircraftName, RealDouble temperature_K, \
-                  RealDouble pressure_Pa, RealDouble relHumidity_w );
+        Aircraft( const char *aircraftName, RealDouble aircraftMass, \
+                  RealDouble temperature_K, RealDouble pressure_Pa,  \
+                  RealDouble relHumidity_w );
 
         /* Destructor */
 

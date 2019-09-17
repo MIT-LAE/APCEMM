@@ -38,6 +38,8 @@ class Mesh
         const Vector_1D& y( ) const { return y_; }
         const Vector_1D& xE( ) const { return x_e_; }
         const Vector_1D& yE( ) const { return y_e_; }
+        const Vector_1D& dx( ) const { return dx_; }
+        const Vector_1D& dy( ) const { return dy_; }
         const Vector_2D& areas( ) const { return areas_; }
         RealDouble totArea( ) const { return totArea_; }
         RealDouble hx( ) const { return hx_; }
@@ -58,6 +60,9 @@ class Mesh
 
         /* Cell edges */
         Vector_1D x_e_, y_e_;
+
+        /* Cell dimensions */
+        Vector_1D dx_, dy_;
 
         /* Cell areas */
         Vector_2D areas_;

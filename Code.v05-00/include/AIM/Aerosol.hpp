@@ -19,6 +19,12 @@
 #include <vector>
 #include <cstring>
 #include <boost/math/special_functions/gamma.hpp>
+#ifdef OMP
+    #include "omp.h"
+#endif /* OMP */
+
+/* Include Parameters.hpp for multithreading option */
+#include "Core/Parameters.hpp"
 
 #include "Util/ForwardDecl.hpp"
 #include "Util/PhysConstant.hpp"
@@ -145,8 +151,8 @@ class AIM::Grid_Aerosol
         Vector_2D TotalVolume( ) const;
         Vector_2D IWC( ) const;
         Vector_2D Extinction( ) const;
-        Vector_1D xOD( const Vector_1D xE ) const;
-        Vector_1D yOD( const Vector_1D yE ) const;
+        Vector_1D xOD( const Vector_1D dx ) const;
+        Vector_1D yOD( const Vector_1D dy ) const;
         Vector_2D Radius( ) const;
         RealDouble Radius( UInt iNx, UInt jNy ) const;
         Vector_2D EffRadius( ) const;

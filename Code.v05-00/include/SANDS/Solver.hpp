@@ -19,6 +19,9 @@
 #include <complex>
 #include <fftw3.h>
 #include <fstream>
+#ifdef OMP
+    #include "omp.h"
+#endif /* OMP */
 
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
@@ -47,12 +50,18 @@ namespace SANDS
              *
              * Initialize 2D solver
              *
-             * @param fill (bool)      : Fill negative values?
+             * @param MULTITHREADED_FFT: Use threaded FFT?
+             * @param WISDOM (bool)    : Use FFTW_WISDOM? (default = 0)
+             * @param FFTW_DIR (char*) : Path to storage for FFTW (default = "")
+             * @param fill (bool)      : Fill negative values? (default = 1)
              * @param fillVal (double) : Fill with? (default = 0.0E+00) 
              * @param fillOpt (int)    : Fill option
              */
 
-            void Initialize( const bool fill = 1, \
+            void Initialize( const bool MULTITHREADED_FFT,         \
+                             const bool WISDOM = 0,                \
+                             const char* FFTW_DIR = "",            \
+                             const bool fill = 1,                  \
                              const RealDouble fillValue = 0.0E+00, \
                              const UInt fillOpt_ = 1 );
 
@@ -129,7 +138,8 @@ namespace SANDS
              * @param threshold (double) : Threshold (default = 0.0)
              */
 
-            void Fill( Vector_2D &V, const RealDouble val, const RealDouble threshold = 0.0 );
+            void Fill( Vector_2D &V, const RealDouble val, \
+                       const RealDouble threshold = 0.0 );
             
             /**
              * Apply correction scheme to get rid of Gibbs oscillations
@@ -139,7 +149,8 @@ namespace SANDS
              * @param cellAreas (2D vector) : Cell areas in m^2
              */
     
-            void ScinoccaCorr( Vector_2D &V, const RealDouble mass0, const Vector_2D &cellAreas );
+            void ScinoccaCorr( Vector_2D &V, const RealDouble mass0, \
+                               const Vector_2D &cellAreas );
 
             /** 
              * Returns the 2D diffusion field 
