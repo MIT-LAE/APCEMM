@@ -50,6 +50,8 @@ class Input
 
     RealDouble fuelFlow_;
 
+    RealDouble aircraftMass_;
+
     RealDouble backgNOx_;
     RealDouble backgHNO3_;
     RealDouble backgO3_;
@@ -98,6 +100,8 @@ class Input
         RealDouble sootRad() const { return sootRad_; }
         
         RealDouble fuelFlow() const { return fuelFlow_; }
+
+        RealDouble aircraftMass() const { return aircraftMass_; }
 
         RealDouble backgNOx() const { return backgNOx_; }
         RealDouble backgHNO3() const { return backgHNO3_; }

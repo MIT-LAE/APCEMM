@@ -24,7 +24,9 @@
 
 #include "Core/Interface.hpp"
 #include "Core/Parameters.hpp"
+#include "Util/ForwardDecl.hpp"
 #include "Core/Input.hpp"
+#include "Core/Input_Mod.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "KPP/KPP_Global.h"
 #include "KPP/KPP.hpp"
@@ -43,32 +45,43 @@ class Solution
     public:
 
         Solution();
+
         ~Solution();
-        void Clear( std::vector<std::vector<double> >& vector_2D );
-        void SetShape( std::vector<std::vector<double> >& vector_2D, \
-                       const unsigned int n_x, \
-                       const unsigned int n_y, \
-                       const double value = 0.0 );
-        void SetToValue( std::vector<std::vector<double> >& vector_2D, \
-                         const double value = 0.0 );
-        void Print( const std::vector<std::vector<double> >& vector_2D, \
-                    const unsigned int i_max = 1, \
-                    const unsigned int j_max = 1 ) const;
-        void Initialize( char const *fileName, \
-                         const Input &input,   \
-                         const double airDens, \
-                         const Meteorology &met, const bool DBG );
-        void getData( double varArray[], double fixArray[], \
-                      const unsigned int i = 0, \
-                      const unsigned int j = 0 );
-        void applyData( double varArray[], \
-                        const unsigned int i = 0, \
-                        const unsigned int j = 0 );
-        void applyRing( double varArray[], double tempArray[], \
-                        const Vector_2Dui &mapIndices, const UInt iRing );
-        void applyAmbient( double varArray[],             \
-                           const Vector_2Dui &mapIndices, \
+
+        void Clear( Vector_2D& vector_2D );
+
+        void SetShape( Vector_2D& vector_2D, \
+                       const UInt n_x,       \
+                       const UInt n_y,       \
+                       const RealDouble value = 0.0 );
+
+        void SetToValue( Vector_2D& vector_2D, \
+                         const RealDouble value = 0.0 );
+
+        void Print( const Vector_2D& vector_2D, \
+                    const UInt i_max = 1,       \
+                    const UInt j_max = 1 ) const;
+
+        void Initialize( char const *fileName,      \
+                         const Input &input,        \
+                         const RealDouble airDens,  \
+                         const Meteorology &met,    \
+                         const OptInput &Input_Opt, \
+                         const bool DBG );
+
+        void getData( const UInt i = 0, \
+                      const UInt j = 0 );
+
+        void applyData( const UInt i = 0, \
+                        const UInt j = 0 );
+
+        void applyRing( RealDouble tempArray[],        \
+                        const Vector_2Dui &mapIndices, \
+                        const UInt iRing );
+
+        void applyAmbient( const Vector_2Dui &mapIndices, \
                            const UInt iRing );
+        
         void addEmission( const Emission &EI, const Aircraft &AC,            \
                           const Mesh &m,                                     \
                           bool halfRing,                                     \
@@ -76,87 +89,92 @@ class Solution
                           AIM::Aerosol liqAer, AIM::Aerosol iceAer,          \
                           const RealDouble Soot_Den,                         \
                           const Meteorology &met, const RealDouble areaPlume );
-        std::vector<double> getAmbient( ) const;
-        std::vector<double> getLiqSpecies() const;
-        std::vector<std::vector<double> > getAerosol( ) const;
-        std::vector<double> getAerosolDens( ) const;
-        std::vector<double> getAerosolRadi( ) const;
-        std::vector<double> getAerosolArea( ) const;
-        void getAerosolProp( double ( &radi )[4], double ( &area )[4], double &IWC, \
+
+        Vector_1D getAmbient( ) const;
+        Vector_1D getLiqSpecies() const;
+        Vector_2D getAerosol( ) const;
+        Vector_1D getAerosolDens( ) const;
+        Vector_1D getAerosolRadi( ) const;
+        Vector_1D getAerosolArea( ) const;
+
+        void getAerosolProp( RealDouble ( &radi )[4], \
+                             RealDouble ( &area )[4], \
+                             RealDouble &IWC,         \
                              const Vector_2D &weights ) const;
-        int SpinUp( std::vector<double> &amb_Value, \
-                    const Input &input,             \
-                    const double airDens,           \
-                    const double startTime,         \
+
+        int SpinUp( Vector_1D &amb_Value,       \
+                    const Input &input,         \
+                    const RealDouble airDens,   \
+                    const RealDouble startTime, \
                     const bool DGB = 0 );
 
-        unsigned int Nx() const { return size_x; };
-        unsigned int Ny() const { return size_y; };
-        void Debug( const double airDens );
+        UInt Nx() const { return size_x; };
+        UInt Ny() const { return size_y; };
+        void Debug( const RealDouble airDens );
 
         /* Gaseous species */
-        std::vector<std::vector<double> > CO2, PPN, BrNO2, IEPOX, PMNN, N2O, N, PAN,\
-                                          ALK4, MAP, MPN, Cl2O2, ETP, HNO2, C3H8, RA3P,\
-                                          RB3P, OClO, ClNO2, ISOP, HNO4, MAOP, MP, ClOO,\
-                                          RP, BrCl, PP, PRPN, SO4, Br2, ETHLN, MVKN,\
-                                          R4P, C2H6, RIP, VRP, ATOOH, IAP, DHMOB, MOBA,\
-                                          MRP, N2O5, ISNOHOO, ISNP, ISOPNB, IEPOXOO, MACRNO2, ROH,\
-                                          MOBAOO, DIBOO, PMN, ISNOOB, INPN, H, BrNO3, PRPE,\
-                                          MVKOO, Cl2, ISOPND, HOBr, A3O2, PROPNN, GLYX, MAOPO2,\
-                                          CH4, GAOO, B3O2, ACET, MACRN, CH2OO, MGLYOO, VRO2,\
-                                          MGLOO, MACROO, PO2, CH3CHOO, MAN2, ISNOOA, H2O2, PRN1,\
-                                          ETO2, KO2, RCO3, HC5OO, GLYC, ClNO3, RIO2, R4N1,\
-                                          HOCl, ATO2, HNO3, ISN1, MAO3, MRO2, INO2, HAC,\
-                                          HC5, MGLY, ISOPNBO2, ISOPNDO2, R4O2, R4N2, BrO, RCHO,\
-                                          MEK, ClO, MACR, SO2, MVK, ALD2, MCO3, CH2O,\
-                                          H2O, Br, NO, NO3, Cl, O, O1D, O3,\
-                                          HO2, NO2, OH, HBr, HCl, CO, MO2, ACTA,\
-                                          EOH, H2, HCOOH, MOH, N2, O2, RCOOH;
+        Vector_2D CO2, PPN, BrNO2, IEPOX, PMNN, N2O, N, PAN,               \
+                  ALK4, MAP, MPN, Cl2O2, ETP, HNO2, C3H8, RA3P,            \
+                  RB3P, OClO, ClNO2, ISOP, HNO4, MAOP, MP, ClOO,           \
+                  RP, BrCl, PP, PRPN, SO4, Br2, ETHLN, MVKN,               \
+                  R4P, C2H6, RIP, VRP, ATOOH, IAP, DHMOB, MOBA,            \
+                  MRP, N2O5, ISNOHOO, ISNP, ISOPNB, IEPOXOO, MACRNO2, ROH, \
+                  MOBAOO, DIBOO, PMN, ISNOOB, INPN, H, BrNO3, PRPE,        \
+                  MVKOO, Cl2, ISOPND, HOBr, A3O2, PROPNN, GLYX, MAOPO2,    \
+                  CH4, GAOO, B3O2, ACET, MACRN, CH2OO, MGLYOO, VRO2,       \
+                  MGLOO, MACROO, PO2, CH3CHOO, MAN2, ISNOOA, H2O2, PRN1,   \
+                  ETO2, KO2, RCO3, HC5OO, GLYC, ClNO3, RIO2, R4N1,         \
+                  HOCl, ATO2, HNO3, ISN1, MAO3, MRO2, INO2, HAC,           \
+                  HC5, MGLY, ISOPNBO2, ISOPNDO2, R4O2, R4N2, BrO, RCHO,    \
+                  MEK, ClO, MACR, SO2, MVK, ALD2, MCO3, CH2O,              \
+                  H2O, Br, NO, NO3, Cl, O, O1D, O3,                        \
+                  HO2, NO2, OH, HBr, HCl, CO, MO2, ACTA,                   \
+                  EOH, H2, HCOOH, MOH, N2, O2, RCOOH;
 
         /* Liquid species */
-        std::vector<std::vector<double> > SO4L, H2OL, HNO3L, HClL, HOClL, HBrL, HOBrL;
+        Vector_2D SO4L, H2OL, HNO3L, HClL, HOClL, HBrL, HOBrL;
 
         /* Solid species */
-        std::vector<std::vector<double> > H2OS, HNO3S;
+        Vector_2D H2OS, HNO3S;
 
-        std::vector<std::vector<double> > NIT, NAT;
+        Vector_2D NIT, NAT;
 
         /* Tracers */
-        std::vector<std::vector<double> > SO4T;
+        Vector_2D SO4T;
 
         /* Aerosols */
-        std::vector<std::vector<double> > sootDens, sootRadi, sootArea;
+        Vector_2D sootDens, sootRadi, sootArea;
 
         AIM::Grid_Aerosol liquidAerosol, solidAerosol;
 
-        unsigned int nBin_PA;
-        unsigned int nBin_LA;
+        UInt nBin_PA;
+        UInt nBin_LA;
 
-//        std::vector<double> LA_rE;
-//        std::vector<double> LA_rJ;
-//        std::vector<double> LA_vJ;
+//        Vector_1D LA_rE;
+//        Vector_1D LA_rJ;
+//        Vector_1D LA_vJ;
 //
-//        std::vector<double> PA_rE;
-//        std::vector<double> PA_rJ;
-//        std::vector<double> PA_vJ;
-//
-//        std::vector<std::vector<std::vector<double> > > PDF_LA, PDF_PA;
+//        Vector_1D PA_rE;
+//        Vector_1D PA_rJ;
+//        Vector_1D PA_vJ;
 
-        double LA_nDens, LA_rEff, LA_SAD;
-        double PA_nDens, PA_rEff, PA_SAD;
+        RealDouble LA_nDens, LA_rEff, LA_SAD;
+        RealDouble PA_nDens, PA_rEff, PA_SAD;
 
         AIM::Coagulation LA_Kernel, PA_Kernel;
 
-        std::vector<double> KHETI_SLA;
-        std::vector<double> AERFRAC, SOLIDFRAC;
-        unsigned int STATE_PSC; 
+        Vector_1D KHETI_SLA;
+        Vector_1D AERFRAC, SOLIDFRAC;
+        UInt STATE_PSC; 
 
     private:
 
-        const unsigned int nVariables;
-        const unsigned int nAer;
-        const unsigned int size_x;
-        const unsigned int size_y;
+        const UInt nVariables;
+        const UInt nAer;
+        const UInt size_x;
+        const UInt size_y;
+
+        bool reducedSize;
 
 };
 

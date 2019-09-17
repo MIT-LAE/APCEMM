@@ -7,6 +7,9 @@ Parameter sweep?        : T
 Output folder           : /path/to/output/folder
  => Overwrite? if exists: F
 Run directory           : ./
+Use threaded FFT?       : F
+Use FFTW WISDOM?        : T
+ => Dir w/ w permission : /path/to/directory/with/write/permission
 Input backgrd condition : /net/d04/data/fritzt/APCEMM_Data/init.txt
 Save forward results    : T
  => netCDF file name    : APCEMM_Case_*
@@ -52,6 +55,7 @@ Emission indices        :
  => Soot [g/kg_fuel]    : 0.02
  => Soot Radius [m]     : 20.0E-09
 Total fuel flow [kg/s]  : 3.2
+Aircraft mass [kg]      : 2.00E+05
 ------------------------+------------------------------------------------------
 %%% TRANSPORT MENU %%%  :
 Turn on Transport?      : T
