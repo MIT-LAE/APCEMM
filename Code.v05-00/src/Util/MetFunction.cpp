@@ -270,6 +270,86 @@ namespace met
 
     } /* End of ComputeLapseRate */
 
+    UInt nearestNeighbor( float xq[], const float &x ) {
+
+        /* DESCRIPTION: Finds the closest of x in xq, returning the index */
+
+        /* INPUTS:
+         * float xq: query values
+         * float x:  desired value */
+
+        UInt i_Z = 0;
+
+        /* Identify increasing direction */
+        if ( xq[0]-xq[1]<0 ) {
+            while ( xq[i_Z] <= x ) {
+                i_Z += 1;
+            }
+        }
+        else {
+            while ( xq[i_Z] >= x ) {
+                i_Z += 1;
+            }
+        }
+        return i_Z;
+
+    } /* End of nearestNeighbor */
+
+    RealDouble satdepth_calc( float RHw[], float T[], float alt[], UInt iFlight, UInt var_length ) {
+
+        /* DESCRIPTION: Finds the saturation depth RHw and T profiles */
+
+        /* INPUTS:
+         * float RHw[]: Relative humidity wrt water [%] profile
+         * float T[]: Temperature [K] profile
+         * float alt[]: Altitude [m] associated with profile
+         * UInt iFlight: index at flight altitude
+         * UInt var_length: length of RHw and T profiles */
+
+        RealDouble satdepth;
+        RealDouble curdepth = 0.00E+00;
+        int iCur = iFlight;
+        UInt isatdepth;
+        RealDouble RHi_cur;
+
+        /* Loop over altitudes till sat depth found or end of profile reached */
+        while ( curdepth < SATDEPTH_MIN && iCur > 0 ) {
+
+            /* Calculate RHi at current altitude */
+            RHi_cur = RHw[iCur] * physFunc::pSat_H2Ol( T[iCur] ) / physFunc::pSat_H2Os( T[iCur] );
+
+            /* Check if current altitude is subsaturated */
+            if ( iCur != iFlight && RHi_cur < 100 ) {
+
+                /* Get distance from previous altitude for saturation depth */
+                if ( curdepth == 0.00E+00 ) {
+                    isatdepth = iCur;
+                }
+                curdepth = curdepth + ( alt[iCur] - alt[iCur-1] );
+
+            } else {
+
+                /* Reset satdepth */
+                curdepth = 0.00E+00;
+            }
+
+            /* Iterate and check satdepth */
+            iCur = iCur - 1;
+            // std::cout << alt[iCur] << "m, " << curdepth << "m" << std::endl;
+        }
+
+        /* Check a genuine satdepth found */
+        if ( iCur <= 0 || alt[iFlight]-alt[iCur] > YLIM_DOWN ) {
+            std::cout << "EndSim: Infinite saturation depth" << std::endl;
+            exit(0);
+        }
+
+        /* Once a SATDEPTH_MIN m depth of subsaturated region found, find altitude */
+        satdepth = alt[iFlight] - alt[isatdepth];
+        return satdepth;
+
+    } /* End of satdepth_cal */ 
+
 }
 
 /* End of MetFunction.cpp */

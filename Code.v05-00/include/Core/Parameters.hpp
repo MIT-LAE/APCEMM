@@ -55,8 +55,8 @@
 
 
 /* Coarse aerosol representation */
-#define LA_VRAT               1.50E+00    /* Size ratio between two consecutive bins */
-#define PA_VRAT               1.50E+00    /* Size ratio between two consecutive bins */
+#define LA_VRAT               1.80E+00    /* Size ratio between two consecutive bins */
+#define PA_VRAT               1.80E+00    /* Size ratio between two consecutive bins */
 
 /* Fine aerosol representation */
 //#define LA_VRAT               1.50E+00    /* Size ratio between two consecutive bins */
@@ -120,5 +120,6 @@
 #define EPM_RTOLS             1.00E-05    /* Relative tolerances in EPM */
 #define EPM_ATOLS             1.00E-07    /* Absolute tolerances in EPM */
 #define SO2TOSO4              0.005       /* Percent conversion from SO2 to SO4 */
+#define SATDEPTH_MIN          10          /* Minimum depth of saturation depth if loading met [m] */
 
 #endif /* PARAMETERS_H_INCLUDED */

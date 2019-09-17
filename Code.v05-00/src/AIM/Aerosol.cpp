@@ -1401,7 +1401,7 @@ namespace AIM
                      * C_{tot}, independently of the time step */
 
 		    /* Check if partNum greater than a limit */
-		    totPart = 0.0E-02;
+		    totPart = 0.0E-00;
 		    for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
 
 			totPart += icePart[iBin][jNy][iNx];
@@ -1412,7 +1412,7 @@ namespace AIM
                      * We here assume that C_{s,i} is independent of the
                      * bin and thus the particle size and only depends
                      * on meteorological parameters. */
-		    if ( totPart > 0.01 ) {
+		    if ( totPart > 0.00 ) {
 			for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
 			
 			/* kGrowth is expressed in [cm^3 ice/s/part] */
@@ -1420,9 +1420,9 @@ namespace AIM
 			
 			/* kGrowth_* are thus in 
 			* [(cm^3 ice/s)/cm^3 air] = [1/s] */
-			totkGrowth_1 += kGrowth[iBin] * icePart[iBin][jNy][iNx] \
+			totkGrowth_1 += kGrowth[iBin] * std::max( icePart[iBin][jNy][iNx], 0.00E+00 ) \
 			* kFactor[iBin];
-			totkGrowth_2 += kGrowth[iBin] * icePart[iBin][jNy][iNx];
+			totkGrowth_2 += kGrowth[iBin] * std::max( icePart[iBin][jNy][iNx], 0.00E+00 );
 			}
 			
 			/* Compute the molecular saturation concentration 
@@ -1438,7 +1438,7 @@ namespace AIM
 			H2O[jNy][iNx] = std::min( H2O[jNy][iNx], totH2O[jNy][iNx] );
 			
 			for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
-			iceVol[iBin][jNy][iNx] += dt * kGrowth[iBin] * icePart[iBin][jNy][iNx] \
+			iceVol[iBin][jNy][iNx] += dt * kGrowth[iBin] * std::max( icePart[iBin][jNy][iNx], 0.00E+00 ) \
 			* ( H2O[jNy][iNx] -  kFactor[iBin] * nSat ) / UNITCONVERSION;
 			/* Unit check:
 			* [m^3 ice/cm^3 air]   = [s] * [cm^3 ice/s/part] * [part/cm^3 air] \
@@ -1447,7 +1447,7 @@ namespace AIM
 			*                      = [m^3 ice/cm^3 air] */
 			
 			iceVol[iBin][jNy][iNx] = \
-			std::min( std::max( iceVol[iBin][jNy][iNx], 0.0E+00 ), icePart[iBin][jNy][iNx] * MAXVOL );
+			std::min( std::max( iceVol[iBin][jNy][iNx], 0.0E+00 ), std::max( icePart[iBin][jNy][iNx], 0.00E+00 ) * MAXVOL );
 			
 			/* Compute total water taken up on particles */
 			totH2Oi += iceVol[iBin][jNy][iNx] * UNITCONVERSION;
@@ -1673,6 +1673,22 @@ namespace AIM
         return Moment( 0 );
 
     } /* End of Grid_Aerosol::TotalNumber */
+
+    RealDouble Grid_Aerosol::TotalNumber_sum( ) const
+    {
+
+        Vector_2D TotalNumber_pcell = TotalNumber( );
+        RealDouble totalnumber_sum;
+
+        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                totalnumber_sum += TotalNumber_pcell[jNy][iNx];
+            }
+        }
+
+        return totalnumber_sum;
+
+    }
 
     Vector_3D Grid_Aerosol::Volume( ) const
     {

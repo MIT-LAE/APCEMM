@@ -20,6 +20,7 @@
 #include "ForwardDecl.hpp"
 #include "PhysConstant.hpp"
 #include "PhysFunction.hpp"
+#include "../Core/Parameters.hpp"
 
 #define ABS(x)   ( ((x) >=  0 ) ?(x):(-x) ) 
 
@@ -49,6 +50,8 @@ namespace met
 
     RealDouble ComputeLapseRate( const RealDouble TEMP, const RealDouble RHi, \
                                  const RealDouble DEPTH );
+    UInt nearestNeighbor( float xq[], const float &x );
+    RealDouble satdepth_calc( float RHw[], float T[], float alt[], UInt iFlight, UInt var_length );
 
 }
 

@@ -36,7 +36,7 @@ static int DIR_FAIL = -9;
 
 void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
-int PlumeModel( const OptInput &Input_Opt, const Input &inputCase );
+int PlumeModel( OptInput &Input_Opt, const Input &inputCase );
 
 inline bool exist( const std::string &name )
 {

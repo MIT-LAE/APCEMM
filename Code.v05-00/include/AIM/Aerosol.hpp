@@ -140,6 +140,7 @@ class AIM::Grid_Aerosol
         /* Extra utils */
         Vector_3D Number( ) const;
         Vector_2D TotalNumber( ) const;
+        RealDouble TotalNumber_sum( ) const;
         Vector_3D Volume( ) const;
         Vector_2D TotalVolume( ) const;
         Vector_2D IWC( ) const;

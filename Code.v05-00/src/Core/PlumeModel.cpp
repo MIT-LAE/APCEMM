@@ -96,7 +96,7 @@ void Transport( Solution& Data, SANDS::Solver& Solver, \
                 const Vector_2D &cellAreas );
 
 
-int PlumeModel( const OptInput &Input_Opt, const Input &input )
+int PlumeModel( OptInput &Input_Opt, const Input &input )
 {
 
     bool printDEBUG = 0;
@@ -431,6 +431,14 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
     Meteorology Met( Input_Opt, curr_Time_s / 3600.0, m,        \
                      temperature_K, pressure_Pa, relHumidity_i, \
                      printDEBUG );
+    if ( Input_Opt.MET_LOADMET && Input_Opt.MET_LOADTEMP ) {
+        temperature_K = Met.temp_user;
+    }
+    if ( Input_Opt.MET_LOADMET && Input_Opt.MET_LOADH2O ) {
+        relHumidity_w = Met.RHw_user;
+        Input_Opt.MET_DEPTH = Met.satdepth_user;
+    }
+    std::cout << temperature_K << " K, " << relHumidity_w << "%, " << Input_Opt.MET_DEPTH << "m" << std::endl;
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -609,6 +617,10 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
          * user-specified input */
         const double iceNumFrac = aircraft.VortexLosses( EI.getSoot(), EI.getSootRad(), \
                                                          Input_Opt.MET_DEPTH );
+        if ( iceNumFrac <= 0.00E+00 ) {
+            std::cout << "EndSim: vortex sinking" << std::endl;
+            exit(0);
+        }
         iceAer.scalePdf( iceNumFrac );
     }
 
@@ -844,6 +856,12 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
         Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
                       Data, m, Met );
+        float totalNumberPart = Data.solidAerosol.TotalNumber_sum();
+        std::cout << totalNumberPart << std::endl;
+        if ( totalNumberPart <= 1.00E-15 ) {
+            std::cout << "EndSim: no particles remain" << std::endl;
+            exit(0);
+        }
     }
     }
 
@@ -1006,7 +1024,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                 Transport( Data, Solver, cellAreas );
             } else {
                 /* Advection and diffusion of condensable species */
-                Solver.Run( Data.H2O, cellAreas, 1 );
+                Solver.Run( Data.H2O, cellAreas, -1 );
             }
  
             /* Advection and diffusion for aerosol particles */
@@ -1016,7 +1034,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             Solver.Run( Data.sootArea, cellAreas );
 
             /* We assume that sulfate aerosols do not settle */
-            if ( TRANSPORT_LA ) {
+            if ( TRANSPORT_LA && 0 ) {
                 /* Transport of liquid aerosols */
                 for ( unsigned int iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ )
                     Solver.Run( Data.liquidAerosol.pdf[iBin_LA], cellAreas );
@@ -1034,8 +1052,8 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                      * accordingly */
                     Solver.UpdateAdv ( 0.0E+00, vFall[iBin_PA] );
 
-                    Solver.Run( Data.solidAerosol.pdf[iBin_PA], cellAreas, 1 );
-                    Solver.Run( iceVolume[iBin_PA], cellAreas, 1 );
+                    Solver.Run( Data.solidAerosol.pdf[iBin_PA], cellAreas, -1 );
+                    Solver.Run( iceVolume[iBin_PA], cellAreas, -1 );
 
                 }
 
@@ -1062,7 +1080,7 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
                                     iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
                                 }
-                                Data.H2O[jNy][iNx] = Data.H2O[NY-1][iNx];
+                                /* Data.H2O[jNy][iNx] = Data.H2O[NY-1][iNx]; */
                             }
                         }
                     }
@@ -1860,7 +1878,13 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
             int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
             int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
             Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
-                          Data, m, Met );
+                          Data, m, Met );    
+	    float totalNumberPart = Data.solidAerosol.TotalNumber_sum();
+	    std::cout << totalNumberPart << std::endl;
+	    if ( totalNumberPart <= 1.00E-15 ) {
+                std::cout << "EndSim: no particles remain" << std::endl;
+	        exit(0);
+            }
         }
         }
 

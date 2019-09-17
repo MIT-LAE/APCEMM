@@ -170,12 +170,12 @@ void Mesh::Ring2Mesh( Cluster &c )
     if ( RingV[nRing - 1].getHAxis() > x_[NX - 1] ) {
         std::cout << "The largest ring's horizontal axis is larger than the grid's dimensions!\n";
         std::cout << "Horizontal axis: " << RingV[nRing-1].getHAxis() << " >= " << x_[NX - 1] << std::endl;
-        exit(-1);
+        /*exit(-1);*/
     }
     if ( RingV[nRing - 1].getVAxis() > y_[NY - 1] ) {
         std::cout << "The largest ring's vertical axis is larger than the grid's dimensions!\n";
         std::cout << "Vertical axis: " << RingV[nRing-1].getVAxis() << " >= " << y_[NY - 1] << std::endl;
-        exit(-1);
+        /*exit(-1);*/
     }
 
     RealDouble hAxis, vAxis, hAxis_in, vAxis_in;

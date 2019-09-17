@@ -445,21 +445,23 @@ void Solution::Initialize( char const *fileName, const Input &input, \
     SetShape( NAT      , 1 , 1, (double) 0.0 );
 
     }
-    if ( LOAD_MET ) {
+
+    if ( inputOpt.MET_LOADMET && inputOpt.MET_LOADH2O ) {
         /* Use meteorological input? */
         H2O = met.H2O_;
     } else {
         /* Else use user-defined H2O profile */
-        RealDouble H2Oval = (input.relHumidity_w()/((double) 100.0) * \
-                          physFunc::pSat_H2Ol( input.temperature_K() ) / ( physConst::kB * input.temperature_K() )) / 1.00E+06;
+        RealDouble xH2Oval = input.relHumidity_w() / ((double) 100.0) * physFunc::pSat_H2Ol( input.temperature_K() ) / ( (double) 101325.0 );
+        /* RealDouble H2Oval = (input.relHumidity_w()/((double) 100.0) * \
+                          physFunc::pSat_H2Ol( input.temperature_K() ) / ( physConst::kB * input.temperature_K() )) / 1.00E+06; */
         for ( unsigned int i = 0; i < size_x; i++ ) {
             for ( unsigned int j = 0; j < size_y; j++ ) {
-                H2O[j][i] = H2Oval;
+                /* H2O[j][i] = H2Oval; */
+                H2O[j][i] = xH2Oval * ( (double) 101325.0 ) / ( 1.00E+06 * physConst::kB * met.temp_[j][i] );
                 /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
             }
         }
     }
- 
     std::vector<double> stratData{ SO4[0][0], HNO3[0][0], HCl[0][0], HOCl[0][0], HBr[0][0], HOBr[0][0],
                                    H2O[0][0], ClNO3[0][0], BrNO3[0][0], NIT[0][0], NAT[0][0] };
    

@@ -20,6 +20,8 @@
 #include "Core/Input_Mod.hpp"
 #include "Util/PhysConstant.hpp"
 #include "Util/MetFunction.hpp"
+#include <netcdfcpp.h>
+#include <limits>
 
 class Meteorology
 {
@@ -51,6 +53,12 @@ class Meteorology
 
         friend class Solution;
 
+        /* Temperature, pressure and humidity fields if input from user-defined file */
+        RealDouble temp_user;
+        RealDouble pres_user;
+        RealDouble RHw_user;
+        RealDouble satdepth_user;
+
     protected:
 
         /* Met input type */
@@ -80,7 +88,6 @@ class Meteorology
         /* Temperature and humidity fields can potentially be 2D fields */
         Vector_2D temp_;
         Vector_2D H2O_;
-
 
 };
 
