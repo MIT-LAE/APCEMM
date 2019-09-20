@@ -1133,7 +1133,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                             const double temperature, bool set2Saturation, \
                             AIM::Aerosol liqAer, AIM::Aerosol iceAer,      \
                             const double Soot_Den,                         \
-                            const Meteorology &met, const RealDouble areaPlume, const bool CHEMISTRY )
+                            const Meteorology &met, const RealDouble areaPlume )
 {
     /* TODO: Release as Gaussian instead of top-hat? */
 

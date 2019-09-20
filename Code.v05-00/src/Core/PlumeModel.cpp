@@ -742,7 +742,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     /* Add emission into the grid */
     Data.addEmission( EI, aircraft, m, ringCluster.halfRing(),  \
                       temperature_K, ( relHumidity_i > 100.0 ), \
-                      liquidAer, iceAer, Soot_den, Met, areaPlume, CHEMISTRY );
+                      liquidAer, iceAer, Soot_den, Met, areaPlume );
     /* Fill in variables species for initial time */
     ringSpecies.FillIn( Data, m.weights, nTime );
 
@@ -1099,7 +1099,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
                                     iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
                                 }
-                                Data.H2O[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
+                                // Data.H2O[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
                             }
                         }
                     }
