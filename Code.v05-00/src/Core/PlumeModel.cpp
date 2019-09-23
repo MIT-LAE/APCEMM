@@ -1045,12 +1045,21 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
         if ( TRANSPORT ) {
 
+            /* Update H2O */
+            for ( UInt jNy = 0; jNy<NY; jNy++ ) {
+                for ( UInt iNx = 0; iNx<NX; iNx++ ) {
+                    Data.H2O[jNy][iNx] = Data.H2O_met[jNy][iNx] + Data.H2O_plume[jNy][iNx];
+                }
+            }
+
             if ( CHEMISTRY ) {
                 /* Advection and diffusion of gas phase species */
                 Transport( Data, Solver, cellAreas );
             } else {
                 /* Advection and diffusion of condensable species */
-                Solver.Run( Data.H2O, cellAreas, 1 );
+                // Solver.Run( Data.H2O, cellAreas, 1 );
+                /* Advection and diffusion of plume affected H2O */
+                Solver.Run( Data.H2O_plume, cellAreas, 1 );
             }
 
             /* Advection and diffusion for aerosol particles */
