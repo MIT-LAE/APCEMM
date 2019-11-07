@@ -94,6 +94,7 @@ class EPM::streamingObserver
         void operator()( const Vector_1D &x, double t );
         RealDouble getLastElement() const;
         void print2File( ) const;
+        bool checkwatersat( ) const;
 
         UInt m_write_every;
         UInt m_count = 0;

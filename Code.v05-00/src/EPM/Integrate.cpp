@@ -350,8 +350,8 @@ namespace EPM
 
                     /* Temperature differential equation
                      * \frac{dT}{dt} = v_z(t) * \frac{dT}{dz} - w_T(t) * ( T - T_amb(t) ) */
-                    dxdt[EPM_ind_T] = dT_Vortex( t, m_delta_T, 1 ) \
-                                    - dilRatio * ( x[EPM_ind_T] - ( m_temperature_K + dT_Vortex ( t, m_delta_T ) ) );
+                    dxdt[EPM_ind_T] = 0*dT_Vortex( t, m_delta_T, 1 ) \
+                                    - dilRatio * ( x[EPM_ind_T] - ( m_temperature_K + 0*dT_Vortex ( t, m_delta_T ) ) );
                     /* Unit check:
                      * dT_Vortex(.,.,1): [K/s]
                      * dT_Vortex(.,.,0): [K]
@@ -368,7 +368,7 @@ namespace EPM
                                           * depositionRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], m_part_r0, x[EPM_ind_the1] + x[EPM_ind_the2] ) \
                                           + condensationRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], x[EPM_ind_the1] + x[EPM_ind_the2] ) ) \
                                           * x[EPM_ind_Part] * physConst::Na / MW_H2O
-                                        - nucRate * ( 1.0 - x_SO4 ) * nMolec;
+                                        - 0*nucRate * ( 1.0 - x_SO4 ) * nMolec;
                     /* Unit check:
                      * [1/s] * ( [molec/cm3] - [molec/cm^3] ) = [molec/cm^3/s]
                      * ([-] * [kg/s] + [kg/s]) * [#/cm^3] * [molec/kg] = [molec/cm^3/s]
@@ -376,14 +376,14 @@ namespace EPM
 
                     /* Liquid SO4 differential equation */
                     dxdt[EPM_ind_SO4l] = - dilRatio * ( x[EPM_ind_SO4l] - m_SO4l_molcm3 ) \
-                                         + nucRate * x_SO4 * nMolec;
+                                         + 0*nucRate * x_SO4 * nMolec;
                     
                     /* Gaseous SO4 differential equation */
                     dxdt[EPM_ind_SO4g] = - dilRatio * ( x[EPM_ind_SO4g] - m_SO4g_molcm3 ) \
                                          - sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_H2SO4 / physConst::Na ) \
                                            * x[EPM_ind_Part] * 1.0E+06 * physConst::PI * m_part_r * m_part_r \
                                            * x[EPM_ind_SO4g] * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] ) \
-                                         - nucRate * x_SO4 * nMolec;
+                                         - 0*nucRate * x_SO4 * nMolec;
                     
                     /* On soot SO4 differential equation 
                      * \frac{d[SO4_s]}{dt} = alpha * v_th / 4.0 * n_part * 4.0 * \pi * r^2 * ( 1.0 - \theta ) * [SO4] */ 
@@ -443,7 +443,7 @@ namespace EPM
 
         Vector_2D obs_Var;
         Vector_1D obs_Time;
-        EPM::streamingObserver observer( obs_Var, obs_Time, EPM_ind, "/home/fritzt/CAPCEMM/data/Micro.out", 1 );
+        EPM::streamingObserver observer( obs_Var, obs_Time, EPM_ind, "/home/aa681/Documents/Ozonesonde/Micro.out", 1 );
 
         /* Creating ode's right hand side */
         gas_aerosol_rhs rhs( temperature_K, pressure_Pa, delta_T, H2O_amb, SO4_amb, SO4l_amb, SO4g_amb, HNO3_amb, Soot_amb, EI.getSootRad(), KernelSO4Soot ); 
@@ -547,9 +547,18 @@ namespace EPM
 
 #pragma omp critical
         {
-//            observer.print2File();
+            observer.print2File();
         }
         /* Output variables */
+
+        /* Check if contrail is water supersaturated at some point during formation */
+        if ( observer.checkwatersat() ) {
+            std::cout << "Water supersaturated at some point" << std::endl;
+        }
+        else {
+            std::cout << "Never reaches water saturation... ending simulation" << std::endl;
+            exit(0);
+        }
 
         /* Persistent contrail */
         if ( relHumidity_i_Final >= 1.0 ) {

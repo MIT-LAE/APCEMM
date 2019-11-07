@@ -345,6 +345,32 @@ namespace EPM
 
     } /* End of streamingObserver::print2File */
 
+    bool streamingObserver::checkwatersat( ) const
+    {
+
+        /* Variable definitions */
+        int counter = 0;
+        float RHw;
+        bool watersup { false };
+
+        /* Loop over until RHw >= 1.0 */
+        while ( !watersup || counter >= m_states.size() ) {
+
+            /* Check value of RHw and update watersub */
+            RHw = m_states[counter][m_indices[3]] * physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 / physFunc::pSat_H2Ol( m_states[counter][m_indices[1]] );
+            if ( RHw >= 1.0 ) {
+                watersup = true;
+            }
+
+            /* Iterate the counter */
+            counter += 1;
+
+        }
+
+        return watersup;
+
+    } /* End of streamingObserver::checkwatersat */
+
     template class odeSolver<void ( const Vector_1D&, Vector_1D&, RealDouble )>;
     template class odeSolver<void ( const Vector_1D&, Vector_1D&, RealDouble ) const>;
 
