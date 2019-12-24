@@ -337,7 +337,9 @@ namespace met
             iCur = iCur - 1;
             // std::cout << alt[iCur] << "m, " << curdepth << "m" << std::endl;
         }
-
+        std::cout << iFlight << ", " << iCur << std::endl;
+        std::cout << alt[iFlight] << ", " << alt[iCur] << std::endl;
+        std::cout << YLIM_DOWN << std::endl;
         /* Check a genuine satdepth found */
         if ( iCur <= 0 || alt[iFlight]-alt[iCur] > YLIM_DOWN ) {
             std::cout << "EndSim: Infinite saturation depth" << std::endl;

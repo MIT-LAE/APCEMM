@@ -354,7 +354,7 @@ namespace EPM
         bool watersup { false };
 
         /* Loop over until RHw >= 1.0 */
-        while ( !watersup || counter >= m_states.size() ) {
+        while ( !watersup && counter < m_states.size() ) {
 
             /* Check value of RHw and update watersub */
             RHw = m_states[counter][m_indices[3]] * physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 / physFunc::pSat_H2Ol( m_states[counter][m_indices[1]] );

@@ -311,19 +311,20 @@ namespace EPM
                     /* SO4_g represents the gaseous molecular concentration of SO4
                      * SO4_rl is the "ready to be liquid" molecular concentration of SO4. This is still gaseous SO4 because it is limited by kinetics.
                      * Gaseous SO4 is in phase equilibrium. Ensure limitations! */
-                    SO4_g  = ( physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) > x[EPM_ind_SO4g] ) ? x[EPM_ind_SO4g] : physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 );
-                    SO4_rl = x[EPM_ind_SO4g] - SO4_g;
+                    SO4_g  = ( physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( x[EPM_ind_P] ) > x[EPM_ind_SO4g] ) ? x[EPM_ind_SO4g] * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) : physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 );
+                    SO4_rl = x[EPM_ind_SO4g] * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) - SO4_g;
+                    std::cout << "Before: " << SO4_g << ", " << SO4_rl << std::endl;                    
                     SO4_g  = ( SO4_g > 0.0 ) ? SO4_g : 0.0;
                     SO4_rl = ( SO4_rl > 0.0 ) ? SO4_rl : 0.0;
-
-                    if ( ( SO4_rl >= AIM::nThresh( x[EPM_ind_T], x[EPM_ind_H2O] * physConst::kB * x[EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( x[EPM_ind_T] ) ) ) ) {
+                    std::cout << "After: " << SO4_g << ", " << SO4_rl << std::endl;                    
+                    if ( ( SO4_rl >= AIM::nThresh( x[EPM_ind_T], x[EPM_ind_H2O] * x[EPM_ind_P] / physFunc::pSat_H2Ol( x[EPM_ind_T] ) ) ) ) {
                        
                         /* Mole fraction of sulfuric acid */
-                        x_SO4 = AIM::x_star(     x[EPM_ind_T], x[EPM_ind_H2O] * physConst::kB * x[EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( x[EPM_ind_T] ), SO4_rl );
+                        x_SO4 = AIM::x_star(     x[EPM_ind_T], x[EPM_ind_H2O] * x[EPM_ind_P] / physFunc::pSat_H2Ol( x[EPM_ind_T] ), SO4_rl );
                         /* Number of molecules per cluster */
-                        nMolec = AIM::nTot(      x[EPM_ind_T], x_SO4, x[EPM_ind_H2O] * physConst::kB * x[EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( x[EPM_ind_T] ), SO4_rl );
+                        nMolec = AIM::nTot(      x[EPM_ind_T], x_SO4, x[EPM_ind_H2O] * x[EPM_ind_P] / physFunc::pSat_H2Ol( x[EPM_ind_T] ), SO4_rl );
                         /* Nucleation rate */
-                        nucRate = AIM::nuclRate( x[EPM_ind_T], x_SO4, x[EPM_ind_H2O] * physConst::kB * x[EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( x[EPM_ind_T] ), SO4_rl );
+                        nucRate = AIM::nuclRate( x[EPM_ind_T], x_SO4, x[EPM_ind_H2O] * x[EPM_ind_P] / physFunc::pSat_H2Ol( x[EPM_ind_T] ), SO4_rl );
 
                     } else {
 
@@ -350,8 +351,8 @@ namespace EPM
 
                     /* Temperature differential equation
                      * \frac{dT}{dt} = v_z(t) * \frac{dT}{dz} - w_T(t) * ( T - T_amb(t) ) */
-                    dxdt[EPM_ind_T] = 0*dT_Vortex( t, m_delta_T, 1 ) \
-                                    - dilRatio * ( x[EPM_ind_T] - ( m_temperature_K + 0*dT_Vortex ( t, m_delta_T ) ) );
+                    dxdt[EPM_ind_T] = dT_Vortex( t, m_delta_T, 1 ) \
+                                    - dilRatio * ( x[EPM_ind_T] - ( m_temperature_K + dT_Vortex ( t, m_delta_T ) ) );
                     /* Unit check:
                      * dT_Vortex(.,.,1): [K/s]
                      * dT_Vortex(.,.,0): [K]
@@ -364,11 +365,11 @@ namespace EPM
                     /* Gaseous water differential equation 
                      * \frac{d[H2O]}{dt} = - w_T(t) * ( [H2O] - [H2O]_amb ) */
                     dxdt[EPM_ind_H2O] = - dilRatio * ( x[EPM_ind_H2O] - m_H2O_molcm3 ) \
-                                        - ( isFreezable( m_part_r, x[EPM_ind_T], x[EPM_ind_H2O], m_part_r0 ) \
-                                          * depositionRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], m_part_r0, x[EPM_ind_the1] + x[EPM_ind_the2] ) \
-                                          + condensationRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], x[EPM_ind_the1] + x[EPM_ind_the2] ) ) \
-                                          * x[EPM_ind_Part] * physConst::Na / MW_H2O
-                                        - 0*nucRate * ( 1.0 - x_SO4 ) * nMolec;
+                                        - ( isFreezable( m_part_r, x[EPM_ind_T], x[EPM_ind_H2O]*x[EPM_ind_P]/( physConst::kB*x[EPM_ind_T]*1.0E+06 ), m_part_r0 ) \
+                                          * depositionRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O]*x[EPM_ind_P]/( physConst::kB*x[EPM_ind_T]*1.0E+06 ), m_part_r0, x[EPM_ind_the1] + x[EPM_ind_the2] ) \
+                                        + condensationRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O]*x[EPM_ind_P]/( physConst::kB*x[EPM_ind_T]*1.0E+06 ), x[EPM_ind_the1] + x[EPM_ind_the2] ) ) \
+                                          * x[EPM_ind_Part] * physConst::Na / MW_H2O * ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) / x[EPM_ind_P] \
+                                        - physConst::kB*x[EPM_ind_T]*1.0E+06/x[EPM_ind_P] * nucRate * ( 1.0 - x_SO4 ) * nMolec;
                     /* Unit check:
                      * [1/s] * ( [molec/cm3] - [molec/cm^3] ) = [molec/cm^3/s]
                      * ([-] * [kg/s] + [kg/s]) * [#/cm^3] * [molec/kg] = [molec/cm^3/s]
@@ -376,21 +377,21 @@ namespace EPM
 
                     /* Liquid SO4 differential equation */
                     dxdt[EPM_ind_SO4l] = - dilRatio * ( x[EPM_ind_SO4l] - m_SO4l_molcm3 ) \
-                                         + 0*nucRate * x_SO4 * nMolec;
-                    
+                                         + nucRate * x_SO4 * nMolec;
+
                     /* Gaseous SO4 differential equation */
                     dxdt[EPM_ind_SO4g] = - dilRatio * ( x[EPM_ind_SO4g] - m_SO4g_molcm3 ) \
                                          - sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_H2SO4 / physConst::Na ) \
                                            * x[EPM_ind_Part] * 1.0E+06 * physConst::PI * m_part_r * m_part_r \
                                            * x[EPM_ind_SO4g] * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] ) \
-                                         - 0*nucRate * x_SO4 * nMolec;
+                                         - nucRate * x_SO4 * nMolec;
                     
                     /* On soot SO4 differential equation 
                      * \frac{d[SO4_s]}{dt} = alpha * v_th / 4.0 * n_part * 4.0 * \pi * r^2 * ( 1.0 - \theta ) * [SO4] */ 
                     dxdt[EPM_ind_SO4s] = - dilRatio * ( x[EPM_ind_SO4s] - 0.0 ) \
                                          + sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_H2SO4 / physConst::Na ) \
                                            * x[EPM_ind_Part] * 1.0E+06 * physConst::PI * m_part_r * m_part_r \
-                                           * x[EPM_ind_SO4g] * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] );
+                                           * x[EPM_ind_SO4g] * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] ); // * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] );
 
                     /* Total SO4 differential equation
                      * \frac{d[SO4]}{dt} = - w_T(t) * ( [SO4] - [SO4]_amb ) */
@@ -406,9 +407,9 @@ namespace EPM
 
                     /* Particle radius differential equation
                      * \frac{dr}{dt} = \frac{dm}{dt}/(\rho * 4 * \pi * r^2) */
-                    dxdt[EPM_ind_ParR] = ( isFreezable( m_part_r, x[EPM_ind_T], x[EPM_ind_H2O], m_part_r0 ) \
-                                           * depositionRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], m_part_r0, x[EPM_ind_the1] + x[EPM_ind_the2] ) \
-                                           + condensationRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O], x[EPM_ind_the1] + x[EPM_ind_the2] ) ) \
+                    dxdt[EPM_ind_ParR] = ( isFreezable( m_part_r, x[EPM_ind_T], x[EPM_ind_H2O] * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] ) * 1.0E-06 , m_part_r0 ) \
+                                           * depositionRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O] * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] ) * 1.0E-06 , m_part_r0, x[EPM_ind_the1] + x[EPM_ind_the2] ) \
+                                         + condensationRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O] * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] ) * 1.0E-06 , x[EPM_ind_the1] + x[EPM_ind_the2] ) ) \
                                          / ( physConst::RHO_ICE * 4.0 * physConst::PI * m_part_r * m_part_r );
                     /* Unit check: 
                      * [kg/s] / ( [kg/m^3] * [m^2]) = [m/s] */
@@ -417,7 +418,7 @@ namespace EPM
                     dxdt[EPM_ind_the1] = sticking_SO4 * physFunc::thermalSpeed( x[EPM_ind_T], MW_H2SO4 / physConst::Na ) * 1.0E+02 * 0.25 * ( SO4_g + SO4_rl ) / sigma_SO4 * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] );
 
                     dxdt[EPM_ind_the2] = CoagRate / ( 4.0 * physConst::PI * m_part_r0 * m_part_r0 );
-                
+
                 } /* End of gas_aerosol_rhs::operator() */
 
         };
@@ -429,13 +430,13 @@ namespace EPM
         x[EPM_ind_Trac] = 1.0;
         x[EPM_ind_T]    = Tc0;
         x[EPM_ind_P]    = pressure_Pa;
-        x[EPM_ind_H2O]  = varArray[ind_H2O];
-        x[EPM_ind_SO4]  = varArray[ind_SO4];
+        x[EPM_ind_H2O]  = varArray[ind_H2O] * physConst::kB * Tc0 / pressure_Pa * 1.0E+06;
+        x[EPM_ind_SO4]  = varArray[ind_SO4] * physConst::kB * Tc0 / pressure_Pa * 1.0E+06;
         /* Assume that emitted SO4 is purely gaseous as temperature is high */
         x[EPM_ind_SO4l] = 0.0;
-        x[EPM_ind_SO4g] = varArray[ind_SO4];
+        x[EPM_ind_SO4g] = varArray[ind_SO4] * physConst::kB * Tc0 / pressure_Pa * 1.0E+06;
         x[EPM_ind_SO4s] = 0.0;
-        x[EPM_ind_HNO3] = varArray[ind_HNO3];
+        x[EPM_ind_HNO3] = varArray[ind_HNO3] * physConst::kB * Tc0 / pressure_Pa * 1.0E+06;
         x[EPM_ind_Part] = varSoot;
         x[EPM_ind_ParR] = EI.getSootRad();
         x[11] = 0.0;
@@ -443,10 +444,16 @@ namespace EPM
 
         Vector_2D obs_Var;
         Vector_1D obs_Time;
-        EPM::streamingObserver observer( obs_Var, obs_Time, EPM_ind, "/home/aa681/Documents/Ozonesonde/Micro.out", 1 );
+        EPM::streamingObserver observer( obs_Var, obs_Time, EPM_ind, "/home/aa681/Documents/Ozonesonde/APCEMM_SACfix/iMicro.out", 1 );
 
         /* Creating ode's right hand side */
-        gas_aerosol_rhs rhs( temperature_K, pressure_Pa, delta_T, H2O_amb, SO4_amb, SO4l_amb, SO4g_amb, HNO3_amb, Soot_amb, EI.getSootRad(), KernelSO4Soot ); 
+        gas_aerosol_rhs rhs( temperature_K, pressure_Pa, delta_T, H2O_amb * physConst::kB * temperature_K / pressure_Pa * 1.0E+06, \
+                             SO4_amb * physConst::kB * temperature_K / pressure_Pa * 1.0E+06, \
+                             SO4l_amb * physConst::kB * temperature_K / pressure_Pa * 1.0E+06, \
+                             SO4g_amb * physConst::kB * temperature_K / pressure_Pa * 1.0E+06, \
+                             HNO3_amb * physConst::kB * temperature_K / pressure_Pa * 1.0E+06, \
+                             Soot_amb, \
+                             EI.getSootRad(), KernelSO4Soot ); 
 
         /* Total number of steps */
         UInt totSteps = 0;
@@ -486,7 +493,7 @@ namespace EPM
             }
             else {
                 dilFactor_b = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
-                SO4l_b = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l];
+                SO4l_b = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l] * observer.m_states[observer.m_states.size()-1][EPM_ind_P] / ( physConst::kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 ) ;
             }
 
             /* Diffusion + Water uptake */
@@ -498,13 +505,12 @@ namespace EPM
             }
             
             dilFactor = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac] / dilFactor_b;
-            SO4l = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l];
+            SO4l = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l] * observer.m_states[observer.m_states.size()-1][EPM_ind_P] / ( physConst::kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 ) ;
 
             nPDF_new = ( SO4l - SO4l_amb - dilFactor * ( SO4l_b - SO4l_amb ) );
-
             if ( nPDF_new >= 1.0E-20 ) {
-                x_star   = AIM::x_star( observer.m_states[observer.m_states.size()-1][EPM_ind_T], observer.m_states[observer.m_states.size()-1][EPM_ind_H2O] * physConst::kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( observer.m_states[observer.m_states.size()-1][EPM_ind_T] ), std::max(x[EPM_ind_SO4g], 0.0) );
-                nTot     = AIM::nTot( observer.m_states[observer.m_states.size()-1][EPM_ind_T], x_star, observer.m_states[observer.m_states.size()-1][EPM_ind_H2O] * physConst::kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 / physFunc::pSat_H2Ol( observer.m_states[observer.m_states.size()-1][EPM_ind_T] ), std::max(x[EPM_ind_SO4g], 0.0) );
+                x_star   = AIM::x_star( observer.m_states[observer.m_states.size()-1][EPM_ind_T], observer.m_states[observer.m_states.size()-1][EPM_ind_H2O] * observer.m_states[observer.m_states.size()-1][EPM_ind_P] / physFunc::pSat_H2Ol( observer.m_states[observer.m_states.size()-1][EPM_ind_T] ), std::max(x[EPM_ind_SO4g], 0.0) * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) );
+                nTot     = AIM::nTot( observer.m_states[observer.m_states.size()-1][EPM_ind_T], x_star, observer.m_states[observer.m_states.size()-1][EPM_ind_H2O] * observer.m_states[observer.m_states.size()-1][EPM_ind_P] / physFunc::pSat_H2Ol( observer.m_states[observer.m_states.size()-1][EPM_ind_T] ), std::max(x[EPM_ind_SO4g], 0.0) * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) );
                 nTot     = ( nTot <= 1.0E-20 ) ? 1.0E-20 : nTot;
                 radSO4   = AIM::radCluster( x_star, nTot );
 //                rho_Sulf = AIM::rho( x_star, observer.m_states[observer.m_states.size()-1][EPM_ind_T]);
@@ -515,15 +521,15 @@ namespace EPM
                     nPDF_SO4 += nPDF_SO4_new;
                 }
             }
-           
+
             /* Scale pdf by diffusion factor */
             nPDF_SO4.scalePdf( dilFactor );
-            
+
             /* For debugging purposes */
             if ( 0 ) {
                 std::cout << "Time: " << timeArray[iTime+1] << ", Number: " << nPDF_SO4.Moment() << ", Radius: " << nPDF_SO4.Radius() << "\n";
             }
-       
+
             totSteps += 1;
             iTime++;
 
@@ -531,11 +537,11 @@ namespace EPM
             if ( iTime == iTime_3mins ) {
                 PartRad_3mins  = observer.m_states[observer.m_states.size()-1][EPM_ind_ParR];
                 PartDens_3mins = observer.m_states[observer.m_states.size()-1][EPM_ind_Part];
-                H2OMol_3mins   = observer.m_states[observer.m_states.size()-1][EPM_ind_H2O];
+                H2OMol_3mins   = observer.m_states[observer.m_states.size()-1][EPM_ind_H2O] * observer.m_states[observer.m_states.size()-1][EPM_ind_P] / ( physConst::kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] ) * 1.0E-06;
                 Tracer_3mins   = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
 //                SO4pdf_3mins   = nPDF_SO4;
-                SO4l_3mins     = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l];
-                SO4g_3mins     = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4g];
+                SO4l_3mins     = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l] * observer.m_states[observer.m_states.size()-1][EPM_ind_P] / ( physConst::kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 ) ;
+                SO4g_3mins     = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4g] * observer.m_states[observer.m_states.size()-1][EPM_ind_P] / ( physConst::kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 ) ;
 //                pSO4pdf_3mins  = new AIM::Aerosol( nPDF_SO4 );
                 pSO4pdf_3mins.updatePdf( nPDF_SO4.getPDF() );
         
@@ -543,14 +549,11 @@ namespace EPM
 
         }
        
-        //std::cout << "\nTotal number of steps: " << totSteps << "\n";
-
 #pragma omp critical
         {
             observer.print2File();
         }
         /* Output variables */
-
         /* Check if contrail is water supersaturated at some point during formation */
         if ( observer.checkwatersat() ) {
             std::cout << "Water supersaturated at some point" << std::endl;

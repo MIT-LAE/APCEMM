@@ -439,7 +439,7 @@ void Meteorology::Update( const RealDouble solarTime_h, const Mesh &m, \
 
     } else if ( TYPE == 3 ) {
 
-        std::cout << "Not updating user input met" << std::endl;
+        // std::cout << "Not updating user input met" << std::endl;
 
     } else {
 
