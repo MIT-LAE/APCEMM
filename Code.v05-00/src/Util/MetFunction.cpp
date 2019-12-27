@@ -306,14 +306,14 @@ namespace met
          * UInt iFlight: index at flight altitude
          * UInt var_length: length of RHw and T profiles */
 
-        RealDouble satdepth;
+        RealDouble satdepth = 0.00E+00;
         RealDouble curdepth = 0.00E+00;
         int iCur = iFlight;
         UInt isatdepth;
         RealDouble RHi_cur;
 
         /* Loop over altitudes till sat depth found or end of profile reached */
-        while ( curdepth < SATDEPTH_MIN && iCur > 0 ) {
+        while ( satdepth==0.00E+00 && iCur > 0 ) {
 
             /* Calculate RHi at current altitude */
             RHi_cur = RHw[iCur] * physFunc::pSat_H2Ol( T[iCur] ) / physFunc::pSat_H2Os( T[iCur] );
@@ -322,24 +322,21 @@ namespace met
             if ( iCur != iFlight && RHi_cur < 100 ) {
 
                 /* Get distance from previous altitude for saturation depth */
-                if ( curdepth == 0.00E+00 ) {
-                    isatdepth = iCur;
-                }
-                curdepth = curdepth + ( alt[iCur] - alt[iCur-1] );
+                isatdepth = iCur;
+                satdepth = alt[iFlight] - alt[iCur];
 
-            } else {
+            } // else {
 
                 /* Reset satdepth */
-                curdepth = 0.00E+00;
-            }
+            //    curdepth = 0.00E+00;
+            //}
 
             /* Iterate and check satdepth */
             iCur = iCur - 1;
+            
             // std::cout << alt[iCur] << "m, " << curdepth << "m" << std::endl;
         }
-        std::cout << iFlight << ", " << iCur << std::endl;
-        std::cout << alt[iFlight] << ", " << alt[iCur] << std::endl;
-        std::cout << YLIM_DOWN << std::endl;
+        
         /* Check a genuine satdepth found */
         if ( iCur <= 0 || alt[iFlight]-alt[iCur] > YLIM_DOWN ) {
             std::cout << "EndSim: Infinite saturation depth" << std::endl;

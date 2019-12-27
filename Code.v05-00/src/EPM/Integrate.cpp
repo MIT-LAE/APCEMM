@@ -313,10 +313,8 @@ namespace EPM
                      * Gaseous SO4 is in phase equilibrium. Ensure limitations! */
                     SO4_g  = ( physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( x[EPM_ind_P] ) > x[EPM_ind_SO4g] ) ? x[EPM_ind_SO4g] * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) : physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 );
                     SO4_rl = x[EPM_ind_SO4g] * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) - SO4_g;
-                    std::cout << "Before: " << SO4_g << ", " << SO4_rl << std::endl;                    
                     SO4_g  = ( SO4_g > 0.0 ) ? SO4_g : 0.0;
                     SO4_rl = ( SO4_rl > 0.0 ) ? SO4_rl : 0.0;
-                    std::cout << "After: " << SO4_g << ", " << SO4_rl << std::endl;                    
                     if ( ( SO4_rl >= AIM::nThresh( x[EPM_ind_T], x[EPM_ind_H2O] * x[EPM_ind_P] / physFunc::pSat_H2Ol( x[EPM_ind_T] ) ) ) ) {
                        
                         /* Mole fraction of sulfuric acid */
