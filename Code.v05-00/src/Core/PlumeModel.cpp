@@ -1033,7 +1033,14 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
                 Transport( Data, Solver, cellAreas );
             } else {
                 /* Advection and diffusion of condensable species */
-                Solver.Run( Data.H2O, cellAreas, 1 );
+                Solver.Run( Data.H2O_plume, cellAreas, 1 );
+            }
+
+            /* Update H2O */
+            for ( jNy = 0; jNy < NY; jNy++ ) {
+                for ( iNx = 0; iNx < NX; iNx++ ) {
+                    Data.H2O[jNy][iNx] = Data.H2O_met[jNy][iNx] + Data.H2O_plume[jNy][iNx];
+                }
             }
 
             /* Advection and diffusion for aerosol particles */
@@ -1162,6 +1169,14 @@ int PlumeModel( const OptInput &Input_Opt, const Input &input )
         if ( TRANSPORT_PA ) {
             /* Update met fields at mid time step */
             Met.Update( ( curr_Time_s + dt/2 ) / 3600.0, m, dTrav_x, dTrav_y );
+
+            /* Update H2O */
+            for ( jNy = 0; jNy < NY; jNy++ ) {
+                for ( iNx = 0; iNx < NX; iNx++ ) {
+                    Data.H2O_met[jNy][iNx] = Met.H2O(jNy,iNx);
+                    Data.H2O[jNy][iNx] = Data.H2O_met[jNy][iNx] + Data.H2O_plume[jNy][iNx];
+                }
+            }
         }
 
         /* ======================================================================= */

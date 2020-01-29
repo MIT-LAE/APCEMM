@@ -194,6 +194,8 @@ void Solution::Initialize( char const *fileName,      \
 
     /* Gaseous species */
     SetShape( H2O      , size_x  , size_y  , amb_Value[112] * airDens );
+    SetShape( H2O_met  , size_x  , size_y  , amb_Value[112] * airDens );
+    SetShape( H2O_plume, size_x  , size_y  , 0.0E+00 );
 
 
     SetShape( CO2      , actualX , actualY , amb_Value[  0] * airDens );
@@ -350,15 +352,24 @@ void Solution::Initialize( char const *fileName,      \
 
     if ( Input_Opt.MET_LOADMET ) {
         /* Use meteorological input? */
-        H2O = met.H2O_;
+        //H2O = met.H2O_;
+        H2O_met = met.H2O_;
+        /* Update H2O */
+        for ( UInt i = 0; i < size_x; i++ ) {
+            for ( UInt j = 0; j < size_y; j++ ) {
+                H2O[j][i] = H2O_met[j][i] + H2O_plume[j][i];
+            }
+        }
     } else {
         /* Else use user-defined H2O profile */
         RealDouble H2Oval = (input.relHumidity_w()/((RealDouble) 100.0) * \
                           physFunc::pSat_H2Ol( input.temperature_K() ) / ( physConst::kB * input.temperature_K() )) / 1.00E+06;
         for ( UInt i = 0; i < size_x; i++ ) {
             for ( UInt j = 0; j < size_y; j++ ) {
-                H2O[j][i] = H2Oval;
+                //H2O[j][i] = H2Oval;
+                H2O_met[j][i] = H2Oval;
                 /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
+                H2O[j][i] = H2O_met[j][i] + H2O_plume[j][i];
             }
         }
     }
@@ -1197,6 +1208,8 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
         for ( jNy = 0; jNy < NY; jNy++ ) {
             for ( iNx = 0; iNx < NX; iNx++ ) {
 
+                H2O_met[jNy][iNx] = met.H2O_[jNy][iNx];
+
                 w = weights[innerRing][jNy][iNx];
 
                 /* Initially weights are either 0 or 1 */
@@ -1227,10 +1240,10 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                     if ( set2Saturation ) {
                         /* If supersaturated, then set water vapor to saturation and no bare soot particles
                          * as they are all covered with ice */
-                            H2O[jNy][iNx] = physFunc::pSat_H2Os( met.temp_[jNy][iNx] ) / ( physConst::kB * met.temp_[jNy][iNx] * 1.00E+06 ); /* [molec / cm^3] */
+                        H2O_plume[jNy][iNx] += physFunc::pSat_H2Os( met.temp_[jNy][iNx] ) / ( physConst::kB * met.temp_[jNy][iNx] * 1.00E+06 ) - H2O_met[jNy][iNx]; /* [molec / cm^3] */
                     } else {
                         /* If subsaturated, then emit water and soot */
-                        H2O[jNy][iNx]      += ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+                        H2O_plume[jNy][iNx]      += ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
                         sootDens[jNy][iNx] += ( Soot_Den * areaPlume / ( nCell * cellAreas[jNy][iNx] ) );
                         sootRadi[jNy][iNx] = rad;
                         sootArea[jNy][iNx] = 4.0 * physConst::PI * rad * rad * sootDens[jNy][iNx];
@@ -1258,6 +1271,9 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
             nCell     = 2.0 * nCellMap[innerRing];
             for ( jNy = 0; jNy < NY; jNy++ ) {
                 for ( iNx = 0; iNx < NX; iNx++ ) {
+
+                    H2O_met[jNy][iNx] = met.H2O_[jNy][iNx];
+
                     w = weights[innerRing][jNy][iNx];
 
                     /* Initially weights are either 0 or 1 */
@@ -1287,10 +1303,10 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                         if ( set2Saturation ) {
                             /* If supersaturated, then set water vapor to saturation and no
                              * bare soot particles as they are all covered with ice */
-                            H2O[jNy][iNx] = physFunc::pSat_H2Os( met.temp_[jNy][iNx] ) / ( physConst::kB * met.temp_[jNy][iNx] * 1.00E+06 );
+                            H2O_plume[jNy][iNx] += physFunc::pSat_H2Os( met.temp_[jNy][iNx] ) / ( physConst::kB * met.temp_[jNy][iNx] * 1.00E+06 ) - H2O_met[jNy][iNx]; /* [molec / cm^3] */
                         } else {
                             /* If subsaturated, then emit water and soot */
-                            H2O[jNy][iNx]      += ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
+                            H2O_plume[jNy][iNx]      += ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
                             sootDens[jNy][iNx] += ( Soot_Den * areaPlume / ( nCell * cellAreas[jNy][iNx] ) );
                             sootRadi[jNy][iNx] = rad;
                             sootArea[jNy][iNx] = 4.0 * physConst::PI * rad * rad * sootDens[jNy][iNx];
@@ -1307,6 +1323,12 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
 
         }
 
+    }
+
+    for ( jNy = 0; jNy < NY; jNy++ ) {
+        for ( iNx = 0; iNx < NX; iNx++ ) {
+            H2O[jNy][iNx] = H2O_met[jNy][iNx] + H2O_plume[jNy][iNx];
+        }
     }
 
 } /* End of Solution::addEmission */
