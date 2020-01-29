@@ -89,7 +89,17 @@ namespace AIM
             std::cout << "\nOptions are: liquid, ice or soot.";
         }
 
-        buildBeta( bin_Centers_1 );
+        if ( strcmp( phase, "liq" ) == 0 )
+            buildBeta( bin_Centers_1 );
+        else {
+            for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
+                beta.push_back( Vector_1D( bin_Centers_1.size() ) );
+                for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_2.size(); iBin_2++ ) {
+                    /* Assuming an aggregation efficiency of 1 */
+                    beta[iBin_1][iBin_2] = Kernel[iBin_1][iBin_2];
+                }
+            }
+        }
         buildF   ( bin_VCenters_1 );
 
 
@@ -161,7 +171,17 @@ namespace AIM
             std::cout << "\nOptions are: liquid, ice or soot.";
         }
 
-        buildBeta( bin_Centers_1 );
+        if ( strcmp( phase, "liq" ) == 0 )
+            buildBeta( bin_Centers_1 );
+        else {
+            for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
+                beta.push_back( Vector_1D( bin_Centers_1.size() ) );
+                for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_1.size(); iBin_2++ ) {
+                    /* Assuming an aggregation efficiency of 1 */
+                    beta[iBin_1][iBin_2] = Kernel[iBin_1][iBin_2];
+                }
+            }
+        }
         buildF   ( bin_VCenters_1 );
 
     } /* End of Coagulation::Coagulation */
