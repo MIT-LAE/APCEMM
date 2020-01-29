@@ -14,78 +14,17 @@
 #ifndef INTERFACE_H_INCLUDED
 #define INTERFACE_H_INCLUDED
 
-/* APCEMM Look-up table */
-#define APCEMM_LUT              1    /* Build look-up table? */
-#define REBUILD                 0    /* Overwrite output files */
-
-#define PSC_SIM                 0    /* Polar Stratospheric Clouds? */
-
-/* MICROPHYSICS */
-#define ICE_MICROPHYSICS        0    /* Is ice microphysics turned 
-                                        on? */
-#define ICECOAG_TSTEP           3600 /* Minimal coagulation time step 
-                                        for ice in s */
-#define LIQ_MICROPHYSICS        0    /* Is sulfate microphysics turned
-                                        on? */
-#define LIQCOAG_TSTEP           3600 /* Minimal coagulation time step for 
-                                        liquid aerosols in s */
-
 /* SYMMETRIES */
 #define X_SYMMETRY              0    /* Is the problem symmetric
                                         around the x-axis? */
 #define Y_SYMMETRY              0    /* Is the problem symmetric
                                         around the y-axis? */
 
-/* METEOROLOGICAL DATA */ 
-#define LOAD_MET                0    /* Load fine plume-scale met 
-                                        data (2D water and 
-                                        tempereature fields) */
-
 /* OUTPUT CONCENTRATIONS */
 
 /* Save output as double? otherwise save as float.
  * Saving as float will reduce the memory requirements */
 #define SAVE_TO_DOUBLE          1 
-
-
-/* OUTPUT MICROPHYSICS */
-/* Save solid aerosol gridded bins? */
-/* At each time step, the array is NX*NY*nBin_PA */
-// This has been removed and can now be handled using timeseries output
-//#define SAVE_PA_MICROPHYS       0
-/* Time interval at which solid aerosol properties are saved 
- * (in seconds) */
-//#define SAVE_PA_DT              3600
-//
-//const char* const OUT_FILE_PA = "data/IceAerosol.nc";
-
-/* If ice microphysics is not performed, make sure that we do not 
- * output it */
-//#if ( !ICE_MICROPHYSICS )
-//
-//    #undef SAVE_PA_MICROPHYS 
-//    #define SAVE_PA_MICROPHYS  0
-//
-//#endif
-
-/* Save liquid aerosol gridded bins? */
-/* At each time step, the array is NX*NY*nBin_LA */
-// This has been removed and can now be handled using timeseries output
-//#define SAVE_LA_MICROPHYS       0
-/* Time interval at which liquid aerosol properties are saved 
- * (in seconds) */
-//#define SAVE_LA_DT              3600
-//
-//const char* const OUT_FILE_LA = "data/LiqAerosol.nc";
-
-/* If liquid microphysics is not performed, make sure that we do not 
- * output it */
-//#if ( !LIQ_MICROPHYSICS )
-//
-//    #undef SAVE_LA_MICROPHYS
-//    #define SAVE_LA_MICROPHYS   0
-//
-//#endif
 
 
 /* MASS CHECK */

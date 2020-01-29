@@ -19,6 +19,12 @@
 #include <vector>
 #include <cstring>
 #include <boost/math/special_functions/gamma.hpp>
+#ifdef OMP
+    #include "omp.h"
+#endif /* OMP */
+
+/* Include Parameters.hpp for multithreading option */
+#include "Core/Parameters.hpp"
 
 #include "Util/ForwardDecl.hpp"
 #include "Util/PhysConstant.hpp"
@@ -144,8 +150,8 @@ class AIM::Grid_Aerosol
         Vector_2D TotalVolume( ) const;
         Vector_2D IWC( ) const;
         Vector_2D Extinction( ) const;
-        Vector_1D xOD( const Vector_1D xE ) const;
-        Vector_1D yOD( const Vector_1D yE ) const;
+        Vector_1D xOD( const Vector_1D dx ) const;
+        Vector_1D yOD( const Vector_1D dy ) const;
         Vector_2D Radius( ) const;
         RealDouble Radius( UInt iNx, UInt jNy ) const;
         Vector_2D EffRadius( ) const;
@@ -157,8 +163,10 @@ class AIM::Grid_Aerosol
         void updatePdf( Vector_3D pdf_ );
         Vector_1D Average( const Vector_2D &weights,   \
                            const RealDouble &totWeight ) const;
-        void addPDF( const Aerosol &PDF, const Vector_2D &weights );
-        void addPDF( const Vector_1D &PDF, const Vector_2D &weights );
+        void addPDF( const Aerosol &PDF, const Vector_2D &weights,  \
+                     const Vector_2D &cellAreas, const RealDouble nCell );
+        void addPDF( const Vector_1D &PDF, const Vector_2D &weights, \
+                     const Vector_2D &cellAreas, const RealDouble nCell );
 
         /* gets */
         Vector_1D getBinCenters() const;

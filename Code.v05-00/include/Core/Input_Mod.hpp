@@ -36,6 +36,9 @@ class OptInput
         std::string SIMULATION_OUTPUT_FOLDER;
         bool        SIMULATION_OVERWRITE;
         std::string SIMULATION_RUN_DIRECTORY;
+        bool        SIMULATION_THREADED_FFT;
+        bool        SIMULATION_USE_FFTW_WISDOM;
+        std::string SIMULATION_DIRECTORY_W_WRITE_PERMISSION;
         std::string SIMULATION_INPUT_BACKG_COND;
         bool        SIMULATION_SAVE_FORWARD;
         std::string SIMULATION_FORWARD_FILENAME;
@@ -126,6 +129,9 @@ class OptInput
         bool        PARAMETER_FF_RANGE;
         std::string PARAMETER_FF_UNIT;
         Vector_1D   PARAMETER_FF;
+        bool        PARAMETER_AMASS_RANGE;
+        std::string PARAMETER_AMASS_UNIT;
+        Vector_1D   PARAMETER_AMASS;
         
         /* ========================================== */
         /* ---- TRANSPORT MENU ---------------------- */

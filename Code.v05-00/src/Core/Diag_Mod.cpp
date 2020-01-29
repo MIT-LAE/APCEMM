@@ -130,10 +130,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.CO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_PPN ) {
 
@@ -148,10 +151,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.PPN, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_BrNO2 ) {
 
@@ -166,10 +172,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.BrNO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_IEPOX ) {
 
@@ -184,10 +193,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.IEPOX, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_PMNN ) {
 
@@ -202,10 +214,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.PMNN, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_N2O ) {
 
@@ -220,10 +235,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.N2O, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_N ) {
 
@@ -238,10 +256,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.N, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_PAN ) {
 
@@ -256,10 +277,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.PAN, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ALK4 ) {
 
@@ -274,10 +298,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ALK4, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MAP ) {
 
@@ -292,10 +319,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MAP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MPN ) {
 
@@ -310,10 +340,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MPN, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_Cl2O2 ) {
 
@@ -328,10 +361,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.Cl2O2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ETP ) {
 
@@ -346,10 +382,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ETP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_HNO2 ) {
 
@@ -364,10 +403,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.HNO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_C3H8 ) {
 
@@ -382,10 +424,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.C3H8, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_RA3P ) {
 
@@ -400,10 +445,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.RA3P, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_RB3P ) {
 
@@ -418,10 +466,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.RB3P, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_OClO ) {
 
@@ -436,10 +487,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.OClO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ClNO2 ) {
 
@@ -454,10 +508,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ClNO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ISOP ) {
 
@@ -472,10 +529,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ISOP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_HNO4 ) {
 
@@ -490,10 +550,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.HNO4, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MAOP ) {
 
@@ -508,10 +571,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MAOP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MP ) {
 
@@ -526,10 +592,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ClOO ) {
 
@@ -544,10 +613,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ClOO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_RP ) {
 
@@ -562,10 +634,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.RP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_BrCl ) {
 
@@ -580,10 +655,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.BrCl, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_PP ) {
 
@@ -598,10 +676,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.PP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_PRPN ) {
 
@@ -616,10 +697,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.PRPN, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_SO4 ) {
 
@@ -634,10 +718,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.SO4, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_Br2 ) {
 
@@ -652,10 +739,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.Br2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ETHLN ) {
 
@@ -670,10 +760,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ETHLN, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MVKN ) {
 
@@ -688,10 +781,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MVKN, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_R4P ) {
 
@@ -706,10 +802,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.R4P, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_C2H6 ) {
 
@@ -724,10 +823,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.C2H6, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_RIP ) {
 
@@ -742,10 +844,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.RIP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_VRP ) {
 
@@ -760,10 +865,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.VRP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ATOOH ) {
 
@@ -778,10 +886,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ATOOH, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_IAP ) {
 
@@ -796,10 +907,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.IAP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_DHMOB ) {
 
@@ -814,10 +928,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.DHMOB, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MOBA ) {
 
@@ -832,10 +949,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MOBA, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MRP ) {
 
@@ -850,10 +970,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MRP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_N2O5 ) {
 
@@ -868,10 +991,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.N2O5, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ISNOHOO ) {
 
@@ -886,10 +1012,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ISNOHOO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ISNP ) {
 
@@ -904,10 +1033,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ISNP, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ISOPNB ) {
 
@@ -922,10 +1054,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ISOPNB, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_IEPOXOO ) {
 
@@ -940,10 +1075,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.IEPOXOO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MACRNO2 ) {
 
@@ -958,10 +1096,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MACRNO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ROH ) {
 
@@ -976,10 +1117,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ROH, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MOBAOO ) {
 
@@ -994,10 +1138,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MOBAOO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_DIBOO ) {
 
@@ -1012,10 +1159,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.DIBOO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_PMN ) {
 
@@ -1030,10 +1180,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.PMN, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ISNOOB ) {
 
@@ -1048,10 +1201,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ISNOOB, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_INPN ) {
 
@@ -1066,10 +1222,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.INPN, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_H ) {
 
@@ -1084,10 +1243,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.H, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_BrNO3 ) {
 
@@ -1102,10 +1264,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.BrNO3, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_PRPE ) {
 
@@ -1120,10 +1285,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.PRPE, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MVKOO ) {
 
@@ -1138,10 +1306,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MVKOO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_Cl2 ) {
 
@@ -1156,10 +1327,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.Cl2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ISOPND ) {
 
@@ -1174,10 +1348,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ISOPND, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_HOBr ) {
 
@@ -1192,10 +1369,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.HOBr, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_A3O2 ) {
 
@@ -1210,10 +1390,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.A3O2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_PROPNN ) {
 
@@ -1228,10 +1411,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.PROPNN, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_GLYX ) {
 
@@ -1246,10 +1432,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.GLYX, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MAOPO2 ) {
 
@@ -1264,10 +1453,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MAOPO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_CH4 ) {
 
@@ -1282,10 +1474,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.CH4, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_GAOO ) {
 
@@ -1300,10 +1495,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.GAOO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_B3O2 ) {
 
@@ -1318,10 +1516,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.B3O2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ACET ) {
 
@@ -1336,10 +1537,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ACET, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MACRN ) {
 
@@ -1354,10 +1558,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MACRN, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_CH2OO ) {
 
@@ -1372,10 +1579,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.CH2OO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MGLYOO ) {
 
@@ -1390,10 +1600,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MGLYOO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_VRO2 ) {
 
@@ -1408,10 +1621,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.VRO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MGLOO ) {
 
@@ -1426,10 +1642,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MGLOO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MACROO ) {
 
@@ -1444,10 +1663,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MACROO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_PO2 ) {
 
@@ -1462,10 +1684,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.PO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_CH3CHOO ) {
 
@@ -1480,10 +1705,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.CH3CHOO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MAN2 ) {
 
@@ -1498,10 +1726,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MAN2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ISNOOA ) {
 
@@ -1516,10 +1747,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ISNOOA, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_H2O2 ) {
 
@@ -1534,10 +1768,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.H2O2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_PRN1 ) {
 
@@ -1552,10 +1789,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.PRN1, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ETO2 ) {
 
@@ -1570,10 +1810,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ETO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_KO2 ) {
 
@@ -1588,10 +1831,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.KO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_RCO3 ) {
 
@@ -1606,10 +1852,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.RCO3, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_HC5OO ) {
 
@@ -1624,10 +1873,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.HC5OO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_GLYC ) {
 
@@ -1642,10 +1894,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.GLYC, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ClNO3 ) {
 
@@ -1660,10 +1915,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ClNO3, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_RIO2 ) {
 
@@ -1678,10 +1936,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.RIO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_R4N1 ) {
 
@@ -1696,10 +1957,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.R4N1, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_HOCl ) {
 
@@ -1714,10 +1978,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.HOCl, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ATO2 ) {
 
@@ -1732,10 +1999,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ATO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_HNO3 ) {
 
@@ -1750,10 +2020,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.HNO3, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ISN1 ) {
 
@@ -1768,10 +2041,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ISN1, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MAO3 ) {
 
@@ -1786,10 +2062,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MAO3, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MRO2 ) {
 
@@ -1804,10 +2083,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MRO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_INO2 ) {
 
@@ -1822,10 +2104,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.INO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_HAC ) {
 
@@ -1840,10 +2125,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.HAC, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_HC5 ) {
 
@@ -1858,10 +2146,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.HC5, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MGLY ) {
 
@@ -1876,10 +2167,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MGLY, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ISOPNBO2 ) {
 
@@ -1894,10 +2188,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ISOPNBO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ISOPNDO2 ) {
 
@@ -1912,10 +2209,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ISOPNDO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_R4O2 ) {
 
@@ -1930,10 +2230,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.R4O2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_R4N2 ) {
 
@@ -1948,10 +2251,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.R4N2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_BrO ) {
 
@@ -1966,10 +2272,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.BrO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_RCHO ) {
 
@@ -1984,10 +2293,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.RCHO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MEK ) {
 
@@ -2002,10 +2314,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MEK, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ClO ) {
 
@@ -2020,10 +2335,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ClO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MACR ) {
 
@@ -2038,10 +2356,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MACR, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_SO2 ) {
 
@@ -2056,10 +2377,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.SO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MVK ) {
 
@@ -2074,10 +2398,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MVK, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_ALD2 ) {
 
@@ -2092,10 +2419,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.ALD2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MCO3 ) {
 
@@ -2110,10 +2440,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MCO3, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_CH2O ) {
 
@@ -2128,10 +2461,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.CH2O, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_H2O ) {
 
@@ -2146,10 +2482,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.H2O, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_Br ) {
 
@@ -2164,10 +2503,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.Br, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_NO ) {
 
@@ -2182,10 +2524,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.NO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_NO3 ) {
 
@@ -2200,10 +2545,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.NO3, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_Cl ) {
 
@@ -2218,10 +2566,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.Cl, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_O ) {
 
@@ -2236,10 +2587,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.O, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_O1D ) {
 
@@ -2254,10 +2608,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.O1D, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_O3 ) {
 
@@ -2272,10 +2629,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.O3, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_HO2 ) {
 
@@ -2290,10 +2650,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.HO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_NO2 ) {
 
@@ -2308,10 +2671,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.NO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_OH ) {
 
@@ -2326,10 +2692,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.OH, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_HBr ) {
 
@@ -2344,10 +2713,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.HBr, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_HCl ) {
 
@@ -2362,10 +2734,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.HCl, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_CO ) {
 
@@ -2380,10 +2755,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.CO, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else if ( speciesIndices[i] - 1 == ind_MO2 ) {
 
@@ -2398,10 +2776,13 @@ bool Diag_TS_Chem( const char* rootName,                     \
                 array = util::vect2float ( Data.MO2, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+                #pragma omp critical
+                {
                 didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                              (const char*)charSpc, yDim, xDim,  \
                                              outputType, (const char*)charUnit, \
                                              (const char*)charName );
+                }
 
             } else {
                 std::cout << " In Diag_Mod for timeseries: Unexpected index: " << speciesIndices[i] << std::endl;
@@ -2557,11 +2938,14 @@ bool Diag_TS_Phys( const char* rootName,                     \
         array = util::vect2float ( met.Press(), m.Ny(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+        #pragma omp critical
+        {
         didSaveSucceed *= fileHandler.addVar( currFile, &(array)[0],    \
                                      (const char*)charSpc,              \
                                      yDim, outputType,                  \
                                      (const char*)charUnit,             \
                                      (const char*)charName );
+        }
 
         /* Saving meteorological temperature */
 
@@ -2575,11 +2959,14 @@ bool Diag_TS_Phys( const char* rootName,                     \
         array = util::vect2float ( met.Temp(), m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+        #pragma omp critical
+        {
         didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                      (const char*)charSpc,              \
                                      yDim, xDim, outputType,            \
                                      (const char*)charUnit,             \
                                      (const char*)charName );
+        }
 
         /* Saving H2O gaseous concentration */
 
@@ -2593,11 +2980,14 @@ bool Diag_TS_Phys( const char* rootName,                     \
         array = util::vect2float ( Data.H2O, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+        #pragma omp critical
+        {
         didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0],  \
                                      (const char*)charSpc,              \
                                      yDim, xDim, outputType,            \
                                      (const char*)charUnit,             \
                                      (const char*)charName );
+        }
 
 
         if ( outputPDF ) {
@@ -2617,11 +3007,14 @@ bool Diag_TS_Phys( const char* rootName,                     \
             array = util::vect2float ( Data.solidAerosol.pdf, Data.nBin_PA, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+            #pragma omp critical
+            {
             didSaveSucceed *= fileHandler.addVar3D( currFile, &(array)[0],  \
                                          (const char*)charSpc,              \
                                          binRad, yDim, xDim, outputType,    \
                                          (const char*)charUnit,             \
                                          (const char*)charName );
+            }
 
             /* Saving ice aerosol bin centers.
              * A moving bin structure is adopted in APCEMM. Each grid-cell thus 
@@ -2638,11 +3031,14 @@ bool Diag_TS_Phys( const char* rootName,                     \
             array = util::vect2float ( Data.solidAerosol.bin_VCenters, Data.nBin_PA, m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+            #pragma omp critical
+            {
             didSaveSucceed *= fileHandler.addVar3D( currFile, &(array)[0],  \
                                          (const char*)charSpc,              \
                                          binRad, yDim, xDim, outputType,    \
                                          (const char*)charUnit,             \
                                          (const char*)charName );
+            }
 
         } else {
 
@@ -2662,11 +3058,14 @@ bool Diag_TS_Phys( const char* rootName,                     \
             array = util::vect2float ( Data.solidAerosol.TotalNumber(), m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+            #pragma omp critical
+            {
             didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0], \
                                          (const char*)charSpc,             \
                                          yDim, xDim, outputType,           \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
+            }
 
             /* Saving ice aerosol volume
              * Size: NY x NX */
@@ -2681,11 +3080,14 @@ bool Diag_TS_Phys( const char* rootName,                     \
             array = util::vect2float ( Data.solidAerosol.TotalVolume(), m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+            #pragma omp critical
+            {
             didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0], \
                                          (const char*)charSpc,             \
                                          yDim, xDim, outputType,           \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
+            }
 
             /* Saving ice aerosol effective radius
              * Size: NY x NX */
@@ -2700,11 +3102,14 @@ bool Diag_TS_Phys( const char* rootName,                     \
             array = util::vect2float ( Data.solidAerosol.EffRadius(), m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+            #pragma omp critical
+            {
             didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0], \
                                          (const char*)charSpc,             \
                                          yDim, xDim, outputType,           \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
+            }
 
             /* Saving horizontal optical depth
              * Size: NY */
@@ -2714,16 +3119,19 @@ bool Diag_TS_Phys( const char* rootName,                     \
             strncpy( charUnit, "-", sizeof(charUnit) );
 
 #if ( SAVE_TO_DOUBLE )
-            array = util::vect2double( Data.solidAerosol.xOD( m.xE() ), m.Ny(), scalingFactor );
+            array = util::vect2double( Data.solidAerosol.xOD( m.dx() ), m.Ny(), scalingFactor );
 #else
-            array = util::vect2float ( Data.solidAerosol.xOD( m.xE() ), m.Ny(), scalingFactor );
+            array = util::vect2float ( Data.solidAerosol.xOD( m.dx() ), m.Ny(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+            #pragma omp critical
+            {
             didSaveSucceed *= fileHandler.addVar( currFile, &(array)[0],   \
                                          (const char*)charSpc,             \
                                          yDim, outputType,                 \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
+            }
 
             /* Saving vertical optical depth
              * Size: NX */
@@ -2733,16 +3141,19 @@ bool Diag_TS_Phys( const char* rootName,                     \
             strncpy( charUnit, "-", sizeof(charUnit) );
 
 #if ( SAVE_TO_DOUBLE )
-            array = util::vect2double( Data.solidAerosol.yOD( m.yE() ), m.Nx(), scalingFactor );
+            array = util::vect2double( Data.solidAerosol.yOD( m.dy() ), m.Nx(), scalingFactor );
 #else
-            array = util::vect2float ( Data.solidAerosol.yOD( m.yE() ), m.Nx(), scalingFactor );
+            array = util::vect2float ( Data.solidAerosol.yOD( m.dy() ), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
+            #pragma omp critical
+            {
             didSaveSucceed *= fileHandler.addVar( currFile, &(array)[0],   \
                                          (const char*)charSpc,             \
                                          xDim, outputType,                 \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
+            }
 
 
         }
