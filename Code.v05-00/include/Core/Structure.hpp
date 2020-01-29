@@ -129,7 +129,8 @@ class Solution
                   MEK, ClO, MACR, SO2, MVK, ALD2, MCO3, CH2O,              \
                   H2O, Br, NO, NO3, Cl, O, O1D, O3,                        \
                   HO2, NO2, OH, HBr, HCl, CO, MO2, ACTA,                   \
-                  EOH, H2, HCOOH, MOH, N2, O2, RCOOH;
+                  EOH, H2, HCOOH, MOH, N2, O2, RCOOH,                      \
+                  H2O_met, H2O_plume;
 
         /* Liquid species */
         Vector_2D SO4L, H2OL, HNO3L, HClL, HOClL, HBrL, HOBrL;
