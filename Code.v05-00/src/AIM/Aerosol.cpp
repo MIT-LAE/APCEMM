@@ -1504,7 +1504,7 @@ namespace AIM
 
                     /* Compute the molecular saturation concentration 
                      * C_{s,i} in [molec/cm^3] */
-                    nSat = 1.01 * pSat / ( kB_ * locT );
+                    nSat = pSat / ( kB_ * locT );
 
                     /* Update gaseous molecular concentration */
                     H2O[jNy][iNx] = ( H2O[jNy][iNx] + dt * totkGrowth_1 * nSat ) \
