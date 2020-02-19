@@ -274,6 +274,12 @@ namespace AIM
 
         /* Refer to errate for corrected formula!! */
 
+        if ( T > 305.15 )
+            T = 305.15;
+
+        if ( T < 190.0 )
+            T = 190.0;
+
         RealDouble invT  = 1.0 / T;
         RealDouble logRH = log(RH);
 
