@@ -114,7 +114,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         /* User defined fields can be set here ! */
 
         /* Set temperature input type if user-defined */
-        TYPE = 2;
+        TYPE = 3;
 
 
         if ( TYPE == 1 ) {
@@ -173,6 +173,48 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
                                    * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + RIGHT) / 1.0E+03 ) + 1.0 ));
     //                               * ( 1.0 - 0.5 * ( std::tanh( ( Y[jNy] - TOP  ) / 1.0E+02 ) + 1.0 )) \
     //                               * ( 0.0 + 0.5 * ( std::tanh( ( Y[jNy] + BOT  ) / 1.0E+02 ) + 1.0 ))
+                    H2O_[jNy][iNx]  = H2O_[jNy][0];
+                }
+            }
+
+        } else if ( TYPE == 3 ) {
+
+            /* RHi layer centered on y = 0 */
+            TOP = 200.0;
+            if ( USERINPUT.MET_FIXDEPTH )
+                BOT = USERINPUT.MET_DEPTH;
+            else
+                BOT = 200.0;
+
+            //RH_star = 110;
+            RH_star = RHI;
+            RH_far  = 50;
+
+#pragma omp parallel for                \
+            if      ( !PARALLEL_CASES ) \
+            default ( shared          ) \
+            private ( iNx, jNy        ) \
+            schedule( dynamic, 1      )
+            for ( jNy = 0; jNy < Y.size(); jNy++ ) {
+                temp_[jNy][0] = TEMPERATURE + Y[jNy] * LAPSERATE + diurnalPert;
+                /* Unit check: Y [m] * LapseRate [K/m] */
+
+                if ( ( Y[jNy] < TOP ) && ( Y[jNy] > -BOT ) ) {
+                    RH = RH_star;
+                    H2O_[jNy][0] = RH / 1.0E+02 * physFunc::pSat_H2Os( temp_[jNy][0] ) / ( physConst::kB * temp_[jNy][0] * 1.0E+06 );
+                } else {
+                    if ( Y[jNy] < 0 ) {
+                        RH = RH_star - ( Y[jNy] + BOT ) / BOT * ( RH_far - RH_star );
+                    } else {
+                        RH = RH_star + ( Y[jNy] - TOP ) / TOP * ( RH_far - RH_star );
+                    }
+                    if ( ( Y[jNy] < -2.0*BOT ) || ( Y[jNy] > 2.0*TOP ) )
+                        RH = RH_far;
+                    H2O_[jNy][0] = RH / 1.0E+02 * physFunc::pSat_H2Os( temp_[jNy][0] ) / ( physConst::kB * temp_[jNy][0] * 1.0E+06 );
+                }
+
+                for ( iNx = 0; iNx < X.size(); iNx++ ) {
+                    temp_[jNy][iNx] = temp_[jNy][0];
                     H2O_[jNy][iNx]  = H2O_[jNy][0];
                 }
             }
@@ -311,6 +353,42 @@ void Meteorology::Update( const RealDouble solarTime_h, const Mesh &m, \
                                * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + RIGHT) / 1.0E+03 ) + 1.0 ));
 //                               * ( 1.0 - 0.5 * ( std::tanh( ( Y[jNy] - TOP  ) / 1.0E+02 ) + 1.0 )) \
 //                               * ( 0.0 + 0.5 * ( std::tanh( ( Y[jNy] + BOT  ) / 1.0E+02 ) + 1.0 ))
+                H2O_[jNy][iNx]  = H2O_[jNy][0];
+            }
+        }
+
+    } else if ( TYPE == 3 ) {
+
+        /* RHi layer centered on y = 0 */
+
+        RH_star = RHI;
+        RH_far  = 50;
+
+#pragma omp parallel for            \
+        if      ( !PARALLEL_CASES ) \
+        default ( shared          ) \
+        private ( iNx, jNy        ) \
+        schedule( dynamic, 1      )
+        for ( jNy = 0; jNy < Y.size(); jNy++ ) {
+            temp_[jNy][0] = TEMPERATURE + Y[jNy] * LAPSERATE + diurnalPert;
+            /* Unit check: Y [m] * LapseRate [K/m] */
+
+            if ( ( Y[jNy] < TOP ) && ( Y[jNy] > -BOT ) ) {
+                RH = RH_star;
+                H2O_[jNy][0] = RH / 1.0E+02 * physFunc::pSat_H2Os( temp_[jNy][0] ) / ( physConst::kB * temp_[jNy][0] * 1.0E+06 );
+            } else {
+                if ( Y[jNy] < 0 ) {
+                    RH = RH_star - ( Y[jNy] + BOT ) / BOT * ( RH_far - RH_star );
+                } else {
+                    RH = RH_star + ( Y[jNy] - TOP ) / TOP * ( RH_far - RH_star );
+                }
+                if ( ( Y[jNy] < -2.0*BOT ) || ( Y[jNy] > 2.0*TOP ) )
+                    RH = RH_far;
+                H2O_[jNy][0] = RH / 1.0E+02 * physFunc::pSat_H2Os( temp_[jNy][0] ) / ( physConst::kB * temp_[jNy][0] * 1.0E+06 );
+            }
+
+            for ( iNx = 0; iNx < X.size(); iNx++ ) {
+                temp_[jNy][iNx] = temp_[jNy][0];
                 H2O_[jNy][iNx]  = H2O_[jNy][0];
             }
         }
