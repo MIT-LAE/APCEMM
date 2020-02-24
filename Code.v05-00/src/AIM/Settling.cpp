@@ -35,7 +35,8 @@ namespace AIM
          * where \mu is the dynamic viscosity of air, Kn the Knudsen number
          * and G the slip correction factor. */
 
-        const bool DBG = 0;
+        const bool DBG    = 0;
+        const bool Stokes = 1;
 
         Vector_1D vFall( binCenters.size(), 0.0E+00 );
 
@@ -47,11 +48,58 @@ namespace AIM
             std::cout << " Maximum bin radius: " << binCenters.back() << " [m]\n";
         }
 
-        for ( UInt iBin = 0; iBin < binCenters.size(); iBin++ ) {
-            vFall[iBin] = 2.0E+00 * physConst::g * ( physConst::RHO_ICE - physFunc::rhoAir( T, P ) ) * \
-                          binCenters[iBin] * binCenters[iBin] /\
-                          ( 9.0E+00 * physFunc::dynVisc( T ) ) * \
-                          physFunc::slip_flowCorrection( physFunc::Kn( binCenters[iBin], T, P ) );
+        if ( Stokes ) {
+
+            /* Terminal fall velocity computed according to Stokes' law:
+             * v = 2 g / ( 9 * \mu ) * ( \rho_i - \rho_air ) * R^2 * C
+             *
+             * where C represents the Cunningham correction factor. */
+
+            for ( UInt iBin = 0; iBin < binCenters.size(); iBin++ ) {
+                vFall[iBin] = 2.0E+00 * physConst::g * ( physConst::RHO_ICE - physFunc::rhoAir( T, P ) ) * \
+                              binCenters[iBin] * binCenters[iBin] /\
+                              ( 9.0E+00 * physFunc::dynVisc( T ) ) * \
+                              physFunc::slip_flowCorrection( physFunc::Kn( binCenters[iBin], T, P ) );
+            }
+        } else {
+
+            /* Terminal fall velocity taken from Sölch and Kärcher, 2010
+             * Sölch, Ingo, and Bernd Kärcher. "A large‐eddy model for
+             * cirrus clouds with explicit aerosol and ice microphysics
+             * and Lagrangian ice particle tracking." Quarterly Journal
+             * of the Royal Meteorological Society 136.653 (2010): 2074-2093.*/
+
+            const bool Heymsfield   = 0;
+
+            const RealDouble a0     = 1.70E-03;
+            const RealDouble b0     = 8.00E-01;
+            const RealDouble C0     = 6.00E-01;
+            const RealDouble delta0 = 5.83E+00;
+            const RealDouble C1     = 4.00E+00 / ( delta0 * delta0 * sqrt( C0 ) );
+            const RealDouble C2     = 2.50E-01 * delta0 * delta0;
+            const RealDouble eta    = physFunc::dynVisc(T);
+            const RealDouble eta2   = eta * eta;
+            const RealDouble rhoA   = physFunc::rhoAir(T, P);
+
+            RealDouble X     = 0.0E+00;
+            RealDouble mi_Ai = 0.0E+00;
+            RealDouble Re    = 0.0E+00;
+
+            for ( UInt iBin = 0; iBin < binCenters.size(); iBin++ ) {
+
+                if ( Heymsfield ) {
+                    mi_Ai = 2.28E-02 * pow( 2.0E+00 * binCenters[iBin], 0.59 );
+                } else {
+                    mi_Ai = binCenters[iBin] * physConst::RHO_ICE / 3.0E+00;
+                }
+
+                X = 8.0E+00 * physConst::g * rhoA / eta2 * binCenters[iBin] * binCenters[iBin] * mi_Ai;
+
+                Re = C2 * pow(sqrt(1.0E+00 + C1 * sqrt(X)) - 1.0E+00, 2.0) - a0 * pow( X, b0 );
+
+                vFall[iBin] = Re * eta / ( rhoA * 2.0E+00 * binCenters[iBin] );
+
+            }
         }
 
         if ( DBG ) {
