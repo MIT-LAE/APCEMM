@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/256520978.svg)](https://zenodo.org/badge/latestdoi/256520978)
+
 # README for the APCEMM Source code repository
 
 APCEMM stands for Aircraft Plume Chemistry Emission and Microphysics Model. The model aims to assess the chemical and microphysical perturbations introduced by a conventional aircraft, equipped with gas turbine engines. Global chemistry transport models commonly assume that emissions are released in grid-boxes that can be several orders of magnitude greater than airplane's typical dimensions. APCEMM account for the fine scale representation of an aircraft plume. To account for
