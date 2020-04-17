@@ -527,7 +527,7 @@ void Solution::Initialize( char const *fileName,      \
     PA_SAD   = SAD[0]   * 1.00E+06; /* [\mum^2/cm^3] */
 
     if ( PA_nDens >= 0.0E+00 ) {
-        const RealDouble expsPA = 1.15;
+        const RealDouble expsPA = 1.6;
         const RealDouble rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW );
         AIM::Grid_Aerosol PAAerosol( size_x, size_y, PA_rJ, PA_rE, PA_nDens, rPA, expsPA, "lognormal" );
 

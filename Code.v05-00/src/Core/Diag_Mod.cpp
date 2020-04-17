@@ -2990,7 +2990,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
         }
 
 
-        if ( outputPDF ) {
+        if ( outputPDF == 2 ) {
 
             /* This might require a lot of disk space. Instead outputting 
              * particle number and volume might be better */
@@ -3036,6 +3036,29 @@ bool Diag_TS_Phys( const char* rootName,                     \
             didSaveSucceed *= fileHandler.addVar3D( currFile, &(array)[0],  \
                                          (const char*)charSpc,              \
                                          binRad, yDim, xDim, outputType,    \
+                                         (const char*)charUnit,             \
+                                         (const char*)charName );
+            }
+
+        } else if ( outputPDF == 1 ) {
+
+            /* Saving ice aerosol probability density function */
+
+            strncpy( charSpc, "Aggregated ice aerosol PDF", sizeof(charSpc) );
+            strncpy( charName, "Ice aerosol probability density function (dN/dlogr)", sizeof(charName) );
+            strncpy( charUnit, "part/m/log(r)", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            array = util::vect2double( Data.solidAerosol.PDF_Total( m ), Data.nBin_PA, scalingFactor );
+#else
+            array = util::vect2float ( Data.solidAerosol.PDF_Total( m ), Data.nBin_PA, scalingFactor );
+#endif /* SAVE_TO_DOUBLE */
+
+            #pragma omp critical
+            {
+            didSaveSucceed *= fileHandler.addVar( currFile, &(array)[0],    \
+                                         (const char*)charSpc,              \ 
+                                         binRad, outputType,                \
                                          (const char*)charUnit,             \
                                          (const char*)charName );
             }

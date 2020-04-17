@@ -1447,20 +1447,20 @@ namespace AIM
                     /* ================================================= */
 
                     /* APC scheme:
-                     * dc_{i}(t)/dt = k_{i}(t) * (C(t) - S'_{i}(t) * C_{s,i}(t))       (1)
-                     * dC(t)/dt     = -\sum k_{i} * (C(t) - S'_{i}(t) * C_{s,i}(t))    (2)
+                     * dc_{i}(t)/dt = k_{i}(t) * (C(t) - S'_{i}(t) * C_{s,i}(t))        (1)
+                     * dC(t)/dt     = -\sum k_{i} * (C(t) - S'_{i}(t) * C_{s,i}(t))     (2)
                      *
                      * The noniterative solution to the growth equation is
                      * obtained by integrating (1) for a final aerosol
                      * concentration.
                      * c_{i}(t) = c_{i}(t-dt) + ...
-                     *          dt * k_{i}(t-h) * (C(t) - S'_{i}(t-dt) * C_{s,i}(t-dt) (3)
+                     *          dt * k_{i}(t-h) * (C(t) - S'_{i}(t-dt) * C_{s,i}(t-dt)) (3)
                      * where the final gas molar concentration C(t) is 
                      * currently unknown.
                      *
                      * Final aerosol and gas concentrations are constrained
                      * by the mass-balance equation:
-                     * C(t) + \sum c_{i}(t) = C(t-dt) + \sum c_{i}(t-dt} = C_{tot}
+                     * C(t) + \sum c_{i}(t) = C(t-dt) + \sum c_{i}(t-dt) = C_{tot}
                      *
                      * Solving for the gas concentration give
                      *          C(t-dt) + dt \sum k_{i}(t) S'_{i}(t) C_{s,i}(t)
@@ -1935,6 +1935,64 @@ namespace AIM
         return chi;
 
     } /* End of Grid_Aerosol::Extinction */
+
+    Vector_1D Grid_Aerosol::PDF_Total( const Vector_2D &cellAreas ) const
+    {
+
+        UInt jNy  = 0;
+        UInt iNx  = 0;
+        UInt iBin = 0;
+
+        Vector_1D PDF( nBin, 0.0E+00 );
+
+#pragma omp parallel for                                                      \
+        default ( shared                                                    ) \
+        private ( iNx, jNy, iBin                                            ) \
+        schedule( dynamic, 1                                                ) \
+        if      ( !PARALLEL_CASES                                           )
+        for ( iBin = 0; iBin < nBin; iBin++ ) {
+            for ( jNy = 0; jNy < Ny; jNy++ ) {
+                for ( iNx = 0; iNx < Nx; iNx++ ) {
+                    PDF[iBin] = PDF[iBin] + pdf[iBin][jNy][iNx] * cellAreas[jNy][iNx] * 1.0E+06;
+                    /* Unit check:
+                     * [#/cm^3] * [m^2] * [cm^3/m^3] = [#/m] */
+                }
+            }
+        }
+
+        return PDF;
+
+    } /* End of Grid_Aerosol::PDF_Total */
+
+    Vector_1D Grid_Aerosol::PDF_Total( const Mesh &m ) const
+    {
+
+        const Vector_2D cellAreas = m.areas();
+
+        UInt jNy  = 0;
+        UInt iNx  = 0;
+        UInt iBin = 0;
+
+        Vector_1D PDF( nBin, 0.0E+00 );
+
+#pragma omp parallel for                                                      \
+        default ( shared                                                    ) \
+        private ( iNx, jNy, iBin                                            ) \
+        schedule( dynamic, 1                                                ) \
+        if      ( !PARALLEL_CASES                                           )
+        for ( iBin = 0; iBin < nBin; iBin++ ) {
+            for ( jNy = 0; jNy < Ny; jNy++ ) {
+                for ( iNx = 0; iNx < Nx; iNx++ ) {
+                    PDF[iBin] = PDF[iBin] + pdf[iBin][jNy][iNx] * cellAreas[jNy][iNx] * 1.0E+06;
+                    /* Unit check:
+                     * [#/cm^3] * [m^2] * [cm^3/m^3] = [#/m] */
+                }
+            }
+        }
+
+        return PDF;
+
+    } /* End of Grid_Aerosol::PDF_Total */
 
     Vector_1D Grid_Aerosol::xOD( const Vector_1D dx ) const
     {

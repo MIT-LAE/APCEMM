@@ -143,7 +143,7 @@ namespace physFunc
          * - RealDouble T :: temperature in K
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Dynamic viscosity in kg/m^3 */
+         * - RealDouble :: Dynamic viscosity in kg/m/s */
 
         return 1.8325E-05 * ( 416.16 / ( T + 120.0 ) ) * pow( T / 296.16, 1.5 );
 
@@ -701,7 +701,7 @@ namespace physFunc
     {
 
         /* DESCRIPTION:
-         * Returns the gaseous water condensation rate in kg/s on a signe spherical particle */
+         * Returns the gaseous water condensation rate in cm^3/s of a single spherical particle */
 
         /* INPUT PARAMETERS:
          * - RealDouble r     :: radius in m
