@@ -87,6 +87,10 @@ namespace output
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Sun Rise"   , 1, "float", "hrs", "Local sun rise" );
             value = sunSet;
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Sun Set"    , 1, "float", "hrs", "Local sun set" );
+            value = input.shear();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Shear"          , 1, "float", "1/s", "Ambient wind shear" );
+            value = input.emissionDOY();
+            didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Day"   , 1, "int"  , "-"  , "Emission day" );
             value = input.emissionTime();
             didSaveSucceed *= fileHandler.addConst( currFile, &value, "Emission Time"  , 1, "float", "hr"  , "Emission time" );
             value = input.EI_NOx();
