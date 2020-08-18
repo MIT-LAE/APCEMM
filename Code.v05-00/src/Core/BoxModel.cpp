@@ -107,7 +107,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         exit(1);
     }
     
-    const RealDouble BOX_AREA = 2 * XLIM * ( YLIM_UP + YLIM_DOWN );
+    const RealDouble BOX_AREA = ( XLIM_LEFT + XLIM_RIGHT ) * ( YLIM_UP + YLIM_DOWN );
     
     /* Assign parameters */
     
@@ -417,9 +417,9 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     Stopwatch_cumul.Start( );
 
 #endif /* TIME_IT */
-
+    std::cout << "Issue -1" << std::endl;
     while ( curr_Time_s < tFinal_s ) {
-
+        std::cout << "Issue 00" << std::endl;
         if ( printDEBUG ) {
             /* Print message */
             std::cout << "\n";
@@ -429,7 +429,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
             #endif /* OMP */
             std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
         }
-
+        std::cout << "Issue 0" << std::endl;
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
         /* --------------------------- UPDATE TIMESTEP --------------------------- */
@@ -444,13 +444,13 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         /* ----------- UPDATE SOLAR ZENITH ANGLE AND PHOTOLYSIS RATES ------------ */
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
-
+        std::cout << "Issue 1" << std::endl;
         /* Compute the cosize of solar zenith angle midway through the integration step */
         sun->Update( curr_Time_s + dt/2 );
-
+        std::cout << "Issue 2" << std::endl;
         /* Store cosine of solar zenith angle */
         ambientData.cosSZA[nTime] = sun->CSZA;
-
+        std::cout << "Issue 3" << std::endl;
         if ( printDEBUG ) {
             std::cout << "\n DEBUG : \n";
             std::cout << "         CSZA = " << sun->CSZA << "\n";

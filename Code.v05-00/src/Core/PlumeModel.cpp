@@ -883,9 +883,10 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
         Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
                       Data, m, Met );
-        float totalNumberPart = Data.solidAerosol.TotalNumber_sum();
-        std::cout << totalNumberPart << std::endl;
-        if ( totalNumberPart <= 1.00E-15 ) {
+        float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
+        float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
+        std::cout << totalIceParticles << std::endl;
+        if ( totalIceParticles <= 1.00E-15 && totalIceMass <= 1.00E-15 ) {
             std::cout << "EndSim: no particles remain" << std::endl;
             exit(0);
         }
@@ -943,9 +944,10 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     Stopwatch_cumul.Start( );
 
 #endif /* TIME_IT */
-
+    std::cout << curr_Time_s << ", " << tFinal_s << std::endl;
+    //std::cout << curr_Time_s < tFinal_s << std::endl;
     while ( curr_Time_s < tFinal_s ) {
-
+        
         if ( printDEBUG ) {
             /* Print message */
             std::cout << "\n";
@@ -955,7 +957,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             #endif /* OMP */
             std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
         }
-
+        
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
         /* --------------------------- UPDATE TIMESTEP --------------------------- */
@@ -965,9 +967,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         /* Compute time step */
         dt = timeArray[nTime+1] - timeArray[nTime];
         LAST_STEP = ( curr_Time_s + dt >= tFinal_s );
-
         Solver.UpdateTimeStep( dt );
-
+        
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
         /* ---------------------- UPDATE TRANSPORT PARAMETERS -------------------- */
@@ -995,7 +996,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             d_y = 0.0;
 
         }
-
+        
         /* Compute advection parameters */
         /* Is plume updraft on? */
         if ( UPDRAFT ) {
@@ -1028,7 +1029,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         /* Microphysics settling is considered for each bin independently */
         /* Update shear */
         Solver.UpdateShear( shear, m.y() );
-
 
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
@@ -1121,7 +1121,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     private ( iNx, jNy        ) \
                     schedule( dynamic, 1      )
                     for ( iNx = 0; iNx < NX; iNx++ ) {
-                        if ( ( xE[iNx] < -XLIM + 5.0E+03 ) || ( xE[iNx] > XLIM - 5.0E+03 ) ) {
+                        if ( ( xE[iNx] < -XLIM_LEFT + 5.0E+03 ) || ( xE[iNx] > XLIM_RIGHT - 5.0E+03 ) ) {
                             for ( jNy = 0; jNy < NY; jNy++ ) {
                                 for ( UInt iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
@@ -1998,16 +1998,17 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
             Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
                           Data, m, Met );    
-	    float totalNumberPart = Data.solidAerosol.TotalNumber_sum();
-	    std::cout << totalNumberPart << std::endl;
-	    if ( totalNumberPart <= 1.00E-15 ) {
+            float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
+            float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
+            std::cout << totalIceParticles << std::endl;
+            if ( totalIceParticles <= 1.00E-15 && totalIceMass <= 1.00E-15 ) {
                 std::cout << "EndSim: no particles remain" << std::endl;
-	        exit(0);
+                exit(0);
             }
         }
 
     }
-
+    std::cout << "end" << std::endl;
     /* ===================================================================== */
     /* --------------------------------------------------------------------- */
     /* ------------------------ TIME LOOP ENDS HERE ------------------------ */
@@ -2219,6 +2220,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
+        std::cout << curr_Time_s << ", " << tFinal_s << std::endl;
         while ( curr_Time_s < tFinal_s ) {
 
             if ( printDEBUG ) {

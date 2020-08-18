@@ -1835,7 +1835,7 @@ namespace AIM
 
     } /* End of Grid_Aerosol::TotalNumber */
 
-    RealDouble Grid_Aerosol::TotalNumber_sum( ) const
+    RealDouble Grid_Aerosol::TotalNumber_sum( const Vector_2D cellAreas ) const
     {
 
         Vector_2D TotalNumber_pcell = TotalNumber( );
@@ -1843,13 +1843,33 @@ namespace AIM
 
         for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
             for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
-                totalnumber_sum += TotalNumber_pcell[jNy][iNx];
+                totalnumber_sum += TotalNumber_pcell[jNy][iNx] * cellAreas[jNy][iNx];
             }
         }
 
         return totalnumber_sum;
 
     }
+
+    Vector_1D Grid_Aerosol::Overall_Size_Dist( const Vector_2D cellAreas ) const
+    {
+
+        Vector_1D overall_size_dist( nBin, 0.00E+00 );
+        UInt jNy  = 0;
+        UInt iNx  = 0;
+        UInt iBin = 0;
+
+        for ( iBin = 0; iBin < nBin; iBin++ ) {
+            for ( jNy = 0; jNy < Ny; jNy++ ) {
+                for ( iNx = 0; iNx < Nx; iNx++ ) {
+                    overall_size_dist[iBin] += pdf[iBin][jNy][iNx] * cellAreas[jNy][iNx];
+                }
+            }
+        }
+
+        return overall_size_dist;
+
+    } 
 
     Vector_3D Grid_Aerosol::Volume( ) const
     {
@@ -1906,6 +1926,25 @@ namespace AIM
         return m3;
 
     } /* End of Grid_Aerosol::TotalVolume */
+
+    RealDouble Grid_Aerosol::TotalIceMass_sum( const Vector_2D cellAreas ) const
+    {
+
+        Vector_2D TotalVolume_pcell = TotalVolume( );
+        RealDouble totalvolume_sum;
+        RealDouble totalicemass_sum;
+
+        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
+            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+                totalvolume_sum += TotalVolume_pcell[jNy][iNx] * cellAreas[jNy][iNx];
+            }
+        }
+
+        totalicemass_sum = totalvolume_sum * physConst::RHO_ICE;
+
+        return totalvolume_sum;
+
+    }
 
     Vector_2D Grid_Aerosol::IWC( ) const
     {
