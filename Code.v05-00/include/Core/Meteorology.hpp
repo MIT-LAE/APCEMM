@@ -62,6 +62,7 @@ class Meteorology
         friend class Solution;
 
         /* Temperature, pressure and humidity fields if input from user-defined file */
+        RealDouble alt_user;
         RealDouble temp_user;
         RealDouble pres_user;
         RealDouble RHw_user;
