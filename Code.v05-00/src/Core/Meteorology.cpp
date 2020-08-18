@@ -140,9 +140,13 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         UInt i_Zp = met::nearestNeighbor( pressure_user, PRESSURE );
         // std::cout << "The closest(ish) pressure is: " << pressure_user[i_Zp] << std::endl;
         pres_user = pressure_user[i_Zp];
+        alt_user = met::linearInterp( pressure_user, altitude_user, PRESSURE );
+        std::cout << "linear interp: " << alt_user << " m" << std::endl;
+        std::cout << "nearest neighbor: " << altitude_user[i_Zp] << " m" << std::endl;
 
         for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
-             alt_[jNy] = altitude_user[i_Zp] + Y[jNy];
+             // alt_[jNy] = altitude_user[i_Zp] + Y[jNy];
+             alt_[jNy] = alt_user + Y[jNy];
         }
 
         float temperature_user[var_len];
@@ -210,7 +214,6 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 
                 /* Find the closest values above and below the central pressure */
                 UInt i_Z = met::nearestNeighbor( altitude_user, alt_[jNy] );
-
                 /* Loop round horizontal coordinates to assign temperature */
                 for ( UInt iNx = 0; iNx < X.size(); iNx++ ) {
                     H2O_[jNy][iNx] = relhumid_user[i_Z]/((double) 100.00) *\
@@ -223,6 +226,9 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 
         /* Identify the saturation depth */
         satdepth_user = met::satdepth_calc( relhumid_user, temperature_user, altitude_user, i_Zp, var_len );
+        if ( satdepth_user != 1.0 ) {
+            satdepth_user = satdepth_user - ( altitude_user[i_Zp]-alt_user );
+        }
         std::cout << "Saturation depth: " << satdepth_user << std::endl;
 
     } else { 
