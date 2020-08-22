@@ -34,7 +34,7 @@ endif
 
 # Source code location
 ifndef CODE_DIR
-  CODE_DIR     :=$(HOME)/CAPCEMM/Code.$(VERSION)
+  CODE_DIR     :=$(HOME)/C-APCEMM/Code.$(VERSION)
 endif
 
 # Output log file destination (default is run directory)
