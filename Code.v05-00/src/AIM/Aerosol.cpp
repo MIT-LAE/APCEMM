@@ -1410,7 +1410,7 @@ namespace AIM
 
 #pragma omp for                                                               \
         private ( iNx, jNy, iBin, jBin, locP, locT, pSat, nSat              ) \
-        private ( kGrowth, totkGrowth_1, totkGrowth_2, totH2Oi              ) \
+        private ( kGrowth, totkGrowth_1, totkGrowth_2, totH2Oi, totPart     ) \
         private ( partVol, icePart_, iceVol_                                ) \
         schedule( dynamic, 1                                                )
         for ( jNy = 0; jNy < Ny_max; jNy++ ) {
