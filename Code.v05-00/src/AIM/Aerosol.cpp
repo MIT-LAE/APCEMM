@@ -1840,14 +1840,17 @@ namespace AIM
 
         Vector_2D TotalNumber_pcell = TotalNumber( );
         RealDouble totalnumber_sum;
+        UInt iNx = 0;
+        UInt jNy = 0;
+
 #pragma omp parallel for                 \
         default  ( shared              ) \
         private  ( iNx, jNy            ) \
         reduction( +:totalnumber_sum   ) \
         schedule ( dynamic, 1          ) \
-        if       ( !PARALLEL_CASES     ) \
-        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
-            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+        if       ( !PARALLEL_CASES     )
+        for ( jNy = 0; jNy < Ny; jNy++ ) {
+            for ( iNx = 0; iNx < Nx; iNx++ ) {
                 totalnumber_sum += TotalNumber_pcell[jNy][iNx] * cellAreas[jNy][iNx] * 1.0E+06;
             }
         }
@@ -1943,6 +1946,8 @@ namespace AIM
         Vector_2D TotalVolume_pcell = TotalVolume( );
         RealDouble totalvolume_sum;
         RealDouble totalicemass_sum;
+        UInt iNx = 0;
+        UInt jNy = 0;
 
 #pragma omp parallel for                 \
         default  ( shared              ) \
@@ -1950,8 +1955,8 @@ namespace AIM
         reduction( +:totalvolume_sum   ) \
         schedule ( dynamic, 1          ) \
         if       ( !PARALLEL_CASES     )
-        for ( UInt jNy = 0; jNy < Ny; jNy++ ) {
-            for ( UInt iNx = 0; iNx < Nx; iNx++ ) {
+        for ( jNy = 0; jNy < Ny; jNy++ ) {
+            for ( iNx = 0; iNx < Nx; iNx++ ) {
                 totalvolume_sum += TotalVolume_pcell[jNy][iNx] * cellAreas[jNy][iNx] * 1.0E+06;
             }
         }
