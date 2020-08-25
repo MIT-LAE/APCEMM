@@ -839,7 +839,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     /* Extract variable */
     tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
 
-    Vector_2D fileInput( 25, Vector_1D( 0, 0.0E+00 ) );
+    Vector_2D fileInput( 26, Vector_1D( 0, 0.0E+00 ) );
 
     if ( Input_Opt.PARAMETER_FILEINPUT == 1 ) {
         std::ifstream f(tokens[0].c_str());
@@ -1085,17 +1085,17 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
                         else if ( iaircraftMass == i )
                             fileInput[19].push_back( std::stod( tokens[i] ) );
                         else if ( ibNOx == i )
-                            fileInput[19].push_back( std::stod( tokens[i] ) );
-                        else if ( ibHNO3 == i )
                             fileInput[20].push_back( std::stod( tokens[i] ) );
-                        else if ( ibO3 == i )
+                        else if ( ibHNO3 == i )
                             fileInput[21].push_back( std::stod( tokens[i] ) );
-                        else if ( ibCO == i )
+                        else if ( ibO3 == i )
                             fileInput[22].push_back( std::stod( tokens[i] ) );
-                        else if ( ibCH4 == i )
+                        else if ( ibCO == i )
                             fileInput[23].push_back( std::stod( tokens[i] ) );
-                        else if ( ibSO2 == i )
+                        else if ( ibCH4 == i )
                             fileInput[24].push_back( std::stod( tokens[i] ) );
+                        else if ( ibSO2 == i )
+                            fileInput[25].push_back( std::stod( tokens[i] ) );
                     } catch( std::exception& e ) {
                         std::cout << " Could not convert string '" << tokens[i] << "' to double/int for index " << i << " in parameter input file." << std::endl;
                         exit(-1);
@@ -4180,7 +4180,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     unit = line.substr( first+1, last-first-1 );
     Input_Opt.PARAMETER_AMASS_UNIT.assign( unit );
 
-    if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( itotFuelFlow != -1 ) ) {
+    if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( iaircraftMass != -1 ) ) {
         /* Found Fuel flow in parameter input file */
         Input_Opt.PARAMETER_AMASS_RANGE = 0;
         if ( fileInput[19].size() > 0 ) {

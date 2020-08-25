@@ -24,7 +24,7 @@
 
 /* Save output as double? otherwise save as float.
  * Saving as float will reduce the memory requirements */
-#define SAVE_TO_DOUBLE          1 
+#define SAVE_TO_DOUBLE          0
 
 
 /* MASS CHECK */

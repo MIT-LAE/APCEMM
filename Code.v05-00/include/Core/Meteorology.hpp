@@ -91,6 +91,10 @@ class Meteorology
         RealDouble DELTAT;
         RealDouble TOP, BOT, LEFT, RIGHT;
 
+        RealDouble RH;
+        RealDouble RH_star;
+        RealDouble RH_far;
+
         /* Assume that pressure only depends on the vertical coordinate */
         Vector_1D alt_;
         Vector_1D press_;
