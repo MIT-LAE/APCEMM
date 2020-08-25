@@ -1039,13 +1039,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
         if ( TRANSPORT ) {
 
-            /* Update H2O */
-            for ( UInt jNy = 0; jNy<NY; jNy++ ) {
-                for ( UInt iNx = 0; iNx<NX; iNx++ ) {
-                    Data.H2O[jNy][iNx] = Data.H2O_met[jNy][iNx] + Data.H2O_plume[jNy][iNx];
-                }
-            }
-
             if ( CHEMISTRY ) {
                 /* Advection and diffusion of gas phase species */
                 Transport( Data, Solver, cellAreas );
@@ -1056,6 +1049,13 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 Solver.Run( Data.H2O_plume, cellAreas, 1 );
             }
 
+            /* Update H2O */
+            for ( UInt jNy = 0; jNy<NY; jNy++ ) {
+                for ( UInt iNx = 0; iNx<NX; iNx++ ) {
+                    Data.H2O[jNy][iNx] = Data.H2O_met[jNy][iNx] + Data.H2O_plume[jNy][iNx];
+                }
+            }
+
             /* Advection and diffusion for aerosol particles */
             Solver.Run( Data.sootDens, cellAreas );
             /* Monodisperse assumption for soot particles */
@@ -1063,7 +1063,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             Solver.Run( Data.sootArea, cellAreas );
 
             /* We assume that sulfate aerosols do not settle */
-            if ( TRANSPORT_LA && 0 ) {
+            if ( TRANSPORT_LA ) {
                 /* Transport of liquid aerosols */
                 for ( UInt iBin_LA = 0; iBin_LA < Data.nBin_LA; iBin_LA++ )
                     Solver.Run( Data.liquidAerosol.pdf[iBin_LA], cellAreas );
@@ -1102,7 +1102,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
                                     iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
                                 }
-                                // Data.H2O[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
+                                Data.H2O_plume[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
                             }
                         }
                     }
@@ -1121,7 +1121,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
                                     iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
                                 }
-                                /* Data.H2O[jNy][iNx] = Data.H2O[NY-1][iNx]; */
+                                Data.H2O_plume[jNy][iNx] = Data.H2O[NY-1][iNx];
                             }
                         }
                     }
@@ -2005,7 +2005,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         }
 
     }
-    std::cout << "end" << std::endl;
+ 
     /* ===================================================================== */
     /* --------------------------------------------------------------------- */
     /* ------------------------ TIME LOOP ENDS HERE ------------------------ */
@@ -2217,7 +2217,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-        std::cout << curr_Time_s << ", " << tFinal_s << std::endl;
         while ( curr_Time_s < tFinal_s ) {
 
             if ( printDEBUG ) {

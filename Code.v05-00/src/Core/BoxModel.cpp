@@ -442,13 +442,13 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         /* ----------- UPDATE SOLAR ZENITH ANGLE AND PHOTOLYSIS RATES ------------ */
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
-        std::cout << "Issue 1" << std::endl;
+
         /* Compute the cosize of solar zenith angle midway through the integration step */
         sun->Update( curr_Time_s + dt/2 );
-        std::cout << "Issue 2" << std::endl;
+
         /* Store cosine of solar zenith angle */
         ambientData.cosSZA[nTime] = sun->CSZA;
-        std::cout << "Issue 3" << std::endl;
+
         if ( printDEBUG ) {
             std::cout << "\n DEBUG : \n";
             std::cout << "         CSZA = " << sun->CSZA << "\n";
