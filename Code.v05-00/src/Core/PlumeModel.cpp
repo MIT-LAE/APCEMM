@@ -572,7 +572,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     if ( DEBUG_EI_INPUT )
         EI.Debug();
 
-
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
     /* ----------------------------- CHEMISTRY ------------------------------- */
@@ -602,7 +601,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     /* Ambient chemistry */
     ambientData.getData( aerArray, nTime );
-
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -696,7 +694,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                                        temperature_K, pressure_Pa );
     }
 
-
 #ifdef RINGS
 
     /* ======================================================================= */
@@ -780,7 +777,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                       liquidAer, iceAer, Soot_den, Met, areaPlume );
 
 #endif /* RINGS */
-
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -866,8 +862,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     }
 
-
-
     /* Timeseries diagnostics */
     if ( TS_SPEC ) {
         int hh = (int) (curr_Time_s - timeArray[0])/3600;
@@ -886,7 +880,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
         float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
         std::cout << totalIceParticles << std::endl;
-        if ( totalIceParticles <= 1.00E-15 && totalIceMass <= 1.00E-15 ) {
+        if ( totalIceParticles <= 1.00E+1 && totalIceMass <= 1.00E-5 ) {
             std::cout << "EndSim: no particles remain" << std::endl;
             exit(0);
         }
@@ -2002,7 +1996,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
             std::cout << totalIceParticles << ", " << totalIceMass << std::endl;
             /* if ( totalIceParticles <= 1.00E-15 && totalIceMass <= 1.00E-15 ) { */
-            if ( totalIceParticles <= 1.00E+10 || totalIceMass <= 1.00E-5 ) {
+            if ( totalIceParticles <= 1.00E+1 || totalIceMass <= 1.00E-5 ) {
                 std::cout << "EndSim: no particles remain" << std::endl;
                 std::cout << "# ice particles: " << totalIceParticles << std::endl;
                 std::cout << "Total ice mass [g]: " << totalIceMass << std::endl;

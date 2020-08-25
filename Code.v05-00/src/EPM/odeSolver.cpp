@@ -282,37 +282,37 @@ namespace EPM
                 file << sep;
                 
                 /* Print gaseous water molecular concentration [molec/cm^3] */
-                file << m_states[counter][m_indices[3]] * m_states[counter][m_indices[2]] / ( physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 ) ;
+                file << m_states[counter][m_indices[3]];
                 file << sep;
 
                 /* Print rel. humidities [-] */
-                file << m_states[counter][m_indices[3]] * m_states[counter][m_indices[2]] / physFunc::pSat_H2Os( m_states[counter][m_indices[1]] );
+                file << m_states[counter][m_indices[3]] * physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 / physFunc::pSat_H2Os( m_states[counter][m_indices[1]] );
                 file << sep;
-                file << m_states[counter][m_indices[3]] * m_states[counter][m_indices[2]] / physFunc::pSat_H2Ol( m_states[counter][m_indices[1]] );
+                file << m_states[counter][m_indices[3]] * physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 / physFunc::pSat_H2Ol( m_states[counter][m_indices[1]] );
                 file << sep;
                 
                 /* Print gaseous SO4 molecular concentration [molec/cm^3] */
-                file << m_states[counter][m_indices[4]] * m_states[counter][m_indices[2]] / ( physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 ) ;
+                file << m_states[counter][m_indices[4]];
                 file << sep;
                 
                 /* Print gaseous SO4 gaseous molecular concentration [molec/cm^3] */
-                file << m_states[counter][m_indices[6]] * m_states[counter][m_indices[2]] / ( physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 ) ;
+                file << m_states[counter][m_indices[6]];
                 file << sep;
 
                 /* Print gaseous SO4 liquid molecular concentration [molec/cm^3] */
-                file << m_states[counter][m_indices[5]] * m_states[counter][m_indices[2]] / ( physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 ) ;
+                file << m_states[counter][m_indices[5]];
                 file << sep;
                 
                 /* Print gaseous SO4 on part [molec/cm^3] */
-                file << m_states[counter][m_indices[7]] * m_states[counter][m_indices[2]] / ( physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 ) ;
+                file << m_states[counter][m_indices[7]];
                 file << sep;
 
                 /* Print SO4 saturation [-] */
-                file << ( m_states[counter][m_indices[5]] + m_states[counter][m_indices[6]] ) * m_states[counter][m_indices[2]] / physFunc::pSat_H2SO4( m_states[counter][m_indices[1]] );
+                file << ( m_states[counter][m_indices[5]] + m_states[counter][m_indices[6]] ) * physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 / physFunc::pSat_H2SO4( m_states[counter][m_indices[1]] );
                 file << sep;
                 
                 /* Print gaseous HNO3 molecular concentration [molec/cm^3] */
-                file << m_states[counter][m_indices[8]] * m_states[counter][m_indices[2]] / ( physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 ) ;
+                file << m_states[counter][m_indices[8]];
                 file << sep;
                 
                 /* Print HNO3 saturation [-] */
@@ -324,7 +324,7 @@ namespace EPM
                 file << m_states[counter][m_indices[9]];
                 file << sep;
                 
-                /* Print particle radius [mum] */
+                /* Print particle concentration [mum] */
                 file << m_states[counter][m_indices[10]] * 1.0E+06;
                 file << sep;
                 
