@@ -107,7 +107,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         exit(1);
     }
     
-    const RealDouble BOX_AREA = 2 * XLIM * ( YLIM_UP + YLIM_DOWN );
+    const RealDouble BOX_AREA = ( XLIM_LEFT + XLIM_RIGHT ) * ( YLIM_UP + YLIM_DOWN );
     
     /* Assign parameters */
     
@@ -417,9 +417,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     Stopwatch_cumul.Start( );
 
 #endif /* TIME_IT */
-
     while ( curr_Time_s < tFinal_s ) {
-
         if ( printDEBUG ) {
             /* Print message */
             std::cout << "\n";

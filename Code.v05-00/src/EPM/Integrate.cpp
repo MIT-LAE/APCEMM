@@ -550,6 +550,14 @@ namespace EPM
 //            observer.print2File();
         }
         /* Output variables */
+        /* Check if contrail is water supersaturated at some point during formation */
+        if ( observer.checkwatersat() ) {
+            std::cout << "Water supersaturated at some point" << std::endl;
+        }
+        else {
+            std::cout << "Never reaches water saturation" << std::endl;
+            //exit(0);
+        }
 
         /* Persistent contrail */
         if ( relHumidity_i_Final >= 1.0 ) {

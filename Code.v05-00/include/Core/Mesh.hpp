@@ -72,7 +72,7 @@ class Mesh
         /* Cell area */
         RealDouble cellArea_;
 
-        RealDouble xlim, ylim_up, ylim_down;
+        RealDouble xlim_right, xlim_left, ylim_up, ylim_down;
         RealDouble hx_, hy_;
         UInt nx, ny;
         Vector_1Dui nCellMap;

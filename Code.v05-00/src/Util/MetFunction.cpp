@@ -270,6 +270,142 @@ namespace met
 
     } /* End of ComputeLapseRate */
 
+    UInt nearestNeighbor( float xq[], const float &x ) {
+
+        /* DESCRIPTION: Finds the closest of x in xq, returning the index */
+
+        /* INPUTS:
+         * float xq: query values
+         * float x:  desired value */
+
+        UInt i_Z = 0;
+
+        /* Identify increasing direction */
+        if ( xq[0]-xq[1]<0 ) {
+            while ( xq[i_Z] <= x ) {
+                i_Z += 1;
+            }
+            /* Check if previous altitude closer */
+            if ( xq[i_Z]-x >= x-xq[i_Z-1] ) {
+                i_Z -= 1;
+            }
+        }
+        else {
+            while ( xq[i_Z] >= x ) {
+                i_Z += 1;
+            }
+            if ( x-xq[i_Z] >= xq[i_Z-1]-x ) {
+                i_Z -= 1;
+            }
+        }
+        return i_Z;
+
+    } /* End of nearestNeighbor */
+
+    float linearInterp( float xq[], float yq[], const float &x ) {
+
+        /* DESCRIPTION: Linearly interpolated around the desired x value */
+
+        /* INPUTS:
+         * float xq: x query values
+         * float yq: y query values
+         * float x: desired value to interpolate around*/
+
+        /* Initialize variables */
+        UInt i_X;
+        UInt i_X2;
+        float y;
+
+        /* Find closest point */
+        i_X = nearestNeighbor( xq, x );
+        i_X2 = i_X;
+        /* Check direction xq increasing */
+        while ( xq[i_X2]==xq[i_X] ) {
+        if ( xq[0]-xq[1]<0 ) {
+            /* Find the next closest point */
+            if ( xq[i_X] > x ) {
+                i_X2 = i_X2 - 1;
+            }
+            else {
+                i_X2 = i_X2 + 1;
+            }
+        }
+        else {
+            /* Find the next closest point */
+            if ( xq[i_X] > x ) {
+                i_X2 = i_X2 + 1;
+            }
+            else {
+                i_X2 = i_X2 - 1;
+            }
+        }
+        }
+
+        /* Linear interpolation */
+        y = yq[i_X] + ( x-xq[i_X] ) * ( yq[i_X2]-yq[i_X] ) / ( xq[i_X2]-xq[i_X] );
+        return y;
+
+    }
+
+    RealDouble satdepth_calc( float RHw[], float T[], float alt[], UInt iFlight, UInt var_length ) {
+
+        /* DESCRIPTION: Finds the saturation depth RHw and T profiles */
+
+        /* INPUTS:
+         * float RHw[]: Relative humidity wrt water [%] profile
+         * float T[]: Temperature [K] profile
+         * float alt[]: Altitude [m] associated with profile
+         * UInt iFlight: index at flight altitude
+         * UInt var_length: length of RHw and T profiles */
+
+        RealDouble satdepth = 0.00E+00;
+        RealDouble curdepth = 0.00E+00;
+        int iCur = iFlight;
+        UInt isatdepth;
+        RealDouble RHi_cur;
+
+        /* Loop over altitudes till sat depth found or end of profile reached */
+        while ( satdepth==0.00E+00 && iCur > 0 ) {
+
+            /* Calculate RHi at current altitude */
+            RHi_cur = RHw[iCur] * physFunc::pSat_H2Ol( T[iCur] ) / physFunc::pSat_H2Os( T[iCur] );
+
+            /* Check if current altitude is subsaturated */
+            if ( iCur != iFlight && RHi_cur < 100 ) {
+
+                /* Get distance from previous altitude for saturation depth */
+                isatdepth = iCur;
+                satdepth = alt[iFlight] - alt[iCur];
+
+            }
+
+            /* Check first point is ISS */
+            if ( RHi_cur < 100 && iCur==iFlight ) {
+                std::cout << "ICs are subsaturated" << std::endl;
+                satdepth = 1.0; /* Set to some arbitrary value, contrail should not survive VS anyway */
+            }
+
+            /* Iterate and check satdepth */
+            iCur = iCur - 1;
+            
+            // std::cout << alt[iCur] << "m, " << curdepth << "m" << std::endl;
+        }
+        
+        /* Check a genuine satdepth found */
+        if ( iCur <= 0 || satdepth > YLIM_DOWN ) {
+            std::cout << "Checking genuine location found" << std::endl;
+            std::cout << iCur << std::endl;
+            std::cout << alt[iFlight]-alt[iCur] << std::endl;
+            std::cout << "EndSim: Infinite saturation depth" << std::endl;
+            exit(0);
+        }
+
+        /* Once a SATDEPTH_MIN m depth of subsaturated region found, find altitude */
+        //satdepth = alt[iFlight] - alt[isatdepth];
+        return satdepth;
+
+    } /* End of satdepth_cal */ 
+
 }
 
 /* End of MetFunction.cpp */

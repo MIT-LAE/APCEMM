@@ -21,16 +21,17 @@ Mesh::Mesh( )
     nx = NX;
     ny = NY;
 
-    xlim      = XLIM;
+    xlim_right= XLIM_RIGHT;
+    xlim_left = XLIM_LEFT;
     ylim_up   = YLIM_UP;
     ylim_down = YLIM_DOWN;
 
-    hx_ = 2 * xlim / nx;
+    hx_ = ( xlim_right + xlim_left) / nx;
     hy_ = ( ylim_up + ylim_down ) / ny;
 
     /* Cell center x-coordinates */
     for ( UInt i = 0; i < nx; i++ ) {
-        x_.push_back( i * hx_ - xlim + hx_ / 2.0 );
+        x_.push_back( i * hx_ - xlim_left + hx_ / 2.0 );
         x_e_.push_back( x_[i] - hx_ / 2.0 );
         if ( i > 0 )
             dx_.push_back( x_e_[i] - x_e_[i-1] );
@@ -75,7 +76,8 @@ Mesh::Mesh( const Mesh &m )
     areas_      = m.areas_;
     totArea_    = m.totArea_;
     cellArea_   = m.cellArea_;
-    xlim        = m.xlim;
+    xlim_left   = m.xlim_left;
+    xlim_right  = m.xlim_right;
     ylim_up     = m.ylim_up;
     ylim_down   = m.ylim_down;
     hx_         = m.hx_;
@@ -101,7 +103,8 @@ Mesh& Mesh::operator=( const Mesh &m )
     areas_      = m.areas_;
     totArea_    = m.totArea_;
     cellArea_   = m.cellArea_;
-    xlim        = m.xlim;
+    xlim_left   = m.xlim_left;
+    xlim_right  = m.xlim_right;
     ylim_up     = m.ylim_up;
     ylim_down   = m.ylim_down;
     hx_         = m.hx_;
@@ -180,12 +183,12 @@ void Mesh::Ring2Mesh( Cluster &c )
     if ( RingV[nRing - 1].getHAxis() > x_[NX - 1] ) {
         std::cout << "The largest ring's horizontal axis is larger than the grid's dimensions!\n";
         std::cout << "Horizontal axis: " << RingV[nRing-1].getHAxis() << " >= " << x_[NX - 1] << std::endl;
-        exit(-1);
+        /*exit(-1);*/
     }
     if ( RingV[nRing - 1].getVAxis() > y_[NY - 1] ) {
         std::cout << "The largest ring's vertical axis is larger than the grid's dimensions!\n";
         std::cout << "Vertical axis: " << RingV[nRing-1].getVAxis() << " >= " << y_[NY - 1] << std::endl;
-        exit(-1);
+        /*exit(-1);*/
     }
 
     /* We have nRing rings and the additional represent background conditions */

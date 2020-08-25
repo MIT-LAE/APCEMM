@@ -1385,6 +1385,9 @@ namespace AIM
         /* Declare and initialize total ice concentration */
         RealDouble totH2Oi = 0.0E+00;
 
+	/* Declare and initialize total particles per cell */
+	RealDouble totPart = 0.0E+00;
+
         /* Compute Kelvin factor */
 #pragma omp for                                                               \
         private ( iBin                                                      ) \
@@ -1407,7 +1410,7 @@ namespace AIM
 
 #pragma omp for                                                               \
         private ( iNx, jNy, iBin, jBin, locP, locT, pSat, nSat              ) \
-        private ( kGrowth, totkGrowth_1, totkGrowth_2, totH2Oi              ) \
+        private ( kGrowth, totkGrowth_1, totkGrowth_2, totH2Oi, totPart     ) \
         private ( partVol, icePart_, iceVol_                                ) \
         schedule( dynamic, 1                                                )
         for ( jNy = 0; jNy < Ny_max; jNy++ ) {
@@ -1485,55 +1488,63 @@ namespace AIM
                      * final concentrations are bounded between 0 and 
                      * C_{tot}, independently of the time step */
 
+		    /* Check if partNum greater than a limit */
+		    totPart = 0.0E-00;
+		    for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+
+			totPart += icePart[iBin][jNy][iNx];
+
+		    }
+
                     /* Compute particle growth rates through ice deposition
                      * We here assume that C_{s,i} is independent of the
                      * bin and thus the particle size and only depends
                      * on meteorological parameters. */
-                    for ( iBin = 0; iBin < nBin; iBin++ ) {
-
-                        /* kGrowth is expressed in [cm^3 ice/s/part] */
-                        kGrowth[iBin] = physFunc::growthRate( bin_Centers[iBin], \
-                                                   locT, locP, H2O[jNy][iNx] );
-
-                        /* kGrowth_* are thus in 
-                         * [(cm^3 ice/s)/cm^3 air] = [1/s] */
-                        totkGrowth_1 += kGrowth[iBin] * icePart[iBin][jNy][iNx] \
-                                        * kFactor[iBin];
-                        totkGrowth_2 += kGrowth[iBin] * icePart[iBin][jNy][iNx];
-                    }
-
-                    /* Compute the molecular saturation concentration 
-                     * C_{s,i} in [molec/cm^3] */
-                    nSat = pSat / ( kB_ * locT );
-
-                    /* Update gaseous molecular concentration */
-                    H2O[jNy][iNx] = ( H2O[jNy][iNx] + dt * totkGrowth_1 * nSat ) \
-                                  / (   1.00E+00    + dt * totkGrowth_2        );
-
-                    /* Make sure that molecular water does not go over 
-                     * total water (gaseous + solid) concentrations */
-                    H2O[jNy][iNx] = std::min( H2O[jNy][iNx], totH2O[jNy][iNx] );
-
-                    for ( iBin = 0; iBin < nBin; iBin++ ) {
-                        iceVol[iBin][jNy][iNx] += dt * kGrowth[iBin] * icePart[iBin][jNy][iNx] \
-                                                * ( H2O[jNy][iNx] -  kFactor[iBin] * nSat ) / UNITCONVERSION;
-                        /* Unit check:
-                         * [m^3 ice/cm^3 air]   = [s] * [cm^3 ice/s/part] * [part/cm^3 air] \
-                         *                      * [molec/cm^3 air] * [m^3 ice/molec] 
-                         *                      = [cm^3 ice/cm^3 air] * [m^3 ice/cm^3 air] 
-                         *                      = [m^3 ice/cm^3 air] */
-
-                        iceVol[iBin][jNy][iNx] = \
-                                std::min( std::max( iceVol[iBin][jNy][iNx], 0.0E+00 ), icePart[iBin][jNy][iNx] * MAXVOL );
-
-                        /* Compute total water taken up on particles */
-                        totH2Oi += iceVol[iBin][jNy][iNx] * UNITCONVERSION;
-                        /* Unit check:
-                         * [molec/cm^3 air] = [m^3 ice/cm^3 air] * [molec/m^3 ice] */
-                    }
-
-                    H2O[jNy][iNx] = totH2O[jNy][iNx] - totH2Oi; 
-
+		    if ( totPart > 0.00 ) {
+			for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+			
+			    /* kGrowth is expressed in [cm^3 ice/s/part] */
+			    kGrowth[iBin] = physFunc::growthRate( bin_Centers[iBin], locT, locP, H2O[jNy][iNx] );
+			
+			    /* kGrowth_* are thus in 
+			    * [(cm^3 ice/s)/cm^3 air] = [1/s] */
+			    totkGrowth_1 += kGrowth[iBin] * icePart[iBin][jNy][iNx] \
+			                    * kFactor[iBin];
+			    totkGrowth_2 += kGrowth[iBin] * icePart[iBin][jNy][iNx];
+			}
+			
+			/* Compute the molecular saturation concentration 
+			* C_{s,i} in [molec/cm^3] */
+			nSat = pSat / ( kB_ * locT );
+			
+			/* Update gaseous molecular concentration */
+			H2O[jNy][iNx] = ( H2O[jNy][iNx] + dt * totkGrowth_1 * nSat ) \
+			              / (   1.00E+00    + dt * totkGrowth_2        );
+			
+			/* Make sure that molecular water does not go over 
+			* total water (gaseous + solid) concentrations */
+			H2O[jNy][iNx] = std::min( H2O[jNy][iNx], totH2O[jNy][iNx] );
+			
+			for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
+			    iceVol[iBin][jNy][iNx] += dt * kGrowth[iBin] * icePart[iBin][jNy][iNx] \
+			                            * ( H2O[jNy][iNx] -  kFactor[iBin] * nSat ) / UNITCONVERSION;
+			    /* Unit check:
+			     * [m^3 ice/cm^3 air]   = [s] * [cm^3 ice/s/part] * [part/cm^3 air] \
+			     *                      * [molec/cm^3 air] * [m^3 ice/molec] 
+			     *                      = [cm^3 ice/cm^3 air] * [m^3 ice/cm^3 air] 
+			     *                      = [m^3 ice/cm^3 air] */
+			
+			    iceVol[iBin][jNy][iNx] = \
+			            std::min( std::max( iceVol[iBin][jNy][iNx], 0.0E+00 ), icePart[iBin][jNy][iNx] * MAXVOL );
+			
+			    /* Compute total water taken up on particles */
+			    totH2Oi += iceVol[iBin][jNy][iNx] * UNITCONVERSION;
+			    /* Unit check:
+			     * [molec/cm^3 air] = [m^3 ice/cm^3 air] * [molec/m^3 ice] */
+			}
+			
+			H2O[jNy][iNx] = totH2O[jNy][iNx] - totH2Oi; 
+		    }
                 }
 
                 /* ======================================================= */
@@ -1824,6 +1835,55 @@ namespace AIM
 
     } /* End of Grid_Aerosol::TotalNumber */
 
+    RealDouble Grid_Aerosol::TotalNumber_sum( const Vector_2D cellAreas ) const
+    {
+
+        Vector_2D TotalNumber_pcell = TotalNumber( );
+        RealDouble totalnumber_sum;
+        UInt iNx = 0;
+        UInt jNy = 0;
+
+#pragma omp parallel for                 \
+        default  ( shared              ) \
+        private  ( iNx, jNy            ) \
+        reduction( +:totalnumber_sum   ) \
+        schedule ( dynamic, 1          ) \
+        if       ( !PARALLEL_CASES     )
+        for ( jNy = 0; jNy < Ny; jNy++ ) {
+            for ( iNx = 0; iNx < Nx; iNx++ ) {
+                totalnumber_sum += TotalNumber_pcell[jNy][iNx] * cellAreas[jNy][iNx] * 1.0E+06;
+            }
+        }
+
+        return totalnumber_sum;
+
+    }
+
+    Vector_1D Grid_Aerosol::Overall_Size_Dist( const Vector_2D cellAreas ) const
+    {
+
+        Vector_1D overall_size_dist( nBin, 0.00E+00 );
+        UInt jNy  = 0;
+        UInt iNx  = 0;
+        UInt iBin = 0;
+
+#pragma omp parallel for               \
+        default ( shared             ) \
+        private ( iNx, jNy, iBin     ) \
+        schedule( dynamic, 1         ) \
+        if      ( !PARALLEL_CASES    )
+        for ( iBin = 0; iBin < nBin; iBin++ ) {
+            for ( jNy = 0; jNy < Ny; jNy++ ) {
+                for ( iNx = 0; iNx < Nx; iNx++ ) {
+                    overall_size_dist[iBin] += pdf[iBin][jNy][iNx] * cellAreas[jNy][iNx] * 1.0E+06;
+                }
+            }
+        }
+
+        return overall_size_dist;
+
+    } 
+
     Vector_3D Grid_Aerosol::Volume( ) const
     {
 
@@ -1879,6 +1939,33 @@ namespace AIM
         return m3;
 
     } /* End of Grid_Aerosol::TotalVolume */
+
+    RealDouble Grid_Aerosol::TotalIceMass_sum( const Vector_2D cellAreas ) const
+    {
+
+        Vector_2D TotalVolume_pcell = TotalVolume( );
+        RealDouble totalvolume_sum;
+        RealDouble totalicemass_sum;
+        UInt iNx = 0;
+        UInt jNy = 0;
+
+#pragma omp parallel for                 \
+        default  ( shared              ) \
+        private  ( iNx, jNy            ) \
+        reduction( +:totalvolume_sum   ) \
+        schedule ( dynamic, 1          ) \
+        if       ( !PARALLEL_CASES     )
+        for ( jNy = 0; jNy < Ny; jNy++ ) {
+            for ( iNx = 0; iNx < Nx; iNx++ ) {
+                totalvolume_sum += TotalVolume_pcell[jNy][iNx] * cellAreas[jNy][iNx] * 1.0E+06;
+            }
+        }
+
+        totalicemass_sum = totalvolume_sum * physConst::RHO_ICE;
+
+        return totalvolume_sum;
+
+    }
 
     Vector_2D Grid_Aerosol::IWC( ) const
     {
