@@ -19,7 +19,8 @@ namespace SANDS
     Solver::Solver( ):
         n_x( NX ),
         n_y( NY ),
-        xlim( XLIM ),
+        xlim_right( XLIM_RIGHT ),
+        xlim_left( XLIM_LEFT ),
         ylim_up( YLIM_UP ),
         ylim_down( YLIM_DOWN ),
         doFill( 1 ),
@@ -116,7 +117,7 @@ namespace SANDS
             kx.push_back( 0.0 );
             kxx.push_back( 0.0 );
             k = (i0%n_x) - n_x/2;
-            kx[i] = physConst::PI / xlim * k;
+            kx[i] = 2.0 * physConst::PI / ( xlim_left + xlim_right ) * k;
             kxx[i] = - kx[i] * kx[i];
             i0++;
         }
@@ -294,17 +295,20 @@ namespace SANDS
         FFT_2D->SANDS( DiffFactor, AdvFactor, V );
 
         /* 2) Apply shear forces */
-        if ( shear != 0 )
+        if ( shear != 0 ) {
             FFT_1D->ApplyShear( ShearFactor, V );
+        }
 
         /* 3) Apply corrections */
         /* Fill negative values with fillVal */
-        if ( doFill && ( fillOpt_ == 0 ) )
+        if ( doFill && ( fillOpt_ == 0 ) ) {
             Fill( V, fillVal );
- 
+        }
+
         /* Apply correction scheme to get rid of Gibbs oscillations */
-        if ( doFill && ( fillOpt_ == 1 ) )
+        if ( doFill && ( fillOpt_ == 1 ) ) {
             ScinoccaCorr( V, mass0, cellAreas );
+        }
 
     } /* End of Solver::Run */
 
@@ -455,9 +459,9 @@ namespace SANDS
              * be ensured. */
             bool success     = 0;
             UInt counter     = 0;
-            UInt guess       = n_y*n_x;
+            int guess       = n_y*n_x;
             RealDouble tArea = 0.0E+00;
-
+            
             while ( !success ) {
                 counter = 0;
                 tArea   = 0.0E+00;
@@ -470,7 +474,7 @@ namespace SANDS
                         }
                     }
                 }
-
+                
                 if ( counter >= guess )
                     success = 1;
                 else
@@ -483,6 +487,7 @@ namespace SANDS
                 }
 
             }
+            
 
             if ( tArea > 0.0E+00 ) {
 

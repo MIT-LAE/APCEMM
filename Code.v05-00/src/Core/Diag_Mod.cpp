@@ -3178,6 +3178,27 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charName );
             }
 
+            /* Saving overall size distributionh
+             * Size: NX */
+
+            strncpy( charSpc, "Overall size distribution", sizeof(charSpc) );
+            strncpy( charName, "Overall size distribution of ice particles", sizeof(charName) );
+            strncpy( charUnit, "particles/m", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            array = util::vect2double( Data.solidAerosol.Overall_Size_Dist( m.areas() ), Data.nBin_PA, scalingFactor );
+#else
+            array = util::vect2float ( Data.solidAerosol.Overall_Size_Dist( m.areas() ), Data.nBin_PA, scalingFactor );
+#endif /* SAVE_TO_DOUBLE */
+
+            #pragma omp critical
+            {
+            didSaveSucceed *= fileHandler.addVar( currFile, &(array)[0],   \
+                                         (const char*)charSpc,             \
+                                         binRad, outputType,                 \
+                                         (const char*)charUnit,            \
+                                         (const char*)charName );
+            }
 
         }
 

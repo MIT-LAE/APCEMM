@@ -93,15 +93,143 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
     if ( USERINPUT.MET_LOADMET ) {
 
         /* Met is loaded in */
-        TYPE = 0;
+        /* TYPE = 0; */
+        TYPE = 3; /* TYPE = 0 means met for every time step */
+
+        /* Set up for error messages */
+        static const int NC_ERR = 2;
+        NcError err( NcError::silent_nonfatal );
+
+        /* Open the netcdf file for read access */
+        std::cout << USERINPUT.MET_FILENAME.c_str() << std::endl;
+        NcFile dataFile( USERINPUT.MET_FILENAME.c_str(), NcFile::ReadOnly  );
+	if ( !dataFile.is_valid() ) {
+	    std::cout << "Netcdf file is not valid" << std::endl;
+	}
+
+        /* Identify the length of variables in input file */
+        int var_len;
+        int var_var_len = 1;
+        NcVar* var_len_ncVar;
+        if ( !(var_len_ncVar = dataFile.get_var( "var_length" )) ) {
+            std::cout << "In Meteorology:: Meteorology: getting variable length pointer" << std::endl;
+        }
+        var_len_ncVar->get(&var_len, var_var_len);
+        std::cout << var_len << std::endl;
+
+        /* Extract pressure and altitude from input file */
+        //int var_len = 5117;
+        float altitude_user[var_len], pressure_user[var_len];
+        NcVar* altitude_ncVar;
+        NcVar* pressure_ncVar;
+        if ( !(altitude_ncVar = dataFile.get_var( "altitude" )) ) {
+            std::cout << "In Meteorology:: Meteorology: getting altitude pointer" << std::endl;
+        }
+        if ( !(pressure_ncVar = dataFile.get_var( "pressure" )) ) {
+            std::cout << "In Meteorology:: Meteorology: getting pressure pointer" << std::endl;
+        }
+        altitude_ncVar->get(altitude_user, var_len);
+        pressure_ncVar->get(pressure_user, var_len);
+        int i;
+        for ( i = 0; i < var_len; i++ ) {
+            pressure_user[i] *= 100.0;
+            altitude_user[i] *= 1000.0;
+        }
+
+        /* Identify closest pressure in input file from user-defined pressure */
+        UInt i_Zp = met::nearestNeighbor( pressure_user, PRESSURE );
+        // std::cout << "The closest(ish) pressure is: " << pressure_user[i_Zp] << std::endl;
+        pres_user = pressure_user[i_Zp];
+        alt_user = met::linearInterp( pressure_user, altitude_user, PRESSURE );
+        std::cout << "linear interp: " << alt_user << " m" << std::endl;
+        std::cout << "nearest neighbor: " << altitude_user[i_Zp] << " m" << std::endl;
+
+        for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
+             // alt_[jNy] = altitude_user[i_Zp] + Y[jNy];
+             alt_[jNy] = alt_user + Y[jNy];
+        }
+
+        float temperature_user[var_len];
+        float relhumid_user[var_len];
 
         if ( USERINPUT.MET_LOADTEMP ) {
             /* !@#$ */
+
+            /* Define temperature input dimension */
+            NcVar* temp_ncVar;
+
+	    /* Give back a pointer to the requested NcVar */
+	    if ( !(temp_ncVar = dataFile.get_var( "temperature" )) ) {
+	        std::cout << "In Meteorology::Meteorology: getting temperature pointer" << std::endl;
+	    }
+
+            /* Extract the temperature data */
+            if ( !(temp_ncVar->get(temperature_user, var_len)) ) {
+                std::cout << "In Meteorology::Meteorology: extracting temperature" << std::endl;
+            }
+
+            /* Identify temperature at above pressure */
+            temp_user = temperature_user[i_Zp];
+            std::cout << "Input T: " << temp_user << std::endl;
+
+            /* Identify closest temperature to given pressure */
+            /* Loop round each vertical layer to estimate temperature */
+            for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
+
+                /* Find the closest values above and below the central pressure */
+                UInt i_Z = met::nearestNeighbor( altitude_user, alt_[jNy] );
+
+                /* Loop round horizontal coordinates to assign temperature */
+                for ( UInt iNx = 0; iNx < X.size(); iNx++ ) {
+                    temp_[jNy][iNx] = temperature_user[i_Z];
+                }
+
+            }
+
         }
 
         if ( USERINPUT.MET_LOADH2O ) {
             /* !@#$ */
+
+            /* Define temperature input dimension */
+            NcVar* relhumid_ncVar;
+
+	    /* Give back a pointer to the requested NcVar */
+	    if ( !(relhumid_ncVar = dataFile.get_var( "relative_humidity" )) ) {
+	        std::cout << "In Meteorology::Meteorology: getting relative humidity pointer" << std::endl;
+	    }
+
+            /* Extract the temperature data */
+            if ( !(relhumid_ncVar->get(relhumid_user, var_len)) ) {
+                std::cout << "In Meteorology::Meteorology: extracting relative humidity" << std::endl;
+            }
+
+            /* Identify temperature at above pressure */
+            RHw_user = relhumid_user[i_Zp];
+            std::cout << "Input RHw: " << RHw_user << std::endl;
+
+            /* Identify closest temperature to given pressure */
+            /* Loop round each vertical layer to estimate temperature */
+            for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
+
+                /* Find the closest values above and below the central pressure */
+                UInt i_Z = met::nearestNeighbor( altitude_user, alt_[jNy] );
+                /* Loop round horizontal coordinates to assign temperature */
+                for ( UInt iNx = 0; iNx < X.size(); iNx++ ) {
+                    H2O_[jNy][iNx] = relhumid_user[i_Z]/((double) 100.00) *\
+                                    physFunc::pSat_H2Ol( temp_[jNy][iNx] ) / ( physConst::kB * temp_[jNy][iNx] ) * 1.00E-06;
+                }
+
+            }
+
         }
+
+        /* Identify the saturation depth */
+        satdepth_user = met::satdepth_calc( relhumid_user, temperature_user, altitude_user, i_Zp, var_len );
+        if ( satdepth_user != 1.0 ) {
+            satdepth_user = satdepth_user - ( altitude_user[i_Zp]-alt_user );
+        }
+        std::cout << "Saturation depth: " << satdepth_user << std::endl;
 
     } else { 
 
@@ -156,8 +284,8 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
                 BOT = USERINPUT.MET_DEPTH;
             else
                 BOT = 200.0;
-            LEFT = 30.00E+03;
-            RIGHT= LEFT;
+            LEFT = XLIM_LEFT-0.50E+04; /* 30.00E+03; */
+            RIGHT= XLIM_RIGHT-0.50E+04;
 
 #pragma omp parallel for                \
             if      ( !PARALLEL_CASES ) \
@@ -221,7 +349,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 
         } else {
 
-            std::cout << " In Meteorology::Meteorology: Undefined value for user-input type: ";
+            std::cout << " (1) In Meteorology::Meteorology: Undefined value for user-input type: ";
             std::cout << TYPE << std::endl;
             exit(-1);
 
@@ -359,39 +487,40 @@ void Meteorology::Update( const RealDouble solarTime_h, const Mesh &m, \
 
     } else if ( TYPE == 3 ) {
 
-        /* RHi layer centered on y = 0 */
+//        /* RHi layer centered on y = 0 */
 
-        RH_star = RHI;
-        RH_far  = 50;
+//        RH_star = RHI;
+//        RH_far  = 50;
 
-#pragma omp parallel for            \
-        if      ( !PARALLEL_CASES ) \
-        default ( shared          ) \
-        private ( iNx, jNy        ) \
-        schedule( dynamic, 1      )
-        for ( jNy = 0; jNy < Y.size(); jNy++ ) {
-            temp_[jNy][0] = TEMPERATURE + Y[jNy] * LAPSERATE + diurnalPert;
-            /* Unit check: Y [m] * LapseRate [K/m] */
+//#pragma omp parallel for            \
+//        if      ( !PARALLEL_CASES ) \
+//        default ( shared          ) \
+//        private ( iNx, jNy        ) \
+//        schedule( dynamic, 1      )
+//        for ( jNy = 0; jNy < Y.size(); jNy++ ) {
+//            temp_[jNy][0] = TEMPERATURE + Y[jNy] * LAPSERATE + diurnalPert;
+//            /* Unit check: Y [m] * LapseRate [K/m] */
 
-            if ( ( Y[jNy] < TOP ) && ( Y[jNy] > -BOT ) ) {
-                RH = RH_star;
-                H2O_[jNy][0] = RH / 1.0E+02 * physFunc::pSat_H2Os( temp_[jNy][0] ) / ( physConst::kB * temp_[jNy][0] * 1.0E+06 );
-            } else {
-                if ( Y[jNy] < 0 ) {
-                    RH = RH_star - ( Y[jNy] + BOT ) / BOT * ( RH_far - RH_star );
-                } else {
-                    RH = RH_star + ( Y[jNy] - TOP ) / TOP * ( RH_far - RH_star );
-                }
-                if ( ( Y[jNy] < -2.0*BOT ) || ( Y[jNy] > 2.0*TOP ) )
-                    RH = RH_far;
-                H2O_[jNy][0] = RH / 1.0E+02 * physFunc::pSat_H2Os( temp_[jNy][0] ) / ( physConst::kB * temp_[jNy][0] * 1.0E+06 );
-            }
+//            if ( ( Y[jNy] < TOP ) && ( Y[jNy] > -BOT ) ) {
+//                RH = RH_star;
+//                H2O_[jNy][0] = RH / 1.0E+02 * physFunc::pSat_H2Os( temp_[jNy][0] ) / ( physConst::kB * temp_[jNy][0] * 1.0E+06 );
+//            } else {
+//                if ( Y[jNy] < 0 ) {
+//                    RH = RH_star - ( Y[jNy] + BOT ) / BOT * ( RH_far - RH_star );
+//                } else {
+//                    RH = RH_star + ( Y[jNy] - TOP ) / TOP * ( RH_far - RH_star );
+//                }
+//                if ( ( Y[jNy] < -2.0*BOT ) || ( Y[jNy] > 2.0*TOP ) )
+//                    RH = RH_far;
+//                H2O_[jNy][0] = RH / 1.0E+02 * physFunc::pSat_H2Os( temp_[jNy][0] ) / ( physConst::kB * temp_[jNy][0] * 1.0E+06 );
+//            }
 
-            for ( iNx = 0; iNx < X.size(); iNx++ ) {
-                temp_[jNy][iNx] = temp_[jNy][0];
-                H2O_[jNy][iNx]  = H2O_[jNy][0];
-            }
-        }
+//            for ( iNx = 0; iNx < X.size(); iNx++ ) {
+//                temp_[jNy][iNx] = temp_[jNy][0];
+//                H2O_[jNy][iNx]  = H2O_[jNy][0];
+//            }
+//        }
+
 
     } else {
 

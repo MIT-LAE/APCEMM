@@ -167,7 +167,7 @@ namespace SANDS
         protected:
 
             unsigned int n_x, n_y;
-            RealDouble xlim, ylim_up, ylim_down;
+            RealDouble xlim_right, xlim_left, ylim_up, ylim_down;
             bool doFill;
             UInt fillOpt;
             RealDouble fillVal;

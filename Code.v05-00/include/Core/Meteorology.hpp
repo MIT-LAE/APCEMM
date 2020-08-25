@@ -27,6 +27,8 @@
 #include "Core/Input_Mod.hpp"
 #include "Util/PhysConstant.hpp"
 #include "Util/MetFunction.hpp"
+#include <netcdfcpp.h>
+#include <limits>
 
 class Meteorology
 {
@@ -58,6 +60,13 @@ class Meteorology
         const Vector_1D& Press() const { return press_; }
 
         friend class Solution;
+
+        /* Temperature, pressure and humidity fields if input from user-defined file */
+        RealDouble alt_user;
+        RealDouble temp_user;
+        RealDouble pres_user;
+        RealDouble RHw_user;
+        RealDouble satdepth_user;
 
     protected:
 
@@ -95,7 +104,6 @@ class Meteorology
         Vector_2D temp_;
         Vector_2D airDens_;
         Vector_2D H2O_;
-
 
 };
 

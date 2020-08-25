@@ -35,24 +35,25 @@ extern int PARALLEL_CASES;
 
 /* 2. Reduced regular grid for non-zero shear: */
 
-#define NX                512         /* Number of grid cells in the x-direction */
-#define NY                256         /* Number of grid cells in the y-direction */
-#define XLIM              3.00E+04    /* x-limits of the domain [m] */
-#define YLIM_UP           6.50E+02    /* Upper y-limit of the domain [m] */
-#define YLIM_DOWN         6.50E+02    /* Lower y-limit of the domain [m] */
-
-/* 3. Fine regular grid for non-zero shear: */
-
-//#define NX                1024        /* Number of grid cells in the x-direction */
+//#define NX                512         /* Number of grid cells in the x-direction */
 //#define NY                256         /* Number of grid cells in the y-direction */
-//#define XLIM              6.00E+04    /* x-limits of the domain [m] */
+//#define XLIM              3.00E+04    /* x-limits of the domain [m] */
 //#define YLIM_UP           6.50E+02    /* Upper y-limit of the domain [m] */
 //#define YLIM_DOWN         6.50E+02    /* Lower y-limit of the domain [m] */
 
+/* 3. Fine regular grid for non-zero shear: */
+
+#define NX 2655 //1024 /* Number of grid cells in the x-direction */
+#define NY 1937 //256 /* Number of grid cells in the y-direction */
+#define XLIM_RIGHT              1.00E+04    /* x-limits of the domain [m] */
+#define XLIM_LEFT 1.49e+05 /* x-limits of the domain [m] */
+#define YLIM_UP 6.50e+02 /* Upper y-limit of the domain [m] */
+#define YLIM_DOWN 9.03e+03 /* Lower y-limit of the domain [m] */
+
 /* 4. Fine and extended grid for contrail simulation: */
 
-//#define NX                2048        /* Number of grid cells in the x-direction */
-//#define NY                512         /* Number of grid cells in the y-direction */
+//#define NX                1024        /* Number of grid cells in the x-direction */
+//#define NY                256         /* Number of grid cells in the y-direction */
 //#define XLIM              4.00E+04    /* x-limits of the domain [m] */
 //#define YLIM_UP           8.00E+02    /* Upper y-limit of the domain [m] */
 //#define YLIM_DOWN         9.00E+02    /* Lower y-limit of the domain [m] */
@@ -68,8 +69,8 @@ extern int PARALLEL_CASES;
 
 
 /* Coarse aerosol representation */
-#define LA_VRAT               2.00E+00    /* Size ratio between two consecutive bins */
-#define PA_VRAT               2.00E+00    /* Size ratio between two consecutive bins */
+#define LA_VRAT               1.50E+00 // 1.80E+00    /* Size ratio between two consecutive bins */
+#define PA_VRAT               1.50E+00 // 1.80E+00    /* Size ratio between two consecutive bins */
 
 /* Fine aerosol representation */
 //#define LA_VRAT               1.50E+00    /* Size ratio between two consecutive bins */
@@ -133,5 +134,6 @@ extern int PARALLEL_CASES;
 #define EPM_RTOLS             1.00E-05    /* Relative tolerances in EPM */
 #define EPM_ATOLS             1.00E-07    /* Absolute tolerances in EPM */
 #define SO2TOSO4              0.005       /* Percent conversion from SO2 to SO4 */
+#define SATDEPTH_MIN          100         /* Minimum depth of saturation depth if loading met [m] */
 
 #endif /* PARAMETERS_H_INCLUDED */

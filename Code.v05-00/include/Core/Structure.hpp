@@ -37,6 +37,7 @@
 #include "Core/Engine.hpp"
 #include "Core/LiquidAer.hpp"
 #include "Core/SZA.hpp"
+#include "Core/Input_Mod.hpp"
 #include "AIM/Aerosol.hpp"
 #include "Core/Meteorology.hpp"
 
