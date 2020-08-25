@@ -1102,7 +1102,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
                                     iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
                                 }
-                                Data.H2O_plume[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
+                                Data.H2O[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
                             }
                         }
                     }
@@ -1121,7 +1121,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
                                     iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
                                 }
-                                Data.H2O_plume[jNy][iNx] = Data.H2O[NY-1][iNx];
+                                Data.H2O[jNy][iNx] = Data.H2O[NY-1][iNx];
                             }
                         }
                     }
