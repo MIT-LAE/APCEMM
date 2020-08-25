@@ -555,8 +555,8 @@ namespace EPM
             std::cout << "Water supersaturated at some point" << std::endl;
         }
         else {
-            std::cout << "Never reaches water saturation... ending simulation" << std::endl;
-            exit(0);
+            std::cout << "Never reaches water saturation" << std::endl;
+            //exit(0);
         }
 
         /* Persistent contrail */
