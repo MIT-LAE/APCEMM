@@ -636,7 +636,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         const RealDouble iceNumFrac = aircraft.VortexLosses( EI.getSoot(),    \
                                                              EI.getSootRad(), \
                                                              Input_Opt.MET_DEPTH );
-        if ( iceNumFrac <= 0.00E+00 ) {
+        if ( iceNumFrac <= 0.00E+00 && !CHEMISTRY ) {
             std::cout << "EndSim: vortex sinking" << std::endl;
             exit(0);
         }
@@ -880,7 +880,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
         float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
         std::cout << totalIceParticles << std::endl;
-        if ( totalIceParticles <= 1.00E+1 && totalIceMass <= 1.00E-5 ) {
+        if ( totalIceParticles <= 1.00E+1 && totalIceMass <= 1.00E-5 && !CHEMISTRY ) {
             std::cout << "EndSim: no particles remain" << std::endl;
             exit(0);
         }
@@ -1996,7 +1996,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
             std::cout << totalIceParticles << ", " << totalIceMass << std::endl;
             /* if ( totalIceParticles <= 1.00E-15 && totalIceMass <= 1.00E-15 ) { */
-            if ( totalIceParticles <= 1.00E+1 || totalIceMass <= 1.00E-5 ) {
+            if ( totalIceParticles <= 1.00E+1 || totalIceMass <= 1.00E-5 && !CHEMISTRY ) {
                 std::cout << "EndSim: no particles remain" << std::endl;
                 std::cout << "# ice particles: " << totalIceParticles << std::endl;
                 std::cout << "Total ice mass [g]: " << totalIceMass << std::endl;

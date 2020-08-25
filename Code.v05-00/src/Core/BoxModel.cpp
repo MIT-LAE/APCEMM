@@ -417,9 +417,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     Stopwatch_cumul.Start( );
 
 #endif /* TIME_IT */
-    std::cout << "Issue -1" << std::endl;
     while ( curr_Time_s < tFinal_s ) {
-        std::cout << "Issue 00" << std::endl;
         if ( printDEBUG ) {
             /* Print message */
             std::cout << "\n";
@@ -429,7 +427,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
             #endif /* OMP */
             std::cout << "\n -> Solar time: " << std::fmod( curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
         }
-        std::cout << "Issue 0" << std::endl;
+
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
         /* --------------------------- UPDATE TIMESTEP --------------------------- */
