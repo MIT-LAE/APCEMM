@@ -165,7 +165,7 @@ ifeq ($(COMPILER),g++)
   VERSION            :=$(subst .,,$(VERSION))
 
   # Base set of compiler flags
-  CXXFLAGS            :=-std=c++11 -w
+  CXXFLAGS            :=-std=c++11 -w -rdynamic
 
   # Default optimization level for all routines (-O3)
   ifndef OPT
