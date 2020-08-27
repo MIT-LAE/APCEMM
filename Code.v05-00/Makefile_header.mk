@@ -188,6 +188,18 @@ ifeq ($(COMPILER),g++)
     USER_DEFS         += -DOMP
   endif
 
+  # Add option for "array out of bounds" checking
+  REGEXP             :=(^[Yy]|^[Yy][Ee][Ss])
+  ifeq ($(shell [[ "$(BOUNDS)" =~ $(REGEXP) ]] && echo true),true)
+    CXXFLAGS          += -Warray-bounds -ftree-vrp
+  endif
+
+  ## Add traceback option
+  #REGEXP             :=(^[Yy]|^[Yy][Ee][Ss])
+  #ifeq ($(shell [[ "$(TRACEBACK)" =~ $(REGEXP) ]] && echo true),true)
+  #  CXXFLAGS          += 
+  #endif
+
   # Use ring structure?
   REGEXP             :=(^[Yy]|^[Yy][Ee][Ss])
   ifeq ($(shell [[ "$(RINGS)" =~ $(REGEXP) ]] && echo true),true)
