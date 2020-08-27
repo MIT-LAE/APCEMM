@@ -284,8 +284,13 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
                 BOT = USERINPUT.MET_DEPTH;
             else
                 BOT = 200.0;
+#ifndef XLIM
             LEFT = XLIM_LEFT-0.50E+04; /* 30.00E+03; */
             RIGHT= XLIM_RIGHT-0.50E+04;
+#else
+            LEFT = XLIM-0.50E+04; /* 30.00E+03; */
+            RIGHT= XLIM-0.50E+04;
+#endif
 
 #pragma omp parallel for                \
             if      ( !PARALLEL_CASES ) \

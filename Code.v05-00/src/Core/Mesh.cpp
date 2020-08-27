@@ -13,20 +13,23 @@
 
 #include "Core/Mesh.hpp"
 
-Mesh::Mesh( )
+Mesh::Mesh( ):
+   nx( NX ),
+   ny( NY ),
+#ifndef XLIM
+   xlim_right( XLIM_RIGHT ),
+   xlim_left( XLIM_LEFT ),
+#else
+   xlim_right( XLIM ),
+   xlim_left( XLIM ),
+#endif
+   ylim_up( YLIM_UP ),
+   ylim_down( YLIM_DOWN )
 {
 
     /* Default Constructor */
 
-    nx = NX;
-    ny = NY;
-
-    xlim_right= XLIM_RIGHT;
-    xlim_left = XLIM_LEFT;
-    ylim_up   = YLIM_UP;
-    ylim_down = YLIM_DOWN;
-
-    hx_ = ( xlim_right + xlim_left) / nx;
+    hx_ = ( xlim_right + xlim_left ) / nx;
     hy_ = ( ylim_up + ylim_down ) / ny;
 
     /* Cell center x-coordinates */

@@ -106,8 +106,12 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         std::cout << " CHEMISTRY_DT = " << CHEMISTRY_DT << " min" << std::endl;
         exit(1);
     }
-    
+
+#ifndef XLIM
     const RealDouble BOX_AREA = ( XLIM_LEFT + XLIM_RIGHT ) * ( YLIM_UP + YLIM_DOWN );
+#else
+    const RealDouble BOX_AREA = 2.0 * XLIM * ( YLIM_UP + YLIM_DOWN );
+#endif
     
     /* Assign parameters */
     

@@ -389,9 +389,14 @@ void Solution::Initialize( char const *fileName,      \
     NDENS.assign( 2, 0.0 );
     SAD.assign( 2, 0.0 );
 
+#ifndef XLIM
+    const RealDouble boxArea = (XLIM_LEFT+XLIM_RIGHT)*(YLIM_UP+YLIM_DOWN);
+#else
+    const RealDouble boxArea = 2.0*XLIM*(YLIM_UP+YLIM_DOWN);
+#endif
     STATE_PSC = STRAT_AER( input.temperature_K(), input.pressure_Pa(), airDens,  \
                            input.latitude_deg(), stratData,                      \
-                           (XLIM_LEFT+XLIM_RIGHT)*(YLIM_UP+YLIM_DOWN), KHETI_SLA, SOLIDFRAC, \
+                           boxArea, KHETI_SLA, SOLIDFRAC,                        \
                            AERFRAC, RAD, RHO, KG, NDENS, SAD, DBG );
 
     /* Liquid/solid species */

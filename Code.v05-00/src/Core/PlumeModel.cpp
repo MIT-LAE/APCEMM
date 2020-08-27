@@ -1114,7 +1114,11 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     private ( iNx, jNy        ) \
                     schedule( dynamic, 1      )
                     for ( iNx = 0; iNx < NX; iNx++ ) {
+#ifndef XLIM
                         if ( ( xE[iNx] < -XLIM_LEFT + 5.0E+03 ) || ( xE[iNx] > XLIM_RIGHT - 5.0E+03 ) ) {
+#else
+                        if ( ( xE[iNx] < -XLIM + 5.0E+03 ) || ( xE[iNx] > XLIM - 5.0E+03 ) ) {
+#endif
                             for ( jNy = 0; jNy < NY; jNy++ ) {
                                 for ( UInt iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
