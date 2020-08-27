@@ -47,7 +47,7 @@ Mesh::Mesh( )
             dy_.push_back( y_e_[j] - y_e_[j-1] );
     }
     y_e_.push_back( y_e_[ny-1] + hy_ );
-    dy_.push_back( y_e_[nx] - y_e_[nx-1] );
+    dy_.push_back( y_e_[ny] - y_e_[ny-1] );
 
     totArea_ = 0;
     /* TO CHANGE if mesh is non-uniform */
