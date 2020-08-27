@@ -46,8 +46,8 @@ namespace AIM
     Vector_2D buildTSKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers_1, RealDouble rho_1, Vector_1D const &bin_Centers_2, RealDouble rho_2 );
 
     /* Print kernel to file for validation */
-    void printKernel2File( Vector_1D Kernel, const char* fileName = "/home/fritzt/CAPCEMM/AIM/data/Kernel.out" );
-    void printKernel2File( Vector_2D Kernel, const char* fileName = "/home/fritzt/CAPCEMM/AIM/data/Kernel.out" );
+    void printKernel2File( Vector_1D Kernel, const char* fileName = "/home/fritzt/APCEMM/AIM/data/Kernel.out" );
+    void printKernel2File( Vector_2D Kernel, const char* fileName = "/home/fritzt/APCEMM/AIM/data/Kernel.out" );
     
 }
 

@@ -443,7 +443,7 @@ namespace EPM
 
         Vector_2D obs_Var;
         Vector_1D obs_Time;
-        EPM::streamingObserver observer( obs_Var, obs_Time, EPM_ind, "/home/fritzt/CAPCEMM/data/Micro.out", 1 );
+        EPM::streamingObserver observer( obs_Var, obs_Time, EPM_ind, "/home/fritzt/APCEMM/data/Micro.out", 1 );
 
         /* Creating ode's right hand side */
         gas_aerosol_rhs rhs( temperature_K, pressure_Pa, delta_T, H2O_amb, SO4_amb, SO4l_amb, SO4g_amb, HNO3_amb, Soot_amb, EI.getSootRad(), KernelSO4Soot ); 

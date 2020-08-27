@@ -15,6 +15,7 @@
 #
 # !REVISION HISTORY:
 # 11 Dec 2018 - T. Fritz - Initial version
+# 27 Aug 2020 - T. Fritz - Rename C-APCEMM into APCEMM
 #
 #------------------------------------------------------------------------------
 
@@ -34,7 +35,7 @@ endif
 
 # Source code location
 ifndef CODE_DIR
-  CODE_DIR     :=$(HOME)/C-APCEMM/Code.$(VERSION)
+  CODE_DIR     :=$(HOME)/APCEMM/Code.$(VERSION)
 endif
 
 # Output log file destination (default is run directory)
