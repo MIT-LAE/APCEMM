@@ -128,7 +128,7 @@ LINK := $(LINK)
 LINK := -L$(LIB_DIR)
 
 # Define any libraries to link into executable: use -llibname option
-LINK := $(LINK) $(LDLIBS) -lstdc++
+LINK := $(LINK) $(LDLIBS) -lstdc++ -lmx -lmat
 
 LINK_FFTW := -lfftw3 -lfftw3f -lfftw3l
 ifeq ($(shell [[ "$(OMP)" =~ $(REGEXP) ]] && echo true),true)
