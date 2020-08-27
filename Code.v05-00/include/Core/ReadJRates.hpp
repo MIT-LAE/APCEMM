@@ -18,7 +18,7 @@
 #include <iomanip>
 #include <cstring>
 #include <algorithm>
-#include "mat.h"
+#include <netcdfcpp.h>
 
 #include "Util/ForwardDecl.hpp"
 #include "KPP/KPP_Parameters.h"
