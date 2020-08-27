@@ -1044,14 +1044,13 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 Transport( Data, Solver, cellAreas );
             } else {
                 /* Advection and diffusion of condensable species */
-                // Solver.Run( Data.H2O, cellAreas, 1 );
                 /* Advection and diffusion of plume affected H2O */
                 Solver.Run( Data.H2O_plume, cellAreas, 1 );
             }
 
             /* Update H2O */
-            for ( UInt jNy = 0; jNy<NY; jNy++ ) {
-                for ( UInt iNx = 0; iNx<NX; iNx++ ) {
+            for ( jNy = 0; jNy < NY; jNy++ ) {
+                for ( iNx = 0; iNx < NX; iNx++ ) {
                     Data.H2O[jNy][iNx] = Data.H2O_met[jNy][iNx] + Data.H2O_plume[jNy][iNx];
                 }
             }
@@ -1102,7 +1101,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
                                     iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
                                 }
-                                Data.H2O_plume[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
+                                Data.H2O[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
                             }
                         }
                     }
@@ -1121,7 +1120,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
                                     iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
                                 }
-                                Data.H2O_plume[jNy][iNx] = Data.H2O[NY-1][iNx];
+                                Data.H2O[jNy][iNx] = Data.H2O[NY-1][iNx];
                             }
                         }
                     }
@@ -1182,6 +1181,14 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         if ( TRANSPORT_PA ) {
             /* Update met fields at mid time step */
             Met.Update( ( curr_Time_s + dt/2 ) / 3600.0, m, dTrav_x, dTrav_y );
+
+            /* Update H2O */
+            for ( jNy = 0; jNy < NY; jNy++ ) {
+                for ( iNx = 0; iNx < NX; iNx++ ) {
+                    Data.H2O_met[jNy][iNx] = Met.H2O(jNy,iNx);
+                    Data.H2O[jNy][iNx] = Data.H2O_met[jNy][iNx] + Data.H2O_plume[jNy][iNx];
+                }
+            }
         }
 
         /* ======================================================================= */

@@ -29,6 +29,7 @@
 #include "Util/ForwardDecl.hpp"
 #include "Util/PhysConstant.hpp"
 #include "AIM/Coagulation.hpp"
+#include "Core/Mesh.hpp"
 
 namespace AIM
 {
@@ -153,6 +154,8 @@ class AIM::Grid_Aerosol
         RealDouble TotalIceMass_sum( const Vector_2D cellAreas ) const;
         Vector_2D IWC( ) const;
         Vector_2D Extinction( ) const;
+        Vector_1D PDF_Total( const Vector_2D &cellAreas ) const;
+        Vector_1D PDF_Total( const Mesh &m ) const;
         Vector_1D xOD( const Vector_1D dx ) const;
         Vector_1D yOD( const Vector_1D dy ) const;
         Vector_2D Radius( ) const;
