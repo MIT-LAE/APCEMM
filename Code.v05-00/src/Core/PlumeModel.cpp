@@ -444,7 +444,9 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         relHumidity_w = Met.RHw_user;
         Input_Opt.MET_DEPTH = Met.satdepth_user;
     }
-    std::cout << temperature_K << " K, " << relHumidity_w << "%, " << Input_Opt.MET_DEPTH << "m" << std::endl;
+    std::cout << "Temperature      = " << temperature_K << " K" << std::endl;
+    std::cout << "Rel. humidity    = " << relHumidity_w << " %" << std::endl;
+    std::cout << "Saturation depth = " << Input_Opt.MET_DEPTH << " m" << std::endl;
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -938,8 +940,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     Stopwatch_cumul.Start( );
 
 #endif /* TIME_IT */
-    std::cout << curr_Time_s << ", " << tFinal_s << std::endl;
-    //std::cout << curr_Time_s < tFinal_s << std::endl;
+
     while ( curr_Time_s < tFinal_s ) {
         
         if ( printDEBUG ) {
