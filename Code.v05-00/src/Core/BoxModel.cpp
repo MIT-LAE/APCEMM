@@ -76,6 +76,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     const char* BACKG_FILENAME= Input_Opt.SIMULATION_INPUT_BACKG_COND.c_str();
     
     /* ======================================================================= */
+    /* ---- Input options from the CHEMISTRY MENU ---------------------------- */
     /* ======================================================================= */
 
     const bool HETCHEM        = Input_Opt.CHEMISTRY_HETCHEM;
@@ -84,8 +85,19 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
    
     /* Make sure that same timesteps as plume model are used */
 
-    const RealDouble TRANSPORT_DT = Input_Opt.TRANSPORT_TIMESTEP;
     const RealDouble CHEMISTRY_DT = Input_Opt.CHEMISTRY_TIMESTEP;
+
+    /* ======================================================================= */
+    /* ---- Input options from the TRANSPORT MENU ---------------------------- */
+    /* ======================================================================= */
+
+    const RealDouble TRANSPORT_DT = Input_Opt.TRANSPORT_TIMESTEP;
+
+    /* ======================================================================= */
+    /* ---- Input options from the TIMESERIES MENU --------------------------- */
+    /* ======================================================================= */
+
+    const std::vector<int> TS_SPEC_LIST = Input_Opt.TS_SPECIES;
 
     /* Define dynamic timestep in s */
     RealDouble DYN_DT;
@@ -364,21 +376,21 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
      *     = [part/cm^3]
      */
 
-    ambientData.CO2[0]      += E_CO2;
-    ambientData.NO[0]       += E_NO;
-    ambientData.NO2[0]      += E_NO2;
-    ambientData.HNO2[0]     += E_HNO2;
-    ambientData.CO[0]       += E_CO;
-    ambientData.CH4[0]      += E_CH4;
-    ambientData.C2H6[0]     += E_C2H6;
-    ambientData.PRPE[0]     += E_PRPE;
-    ambientData.ALK4[0]     += E_ALK4;
-    ambientData.CH2O[0]     += E_CH2O;
-    ambientData.ALD2[0]     += E_ALD2;
-    ambientData.GLYX[0]     += E_GLYX;
-    ambientData.MGLY[0]     += E_MGLY;
-    ambientData.H2O[0]      += E_H2O;
-    ambientData.SO2[0]      += E_SO2;
+    ambientData.Species[ind_CO2][0]      += E_CO2;
+    ambientData.Species[ind_NO][0]       += E_NO;
+    ambientData.Species[ind_NO2][0]      += E_NO2;
+    ambientData.Species[ind_HNO2][0]     += E_HNO2;
+    ambientData.Species[ind_CO][0]       += E_CO;
+    ambientData.Species[ind_CH4][0]      += E_CH4;
+    ambientData.Species[ind_C2H6][0]     += E_C2H6;
+    ambientData.Species[ind_PRPE][0]     += E_PRPE;
+    ambientData.Species[ind_ALK4][0]     += E_ALK4;
+    ambientData.Species[ind_CH2O][0]     += E_CH2O;
+    ambientData.Species[ind_ALD2][0]     += E_ALD2;
+    ambientData.Species[ind_GLYX][0]     += E_GLYX;
+    ambientData.Species[ind_MGLY][0]     += E_MGLY;
+    ambientData.Species[ind_H2O][0]      += E_H2O;
+    ambientData.Species[ind_SO2][0]      += E_SO2;
     ambientData.sootDens[0] += E_Soot;
 
     
@@ -584,6 +596,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     #pragma omp critical
     {
         isSaved_Box = output::Write_Box( input.fileName_BOX2char(), \
+                                         TS_SPEC_LIST,              \
                                          ambientData,               \
                                          timeArray,                 \
                                          input,                     \

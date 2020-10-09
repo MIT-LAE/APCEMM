@@ -92,8 +92,6 @@ void AdvGlobal( const RealDouble time, const RealDouble T_UPDRAFT, \
 Vector_1D BuildTime( const RealDouble tStart, const RealDouble tEnd,    \
                      const RealDouble sunRise, const RealDouble sunSet, \
                      const RealDouble DYN_DT );
-void Transport( Solution& Data, SANDS::Solver& Solver, \
-                const Vector_2D &cellAreas );
 
 
 int PlumeModel( OptInput &Input_Opt, const Input &input )
@@ -274,6 +272,9 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     /* Grid indices */
     UInt iNx = 0;
     UInt jNy = 0;
+
+    /* Species index */
+    UInt N   = 0;
 
     int IERR;
 
@@ -529,7 +530,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     }
 
 
-
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
     /* ----------------------------- EMISSIONS ------------------------------- */
@@ -719,7 +719,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         ringCluster.Debug();
 
     /* Allocate species-ring vector */
-    SpeciesArray ringSpecies( nRing, timeArray.size(), ringCluster.halfRing() );
+    SpeciesArray ringData( nRing, timeArray.size(), ringCluster.halfRing() );
 
     /* Compute Grid to Ring mapping */
     m.Ring2Mesh( ringCluster );
@@ -743,7 +743,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                       temperature_K, ( relHumidity_i > 100.0 ), \
                       liquidAer, iceAer, Soot_den, Met, areaPlume );
     /* Fill in variables species for initial time */
-    ringSpecies.FillIn( Data, m.weights, nTime );
+    ringData.FillIn( Data, m.weights, nTime );
 
     /* Allocate an additional array for KPP */
     RealDouble tempArray[NVAR];
@@ -943,7 +943,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     while ( curr_Time_s < tFinal_s ) {
         
-        if ( printDEBUG ) {
+        if ( printDEBUG || 1 ) {
             /* Print message */
             std::cout << "\n";
             std::cout << "\n - Time step: " << nTime + 1 << " out of " << timeArray.size();
@@ -1042,17 +1042,22 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
             if ( CHEMISTRY ) {
                 /* Advection and diffusion of gas phase species */
-                Transport( Data, Solver, cellAreas );
+                for ( N = 0; N < NVAR; N++ ) {
+                    if ( N == ind_H2O )
+                        Solver.Run( Data.Species[ind_H2Oplume], cellAreas, 1 );
+                    else
+                        Solver.Run( Data.Species[N], cellAreas );
+                }
             } else {
                 /* Advection and diffusion of condensable species */
                 /* Advection and diffusion of plume affected H2O */
-                Solver.Run( Data.H2O_plume, cellAreas, 1 );
+                Solver.Run( Data.Species[ind_H2Oplume], cellAreas, 1 );
             }
 
             /* Update H2O */
             for ( jNy = 0; jNy < NY; jNy++ ) {
                 for ( iNx = 0; iNx < NX; iNx++ ) {
-                    Data.H2O[jNy][iNx] = Data.H2O_met[jNy][iNx] + Data.H2O_plume[jNy][iNx];
+                    Data.Species[ind_H2O][jNy][iNx] = Data.Species[ind_H2Omet][jNy][iNx] + Data.Species[ind_H2Oplume][jNy][iNx];
                 }
             }
 
@@ -1102,7 +1107,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
                                     iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
                                 }
-                                Data.H2O[jNy][iNx] = Data.H2O[jNy][LASTINDEX_SHEAR];
+                                Data.Species[ind_H2O][jNy][iNx] = Data.Species[ind_H2O][jNy][LASTINDEX_SHEAR];
                             }
                         }
                     }
@@ -1125,7 +1130,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
                                     iceVolume[iBin_PA][jNy][iNx] = 0.0E+00;
                                 }
-                                Data.H2O[jNy][iNx] = Data.H2O[NY-1][iNx];
+                                Data.Species[ind_H2O][jNy][iNx] = Data.Species[ind_H2O][NY-1][iNx];
                             }
                         }
                     }
@@ -1190,8 +1195,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             /* Update H2O */
             for ( jNy = 0; jNy < NY; jNy++ ) {
                 for ( iNx = 0; iNx < NX; iNx++ ) {
-                    Data.H2O_met[jNy][iNx] = Met.H2O(jNy,iNx);
-                    Data.H2O[jNy][iNx] = Data.H2O_met[jNy][iNx] + Data.H2O_plume[jNy][iNx];
+                    Data.Species[ind_H2Omet][jNy][iNx] = Met.H2O(jNy,iNx);
+                    Data.Species[ind_H2O][jNy][iNx] = Data.Species[ind_H2Omet][jNy][iNx] + Data.Species[ind_H2Oplume][jNy][iNx];
                 }
             }
         }
@@ -1250,8 +1255,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         #ifdef RINGS
 
             /* Fill in variables species for current time */
-            ringSpecies.FillIn( Data, m.weights, \
-                                nTime + 1 );
+            ringData.FillIn( Data, m.weights, nTime + 1 );
 
             /* Is chemistry turned on? */
             if ( CHEMISTRY ) {
@@ -1260,7 +1264,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 for ( iRing = 0; iRing < nRing; iRing++ ) {
 
                     /* Convert ring structure to KPP inputs (VAR and FIX) */
-                    ringSpecies.getData( nTime + 1, iRing );
+                    ringData.getData( nTime + 1, iRing );
 
                     for ( UInt iSpec = 0; iSpec < NVAR; iSpec++ )
                         tempArray[iSpec] = VAR[iSpec];
@@ -1405,7 +1409,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                         return KPP_FAIL;
                     }
 
-                    ringSpecies.FillIn( nTime + 1, iRing );
+                    ringData.FillIn( nTime + 1, iRing );
 
                     Data.applyRing( tempArray, mapIndices, iRing );
 
@@ -1809,7 +1813,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
             lastTimeIceGrowth = curr_Time_s + dt;
             /* If shear = 0, take advantage of the symmetry around the Y-axis */
-            Data.solidAerosol.Grow( dtIceGrowth, Data.H2O, Met.Temp(), Met.Press(), PA_MICROPHYSICS, ( shear == 0 ) );
+            Data.solidAerosol.Grow( dtIceGrowth, Data.Species[ind_H2O], Met.Temp(), Met.Press(), PA_MICROPHYSICS, ( shear == 0 ) );
         }
 
         /* ======================================================================= */
@@ -1821,17 +1825,17 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 #if ( NOy_MASS_CHECK )
 
         /* Compute ambient concentrations */
-        mass_Ambient_NOy = ambientData.NO[nTime+1]     + ambientData.NO2[nTime+1]   \
-                         + ambientData.NO3[nTime+1]    + ambientData.HNO2[nTime+1]  \
-                         + ambientData.HNO3[nTime+1]   + ambientData.HNO4[nTime+1]  \`
-                         + 2*ambientData.N2O5[nTime+1] + ambientData.PAN[nTime+1]   \
-                         + ambientData.MPN[nTime+1]    + ambientData.N[nTime+1]     \
-                         + ambientData.PROPNN[nTime+1] + ambientData.BrNO2[nTime+1] \
-                         + ambientData.BrNO3[nTime+1]  + ambientData.ClNO2[nTime+1] \
-                         + ambientData.ClNO3[nTime+1]  + ambientData.PPN[nTime+1]   \
-                         + ambientData.PRPN[nTime+1]   + ambientData.R4N1[nTime+1]  \
-                         + ambientData.PRN1[nTime+1]   + ambientData.R4N2[nTime+1]  \
-                         + 2*ambientData.N2O[nTime+1];
+        mass_Ambient_NOy = ambientData.Species[ind_NO][nTime+1]     + ambientData.Species[ind_NO2][nTime+1]   \
+                         + ambientData.Species[ind_NO3][nTime+1]    + ambientData.Species[ind_HNO2][nTime+1]  \
+                         + ambientData.Species[ind_HNO3][nTime+1]   + ambientData.Species[ind_HNO4][nTime+1]  \`
+                         + 2*ambientData.Species[ind_N2O5][nTime+1] + ambientData.Species[ind_PAN][nTime+1]   \
+                         + ambientData.Species[ind_MPN][nTime+1]    + ambientData.Species[ind_N][nTime+1]     \
+                         + ambientData.Species[ind_PROPNN][nTime+1] + ambientData.Species[ind_BrNO2][nTime+1] \
+                         + ambientData.Species[ind_BrNO3][nTime+1]  + ambientData.Species[ind_ClNO2][nTime+1] \
+                         + ambientData.Species[ind_ClNO3][nTime+1]  + ambientData.Species[ind_PPN][nTime+1]   \
+                         + ambientData.Species[ind_PRPN][nTime+1]   + ambientData.Species[ind_R4N1][nTime+1]  \
+                         + ambientData.Species[ind_PRN1][nTime+1]   + ambientData.Species[ind_R4N2][nTime+1]  \
+                         + 2*ambientData.Species[ind_N2O][nTime+1];
 
         /* Compute emitted */
         mass_Emitted_NOy = 0;
@@ -1843,17 +1847,17 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         if       ( !PARALLEL_CASES    )
         for ( iNx = 0; iNx < NX; iNx++ ) {
             for ( jNy = 0; jNy < NY; jNy++ ) {
-                mass_Emitted_NOy += ( Data.NO[jNy][iNx]     + Data.NO2[jNy][iNx]   \
-                                    + Data.NO3[jNy][iNx]    + Data.HNO2[jNy][iNx]  \
-                                    + Data.HNO3[jNy][iNx]   + Data.HNO4[jNy][iNx]  \
-                                    + 2*Data.N2O5[jNy][iNx] + Data.PAN[jNy][iNx]   \
-                                    + Data.MPN[jNy][iNx]    + Data.N[jNy][iNx]     \
-                                    + Data.PROPNN[jNy][iNx] + Data.BrNO2[jNy][iNx] \
-                                    + Data.BrNO3[jNy][iNx]  + Data.ClNO2[jNy][iNx] \
-                                    + Data.ClNO3[jNy][iNx]  + Data.PPN[jNy][iNx]   \
-                                    + Data.PRPN[jNy][iNx]   + Data.R4N1[jNy][iNx]  \
-                                    + Data.PRN1[jNy][iNx]   + Data.R4N2[jNy][iNx]  \
-                                    + 2*Data.N2O[jNy][iNx]                         \
+                mass_Emitted_NOy += ( Data.Species[ind_NO][jNy][iNx]     + Data.Species[ind_NO2][jNy][iNx]   \
+                                    + Data.Species[ind_NO3][jNy][iNx]    + Data.Species[ind_HNO2][jNy][iNx]  \
+                                    + Data.Species[ind_HNO3][jNy][iNx]   + Data.Species[ind_HNO4][jNy][iNx]  \
+                                    + 2*Data.Species[ind_N2O5][jNy][iNx] + Data.Species[ind_PAN][jNy][iNx]   \
+                                    + Data.Species[ind_MPN][jNy][iNx]    + Data.Species[ind_N][jNy][iNx]     \
+                                    + Data.Species[ind_PROPNN][jNy][iNx] + Data.Species[ind_BrNO2][jNy][iNx] \
+                                    + Data.Species[ind_BrNO3][jNy][iNx]  + Data.Species[ind_ClNO2][jNy][iNx] \
+                                    + Data.Species[ind_ClNO3][jNy][iNx]  + Data.Species[ind_PPN][jNy][iNx]   \
+                                    + Data.Species[ind_PRPN][jNy][iNx]   + Data.Species[ind_R4N1][jNy][iNx]  \
+                                    + Data.Species[ind_PRN1][jNy][iNx]   + Data.Species[ind_R4N2][jNy][iNx]  \
+                                    + 2*Data.Species[ind_N2O][jNy][iNx]                         \
                                     - mass_Ambient_NOy ) * cellAreas[jNy][iNx];
             }
         }
@@ -1869,27 +1873,27 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
         mass_Emitted_NOy_Rings = 0;
         for ( iRing = 0; iRing < nRing; iRing++ ) {
-            mass_Emitted_NOy_Rings += ( ringSpecies.NO[nTime+1][iRing]     \
-                                      + ringSpecies.NO2[nTime+1][iRing]    \
-                                      + ringSpecies.NO3[nTime+1][iRing]    \
-                                      + ringSpecies.HNO2[nTime+1][iRing]   \
-                                      + ringSpecies.HNO3[nTime+1][iRing]   \
-                                      + ringSpecies.HNO4[nTime+1][iRing]   \
-                                      + 2*ringSpecies.N2O5[nTime+1][iRing] \
-                                      + ringSpecies.PAN[nTime+1][iRing]    \
-                                      + ringSpecies.MPN[nTime+1][iRing]    \
-                                      + ringSpecies.N[nTime+1][iRing]      \
-                                      + ringSpecies.PROPNN[nTime+1][iRing] \
-                                      + ringSpecies.BrNO2[nTime+1][iRing]  \
-                                      + ringSpecies.BrNO3[nTime+1][iRing]  \
-                                      + ringSpecies.ClNO2[nTime+1][iRing]  \
-                                      + ringSpecies.ClNO3[nTime+1][iRing]  \
-                                      + ringSpecies.PPN[nTime+1][iRing]    \
-                                      + ringSpecies.PRPN[nTime+1][iRing]   \
-                                      + ringSpecies.R4N1[nTime+1][iRing]   \
-                                      + ringSpecies.PRN1[nTime+1][iRing]   \
-                                      + ringSpecies.R4N2[nTime+1][iRing]   \
-                                      + 2*ringSpecies.N2O[nTime+1][iRing]  \
+            mass_Emitted_NOy_Rings += ( ringData.NO[nTime+1][iRing]     \
+                                      + ringData.NO2[nTime+1][iRing]    \
+                                      + ringData.NO3[nTime+1][iRing]    \
+                                      + ringData.HNO2[nTime+1][iRing]   \
+                                      + ringData.HNO3[nTime+1][iRing]   \
+                                      + ringData.HNO4[nTime+1][iRing]   \
+                                      + 2*ringData.N2O5[nTime+1][iRing] \
+                                      + ringData.PAN[nTime+1][iRing]    \
+                                      + ringData.MPN[nTime+1][iRing]    \
+                                      + ringData.N[nTime+1][iRing]      \
+                                      + ringData.PROPNN[nTime+1][iRing] \
+                                      + ringData.BrNO2[nTime+1][iRing]  \
+                                      + ringData.BrNO3[nTime+1][iRing]  \
+                                      + ringData.ClNO2[nTime+1][iRing]  \
+                                      + ringData.ClNO3[nTime+1][iRing]  \
+                                      + ringData.PPN[nTime+1][iRing]    \
+                                      + ringData.PRPN[nTime+1][iRing]   \
+                                      + ringData.R4N1[nTime+1][iRing]   \
+                                      + ringData.PRN1[nTime+1][iRing]   \
+                                      + ringData.R4N2[nTime+1][iRing]   \
+                                      + 2*ringData.N2O[nTime+1][iRing]  \
                                       - mass_Ambient_NOy ) * ringArea[iRing];
         }
         /* How much of this emitted mass is still in the rings? FR = Fraction in rings */
@@ -1903,7 +1907,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
         /* CO2 is not an exactly conserved quantity because of the oxidation CO and other compounds (unless chemistry is turned off) */
 
-        mass_Ambient_CO2 = ambientData.CO2[nTime+1];
+        mass_Ambient_CO2 = ambientData.Species[ind_CO2][nTime+1];
 
         /* Compute emitted */
         mass_Emitted_CO2 = 0;
@@ -1915,7 +1919,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         if       ( !PARALLEL_CASES    )
         for ( iNx = 0; iNx < NX; iNx++ ) {
             for ( jNy = 0; jNy < NY; jNy++ ) {
-                mass_Emitted_CO2 += ( Data.CO2[jNy][iNx] \
+                mass_Emitted_CO2 += ( Data.Species[ind_CO2][jNy][iNx] \
                                     - mass_Ambient_CO2 ) * cellAreas[jNy][iNx];
             }
         }
@@ -1930,7 +1934,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 #ifdef RINGS
             mass_Emitted_CO2_Rings = 0;
             for ( iRing = 0; iRing < nRing; iRing++ ) {
-                mass_Emitted_CO2_Rings += ( ringSpecies.CO2[nTime+1][iRing] \
+                mass_Emitted_CO2_Rings += ( ringData.Species[ind_CO2][nTime+1][iRing] \
                                           - mass_Ambient_CO2 ) * ringArea[iRing];
             }
             /* How much of this emitted mass is still in the rings? FR = Fraction in rings */
@@ -1942,7 +1946,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
 #if ( H2O_MASS_CHECK )
 
-        mass_Ambient_H2O = ambientData.H2O[nTime+1];
+        mass_Ambient_H2O = ambientData.Species[ind_H2O][nTime+1];
         totIceVol = Data.solidAerosol.TotalVolume( );
 
         /* Compute total water */
@@ -1955,7 +1959,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         if       ( !PARALLEL_CASES )
         for ( iNx = 0; iNx < NX; iNx++ ) {
             for ( jNy = 0; jNy < NY; jNy++ ) {
-                mass_H2O += ( ( Data.H2O[jNy][iNx] - mass_Ambient_H2O ) \
+                mass_H2O += ( ( Data.Species[ind_H2O][jNy][iNx] - mass_Ambient_H2O ) \
                             + totIceVol[jNy][iNx] * UNITCONVERSION ) * \
                             cellAreas[jNy][iNx];
             }
@@ -2063,7 +2067,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         if ( SAVE_FORWARD ) {
             isSaved = output::Write( input.fileName2char(),               \
                                      Input_Opt,                           \
-                                     ringSpecies,                         \
+                                     TS_SPEC_LIST,                        \
+                                     ringData,                            \
                                      ambientData,                         \
                                      ringCluster,                         \
                                      timeArray,                           \
@@ -2100,8 +2105,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         RealDouble VAR_OPT[NVAR];
         RealDouble METRIC;
 
-        const Vector_1D initBackg = ringSpecies.RingAverage( ringArea, totArea, 0 );
-        const Vector_1D finalPlume = ringSpecies.RingAverage( ringArea, totArea, timeArray.size() - 1 );
+        const Vector_1D initBackg = ringData.RingAverage( ringArea, totArea, 0 );
+        const Vector_1D finalPlume = ringData.RingAverage( ringArea, totArea, timeArray.size() - 1 );
 
         IERR = KPP_Main_ADJ( &(finalPlume)[0], &(initBackg)[0],   \
                              temperature_K, pressure_Pa, airDens, \
@@ -2394,7 +2399,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         #pragma omp critical
         {
             isSaved = output::Write_Adjoint( input.fileName_ADJ2char(), \
-                                             ringSpecies, ambientData,  \
+                                             TS_SPEC_LIST,              \
+                                             ringData, ambientData,     \
                                              adjointData,               \
                                              ringArea, totArea,         \
                                              timeArray,                 \
