@@ -20,8 +20,10 @@ namespace EPM
                    RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
                    RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, \
                    RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, \
-                   RealDouble &Area )
+                   RealDouble &Area, RealDouble &Ab0, RealDouble &Tc0 )
     {
+
+        std::cout << "Ab0=" << Ab0 << ", Tc0=" << Tc0 << std::endl;
 
         /* Get mean vortex displacement in [m] */
         RealDouble delta_z;
@@ -37,7 +39,7 @@ namespace EPM
          * The minus sign is because delta_z is the distance pointing down */
 
         RunMicrophysics( temperature_K, pressure_Pa, relHumidity_w, varArray, fixArray, aerArray, AC, EI, delta_T_ad, delta_T, \
-                         Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, SO4Aer, IceAer, Area );
+                         Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, SO4Aer, IceAer, Area, Ab0, Tc0 );
 
         return EPM_SUCCESS;
 
@@ -47,7 +49,7 @@ namespace EPM
                          RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
                          RealDouble delta_T_ad, RealDouble delta_T, RealDouble &Ice_rad, RealDouble &Ice_den, \
                          RealDouble &Soot_den, RealDouble &H2O_mol, RealDouble &SO4g_mol, RealDouble &SO4l_mol, \
-                         AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, RealDouble &Area )
+                         AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, RealDouble &Area, RealDouble &Ab0, RealDouble &Tc0 )
     {
     
         RealDouble relHumidity_i_Amb, relHumidity_i_postVortex, relHumidity_i_Final;

@@ -787,6 +787,11 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     int iEISootRad    = -1;
     int itotFuelFlow  = -1;
     int iaircraftMass = -1;
+    int iflightSpeed  = -1;
+    int inumEngines   = -1;
+    int iwingspan     = -1;
+    int icoreExitTemp = -1;
+    int ibypassArea   = -1;
 
     /* ==================================================== */
     /* Read parameters from file?                           */
@@ -1023,7 +1028,39 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
                             ( strcmp( tokens[i].c_str(), "amass" )         == 0 ) ) {
                     std::cout << std::left << std::setw(40) << " Found Aircraft mass field at index " << std::setw(4) << i;
                     std::cout << std::right << std::setw(12) << "  (" << tokens[i].c_str() << ")" << std::endl;
-                    iaircraftMass = i;
+                    iaircraftMass = i;                                          
+                } else if ( ( strcmp( tokens[i].c_str(), "flight speed" ) == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "flt speed" )       == 0 ) || \              
+                            ( strcmp( tokens[i].c_str(), "fltspeed" )        == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "fspeed" )         == 0 ) ) {               
+                    std::cout << std::left << std::setw(40) << " Found Aircraft flight speed field at index " << std::setw(4) << i;                                   
+                    std::cout << std::right << std::setw(12) << "  (" << tokens[i].c_str() << ")" << std::endl;
+                    iflightSpeed = i;
+                } else if ( ( strcmp( tokens[i].c_str(), "number of engines" ) == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "num. of engines" )       == 0 ) || \              
+                            ( strcmp( tokens[i].c_str(), "num. eng." )        == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "numeng" )         == 0 ) ) {               
+                    std::cout << std::left << std::setw(40) << " Found Aircraft number of engines field at index " << std::setw(4) << i;                                   
+                    std::cout << std::right << std::setw(12) << "  (" << tokens[i].c_str() << ")" << std::endl;
+                    inumEngines = i;                                          
+                } else if ( ( strcmp( tokens[i].c_str(), "wing span" ) == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "wingspan" )         == 0 ) ) {               
+                    std::cout << std::left << std::setw(40) << " Found Aircraft wingspan field at index " << std::setw(4) << i;                                   
+                    std::cout << std::right << std::setw(12) << "  (" << tokens[i].c_str() << ")" << std::endl;
+                    iwingspan = i;                                          
+                } else if ( ( strcmp( tokens[i].c_str(), "core exit temperature" ) == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "core exit temp." )       == 0 ) || \              
+                            ( strcmp( tokens[i].c_str(), "core exit T" )        == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "core T" )         == 0 ) ) {               
+                    std::cout << std::left << std::setw(40) << " Found core exit temperature field at index " << std::setw(4) << i;                                   
+                    std::cout << std::right << std::setw(12) << "  (" << tokens[i].c_str() << ")" << std::endl;
+                    icoreExitTemp = i;
+                } else if ( ( strcmp( tokens[i].c_str(), "exit bypass area" ) == 0 ) || \
+                            ( strcmp( tokens[i].c_str(), "bypass area" )       == 0 ) || \              
+                            ( strcmp( tokens[i].c_str(), "area" )         == 0 ) ) {               
+                    std::cout << std::left << std::setw(40) << " Found bypass exit area field at index " << std::setw(4) << i;                                   
+                    std::cout << std::right << std::setw(12) << "  (" << tokens[i].c_str() << ")" << std::endl;
+                    ibypassArea = i;
                 } else 
                     std::cout << " Ignoring field: " << tokens[i] << std::endl;
             }
@@ -1096,6 +1133,16 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
                             fileInput[24].push_back( std::stod( tokens[i] ) );
                         else if ( ibSO2 == i )
                             fileInput[25].push_back( std::stod( tokens[i] ) );
+                        else if ( iflightSpeed == i )
+                            fileInput[26].push_back( std::stod( tokens[i] ) );
+                        else if ( inumEngines == i )
+                            fileInput[27].push_back( std::stod( tokens[i] ) );
+                        else if ( iwingspan == i )
+                            fileInput[28].push_back( std::stod( tokens[i] ) );
+                        else if ( icoreExitTemp == i )
+                            fileInput[29].push_back( std::stod( tokens[i] ) );
+                        else if ( ibypassArea == i )
+                            fileInput[30].push_back( std::stod( tokens[i] ) );
                     } catch( std::exception& e ) {
                         std::cout << " Could not convert string '" << tokens[i] << "' to double/int for index " << i << " in parameter input file." << std::endl;
                         exit(-1);
@@ -4227,6 +4274,600 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
         }
     }
 
+    /* ==================================================== */
+    /* Flight speed                                         */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Flight speed";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_FSPEED_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_FSPEED_RANGE = 0;
+    }
+   
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+    
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_FSPEED_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_FSPEED_RANGE = 0;
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_FSPEED_UNIT.assign( unit );
+
+    if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( iflightSpeed != -1 ) ) {
+        /* Found Fuel flow in parameter input file */
+        Input_Opt.PARAMETER_FSPEED_RANGE = 0;
+        if ( fileInput[26].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[26].size(); i++ ) {
+                if ( fileInput[26][i] >= 0.0E+00 )
+                    Input_Opt.PARAMETER_FSPEED.push_back( fileInput[26][i] );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            }
+        } else {
+            try {
+                value = std::stod( tokens[0] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_FSPEED.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[0] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    } else {
+        /* Store in values for variable */
+        for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+            try {
+                value = std::stod( tokens[i] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_FSPEED.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    }
+
+    /* ==================================================== */
+    /* Number of engines                                    */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Number of engines";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_NUMENG_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_NUMENG_RANGE = 0;
+    }
+   
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+    
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_NUMENG_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_NUMENG_RANGE = 0;
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_NUMENG_UNIT.assign( unit );
+
+    if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( inumEngines != -1 ) ) {
+        /* Found Fuel flow in parameter input file */
+        Input_Opt.PARAMETER_NUMENG_RANGE = 0;
+        if ( fileInput[27].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[27].size(); i++ ) {
+                if ( ( fileInput[27][i] == 2 ) || ( fileInput[27][i] == 4 ) )
+                    Input_Opt.PARAMETER_NUMENG.push_back( fileInput[27][i] );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            }
+        } else {
+            try {
+                value = std::stod( tokens[0] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_NUMENG.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[0] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    } else {
+        /* Store in values for variable */
+        for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+            try {
+                value = std::stod( tokens[i] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_NUMENG.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    }
+
+    /* ==================================================== */
+    /* Wingspan                                             */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Wingspan";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_WINGSPAN_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_WINGSPAN_RANGE = 0;
+    }
+   
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+    
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_WINGSPAN_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_WINGSPAN_RANGE = 0;
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_WINGSPAN_UNIT.assign( unit );
+
+    if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( iwingspan != -1 ) ) {
+        /* Found Fuel flow in parameter input file */
+        Input_Opt.PARAMETER_WINGSPAN_RANGE = 0;
+        if ( fileInput[28].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[28].size(); i++ ) {
+                if ( fileInput[28][i] > 0.0E+00 )
+                    Input_Opt.PARAMETER_WINGSPAN.push_back( fileInput[28][i] );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            }
+        } else {
+            try {
+                value = std::stod( tokens[0] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_WINGSPAN.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[0] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    } else {
+        /* Store in values for variable */
+        for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+            try {
+                value = std::stod( tokens[i] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_WINGSPAN.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    }
+
+    /* ==================================================== */
+    /* Core exit temperature                                */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Core exit temperature";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_COREEXITTEMP_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_COREEXITTEMP_RANGE = 0;
+    }
+   
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+    
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_COREEXITTEMP_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_COREEXITTEMP_RANGE = 0;
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_COREEXITTEMP_UNIT.assign( unit );
+
+    if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( icoreExitTemp != -1 ) ) {
+        /* Found Fuel flow in parameter input file */
+        Input_Opt.PARAMETER_COREEXITTEMP_RANGE = 0;
+        if ( fileInput[29].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[29].size(); i++ ) {
+                if ( fileInput[29][i] > 0.0E+00 )
+                    Input_Opt.PARAMETER_COREEXITTEMP.push_back( fileInput[29][i] );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            }
+        } else {
+            try {
+                value = std::stod( tokens[0] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_COREEXITTEMP.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[0] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    } else {
+        /* Store in values for variable */
+        for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+            try {
+                value = std::stod( tokens[i] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_COREEXITTEMP.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    }
+
+    /* ==================================================== */
+    /* Exit bypass area                                     */
+    /* ==================================================== */
+
+    /* Variable */
+    variable = "Exit bypass area";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Get line past the delimiter */
+    subline = line.substr(FIRSTCOL);
+    /* Look for colon */
+    found = subline.find( COLON );
+    if ( found != std::string::npos ) {
+        subline.erase(std::remove(subline.begin(), subline.end(), ' '), subline.end());
+        /* Extract variable range */
+        tokens = Split_Line( subline, COLON );
+
+        if ( !Input_Opt.SIMULATION_MONTECARLO ) {
+            if (tokens.size() != 3) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: " << std::endl;
+                std::cout << "   --> begin:step:end" << std::endl;
+                std::cout << "       or" << std::endl;
+                std::cout << "   --> val1 val2 val3 ..." << std::endl;
+                exit(1);
+            }
+            if ( ( std::stod(tokens[2]) <  std::stod(tokens[0]) ) || \
+                 ( std::stod(tokens[1]) <= 0.0E+00 )              || \
+                 ( std::stod(tokens[1]) >  ( std::stod(tokens[2]) - std::stod(tokens[0]) ) ) ) {
+                std::cout << " Wrong input for " << variable << std::endl;
+                std::cout << " Expected format is: begin:step:end with begin < end, 0 < step < end - begin" << std::endl;
+                exit(1);
+            }
+        }
+        Input_Opt.PARAMETER_BYPASSAREA_RANGE = 1;
+    } 
+    else {
+        /* Extract variable range */
+        tokens = Split_Line( subline, SPACE );
+
+        if ( tokens.size() < 1 ) {
+            std::cout << " Expected at least one value for " << variable << std::endl;
+            exit(1);
+        }
+        Input_Opt.PARAMETER_BYPASSAREA_RANGE = 0;
+    }
+   
+    if ( ( tokens.size() > 1 ) && ( !Input_Opt.SIMULATION_PARAMETER_SWEEP ) ) {
+        std::cout << " APCEMM cannot accept multiple cases when the 'parameter sweep?' argument is turned off! Aborting." << std::endl;
+        exit(1);
+    }
+    
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( tokens.size() > 2 ) {
+            std::cout << " Wrong input for " << variable << " when MC is turned on!" << std::endl;
+            std::cout << " Expected format is min max or min:max representing the range of possible values" << std::endl;
+            exit(1);
+        } else if ( tokens.size() == 2 ) {
+            Input_Opt.PARAMETER_BYPASSAREA_RANGE = 1;
+            sort(tokens.begin(), tokens.end());
+        } else if ( tokens.size() == 1 )
+            Input_Opt.PARAMETER_BYPASSAREA_RANGE = 0;
+    }
+    
+    /* Find unit in between "[" and "]" */ 
+    first = line.find("[");
+    last  = line.find("]");
+    unit = line.substr( first+1, last-first-1 );
+    Input_Opt.PARAMETER_BYPASSAREA_UNIT.assign( unit );
+
+    if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibypassArea != -1 ) ) {
+        /* Found Fuel flow in parameter input file */
+        Input_Opt.PARAMETER_BYPASSAREA_RANGE = 0;
+        if ( fileInput[29].size() > 0 ) {
+            for ( unsigned int i = 0; i < fileInput[29].size(); i++ ) {
+                if ( fileInput[29][i] > 0.0E+00 )
+                    Input_Opt.PARAMETER_BYPASSAREA.push_back( fileInput[29][i] );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            }
+        } else {
+            try {
+                value = std::stod( tokens[0] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BYPASSAREA.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[0] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    } else {
+        /* Store in values for variable */
+        for ( unsigned int i = 0; i < tokens.size(); i++ ) {
+            try {
+                value = std::stod( tokens[i] );
+                if ( value >= 0.0E+00 )
+                    Input_Opt.PARAMETER_BYPASSAREA.push_back( value );
+                else {
+                    std::cout << " Wrong input for: " << variable << std::endl;
+                    std::cout << variable << " needs to be positive" << std::endl;
+                    exit(1);
+                }
+            } catch(std::exception& e) {
+                std::cout << " Could not convert string '" << tokens[i] << "' to double for " << variable << std::endl;
+                exit(1);
+            }
+        }
+    }
 
     /* If we found NOx flow, convert to EI */
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( iNOxFlow != -1 ) ) {
@@ -4667,6 +5308,92 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
             std::cout << std::endl;
         }
     }
+
+    /* ---- Flight speed ------------------------------- */
+    std::cout << "  Flight speed [" << Input_Opt.PARAMETER_AMASS_UNIT << "] : ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_FSPEED_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_FSPEED[0] << "," << Input_Opt.PARAMETER_FSPEED[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_FSPEED[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_FSPEED_RANGE )
+            std::cout << Input_Opt.PARAMETER_FSPEED[0] << ":" << Input_Opt.PARAMETER_FSPEED[1] << ":" << Input_Opt.PARAMETER_FSPEED[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_FSPEED.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_FSPEED[i] << " ";
+            std::cout << std::endl;
+        }
+    }
+
+    /* ---- Number of engines ------------------------------- */
+    std::cout << "  Num. of engines [" << Input_Opt.PARAMETER_NUMENG_UNIT << "] : ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_NUMENG_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_NUMENG[0] << "," << Input_Opt.PARAMETER_NUMENG[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_NUMENG[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_NUMENG_RANGE )
+            std::cout << Input_Opt.PARAMETER_NUMENG[0] << ":" << Input_Opt.PARAMETER_NUMENG[1] << ":" << Input_Opt.PARAMETER_NUMENG[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_NUMENG.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_NUMENG[i] << " ";
+            std::cout << std::endl;
+        }
+    }
+
+    /* ---- Wingspan ------------------------------- */
+    std::cout << "  Wingspan [" << Input_Opt.PARAMETER_WINGSPAN_UNIT << "] : ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_WINGSPAN_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_WINGSPAN[0] << "," << Input_Opt.PARAMETER_WINGSPAN[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_WINGSPAN[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_WINGSPAN_RANGE )
+            std::cout << Input_Opt.PARAMETER_WINGSPAN[0] << ":" << Input_Opt.PARAMETER_WINGSPAN[1] << ":" << Input_Opt.PARAMETER_WINGSPAN[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_WINGSPAN.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_WINGSPAN[i] << " ";
+            std::cout << std::endl;
+        }
+    }
+
+    /* ---- Core exit temperature ------------------------------- */
+    std::cout << "  Core exit temp. [" << Input_Opt.PARAMETER_COREEXITTEMP_UNIT << "] : ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_COREEXITTEMP_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_COREEXITTEMP[0] << "," << Input_Opt.PARAMETER_COREEXITTEMP[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_COREEXITTEMP[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_COREEXITTEMP_RANGE )
+            std::cout << Input_Opt.PARAMETER_COREEXITTEMP[0] << ":" << Input_Opt.PARAMETER_COREEXITTEMP[1] << ":" << Input_Opt.PARAMETER_COREEXITTEMP[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_COREEXITTEMP.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_COREEXITTEMP[i] << " ";
+            std::cout << std::endl;
+        }
+    }
+
+    /* ---- Bypass area ------------------------------- */
+    std::cout << "  Exit bypass area [" << Input_Opt.PARAMETER_BYPASSAREA_UNIT << "] : ";
+    if ( Input_Opt.SIMULATION_MONTECARLO ) {
+        if ( Input_Opt.PARAMETER_BYPASSAREA_RANGE )
+            std::cout << "[" << Input_Opt.PARAMETER_BYPASSAREA[0] << "," << Input_Opt.PARAMETER_BYPASSAREA[1] << "]" << std::endl;
+        else
+            std::cout << Input_Opt.PARAMETER_BYPASSAREA[0] << std::endl;
+    } else {
+        if ( Input_Opt.PARAMETER_BYPASSAREA_RANGE )
+            std::cout << Input_Opt.PARAMETER_BYPASSAREA[0] << ":" << Input_Opt.PARAMETER_BYPASSAREA[1] << ":" << Input_Opt.PARAMETER_BYPASSAREA[2] << std::endl;
+        else {
+            for ( unsigned int i = 0; i < Input_Opt.PARAMETER_BYPASSAREA.size(); i++ )
+                std::cout << Input_Opt.PARAMETER_BYPASSAREA[i] << " ";
+            std::cout << std::endl;
+        }
+    }
+
 
 } /* End of Read_Parameters */
 

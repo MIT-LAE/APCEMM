@@ -62,22 +62,23 @@ namespace EPM
     /* Engine exit core velocity in m/s */
     const RealDouble uc0 = 475.7;
     /* Engine exit core temperature in K */
-    const RealDouble Tc0 = 547.3;
+    /* const RealDouble Tc0 = 547.3; */
+    /* RealDouble Tc0 */
     /* Engine exit bypass area in m^2 */
-    const RealDouble Ab0 = 1.804;
-
+    /* const RealDouble Ab0 = 1.804; */
+    /* RealDouble Ab0 */
 
     int Integrate( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, RealDouble varArray[], \
                    RealDouble fixArray[], RealDouble aerArray[][2], const Aircraft &AC, const Emission &EI, \
                    RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, \
                    RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, \
-                   RealDouble &Area );
+                   RealDouble &Area, RealDouble &Ab0, RealDouble &Tc0 );
     int RunMicrophysics( RealDouble &temperature_K, RealDouble pressure_Pa, RealDouble relHumidity_w, \
                          RealDouble varArray[], RealDouble fixArray[], RealDouble aerArray[][2], \
                          const Aircraft &AC, const Emission &EI, RealDouble delta_T_ad, RealDouble delta_T, \
                          RealDouble &Ice_rad, RealDouble &Ice_den, RealDouble &Soot_den, RealDouble &H2O_mol, \
                          RealDouble &SO4g_mol, RealDouble &SO4l_mol, AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, \
-                         RealDouble &Area );
+                         RealDouble &Area, RealDouble &Ab0, RealDouble &Tc0 );
     RealDouble dT_Vortex( const RealDouble time, const RealDouble delta_T, bool deriv = 0 );
     RealDouble dilutionRatio( const RealDouble time );
     RealDouble depositionRate( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O, \

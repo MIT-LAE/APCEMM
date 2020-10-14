@@ -80,7 +80,7 @@ int main( int , char* )
 
         /* Read in input file */
         Read_Input_File( Input_Opt );
-        
+
         /* Collect parameters and create cases */
         parameters = CombVec( Input_Opt );
 

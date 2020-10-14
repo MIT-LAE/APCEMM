@@ -23,6 +23,7 @@
 #include "Core/Interface.hpp"
 #include "Core/Cluster.hpp"
 #include "Core/Ring.hpp"
+#include "Util/PhysConstant.hpp"
 
 class Mesh
 {
