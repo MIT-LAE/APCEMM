@@ -4347,7 +4347,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_FSPEED_UNIT.assign( unit );
 
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( iflightSpeed != -1 ) ) {
-        /* Found Fuel flow in parameter input file */
+        /* Found flight speed in parameter input file */
         Input_Opt.PARAMETER_FSPEED_RANGE = 0;
         if ( fileInput[26].size() > 0 ) {
             for ( unsigned int i = 0; i < fileInput[26].size(); i++ ) {
@@ -4466,7 +4466,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_NUMENG_UNIT.assign( unit );
 
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( inumEngines != -1 ) ) {
-        /* Found Fuel flow in parameter input file */
+        /* Found number of engines in parameter input file */
         Input_Opt.PARAMETER_NUMENG_RANGE = 0;
         if ( fileInput[27].size() > 0 ) {
             for ( unsigned int i = 0; i < fileInput[27].size(); i++ ) {
@@ -4585,7 +4585,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_WINGSPAN_UNIT.assign( unit );
 
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( iwingspan != -1 ) ) {
-        /* Found Fuel flow in parameter input file */
+        /* Found wingspan in parameter input file */
         Input_Opt.PARAMETER_WINGSPAN_RANGE = 0;
         if ( fileInput[28].size() > 0 ) {
             for ( unsigned int i = 0; i < fileInput[28].size(); i++ ) {
@@ -4704,7 +4704,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_COREEXITTEMP_UNIT.assign( unit );
 
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( icoreExitTemp != -1 ) ) {
-        /* Found Fuel flow in parameter input file */
+        /* Found core exit temperature in parameter input file */
         Input_Opt.PARAMETER_COREEXITTEMP_RANGE = 0;
         if ( fileInput[29].size() > 0 ) {
             for ( unsigned int i = 0; i < fileInput[29].size(); i++ ) {
@@ -4823,7 +4823,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     Input_Opt.PARAMETER_BYPASSAREA_UNIT.assign( unit );
 
     if ( ( Input_Opt.PARAMETER_FILEINPUT ) && ( ibypassArea != -1 ) ) {
-        /* Found Fuel flow in parameter input file */
+        /* Found bypass area in parameter input file */
         Input_Opt.PARAMETER_BYPASSAREA_RANGE = 0;
         if ( fileInput[29].size() > 0 ) {
             for ( unsigned int i = 0; i < fileInput[29].size(); i++ ) {
