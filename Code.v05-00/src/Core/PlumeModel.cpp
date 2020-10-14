@@ -610,11 +610,14 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     RealDouble Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol;
     RealDouble areaPlume;
+    RealDouble Ab0 = Input_Opt.PARAMETER_BYPASSAREA[0];
+    RealDouble Tc0 = Input_Opt.PARAMETER_COREEXITTEMP[0];
     AIM::Aerosol liquidAer, iceAer;
     EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, VAR, FIX, \
                     aerArray, aircraft, EI, Ice_rad, Ice_den, Soot_den,  \
-                    H2O_mol, SO4g_mol, SO4l_mol, liquidAer, iceAer, areaPlume );
-
+                    H2O_mol, SO4g_mol, SO4l_mol, liquidAer, iceAer, areaPlume, \
+                    Ab0, Tc0 );
+    
     /* Compute initial plume area.
      * If 2 engines, we assume that after 3 mins, the two plumes haven't fully mixed yet and result in a total
      * area of 2 * the area computed for one engine
@@ -2003,7 +2006,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
             std::cout << totalIceParticles << ", " << totalIceMass << std::endl;
             /* if ( totalIceParticles <= 1.00E-15 && totalIceMass <= 1.00E-15 ) { */
-            if ( totalIceParticles <= 1.00E+1 || totalIceMass <= 1.00E-5 && !CHEMISTRY ) {
+            if ( totalIceParticles <= 1.00E+1 && totalIceMass <= 1.00E-5 && !CHEMISTRY ) {
                 std::cout << "EndSim: no particles remain" << std::endl;
                 std::cout << "# ice particles: " << totalIceParticles << std::endl;
                 std::cout << "Total ice mass [g]: " << totalIceMass << std::endl;
