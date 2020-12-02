@@ -184,7 +184,7 @@ void Solution::Initialize( char const *fileName,      \
 
     UInt actualX = size_x;
     UInt actualY = size_y;
-
+    std::cout << "size_x=" << size_x << ", size_y=" << size_y << std::endl;
     if ( !Input_Opt.CHEMISTRY_CHEMISTRY ) {
         actualX = 1;
         actualY = 1;

@@ -86,6 +86,9 @@ class Aircraft
         void setEI_Soot(const RealDouble Soot);
         void setSootRad(const RealDouble sootRad);
         void setFuelFlow(const RealDouble ff);
+        void setVFlight(const RealDouble Vf, RealDouble temperature_K);
+        void setEngNumber(const RealDouble nEng);
+        void setWingspan(const RealDouble span);
 
         /* Engine */
         Engine engine_;

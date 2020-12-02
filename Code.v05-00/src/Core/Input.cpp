@@ -177,7 +177,8 @@ Input::Input( unsigned int iCase,             \
         exit(-1);
     }
 
-    if ( aircraftMass_ < 50.0E+03 ) {
+    /* if ( aircraftMass_ < 50.0E+03 ) { */
+    if ( aircraftMass_ < 0.0E+00 ) {
         std::cout << " In Input::Input:";
         std::cout << " aircraftMass takes an unrealisable value: aircraftMass = ";
         std::cout << aircraftMass_ << " [kg]" << std::endl;

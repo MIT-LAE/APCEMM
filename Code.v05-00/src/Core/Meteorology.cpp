@@ -101,7 +101,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         NcError err( NcError::silent_nonfatal );
 
         /* Open the netcdf file for read access */
-        std::cout << USERINPUT.MET_FILENAME.c_str() << std::endl;
+        // std::cout << USERINPUT.MET_FILENAME.c_str() << std::endl;
         NcFile dataFile( USERINPUT.MET_FILENAME.c_str(), NcFile::ReadOnly  );
 	if ( !dataFile.is_valid() ) {
 	    std::cout << "Netcdf file is not valid" << std::endl;
@@ -115,7 +115,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
             std::cout << "In Meteorology:: Meteorology: getting variable length pointer" << std::endl;
         }
         var_len_ncVar->get(&var_len, var_var_len);
-        std::cout << var_len << std::endl;
+        // std::cout << var_len << std::endl;
 
         /* Extract pressure and altitude from input file */
         //int var_len = 5117;
@@ -141,8 +141,8 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         // std::cout << "The closest(ish) pressure is: " << pressure_user[i_Zp] << std::endl;
         pres_user = pressure_user[i_Zp];
         alt_user = met::linearInterp( pressure_user, altitude_user, PRESSURE );
-        std::cout << "linear interp: " << alt_user << " m" << std::endl;
-        std::cout << "nearest neighbor: " << altitude_user[i_Zp] << " m" << std::endl;
+        // std::cout << "linear interp: " << alt_user << " m" << std::endl;
+        // std::cout << "nearest neighbor: " << altitude_user[i_Zp] << " m" << std::endl;
 
         for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
              // alt_[jNy] = altitude_user[i_Zp] + Y[jNy];

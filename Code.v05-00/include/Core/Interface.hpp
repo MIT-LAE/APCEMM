@@ -34,7 +34,7 @@
 
 /* DEBUG */
 /* DEBUG is now specified in Makefile header */
-#define DEBUG_ALL               0    /* Debug all? */
+#define DEBUG_ALL               1    /* Debug all? */
 //#define DEBUG                   0    /* Debug all except variables that have
 //                                        specific debug options (see below) */
 

@@ -69,7 +69,6 @@ Vortex::Vortex( RealDouble temperature_K, RealDouble pressure_Pa,  \
     
     /* Normalized dissipation rate, [ - ] */
     eps_star_ = pow( physConst::EPSILON * b_, RealDouble(1.0/3.0) ) / w_;
-
     if ( N_BV <= 0 ) {
         std::cout << "In Vortex::Vortex: Brunt-Vaisala frequency takes negative value, N_BV = " << N_BV << " [s^-1]\n";
         N_BV = 1.3E-02;
@@ -99,7 +98,6 @@ Vortex::Vortex( RealDouble temperature_K, RealDouble pressure_Pa,  \
     delta_z1_ = Cz1 * delta_zw_;
 
     D_1_ = CD_0 * delta_zw_;
-
 
 } /* End of Vortex::Vortex */
 

@@ -259,6 +259,35 @@ void Aircraft::setFuelFlow(const RealDouble ff)
 
 } /* End of Aircraft::setFuelFlow */
 
+void Aircraft::setVFlight(const RealDouble Vf, RealDouble temperature_K)
+{
+
+    if ( Vf > 0.0E+00 )
+        vFlight_ms_ = Vf;
+        machNumber_ = vFlight_ms_ \
+                    / sqrt( physConst::GAMMA_Air * physConst::R_Air * temperature_K );
+
+
+} /* End of Aircraft::setVFlight */
+
+void Aircraft::setEngNumber(const RealDouble nEng)
+{
+
+    if ( nEng > 0.0E+00 )
+        engNumber_ = nEng;
+
+
+} /* End of Aircraft::setEngNumber */
+
+void Aircraft::setWingspan(const RealDouble span)
+{
+
+    if ( span > 0.0E+00 )
+        wingspan_ = span;
+
+
+} /* End of Aircraft::setWingspan */
+
 void Aircraft::Debug( ) const
 {
 
