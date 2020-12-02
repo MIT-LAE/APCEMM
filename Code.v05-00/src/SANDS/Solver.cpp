@@ -19,8 +19,13 @@ namespace SANDS
     Solver::Solver( ):
         n_x( NX ),
         n_y( NY ),
+#ifndef XLIM
         xlim_right( XLIM_RIGHT ),
         xlim_left( XLIM_LEFT ),
+#else
+        xlim_right( XLIM ),
+        xlim_left( XLIM ),
+#endif
         ylim_up( YLIM_UP ),
         ylim_down( YLIM_DOWN ),
         doFill( 1 ),

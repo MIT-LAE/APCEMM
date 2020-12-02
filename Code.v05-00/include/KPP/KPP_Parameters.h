@@ -185,6 +185,25 @@
 #define ind_O2               133        
 #define ind_RCOOH            134        
 
+/* Index declaration for additional species in APCEMM               */
+
+#define ind_NIT      NSPEC
+#define ind_NAT      NSPEC+1
+#define ind_SO4L     NSPEC+2
+#define ind_H2OL     NSPEC+3
+#define ind_H2OS     NSPEC+4
+#define ind_HNO3L    NSPEC+5
+#define ind_HNO3S    NSPEC+6
+#define ind_HClL     NSPEC+7
+#define ind_HOClL    NSPEC+8
+#define ind_HBrL     NSPEC+9
+#define ind_HOBrL    NSPEC+10
+#define NSPECREACT   NSPEC+11
+#define ind_SO4T     NSPEC+11
+#define ind_H2Omet   NSPEC+12
+#define ind_H2Oplume NSPEC+13
+#define NSPECALL     NSPEC+14
+
 /* Index declaration for fixed species in FIX                       */
 /*    FIX(indf_spc) = C(ind_spc) = C(NVAR+indf_spc)                 */
 

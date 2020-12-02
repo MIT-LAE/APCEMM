@@ -127,20 +127,8 @@ LINK := $(LINK)
 # Add path to APCEMM's library folder
 LINK := -L$(LIB_DIR)
 
-# Adding Matlab's include and library paths for mat library
-MATLAB_INCL      :=/opt/MATLAB/R2016a/extern/include
-MATLAB_LIBBIN    :=/opt/MATLAB/R2016a/bin/glnxa64/
-MATLAB_LIBEXTERN :=/opt/MATLAB/R2016a/extern/lib/glnxa64/
-MATLAB_LIBSYS    :=/opt/MATLAB/R2016a/sys/
-
-# Matlab's linking sequence
-LDLIBS = -Wl,--rpath-link,$(MATLAB_LIBBIN),$\
-			 --rpath-link,$(MATLAB_LIBEXTERN),$\
-			 --rpath-link,$(MATLAB_LIBSYS) $\
-			 -L$(MATLAB_LIBBIN) -L$(MATLAB_LIBEXTERN) -L$(MATLAB_LIBSYS)
-
 # Define any libraries to link into executable: use -llibname option
-LINK := $(LINK) $(LDLIBS) -lstdc++ -lmx -lmat
+LINK := $(LINK) $(LDLIBS) -lstdc++
 
 LINK_FFTW := -lfftw3 -lfftw3f -lfftw3l
 ifeq ($(shell [[ "$(OMP)" =~ $(REGEXP) ]] && echo true),true)
@@ -165,7 +153,7 @@ ifeq ($(COMPILER),g++)
   VERSION            :=$(subst .,,$(VERSION))
 
   # Base set of compiler flags
-  CXXFLAGS            :=-std=c++11 -w
+  CXXFLAGS            :=-std=c++11 -w -rdynamic
 
   # Default optimization level for all routines (-O3)
   ifndef OPT
@@ -200,6 +188,18 @@ ifeq ($(COMPILER),g++)
     USER_DEFS         += -DOMP
   endif
 
+  # Add option for "array out of bounds" checking
+  REGEXP             :=(^[Yy]|^[Yy][Ee][Ss])
+  ifeq ($(shell [[ "$(BOUNDS)" =~ $(REGEXP) ]] && echo true),true)
+    CXXFLAGS          += -Warray-bounds -ftree-vrp
+  endif
+
+  ## Add traceback option
+  #REGEXP             :=(^[Yy]|^[Yy][Ee][Ss])
+  #ifeq ($(shell [[ "$(TRACEBACK)" =~ $(REGEXP) ]] && echo true),true)
+  #  CXXFLAGS          += 
+  #endif
+
   # Use ring structure?
   REGEXP             :=(^[Yy]|^[Yy][Ee][Ss])
   ifeq ($(shell [[ "$(RINGS)" =~ $(REGEXP) ]] && echo true),true)
@@ -217,8 +217,6 @@ ifeq ($(COMPILER),g++)
 
   # Include options (i.e. for finding *.h* files)
   INCLUDE := -I$(ROOT_DIR)/include
-
-  INCLUDE := $(INCLUDE) -I$(MATLAB_INCL)
 
 endif
 

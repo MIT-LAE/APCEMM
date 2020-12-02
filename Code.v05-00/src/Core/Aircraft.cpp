@@ -115,7 +115,7 @@ RealDouble Aircraft::VortexLosses( const RealDouble EI_Soot,    \
      * */
 
     /* Debug flag? */
-    const bool DEBUG = 0;
+    const bool ACDEBUG = 0;
 
     /* Compute volume and mass of soot particles emitted */
     const RealDouble volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 );
@@ -177,12 +177,12 @@ RealDouble Aircraft::VortexLosses( const RealDouble EI_Soot,    \
 
     iceNumFrac = beta_0 + beta_1 / physConst::PI * atan( alpha_0 + z_Delta / 1.0E+02 );
 
-    if ( ( DEBUG ) || ( iceNumFrac < 0.1E+00 ) || ( iceNumFrac > 1.0E+00 ) ) {
+    if ( ( ACDEBUG ) || ( iceNumFrac < 0.1E+00 ) || ( iceNumFrac > 1.0E+00 ) ) {
         /* If DEBUG is on or if we lose more than 90% of the initial number of 
          * ice crystals, then print diagnostic */
 #pragma omp critical
         {
-        if ( DEBUG )
+        if ( ACDEBUG )
             std::cout << "----------------- DEBUG -----------------" << std::endl;
         std::cout << "In Aircraft::VortexLosses: " << std::endl;
         std::cout << "alpha_Atm  = " << alpha_Atm  << std::endl;
