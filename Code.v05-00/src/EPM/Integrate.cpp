@@ -155,7 +155,9 @@ namespace EPM
         RealDouble Soot_amb = aerArray[ind_SOOT][0]; /* [#/cm^3] */
 
         /* Add emissions of one engine to concentration arrays */
+        std::cout << varArray[ind_H2O] << std::endl;
         varArray[ind_H2O] += EI.getH2O() / ( MW_H2O  * 1.0E+03 ) * AC.FuelFlow() / RealDouble(AC.EngNumber()) / AC.VFlight() * physConst::Na / Ab0     * 1.00E-06;
+        std::cout << varArray[ind_H2O] << std::endl;
         /* [ molec/cm^3 ] += [ g/kgf ]   / [ kg/mol ] * [ g/kg ] * [ kgf/s ]                                  / [ m/s ]      * [ molec/mol ] / [ m^2 ] * [ m^3/cm^3 ]
          *                += [ molec/cm^3 ] */
 
@@ -312,14 +314,19 @@ namespace EPM
                      * SO4_rl is the "ready to be liquid" molecular concentration of SO4. This is still gaseous SO4 because it is limited by kinetics.
                      * Gaseous SO4 is in phase equilibrium. Ensure limitations! */
                     /* SO4_g  = ( physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) > x[EPM_ind_SO4g] ) ? x[EPM_ind_SO4g] : physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ); */
+                    std::cout << "psat_h2so4=" << physFunc::pSat_H2SO4( x[EPM_ind_T] ) << ", P=" << x[EPM_ind_P] << ", SO4g=" << x[EPM_ind_SO4g] << std::endl;
                     SO4_g  = ( physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( x[EPM_ind_P] ) > x[EPM_ind_SO4g] ) ? x[EPM_ind_SO4g] * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) : physFunc::pSat_H2SO4( x[EPM_ind_T] ) / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 );
                     SO4_rl = x[EPM_ind_SO4g] * x[EPM_ind_P] / ( physConst::kB * x[EPM_ind_T] * 1.0E+06 ) - SO4_g;
+                    std::cout << "SO4_g=" << SO4_g << ", SO4_rl=" << SO4_rl << std::endl;
                     /* SO4_rl = x[EPM_ind_SO4g] - SO4_g; */
                     SO4_g  = ( SO4_g > 0.0 ) ? SO4_g : 0.0;
                     SO4_rl = ( SO4_rl > 0.0 ) ? SO4_rl : 0.0;
+                    std::cout << "SO4_rl=" << SO4_rl << std::endl;
+                    std::cout << "nThresh=" << AIM::nThresh( x[EPM_ind_T], x[EPM_ind_H2O] * x[EPM_ind_P] / physFunc::pSat_H2Ol( x[EPM_ind_T] ) ) << std::endl;
                     if ( ( SO4_rl >= AIM::nThresh( x[EPM_ind_T], x[EPM_ind_H2O] * x[EPM_ind_P] / physFunc::pSat_H2Ol( x[EPM_ind_T] ) ) ) ) {
                        
                         /* Mole fraction of sulfuric acid */
+                        std::cout << "here" << std::endl;
                         x_SO4 = AIM::x_star(     x[EPM_ind_T], x[EPM_ind_H2O] * x[EPM_ind_P] / physFunc::pSat_H2Ol( x[EPM_ind_T] ), SO4_rl );
                         /* Number of molecules per cluster */
                         nMolec = AIM::nTot(      x[EPM_ind_T], x_SO4, x[EPM_ind_H2O] * x[EPM_ind_P] / physFunc::pSat_H2Ol( x[EPM_ind_T] ), SO4_rl );
@@ -333,7 +340,7 @@ namespace EPM
                         nucRate = 0.0;
 
                     }
-
+                    std::cout << "x_SO4=" << x_SO4 << ", nMolec=" << nMolec << ", nucRate=" << nucRate << std::endl;
                     /* Compute sulfate - soot coagulation rate */
                     RealDouble CoagRate = 0;
                     Vector_1D pdf = nPDF_SO4.getPDF();
@@ -555,11 +562,8 @@ namespace EPM
         }
         /* Output variables */
         /* Check if contrail is water supersaturated at some point during formation */
-        if ( observer.checkwatersat() ) {
-            std::cout << "Water supersaturated at some point" << std::endl;
-        }
-        else {
-            std::cout << "Never reaches water saturation... ending simulation" << std::endl;
+        if ( !observer.checkwatersat() ) {
+            std::cout << "EndSim: Never reaches water saturation... ending simulation" << std::endl;
             exit(0);
         }
 

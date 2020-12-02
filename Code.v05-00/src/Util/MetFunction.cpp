@@ -381,7 +381,6 @@ namespace met
 
             /* Check first point is ISS */
             if ( RHi_cur < 100 && iCur==iFlight ) {
-                std::cout << "ICs are subsaturated" << std::endl;
                 satdepth = 1.0; /* Set to some arbitrary value, contrail should not survive VS anyway */
             }
 
@@ -392,6 +391,7 @@ namespace met
         }
         
         /* Check a genuine satdepth found */
+        std::cout << "satdepth=" << satdepth << ", ylim_down=" << YLIM_DOWN << std::endl;
         if ( iCur <= 0 || satdepth > YLIM_DOWN ) {
             std::cout << "Checking genuine location found" << std::endl;
             std::cout << iCur << std::endl;
