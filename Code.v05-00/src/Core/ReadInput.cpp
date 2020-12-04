@@ -8870,7 +8870,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- TEMPERATURE ------------------------------------------------------ */
         /* ---- Accepted units are: Kelvin (default), Celsius, Fahrenheit          */
         /* ======================================================================= */
-        std::cout << "temperature" << std::endl;
+
         if ( Input_Opt.PARAMETER_TEMPERATURE_RANGE ) {
             currVal = Input_Opt.PARAMETER_TEMPERATURE[0];
             while ( currVal <= Input_Opt.PARAMETER_TEMPERATURE[2] ) {
@@ -8931,7 +8931,6 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- Accepted units are: % (0-100, default), - (0-1)                    */
         /* ======================================================================= */
 
-        std::cout << "rhw" << std::endl;
         if ( Input_Opt.PARAMETER_RHW_RANGE ) {
             currVal = Input_Opt.PARAMETER_RHW[0];
             while ( currVal <= Input_Opt.PARAMETER_RHW[2] ) {
@@ -8987,7 +8986,6 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- Accepted units are: m^2/s (default)                                */
         /* ======================================================================= */
 
-        std::cout << "DH" << std::endl;
         if ( Input_Opt.PARAMETER_DH_RANGE ) {
             currVal = Input_Opt.PARAMETER_DH[0];
             while ( currVal <= Input_Opt.PARAMETER_DH[2] ) {
@@ -9788,7 +9786,6 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- Accepted units are: kg/s (default)                                 */
         /* ======================================================================= */
 
-        std::cout << "fuel flow" << std::endl;
         if ( Input_Opt.PARAMETER_FF_RANGE ) {
             currVal = Input_Opt.PARAMETER_FF[0];
             while ( currVal <= Input_Opt.PARAMETER_FF[2] ) {
@@ -9842,7 +9839,6 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- Accepted units are: kg (default), tonnes                           */
         /* ======================================================================= */
 
-        std::cout << "acmass" << std::endl;
         if ( Input_Opt.PARAMETER_AMASS_RANGE ) {
             currVal = Input_Opt.PARAMETER_AMASS[0];
             while ( currVal <= Input_Opt.PARAMETER_AMASS[2] ) {
@@ -10195,7 +10191,6 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
 
-        std::cout << "prior" << std::endl;
         if ( Input_Opt.PARAMETER_BACKG_SO2_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_SO2[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_SO2[2] ) {
@@ -10262,23 +10257,20 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- FLIGHT SPEED  ---------------------------------------------------- */
         /* ---- Accepted units are: m/s (default)                                  */
         /* ======================================================================= */
-        std::cout << "Working on FSPEED" << std::endl;
+
         if ( Input_Opt.PARAMETER_FSPEED_RANGE ) {
-            std::cout << "Here" << std::endl;
             currVal = Input_Opt.PARAMETER_FSPEED[0];
             while ( currVal <= Input_Opt.PARAMETER_FSPEED[2] ) {
                 cases.push_back( currVal );
                 currVal += Input_Opt.PARAMETER_FSPEED[1];
             }
         } else {
-            std::cout << "No here" << std::endl;
             for ( i = 0; i < Input_Opt.PARAMETER_FSPEED.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_FSPEED[i]);
         }
 
         if ( Input_Opt.PARAMETER_FSPEED_UNIT.compare( "m/s" ) == 0 ) {
             /* Do nothing. Default unit */
-            std::cout << "Here" << std::endl;
         } else {
             std::cout << " Unknown unit for variable 'FSPEED': ";
             std::cout << Input_Opt.PARAMETER_FSPEED_UNIT << std::endl;
@@ -10316,8 +10308,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- NUMBER OF ENGINES  ---------------------------------------------------- */
         /* ---- Accepted units are: 2/4 (default)                                  */
         /* ======================================================================= */
-      std::cout << "Working on NUMENG" << std::endl;
-      if ( Input_Opt.PARAMETER_NUMENG_RANGE ) {
+
+        if ( Input_Opt.PARAMETER_NUMENG_RANGE ) {
             currVal = Input_Opt.PARAMETER_NUMENG[0];
             while ( currVal <= Input_Opt.PARAMETER_NUMENG[2] ) {
                 cases.push_back( currVal );
@@ -10327,7 +10319,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
             for ( i = 0; i < Input_Opt.PARAMETER_NUMENG.size(); i++ )
                 cases.push_back(Input_Opt.PARAMETER_NUMENG[i]);
         }
-        std::cout << "NUMENG units: " << Input_Opt.PARAMETER_NUMENG_UNIT << std::endl;
+
         if ( Input_Opt.PARAMETER_NUMENG_UNIT.compare( "2/4" ) == 0 ) {
             /* Do nothing. Default unit */
         } else {
