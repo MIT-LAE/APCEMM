@@ -195,7 +195,6 @@ int main( int , char* )
 
 
             int iERR = 0;
-            std::cout << "Deciding model" << std::endl;
             switch (model) {
 
                 /* Box Model */
