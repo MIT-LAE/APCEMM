@@ -51,6 +51,11 @@ class Input
     RealDouble fuelFlow_;
 
     RealDouble aircraftMass_;
+    RealDouble flightSpeed_;
+    RealDouble numEngines_;
+    RealDouble wingspan_;
+    RealDouble coreExitTemp_;
+    RealDouble bypassArea_;
 
     RealDouble backgNOx_;
     RealDouble backgHNO3_;
@@ -102,7 +107,12 @@ class Input
         RealDouble fuelFlow() const { return fuelFlow_; }
 
         RealDouble aircraftMass() const { return aircraftMass_; }
-
+        RealDouble flightSpeed() const { return flightSpeed_; }
+        RealDouble numEngines() const { return numEngines_; }
+        RealDouble wingspan() const { return wingspan_; }
+        RealDouble coreExitTemp() const { return coreExitTemp_; }
+        RealDouble bypassArea() const { return bypassArea_; }
+        
         RealDouble backgNOx() const { return backgNOx_; }
         RealDouble backgHNO3() const { return backgHNO3_; }
         RealDouble backgO3() const { return backgO3_; }

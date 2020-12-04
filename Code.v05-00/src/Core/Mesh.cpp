@@ -398,14 +398,11 @@ void Mesh::Ring2Mesh( Cluster &c )
                 /* First cell */
                 jNy = std::ceil(NY/2);
                 iNx = std::ceil(NX/2);
-                std::cout << "calculate first weight" << std::endl;
                 weights[iRing][jNy][iNx] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
-                std::cout << "calculate first map index" << std::endl;
                 mapIndex_[jNy][iNx] = iRing;
                 /* Second cell */
                 jNy = std::ceil(NY/2-1);
                 iNx = std::ceil(NX/2);
-                std::cout << "calculate second weight" << std::endl;
                 weights[iRing][jNy][iNx] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
                 mapIndex_[jNy][iNx] = iRing;
                 /* Third cell */

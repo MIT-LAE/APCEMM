@@ -178,7 +178,7 @@ int main( int , char* )
         }
 
         if ( !fileExist || Input_Opt.SIMULATION_OVERWRITE ) {
-            
+
             const Input inputCase( iCase, parameters, \
                                    fullPath,          \
                                    fullPath_ADJ,      \
@@ -195,7 +195,7 @@ int main( int , char* )
 
 
             int iERR = 0;
-
+            std::cout << "Deciding model" << std::endl;
             switch (model) {
 
                 /* Box Model */

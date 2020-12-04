@@ -434,7 +434,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     /* ----------------------------- METEOROLOGY ----------------------------- */
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
-    std::cout << "Xleft=" << XLIM_LEFT << ", Ydown=" << YLIM_DOWN << std::endl;
+
     Meteorology Met( Input_Opt, curr_Time_s / 3600.0, m,        \
                      temperature_K, pressure_Pa, relHumidity_i, \
                      printDEBUG );
@@ -565,9 +565,9 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     aircraft.setEI_HC( input.EI_HC() );
     aircraft.setEI_Soot( input.EI_Soot() );
     aircraft.setSootRad( input.sootRad() );
-    aircraft.setVFlight( Input_Opt.PARAMETER_FSPEED[0], temperature_K );
-    aircraft.setEngNumber( Input_Opt.PARAMETER_NUMENG[0] );
-    aircraft.setWingspan( Input_Opt.PARAMETER_WINGSPAN[0] );
+    aircraft.setVFlight( input.flightSpeed(), temperature_K );
+    aircraft.setEngNumber( input.numEngines() );
+    aircraft.setWingspan( input.wingspan() );
     aircraft.setFuelFlow( input.fuelFlow() );
     JetA.setFSC( input.EI_SO2() * (RealDouble) 500.0 );
 
@@ -621,14 +621,14 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     RealDouble Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol;
     RealDouble areaPlume;
-    RealDouble Ab0 = Input_Opt.PARAMETER_BYPASSAREA[0];
-    RealDouble Tc0 = Input_Opt.PARAMETER_COREEXITTEMP[0];
+    RealDouble Ab0 = input.bypassArea();
+    RealDouble Tc0 = input.coreExitTemp();
     AIM::Aerosol liquidAer, iceAer;
     EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, VAR, FIX, \
                     aerArray, aircraft, EI, Ice_rad, Ice_den, Soot_den,  \
                     H2O_mol, SO4g_mol, SO4l_mol, liquidAer, iceAer, areaPlume, \
                     Ab0, Tc0 );
-    std::cout << "Ab0=" << Ab0 << std::endl;
+
     /* Compute initial plume area.
      * If 2 engines, we assume that after 3 mins, the two plumes haven't fully mixed yet and result in a total
      * area of 2 * the area computed for one engine
@@ -786,11 +786,9 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     const Vector_1D ringArea = ringCluster.getRingArea();
 
     /* Add emission into the grid */
-    std::cout << "adding emissions" << std::endl;
     Data.addEmission( EI, aircraft, m, ringCluster.halfRing(),  \
                       temperature_K, ( relHumidity_i > 100.0 ), \
                       liquidAer, iceAer, Soot_den, Met, areaPlume );
-    std::cout << "added emissions" << std::endl;
 
 #endif /* RINGS */
 
