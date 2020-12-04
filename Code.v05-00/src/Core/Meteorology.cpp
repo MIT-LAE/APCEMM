@@ -101,7 +101,6 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         NcError err( NcError::silent_nonfatal );
 
         /* Open the netcdf file for read access */
-        // std::cout << USERINPUT.MET_FILENAME.c_str() << std::endl;
         NcFile dataFile( USERINPUT.MET_FILENAME.c_str(), NcFile::ReadOnly  );
 	if ( !dataFile.is_valid() ) {
 	    std::cout << "Netcdf file is not valid" << std::endl;
@@ -115,7 +114,6 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
             std::cout << "In Meteorology:: Meteorology: getting variable length pointer" << std::endl;
         }
         var_len_ncVar->get(&var_len, var_var_len);
-        // std::cout << var_len << std::endl;
 
         /* Extract pressure and altitude from input file */
         //int var_len = 5117;
@@ -138,11 +136,8 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 
         /* Identify closest pressure in input file from user-defined pressure */
         UInt i_Zp = met::nearestNeighbor( pressure_user, PRESSURE );
-        // std::cout << "The closest(ish) pressure is: " << pressure_user[i_Zp] << std::endl;
         pres_user = pressure_user[i_Zp];
         alt_user = met::linearInterp( pressure_user, altitude_user, PRESSURE );
-        // std::cout << "linear interp: " << alt_user << " m" << std::endl;
-        // std::cout << "nearest neighbor: " << altitude_user[i_Zp] << " m" << std::endl;
 
         for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
              // alt_[jNy] = altitude_user[i_Zp] + Y[jNy];
@@ -170,7 +165,6 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 
             /* Identify temperature at above pressure */
             temp_user = temperature_user[i_Zp];
-            std::cout << "Input T: " << temp_user << std::endl;
 
             /* Identify closest temperature to given pressure */
             /* Loop round each vertical layer to estimate temperature */
@@ -206,7 +200,6 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 
             /* Identify temperature at above pressure */
             RHw_user = relhumid_user[i_Zp];
-            std::cout << "Input RHw: " << RHw_user << std::endl;
 
             /* Identify closest temperature to given pressure */
             /* Loop round each vertical layer to estimate temperature */
@@ -229,7 +222,6 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         if ( satdepth_user != 1.0 ) {
             satdepth_user = satdepth_user - ( altitude_user[i_Zp]-alt_user );
         }
-        std::cout << "Saturation depth: " << satdepth_user << std::endl;
 
     } else { 
 

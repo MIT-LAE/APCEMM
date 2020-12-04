@@ -7617,6 +7617,169 @@ Vector_2D CombVec( OptInput &Input_Opt )
             y[counter-1][i] = cases[i];
         cases.clear();
 
+        /* ======================================================================= */
+        /* ---- FLIGHT SPEED ----------------------------------------------------- */
+        /* ---- Accepted units are: m/s (default)                           */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_FSPEED_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_FSPEED[0], \
+                                       Input_Opt.PARAMETER_FSPEED[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_FSPEED[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_FSPEED_UNIT.compare( "m/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'FSPEED': ";
+            std::cout << Input_Opt.PARAMETER_FSPEED_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_FSPEED_UNIT = "m/s";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- NUMBER OF ENGINES ------------------------------------------------ */
+        /* ---- Accepted units are: 2/4 (default)                           */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_NUMENG_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_NUMENG[0], \
+                                       Input_Opt.PARAMETER_NUMENG[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_NUMENG[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_NUMENG_UNIT.compare( "2/4" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'NUMENG': ";
+            std::cout << Input_Opt.PARAMETER_NUMENG_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_NUMENG_UNIT = "2/4";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- WINGSPAN --------------------------------------------------------- */
+        /* ---- Accepted units are: m (default), ft                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_WINGSPAN_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_WINGSPAN[0], \
+                                       Input_Opt.PARAMETER_WINGSPAN[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_WINGSPAN[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_WINGSPAN_UNIT.compare( "m" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else if ( Input_Opt.PARAMETER_WINGSPAN_UNIT.compare( "ft" )      == 0 ) {
+            /* Convert tonnes to kg */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] /= 3.281;
+        } else {
+            std::cout << " Unknown unit for variable 'WINGSPAN': ";
+            std::cout << Input_Opt.PARAMETER_WINGSPAN_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_AMASS_UNIT = "m";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- CORE EXIT TEMPERATURE -------------------------------------------- */
+        /* ---- Accepted units are: K (default), C                                 */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_COREEXITTEMP_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_COREEXITTEMP[0], \
+                                       Input_Opt.PARAMETER_COREEXITTEMP[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_COREEXITTEMP[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_COREEXITTEMP_UNIT.compare( "K" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else if ( Input_Opt.PARAMETER_COREEXITTEMP_UNIT.compare( "C" )      == 0 ) {
+            /* Convert tonnes to kg */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] += 273.15;
+        } else {
+            std::cout << " Unknown unit for variable 'COREEXITTEMP': ";
+            std::cout << Input_Opt.PARAMETER_COREEXITTEMP_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_COREEXITTEMP_UNIT = "K";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- EXIT BYPASS AREA ------------------------------------------------- */
+        /* ---- Accepted units are: m^2 (default)                                 */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_BYPASSAREA_RANGE ) {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( fRand(Input_Opt.PARAMETER_BYPASSAREA[0], \
+                                       Input_Opt.PARAMETER_BYPASSAREA[1]) );
+        } else {
+            for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+                cases.push_back( Input_Opt.PARAMETER_BYPASSAREA[0] );
+        }
+
+        if ( Input_Opt.PARAMETER_BYPASSAREA_UNIT.compare( "m^2" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'BYPASSAREA': ";
+            std::cout << Input_Opt.PARAMETER_BYPASSAREA_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_BYPASSAREA_UNIT = "m^2";
+
+        counter += 1;
+        y.push_back(Vector_1D(Input_Opt.SIMULATION_MCRUNS));
+        for ( i = 0; i < Input_Opt.SIMULATION_MCRUNS; i++ )
+            y[counter-1][i] = cases[i];
+        cases.clear();
+
 
         /* ======================================================================= */
         /* ---- BACKGROUND NOX MIXING RATIO -------------------------------------- */
@@ -8246,6 +8409,165 @@ Vector_2D CombVec( OptInput &Input_Opt )
         counter += 1;
 
         /* ======================================================================= */
+        /* ---- FLIGHT SPEED ----------------------------------------------------- */
+        /* ---- Assumed units are: m/s                                             */
+        /* ======================================================================= */
+
+        y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
+        if ( Input_Opt.PARAMETER_FSPEED.size() == Input_Opt.PARAMETER_FILECASES ) {
+            for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                y[counter-1][i] = Input_Opt.PARAMETER_FSPEED[i];
+        } else if ( Input_Opt.PARAMETER_FSPEED.size() == 1 ) {
+            if ( Input_Opt.PARAMETER_FSPEED_UNIT.compare( "m/s" ) == 0 ) {
+                /* Do nothing. Default unit */
+                for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                    y[counter-1][i] = Input_Opt.PARAMETER_FSPEED[0];
+            } else {
+                std::cout << " Unknown unit for variable 'FSPEED': ";
+                std::cout << Input_Opt.PARAMETER_FSPEED_UNIT << std::endl;
+                exit(1);
+            }
+
+            /* Updating unit now that conversion has been taken care of */
+            Input_Opt.PARAMETER_FSPEED_UNIT = "m/s";
+        } else {
+            std::cout << " In CombVec:";
+            std::cout << " PARAMETER_FSPEED has the wrong shape: ";
+            std::cout << Input_Opt.PARAMETER_FSPEED.size() << std::endl;
+        }
+
+        counter += 1;
+
+        /* ======================================================================= */
+        /* ---- NUMBER OF ENGINES ------------------------------------------------ */
+        /* ---- Assumed units are: 2/4                                             */
+        /* ======================================================================= */
+
+        y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
+        if ( Input_Opt.PARAMETER_NUMENG.size() == Input_Opt.PARAMETER_FILECASES ) {
+            for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                y[counter-1][i] = Input_Opt.PARAMETER_NUMENG[i];
+        } else if ( Input_Opt.PARAMETER_NUMENG.size() == 1 ) {
+            if ( Input_Opt.PARAMETER_NUMENG_UNIT.compare( "2/4" ) == 0 ) {
+                /* Do nothing. Default unit */
+                for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                    y[counter-1][i] = Input_Opt.PARAMETER_FSPEED[0];
+            } else {
+                std::cout << " Unknown unit for variable 'NUMENG': ";
+                std::cout << Input_Opt.PARAMETER_NUMENG_UNIT << std::endl;
+                exit(1);
+            }
+
+            /* Updating unit now that conversion has been taken care of */
+            Input_Opt.PARAMETER_NUMENG_UNIT = "2/4";
+        } else {
+            std::cout << " In CombVec:";
+            std::cout << " PARAMETER_NUMENG has the wrong shape: ";
+            std::cout << Input_Opt.PARAMETER_NUMENG.size() << std::endl;
+        }
+
+        counter += 1;
+
+        /* ======================================================================= */
+        /* ---- WINGSPAN --------------------------------------------------------- */
+        /* ---- Assumed units are: m                                               */
+        /* ======================================================================= */
+
+        y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
+        if ( Input_Opt.PARAMETER_WINGSPAN.size() == Input_Opt.PARAMETER_FILECASES ) {
+            for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                y[counter-1][i] = Input_Opt.PARAMETER_WINGSPAN[i];
+        } else if ( Input_Opt.PARAMETER_WINGSPAN.size() == 1 ) {
+            if ( Input_Opt.PARAMETER_WINGSPAN_UNIT.compare( "m" ) == 0 ) {
+                /* Do nothing. Default unit */
+                for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                    y[counter-1][i] = Input_Opt.PARAMETER_FSPEED[0];
+            } else if ( Input_Opt.PARAMETER_WINGSPAN_UNIT.compare( "ft" ) == 0 ) {
+                /* Do nothing. Default unit */
+                for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                    y[counter-1][i] = Input_Opt.PARAMETER_FSPEED[0] / 3.281;
+            } else {
+                std::cout << " Unknown unit for variable 'WINGSPAN': ";
+                std::cout << Input_Opt.PARAMETER_WINGSPAN_UNIT << std::endl;
+                exit(1);
+            }
+
+            /* Updating unit now that conversion has been taken care of */
+            Input_Opt.PARAMETER_WINGSPAN_UNIT = "m";
+        } else {
+            std::cout << " In CombVec:";
+            std::cout << " PARAMETER_WINGSPAN has the wrong shape: ";
+            std::cout << Input_Opt.PARAMETER_WINGSPAN.size() << std::endl;
+        }
+
+        counter += 1;
+
+        /* ======================================================================= */
+        /* ---- CORE EXIT TEMPERATURE -------------------------------------------- */
+        /* ---- Assumed units are: K                                               */
+        /* ======================================================================= */
+
+        y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
+        if ( Input_Opt.PARAMETER_COREEXITTEMP.size() == Input_Opt.PARAMETER_FILECASES ) {
+            for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                y[counter-1][i] = Input_Opt.PARAMETER_COREEXITTEMP[i];
+        } else if ( Input_Opt.PARAMETER_COREEXITTEMP.size() == 1 ) {
+            if ( Input_Opt.PARAMETER_COREEXITTEMP_UNIT.compare( "K" ) == 0 ) {
+                /* Do nothing. Default unit */
+                for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                    y[counter-1][i] = Input_Opt.PARAMETER_COREEXITTEMP[0];
+            } else if ( Input_Opt.PARAMETER_COREEXITTEMP_UNIT.compare( "C" ) == 0 ) {
+                /* Do nothing. Default unit */
+                for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                    y[counter-1][i] = Input_Opt.PARAMETER_COREEXITTEMP[0] + 273.15;
+            } else {
+                std::cout << " Unknown unit for variable 'COREEXITTEMP': ";
+                std::cout << Input_Opt.PARAMETER_COREEXITTEMP_UNIT << std::endl;
+                exit(1);
+            }
+
+            /* Updating unit now that conversion has been taken care of */
+            Input_Opt.PARAMETER_COREEXITTEMP_UNIT = "K";
+        } else {
+            std::cout << " In CombVec:";
+            std::cout << " PARAMETER_COREEXITTEMP has the wrong shape: ";
+            std::cout << Input_Opt.PARAMETER_COREEXITTEMP.size() << std::endl;
+        }
+
+        counter += 1;
+
+        /* ======================================================================= */
+        /* ---- EXIT BYPASS AREA -------------------------------------------- */
+        /* ---- Assumed units are: m^2                                               */
+        /* ======================================================================= */
+
+        y.push_back( Vector_1D( Input_Opt.PARAMETER_FILECASES ) );
+        if ( Input_Opt.PARAMETER_BYPASSAREA.size() == Input_Opt.PARAMETER_FILECASES ) {
+            for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                y[counter-1][i] = Input_Opt.PARAMETER_BYPASSAREA[i];
+        } else if ( Input_Opt.PARAMETER_BYPASSAREA.size() == 1 ) {
+            if ( Input_Opt.PARAMETER_BYPASSAREA_UNIT.compare( "m^2" ) == 0 ) {
+                /* Do nothing. Default unit */
+                for ( i = 0; i < Input_Opt.PARAMETER_FILECASES; i++ )
+                    y[counter-1][i] = Input_Opt.PARAMETER_BYPASSAREA[0];
+            } else {
+                std::cout << " Unknown unit for variable 'BYPASSAREA': ";
+                std::cout << Input_Opt.PARAMETER_BYPASSAREA_UNIT << std::endl;
+                exit(1);
+            }
+
+            /* Updating unit now that conversion has been taken care of */
+            Input_Opt.PARAMETER_BYPASSAREA_UNIT = "m^2";
+        } else {
+            std::cout << " In CombVec:";
+            std::cout << " PARAMETER_BYPASSAREA has the wrong shape: ";
+            std::cout << Input_Opt.PARAMETER_BYPASSAREA.size() << std::endl;
+        }
+
+        counter += 1;
+
+
+        /* ======================================================================= */
         /* ---- AIRCRAFT MASS ---------------------------------------------------- */
         /* ---- Assumed units are: kg                                              */
         /* ======================================================================= */
@@ -8504,7 +8826,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         return y;
 
     } else {
-
+        std::cout << "combvec" << std::endl;
         /* ======================================================================= */
         /* ---- PLUME PROCESSING TIME ( SIMULATION TIME ) ------------------------ */
         /* ---- Accepted units are: hr (default)                                   */
@@ -8548,7 +8870,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- TEMPERATURE ------------------------------------------------------ */
         /* ---- Accepted units are: Kelvin (default), Celsius, Fahrenheit          */
         /* ======================================================================= */
-
+        std::cout << "temperature" << std::endl;
         if ( Input_Opt.PARAMETER_TEMPERATURE_RANGE ) {
             currVal = Input_Opt.PARAMETER_TEMPERATURE[0];
             while ( currVal <= Input_Opt.PARAMETER_TEMPERATURE[2] ) {
@@ -8609,6 +8931,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- Accepted units are: % (0-100, default), - (0-1)                    */
         /* ======================================================================= */
 
+        std::cout << "rhw" << std::endl;
         if ( Input_Opt.PARAMETER_RHW_RANGE ) {
             currVal = Input_Opt.PARAMETER_RHW[0];
             while ( currVal <= Input_Opt.PARAMETER_RHW[2] ) {
@@ -8664,6 +8987,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- Accepted units are: m^2/s (default)                                */
         /* ======================================================================= */
 
+        std::cout << "DH" << std::endl;
         if ( Input_Opt.PARAMETER_DH_RANGE ) {
             currVal = Input_Opt.PARAMETER_DH[0];
             while ( currVal <= Input_Opt.PARAMETER_DH[2] ) {
@@ -9464,6 +9788,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- Accepted units are: kg/s (default)                                 */
         /* ======================================================================= */
 
+        std::cout << "fuel flow" << std::endl;
         if ( Input_Opt.PARAMETER_FF_RANGE ) {
             currVal = Input_Opt.PARAMETER_FF[0];
             while ( currVal <= Input_Opt.PARAMETER_FF[2] ) {
@@ -9517,6 +9842,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- Accepted units are: kg (default), tonnes                           */
         /* ======================================================================= */
 
+        std::cout << "acmass" << std::endl;
         if ( Input_Opt.PARAMETER_AMASS_RANGE ) {
             currVal = Input_Opt.PARAMETER_AMASS[0];
             while ( currVal <= Input_Opt.PARAMETER_AMASS[2] ) {
@@ -9869,6 +10195,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- Accepted units are: ppb (default), ppt, ppm                        */
         /* ======================================================================= */
 
+        std::cout << "prior" << std::endl;
         if ( Input_Opt.PARAMETER_BACKG_SO2_RANGE ) {
             currVal = Input_Opt.PARAMETER_BACKG_SO2[0];
             while ( currVal <= Input_Opt.PARAMETER_BACKG_SO2[2] ) {
@@ -9929,6 +10256,273 @@ Vector_2D CombVec( OptInput &Input_Opt )
                 std::cout << std::endl;
             }
         }
+
+
+        /* ======================================================================= */
+        /* ---- FLIGHT SPEED  ---------------------------------------------------- */
+        /* ---- Accepted units are: m/s (default)                                  */
+        /* ======================================================================= */
+        std::cout << "Working on FSPEED" << std::endl;
+        if ( Input_Opt.PARAMETER_FSPEED_RANGE ) {
+            std::cout << "Here" << std::endl;
+            currVal = Input_Opt.PARAMETER_FSPEED[0];
+            while ( currVal <= Input_Opt.PARAMETER_FSPEED[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_FSPEED[1];
+            }
+        } else {
+            std::cout << "No here" << std::endl;
+            for ( i = 0; i < Input_Opt.PARAMETER_FSPEED.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_FSPEED[i]);
+        }
+
+        if ( Input_Opt.PARAMETER_FSPEED_UNIT.compare( "m/s" ) == 0 ) {
+            /* Do nothing. Default unit */
+            std::cout << "Here" << std::endl;
+        } else {
+            std::cout << " Unknown unit for variable 'FSPEED': ";
+            std::cout << Input_Opt.PARAMETER_FSPEED_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_FSPEED_UNIT = "m/s";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- NUMBER OF ENGINES  ---------------------------------------------------- */
+        /* ---- Accepted units are: 2/4 (default)                                  */
+        /* ======================================================================= */
+      std::cout << "Working on NUMENG" << std::endl;
+      if ( Input_Opt.PARAMETER_NUMENG_RANGE ) {
+            currVal = Input_Opt.PARAMETER_NUMENG[0];
+            while ( currVal <= Input_Opt.PARAMETER_NUMENG[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_NUMENG[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_NUMENG.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_NUMENG[i]);
+        }
+        std::cout << "NUMENG units: " << Input_Opt.PARAMETER_NUMENG_UNIT << std::endl;
+        if ( Input_Opt.PARAMETER_NUMENG_UNIT.compare( "2/4" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'NUMENG': ";
+            std::cout << Input_Opt.PARAMETER_NUMENG_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_NUMENG_UNIT = "2/4";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- WINGSPAN      ---------------------------------------------------- */
+        /* ---- Accepted units are: m (default), ft                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_WINGSPAN_RANGE ) {
+            currVal = Input_Opt.PARAMETER_WINGSPAN[0];
+            while ( currVal <= Input_Opt.PARAMETER_WINGSPAN[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_WINGSPAN[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_WINGSPAN.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_WINGSPAN[i]);
+        }
+
+        if ( Input_Opt.PARAMETER_WINGSPAN_UNIT.compare( "m" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else if ( Input_Opt.PARAMETER_WINGSPAN_UNIT.compare( "ft" ) == 0 ) {
+            /* Convert m to ft */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] /= 3.281;
+        } else {
+            std::cout << " Unknown unit for variable 'WINGSPAN': ";
+            std::cout << Input_Opt.PARAMETER_WINGSPAN_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_WINGSPAN_UNIT = "m";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- CORE EXIT TEMPERATURE -------------------------------------------- */
+        /* ---- Accepted units are: K (default), C                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_COREEXITTEMP_RANGE ) {
+            currVal = Input_Opt.PARAMETER_COREEXITTEMP[0];
+            while ( currVal <= Input_Opt.PARAMETER_COREEXITTEMP[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_COREEXITTEMP[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_COREEXITTEMP.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_COREEXITTEMP[i]);
+        }
+
+        if ( Input_Opt.PARAMETER_COREEXITTEMP_UNIT.compare( "K" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else if ( Input_Opt.PARAMETER_COREEXITTEMP_UNIT.compare( "C" ) == 0 ) {
+            /* Convert C to K */
+            for ( i = 0; i < cases.size(); i++ )
+                cases[i] += 273.15;
+        } else {
+            std::cout << " Unknown unit for variable 'COREEXITTEMP': ";
+            std::cout << Input_Opt.PARAMETER_COREEXITTEMP_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_COREEXITTEMP_UNIT = "K";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
+
+        /* ======================================================================= */
+        /* ---- Exit bypass area ---- -------------------------------------------- */
+        /* ---- Accepted units are: m^2 (default)                                */
+        /* ======================================================================= */
+
+        if ( Input_Opt.PARAMETER_BYPASSAREA_RANGE ) {
+            currVal = Input_Opt.PARAMETER_BYPASSAREA[0];
+            while ( currVal <= Input_Opt.PARAMETER_BYPASSAREA[2] ) {
+                cases.push_back( currVal );
+                currVal += Input_Opt.PARAMETER_BYPASSAREA[1];
+            }
+        } else {
+            for ( i = 0; i < Input_Opt.PARAMETER_BYPASSAREA.size(); i++ )
+                cases.push_back(Input_Opt.PARAMETER_BYPASSAREA[i]);
+        }
+
+        if ( Input_Opt.PARAMETER_BYPASSAREA_UNIT.compare( "m^2" ) == 0 ) {
+            /* Do nothing. Default unit */
+        } else {
+            std::cout << " Unknown unit for variable 'BYPASSAREA': ";
+            std::cout << Input_Opt.PARAMETER_BYPASSAREA_UNIT << std::endl;
+            exit(1);
+        }
+
+        /* Updating unit now that conversion has been taken care of */
+        Input_Opt.PARAMETER_BYPASSAREA_UNIT = "m^2";
+
+        z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
+        nCases *= cases.size();
+
+        u = Copy_blocked(y,z[0].size());
+        v = Copy_interleaved(z,y[0].size());
+
+        for ( i = 0; i < counter; i++ )
+            y[i].clear();
+        z[0].clear();
+        y.clear(); z.clear();
+
+        counter += 1;
+        for ( i = 0; i < counter; i++ )
+            y.push_back(Vector_1D( nCases ));
+
+        for ( i = 0; i < nCases; i++ ) {
+            for ( j = 0; j < counter - 1; j++ )
+                y[j][i] = u[j][i];
+            y[counter-1][i] = v[0][i];
+        }
+        cases.clear();
 
         return y;
 
