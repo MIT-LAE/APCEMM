@@ -1063,7 +1063,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             } else {
                 /* Advection and diffusion of condensable species */
                 /* Advection and diffusion of plume affected H2O */
-                Solver.Run( Data.Species[ind_H2Oplume], cellAreas, 1 );
+                Solver.Run( Data.Species[ind_H2Oplume], cellAreas, -1 );
+
             }
 
             /* Update H2O */
@@ -1825,7 +1826,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
             lastTimeIceGrowth = curr_Time_s + dt;
             /* If shear = 0, take advantage of the symmetry around the Y-axis */
-            Data.solidAerosol.Grow( dtIceGrowth, Data.H2O, Met.Temp(), Met.Press(), PA_MICROPHYSICS, ( shear == 0.0E+00 ) && ( XLIM_LEFT == XLIM_RIGHT ) );
+            Data.solidAerosol.Grow( dtIceGrowth, Data.Species[ind_H2O], Met.Temp(), Met.Press(), PA_MICROPHYSICS, ( shear == 0.0E+00 ) && ( XLIM_LEFT == XLIM_RIGHT ) );
         }
 
         /* ======================================================================= */
