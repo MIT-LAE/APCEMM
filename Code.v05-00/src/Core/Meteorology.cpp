@@ -118,6 +118,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         /* Extract pressure and altitude from input file */
         //int var_len = 5117;
         float altitude_user[var_len], pressure_user[var_len];
+	altitude_store_.assign( var_len, 0.0E+00 );
         NcVar* altitude_ncVar;
         NcVar* pressure_ncVar;
         if ( !(altitude_ncVar = dataFile.get_var( "altitude" )) ) {
@@ -132,13 +133,13 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         for ( i = 0; i < var_len; i++ ) {
             pressure_user[i] *= 100.0;
             altitude_user[i] *= 1000.0;
+	    altitude_store_[i] = altitude_user[i];
         }
 
         /* Identify closest pressure in input file from user-defined pressure */
         UInt i_Zp = met::nearestNeighbor( pressure_user, PRESSURE );
         pres_user = pressure_user[i_Zp];
         alt_user = met::linearInterp( pressure_user, altitude_user, PRESSURE );
-
         for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
              // alt_[jNy] = altitude_user[i_Zp] + Y[jNy];
              alt_[jNy] = alt_user + Y[jNy];
@@ -430,6 +431,7 @@ Meteorology::Meteorology( const Meteorology &met ) :
     airDens_      = met.airDens_;
     H2O_          = met.H2O_;
     temperature_store_ = met.temperature_store_;
+    altitude_store_ = met.altitude_store_;
 
 } /* End of Meteorology::Meteorology */
 
@@ -453,28 +455,52 @@ void Meteorology::Update( const OptInput &USERINPUT, const RealDouble solarTime_
 
     diurnalPert = DIURNAL_AMPL * cos( 2.0E+00 * physConst::PI * ( solarTime_h - DIURNAL_PHASE ) / 24.0E+00 );
 
-#pragma omp parallel for        \
-    if      ( !PARALLEL_CASES ) \
-    default ( shared          ) \
-    private ( jNy             ) \
-    schedule( dynamic, 1      )
-    for ( jNy = 0; jNy < Y.size(); jNy++ )
-        alt_[jNy] = ALTITUDE + Y[jNy] + dTrav_y;
-    met::ISA( alt_, press_ );
     
     /* User defined fields can be set here ! */
     if ( USERINPUT.MET_LOADMET ) {
 
         std::cout << "Umm... you need to set this up, mate" << std::endl;
 
-	/* Extract temperature data before and after current time */
-        UInt itime_extract = std::floor( simTime_h / 3 );
-	std::cout << "Time=" << simTime_h << ", ii=" << itime_extract << std::endl;
+        /* Define variable sizes */
+	UInt var_len = temperature_store_.size();
+	float temperature_before[var_len];
+	float temperature_after[var_len];
+	float temperature_interp[var_len];
 
+	/* Extract temperature data before and after current time, and interpolate */
+        UInt itime_extract = std::floor( simTime_h / 3 );
+        for ( UInt i = 0; i < var_len; i++ ) {
+	    temperature_before[i] = temperature_store_[i][itime_extract];
+	    temperature_after[i] = temperature_store_[i][itime_extract+1];
+	    temperature_interp[i] = temperature_before[i] + ( temperature_after[i] - temperature_before[i] ) / 3.0 * ( simTime_h - itime_extract * 3.0 );
+	}
+
+        /* Identify closest temperature to given pressure */
+        /* Loop round each vertical layer to estimate temperature */
+        for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
+            
+	    /* Find the closest values above and below the central pressure */
+            UInt i_Z = met::nearestNeighbor( altitude_store_, alt_[jNy] );
+            
+	    /* Loop round horizontal coordinates to assign temperature */
+            for ( UInt iNx = 0; iNx < X.size(); iNx++ ) {
+                temp_[jNy][iNx] = temperature_interp[i_Z];
+            }
+
+        }
 
     }
     else {
 
+#pragma omp parallel for        \
+        if      ( !PARALLEL_CASES ) \
+        default ( shared          ) \
+        private ( jNy             ) \
+        schedule( dynamic, 1      )
+        for ( jNy = 0; jNy < Y.size(); jNy++ )
+            alt_[jNy] = ALTITUDE + Y[jNy] + dTrav_y;
+        met::ISA( alt_, press_ );
+	
 	if ( TYPE == 1 ) {
 	    
 	    /* (quasi-)X-invariant met field: */
@@ -579,6 +605,17 @@ RealDouble invkB = 1.00E-06 / physConst::kB;
     for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
         for ( UInt iNx = 0; iNx < X.size(); iNx++ )
             airDens_[jNy][iNx] = press_[jNy] / temp_[jNy][iNx] * invkB;
+    }
+
+    if ( 1 ) {
+        std::cout << "\n DEBUG : Meteorology\n";
+        std::cout << "         Grid number | Altitude [km] | Pressure [hPa] | Temperature [K] | H2O [-] | RHi [-] |\n";
+        for ( jNy = Y.size() - 1; jNy --> 0; ) {
+            std::cout << "         " << std::setw(11) << jNy << " | " << std::setw(13) << alt_[jNy] * 1.00E-03 \
+                      << " | " << std::setw(14) << press_[jNy] * 1.00E-02 << " | " << std::setw(15) << temp_[jNy][0] \
+                      << " | " << std::setw(9) << H2O_[jNy][0] << " | " << std::setw(9) << H2O_[jNy][0]*physConst::kB*temp_[jNy][0]/physFunc::pSat_H2Os( temp_[jNy][0] )*1.0E+06 << "\n";
+        }
+        std::cout << "\n";
     }
 
 } /* End of Meteorology::UpdateMet */
