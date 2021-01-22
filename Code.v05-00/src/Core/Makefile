@@ -84,9 +84,9 @@ TARGET     := APCEMM.sh
 .PHONY: libUtil libKpp libSands libAim libEpm libCore
 
 all:
-	@$(MAKE) $(MAKEFLAGS) build
-	@$(MAKE) $(MAKEFLAGS) lib
-	@$(MAKE) $(MAKEFLAGS) exe
+	@$(MAKE) build
+	@$(MAKE) lib
+	@$(MAKE) exe
 
 build:
 	@mkdir -p $(LIB_DIR)
