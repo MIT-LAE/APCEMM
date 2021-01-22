@@ -43,12 +43,12 @@ extern int PARALLEL_CASES;
 
 /* 3. Fine regular grid for non-zero shear: */
 
-#define NX                256 //1024        /* Number of grid cells in the x-direction */
-#define NY                64  //256         /* Number of grid cells in the y-direction */
+#define NX                1024 //1024        /* Number of grid cells in the x-direction */
+#define NY                256  //256         /* Number of grid cells in the y-direction */
 #define XLIM_RIGHT        1.00E+04    /* x-limits of the domain [m] */
-#define XLIM_LEFT         4.00E+04    /* x-limits of the domain [m] */
+#define XLIM_LEFT         14.0E+04    /* x-limits of the domain [m] */
 #define YLIM_UP           6.50E+02    /* Upper y-limit of the domain [m] */
-#define YLIM_DOWN         6.50E+02    /* Lower y-limit of the domain [m] */
+#define YLIM_DOWN         5.00E+03    /* Lower y-limit of the domain [m] */
 
 /* 4. Fine and extended grid for contrail simulation: */
 
@@ -57,6 +57,12 @@ extern int PARALLEL_CASES;
 //#define XLIM              4.00E+04    /* x-limits of the domain [m] */
 //#define YLIM_UP           8.00E+02    /* Upper y-limit of the domain [m] */
 //#define YLIM_DOWN         9.00E+02    /* Lower y-limit of the domain [m] */
+
+//#define NX                2048        /* Number of grid cells in the x-direction */
+//#define NY                1024        /* Number of grid cells in the y-direction */
+//#define XLIM              4.00E+04    /* x-limits of the domain [m] */
+//#define YLIM_UP           1.40E+03    /* Upper y-limit of the domain [m] */
+//#define YLIM_DOWN         1.50E+03    /* Lower y-limit of the domain [m] */
 
 #define NYH               NY/2 + 1
 #define NCELL             NX*NY       /* Number of grid cells */
