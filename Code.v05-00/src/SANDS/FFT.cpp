@@ -12,6 +12,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "SANDS/FFT.hpp"
+#include "omp.h"
 
 FourierTransform_1D<float>::FourierTransform_1D( const bool MULTITHREADED_FFT, \
                                                  const bool WISDOM,            \
