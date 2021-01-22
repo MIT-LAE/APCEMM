@@ -6216,6 +6216,47 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     }
 
     /* ==================================================== */
+    /* Interpolate temperature in time?                     */
+    /* ==================================================== */
+
+    variable = "Interpolate T in time?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "TRUE" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "true" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "True" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "YES" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Y" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "y" )    == 0 ) )
+        Input_Opt.MET_INTERPTEMP = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "f" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "FALSE" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "false" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "False" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "NO" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "No" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "no" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "N" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "n" )     == 0 ) )
+        Input_Opt.MET_INTERPTEMP = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
     /* Initialize H2O from MET?                             */
     /* ==================================================== */
 
@@ -6251,6 +6292,47 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
               ( strcmp(tokens[0].c_str(), "N" )     == 0 ) || \
               ( strcmp(tokens[0].c_str(), "n" )     == 0 ) )
         Input_Opt.MET_LOADH2O = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Interpolate H2O in time?                             */
+    /* ==================================================== */
+
+    variable = "Interpolate H2O in time?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "TRUE" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "true" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "True" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "YES" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Y" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "y" )    == 0 ) )
+        Input_Opt.MET_INTERPH2O = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "f" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "FALSE" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "false" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "False" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "NO" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "No" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "no" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "N" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "n" )     == 0 ) )
+        Input_Opt.MET_INTERPH2O = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
