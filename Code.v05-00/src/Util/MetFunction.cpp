@@ -302,6 +302,38 @@ namespace met
 
     } /* End of nearestNeighbor */
 
+    UInt nearestNeighbor( Vector_1D xq, const float &x ) {
+
+        /* DESCRIPTION: Finds the closest of x in xq, returning the index */
+
+        /* INPUTS:
+         * float xq: query values
+         * float x:  desired value */
+
+        UInt i_Z = 0;
+
+        /* Identify increasing direction */
+        if ( xq[0]-xq[1]<0 ) {
+            while ( xq[i_Z] <= x ) {
+                i_Z += 1;
+            }
+            /* Check if previous altitude closer */
+            if ( xq[i_Z]-x >= x-xq[i_Z-1] ) {
+                i_Z -= 1;
+            }
+        }
+        else {
+            while ( xq[i_Z] >= x ) {
+                i_Z += 1;
+            }
+            if ( x-xq[i_Z] >= xq[i_Z-1]-x ) {
+                i_Z -= 1;
+            }
+        }
+        return i_Z;
+
+    } /* End of nearestNeighbor */
+
     float linearInterp( float xq[], float yq[], const float &x ) {
 
         /* DESCRIPTION: Linearly interpolated around the desired x value */
