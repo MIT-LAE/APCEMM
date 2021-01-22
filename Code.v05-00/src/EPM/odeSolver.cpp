@@ -372,8 +372,6 @@ namespace EPM
     } /* End of streamingObserver::checkwatersat */
 
     template class odeSolver<void ( const Vector_1D&, Vector_1D&, RealDouble )>;
-    template class odeSolver<void ( const Vector_1D&, Vector_1D&, RealDouble ) const>;
-
 }
 
 /* End of odeSolver.cpp */
