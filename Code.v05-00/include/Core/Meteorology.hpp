@@ -46,8 +46,9 @@ class Meteorology
         Meteorology( const Meteorology &met );
         ~Meteorology( );
 
-        void Update( const RealDouble solarTime_h, const Mesh &m, \
-                     const RealDouble dTrav_x, const RealDouble dTrav_y );
+        void Update( const OptInput &USERINPUT, const RealDouble solarTime_h, \
+                     const RealDouble simTime_h, \
+                     const Mesh &m, const RealDouble dTrav_x, const RealDouble dTrav_y );
 
         RealDouble alt( UInt j ) const { return alt_[j]; }
         RealDouble press( UInt j ) const { return press_[j]; }
@@ -104,6 +105,9 @@ class Meteorology
         Vector_2D temp_;
         Vector_2D airDens_;
         Vector_2D H2O_;
+
+        /* Temperature input from user can be 2D [T(z,t)] */
+	Vector_2D temperature_store_;
 
 };
 

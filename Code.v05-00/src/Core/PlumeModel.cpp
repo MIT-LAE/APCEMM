@@ -102,7 +102,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 #ifdef DEBUG
 
     std::cout << "\n DEBUG is turned ON!\n\n";
-    printDEBUG = 1;
+    printDEBUG = 0;
 
 #endif /* DEBUG */
 
@@ -1203,7 +1203,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         /* Met only matters for contrail evolution */
         if ( TRANSPORT_PA ) {
             /* Update met fields at mid time step */
-            Met.Update( ( curr_Time_s + dt/2 ) / 3600.0, m, dTrav_x, dTrav_y );
+            Met.Update( Input_Opt, ( curr_Time_s + dt/2 ) / 3600.0, ( curr_Time_s + dt/2 - timeArray[0] ) / 3600, m, dTrav_x, dTrav_y );
 
             /* Update H2O */
             for ( jNy = 0; jNy < NY; jNy++ ) {
