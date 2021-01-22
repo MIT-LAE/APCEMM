@@ -36,7 +36,7 @@ Engine::Engine( const char *engineName, double tempe_K, double pres_Pa, double r
     foundEngine = GetEDB( engineFile, engineName, idle, approach, climbout, takeoff );
     
     if ( foundEngine == 0 ) {
-        std::cout << "Engine " << engineName << " was not found in " << engineFileName << std::cout;
+        std::cout << "Engine " << engineName << " was not found in " << engineFileName << std::endl;
         return;
     }
 
