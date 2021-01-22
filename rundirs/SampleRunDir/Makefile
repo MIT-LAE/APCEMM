@@ -35,7 +35,8 @@ endif
 
 # Source code location
 ifndef CODE_DIR
-  CODE_DIR     :=/net/d13/data/aa681/statistical_global_contrails/Simulations/C-APCEMM/Code.$(VERSION)
+  CODE_DIR       :=/net/d13/data/aa681/statistical_global_contrails/Simulations/C-APCEMM/Code.$(VERSION)
+  # CODE_DIR     :=$(HOME)/APCEMM/Code.$(VERSION)
 endif
 
 # Output log file destination (default is run directory)
