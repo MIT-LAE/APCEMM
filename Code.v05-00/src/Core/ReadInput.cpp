@@ -6530,7 +6530,9 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " Do we have MET input?   : " << Input_Opt.MET_LOADMET                              << std::endl;
     std::cout << "  => Met file            : " << Input_Opt.MET_FILENAME                             << std::endl;
     std::cout << "  => Init T from MET?    : " << Input_Opt.MET_LOADTEMP                             << std::endl;
+    std::cout << "    => Interpolate T?    : " << Input_Opt.MET_INTERPTEMP                           << std::endl;
     std::cout << "  => Init H2O from MET?  : " << Input_Opt.MET_LOADH2O                              << std::endl;
+    std::cout << "    => Interpolate H2O?  : " << Input_Opt.MET_INTERPTEMP                           << std::endl;
     std::cout << " - OR -------------------: " << std::endl;
     std::cout << " Impose moist layer depth: " << Input_Opt.MET_FIXDEPTH                             << std::endl;
     std::cout << "  => Moist layer depth[m]: " << Input_Opt.MET_DEPTH                                << std::endl;
@@ -8913,7 +8915,10 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- PLUME PROCESSING TIME ( SIMULATION TIME ) ------------------------ */
         /* ---- Accepted units are: hr (default)                                   */
         /* ======================================================================= */
-
+        std::cout << Input_Opt.PARAMETER_PLUMEPROCESS_RANGE << std::endl;
+	std::cout << Input_Opt.PARAMETER_PLUMEPROCESS.size() << std::endl;
+	for ( i = 0; i < Input_Opt.PARAMETER_PLUMEPROCESS.size(); i++ )
+	    std::cout << Input_Opt.PARAMETER_PLUMEPROCESS[i] << std::endl;
         if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE ) {
             currVal = Input_Opt.PARAMETER_PLUMEPROCESS[0];
             while ( currVal <= Input_Opt.PARAMETER_PLUMEPROCESS[2] ) {
@@ -8984,9 +8989,11 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
 
+	std::cout << cases.size() << std::endl;
         z.push_back( Vector_1D(cases.size() ) );
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
+	    std::cout << i << ", " << cases[i] << std::endl;
         nCases *= cases.size();
 
         u = Copy_blocked(y,z[0].size());
@@ -10339,7 +10346,7 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- FLIGHT SPEED  ---------------------------------------------------- */
         /* ---- Accepted units are: m/s (default)                                  */
         /* ======================================================================= */
-
+	
         if ( Input_Opt.PARAMETER_FSPEED_RANGE ) {
             currVal = Input_Opt.PARAMETER_FSPEED[0];
             while ( currVal <= Input_Opt.PARAMETER_FSPEED[2] ) {
@@ -10363,8 +10370,6 @@ Vector_2D CombVec( OptInput &Input_Opt )
         Input_Opt.PARAMETER_FSPEED_UNIT = "m/s";
 
         z.push_back( Vector_1D(cases.size() ) );
-        for ( i = 0; i < cases.size(); i++ )
-            z[0][i] = cases[i];
         nCases *= cases.size();
 
         u = Copy_blocked(y,z[0].size());
