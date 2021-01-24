@@ -195,15 +195,17 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     const char* TS_AERO_FILENAME        = TS_FILE2.c_str();
     const std::vector<int> TS_AERO_LIST = Input_Opt.TS_AEROSOL;
     const RealDouble TS_AERO_FREQ       = Input_Opt.TS_AERO_FREQ;
+    std::cout << TS_FOLDER << std::endl;
 
     if ( TS_SPEC )
         std::cout << "\n Saving TS files to: " << TS_SPEC_FILENAME << std::endl;
 
     if ( TS_AERO )
         std::cout << "\n Saving TS_AERO files to: " << TS_AERO_FILENAME << std::endl;
-
+    
     if ( ( TS_SPEC || TS_AERO ) && ( TS_FOLDER.compare("") != 0 ) ) {
-
+        std::cout << "Creating director" << std::endl;
+	std::cout << TS_FOLDER << std::endl;
         /* Create output directory for timeseries */
         struct stat sb;
         if ( !( stat( TS_FOLDER.c_str(), &sb ) == 0 \
@@ -222,7 +224,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             }
         }
     }
-
+    std::cout << "1 " << std::endl;
     /* ======================================================================= */
     /* ---- Input options from the PROD & LOSS MENU -------------------------- */
     /* ======================================================================= */
@@ -320,6 +322,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     Vector_2D totIceVol;
 
 #endif /* H2O_MASS_CHECK */
+    std::cout << "2 " << std::endl;
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -333,6 +336,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     /* Get cell areas */
     const Vector_2D cellAreas = m.areas();
+    std::cout << "3 " << std::endl;
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -381,6 +385,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     /* Run box model */
     if ( RUN_BOXMODEL )
         BoxModel( Input_Opt, input );
+    std::cout << "4 " << std::endl;
 
 
     /* ======================================================================= */
@@ -428,6 +433,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     RealDouble dtLiqCoag              = 0.0E+00;
     RealDouble dtIceCoag              = 0.0E+00;
     RealDouble dtIceGrowth            = 0.0E+00;
+    std::cout << "5 " << std::endl;
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -438,6 +444,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     Meteorology Met( Input_Opt, curr_Time_s / 3600.0, m,        \
                      temperature_K, pressure_Pa, relHumidity_i, \
                      printDEBUG );
+    std::cout << "6 " << std::endl;
     if ( Input_Opt.MET_LOADMET && Input_Opt.MET_LOADTEMP ) {
         temperature_K = Met.temp_user;
         relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\

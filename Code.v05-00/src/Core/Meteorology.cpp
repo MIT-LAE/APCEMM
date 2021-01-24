@@ -61,6 +61,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
     /* If imposing a fixed moist layer depth, the temperature lapse rate gets
      * overwritten */
     LAPSERATE = USERINPUT.MET_LAPSERATE; /* [K/m] */
+    std::cout << "1 " << std::endl;
 
     /* If a fixed depth of the moist layer is imposed, compute the temperature 
      * lapse rate to have the prescribed RH at flight level and a 100% RH at 
@@ -68,6 +69,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
     if ( USERINPUT.MET_FIXDEPTH )
         LAPSERATE = met::ComputeLapseRate( TEMPERATURE, RHI, \
                                            USERINPUT.MET_DEPTH );
+    std::cout << "1 " << std::endl;
 
     /* The diurnal temperature amplitude represents one-half of the 
      * diurnal temperature range, and the phase represents the hour
@@ -87,8 +89,10 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         DIURNAL_AMPL  = 0.0 ; /* [K] */
         DIURNAL_PHASE = 12.0; /* [hrs] */
     }
+    std::cout << "loadmet=" << USERINPUT.MET_LOADMET << std::endl;
 
     diurnalPert = DIURNAL_AMPL * cos( 2.0E+00 * physConst::PI * ( solarTime_h - DIURNAL_PHASE ) / 24.0E+00 );
+    std::cout << "1 " << std::endl;
 
     if ( USERINPUT.MET_LOADMET ) {
 
@@ -99,12 +103,17 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         /* Set up for error messages */
         static const int NC_ERR = 2;
         NcError err( NcError::silent_nonfatal );
+        std::cout << "1 " << std::endl;
+
+	std::cout << "loadmet=" << USERINPUT.MET_FILENAME.c_str() << std::endl;
 
         /* Open the netcdf file for read access */
         NcFile dataFile( USERINPUT.MET_FILENAME.c_str(), NcFile::ReadOnly  );
+        std::cout << "1 " << std::endl;
 	if ( !dataFile.is_valid() ) {
 	    std::cout << "Netcdf file is not valid" << std::endl;
 	}
+        std::cout << "1 " << std::endl;
 
         /* Identify the length of variables in input file */
         int var_len;
