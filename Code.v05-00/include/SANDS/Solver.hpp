@@ -117,6 +117,7 @@ namespace SANDS
              * */
  
             void UpdateShear( const RealDouble shear, const Vector_1D &y );
+            void UpdateShear( const Vector_1D shear, const Vector_1D &y );
 
             /**
              * Solves the 2D advection-diffusion equation over dt using

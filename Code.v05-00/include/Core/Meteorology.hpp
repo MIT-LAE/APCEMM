@@ -42,6 +42,7 @@ class Meteorology
                      const RealDouble temperature_,  \
                      const RealDouble relHumidity_i, \
                      const RealDouble pressure_Pa,   \
+                     const RealDouble shear_pm,   \
                      const bool DBG = 0 );
         Meteorology( const Meteorology &met );
         ~Meteorology( );
@@ -51,7 +52,8 @@ class Meteorology
                      const Mesh &m, const RealDouble dTrav_x, const RealDouble dTrav_y );
 
         RealDouble alt( UInt j ) const { return alt_[j]; }
-        RealDouble press( UInt j ) const { return press_[j]; }
+	RealDouble press( UInt j ) const { return press_[j]; }
+        RealDouble shear( UInt j ) const { return shear_[j]; }
 
         RealDouble temp( UInt j, UInt i ) const { return temp_[j][i]; }
         RealDouble airDens( UInt j, UInt i ) const { return airDens_[j][i]; }
@@ -59,6 +61,7 @@ class Meteorology
 
         const Vector_2D& Temp() const { return temp_; }
         const Vector_1D& Press() const { return press_; }
+        const Vector_1D& Shear() const { return shear_; }
 
         friend class Solution;
 
@@ -78,6 +81,7 @@ class Meteorology
         const RealDouble TEMPERATURE;
         const RealDouble PRESSURE;
         const RealDouble RHI;
+        const RealDouble SHEAR;
         RealDouble ALTITUDE;
 
         /* Temperature lapse rate */
@@ -98,7 +102,8 @@ class Meteorology
 
         /* Assume that pressure only depends on the vertical coordinate */
         Vector_1D alt_;
-        Vector_1D press_;
+	Vector_1D press_;
+        Vector_1D shear_;
 
         /* Temperature, air density and humidity fields can potentially be
          * 2D fields */

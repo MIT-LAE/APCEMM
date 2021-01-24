@@ -268,6 +268,42 @@ namespace SANDS
 
     } /* End of Solver::UpdateShear */
 
+    void Solver::UpdateShear( const Vector_1D shear_, const Vector_1D &y )
+    {
+
+        UInt iNx = 0;
+        UInt jNy = 0;
+
+        /* Declare and initialize horizontal velocity corresponding to shear.
+         * This value is dependent on the layer considered. */
+        RealDouble V = 0.0E+00;
+
+#pragma omp parallel for               \
+        if     ( !PARALLEL_CASES ) \
+        default( shared          ) \
+        private( iNx, jNy, V     ) \
+        schedule( dynamic, 1     )
+        for ( jNy = 0; jNy < n_y; jNy++ ) {
+
+                /* Compute horizonal velocity. V > 0 means that layer is going
+                 * left. Since positive shear means that the plume is rotating 
+                 * clockwise when looking from behind the aircraft, add a
+                 * negative sign.
+                 * If meteorological data is symmetric, that should not change
+                 * the outcome */
+
+                shear = shear_[jNy];
+		std::cout << "jNy=" << jNy << ", shear=" << shear << std::endl;
+                V = - shear * y[jNy];
+
+                /* Computing frequencies */
+                for ( iNx = 0; iNx < n_x; iNx++ )
+                    ShearFactor[jNy][iNx] = exp( physConst::_1j * dt * V * kx[iNx] ); 
+            
+        }
+
+    } /* End of Solver::UpdateShear */
+
     void Solver::Run( Vector_2D &V, const Vector_2D &cellAreas, const int fillOpt_ )
     {
 

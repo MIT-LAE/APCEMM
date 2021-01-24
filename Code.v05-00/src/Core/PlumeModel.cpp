@@ -224,7 +224,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             }
         }
     }
-    std::cout << "1 " << std::endl;
     /* ======================================================================= */
     /* ---- Input options from the PROD & LOSS MENU -------------------------- */
     /* ======================================================================= */
@@ -322,7 +321,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     Vector_2D totIceVol;
 
 #endif /* H2O_MASS_CHECK */
-    std::cout << "2 " << std::endl;
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -336,7 +334,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     /* Get cell areas */
     const Vector_2D cellAreas = m.areas();
-    std::cout << "3 " << std::endl;
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -385,7 +382,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     /* Run box model */
     if ( RUN_BOXMODEL )
         BoxModel( Input_Opt, input );
-    std::cout << "4 " << std::endl;
 
 
     /* ======================================================================= */
@@ -433,7 +429,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     RealDouble dtLiqCoag              = 0.0E+00;
     RealDouble dtIceCoag              = 0.0E+00;
     RealDouble dtIceGrowth            = 0.0E+00;
-    std::cout << "5 " << std::endl;
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -442,9 +437,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
     Meteorology Met( Input_Opt, curr_Time_s / 3600.0, m,        \
-                     temperature_K, pressure_Pa, relHumidity_i, \
+                     temperature_K, pressure_Pa, relHumidity_i, input.shear(), \
                      printDEBUG );
-    std::cout << "6 " << std::endl;
     if ( Input_Opt.MET_LOADMET && Input_Opt.MET_LOADTEMP ) {
         temperature_K = Met.temp_user;
         relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
@@ -1042,7 +1036,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         Solver.UpdateAdv  ( 0.0E+00, 0.0E+00 );
         /* Microphysics settling is considered for each bin independently */
         /* Update shear */
-        Solver.UpdateShear( shear, m.y() );
+        Solver.UpdateShear( Met.Shear(), m.y() );
+	
 
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
@@ -1176,7 +1171,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 /* Assume no plume advection */
                 Solver.UpdateAdv  ( 0.0E+00, 0.0E+00 );
                 /* Update shear */
-                Solver.UpdateShear( shear, m.y() );
+                Solver.UpdateShear( Met.Shear(), m.y() );
 
                 /* Do not apply any filling option: -1 */
                 for ( iRing = 0; iRing < nRing + 1; iRing++ )
