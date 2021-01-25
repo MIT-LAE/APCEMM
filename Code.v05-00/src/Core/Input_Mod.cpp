@@ -133,6 +133,8 @@ OptInput::OptInput( ):
     MET_INTERPTEMP( 0 ),
     MET_LOADH2O( 0 ),
     MET_INTERPH2O( 0 ),
+    MET_LOADSHEAR( 0 ),
+    MET_INTERPSHEAR( 0 ),
     MET_FIXDEPTH( 0 ),
     MET_DEPTH( 0.0E+00 ),
     MET_FIXLAPSERATE( 0 ),

@@ -91,7 +91,6 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         DIURNAL_AMPL  = 0.0 ; /* [K] */
         DIURNAL_PHASE = 12.0; /* [hrs] */
     }
-    std::cout << "loadmet=" << USERINPUT.MET_LOADMET << std::endl;
 
     diurnalPert = DIURNAL_AMPL * cos( 2.0E+00 * physConst::PI * ( solarTime_h - DIURNAL_PHASE ) / 24.0E+00 );
 
@@ -154,13 +153,16 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 
         float relhumid_user[var_len];
         float temperature_user[var_len];
+        float shear_user[var_len];
 	Vector_1D v1d_store( 8, 0.0E+00 );
         for ( UInt itime = 0; itime < var_len; itime++ ) {
             temperature_store_.push_back( v1d_store );
+            shear_store_.push_back( v1d_store );
         }
 
         std::cout << "Interpolate T: " << USERINPUT.MET_INTERPTEMP << std::endl;
         std::cout << "Interpolate H2O: " << USERINPUT.MET_INTERPH2O << std::endl;
+        std::cout << "Interpolate shear: " << USERINPUT.MET_LOADSHEAR << std::endl;
 
         if ( USERINPUT.MET_LOADTEMP ) {
             /* !@#$ */
@@ -259,9 +261,67 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
             satdepth_user = satdepth_user - ( altitude_user[i_Zp]-alt_user );
         }
 
-        /* Assign shear vector */
-        for ( jNy = 0; jNy < Y.size(); jNy++ )
-            shear_[jNy] = SHEAR;
+        if ( USERINPUT.MET_LOADSHEAR ) {
+	    /* !?*# */
+            
+	    /* Define temperature input dimension */
+            NcVar* temp_ncVar;
+
+	    /* Give back a pointer to the requested NcVar */
+	    if ( !(temp_ncVar = dataFile.get_var( "shear" )) ) {
+	        std::cout << "In Meteorology::Meteorology: getting temperature pointer" << std::endl;
+	    }
+
+            /* Interpolation desired? */
+	    if ( USERINPUT.MET_INTERPSHEAR ) {
+	        
+		float shear_store_temp[var_len][8];
+                if ( !(temp_ncVar->get(&shear_store_temp[0][0], var_len, 8)) ) {   
+                    std::cout << "In Meteorology::Meteorology: extracting temperature" << std::endl;                                                              
+                }
+
+                /* Identify temperature at above pressure */
+                S_user = shear_store_temp[i_Zp][0];
+                
+		/* Extract 2D temperature data into a 1D array */
+                for ( UInt i = 0; i < var_len; i++ ) {
+                    shear_user[i] = shear_store_temp[i][0];
+		    for ( UInt itime = 0; itime < 8; itime++ ) {
+                        shear_store_[i][itime] = shear_store_temp[i][itime];
+		    }
+                }
+
+            }
+            else {
+                
+		if ( !(temp_ncVar->get(shear_user, var_len)) ) {
+                    std::cout << "In Meteorology::Meteorology: extracting temperature" << std::endl;
+                }
+                /* Identify temperature at above pressure */
+                S_user = shear_user[i_Zp];
+
+            }
+
+            /* Identify closest temperature to given pressure */
+            /* Loop round each vertical layer to estimate temperature */
+            for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
+
+                /* Find the closest values above and below the central pressure */
+                UInt i_Z = met::nearestNeighbor( altitude_user, alt_[jNy] );
+                /* Loop round horizontal coordinates to assign temperature */
+                for ( UInt iNx = 0; iNx < X.size(); iNx++ ) {
+                    shear_[jNy] = shear_user[i_Z];
+                }
+
+            }
+
+	} else {
+	
+            /* Assign shear vector */
+            for ( jNy = 0; jNy < Y.size(); jNy++ )
+                shear_[jNy] = SHEAR;
+	
+        }
 
     } else { 
 
@@ -445,6 +505,7 @@ Meteorology::Meteorology( const Meteorology &met ) :
     H2O_          = met.H2O_;
     temperature_store_ = met.temperature_store_;
     altitude_store_ = met.altitude_store_;
+    shear_store_ = met.shear_store_;
 
 } /* End of Meteorology::Meteorology */
 
@@ -472,35 +533,65 @@ void Meteorology::Update( const OptInput &USERINPUT, const RealDouble solarTime_
     /* User defined fields can be set here ! */
     if ( USERINPUT.MET_LOADMET ) {
 
-        std::cout << "Umm... you need to set this up, mate" << std::endl;
 
-        /* Define variable sizes */
-	UInt var_len = temperature_store_.size();
-	float temperature_before[var_len];
-	float temperature_after[var_len];
-	float temperature_interp[var_len];
+        if ( USERINPUT.MET_INTERPTEMP ) {
+	    
+            /* Define variable sizes */
+	    UInt var_len = temperature_store_.size();
+	    float temperature_before[var_len];
+	    float temperature_after[var_len];
+	    float temperature_interp[var_len];
 
-	/* Extract temperature data before and after current time, and interpolate */
-        UInt itime_extract = std::floor( simTime_h / 3 );
-        for ( UInt i = 0; i < var_len; i++ ) {
-	    temperature_before[i] = temperature_store_[i][itime_extract];
-	    temperature_after[i] = temperature_store_[i][itime_extract+1];
-	    temperature_interp[i] = temperature_before[i] + ( temperature_after[i] - temperature_before[i] ) / 3.0 * ( simTime_h - itime_extract * 3.0 );
+	    /* Extract temperature data before and after current time, and interpolate */
+            UInt itime_extract = std::floor( simTime_h / 3 );
+            for ( UInt i = 0; i < var_len; i++ ) {
+	        temperature_before[i] = temperature_store_[i][itime_extract];
+	        temperature_after[i] = temperature_store_[i][itime_extract+1];
+	        temperature_interp[i] = temperature_before[i] + ( temperature_after[i] - temperature_before[i] ) / 3.0 * ( simTime_h - itime_extract * 3.0 );
+	    }
+
+            /* Identify closest temperature to given pressure */
+            /* Loop round each vertical layer to estimate temperature */
+            for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
+            
+	        /* Find the closest values above and below the central pressure */
+                UInt i_Z = met::nearestNeighbor( altitude_store_, alt_[jNy] );
+            
+	        /* Loop round horizontal coordinates to assign temperature */
+                for ( UInt iNx = 0; iNx < X.size(); iNx++ ) {
+                    temp_[jNy][iNx] = temperature_interp[i_Z];
+                }
+
+            }
 	}
 
-        /* Identify closest temperature to given pressure */
-        /* Loop round each vertical layer to estimate temperature */
-        for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
-            
-	    /* Find the closest values above and below the central pressure */
-            UInt i_Z = met::nearestNeighbor( altitude_store_, alt_[jNy] );
-            
-	    /* Loop round horizontal coordinates to assign temperature */
-            for ( UInt iNx = 0; iNx < X.size(); iNx++ ) {
-                temp_[jNy][iNx] = temperature_interp[i_Z];
+	if ( USERINPUT.MET_INTERPSHEAR ) {
+	
+            /* Define variable sizes */
+	    UInt var_len = shear_store_.size();
+	    float shear_before[var_len];
+	    float shear_after[var_len];
+	    float shear_interp[var_len];
+
+	    /* Extract shear data before and after current time, and interpolate */
+	    UInt itime_extract = std::floor( simTime_h / 3 );
+	    for ( UInt i = 0; i < var_len; i++ ) {
+	        shear_before[i] = shear_store_[i][itime_extract];
+		shear_after[i] = shear_store_[i][itime_extract+1];
+		shear_interp[i] = shear_before[i] + ( shear_after[i] - shear_before[i] ) / 3.0 * ( simTime_h - itime_extract * 3.0 );
             }
 
-        }
+	    /* Identify closest shear to given pressure */
+	    /* Loop round each vertical layer to estimate shear */
+	    for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
+
+	        /* Find the closest values above and below the central pressure */
+		UInt i_Z = met::nearestNeighbor( altitude_store_, alt_[jNy] );
+		shear_[jNy] = shear_interp[i_Z];
+
+	    }
+
+	}
 
     }
     else {
@@ -620,7 +711,7 @@ RealDouble invkB = 1.00E-06 / physConst::kB;
             airDens_[jNy][iNx] = press_[jNy] / temp_[jNy][iNx] * invkB;
     }
 
-    if ( 1 ) {
+    if ( 0 ) {
         std::cout << "\n DEBUG : Meteorology\n";
         std::cout << "         Grid number | Altitude [km] | Pressure [hPa] | Temperature [K] | H2O [-] | RHi [-] |\n";
         for ( jNy = Y.size() - 1; jNy --> 0; ) {

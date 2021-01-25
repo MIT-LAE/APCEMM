@@ -71,6 +71,7 @@ class Meteorology
         RealDouble pres_user;
         RealDouble RHw_user;
         RealDouble satdepth_user;
+        RealDouble S_user;
 
     protected:
 
@@ -114,6 +115,7 @@ class Meteorology
         /* Temperature input from user can be 2D [T(z,t)] */
 	Vector_2D temperature_store_;
         Vector_1D altitude_store_;
+        Vector_2D shear_store_;
 
 };
 

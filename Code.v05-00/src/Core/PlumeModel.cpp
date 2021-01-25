@@ -97,7 +97,7 @@ Vector_1D BuildTime( const RealDouble tStart, const RealDouble tEnd,    \
 int PlumeModel( OptInput &Input_Opt, const Input &input )
 {
 
-    bool printDEBUG = 1;
+    bool printDEBUG = 0;
 
 #ifdef DEBUG
 
