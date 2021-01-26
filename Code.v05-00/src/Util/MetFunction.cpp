@@ -428,8 +428,8 @@ namespace met
             std::cout << "Checking genuine location found" << std::endl;
             std::cout << iCur << std::endl;
             std::cout << alt[iFlight]-alt[iCur] << std::endl;
-            std::cout << "EndSim: Infinite saturation depth" << std::endl;
-            exit(0);
+            std::cout << "Careful: saturation depth exceeds domain" << std::endl;
+            // exit(0);
         }
 
         /* Once a SATDEPTH_MIN m depth of subsaturated region found, find altitude */

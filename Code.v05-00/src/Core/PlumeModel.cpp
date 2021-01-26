@@ -438,7 +438,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     Meteorology Met( Input_Opt, curr_Time_s / 3600.0, m,        \
                      temperature_K, pressure_Pa, relHumidity_i, input.shear(), \
-                     printDEBUG );
+                     0 ); //printDEBUG );
     if ( Input_Opt.MET_LOADMET && Input_Opt.MET_LOADTEMP ) {
         temperature_K = Met.temp_user;
         relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
@@ -896,6 +896,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                       Data, m, Met );
         float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
         float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
+	std::cout << "# particles: " << totalIceParticles << ", ice mass: " << totalIceMass << std::endl;
         if ( totalIceParticles <= 1.00E+1 && totalIceMass <= 1.00E-5 && !CHEMISTRY ) {
             std::cout << "EndSim: no particles remain" << std::endl;
             exit(0);
@@ -2025,6 +2026,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                           Data, m, Met );    
             float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
             float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
+	    std::cout << "# particles: " << totalIceParticles << ", ice mass: " << totalIceMass << std::endl;
             if ( totalIceParticles <= 1.00E+1 && totalIceMass <= 1.00E-5 && !CHEMISTRY ) {
                 std::cout << "EndSim: no particles remain" << std::endl;
                 std::cout << "# ice particles: " << totalIceParticles << std::endl;

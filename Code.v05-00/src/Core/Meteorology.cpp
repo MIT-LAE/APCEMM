@@ -148,6 +148,8 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         for ( UInt jNy = 0; jNy < Y.size(); jNy++ ) {
              // alt_[jNy] = altitude_user[i_Zp] + Y[jNy];
              alt_[jNy] = alt_user + Y[jNy];
+	     UInt i_Z = met::nearestNeighbor( altitude_user, alt_[jNy] );
+             press_[jNy] = pressure_user[i_Z];
         }
 
 
@@ -176,17 +178,16 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 	    }
 
             /* Extract the temperature data */
+	    float temperature_store_temp[var_len][8];
+            if ( !(temp_ncVar->get(&temperature_store_temp[0][0], var_len, 8)) ) {   
+                std::cout << "In Meteorology::Meteorology: extracting temperature" << std::endl;                                                              
+            }
 
-            if ( USERINPUT.MET_INTERPTEMP ) {
-	        
-		float temperature_store_temp[var_len][8];
-                if ( !(temp_ncVar->get(&temperature_store_temp[0][0], var_len, 8)) ) {   
-                    std::cout << "In Meteorology::Meteorology: extracting temperature" << std::endl;                                                              
-                }
+            /* Identify temperature at above pressure */
+            temp_user = temperature_store_temp[i_Zp][0];    
 
-                /* Identify temperature at above pressure */
-                temp_user = temperature_store_temp[i_Zp][0];
-                
+            if ( USERINPUT.MET_INTERPTEMP ) { 
+
 		/* Extract 2D temperature data into a 1D array */
                 for ( UInt i = 0; i < var_len; i++ ) {
                     temperature_user[i] = temperature_store_temp[i][0];
@@ -197,9 +198,12 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 
             }
             else {
-                if ( !(temp_ncVar->get(temperature_user, var_len)) ) {
-                    std::cout << "In Meteorology::Meteorology: extracting temperature" << std::endl;
-                }
+                //if ( !(temp_ncVar->get(temperature_user, var_len)) ) {
+                //    std::cout << "In Meteorology::Meteorology: extracting temperature" << std::endl;
+                //}
+		for ( UInt i = 0; i < var_len; i++ ) {
+		    temperature_user[i] = temperature_store_temp[i][0];
+		}
                 /* Identify temperature at above pressure */
                 temp_user = temperature_user[i_Zp];
             }
@@ -256,7 +260,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         }
 
         /* Identify the saturation depth */
-        satdepth_user = 100; //met::satdepth_calc( relhumid_user, temperature_user, altitude_user, i_Zp, var_len );
+        satdepth_user = met::satdepth_calc( relhumid_user, temperature_user, altitude_user, i_Zp, var_len );
         if ( satdepth_user != 1.0 ) {
             satdepth_user = satdepth_user - ( altitude_user[i_Zp]-alt_user );
         }
@@ -272,17 +276,17 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 	        std::cout << "In Meteorology::Meteorology: getting temperature pointer" << std::endl;
 	    }
 
+	    float shear_store_temp[var_len][8];
+            if ( !(temp_ncVar->get(&shear_store_temp[0][0], var_len, 8)) ) {   
+                std::cout << "In Meteorology::Meteorology: extracting temperature" << std::endl;                                                              
+            }
+
+            /* Identify temperature at above pressure */
+            S_user = shear_store_temp[i_Zp][0];
+                
             /* Interpolation desired? */
 	    if ( USERINPUT.MET_INTERPSHEAR ) {
-	        
-		float shear_store_temp[var_len][8];
-                if ( !(temp_ncVar->get(&shear_store_temp[0][0], var_len, 8)) ) {   
-                    std::cout << "In Meteorology::Meteorology: extracting temperature" << std::endl;                                                              
-                }
 
-                /* Identify temperature at above pressure */
-                S_user = shear_store_temp[i_Zp][0];
-                
 		/* Extract 2D temperature data into a 1D array */
                 for ( UInt i = 0; i < var_len; i++ ) {
                     shear_user[i] = shear_store_temp[i][0];
@@ -294,9 +298,12 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
             }
             else {
                 
-		if ( !(temp_ncVar->get(shear_user, var_len)) ) {
-                    std::cout << "In Meteorology::Meteorology: extracting temperature" << std::endl;
-                }
+		// if ( !(temp_ncVar->get(shear_user, var_len)) ) {
+                //    std::cout << "In Meteorology::Meteorology: extracting temperature" << std::endl;
+                // }
+		for ( UInt i = 0; i < var_len; i++ ) {
+		    shear_user[i] = shear_store_temp[i][0];
+		}
                 /* Identify temperature at above pressure */
                 S_user = shear_user[i_Zp];
 
@@ -711,7 +718,7 @@ RealDouble invkB = 1.00E-06 / physConst::kB;
             airDens_[jNy][iNx] = press_[jNy] / temp_[jNy][iNx] * invkB;
     }
 
-    if ( 0 ) {
+    if ( 1 ) {
         std::cout << "\n DEBUG : Meteorology\n";
         std::cout << "         Grid number | Altitude [km] | Pressure [hPa] | Temperature [K] | H2O [-] | RHi [-] |\n";
         for ( jNy = Y.size() - 1; jNy --> 0; ) {

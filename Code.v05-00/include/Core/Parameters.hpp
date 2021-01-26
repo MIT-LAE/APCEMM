@@ -45,8 +45,8 @@ extern int PARALLEL_CASES;
 
 #define NX                1024 //1024        /* Number of grid cells in the x-direction */
 #define NY                256  //256         /* Number of grid cells in the y-direction */
-#define XLIM_RIGHT        1.00E+04    /* x-limits of the domain [m] */
-#define XLIM_LEFT         14.0E+04    /* x-limits of the domain [m] */
+#define XLIM_RIGHT        10.0E+04    /* x-limits of the domain [m] */
+#define XLIM_LEFT         10.0E+04    /* x-limits of the domain [m] */
 #define YLIM_UP           6.50E+02    /* Upper y-limit of the domain [m] */
 #define YLIM_DOWN         5.00E+03    /* Lower y-limit of the domain [m] */
 

@@ -293,7 +293,6 @@ namespace SANDS
                  * the outcome */
 
                 shear = shear_[jNy];
-		std::cout << "jNy=" << jNy << ", shear=" << shear << std::endl;
                 V = - shear * y[jNy];
 
                 /* Computing frequencies */

@@ -396,25 +396,31 @@ void Mesh::Ring2Mesh( Cluster &c )
 
                 /* Split over 4 cells */
                 /* First cell */
-                jNy = std::ceil(NY/2);
-                iNx = std::ceil(NX/2);
+                jNy = std::floor( y_[0]/(y_[0]-y_[1]) ); //std::ceil(NY/2);
+                iNx = std::floor( x_[0]/(x_[0]-x_[1]) ); //std::ceil(NX/2);
+		if ( y_[jNy] < 0 ) {
+		    jNy+=1;
+		}
+		if ( x_[iNx] < 0 ) {
+		    iNx+=1;
+		}
                 weights[iRing][jNy][iNx] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
                 mapIndex_[jNy][iNx] = iRing;
                 /* Second cell */
-                jNy = std::ceil(NY/2-1);
-                iNx = std::ceil(NX/2);
-                weights[iRing][jNy][iNx] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
-                mapIndex_[jNy][iNx] = iRing;
+                // jNy = std::ceil(NY/2-1);
+                // iNx = std::ceil(NX/2);
+                weights[iRing][jNy-1][iNx] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
+                mapIndex_[jNy-1][iNx] = iRing;
                 /* Third cell */
-                jNy = std::ceil(NY/2);
-                iNx = std::ceil(NX/2-1);
-                weights[iRing][jNy][iNx] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
-                mapIndex_[jNy][iNx] = iRing;
+                // jNy = std::ceil(NY/2);
+                // iNx = std::ceil(NX/2-1);
+                weights[iRing][jNy][iNx-1] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
+                mapIndex_[jNy][iNx-1] = iRing;
                 /* Fourth cell */
-                jNy = std::ceil(NY/2-1);
-                iNx = std::ceil(NX/2-1);
-                weights[iRing][jNy][iNx] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
-                mapIndex_[jNy][iNx] = iRing;
+                // jNy = std::ceil(NY/2-1);
+                // iNx = std::ceil(NX/2-1);
+                weights[iRing][jNy-1][iNx-1] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
+                mapIndex_[jNy-1][iNx-1] = iRing;
                 /* nCellMap */
                 nCellMap[iRing] = 4;
 
