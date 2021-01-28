@@ -125,7 +125,7 @@ endif
 LINK := $(LINK)
 
 # Add path to APCEMM's library folder
-LINK := -L$(LIB_DIR)
+LINK := -L$(LIB_DIR) -L/home/aa681/src/trusty_libs/usr/lib -L/home/aa681/src/trusty_libs/usr/lib/x86_64-linux-gnu
 
 # Define any libraries to link into executable: use -llibname option
 LINK := $(LINK) $(LDLIBS) -lstdc++
@@ -216,7 +216,7 @@ ifeq ($(COMPILER),g++)
   CXXFLAGS            += $(USER_DEFS)
 
   # Include options (i.e. for finding *.h* files)
-  INCLUDE := -I$(ROOT_DIR)/include
+  INCLUDE := -I$(ROOT_DIR)/include -I/home/aa681/src/trusty_libs/usr/include
 
 endif
 
