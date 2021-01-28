@@ -91,6 +91,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         DIURNAL_AMPL  = 0.0 ; /* [K] */
         DIURNAL_PHASE = 12.0; /* [hrs] */
     }
+    std::cout << "loadmet=" << USERINPUT.MET_LOADMET << std::endl;
 
     diurnalPert = DIURNAL_AMPL * cos( 2.0E+00 * physConst::PI * ( solarTime_h - DIURNAL_PHASE ) / 24.0E+00 );
 
@@ -204,7 +205,8 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 		for ( UInt i = 0; i < var_len; i++ ) {
 		    temperature_user[i] = temperature_store_temp[i][0];
 		}
-                /* Identify temperature at above pressure */
+                
+		/* Identify temperature at above pressure */
                 temp_user = temperature_user[i_Zp];
             }
 
@@ -260,7 +262,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         }
 
         /* Identify the saturation depth */
-        satdepth_user = met::satdepth_calc( relhumid_user, temperature_user, altitude_user, i_Zp, var_len );
+        satdepth_user = 100; //met::satdepth_calc( relhumid_user, temperature_user, altitude_user, i_Zp, var_len );
         if ( satdepth_user != 1.0 ) {
             satdepth_user = satdepth_user - ( altitude_user[i_Zp]-alt_user );
         }
@@ -539,7 +541,6 @@ void Meteorology::Update( const OptInput &USERINPUT, const RealDouble solarTime_
     
     /* User defined fields can be set here ! */
     if ( USERINPUT.MET_LOADMET ) {
-
 
         if ( USERINPUT.MET_INTERPTEMP ) {
 	    

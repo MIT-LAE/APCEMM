@@ -438,7 +438,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     Meteorology Met( Input_Opt, curr_Time_s / 3600.0, m,        \
                      temperature_K, pressure_Pa, relHumidity_i, input.shear(), \
-                     0 ); //printDEBUG );
+                     printDEBUG );
     if ( Input_Opt.MET_LOADMET && Input_Opt.MET_LOADTEMP ) {
         temperature_K = Met.temp_user;
         relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\

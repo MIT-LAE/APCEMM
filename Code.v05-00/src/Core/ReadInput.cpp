@@ -8999,8 +8999,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- PLUME PROCESSING TIME ( SIMULATION TIME ) ------------------------ */
         /* ---- Accepted units are: hr (default)                                   */
         /* ======================================================================= */
-	
-        if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE ) {
+        
+	if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE ) {
             currVal = Input_Opt.PARAMETER_PLUMEPROCESS[0];
             while ( currVal <= Input_Opt.PARAMETER_PLUMEPROCESS[2] ) {
                 cases.push_back( currVal );
@@ -9070,9 +9070,11 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
 
+	std::cout << cases.size() << std::endl;
         z.push_back( Vector_1D(cases.size() ) );
         for ( i = 0; i < cases.size(); i++ )
             z[0][i] = cases[i];
+	    std::cout << i << ", " << cases[i] << std::endl;
         nCases *= cases.size();
 
         u = Copy_blocked(y,z[0].size());
