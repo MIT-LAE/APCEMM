@@ -736,7 +736,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     /* Compute Grid to Ring mapping */
     m.Ring2Mesh( ringCluster );
-    Vector_2Dui mapIndices = m.mapIndex();
+    Vector_2D mapIndices = m.mapIndex();
 
     /* Print ring to mesh mapping? */
     if ( DEBUG_MAPPING )
@@ -1117,7 +1117,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     private ( iNx, jNy        ) \
                     schedule( dynamic, 1      )
                     for ( jNy = 0; jNy < NY; jNy++ ) {
-                        if ( ( yE[jNy] > YLIM_UP - 200.0 ) && ( yE[jNy] > 400.0 ) ) {
+                        if ( ( yE[jNy] > YLIM_UP - 100.0 ) && ( yE[jNy] < YLIM_DOWN - 100.0 ) ) {
                             for ( iNx = 0; iNx < NX; iNx++ ) {
                                 for ( UInt iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
@@ -1137,9 +1137,9 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     schedule( dynamic, 1      )
                     for ( iNx = 0; iNx < NX; iNx++ ) {
 #ifndef XLIM
-                        if ( ( xE[iNx] < -XLIM_LEFT + 5.0E+03 ) || ( xE[iNx] > XLIM_RIGHT - 5.0E+03 ) ) {
+                        if ( ( xE[iNx] < -XLIM_LEFT + 100.0 ) || ( xE[iNx] > XLIM_RIGHT - 100.0 ) ) {
 #else
-                        if ( ( xE[iNx] < -XLIM + 5.0E+03 ) || ( xE[iNx] > XLIM - 5.0E+03 ) ) {
+                        if ( ( xE[iNx] < -XLIM + 100.0 ) || ( xE[iNx] > XLIM - 100.0 ) ) {
 #endif
                             for ( jNy = 0; jNy < NY; jNy++ ) {
                                 for ( UInt iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
