@@ -49,7 +49,8 @@ class Meteorology
 
         void Update( const OptInput &USERINPUT, const RealDouble solarTime_h, \
                      const RealDouble simTime_h, \
-                     const Mesh &m, const RealDouble dTrav_x, const RealDouble dTrav_y );
+                     const Mesh &m, const RealDouble dTrav_x, const RealDouble dTrav_y, \
+		     const bool DBG = 0 );
 
         RealDouble alt( UInt j ) const { return alt_[j]; }
 	RealDouble press( UInt j ) const { return press_[j]; }

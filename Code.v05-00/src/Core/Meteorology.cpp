@@ -527,7 +527,8 @@ Meteorology::~Meteorology( )
 
 void Meteorology::Update( const OptInput &USERINPUT, const RealDouble solarTime_h, \
                           const RealDouble simTime_h, const Mesh &m, \
-                          const RealDouble dTrav_x, const RealDouble dTrav_y )
+                          const RealDouble dTrav_x, const RealDouble dTrav_y, \
+	       	          const bool DBG )
 {
 
     UInt iNx = 0;
@@ -719,7 +720,7 @@ RealDouble invkB = 1.00E-06 / physConst::kB;
             airDens_[jNy][iNx] = press_[jNy] / temp_[jNy][iNx] * invkB;
     }
 
-    if ( 1 ) {
+    if ( DBG ) {
         std::cout << "\n DEBUG : Meteorology\n";
         std::cout << "         Grid number | Altitude [km] | Pressure [hPa] | Temperature [K] | H2O [-] | RHi [-] |\n";
         for ( jNy = Y.size() - 1; jNy --> 0; ) {
