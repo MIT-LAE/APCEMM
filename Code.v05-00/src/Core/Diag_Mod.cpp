@@ -447,6 +447,28 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charName );
             }
 
+            /* Saving ice aerosol surface area 
+             * Size: NY x NX */
+
+            strncpy( charSpc, "Ice aerosol surface area", sizeof(charSpc) );
+            strncpy( charName, "Ice aerosol surface area", sizeof(charName) );
+            strncpy( charUnit, "m^2/cm^3", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            array = util::vect2double( Data.solidAerosol.TotalArea(), m.Ny(), m.Nx(), scalingFactor );
+#else
+            array = util::vect2float ( Data.solidAerosol.TotalArea(), m.Ny(), m.Nx(), scalingFactor );
+#endif /* SAVE_TO_DOUBLE */
+
+            #pragma omp critical
+            {
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0], \
+                                         (const char*)charSpc,             \
+                                         yDim, xDim, outputType,           \
+                                         (const char*)charUnit,            \
+                                         (const char*)charName );
+            }
+
             /* Saving ice aerosol volume
              * Size: NY x NX */
 
