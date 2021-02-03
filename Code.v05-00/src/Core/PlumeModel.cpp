@@ -736,7 +736,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     /* Compute Grid to Ring mapping */
     m.Ring2Mesh( ringCluster );
-    Vector_2D mapIndices = m.mapIndex();
+    Vector_2Dui mapIndices = m.mapIndex();
 
     /* Print ring to mesh mapping? */
     if ( DEBUG_MAPPING )
@@ -1053,6 +1053,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
 #endif /* TIME_IT */
 
+        float totPart_lost;
+        float totIce_lost;
         if ( TRANSPORT ) {
 
             if ( CHEMISTRY ) {
@@ -1107,6 +1109,9 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
                 }
 
+                /* Check how much particle number and mass change before/after flux correction */
+                float totalIceParticles_before = Data.solidAerosol.TotalNumber_sum( cellAreas );
+                float totalIceMass_before = Data.solidAerosol.TotalIceMass_sum( cellAreas );
                 if ( FLUX_CORRECTION ) {
 
                     /* Limit flux of ice particles through top boundary */
@@ -1152,6 +1157,11 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     }
 
                 } /* FLUX_CORRECTION */
+                float totalIceParticles_after = Data.solidAerosol.TotalNumber_sum( cellAreas );
+                float totalIceMass_after = Data.solidAerosol.TotalIceMass_sum( cellAreas );
+		totPart_lost = totalIceParticles_after / totalIceParticles_before;
+		totIce_lost = totalIceMass_after / totalIceMass_before;
+	        std::cout << "part lost=" << totPart_lost << ", ice lost=" << totIce_lost << std::endl;
 
                 /* Update centers of each bin */
                 Data.solidAerosol.UpdateCenters( iceVolume, Data.solidAerosol.pdf );
@@ -2022,8 +2032,9 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             int hh = (int) (curr_Time_s - timeArray[0])/3600;
             int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
             int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
+	    std::cout << "part lost=" << totPart_lost << ", ice lost=" << totIce_lost << std::endl;
             Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
-                          Data, m, Met );    
+                          Data, m, Met, 0, totPart_lost, totIce_lost );    
             float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
             float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
 	    std::cout << "# particles: " << totalIceParticles << ", ice mass: " << totalIceMass << std::endl;
@@ -2033,6 +2044,11 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 std::cout << "Total ice mass [g]: " << totalIceMass << std::endl;
                 exit(0);
             }
+            /* Check not lost too many particles */
+	    if (( ( 1.0 - totPart_lost ) > 0.1 ) || ( ( 1.0 - totIce_lost ) > 0.1 )) {
+                std::cout << "Lost at least 5% of particles or ice mass... Ending" << std::endl;
+                exit(5);
+	    }
         }
 
     }

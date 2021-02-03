@@ -43,12 +43,12 @@ extern int PARALLEL_CASES;
 
 /* 3. Fine regular grid for non-zero shear: */
 
-#define NX                512         /* Number of grid cells in the x-direction */
-#define NY                96          /* Number of grid cells in the y-direction */
-#define XLIM_RIGHT        5.0E+04     /* x-limits of the domain [m] */
-#define XLIM_LEFT         5.0E+04     /* x-limits of the domain [m] */
+#define NX                128          /* Number of grid cells in the x-direction */
+#define NY                64           /* Number of grid cells in the y-direction */
+#define XLIM_RIGHT        1.0E+04     /* x-limits of the domain [m] */
+#define XLIM_LEFT         1.0E+04     /* x-limits of the domain [m] */
 #define YLIM_UP           6.50E+02    /* Upper y-limit of the domain [m] */
-#define YLIM_DOWN         1.00E+03    /* Lower y-limit of the domain [m] */
+#define YLIM_DOWN         6.50E+02    /* Lower y-limit of the domain [m] */
 
 /* 4. Fine and extended grid for contrail simulation: */
 
