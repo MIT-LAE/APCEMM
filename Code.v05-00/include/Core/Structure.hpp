@@ -71,7 +71,8 @@ class Solution
                          const bool DBG );
 
         void getData( const UInt i = 0, \
-                      const UInt j = 0 );
+                      const UInt j = 0, \
+		      const bool CHEMISTRY = 0 );
 
         void applyData( const UInt i = 0, \
                         const UInt j = 0 );

@@ -416,14 +416,46 @@ void Solution::Initialize( char const *fileName,      \
 } /* End of Solution::Initialize */
 
 void Solution::getData( const UInt i, \
-                        const UInt j )
+                        const UInt j, \
+	                const bool CHEMISTRY )
 {
 
-    for ( UInt N = 0; N < NVAR; N++ )
-        VAR[N] = Species[N][j][i];
+    for ( UInt N = 0; N < NVAR; N++ ) {
+	if ( CHEMISTRY )
+            VAR[N] = Species[N][j][i];
+	else {
+            if ( ( N == ind_H2O      ) || \
+                 ( N == ind_H2Omet   ) || \
+                 ( N == ind_H2Oplume ) || \
+                 ( N == ind_H2OL     ) || \
+                 ( N == ind_H2OS     ) ) {
+                VAR[N] = Species[N][j][i];
+            }
+	    else {
+                VAR[N] = Species[N][0][0];
+	    }
+	
+	}
+    }
 
-    for ( UInt N = 0; N < NFIX; N++ )
-        FIX[N] = Species[N+NVAR][j][i];
+    for ( UInt N = 0; N < NFIX; N++ ) {
+	if ( CHEMISTRY )
+            FIX[N] = Species[N+NVAR][j][i];
+	else {
+            if ( ( N == ind_H2O      ) || \
+                 ( N == ind_H2Omet   ) || \
+                 ( N == ind_H2Oplume ) || \
+                 ( N == ind_H2OL     ) || \
+                 ( N == ind_H2OS     ) ) {
+                FIX[N] = Species[N+NVAR][j][i];
+            }
+	    else {
+                FIX[N] = Species[N+NVAR][0][0];
+	    }
+	
+	}
+
+    }
 
 } /* End of Solution::getData */
 
@@ -663,8 +695,8 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                     }
                 }
             }
-
-            if ( ( std::isfinite(iceAer.Moment()) ) && ( iceAer.Moment() > 0.0E+00 ) )
+            
+	    if ( ( std::isfinite(iceAer.Moment()) ) && ( iceAer.Moment() > 0.0E+00 ) )
                 solidAerosol.addPDF( iceAer, weights[innerRing], cellAreas, nCell );
             if ( ( std::isfinite(liqAer.Moment()) ) && ( liqAer.Moment() > 0.0E+00 ) )
                 liquidAerosol.addPDF( liqAer, weights[innerRing], cellAreas, nCell );

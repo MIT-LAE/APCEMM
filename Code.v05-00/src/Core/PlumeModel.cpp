@@ -613,6 +613,11 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     /* Ambient chemistry */
     ambientData.getData( aerArray, nTime );
 
+    /* Assign VAR using Structure - overwrites the value set in ambientData */
+    UInt i_center = std::floor( xE[0]/(xE[0]-xE[1]) );
+    UInt j_center = std::floor( yE[0]/(yE[0]-yE[1]) );
+    Data.getData( i_center, j_center, CHEMISTRY );
+
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
     /* -------------------------- EARLY MICROPHYSICS ------------------------- */
@@ -629,7 +634,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     aerArray, aircraft, EI, Ice_rad, Ice_den, Soot_den,  \
                     H2O_mol, SO4g_mol, SO4l_mol, liquidAer, iceAer, areaPlume, \
                     Ab0, Tc0 );
-
+    
     /* Compute initial plume area.
      * If 2 engines, we assume that after 3 mins, the two plumes haven't fully mixed yet and result in a total
      * area of 2 * the area computed for one engine
@@ -755,6 +760,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     Data.addEmission( EI, aircraft, m, ringCluster.halfRing(),  \
                       temperature_K, ( relHumidity_i > 100.0 ), \
                       liquidAer, iceAer, Soot_den, Met, areaPlume );
+
     /* Fill in variables species for initial time */
     ringData.FillIn( Data, m.weights, nTime );
 
@@ -1612,7 +1618,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                         RealDouble AerosolRadi[NAERO];
 
                         /* Convert data structure to KPP inputs (VAR and FIX) */
-                        Data.getData( iNx, jNy );
+                        Data.getData( iNx, jNy, CHEMISTRY );
 
                         /* ================================================= */
                         /* =============== Chemical rates ================== */

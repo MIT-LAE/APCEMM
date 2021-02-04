@@ -553,10 +553,18 @@ void Meteorology::Update( const OptInput &USERINPUT, const RealDouble solarTime_
 
 	    /* Extract temperature data before and after current time, and interpolate */
             UInt itime_extract = std::floor( simTime_h / 3 );
+	    if ( itime_extract > 7 ) {
+		itime_extract = 7;
+            }
             for ( UInt i = 0; i < var_len; i++ ) {
 	        temperature_before[i] = temperature_store_[i][itime_extract];
-	        temperature_after[i] = temperature_store_[i][itime_extract+1];
-	        temperature_interp[i] = temperature_before[i] + ( temperature_after[i] - temperature_before[i] ) / 3.0 * ( simTime_h - itime_extract * 3.0 );
+	        if ( itime_extract >= 7 ) {
+		    temperature_after[i] = temperature_store_[i][itime_extract];
+		}
+		else {
+		    temperature_after[i] = temperature_store_[i][itime_extract+1];
+		}
+		temperature_interp[i] = temperature_before[i] + ( temperature_after[i] - temperature_before[i] ) / 3.0 * ( simTime_h - itime_extract * 3.0 );
 	    }
 
             /* Identify closest temperature to given pressure */
