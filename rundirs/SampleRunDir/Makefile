@@ -92,7 +92,7 @@ endif
 TIMESTAMP    :=$(shell date +"%Y/%m/%d %H:%M")	
 
 # Log files that will be written to the log directory
-LOG_COMP     :="$(RUN_DIR)/lastbuild"
+LOG_COMP     :=$(RUN_DIR)/lastbuild
 LOG_SP       :="$(LOG_DIR)/$(VERSION).log.sp"
 LOG_MP       :="$(LOG_DIR)/$(VERSION).log.mp"
 
