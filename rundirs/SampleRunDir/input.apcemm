@@ -4,7 +4,7 @@ APCEMM SIMULATION
 Parameter sweep?        : F
  => Monte Carlo?        : F
   => Number of runs     : 50
-Output folder           : /net/d13/data/aa681/statistical_global_contrails/Simulations/C-APCEMM/rundirs/SampleRunDir/
+Output folder           : /path/to/output/folder
  => Overwrite? if exists: F
 Run directory           : ./
 Use threaded FFT?       : F
