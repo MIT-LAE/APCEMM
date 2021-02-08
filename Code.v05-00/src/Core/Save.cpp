@@ -828,7 +828,7 @@ namespace output
                         strncpy( charSpc, SPC_NAMES[N], sizeof(charSpc) );
                         strcat(  charSpc, "_Ambient" );
                         strncpy( charName, SPC_NAMES[N], sizeof(charName) );
-                        strcat(  charSpc, " ambient mixing ratio" );
+                        strcat(  charName, " ambient mixing ratio" );
                         
                         didSaveSucceed *= fileHandler.addVar( currFile, &(ambArray)[0], (const char*)charSpc, timeDim, outputType, (const char*)charUnit, (const char*)charName ); 
                     }
