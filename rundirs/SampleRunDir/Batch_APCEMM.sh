@@ -99,7 +99,7 @@ export OMP_NUM_THREADS=$omp_threads
 # Define current directory
 APCEMM_runDir=${PWD##}
 export APCEMM_runDir
-
+echo $APCEMM_runDir
 if [[ -e ${APCEMM_runDir}/APCEMM ]]; then
     rm ${APCEMM_runDir}/APCEMM
 fi

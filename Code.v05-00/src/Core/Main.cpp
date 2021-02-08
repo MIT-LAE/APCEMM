@@ -80,7 +80,7 @@ int main( int , char* )
 
         /* Read in input file */
         Read_Input_File( Input_Opt );
-        
+
         /* Collect parameters and create cases */
         parameters = CombVec( Input_Opt );
 
@@ -178,7 +178,7 @@ int main( int , char* )
         }
 
         if ( !fileExist || Input_Opt.SIMULATION_OVERWRITE ) {
-            
+
             const Input inputCase( iCase, parameters, \
                                    fullPath,          \
                                    fullPath_ADJ,      \
@@ -195,7 +195,6 @@ int main( int , char* )
 
 
             int iERR = 0;
-
             switch (model) {
 
                 /* Box Model */

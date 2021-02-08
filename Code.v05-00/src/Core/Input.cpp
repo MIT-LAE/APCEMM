@@ -45,6 +45,11 @@ Input::Input( unsigned int iCase,             \
     backgCO_       ( parameters[23][iCase] ),
     backgCH4_      ( parameters[24][iCase] ),
     backgSO2_      ( parameters[25][iCase] ),
+    flightSpeed_   ( parameters[26][iCase] ),
+    numEngines_    ( parameters[27][iCase] ),
+    wingspan_      ( parameters[28][iCase] ),
+    coreExitTemp_  ( parameters[29][iCase] ),
+    bypassArea_    ( parameters[30][iCase] ),
     fileName_      ( fileName ),
     fileName_ADJ_  ( fileName_ADJ ),
     fileName_BOX_  ( fileName_BOX )
@@ -177,7 +182,8 @@ Input::Input( unsigned int iCase,             \
         exit(-1);
     }
 
-    if ( aircraftMass_ < 50.0E+03 ) {
+    /* if ( aircraftMass_ < 50.0E+03 ) { */
+    if ( aircraftMass_ < 0.0E+00 ) {
         std::cout << " In Input::Input:";
         std::cout << " aircraftMass takes an unrealisable value: aircraftMass = ";
         std::cout << aircraftMass_ << " [kg]" << std::endl;
@@ -223,6 +229,41 @@ Input::Input( unsigned int iCase,             \
         std::cout << " In Input::Input:";
         std::cout << " backgSO2 takes an unrealisable value: backgCH4 = ";
         std::cout << backgSO2_ << " [ppb]" << std::endl;
+        exit(-1);
+    }
+
+    if ( flightSpeed_ < 0.0E+00 ) {
+        std::cout << " In Input::Input:";
+        std::cout << " Flight speed takes an unrealisable value: flightSpeed = ";
+        std::cout << flightSpeed_ << " [m/s]" << std::endl;
+        exit(-1);
+    }
+    
+    if ( !( numEngines_ == 2 || numEngines_ == 4 ) ) {
+        std::cout << " In Input::Input:";
+        std::cout << " Number of engines takes an unrealisable value: numEngines = ";
+        std::cout << numEngines_ << " []" << std::endl;
+        exit(-1);
+    }
+
+    if ( wingspan_ < 0.0E+00 ) {
+        std::cout << " In Input::Input:";
+        std::cout << " Wingspan takes an unrealisable value: wingspan_ = ";
+        std::cout << wingspan_ << " [m]" << std::endl;
+        exit(-1);
+    }
+
+    if ( coreExitTemp_ < 0.0E+00 ) {
+        std::cout << " In Input::Input:";
+        std::cout << " Exhaust temperature takes an unrealisable value: coreExitTemp = ";
+        std::cout << coreExitTemp_ << " [K]" << std::endl;
+        exit(-1);
+    }
+
+    if ( bypassArea_ < 0.0E+00 ) {
+        std::cout << " In Input::Input:";
+        std::cout << " Exhaust area takes an unrealisable value: bypassArea = ";
+        std::cout << bypassArea_ << " [m^2]" << std::endl;
         exit(-1);
     }
 

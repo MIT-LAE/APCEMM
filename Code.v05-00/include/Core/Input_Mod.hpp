@@ -132,6 +132,21 @@ class OptInput
         bool        PARAMETER_AMASS_RANGE;
         std::string PARAMETER_AMASS_UNIT;
         Vector_1D   PARAMETER_AMASS;
+        bool        PARAMETER_FSPEED_RANGE;
+        std::string PARAMETER_FSPEED_UNIT;
+        Vector_1D   PARAMETER_FSPEED;
+        bool        PARAMETER_NUMENG_RANGE;
+        std::string PARAMETER_NUMENG_UNIT;
+        Vector_1D   PARAMETER_NUMENG;
+        bool        PARAMETER_WINGSPAN_RANGE;
+        std::string PARAMETER_WINGSPAN_UNIT;
+        Vector_1D   PARAMETER_WINGSPAN;
+        bool        PARAMETER_COREEXITTEMP_RANGE;
+        std::string PARAMETER_COREEXITTEMP_UNIT;
+        Vector_1D   PARAMETER_COREEXITTEMP;
+        bool        PARAMETER_BYPASSAREA_RANGE;
+        std::string PARAMETER_BYPASSAREA_UNIT;
+        Vector_1D   PARAMETER_BYPASSAREA;
         
         /* ========================================== */
         /* ---- TRANSPORT MENU ---------------------- */

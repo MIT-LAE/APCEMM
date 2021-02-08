@@ -382,7 +382,46 @@ void Mesh::Ring2Mesh( Cluster &c )
         }
         else {
             std::cout << "Ring " << iRing << " has no cell in it (nCell = 0)!!" << std::endl;
-            exit(-1);
+            if ( iRing == 0 ) {
+                /* Just add to central ring */
+                UInt jNy = 0;
+                UInt iNx = 0;
+                double ringArea;
+
+                /* Calculate ring Area */
+                hAxis = RingV[iRing].getHAxis();
+                vAxis = RingV[iRing].getVAxis();
+                ringArea = physConst::PI * hAxis * vAxis;
+                std::cout << ringArea << std::endl;
+
+                /* Split over 4 cells */
+                /* First cell */
+                jNy = std::ceil(NY/2);
+                iNx = std::ceil(NX/2);
+                weights[iRing][jNy][iNx] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
+                mapIndex_[jNy][iNx] = iRing;
+                /* Second cell */
+                jNy = std::ceil(NY/2-1);
+                iNx = std::ceil(NX/2);
+                weights[iRing][jNy][iNx] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
+                mapIndex_[jNy][iNx] = iRing;
+                /* Third cell */
+                jNy = std::ceil(NY/2);
+                iNx = std::ceil(NX/2-1);
+                weights[iRing][jNy][iNx] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
+                mapIndex_[jNy][iNx] = iRing;
+                /* Fourth cell */
+                jNy = std::ceil(NY/2-1);
+                iNx = std::ceil(NX/2-1);
+                weights[iRing][jNy][iNx] = 0.25 * ringArea / cellArea_; /* 1.0E+00; */
+                mapIndex_[jNy][iNx] = iRing;
+                /* nCellMap */
+                nCellMap[iRing] = 4;
+
+            }
+            else {
+                exit(-1);
+            }
         }
 
 #if ( Y_SYMMETRY && X_SYMMETRY )
