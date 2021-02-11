@@ -903,7 +903,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
         float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
 	std::cout << "# particles: " << totalIceParticles << ", ice mass: " << totalIceMass << std::endl;
-        if ( totalIceParticles <= 1.00E+1 && totalIceMass <= 1.00E-5 && !CHEMISTRY ) {
+        if ( totalIceParticles <= 1.00E+6 && totalIceMass <= 1.00E-2 && !CHEMISTRY ) {
             std::cout << "EndSim: no particles remain" << std::endl;
             exit(0);
         }
@@ -2044,17 +2044,17 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
             float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
 	    std::cout << "# particles: " << totalIceParticles << ", ice mass: " << totalIceMass << std::endl;
-            if ( totalIceParticles <= 1.00E+1 && totalIceMass <= 1.00E-5 && !CHEMISTRY ) {
+            if ( totalIceParticles <= 1.00E+6 && totalIceMass <= 1.00E-2 && !CHEMISTRY ) {
                 std::cout << "EndSim: no particles remain" << std::endl;
                 std::cout << "# ice particles: " << totalIceParticles << std::endl;
                 std::cout << "Total ice mass [g]: " << totalIceMass << std::endl;
                 exit(0);
             }
             /* Check not lost too many particles */
-	    if (( ( 1.0 - totPart_lost ) > 0.1 ) || ( ( 1.0 - totIce_lost ) > 0.1 )) {
-                std::cout << "Lost at least 5% of particles or ice mass... Ending" << std::endl;
-                exit(5);
-	    }
+	    // if (( ( 1.0 - totPart_lost ) > 0.1 ) || ( ( 1.0 - totIce_lost ) > 0.1 )) {
+            //     std::cout << "Lost at least 5% of particles or ice mass... Ending" << std::endl;
+            //     exit(5);
+	    // }
         }
 
     }
