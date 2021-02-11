@@ -683,9 +683,9 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
 Vector_1D Solution::getAmbient() const
 {
 
-    Vector_1D ambVector( NSPEC, 0.0 );
+    Vector_1D ambVector( NSPECREACT, 0.0 );
 
-    for ( UInt iVar = 0; iVar < NSPEC; iVar++ )
+    for ( UInt iVar = 0; iVar < NSPECREACT; iVar++ )
         ambVector[iVar] = Species[iVar][0][0];
 
     return ambVector;
