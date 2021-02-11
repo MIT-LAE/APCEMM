@@ -1839,7 +1839,7 @@ namespace AIM
     {
 
         Vector_2D TotalNumber_pcell = TotalNumber( );
-        RealDouble totalnumber_sum;
+        RealDouble totalnumber_sum = 0;
         UInt iNx = 0;
         UInt jNy = 0;
 
@@ -1968,8 +1968,8 @@ namespace AIM
     {
 
         Vector_2D TotalVolume_pcell = TotalVolume( );
-        RealDouble totalvolume_sum;
-        RealDouble totalicemass_sum;
+        RealDouble totalvolume_sum = 0;
+        RealDouble totalicemass_sum = 0;
         UInt iNx = 0;
         UInt jNy = 0;
 
