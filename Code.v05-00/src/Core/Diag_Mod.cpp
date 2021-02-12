@@ -139,6 +139,7 @@ bool Diag_TS_Chem( const char* rootName,                     \
                                                  outputType, (const char*)charUnit, \
                                                  (const char*)charName );
                     }
+                    delete[] array;
 
                 } else {
                     std::cout << " In Diag_Mod for timeseries: Unexpected index: " << speciesIndices[i] << std::endl;
@@ -147,8 +148,6 @@ bool Diag_TS_Chem( const char* rootName,                     \
             }
 
         }
-
-        delete[] array; array = NULL;
 
         if ( didSaveSucceed == NC_SUCCESS ) {
 //            std::cout << " Done saving to netCDF!" << "\n";
@@ -308,6 +307,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                      (const char*)charUnit,             \
                                      (const char*)charName );
         }
+        delete[] array;
 
         /* Saving meteorological temperature */
 
@@ -329,6 +329,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                      (const char*)charUnit,             \
                                      (const char*)charName );
         }
+        delete[] array;
 
         /* Saving H2O gaseous concentration */
 
@@ -350,7 +351,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                      (const char*)charUnit,             \
                                      (const char*)charName );
         }
-
+        delete[] array;
 
         if ( outputPDF == 2 ) {
 
@@ -377,6 +378,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,             \
                                          (const char*)charName );
             }
+            delete[] array;
 
             /* Saving ice aerosol bin centers.
              * A moving bin structure is adopted in APCEMM. Each grid-cell thus 
@@ -401,6 +403,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,             \
                                          (const char*)charName );
             }
+            delete[] array;
 
         } else if ( outputPDF == 1 ) {
 
@@ -424,6 +427,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,             \
                                          (const char*)charName );
             }
+            delete[] array;
 
         } else {
 
@@ -483,6 +487,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
             }
+            delete[] array;
 
             /* Saving ice aerosol surface area 
              * Size: NY x NX */
@@ -505,6 +510,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
             }
+            delete[] array;
 
             /* Saving ice aerosol volume
              * Size: NY x NX */
@@ -527,6 +533,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
             }
+            delete[] array;
 
             /* Saving ice aerosol effective radius
              * Size: NY x NX */
@@ -549,6 +556,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
             }
+            delete[] array;
 
             /* Saving horizontal optical depth
              * Size: NY */
@@ -571,6 +579,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
             }
+            delete[] array;
 
             /* Saving vertical optical depth
              * Size: NX */
@@ -593,6 +602,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
             }
+            delete[] array;
 
             /* Saving overall size distributionh
              * Size: NX */
@@ -615,10 +625,9 @@ bool Diag_TS_Phys( const char* rootName,                     \
                                          (const char*)charUnit,            \
                                          (const char*)charName );
             }
+            delete[] array;
 
         }
-
-        delete[] array; array = NULL;
 
     }
 

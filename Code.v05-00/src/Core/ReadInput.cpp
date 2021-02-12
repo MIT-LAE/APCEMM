@@ -9072,9 +9072,10 @@ Vector_2D CombVec( OptInput &Input_Opt )
 
 	std::cout << cases.size() << std::endl;
         z.push_back( Vector_1D(cases.size() ) );
-        for ( i = 0; i < cases.size(); i++ )
+        for ( i = 0; i < cases.size(); i++ ) {
             z[0][i] = cases[i];
-	    std::cout << i << ", " << cases[i] << std::endl;
+            std::cout << i << ", " << cases[i] << std::endl;
+        }
         nCases *= cases.size();
 
         u = Copy_blocked(y,z[0].size());
