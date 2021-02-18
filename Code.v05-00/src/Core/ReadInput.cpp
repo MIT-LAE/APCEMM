@@ -5310,7 +5310,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
 
     /* ---- Flight speed ------------------------------- */
-    std::cout << "  Flight speed [" << Input_Opt.PARAMETER_AMASS_UNIT << "] : ";
+    std::cout << "  Flight speed [" << Input_Opt.PARAMETER_FSPEED_UNIT << "] : ";
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( Input_Opt.PARAMETER_FSPEED_RANGE )
             std::cout << "[" << Input_Opt.PARAMETER_FSPEED[0] << "," << Input_Opt.PARAMETER_FSPEED[1] << "]" << std::endl;
@@ -10428,8 +10428,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- FLIGHT SPEED  ---------------------------------------------------- */
         /* ---- Accepted units are: m/s (default)                                  */
         /* ======================================================================= */
-	
-        if ( Input_Opt.PARAMETER_FSPEED_RANGE ) {
+        
+	if ( Input_Opt.PARAMETER_FSPEED_RANGE ) {
             currVal = Input_Opt.PARAMETER_FSPEED[0];
             while ( currVal <= Input_Opt.PARAMETER_FSPEED[2] ) {
                 cases.push_back( currVal );
@@ -10452,6 +10452,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
         Input_Opt.PARAMETER_FSPEED_UNIT = "m/s";
 
         z.push_back( Vector_1D(cases.size() ) );
+        for ( i = 0; i < cases.size(); i++ )
+            z[0][i] = cases[i];
         nCases *= cases.size();
 
         u = Copy_blocked(y,z[0].size());
