@@ -428,7 +428,8 @@ namespace met
             std::cout << "Checking genuine location found" << std::endl;
             std::cout << iCur << std::endl;
             std::cout << alt[iFlight]-alt[iCur] << std::endl;
-            std::cout << "Careful: saturation depth exceeds domain" << std::endl;
+            std::cout << "Careful: saturation depth exceeds domain - resetting to 100" << std::endl;
+	    satdepth = 100.0;
             // exit(0);
         }
 

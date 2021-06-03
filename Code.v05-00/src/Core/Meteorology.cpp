@@ -262,7 +262,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
         }
 
         /* Identify the saturation depth */
-        satdepth_user = 100; //met::satdepth_calc( relhumid_user, temperature_user, altitude_user, i_Zp, var_len );
+        satdepth_user = met::satdepth_calc( relhumid_user, temperature_user, altitude_user, i_Zp, var_len );
         if ( satdepth_user != 1.0 ) {
             satdepth_user = satdepth_user - ( altitude_user[i_Zp]-alt_user );
         }
