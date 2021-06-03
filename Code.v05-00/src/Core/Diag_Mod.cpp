@@ -173,7 +173,8 @@ bool Diag_TS_Phys( const char* rootName,                     \
                    const int hh, const int mm, const int ss, \
                    const Solution& Data, const Mesh& m,      \
                    const Meteorology &met,                   \
-                   const int outputPDF )
+                   const int outputPDF, \
+		   const float partNum_lost, const float iceMass_lost )
 {
 
     const bool doWrite   = 1;
@@ -243,6 +244,10 @@ bool Diag_TS_Phys( const char* rootName,                     \
         char buffer[80];
         time( &rawtime );
         strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
+
+        const NcDim *tDim = fileHandler.addDim( currFile, "Time", long(1.0) );
+	const float cur_time = hh+mm/60.0+ss/3600.0;
+        didSaveSucceed *= fileHandler.addVar( currFile, &(cur_time), "Time", tDim, "float", "h", "Time since inception");
 
         const NcDim *xDim = fileHandler.addDim( currFile, "X Center", long(m.Nx()) );
         didSaveSucceed *= fileHandler.addVar( currFile, &(m.x())[0], "X Centers", xDim, "float", "m", "Grid cell horizontal centers");
@@ -429,6 +434,38 @@ bool Diag_TS_Phys( const char* rootName,                     \
             /* This might be a better approach as this requires less disk 
              * space */
 
+            /* Saving particle number that is flux corrected 
+             * Size: 1 */
+
+            strncpy( charSpc, "Particle number lost", sizeof(charSpc) );
+            strncpy( charName, "Particle number lost", sizeof(charName) );
+            strncpy( charUnit, "part/m", sizeof(charUnit) );
+
+            #pragma omp critical
+            {
+            didSaveSucceed *= fileHandler.addVar( currFile, &(partNum_lost), \
+                                         (const char*)charSpc,           \
+                                         tDim, outputType,               \
+                                         (const char*)charUnit,          \
+                                         (const char*)charName );
+            }
+
+            /* Saving ice mass that is flux corrected 
+             * Size: 1 */
+
+            strncpy( charSpc, "Ice mass lost", sizeof(charSpc) );
+            strncpy( charName, "Ice mass lost", sizeof(charName) );
+            strncpy( charUnit, "kg/m", sizeof(charUnit) );
+
+            #pragma omp critical
+            {
+            didSaveSucceed *= fileHandler.addVar( currFile, &(iceMass_lost), \
+                                         (const char*)charSpc,           \
+                                         tDim, outputType,           \
+                                         (const char*)charUnit,          \
+                                         (const char*)charName );
+            }
+
             /* Saving ice aerosol particle number 
              * Size: NY x NX */
 
@@ -440,6 +477,29 @@ bool Diag_TS_Phys( const char* rootName,                     \
             array = util::vect2double( Data.solidAerosol.TotalNumber(), m.Ny(), m.Nx(), scalingFactor );
 #else
             array = util::vect2float ( Data.solidAerosol.TotalNumber(), m.Ny(), m.Nx(), scalingFactor );
+#endif /* SAVE_TO_DOUBLE */
+
+            #pragma omp critical
+            {
+            didSaveSucceed *= fileHandler.addVar2D( currFile, &(array)[0], \
+                                         (const char*)charSpc,             \
+                                         yDim, xDim, outputType,           \
+                                         (const char*)charUnit,            \
+                                         (const char*)charName );
+            }
+            delete[] array;
+
+            /* Saving ice aerosol surface area 
+             * Size: NY x NX */
+
+            strncpy( charSpc, "Ice aerosol surface area", sizeof(charSpc) );
+            strncpy( charName, "Ice aerosol surface area", sizeof(charName) );
+            strncpy( charUnit, "m^2/cm^3", sizeof(charUnit) );
+
+#if ( SAVE_TO_DOUBLE )
+            array = util::vect2double( Data.solidAerosol.TotalArea(), m.Ny(), m.Nx(), scalingFactor );
+#else
+            array = util::vect2float ( Data.solidAerosol.TotalArea(), m.Ny(), m.Nx(), scalingFactor );
 #endif /* SAVE_TO_DOUBLE */
 
             #pragma omp critical

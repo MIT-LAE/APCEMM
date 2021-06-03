@@ -151,6 +151,7 @@ class AIM::Grid_Aerosol
         Vector_1D Overall_Size_Dist( const Vector_2D cellAreas ) const;
         Vector_3D Volume( ) const;
         Vector_2D TotalVolume( ) const;
+        Vector_2D TotalArea( ) const;
         RealDouble TotalIceMass_sum( const Vector_2D cellAreas ) const;
         Vector_2D IWC( ) const;
         Vector_2D Extinction( ) const;

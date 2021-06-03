@@ -13,7 +13,7 @@
 
 #include "Core/Engine.hpp"
 
-const char * const Engine::engineFileName = "/net/d07/data/fritzt/APCEMM_Data/ENG_EI.txt";
+const char * const Engine::engineFileName = "/home/aa681/Documents/APCEMM_Data/ENG_EI.txt";
 
 Engine::Engine( )
 {

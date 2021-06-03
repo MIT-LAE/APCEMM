@@ -47,7 +47,9 @@ bool Diag_TS_Phys( const char* ROOTNAME,                     \
                    const int hh, const int mm, const int ss, \
                    const Solution& Data, const Mesh& m,      \
                    const Meteorology &Met,                   \
-                   const int outputPDF = 0 );
+                   const int outputPDF = 0,                  \
+	           const float partNum_lost = 1.0,             \
+	           const float iceMass_lost = 1.0 );
 
 /* ================================================================== */
 /* ---- Prod & Loss Rates Diagnostics ------------------------------- */

@@ -5310,7 +5310,7 @@ void Read_Parameters( OptInput &Input_Opt, bool &RC )
     }
 
     /* ---- Flight speed ------------------------------- */
-    std::cout << "  Flight speed [" << Input_Opt.PARAMETER_AMASS_UNIT << "] : ";
+    std::cout << "  Flight speed [" << Input_Opt.PARAMETER_FSPEED_UNIT << "] : ";
     if ( Input_Opt.SIMULATION_MONTECARLO ) {
         if ( Input_Opt.PARAMETER_FSPEED_RANGE )
             std::cout << "[" << Input_Opt.PARAMETER_FSPEED[0] << "," << Input_Opt.PARAMETER_FSPEED[1] << "]" << std::endl;
@@ -6216,6 +6216,47 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     }
 
     /* ==================================================== */
+    /* Interpolate temperature in time?                     */
+    /* ==================================================== */
+
+    variable = "Interpolate T in time?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "TRUE" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "true" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "True" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "YES" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Y" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "y" )    == 0 ) )
+        Input_Opt.MET_INTERPTEMP = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "f" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "FALSE" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "false" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "False" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "NO" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "No" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "no" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "N" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "n" )     == 0 ) )
+        Input_Opt.MET_INTERPTEMP = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
     /* Initialize H2O from MET?                             */
     /* ==================================================== */
 
@@ -6251,6 +6292,129 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
               ( strcmp(tokens[0].c_str(), "N" )     == 0 ) || \
               ( strcmp(tokens[0].c_str(), "n" )     == 0 ) )
         Input_Opt.MET_LOADH2O = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Interpolate H2O in time?                             */
+    /* ==================================================== */
+
+    variable = "Interpolate H2O in time?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "TRUE" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "true" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "True" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "YES" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Y" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "y" )    == 0 ) )
+        Input_Opt.MET_INTERPH2O = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "f" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "FALSE" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "false" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "False" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "NO" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "No" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "no" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "N" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "n" )     == 0 ) )
+        Input_Opt.MET_INTERPH2O = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Initialize shear from MET?                           */
+    /* ==================================================== */
+
+    variable = "Initialize shear from MET?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "TRUE" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "true" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "True" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "YES" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Y" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "y" )    == 0 ) )
+        Input_Opt.MET_LOADSHEAR = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "f" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "FALSE" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "false" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "False" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "NO" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "No" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "no" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "N" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "n" )     == 0 ) )
+        Input_Opt.MET_LOADSHEAR = 0;
+    else {
+        std::cout << " Wrong input for: " << variable << std::endl;
+        exit(1);
+    }
+
+    /* ==================================================== */
+    /* Interpolate shear in time?                           */
+    /* ==================================================== */
+
+    variable = "Interpolate shear in time?";
+    getline( inputFile, line, '\n' );
+    if ( VERBOSE )
+        std::cout << line << std::endl;
+
+    /* Extract variable */
+    tokens = Split_Line( line.substr(FIRSTCOL), SPACE );
+
+    if ( ( strcmp(tokens[0].c_str(), "T" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "t" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "1" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "TRUE" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "true" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "True" ) == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "YES" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "yes" )  == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "Y" )    == 0 ) || \
+         ( strcmp(tokens[0].c_str(), "y" )    == 0 ) )
+        Input_Opt.MET_INTERPSHEAR = 1;
+    else if ( ( strcmp(tokens[0].c_str(), "F" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "f" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "0" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "FALSE" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "false" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "False" ) == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "NO" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "No" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "no" )    == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "N" )     == 0 ) || \
+              ( strcmp(tokens[0].c_str(), "n" )     == 0 ) )
+        Input_Opt.MET_INTERPSHEAR = 0;
     else {
         std::cout << " Wrong input for: " << variable << std::endl;
         exit(1);
@@ -6448,7 +6612,11 @@ void Read_Meteorology_Menu( OptInput &Input_Opt, bool &RC )
     std::cout << " Do we have MET input?   : " << Input_Opt.MET_LOADMET                              << std::endl;
     std::cout << "  => Met file            : " << Input_Opt.MET_FILENAME                             << std::endl;
     std::cout << "  => Init T from MET?    : " << Input_Opt.MET_LOADTEMP                             << std::endl;
+    std::cout << "    => Interpolate T?    : " << Input_Opt.MET_INTERPTEMP                           << std::endl;
     std::cout << "  => Init H2O from MET?  : " << Input_Opt.MET_LOADH2O                              << std::endl;
+    std::cout << "    => Interpolate H2O?  : " << Input_Opt.MET_INTERPH2O                            << std::endl;
+    std::cout << "  => Init shear from MET?: " << Input_Opt.MET_LOADSHEAR                            << std::endl;
+    std::cout << "    => Interpolate shear?: " << Input_Opt.MET_INTERPSHEAR                          << std::endl;
     std::cout << " - OR -------------------: " << std::endl;
     std::cout << " Impose moist layer depth: " << Input_Opt.MET_FIXDEPTH                             << std::endl;
     std::cout << "  => Moist layer depth[m]: " << Input_Opt.MET_DEPTH                                << std::endl;
@@ -8831,8 +8999,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- PLUME PROCESSING TIME ( SIMULATION TIME ) ------------------------ */
         /* ---- Accepted units are: hr (default)                                   */
         /* ======================================================================= */
-
-        if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE ) {
+        
+	if ( Input_Opt.PARAMETER_PLUMEPROCESS_RANGE ) {
             currVal = Input_Opt.PARAMETER_PLUMEPROCESS[0];
             while ( currVal <= Input_Opt.PARAMETER_PLUMEPROCESS[2] ) {
                 cases.push_back( currVal );
@@ -8902,9 +9070,12 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* Updating unit now that conversion has been taken care of */
         Input_Opt.PARAMETER_TEMPERATURE_UNIT = "K";
 
+	std::cout << cases.size() << std::endl;
         z.push_back( Vector_1D(cases.size() ) );
-        for ( i = 0; i < cases.size(); i++ )
+        for ( i = 0; i < cases.size(); i++ ) {
             z[0][i] = cases[i];
+            std::cout << i << ", " << cases[i] << std::endl;
+        }
         nCases *= cases.size();
 
         u = Copy_blocked(y,z[0].size());
@@ -10257,8 +10428,8 @@ Vector_2D CombVec( OptInput &Input_Opt )
         /* ---- FLIGHT SPEED  ---------------------------------------------------- */
         /* ---- Accepted units are: m/s (default)                                  */
         /* ======================================================================= */
-
-        if ( Input_Opt.PARAMETER_FSPEED_RANGE ) {
+        
+	if ( Input_Opt.PARAMETER_FSPEED_RANGE ) {
             currVal = Input_Opt.PARAMETER_FSPEED[0];
             while ( currVal <= Input_Opt.PARAMETER_FSPEED[2] ) {
                 cases.push_back( currVal );

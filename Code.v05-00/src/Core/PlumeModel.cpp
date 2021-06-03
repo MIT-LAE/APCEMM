@@ -97,12 +97,12 @@ Vector_1D BuildTime( const RealDouble tStart, const RealDouble tEnd,    \
 int PlumeModel( OptInput &Input_Opt, const Input &input )
 {
 
-    bool printDEBUG = 1;
+    bool printDEBUG = 0;
 
 #ifdef DEBUG
 
     std::cout << "\n DEBUG is turned ON!\n\n";
-    printDEBUG = 1;
+    printDEBUG = 0;
 
 #endif /* DEBUG */
 
@@ -195,15 +195,17 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     const char* TS_AERO_FILENAME        = TS_FILE2.c_str();
     const std::vector<int> TS_AERO_LIST = Input_Opt.TS_AEROSOL;
     const RealDouble TS_AERO_FREQ       = Input_Opt.TS_AERO_FREQ;
+    std::cout << TS_FOLDER << std::endl;
 
     if ( TS_SPEC )
         std::cout << "\n Saving TS files to: " << TS_SPEC_FILENAME << std::endl;
 
     if ( TS_AERO )
         std::cout << "\n Saving TS_AERO files to: " << TS_AERO_FILENAME << std::endl;
-
+    
     if ( ( TS_SPEC || TS_AERO ) && ( TS_FOLDER.compare("") != 0 ) ) {
-
+        std::cout << "Creating director" << std::endl;
+	std::cout << TS_FOLDER << std::endl;
         /* Create output directory for timeseries */
         struct stat sb;
         if ( !( stat( TS_FOLDER.c_str(), &sb ) == 0 \
@@ -222,7 +224,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             }
         }
     }
-
     /* ======================================================================= */
     /* ---- Input options from the PROD & LOSS MENU -------------------------- */
     /* ======================================================================= */
@@ -436,7 +437,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
 
     Meteorology Met( Input_Opt, curr_Time_s / 3600.0, m,        \
-                     temperature_K, pressure_Pa, relHumidity_i, \
+                     temperature_K, pressure_Pa, relHumidity_i, input.shear(), \
                      printDEBUG );
     if ( Input_Opt.MET_LOADMET && Input_Opt.MET_LOADTEMP ) {
         temperature_K = Met.temp_user;
@@ -570,7 +571,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     aircraft.setWingspan( input.wingspan() );
     aircraft.setFuelFlow( input.fuelFlow() );
     JetA.setFSC( input.EI_SO2() * (RealDouble) 500.0 );
-
+    
     /* Print AC Debug? */
     if ( DEBUG_AC_INPUT )
         aircraft.Debug();
@@ -612,6 +613,11 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     /* Ambient chemistry */
     ambientData.getData( aerArray, nTime );
 
+    /* Assign VAR using Structure - overwrites the value set in ambientData */
+    UInt i_center = std::floor( xE[0]/(xE[0]-xE[1]) );
+    UInt j_center = std::floor( yE[0]/(yE[0]-yE[1]) );
+    Data.getData( i_center, j_center, CHEMISTRY );
+
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
     /* -------------------------- EARLY MICROPHYSICS ------------------------- */
@@ -627,8 +633,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, VAR, FIX, \
                     aerArray, aircraft, EI, Ice_rad, Ice_den, Soot_den,  \
                     H2O_mol, SO4g_mol, SO4l_mol, liquidAer, iceAer, areaPlume, \
-                    Ab0, Tc0 );
-
+		    Ab0, Tc0 );
     /* Compute initial plume area.
      * If 2 engines, we assume that after 3 mins, the two plumes haven't fully mixed yet and result in a total
      * area of 2 * the area computed for one engine
@@ -650,6 +655,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         const RealDouble iceNumFrac = aircraft.VortexLosses( EI.getSoot(),    \
                                                              EI.getSootRad(), \
                                                              Input_Opt.MET_DEPTH );
+	std::cout << iceNumFrac << std::endl;
         if ( iceNumFrac <= 0.00E+00 && !CHEMISTRY ) {
             std::cout << "EndSim: vortex sinking" << std::endl;
             exit(0);
@@ -754,6 +760,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     Data.addEmission( EI, aircraft, m, ringCluster.halfRing(),  \
                       temperature_K, ( relHumidity_i > 100.0 ), \
                       liquidAer, iceAer, Soot_den, Met, areaPlume );
+
     /* Fill in variables species for initial time */
     ringData.FillIn( Data, m.weights, nTime );
 
@@ -892,10 +899,11 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
         int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
         Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
-                      Data, m, Met );
+                      Data, m, Met, 0 );
         float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
         float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
-        if ( totalIceParticles <= 1.00E+1 && totalIceMass <= 1.00E-5 && !CHEMISTRY ) {
+	std::cout << "# particles: " << totalIceParticles << ", ice mass: " << totalIceMass << std::endl;
+        if ( totalIceParticles <= 1.00E+6 && totalIceMass <= 1.00E-2 && !CHEMISTRY ) {
             std::cout << "EndSim: no particles remain" << std::endl;
             exit(0);
         }
@@ -1035,7 +1043,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         Solver.UpdateAdv  ( 0.0E+00, 0.0E+00 );
         /* Microphysics settling is considered for each bin independently */
         /* Update shear */
-        Solver.UpdateShear( shear, m.y() );
+        Solver.UpdateShear( Met.Shear(), m.y(), 1 );
+	
 
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
@@ -1050,6 +1059,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
 #endif /* TIME_IT */
 
+        float totPart_lost;
+        float totIce_lost;
         if ( TRANSPORT ) {
 
             if ( CHEMISTRY ) {
@@ -1097,13 +1108,16 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     /* Transport particle number and volume for each bin and
                      * recompute centers of each bin for each grid cell
                      * accordingly */
-                    Solver.UpdateAdv ( 0.0E+00, vFall[iBin_PA] );
+                    Solver.UpdateAdv ( 0.0E+00, vFall[iBin_PA], 1 );
 
                     Solver.Run( Data.solidAerosol.pdf[iBin_PA], cellAreas, -1 );
                     Solver.Run( iceVolume[iBin_PA], cellAreas, -1 );
 
                 }
 
+                /* Check how much particle number and mass change before/after flux correction */
+                float totalIceParticles_before = Data.solidAerosol.TotalNumber_sum( cellAreas );
+                float totalIceMass_before = Data.solidAerosol.TotalIceMass_sum( cellAreas );
                 if ( FLUX_CORRECTION ) {
 
                     /* Limit flux of ice particles through top boundary */
@@ -1114,7 +1128,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     private ( iNx, jNy        ) \
                     schedule( dynamic, 1      )
                     for ( jNy = 0; jNy < NY; jNy++ ) {
-                        if ( ( yE[jNy] > YLIM_UP - 200.0 ) && ( yE[jNy] > 400.0 ) ) {
+                        
+			if ( ( yE[jNy] > YLIM_UP - 250.0 ) || ( yE[jNy] < -YLIM_DOWN + 1250.0 ) ) {
                             for ( iNx = 0; iNx < NX; iNx++ ) {
                                 for ( UInt iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
@@ -1134,9 +1149,9 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     schedule( dynamic, 1      )
                     for ( iNx = 0; iNx < NX; iNx++ ) {
 #ifndef XLIM
-                        if ( ( xE[iNx] < -XLIM_LEFT + 5.0E+03 ) || ( xE[iNx] > XLIM_RIGHT - 5.0E+03 ) ) {
+                        if ( ( xE[iNx] < -XLIM_LEFT + 1500.0 ) || ( xE[iNx] > XLIM_RIGHT - 1500.0 ) ) {
 #else
-                        if ( ( xE[iNx] < -XLIM + 5.0E+03 ) || ( xE[iNx] > XLIM - 5.0E+03 ) ) {
+                        if ( ( xE[iNx] < -XLIM + 1500.0 ) || ( xE[iNx] > XLIM - 1500.0 ) ) {
 #endif
                             for ( jNy = 0; jNy < NY; jNy++ ) {
                                 for ( UInt iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
@@ -1149,6 +1164,11 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     }
 
                 } /* FLUX_CORRECTION */
+                float totalIceParticles_after = Data.solidAerosol.TotalNumber_sum( cellAreas );
+                float totalIceMass_after = Data.solidAerosol.TotalIceMass_sum( cellAreas );
+		totPart_lost = totalIceParticles_after / totalIceParticles_before;
+		totIce_lost = totalIceMass_after / totalIceMass_before;
+	        std::cout << "part lost=" << totPart_lost << ", ice lost=" << totIce_lost << std::endl;
 
                 /* Update centers of each bin */
                 Data.solidAerosol.UpdateCenters( iceVolume, Data.solidAerosol.pdf );
@@ -1169,7 +1189,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 /* Assume no plume advection */
                 Solver.UpdateAdv  ( 0.0E+00, 0.0E+00 );
                 /* Update shear */
-                Solver.UpdateShear( shear, m.y() );
+                Solver.UpdateShear( Met.Shear(), m.y(), 1 );
 
                 /* Do not apply any filling option: -1 */
                 for ( iRing = 0; iRing < nRing + 1; iRing++ )
@@ -1203,7 +1223,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         /* Met only matters for contrail evolution */
         if ( TRANSPORT_PA ) {
             /* Update met fields at mid time step */
-            Met.Update( ( curr_Time_s + dt/2 ) / 3600.0, m, dTrav_x, dTrav_y );
+            Met.Update( Input_Opt, ( curr_Time_s + dt/2 ) / 3600.0, ( curr_Time_s + dt/2 - timeArray[0] ) / 3600, m, dTrav_x, dTrav_y );
 
             /* Update H2O */
             for ( jNy = 0; jNy < NY; jNy++ ) {
@@ -1599,7 +1619,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                         RealDouble AerosolRadi[NAERO];
 
                         /* Convert data structure to KPP inputs (VAR and FIX) */
-                        Data.getData( iNx, jNy );
+                        Data.getData( iNx, jNy, CHEMISTRY );
 
                         /* ================================================= */
                         /* =============== Chemical rates ================== */
@@ -2019,16 +2039,23 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             int hh = (int) (curr_Time_s - timeArray[0])/3600;
             int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
             int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
+	    std::cout << "part lost=" << totPart_lost << ", ice lost=" << totIce_lost << std::endl;
             Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
-                          Data, m, Met );    
+                          Data, m, Met, 0, totPart_lost, totIce_lost );    
             float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
             float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
-            if ( totalIceParticles <= 1.00E+1 && totalIceMass <= 1.00E-5 && !CHEMISTRY ) {
+	    std::cout << "# particles: " << totalIceParticles << ", ice mass: " << totalIceMass << std::endl;
+            if ( totalIceParticles <= 1.00E+6 && totalIceMass <= 1.00E-2 && !CHEMISTRY ) {
                 std::cout << "EndSim: no particles remain" << std::endl;
                 std::cout << "# ice particles: " << totalIceParticles << std::endl;
                 std::cout << "Total ice mass [g]: " << totalIceMass << std::endl;
                 exit(0);
             }
+            /* Check not lost too many particles */
+	    if (( ( 1.0 - totPart_lost ) > 0.1 ) || ( ( 1.0 - totIce_lost ) > 0.1 )) {
+               std::cout << "Lost at least 5% of particles or ice mass... Ending" << std::endl;
+               exit(5);
+	    }
         }
 
     }
@@ -2436,3 +2463,5 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 } /* End of PlumeModel */
 
 /* End of PlumeModel.cpp */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/*                                                                  */

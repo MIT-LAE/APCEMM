@@ -186,7 +186,11 @@ class OptInput
         bool        MET_LOADMET;
         std::string MET_FILENAME;
         bool        MET_LOADTEMP;
+        bool        MET_INTERPTEMP;
         bool        MET_LOADH2O;
+        bool        MET_INTERPH2O;
+        bool        MET_LOADSHEAR;
+        bool        MET_INTERPSHEAR;
         bool        MET_FIXDEPTH;
         RealDouble  MET_DEPTH;
         bool        MET_FIXLAPSERATE;
