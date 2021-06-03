@@ -733,9 +733,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     const UInt nRing = ringCluster.getnRing();
 
     /* Print Ring Debug? */
-    const UInt nRing = ringCluster.getnRing();
-
-    /* Print Ring Debug? */
     if ( DEBUG_RINGS )
         ringCluster.Debug();
 
@@ -1046,7 +1043,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         Solver.UpdateAdv  ( 0.0E+00, 0.0E+00 );
         /* Microphysics settling is considered for each bin independently */
         /* Update shear */
-        Solver.UpdateShear( Met.Shear(), m.y(), 0 );
+        Solver.UpdateShear( Met.Shear(), m.y(), 1 );
 	
 
         /* ======================================================================= */
@@ -1117,15 +1114,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     Solver.Run( iceVolume[iBin_PA], cellAreas, -1 );
 
                 }
-                if ( TS_AERO && \
-                    (( TS_AERO_FREQ == 0 ) || \
-                     ( std::fmod((curr_Time_s - timeArray[0])/60.0, TS_AERO_FREQ) == 0.0E+00 )) ) {
-                    int hh = (int) (curr_Time_s - timeArray[0])/3600;
-                    int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
-                    int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
-                    Diag_TS_Phys( TS_SPEC_FILENAME, TS_AERO_LIST, hh, mm, ss, \
-                                  Data, m, Met, 0 );    
-            }
 
                 /* Check how much particle number and mass change before/after flux correction */
                 float totalIceParticles_before = Data.solidAerosol.TotalNumber_sum( cellAreas );
@@ -1141,7 +1129,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     schedule( dynamic, 1      )
                     for ( jNy = 0; jNy < NY; jNy++ ) {
                         
-			if ( ( yE[jNy] > YLIM_UP - 250.0 ) || ( yE[jNy] < -YLIM_DOWN + 1500.0 ) ) {
+			if ( ( yE[jNy] > YLIM_UP - 250.0 ) || ( yE[jNy] < -YLIM_DOWN + 1250.0 ) ) {
                             for ( iNx = 0; iNx < NX; iNx++ ) {
                                 for ( UInt iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
                                     Data.solidAerosol.pdf[iBin_PA][jNy][iNx] = 0.0E+00;
@@ -1201,7 +1189,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 /* Assume no plume advection */
                 Solver.UpdateAdv  ( 0.0E+00, 0.0E+00 );
                 /* Update shear */
-                Solver.UpdateShear( Met.Shear(), m.y(), 0 );
+                Solver.UpdateShear( Met.Shear(), m.y(), 1 );
 
                 /* Do not apply any filling option: -1 */
                 for ( iRing = 0; iRing < nRing + 1; iRing++ )
@@ -2064,10 +2052,10 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 exit(0);
             }
             /* Check not lost too many particles */
-	    // if (( ( 1.0 - totPart_lost ) > 0.1 ) || ( ( 1.0 - totIce_lost ) > 0.1 )) {
-            //    std::cout << "Lost at least 5% of particles or ice mass... Ending" << std::endl;
-            //    exit(5);
-	    // }
+	    if (( ( 1.0 - totPart_lost ) > 0.1 ) || ( ( 1.0 - totIce_lost ) > 0.1 )) {
+               std::cout << "Lost at least 5% of particles or ice mass... Ending" << std::endl;
+               exit(5);
+	    }
         }
 
     }

@@ -264,9 +264,8 @@ namespace SANDS
                     AdvFactor[jNy][iNx] =                             \
                             exp( physConst::_1j * dt * ( vH * kx[iNx] \
                                                        + vV * ky[jNy] ) \
-			         - alpha * pow( etay[jNy]/etamaxy, 2*p )
+			         - alpha * pow( etay[jNy]/etamaxy, 2*p ) \
 			         - alpha * pow( etax[iNx]/etamaxx, 2*p ) );
-		    // std::cout << "adv=" << AdvFactor[jNy][iNx] << ", 1=" << dt * ( vH * kx[iNx] + vV * ky[jNy] ) << ", 2=" << alpha * pow( etay[jNy]/etamaxy, 2*p ) << ", 3=" << alpha * pow( etax[iNx]/etamaxx, 2*p ) << std::endl;
                 }
             }
         }
@@ -281,7 +280,7 @@ namespace SANDS
 	RealDouble alpha = 0.0;
 	RealDouble p = 1.0;
 	Vector_1D eta( n_x, 0.0E+00 );
-        RealDouble etamax = 0.0;
+        RealDouble etamax = 1.0;
 
         /* Declare and initialize horizontal velocity corresponding to shear.
          * This value is dependent on the layer considered. */
@@ -340,7 +339,7 @@ namespace SANDS
 	RealDouble alpha = 0.0;
 	RealDouble p = 1.0;
 	Vector_1D eta( n_x, 0.0E+00 );
-        RealDouble etamax = 0.0;
+        RealDouble etamax = 1.0;
 
         /* Declare and initialize horizontal velocity corresponding to shear.
          * This value is dependent on the layer considered. */
