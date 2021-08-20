@@ -16,6 +16,7 @@
 # !REVISION HISTORY:
 # 11 Dec 2018 - T. Fritz - Initial version
 # 27 Aug 2020 - T. Fritz - Rename C-APCEMM into APCEMM
+# 10 Feb 2021 - T. Fritz - Change default make command to mpbuild
 #
 #------------------------------------------------------------------------------
 
@@ -150,7 +151,7 @@ endif
 .PHONY: all     dataclean  logclean   fileclean  spclean
 .PHONY: mpclean spexeclean mpexeclean superclean printallinfo
 
-all: unittest
+all: mpbuild
 
 ut: unittest
 

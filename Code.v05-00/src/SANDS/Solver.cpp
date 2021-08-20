@@ -202,14 +202,53 @@ namespace SANDS
 
     } /* End of Solver::UpdateDiff */
 
-    void Solver::UpdateAdv( const RealDouble vH_, const RealDouble vV_ )
+    void Solver::UpdateAdv( const RealDouble vH_, const RealDouble vV_, const bool artFilt )
     {
 
         UInt iNx = 0;
         UInt jNy = 0;
+	RealDouble alpha = 0.0;
+	RealDouble p = 1.0;
+	Vector_1D etay( n_y, 0.0E+00 );
+        RealDouble etamaxy = 1.0;
+	Vector_1D etax( n_x, 0.0E+00 );
+        RealDouble etamaxx = 1.0;
 
         // vH > 0 means left, < 0 means right
         // vV > 0 means downwards, < 0 means upwards
+
+        /* Set up artificial filtering terms */
+	if ( artFilt ) {
+	    alpha = 10.0;
+	    double hy = ( ylim_up + ylim_down ) / n_y;
+	    for ( jNy = 0; jNy < n_y; jNy++ ) {
+		if ( jNy < n_y/2 ) {
+                    etay[jNy] = jNy;
+		}
+		else {
+		    etay[jNy] = (double) jNy - (double) n_y;
+		}
+		// std::cout << "jNy=" << jNy << "etay=" << etay[jNy] << std::endl;
+		if ( etay[jNy] > etamaxy ) {
+		    etamaxy = etay[jNy];
+                }
+	    }
+	    // std::cout << "etamaxy=" << etamaxy << std::endl;
+	    double hx = ( xlim_left + xlim_right ) / n_x;
+	    for ( iNx = 0; iNx < n_x; iNx++ ) {
+		if ( iNx < n_x/2 ) {
+                    etax[iNx] = iNx;
+		}
+		else {
+		    etax[iNx] = (double) iNx - (double) n_x;
+		}
+		// std::cout << "iNx=" << iNx << "etax=" << etax[iNx] << std::endl;
+		if ( etax[iNx] > etamaxx ) {
+		    etamaxx = etax[iNx];
+                }
+	    }
+	    // std::cout << "etamaxx=" << etamaxx << std::endl;
+	}
 
         if ( ( vH_ != vH ) || ( vV_ != vV ) ) {
             vH = vH_;
@@ -221,24 +260,48 @@ namespace SANDS
             private ( iNx, jNy        ) \
             schedule( dynamic, 1      )
             for ( iNx = 0; iNx < n_x; iNx++ ) {
-                for ( jNy = 0; jNy < n_y; jNy++ )
+                for ( jNy = 0; jNy < n_y; jNy++ ) {
                     AdvFactor[jNy][iNx] =                             \
                             exp( physConst::_1j * dt * ( vH * kx[iNx] \
-                                                       + vV * ky[jNy] ) );
+                                                       + vV * ky[jNy] ) \
+			         - alpha * pow( etay[jNy]/etamaxy, 2*p ) \
+			         - alpha * pow( etax[iNx]/etamaxx, 2*p ) );
+                }
             }
         }
 
     } /* End of Solver::UpdateAdv */
 
-    void Solver::UpdateShear( const RealDouble shear_, const Vector_1D &y )
+    void Solver::UpdateShear( const RealDouble shear_, const Vector_1D &y, const bool artFilt )
     {
 
         UInt iNx = 0;
         UInt jNy = 0;
+	RealDouble alpha = 0.0;
+	RealDouble p = 1.0;
+	Vector_1D eta( n_x, 0.0E+00 );
+        RealDouble etamax = 1.0;
 
         /* Declare and initialize horizontal velocity corresponding to shear.
          * This value is dependent on the layer considered. */
         RealDouble V = 0.0E+00;
+
+        /* Set up artificial filtering terms */
+	if ( artFilt ) {
+	    alpha = 1.0;
+	    double hx = ( xlim_left + xlim_right ) / n_x;
+	    for ( iNx = 0; iNx < n_x; iNx++ ) {
+		if ( iNx < n_x/2 ) {
+                    eta[iNx] = iNx;
+		}
+		else {
+		    eta[iNx] = (double) iNx - (double) n_x;
+		}
+		if ( eta[iNx] > etamax ) {
+		    etamax = eta[iNx];
+                }
+	    }
+	}
 
         if ( shear != shear_ ) {
             /* Update shear value [1/s] */
@@ -262,8 +325,64 @@ namespace SANDS
 
                 /* Computing frequencies */
                 for ( iNx = 0; iNx < n_x; iNx++ )
-                    ShearFactor[jNy][iNx] = exp( physConst::_1j * dt * V * kx[iNx] ); 
+                    ShearFactor[jNy][iNx] = exp( physConst::_1j * dt * V * kx[iNx] - alpha * pow( eta[iNx]/etamax, 2*p ) ); 
             }
+        }
+
+    } /* End of Solver::UpdateShear */
+
+    void Solver::UpdateShear( const Vector_1D shear_, const Vector_1D &y, const bool artFilt )
+    {
+
+        UInt iNx = 0;
+        UInt jNy = 0;
+	RealDouble alpha = 0.0;
+	RealDouble p = 1.0;
+	Vector_1D eta( n_x, 0.0E+00 );
+        RealDouble etamax = 1.0;
+
+        /* Declare and initialize horizontal velocity corresponding to shear.
+         * This value is dependent on the layer considered. */
+        RealDouble V = 0.0E+00;
+
+        /* Set up artificial filtering terms */
+	if ( artFilt ) {
+	    alpha = 1.0;
+	    double hx = ( xlim_left + xlim_right ) / n_x;
+	    for ( iNx = 0; iNx < n_x; iNx++ ) {
+		if ( iNx < n_x/2 ) {
+                    eta[iNx] = iNx;
+		}
+		else {
+		    eta[iNx] = (double) iNx - (double) n_x;
+		}
+		if ( eta[iNx] > etamax ) {
+		    etamax = eta[iNx];
+                }
+	    }
+	}
+
+#pragma omp parallel for               \
+        if     ( !PARALLEL_CASES ) \
+        default( shared          ) \
+        private( iNx, jNy, V     ) \
+        schedule( dynamic, 1     )
+        for ( jNy = 0; jNy < n_y; jNy++ ) {
+
+                /* Compute horizonal velocity. V > 0 means that layer is going
+                 * left. Since positive shear means that the plume is rotating 
+                 * clockwise when looking from behind the aircraft, add a
+                 * negative sign.
+                 * If meteorological data is symmetric, that should not change
+                 * the outcome */
+
+                shear = shear_[jNy];
+                V = - shear * y[jNy];
+
+                /* Computing frequencies */
+                for ( iNx = 0; iNx < n_x; iNx++ )
+                    ShearFactor[jNy][iNx] = exp( physConst::_1j * dt * V * kx[iNx] - alpha * pow( eta[iNx]/etamax, 2*p ) ); 
+            
         }
 
     } /* End of Solver::UpdateShear */

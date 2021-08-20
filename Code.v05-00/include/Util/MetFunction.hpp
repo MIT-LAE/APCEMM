@@ -52,6 +52,7 @@ namespace met
                                  const RealDouble DEPTH );
     float linearInterp( float xq[], float yq[], const float &x );
     UInt nearestNeighbor( float xq[], const float &x );
+    UInt nearestNeighbor( Vector_1D xq, const float &x );
     RealDouble satdepth_calc( float RHw[], float T[], float alt[], UInt iFlight, UInt var_length );
 
 }

@@ -107,7 +107,7 @@ namespace SANDS
              * @param vV (double) : Vertical advection velocity [m/s]
              */
 
-            void UpdateAdv( const RealDouble vH, const RealDouble vV );
+            void UpdateAdv( const RealDouble vH, const RealDouble vV, const bool artFilt = 0 );
  
             /**
              * Update shear value
@@ -116,7 +116,8 @@ namespace SANDS
              * @param m (Mesh)
              * */
  
-            void UpdateShear( const RealDouble shear, const Vector_1D &y );
+            void UpdateShear( const RealDouble shear, const Vector_1D &y, const bool artFilt = 0 );
+            void UpdateShear( const Vector_1D shear, const Vector_1D &y, const bool artFilt = 0 );
 
             /**
              * Solves the 2D advection-diffusion equation over dt using

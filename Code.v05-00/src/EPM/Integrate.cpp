@@ -579,8 +579,10 @@ namespace EPM
              Ice_den  = 0.0;
              Soot_den = PartDens_3mins;
              H2O_mol  = H2OMol_3mins;
+	     std::cout << "EndSim: Not a persistent contrail..." << std::endl;
 
         }
+	std::cout << "Ice_den=" << Ice_den << std::endl;
 
         SO4l_mol = SO4l_3mins;
         SO4g_mol = SO4g_3mins;
