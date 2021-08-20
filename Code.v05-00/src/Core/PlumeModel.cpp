@@ -2052,10 +2052,10 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 exit(0);
             }
             /* Check not lost too many particles */
-	    if (( ( 1.0 - totPart_lost ) > 0.1 ) || ( ( 1.0 - totIce_lost ) > 0.1 )) {
-               std::cout << "Lost at least 5% of particles or ice mass... Ending" << std::endl;
-               exit(5);
-	    }
+	    //if (( ( 1.0 - totPart_lost ) > 0.1 ) || ( ( 1.0 - totIce_lost ) > 0.1 )) {
+            //   std::cout << "Lost at least 5% of particles or ice mass... Ending" << std::endl;
+            //   exit(5);
+	    //}
         }
 
     }
