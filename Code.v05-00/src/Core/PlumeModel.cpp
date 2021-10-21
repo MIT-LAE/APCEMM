@@ -430,6 +430,16 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     RealDouble dtIceCoag              = 0.0E+00;
     RealDouble dtIceGrowth            = 0.0E+00;
 
+    RealDouble totalIceParticles_before  = 0.0E+00;
+    RealDouble totalIceMass_before       = 0.0E+00;
+    RealDouble totalIceParticles_initial = 0.0E+00;
+    RealDouble totalIceMass_initial      = 0.0E+00;
+    RealDouble totalIceParticles_after   = 0.0E+00;
+    RealDouble totalIceMass_after        = 0.0E+00;
+    RealDouble totPart_lost              = 0.0E+00;
+    RealDouble totIce_lost               = 0.0E+00;
+    const RealDouble ABORT_THRESHOLD     = 1.0E-03;
+
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
     /* ----------------------------- METEOROLOGY ----------------------------- */
@@ -633,7 +643,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     EPM::Integrate( temperature_K, pressure_Pa, relHumidity_w, VAR, FIX, \
                     aerArray, aircraft, EI, Ice_rad, Ice_den, Soot_den,  \
                     H2O_mol, SO4g_mol, SO4l_mol, liquidAer, iceAer, areaPlume, \
-		    Ab0, Tc0 );
+        		    Ab0, Tc0, CHEMISTRY );
     /* Compute initial plume area.
      * If 2 engines, we assume that after 3 mins, the two plumes haven't fully mixed yet and result in a total
      * area of 2 * the area computed for one engine
@@ -1059,8 +1069,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
 #endif /* TIME_IT */
 
-        float totPart_lost;
-        float totIce_lost;
         if ( TRANSPORT ) {
 
             if ( CHEMISTRY ) {
@@ -1116,8 +1124,10 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 }
 
                 /* Check how much particle number and mass change before/after flux correction */
-                float totalIceParticles_before = Data.solidAerosol.TotalNumber_sum( cellAreas );
-                float totalIceMass_before = Data.solidAerosol.TotalIceMass_sum( cellAreas );
+                totalIceParticles_before = Data.solidAerosol.TotalNumber_sum( cellAreas );
+                totalIceMass_before = Data.solidAerosol.TotalIceMass_sum( cellAreas );
+                if ( nTime == 0 ) totalIceMass_initial = totalIceMass_before;
+                if ( nTime == 0 ) totalIceParticles_initial = totalIceParticles_before;
                 if ( FLUX_CORRECTION ) {
 
                     /* Limit flux of ice particles through top boundary */
@@ -1164,11 +1174,11 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     }
 
                 } /* FLUX_CORRECTION */
-                float totalIceParticles_after = Data.solidAerosol.TotalNumber_sum( cellAreas );
-                float totalIceMass_after = Data.solidAerosol.TotalIceMass_sum( cellAreas );
-		totPart_lost = totalIceParticles_after / totalIceParticles_before;
-		totIce_lost = totalIceMass_after / totalIceMass_before;
-	        std::cout << "part lost=" << totPart_lost << ", ice lost=" << totIce_lost << std::endl;
+                totalIceParticles_after = Data.solidAerosol.TotalNumber_sum( cellAreas );
+                totalIceMass_after = Data.solidAerosol.TotalIceMass_sum( cellAreas );
+		        totPart_lost = totalIceParticles_after / totalIceParticles_before;
+		        totIce_lost = totalIceMass_after / totalIceMass_before;
+	            std::cout << "part lost=" << totPart_lost << ", ice lost=" << totIce_lost << std::endl;
 
                 /* Update centers of each bin */
                 Data.solidAerosol.UpdateCenters( iceVolume, Data.solidAerosol.pdf );
@@ -1849,6 +1859,15 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             Data.solidAerosol.Grow( dtIceGrowth, Data.Species[ind_H2O], Met.Temp(), Met.Press(), PA_MICROPHYSICS, ( shear == 0.0E+00 ) && ( XLIM_LEFT == XLIM_RIGHT ) );
         }
 
+        // If we do not perform chemistry, let's abort the simulation if there's no ice mass left
+        if ( !CHEMISTRY && totalIceParticles_initial > 0.0E+00 ) {
+            totalIceParticles_after = Data.solidAerosol.TotalNumber_sum( cellAreas );
+            if ( totalIceParticles_after / totalIceParticles_initial < ABORT_THRESHOLD ) {
+                std::cout << "Only " << 100 * totalIceParticles_after / totalIceParticles_initial << " % of initial (post-vortex sinking) ice particles remaining. Let's abort!" << std::endl;
+                exit(0);
+            }
+        }
+
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */
         /* ------------------------ PERFORM MASS CHECKS -------------------------- */
@@ -2039,7 +2058,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             int hh = (int) (curr_Time_s - timeArray[0])/3600;
             int mm = (int) (curr_Time_s - timeArray[0])/60   - 60 * hh;
             int ss = (int) (curr_Time_s - timeArray[0])      - 60 * ( mm + 60 * hh );
-	    std::cout << "part lost=" << totPart_lost << ", ice lost=" << totIce_lost << std::endl;
+	        std::cout << "part lost=" << totPart_lost << ", ice lost=" << totIce_lost << std::endl;
             Diag_TS_Phys( TS_AERO_FILENAME, TS_AERO_LIST, hh, mm, ss, \
                           Data, m, Met, 0, totPart_lost, totIce_lost );    
             float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
@@ -2052,10 +2071,10 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 exit(0);
             }
             /* Check not lost too many particles */
-	    //if (( ( 1.0 - totPart_lost ) > 0.1 ) || ( ( 1.0 - totIce_lost ) > 0.1 )) {
-            //   std::cout << "Lost at least 5% of particles or ice mass... Ending" << std::endl;
-            //   exit(5);
-	    //}
+	        if (( ( 1.0 - totPart_lost ) > 0.1 ) || ( ( 1.0 - totIce_lost ) > 0.1 )) {
+               std::cout << "Lost at least 5% of particles or ice mass... Ending" << std::endl;
+               exit(5);
+	        }
         }
 
     }
