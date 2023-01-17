@@ -48,7 +48,7 @@ extern int PARALLEL_CASES;
 #define XLIM_RIGHT        1.0E+05     /* x-limits of the domain [m] */
 #define XLIM_LEFT         1.0E+05     /* x-limits of the domain [m] */
 #define YLIM_UP           6.50E+02    /* Upper y-limit of the domain [m] */
-#define YLIM_DOWN         1.00E+03    /* Lower y-limit of the domain [m] */
+#define YLIM_DOWN         1.50E+03    /* Lower y-limit of the domain [m] */
 
 /* 4. Fine and extended grid for contrail simulation: */
 
