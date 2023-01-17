@@ -18,10 +18,13 @@
 #include <iomanip>
 #include <cstring>
 #include <algorithm>
-#include <netcdfcpp.h>
 
 #include "Util/ForwardDecl.hpp"
 #include "KPP/KPP_Parameters.h"
+
+#include <netcdf>
+using namespace netCDF;
+using namespace netCDF::exceptions;
 
 void ReadJRates( const char* ROOTDIR,                          \
                  const unsigned int MM, const unsigned int DD, \

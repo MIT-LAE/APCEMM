@@ -124,9 +124,8 @@ namespace physFunc
     /* Kelvin factor [-] */
     RealDouble Kelvin( const RealDouble r );
 
-    /* Condensation growth rate [cm^3 ice/s/part] */
-    RealDouble growthRate( const RealDouble r, const RealDouble T, \
-                           const RealDouble P, const RealDouble H2O );
+    /* RH Field */
+    Vector_2D RHi_Field(const Vector_2D& H2O, const Vector_2D& T, const Vector_1D& P);
 
 }
 

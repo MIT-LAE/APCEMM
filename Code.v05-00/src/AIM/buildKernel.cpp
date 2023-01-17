@@ -240,7 +240,7 @@ namespace AIM
     Vector_1D buildTIKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers, RealDouble rho_1, RealDouble bin_R, RealDouble rho_2 )
     {
 
-        /* Returns the 1D coagulation kernel linked to turbulent initial motion.
+        /* Returns the 1D coagulation kernel linked to turbulent inertial motion.
          * Coagulation of particles occurs through this physical process because 
          * particles of different size accelerate differently */
 
@@ -259,7 +259,7 @@ namespace AIM
     Vector_2D buildTIKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers_1, RealDouble rho_1, Vector_1D const &bin_Centers_2, RealDouble rho_2 )
     {
 
-        /* Returns the 2D coagulation kernel linked to turbulent initial motion.
+        /* Returns the 2D coagulation kernel linked to turbulent inertial motion.
          * Coagulation of particles occurs through this physical process because 
          * particles of different size accelerate differently */
 

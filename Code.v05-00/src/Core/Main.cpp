@@ -25,9 +25,7 @@
     #include "omp.h"
 #endif /* OMP */
 #include <sys/stat.h>
-
-#include "Core/Input_Mod.hpp"
-#include "Core/ReadInput.hpp"
+#include <YamlInputReader/YamlInputReader.hpp>
 #include "Core/Interface.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Input.hpp"
@@ -47,10 +45,10 @@ inline bool exist( const std::string &name )
 
 } /* End of exist */
 
-int main( int , char* )
+int main( int argc, char* argv[])
 {
 
-    std::vector<std::vector<double> > parameters;
+    std::vector<std::unordered_map<std::string, double> > parameters;
     unsigned int iCase, nCases;
     const unsigned int iOFFSET = 0;
     
@@ -77,15 +75,31 @@ int main( int , char* )
 
     #pragma omp master
     {
+        std::string FILESEP = "/";
+        std::string FILENAME = "input.yaml";
+        std::string fullPath = "";
+        if ( const char* simDir = std::getenv("APCEMM_runDir") )
+            fullPath += simDir;
+        else {
+            std::cout << " \n Simulation Directory is not defined!" << std::endl;
+            const char* currDir = std::getenv("PWD");
+            fullPath += currDir;
+            std::cout << " Reading from PWD: " << currDir << std::endl;
+            std::cout << " For future runs, make sure that the variable";
+            std::cout << " 'APCEMM_runDir' is exported" << std::endl;
+        }
 
+        fullPath += FILESEP;
+        fullPath += FILENAME;
+        
         /* Read in input file */
-        Read_Input_File( Input_Opt );
+        YamlInputReader::readYamlInputFile( Input_Opt, fullPath );
 
         /* Collect parameters and create cases */
-        parameters = CombVec( Input_Opt );
+        parameters = YamlInputReader::generateCases( Input_Opt );
 
         /* Number of cases */
-        nCases  = parameters[0].size();
+        nCases  = parameters.size();
         
         /* Create output directory */
         struct stat sb;
@@ -145,27 +159,32 @@ int main( int , char* )
 
         unsigned int jCase = iOFFSET + iCase;
 
-        std::string fullPath, fullPath_ADJ, fullPath_BOX;
-        std::stringstream ss, ss_ADJ, ss_BOX;
+        std::string fullPath, fullPath_ADJ, fullPath_BOX, fullPath_micro;
+        std::stringstream ss, ss_ADJ, ss_BOX, ss_micro;
         ss     << std::setw(6) << std::setfill('0') << jCase;
         std::string file     = Input_Opt.SIMULATION_FORWARD_FILENAME + ss.str();
         ss_ADJ << std::setw(6) << std::setfill('0') << jCase;
         std::string file_ADJ = Input_Opt.SIMULATION_ADJOINT_FILENAME + ss_ADJ.str();
         ss_BOX << std::setw(6) << std::setfill('0') << jCase;
         std::string file_BOX = Input_Opt.SIMULATION_BOX_FILENAME + ss_BOX.str();
+        ss_micro << std::setw(6) << std::setfill('0') << jCase;
+        std::string file_micro = "Micro" + ss_micro.str();
 
         if ( Input_Opt.SIMULATION_OUTPUT_FOLDER.back() == '/' ) {
-            fullPath     = Input_Opt.SIMULATION_OUTPUT_FOLDER + file;
-            fullPath_ADJ = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_ADJ;
-            fullPath_BOX = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_BOX;
+            fullPath       = Input_Opt.SIMULATION_OUTPUT_FOLDER + file;
+            fullPath_ADJ   = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_ADJ;
+            fullPath_BOX   = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_BOX;
+            fullPath_micro = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_micro;
         } else {
-            fullPath     = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file;
-            fullPath_ADJ = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file_ADJ;
-            fullPath_BOX = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file_BOX;
+            fullPath       = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file;
+            fullPath_ADJ   = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file_ADJ;
+            fullPath_BOX   = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file_BOX;
+            fullPath_micro = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file_micro;
         }
         fullPath = fullPath + ".nc";
         fullPath_ADJ = fullPath_ADJ + ".nc";
         fullPath_BOX = fullPath_BOX + ".nc";
+        fullPath_micro = fullPath_micro + ".out";
 
         bool fileExist = 0;
 
@@ -177,12 +196,17 @@ int main( int , char* )
             { fileExist = exist( fullPath ); }
         }
 
+        // Hardcode for now
+        std::string author = "Thibaud M. Fritz (fritzt@mit.edu)";
+
         if ( !fileExist || Input_Opt.SIMULATION_OVERWRITE ) {
 
             const Input inputCase( iCase, parameters, \
                                    fullPath,          \
                                    fullPath_ADJ,      \
-                                   fullPath_BOX );
+                                   fullPath_BOX,      \
+                                   fullPath_micro,    \
+                                   author );
 
             #pragma omp critical
             { 
@@ -192,7 +216,7 @@ int main( int , char* )
                 #endif /* OMP */
                 std::cout << "" << std::endl;
             }
-
+            Input_Opt.TS_AERO_FILENAME = "ts_aerosol_case" + std::to_string(iCase) + "_hhmm.nc";
 
             int iERR = 0;
             switch (model) {

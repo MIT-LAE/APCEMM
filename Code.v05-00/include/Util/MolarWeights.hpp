@@ -17,7 +17,7 @@
 #define MOLARWEIGHTS_H_INCLUDED
 
 /* Molar weights, Unit : [ kg / mol ] */
-#define MW_Air    28.5766E-03
+#define MW_Air    28.9647E-03 
 #define MW_O2     31.9988E-03
 #define MW_N2     28.0134E-03
 #define MW_N      14.0067E-03

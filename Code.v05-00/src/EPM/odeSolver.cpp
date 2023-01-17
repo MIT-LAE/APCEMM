@@ -152,7 +152,7 @@ namespace EPM
 
     } /* End of odeSolver::getState */
 
-    streamingObserver::streamingObserver( Vector_2D &states, Vector_1D &times, std::vector<UInt> indices, const char* filename, UInt write_every ):
+    streamingObserver::streamingObserver( Vector_2D &states, Vector_1D &times, std::vector<UInt> indices, std::string filename, UInt write_every ):
         m_write_every( write_every ),
         fileName( filename ),
         m_states( states ),
@@ -224,6 +224,8 @@ namespace EPM
             const char* sep = ", ";
             const unsigned int prec = 6;
 
+            RealDouble n_air; 
+
             /* Variable list: 
              * - Temperature [K]
              * - Water molecular concentration [molecules/cm^3] 
@@ -281,8 +283,11 @@ namespace EPM
                 file << m_states[counter][m_indices[2]];
                 file << sep;
                 
+                /* Compute number concentration of air for conversions sake */
+                n_air = m_states[counter][m_indices[2]] / (physConst::kB * m_states[counter][m_indices[1]] * 1.0e6) ; 
+
                 /* Print gaseous water molecular concentration [molec/cm^3] */
-                file << m_states[counter][m_indices[3]] * m_states[counter][m_indices[2]] / ( physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 ) ;
+                file << m_states[counter][m_indices[3]] * n_air ;
                 file << sep;
 
                 /* Print rel. humidities [-] */
@@ -292,15 +297,15 @@ namespace EPM
                 file << sep;
                 
                 /* Print gaseous SO4 molecular concentration [molec/cm^3] */
-                file << m_states[counter][m_indices[4]] * m_states[counter][m_indices[2]] / ( physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 ) ;
+                file << m_states[counter][m_indices[4]] * n_air ;
                 file << sep;
                 
                 /* Print gaseous SO4 gaseous molecular concentration [molec/cm^3] */
-                file << m_states[counter][m_indices[6]] * m_states[counter][m_indices[2]] / ( physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 ) ;
+                file << m_states[counter][m_indices[6]] * n_air;
                 file << sep;
 
                 /* Print gaseous SO4 liquid molecular concentration [molec/cm^3] */
-                file << m_states[counter][m_indices[5]] * m_states[counter][m_indices[2]] / ( physConst::kB * m_states[counter][m_indices[1]] * 1.0E+06 ) ;
+                file << m_states[counter][m_indices[5]] * n_air;
                 file << sep;
                 
                 /* Print gaseous SO4 on part [molec/cm^3] */
@@ -321,7 +326,7 @@ namespace EPM
                 file << sep;
                 
                 /* Print particle concentration [#/cm^3] */
-                file << m_states[counter][m_indices[9]];
+                file << m_states[counter][m_indices[9]] * n_air;
                 file << sep;
                 
                 /* Print particle radius [mum] */

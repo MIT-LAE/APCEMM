@@ -63,3 +63,9 @@ valgrind*
 # For UNIX #
 ############
 *~
+
+# Cmake files #
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+

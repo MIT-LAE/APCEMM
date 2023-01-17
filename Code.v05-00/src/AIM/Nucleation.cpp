@@ -285,7 +285,7 @@ namespace AIM
 
         return exp( - 2.79243E+02 + 1.17344E+01 * RH + 2.27009E+04 * invT - 1.08864E+03 * invT * RH + 1.14436E+00 * T \
                     - 3.02331E-02 * RH * T - 1.30254E-03 * T * T - 6.38697E+00 * logRH + 8.5498E+02 * invT * logRH \
-                    + 8.79662E-02 * T * logRH );
+                    + 8.79662E-03 * T * logRH );
     
 
     } /* End of nThresh */

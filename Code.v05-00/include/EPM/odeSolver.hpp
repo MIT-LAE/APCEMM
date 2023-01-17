@@ -88,7 +88,7 @@ class EPM::streamingObserver
 
     public:
 
-        streamingObserver( Vector_2D &states, Vector_1D &times, std::vector<UInt> indices, const char* fileName = "", UInt write_every = 100 );
+        streamingObserver( Vector_2D &states, Vector_1D &times, std::vector<UInt> indices, std::string fileName, UInt write_every = 100 );
         ~streamingObserver( );
         streamingObserver& operator=( const streamingObserver &obs );
         void operator()( const Vector_1D &x, double t );
@@ -98,7 +98,8 @@ class EPM::streamingObserver
 
         UInt m_write_every;
         UInt m_count = 0;
-        const char* fileName;
+        //const char* fileName;
+        std::string fileName;
 
         Vector_2D &m_states;
         Vector_1D &m_times;

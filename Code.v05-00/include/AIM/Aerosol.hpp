@@ -33,10 +33,10 @@
 
 namespace AIM
 {
-
     class Aerosol;
     class Grid_Aerosol;
-
+    static const RealDouble DEFAULT_MIN_RADIUS = 1.0e-8; 
+    static const RealDouble TINY = 1.0e-50;
 }
 
 class AIM::Aerosol
@@ -88,6 +88,9 @@ class AIM::Aerosol
         RealDouble getAlpha() const;
         Vector_1D getPDF() const;
 
+        static Vector_1D generateEndOfEPMTestPDF(const Vector_1D& bin_Centers);
+
+
     protected:
 
         Vector_1D bin_Centers;
@@ -135,7 +138,15 @@ class AIM::Grid_Aerosol
 
         /* Ice crystal growth */
         void Grow( const RealDouble dt, Vector_2D &H2O, const Vector_2D &T, const Vector_1D &P, const UInt N = 2, const UInt SYM = 0 );
-    
+        RealDouble EffDiffCoef( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O) const;
+        void APC_Scheme(const UInt jNy, const UInt iNx, const double T, const double P,
+                            const double dt, Vector_2D& H2O, Vector_2D& totH2O, Vector_3D& icePart, Vector_3D& iceVol);
+        std::vector<int> ComputeBinParticleFlux(const int x_index, const int y_index, const Vector_3D& iceVol, const Vector_3D& icePart) const;
+        void ApplyBinParticleFlux(const int x_index, const int y_index, const std::vector<int> &toBin, const Vector_3D &iceVol, const Vector_3D &icePart);
+        
+        /* Helper Functions for Coagulation and Ice Growth */
+        bool CheckCoagAndGrowInputs(const UInt N, const UInt SYM, UInt& Nx_max, UInt& Ny_max, const std::string funcName) const;
+        void CoagAndGrowApplySymmetry(const UInt N, const UInt SYM, const UInt Nx_max, const UInt Ny_max, const char* funcName, Vector_2D& H2O);
         /* Update bin centers - Used after aerosol transport */
         void UpdateCenters( const Vector_3D &iceV, const Vector_3D &PDF );
 

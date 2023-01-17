@@ -1,0 +1,129 @@
+#Format of parameter items:
+# Param_name [unit] (Variable_type)
+SIMULATION MENU:
+  PARAM SWEEP SUBMENU:
+    Parameter sweep (T/F): T
+  #-OR---------------
+    Run Monte Carlo (T/F): T
+    Num Monte Carlo runs (int): 2
+  OUTPUT SUBMENU:
+    Output folder (string): ./
+    Overwrite if folder exists (T/F): T
+  Run directory (string): ./
+  Use threaded FFT (T/F): T
+  FFTW WISDOM SUBMENU:
+    Use FFTW WISDOM (T/F): T
+    Dir w/ write permission (string): ./
+  Input background condition (string): /net/d07/data/fritzt/APCEMM_Data/init.txt
+  SAVE FORWARD RESULTS SUBMENU:
+    Save forward results (T/F): T
+    netCDF filename format (string): APCEMM_Case_*
+  ADJOINT OPTIMIZATION SUBMENU:
+    Turn on adjoint optim. (T/F): T
+    netCDF filename format (string): APCEMM_ADJ_Case_*
+  BOX MODEL SUBMENU:
+    Run box model (T/F): T
+    netCDF filename format (string): APCEMM_BOX_CASE_*
+
+PARAMETER MENU:
+  Use input file (T/F): T
+  Input file name (string): /path/to/input/
+  #Parameter sweep format  : Format is either 200 220 240 or 200:20:240 (except
+  #                        : for MC runs where it should be 200 240 or 200:240)
+  Plume Process [hr] (double): 24
+  METEOROLOGICAL PARAMETERS SUBMENU:
+    Temperature [K] (double): 215:5:225
+    R.Hum. wrt water [%] (double): 43.9432
+    Pressure [hPa] (double): 220 230 240
+    Horiz. diff. coeff. [m^2/s] (double): 15.0
+    Verti. diff. [m^2/s] (double): 0.15
+    Wind shear [1/s] (double): 0.002
+  LOCATION AND TIME SUBMENU:
+    LON [deg] (double): -15
+    LAT [deg] (double): 60
+    Emission day [1-365] (int): 81
+    Emission time [hr] (double) : 8
+  BACKGROUND MIXING RATIOS SUBMENU:
+    NOx [ppt] (double): 5100
+    HNO3 [ppt] (double): 81.5
+    O3 [ppb] (double): 100
+    CO [ppb] (double): 40
+    CH4 [ppm] (double): 1.76
+    SO2 [ppt] (double): 7.25
+  EMISSION INDICES SUBMENU:
+    NOx [g(NO2)/kg_fuel] (double): 10
+    CO [g/kg_fuel] (double): 1
+    UHC [g/kg_fuel] (double): 0.6
+    SO2 [g/kg_fuel] (double): 0.1
+    SO2 to SO4 conv [%] (double): 5
+    Soot [g/kg_fuel] (double): 0.06
+  Soot Radius [m] (double): 20.0E-09
+  Total fuel flow [kg/s] (double) : 2.8
+  Aircraft mass [kg] (double): 2.00E+05
+  Flight speed [m/s] (double): 250.0
+  Num. of engines [2/4] (int): 4
+  Wingspan [m] (double): 69.8
+  Core exit temp. [K] (double): 547.3
+  Exit bypass area [m^2] (double): 1.804
+
+TRANSPORT MENU:
+  Turn on Transport (T/F): T
+  Fill Negative Values (T/F): T
+  Transport Timestep [min] (double): 10
+  Particle flux correction (T/F): T
+  PLUME UPDRAFT SUBMENU:
+    Turn on plume updraft (T/F): T
+    Updraft timescale [s] (double): 3600
+    Updraft veloc. [cm/s] (double): 5
+
+CHEMISTRY MENU:
+  Turn on Chemistry (T/F): T
+  Perform hetero. chem. (T/F): T
+  Chemistry Timestep [min] (double): 10
+  Photolysis rates folder (string): /net/d04/data/fritzt/APCEMM_Data/J-Rates
+
+AEROSOL MENU:
+  Turn on grav. settling (T/F): T
+  Turn on solid coagulation (T/F): T
+  Turn on liquid coagulation (T/F): T
+  Coag. timestep [min] (double): 60
+  Turn on ice growth (T/F): T
+
+METEOROLOGY MENU:
+  METEOROLOGICAL INPUT SUBMENU:
+    Use met. input (T/F): T
+    Met input file path (string): /path/to/met/input
+    Time series data timestep [hr] (double): 1.0
+    Init temp. from met. (T/F): T
+    Temp. time series input (T/F): T
+    Init RH from met. (T/F): T
+    RH time series input (T/F): T
+    Init wind shear from met. (T/F): T
+    Wind shear time series input (T/F): T
+  #- OR -------------------+
+  IMPOSE MOIST LAYER DEPTH SUBMENU:
+    Impose moist layer depth (T/F): T
+    Moist layer depth [m] (double): 200
+  #--- OR -----------------+
+  IMPOSE LAPSE RATE SUBMENU:
+    Impose lapse rate (T/F): T
+    Lapse rate [K/m] (T/F): -6.0E-03
+  Add diurnal variations (T/F): T
+
+DIAGNOSTIC MENU:
+  netCDF filename format (string): trac_avg.apcemm.hhmm
+  SPECIES TIMESERIES SUBMENU:
+    Save species timeseries (T/F): T
+    Inst timeseries file (string): ts_hhmm.nc
+    #list input: separate by spaces. e.g. 1 2 3 4 5
+    Species indices to include (list of ints): 1 2 3
+    Save frequency [min] (double): 10
+  AEROSOL TIMESERIES SUBMENU:
+    Save aerosol timeseries (T/F): T
+    Inst timeseries file (string): ts_aerosol_hhmm.nc
+    #list input: separate by spaces. e.g. 1 2 3 4 5
+    Aerosol indices to include (list of ints): 1 3 5
+    Save frequency [min] (double): 10
+  PRODUCTION & LOSS SUBMENU:
+    Turn on P/L diag (T/F): T
+    Save O3 P/L (T/F): T

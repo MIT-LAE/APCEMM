@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 #include "Util/ForwardDecl.hpp"
 
 class Input
@@ -67,17 +68,32 @@ class Input
     std::string fileName_;
     std::string fileName_ADJ_;
     std::string fileName_BOX_;
+    std::string fileName_micro_;
+    std::string author_;
+
+    private:
+        void checkInputValidity();
+        void adjustLatLong();
+        void calculate_emissionMonth();
 
     public:
 
-        Input( unsigned int iCase,             \
-               const Vector_2D &parameters,    \
-               const std::string fileName,     \
-               const std::string fileName_ADJ, \
-               const std::string fileName_BOX );
+        Input( unsigned int iCase,               \
+               const Vector_2D &parameters,      \
+               const std::string fileName,       \
+               const std::string fileName_ADJ,   \
+               const std::string fileName_BOX,   \
+               const std::string fileName_micro, \
+               const std::string author          );
+        Input( unsigned int iCase,               \
+                const std::vector<std::unordered_map<std::string, double>> &parameters,      \
+                const std::string fileName,       \
+                const std::string fileName_ADJ,   \
+                const std::string fileName_BOX,   \
+                const std::string fileName_micro, \
+                const std::string author          );
 
         ~Input();
-
         UInt Case() const { return Case_; }
 
         RealDouble simulationTime() const { return simulationTime_; }
@@ -123,9 +139,12 @@ class Input
         std::string fileName() const { return fileName_; }
         std::string fileName_ADJ() const { return fileName_ADJ_; }
         std::string fileName_BOX() const { return fileName_BOX_; }
+        std::string fileName_micro() const { return fileName_micro_; }
+        std::string author() const { return author_; }
         const char* fileName2char() const { return fileName_.c_str(); }
         const char* fileName_ADJ2char() const { return fileName_ADJ_.c_str(); }
         const char* fileName_BOX2char() const { return fileName_BOX_.c_str(); }
+        const char* fileName_micro2char() const { return fileName_micro_.c_str(); }
 
 };
 

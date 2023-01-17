@@ -12,6 +12,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "Util/PhysFunction.hpp"
+#include <iostream>
 
 namespace physFunc
 {
@@ -20,7 +21,8 @@ namespace physFunc
     {
         
         /* DESCRIPTION:
-         * Returns water liquid saturation pressure in Pascal. */
+         * Returns water liquid saturation pressure in Pascal.
+         * Source: Sonntag (1994) */
 
         /* INPUT PARAMETERS:
          * - RealDouble T :: temperature expressed in K 
@@ -40,7 +42,8 @@ namespace physFunc
     {
         
         /* DESCRIPTION:
-         * Returns water solid saturation pressure in Pascal. */
+         * Returns water solid saturation pressure in Pascal.
+         * Source: Sonntag (1990) */
 
         /* INPUT PARAMETERS:
          * - RealDouble T :: temperature expressed in K 
@@ -81,7 +84,8 @@ namespace physFunc
     {
         
         /* DESCRIPTION:
-         * Returns sulfate liquid saturation pressure in Pascal. */
+         * Returns sulfate liquid saturation pressure in Pascal.
+         * Source: Noppel et al. (2002) */
 
         /* INPUT PARAMETERS:
          * - RealDouble T :: temperature expressed in K 
@@ -89,13 +93,13 @@ namespace physFunc
          * OUTPUT PARAMETERS:
          * - RealDouble :: H2SO4 liquid saturation pressure in Pascal */
         
-        return 100.0 * exp( + 23.1885 \
-                            + 10156.0 * ( \
+        return physConst::ATM * exp(-11.94 \
+                            + 10156.0 * ( 1.0 / 360.15 \
                                           - 1.0 / T\
                                           + 0.38/(545.0)*( \
                                                            + 1.0 \
-                                                           + log( 360.0 * 1.0 / T ) \
-                                                           - 360.0 * 1.0 / T ) ) );
+                                                           + log( 360.15 * 1.0 / T ) \
+                                                           - 360.15 * 1.0 / T ) ) );
 
     } /* End of pSat_H2SO4 */
 
@@ -103,7 +107,8 @@ namespace physFunc
     {
         
         /* DESCRIPTION:
-         * Returns nitric acid saturation pressure in Pascal. */
+         * Returns nitric acid saturation pressure in Pascal.
+         * Source: Hanson and Mauersberger (1988) */
 
         /* INPUT PARAMETERS:
          * - RealDouble T     :: temperature expressed in K 
@@ -170,7 +175,7 @@ namespace physFunc
     {
 
         /* DESCRIPTION:
-         * Returns the thermal speed of an air molecule/particle in m/s */
+         * Returns the thermal speed of a molecule/particle in m/s */
 
         /* INPUT PARAMETERS:
          * - RealDouble T :: temperature in K
@@ -262,7 +267,8 @@ namespace physFunc
     {
 
         /* DESCRIPTION:
-         * Returns the particle diffusion coefficient in m^2/s */
+         * Returns the particle diffusion coefficient in m^2/s 
+         * Source: Jacobson (2005) Equation 15.29*/
 
         /* INPUT PARAMETERS:
          * - RealDouble r :: radius of the spherical particle in m
@@ -280,7 +286,8 @@ namespace physFunc
     {
 
         /* DESCRIPTION:
-         * Returns the dimensionless Cunningham slip-flow correction */
+         * Returns the dimensionless Cunningham slip-flow correction.
+         * Source: Jacobson (2005) page 509 */
 
         /* INPUT PARAMETERS:
          * - RealDouble Kn :: particle Knudsen number
@@ -301,7 +308,8 @@ namespace physFunc
     {
 
         /* DESCRIPTION:
-         * Returns the mean free path of a particle in air in m */
+         * Returns the mean free path of a particle in air in m 
+         * Source: Jacobson (2005) Equation 15.34 */
 
         /* INPUT PARAMETERS:
          * - RealDouble r :: particle radius in m
@@ -323,7 +331,8 @@ namespace physFunc
         /* DESCRIPTION:
          * Returns the mean distance in m from the center of a sphere reached by particles 
          * leaving the sphere's surface and traveling a distance of particle mean free 
-         * path lambda_p */
+         * path lambda_p
+         * Source: Jacobson (2005) Equation */
 
         /* INPUT PARAMETERS:
          * - RealDouble r :: particle radius in m
@@ -484,7 +493,8 @@ namespace physFunc
     {
 
         /* DESCRIPTION: 
-         * Returns the gas phase diffusion coefficient of water in m^2/s */
+         * Returns the gas phase diffusion coefficient of water in m^2/s
+         * Source: Pruppacher and Klett (2010), Equation 13.3 */
 
         /* INPUT PARAMETERS:
          * - RealDouble r :: particle radius expressed in m
@@ -515,7 +525,7 @@ namespace physFunc
          * (M.J. Tang, Gas phase diffusion coefficients: inorganic compounds, 
          * Atmospheric Chemistry and Physics, 2014)
          *
-         * D(296K) = D(T) * (296.0/T)^(1.5) = 74.0 Torr cm^2 s^-1 */
+         * D(296K) = D(T) * (296.0/T)^(1.75) = 74.0 Torr cm^2 s^-1 */
 
         return 9.736842E-06 * pow( ( T / 296.0 ), 1.75 ) * physConst::ATM / P;
 
@@ -538,9 +548,9 @@ namespace physFunc
          * (M.J. Tang, Gas phase diffusion coefficients: inorganic compounds, 
          * Atmospheric Chemistry and Physics, 2014)
          *
-         * D(296K) = D(T) * (296.0/T)^(1.5) = 87.0 Torr cm^2 s^-1 */
+         * D(296K) = D(T) * (296.0/T)^(1.75) = 87.0 Torr cm^2 s^-1 */
 
-        return 9.736842E-05 * pow( ( T / 296.0 ), 1.75 ) * physConst::ATM / P;
+        return 1.144736E-05 * pow( ( T / 296.0 ), 1.75 ) * physConst::ATM / P;
 
     } /* End of DiffCoef_HNO3 */
     
@@ -551,7 +561,8 @@ namespace physFunc
         /* DESCRIPTION: 
          * Returns the corrected gas phase diffusion coefficient of gaseous water in m^2/s
          * This correction accounts for the transition between the diffusion-limited 
-         * ( r >> \lambda ) and the free molecular ( r << \lambda ) growth regime */
+         * ( r >> \lambda ) and the free molecular ( r << \lambda ) growth regime
+         * Source: Pruppacher and Klett (2010) Equation 13.14 */
 
         /* INPUT PARAMETERS:
          * - RealDouble r :: particle radius expressed in m
@@ -564,11 +575,11 @@ namespace physFunc
         /* alpha represents the deposition coefficient for H2O molecules impinging on the 
          * surface. It is experimentally derived */
 
-        static const RealDouble alpha = 0.5;
+        static const RealDouble alpha = 0.036; //Pruppacher and Klett Table 5.5
 
         return DiffCoef_H2O( T, P ) \
             / ( r / ( r + lambda( T, P ) ) \
-              + DiffCoef_H2O( T, P ) / ( alpha * r * thermalSpeed( T, MW_H2O / physConst::Na ) ) );
+              + 4.0 * DiffCoef_H2O( T, P ) / ( alpha * r * thermalSpeed( T, MW_H2O / physConst::Na ) ) );
 
     } /* End of CorrDiffCoef_H2O */
     
@@ -579,7 +590,8 @@ namespace physFunc
         /* DESCRIPTION: 
          * Returns the corrected gas phase diffusion coefficient of gaseous sulfuric acid in m^2/s
          * This correction accounts for the transition between the diffusion-limited 
-         * ( r >> \lambda ) and the free molecular ( r << \lambda ) growth regime */
+         * ( r >> \lambda ) and the free molecular ( r << \lambda ) growth regime
+         * Source: Pruppacher and Klett (2010) Equation 13.14 */
 
         /* INPUT PARAMETERS:
          * - RealDouble r :: particle radius expressed in m
@@ -596,7 +608,7 @@ namespace physFunc
 
         return DiffCoef_H2SO4( T, P ) \
             / ( r / ( r + lambda( T, P ) ) \
-              + DiffCoef_H2SO4( T, P ) / ( alpha * r * thermalSpeed( T, MW_SO4 / physConst::Na ) ) );
+              + 4.0 * DiffCoef_H2SO4( T, P ) / ( alpha * r * thermalSpeed( T, MW_SO4 / physConst::Na ) ) );
 
     } /* End of CorrDiffCoef_H2SO4 */
 
@@ -607,7 +619,8 @@ namespace physFunc
         /* DESCRIPTION: 
          * Returns the corrected gas phase diffusion coefficient of gaseous nitric acid in m^2/s
          * This correction accounts for the transition between the diffusion-limited 
-         * ( r >> \lambda ) and the free molecular ( r << \lambda ) growth regime */
+         * ( r >> \lambda ) and the free molecular ( r << \lambda ) growth regime.
+         * Source: Pruppacher and Klett (2010) Equation 13.14 */
 
         /* INPUT PARAMETERS:
          * - RealDouble r :: particle radius expressed in m
@@ -624,7 +637,7 @@ namespace physFunc
 
         return DiffCoef_HNO3( T, P ) \
             / ( r / ( r + lambda( T, P ) ) \
-              + DiffCoef_HNO3( T, P ) / ( alpha * r * thermalSpeed( T, MW_HNO3 / physConst::Na ) ) );
+              + 4.0 * DiffCoef_HNO3( T, P ) / ( alpha * r * thermalSpeed( T, MW_HNO3 / physConst::Na ) ) );
 
     } /* End of CorrDiffCoef_HNO3 */
 
@@ -644,7 +657,7 @@ namespace physFunc
          * OUTPUT PARAMETERS:
          * - RealDouble :: Thermal conductivity of dry air in J / ( m s K ) 
          *
-         * (H.R. Prupparcher and J.D. Klett, Microphysics of Clouds and Precipitation,
+         * (H.R. Pruppacher and J.D. Klett, Microphysics of Clouds and Precipitation,
          *  Kluwer Academic Publishers, 1997)*/
 
         /* alpha_T is experimentally derived */
@@ -654,7 +667,7 @@ namespace physFunc
 
         return k_a \
             / ( r / ( r + 2.16E-07 ) \
-              + k_a / ( alpha_T * r * physConst::CP_Air * rhoAir( T, P ) * thermalSpeed( T, MW_H2O / physConst::Na ) ) );
+              + 4.0 * k_a / ( alpha_T * r * 1000.* physConst::CP_Air * rhoAir( T, P ) * thermalSpeed( T, MW_Air / physConst::Na ) ) );
 
     } /* End of ThermalCond */
 
@@ -662,13 +675,14 @@ namespace physFunc
     {
 
         /* DESCRIPTION:
-         * Returns the latent heat of sublimation of water vapor in J/kg */
+         * Returns the latent heat of sublimation of water vapor in J/kg
+         * Source: Polynomial curve fit to Table 2.1 of Rogers and Yau (1989)*/
 
         /* INPUT PARAMETERS:
          * - RealDouble T :: temperature in K
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Latent heat of sublimation */
+         * - RealDouble :: Latent heat of sublimation in J/kg*/
 
         return ( 2.8341E+06 - 2.90E+02 * ( T - physConst::TEMP_REF ) - 4.00E+00 * ( T - physConst::TEMP_REF ) * ( T - physConst::TEMP_REF ) );
 
@@ -696,36 +710,21 @@ namespace physFunc
 
     } /* End of Kelvin */
 
-    RealDouble growthRate( const RealDouble r, const RealDouble T, \
-                           const RealDouble P, const RealDouble H2O )
-    {
+    Vector_2D RHi_Field(const Vector_2D& H2O, const Vector_2D& T, const Vector_1D& P) {
+        Vector_2D RHi(H2O.size(), Vector_1D(H2O[0].size(), 0));
+        double pH2O, locP;
+        #pragma omp parallel for \
+        private(pH2O, locP)
+        for(int jNy = 0; jNy < H2O.size(); jNy++){
+            locP = P[jNy];
+            for (int iNx = 0; iNx < H2O[0].size(); iNx++){
+                pH2O = physConst::R * T[jNy][iNx] * H2O[jNy][iNx] /(physConst::Na*1e-6);
+                RHi[jNy][iNx] = pH2O / pSat_H2Os(T[jNy][iNx]);
+            }
+        }
+        return RHi;
+    } //End of RH_Field
 
-        /* DESCRIPTION:
-         * Returns the gaseous water condensation rate in cm^3/s of a single spherical particle */
-
-        /* INPUT PARAMETERS:
-         * - RealDouble r     :: radius in m
-         * - RealDouble T     :: temperature in K
-         * - RealDouble P     :: pressure in Pa
-         * - RealDouble H2O   :: gaseous water concentration in molec/cm^3 air
-         *
-         * OUTPUT PARAMETERS:
-         * - RealDouble :: growth rate [cm^3 ice/s] */
-
-        const RealDouble dCoef = physFunc::CorrDiffCoef_H2O( r, T, P ); /* [m^2/s] */
-        const RealDouble nSat  = physFunc::pSat_H2Os( T ) / ( physConst::kB * T ); /* [#/m^3] */
-        const RealDouble latS  = physFunc::LHeatSubl_H2O( T ); /* [J/kg] */
-        return 4.0 * physConst::PI * r * dCoef * 1.00E+06 \
-            / ( 1.00E+00 + dCoef * latS * physFunc::Kelvin( r ) * nSat * MW_H2O / \
-                           ( physConst::Na * physFunc::ThermalCond( r, T, P ) * T ) * \
-                           ( latS * MW_H2O / ( physConst::R * T ) - 1.00E+00 ) );
-
-        /* Unit check: 
-         * [m] * [m^2/s] * [cm^3/m^3] / ( [] + [m^2/s] * [J/kg] * [molec/m^3] * [kg/mol] / ( [molec/mol] * [J/m/s/K] * [K] ) )
-         * = [cm^3/s] / ( [] + [] )
-         * = [cm^3/s] */
-
-    } /* End of growthRate */
 
 }
 

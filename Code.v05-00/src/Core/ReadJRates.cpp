@@ -22,39 +22,42 @@ void ReadJRates( const char* ROOTDIR,                          \
 
     /* Set up for error messages */
     static const int NC_ERR = 2;
-    NcError err( NcError::silent_nonfatal );
 
     std::string fullPath;
     std::stringstream mm, dd;
     std::string varName;
-    RealDouble lonIn[72];
-    RealDouble latIn[46];
-    RealDouble pMidIn[59];
+    //RealDouble lonIn[72];
+    //RealDouble latIn[46];
+    //RealDouble pMidIn[59];
+    double lonIn[72];
+    double latIn[46];
+    double pMidIn[59];
 
-    NcVar* data;
+    NcVar data;
    
     mm << std::setw(2) << std::setfill('0') << MM;
     dd << std::setw(2) << std::setfill('0') << DD;
     fullPath += ROOTDIR;
     fullPath += "/JData_2013-" + mm.str() + "-" + dd.str() + ".nc";
 
-    NcFile dataFile( fullPath.c_str(), NcFile::ReadOnly );
-    if ( !dataFile.is_valid() ) {
-        std::cout << " Photolysis rate input file '" << fullPath << "' not found!" << std::endl;
-        exit(-1);
-    }
+    //NcFile dataFile( fullPath.c_str(), NcFile::ReadOnly );
+    //if ( !dataFile.is_valid() ) {
+    //    std::cout << " Photolysis rate input file '" << fullPath << "' not found!" << std::endl;
+    //    exit(-1);
+    //}
+    NcFile dataFile( fullPath.c_str(), NcFile::read );
 
     varName = "lon";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&lonIn[0], 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(lonIn);
 
     varName = "lat";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&latIn[0], 46);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(latIn);
 
     varName = "pmid";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&pMidIn[0], 59);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(pMidIn);
 
     Vector_1D lon(lonIn, lonIn+72);
     Vector_1D lat(latIn, latIn+46);
@@ -98,7 +101,8 @@ void ReadJRates( const char* ROOTDIR,                          \
     const double PRES_HIGH = pmid[PRES_INDEX - 1];
     const double PRES_LOW  = pmid[PRES_INDEX];
 
-    RealDouble jRate[59][46][72];
+    //RealDouble jRate[59][46][72];
+    double jRate[59][46][72];
     RealDouble jRateNEL, jRateNEH, jRateNWL, jRateNWH, jRateSEL, jRateSEH, jRateSWL, jRateSWH;
 
     /* Read the photolysis rates ... */
@@ -107,8 +111,10 @@ void ReadJRates( const char* ROOTDIR,                          \
 
     /* O2_J1 */
     varName = "O2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -161,8 +167,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* O3_J1 */
     varName = "O3_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -215,8 +223,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* O3_J2 */
     varName = "O3_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -269,8 +279,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* H2O_J1 */
     varName = "H2O_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -323,8 +335,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HO2_J1 */
     varName = "HO2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -377,8 +391,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* NO_J1 */
     varName = "NO_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -431,8 +447,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CH2O_J1 */
     varName = "CH2O_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -485,8 +503,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CH2O_J2 */
     varName = "CH2O_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -539,8 +559,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* H2O2_J1 */
     varName = "H2O2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -593,8 +615,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MP_J1 */
     varName = "MP_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -647,8 +671,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* NO2_J1 */
     varName = "NO2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -701,8 +727,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* NO3_J1 */
     varName = "NO3_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -755,8 +783,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* NO3_J2 */
     varName = "NO3_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -809,8 +839,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* N2O5_J1 */
     varName = "N2O5_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -863,8 +895,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HNO2_J1 */
     varName = "HNO2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -917,8 +951,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HNO3_J1 */
     varName = "HNO3_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -971,8 +1007,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HNO4_J1 */
     varName = "HNO4_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1025,8 +1063,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HNO4_J2 */
     varName = "HNO4_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1079,8 +1119,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ClNO3_J1 */
     varName = "ClNO3_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1133,8 +1175,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ClNO3_J2 */
     varName = "ClNO3_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1187,8 +1231,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ClNO2_J1 */
     varName = "ClNO2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1241,8 +1287,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* Cl2_J1 */
     varName = "Cl2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1295,8 +1343,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* Br2_J1 */
     varName = "Br2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1349,8 +1399,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HOCl_J1 */
     varName = "HOCl_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1403,8 +1455,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* OClO_J1 */
     varName = "OClO_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1457,8 +1511,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* Cl2O2_J1 */
     varName = "Cl2O2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1511,8 +1567,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ClO_J1 */
     varName = "ClO_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1565,8 +1623,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* BrO_J1 */
     varName = "BrO_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1619,8 +1679,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* BrNO3_J1 */
     varName = "BrNO3_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1673,8 +1735,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* BrNO3_J2 */
     varName = "BrNO3_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1727,8 +1791,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* BrNO2_J1 */
     varName = "BrNO2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1781,8 +1847,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HOBr_J1 */
     varName = "HOBr_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1835,8 +1903,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* BrCl_J1 */
     varName = "BrCl_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1889,8 +1959,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* OCS_J1 */
     varName = "OCS_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1943,8 +2015,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* SO2_J1 */
     varName = "SO2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -1997,8 +2071,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* N2O_J1 */
     varName = "N2O_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2051,8 +2127,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CFC11_J1 */
     varName = "CFC11_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2105,8 +2183,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CFC12_J1 */
     varName = "CFC12_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2159,8 +2239,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CFC113_J1 */
     varName = "CFC113_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2213,8 +2295,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CFC114_J1 */
     varName = "CFC114_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2267,8 +2351,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CFC115_J1 */
     varName = "CFC115_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2321,8 +2407,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CCl4_J1 */
     varName = "CCl4_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2375,8 +2463,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CH3Cl_J1 */
     varName = "CH3Cl_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2429,8 +2519,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CH3CCl3_J1 */
     varName = "CH3CCl3_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2483,8 +2575,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CH2Cl2_J1 */
     varName = "CH2Cl2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2537,8 +2631,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HCFC22_J1 */
     varName = "HCFC22_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2591,8 +2687,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HCFC123_J1 */
     varName = "HCFC123_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2645,8 +2743,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HCFC141b_J1 */
     varName = "HCFC141b_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2699,8 +2799,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HCFC142b_J1 */
     varName = "HCFC142b_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2753,8 +2855,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CH3Br_J1 */
     varName = "CH3Br_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2807,8 +2911,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* H1211_J1 */
     varName = "H1211_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2861,8 +2967,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* H12O2_J1 */
     varName = "H12O2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2915,8 +3023,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* H1301_J1 */
     varName = "H1301_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -2969,8 +3079,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* H2402_J1 */
     varName = "H2402_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3023,8 +3135,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CH2Br2_J1 */
     varName = "CH2Br2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3077,8 +3191,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CHBr3_J1 */
     varName = "CHBr3_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3131,8 +3247,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CH3I_J1 */
     varName = "CH3I_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3185,8 +3303,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* CF3I_J1 */
     varName = "CF3I_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3239,8 +3359,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* PAN_J1 */
     varName = "PAN_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3293,8 +3415,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* R4N2_J1 */
     varName = "R4N2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3347,8 +3471,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ALD2_J1 */
     varName = "ALD2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3401,8 +3527,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ALD2_J2 */
     varName = "ALD2_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3455,8 +3583,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MVK_J1 */
     varName = "MVK_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3509,8 +3639,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MVK_J2 */
     varName = "MVK_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3563,8 +3695,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MVK_J3 */
     varName = "MVK_J3";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3617,8 +3751,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MACR_J1 */
     varName = "MACR_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3671,8 +3807,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MACR_J2 */
     varName = "MACR_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3725,8 +3863,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* GLYC_J1 */
     varName = "GLYC_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3779,8 +3919,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MEK_J1 */
     varName = "MEK_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3833,8 +3975,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* RCHO_J1 */
     varName = "RCHO_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3887,8 +4031,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MGLY_J1 */
     varName = "MGLY_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3941,8 +4087,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* GLYX_J1 */
     varName = "GLYX_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -3995,8 +4143,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* GLYX_J2 */
     varName = "GLYX_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4049,8 +4199,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* GLYX_J3 */
     varName = "GLYX_J3";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4103,8 +4255,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* HAC_J1 */
     varName = "HAC_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4157,8 +4311,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ACET_J1 */
     varName = "ACET_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4211,8 +4367,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ACET_J2 */
     varName = "ACET_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4265,8 +4423,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* INPN_J1 */
     varName = "INPN_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4319,8 +4479,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* PRPN_J1 */
     varName = "PRPN_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4373,8 +4535,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ETP_J1 */
     varName = "ETP_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4427,8 +4591,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* RA3P_J1 */
     varName = "RA3P_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4481,8 +4647,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* RB3P_J1 */
     varName = "RB3P_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4535,8 +4703,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* R4P_J1 */
     varName = "R4P_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4589,8 +4759,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* PP_J1 */
     varName = "PP_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4643,8 +4815,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* RP_J1 */
     varName = "RP_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4697,8 +4871,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* RIP_J1 */
     varName = "RIP_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4751,8 +4927,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* IAP_J1 */
     varName = "IAP_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4805,8 +4983,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ISNP_J1 */
     varName = "ISNP_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4859,8 +5039,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* VRP_J1 */
     varName = "VRP_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4913,8 +5095,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MRP_J1 */
     varName = "MRP_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -4967,8 +5151,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MAOP_J1 */
     varName = "MAOP_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5021,8 +5207,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MACRN_J1 */
     varName = "MACRN_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5075,8 +5263,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MVKN_J1 */
     varName = "MVKN_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5129,8 +5319,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ISOPNB_J1 */
     varName = "ISOPNB_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5183,8 +5375,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ISOPND_J1 */
     varName = "ISOPND_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5237,8 +5431,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* PROPNN_J1 */
     varName = "PROPNN_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5291,8 +5487,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ATOOH_J1 */
     varName = "ATOOH_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5345,8 +5543,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* R4N2_J1 */
     varName = "R4N2_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5399,8 +5599,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MAP_J1 */
     varName = "MAP_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5453,8 +5655,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* SO4_J1 */
     varName = "SO4_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5507,8 +5711,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ClNO2_J2 */
     varName = "ClNO2_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5561,8 +5767,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* ClOO_J1 */
     varName = "ClOO_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5615,8 +5823,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* O3_J3 */
     varName = "O3_J3";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5669,8 +5879,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MPN_J1 */
     varName = "MPN_J1";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {
@@ -5723,8 +5935,10 @@ void ReadJRates( const char* ROOTDIR,                          \
     
     /* MPN_J2 */
     varName = "MPN_J2";
-    data = dataFile.get_var(varName.c_str());
-    data->get(&jRate[0][0][0], 59, 46, 72);
+    //data = dataFile.get_var(varName.c_str());
+    //data.getVar(&jRate[0][0][0], 59, 46, 72);
+    data = dataFile.getVar(varName.c_str());
+    data.getVar(jRate);
     
     /* ... and interpolate */
     if ( LAT_EDGE && LON_EDGE ) {

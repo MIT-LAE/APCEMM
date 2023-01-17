@@ -92,4 +92,3 @@ debug:
 Integrate.o         : Integrate.cpp
 
 odeSolver.o         : odeSolver.cpp
-

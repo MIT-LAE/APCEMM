@@ -270,31 +270,45 @@ namespace met
 
     } /* End of ComputeLapseRate */
 
-    UInt nearestNeighbor( float xq[], const float &x ) {
+    UInt nearestNeighbor( float xq[], const float &x , size_t xq_size) {
 
         /* DESCRIPTION: Finds the closest of x in xq, returning the index */
 
         /* INPUTS:
-         * float xq: query values
+         * (1-D Vector) xq: query values
          * float x:  desired value */
 
+        /*This function passes in a float array which means the size of the array is unknown. Therefore, we actually 
+        have no idea when to stop if the query value is past the end of the array.
+        */
         UInt i_Z = 0;
 
         /* Identify increasing direction */
         if ( xq[0]-xq[1]<0 ) {
             while ( xq[i_Z] <= x ) {
+
+                if(i_Z == xq_size-1) return i_Z;
                 i_Z += 1;
             }
+            /* Check if out of bounds*/
+            if(x < xq[0]){
+                return 0;
+            }
             /* Check if previous altitude closer */
-            if ( xq[i_Z]-x >= x-xq[i_Z-1] ) {
+            else if ( xq[i_Z]-x >= x-xq[i_Z-1] ) {
                 i_Z -= 1;
             }
         }
         else {
             while ( xq[i_Z] >= x ) {
+                if(i_Z == xq_size-1) return i_Z;
                 i_Z += 1;
             }
-            if ( x-xq[i_Z] >= xq[i_Z-1]-x ) {
+            /* Check if out of bounds */
+            if(x>xq[0]){
+                return 0;
+            }
+            else if ( x-xq[i_Z] >= xq[i_Z-1]-x ) {
                 i_Z -= 1;
             }
         }
@@ -303,38 +317,18 @@ namespace met
     } /* End of nearestNeighbor */
 
     UInt nearestNeighbor( Vector_1D xq, const float &x ) {
-
-        /* DESCRIPTION: Finds the closest of x in xq, returning the index */
-
-        /* INPUTS:
-         * float xq: query values
-         * float x:  desired value */
-
-        UInt i_Z = 0;
-
-        /* Identify increasing direction */
-        if ( xq[0]-xq[1]<0 ) {
-            while ( xq[i_Z] <= x ) {
-                i_Z += 1;
-            }
-            /* Check if previous altitude closer */
-            if ( xq[i_Z]-x >= x-xq[i_Z-1] ) {
-                i_Z -= 1;
-            }
+        //Just a temporary solution to get rid of this redundant high maint code. Ideally want to template it later or something - Michael
+        float* floatArray = new float[xq.size()];
+        for (int i = 0 ; i < xq.size(); i++)
+        {
+            floatArray[i] = (float) xq[i];
         }
-        else {
-            while ( xq[i_Z] >= x ) {
-                i_Z += 1;
-            }
-            if ( x-xq[i_Z] >= xq[i_Z-1]-x ) {
-                i_Z -= 1;
-            }
-        }
-        return i_Z;
+        UInt i = nearestNeighbor(floatArray, x, xq.size());
+        delete[] floatArray;
+        return i;
+    } /* End of nearestNeighbor */ 
 
-    } /* End of nearestNeighbor */
-
-    float linearInterp( float xq[], float yq[], const float &x ) {
+    float linearInterp( float xq[], float yq[], const float &x , size_t xq_size) {
 
         /* DESCRIPTION: Linearly interpolated around the desired x value */
 
@@ -349,8 +343,15 @@ namespace met
         float y;
 
         /* Find closest point */
-        i_X = nearestNeighbor( xq, x );
+        i_X = nearestNeighbor( xq, x , xq_size);
         i_X2 = i_X;
+
+        /* Disallow extrapolation for now*/
+        bool out_of_bounds = xq[0]-xq[1]<0 ? x < xq[0] || x > xq[xq_size-1] :
+                                             x > xq[0] || x < xq[xq_size-1];
+        if(out_of_bounds) {
+            throw std::range_error("met::linearInterp : x out of range of xq. Extrapolation not supported.");
+        }
         /* Check direction xq increasing */
         while ( xq[i_X2]==xq[i_X] ) {
         if ( xq[0]-xq[1]<0 ) {
@@ -364,7 +365,7 @@ namespace met
         }
         else {
             /* Find the next closest point */
-            if ( xq[i_X] > x ) {
+            if ( xq[i_X] >= x ) {
                 i_X2 = i_X2 + 1;
             }
             else {
@@ -393,27 +394,31 @@ namespace met
         RealDouble satdepth = 0.00E+00;
         RealDouble curdepth = 0.00E+00;
         int iCur = iFlight;
-        UInt isatdepth;
-        RealDouble RHi_cur;
+        RealDouble RHi_cur, RHi_prev;
 
         /* Loop over altitudes till sat depth found or end of profile reached */
-        while ( satdepth==0.00E+00 && iCur > 0 ) {
+        while ( satdepth==0.00E+00 && iCur >= 0 ) {
 
             /* Calculate RHi at current altitude */
             RHi_cur = RHw[iCur] * physFunc::pSat_H2Ol( T[iCur] ) / physFunc::pSat_H2Os( T[iCur] );
-
             /* Check if current altitude is subsaturated */
             if ( iCur != iFlight && RHi_cur < 100 ) {
 
                 /* Get distance from previous altitude for saturation depth */
-                isatdepth = iCur;
-                satdepth = alt[iFlight] - alt[iCur];
+                //Because met input automatically sets RH to nearest point,
+                //We need to "interpolate" on the border point between the saturated and non-sat layer.
 
+                //satdepth = alt[iFlight] - alt[iCur];
+
+                RHi_prev = RHw[iCur + 1] * physFunc::pSat_H2Ol( T[iCur + 1] ) / physFunc::pSat_H2Os( T[iCur + 1] );
+                satdepth = alt[iFlight] - (alt[iCur] + (100 - RHi_cur)/(RHi_prev - RHi_cur) * (alt[iCur + 1] - alt[iCur]));
+                break;
             }
 
             /* Check first point is ISS */
             if ( RHi_cur < 100 && iCur==iFlight ) {
                 satdepth = 1.0; /* Set to some arbitrary value, contrail should not survive VS anyway */
+                break;
             }
 
             /* Iterate and check satdepth */
@@ -421,23 +426,17 @@ namespace met
             
             // std::cout << alt[iCur] << "m, " << curdepth << "m" << std::endl;
         }
-        
         /* Check a genuine satdepth found */
-        std::cout << "satdepth=" << satdepth << ", ylim_down=" << YLIM_DOWN << std::endl;
-        if ( iCur <= 0 || satdepth > YLIM_DOWN ) {
-            std::cout << "Checking genuine location found" << std::endl;
-            std::cout << iCur << std::endl;
-            std::cout << alt[iFlight]-alt[iCur] << std::endl;
-            std::cout << "Careful: saturation depth exceeds domain - resetting to 100" << std::endl;
-	    satdepth = 100.0;
-            // exit(0);
+        if ( iCur < 0) {
+            throw std::out_of_range("In met::satdepth_calc: No end of ice supersaturated layer found.");
+        }
+        else if (satdepth > YLIM_DOWN){
+            throw std::out_of_range("In met::satdepth_calc: Ice supersatured layer depth exceeds domain limits.");
         }
 
-        /* Once a SATDEPTH_MIN m depth of subsaturated region found, find altitude */
-        //satdepth = alt[iFlight] - alt[isatdepth];
         return satdepth;
 
-    } /* End of satdepth_cal */ 
+    } /* End of satdepth_calc */ 
 
 }
 

@@ -13,11 +13,13 @@
 
 #include "Core/Input.hpp"
 
-Input::Input( unsigned int iCase,             \
-              const Vector_2D &parameters,    \
-              const std::string fileName,     \
-              const std::string fileName_ADJ, \
-              const std::string fileName_BOX ):
+Input::Input( unsigned int iCase,               \
+              const Vector_2D &parameters,      \
+              const std::string fileName,       \
+              const std::string fileName_ADJ,   \
+              const std::string fileName_BOX,   \
+              const std::string fileName_micro, \
+              const std::string author          ):
     Case_          ( iCase                 ),
     simulationTime_( parameters[ 0][iCase] ),
     temperature_K_ ( parameters[ 1][iCase] ),
@@ -52,30 +54,76 @@ Input::Input( unsigned int iCase,             \
     bypassArea_    ( parameters[30][iCase] ),
     fileName_      ( fileName ),
     fileName_ADJ_  ( fileName_ADJ ),
-    fileName_BOX_  ( fileName_BOX )
+    fileName_BOX_  ( fileName_BOX ),
+    fileName_micro_ ( fileName_micro ),
+    author_        ( author )
 {
 
     /* Constructor */
- 
-    while ( longitude_deg_ > 180 )
-        longitude_deg_ -= 360;
-    
-    while ( longitude_deg_ < -180 )
-        longitude_deg_ += 360;
+    adjustLatLong();
+    checkInputValidity();
+    calculate_emissionMonth();
 
-    while ( latitude_deg_ > 90 )
-        latitude_deg_ -= 180;
-    
-    while ( latitude_deg_ < -90 )
-        latitude_deg_ += 180;
+} /* End of Input::Input */
 
-    while ( emissionDOY_ > 365 )
-        emissionDOY_ -= 365;
+Input::Input( unsigned int iCase,               \
+        const std::vector<std::unordered_map<std::string, double>> &parameters,      \
+        const std::string fileName,       \
+        const std::string fileName_ADJ,   \
+        const std::string fileName_BOX,   \
+        const std::string fileName_micro, \
+        const std::string author          ):
+    Case_          ( iCase                 ),
+    simulationTime_( parameters[iCase].at("PLUMEPROCESS")),
+    temperature_K_ ( parameters[iCase].at("TEMPERATURE")),
+    relHumidity_w_ ( parameters[iCase].at("RHW")),
+    pressure_Pa_   ( parameters[iCase].at("PRESSURE")),
+    horizDiff_     ( parameters[iCase].at("DH")),
+    vertiDiff_     ( parameters[iCase].at("DV")),
+    shear_         ( parameters[iCase].at("SHEAR")),
+    longitude_deg_ ( parameters[iCase].at("LONGITUDE")),
+    latitude_deg_  ( parameters[iCase].at("LATITUDE")),
+    emissionDOY_   ( parameters[iCase].at("EDAY")),
+    emissionTime_  ( parameters[iCase].at("ETIME")),
+    backgNOx_      ( parameters[iCase].at("BACKG_NOX")),
+    backgHNO3_     ( parameters[iCase].at("BACKG_HNO3")),
+    backgO3_       ( parameters[iCase].at("BACKG_O3")),
+    backgCO_       ( parameters[iCase].at("BACKG_CO")),
+    backgCH4_      ( parameters[iCase].at("BACKG_CH4")),
+    backgSO2_      ( parameters[iCase].at("BACKG_SO2")),
+    EI_NOx_        ( parameters[iCase].at("EI_NOX")),
+    EI_CO_         ( parameters[iCase].at("EI_CO")),
+    EI_HC_         ( parameters[iCase].at("EI_UHC")),
+    EI_SO2_        ( parameters[iCase].at("EI_SO2")),
+    EI_SO2TOSO4_   ( parameters[iCase].at("EI_SO2TOSO4")),
+    EI_Soot_       ( parameters[iCase].at("EI_SOOT")),
+    sootRad_       ( parameters[iCase].at("EI_SOOTRAD")),
+    fuelFlow_      ( parameters[iCase].at("FF")),
+    aircraftMass_  ( parameters[iCase].at("AMASS")),
+    flightSpeed_   ( parameters[iCase].at("FSPEED")),
+    numEngines_    ( parameters[iCase].at("NUMENG")),
+    wingspan_      ( parameters[iCase].at("WINGSPAN")),
+    coreExitTemp_  ( parameters[iCase].at("COREEXITTEMP")),
+    bypassArea_    ( parameters[iCase].at("BYPASSAREA")),
+    fileName_      ( fileName ),
+    fileName_ADJ_  ( fileName_ADJ ),
+    fileName_BOX_  ( fileName_BOX ),
+    fileName_micro_ ( fileName_micro ),
+    author_        ( author )
+{
 
-    while ( emissionTime_ > 24.0 )
-        emissionTime_ -= 24.0;
+}
+Input::~Input()
+{
 
-    if ( simulationTime_ <= 0.0 || simulationTime_ >= 48.0 ) {
+    /* Destructor */
+
+} /* End of Input::~Input */
+
+/* End of Input.cpp */
+
+void Input::checkInputValidity(){
+        if ( simulationTime_ <= 0.0 || simulationTime_ >= 48.0 ) {
         std::cout << " In Input::Input:";
         std::cout << " simulationTime takes an odd value: simulationTime = ";
         std::cout << simulationTime_ << " [hrs]" << std::endl;
@@ -119,17 +167,24 @@ Input::Input( unsigned int iCase,             \
             exit(-1);
     }
 
-    if ( shear_ >= 5.0E-02 || shear_ < -5.0E-02 ) {
+    if ( shear_ >= 5.0E-02 || shear_ <= -5.0E-02 ) {
         std::cout << " In Input::Input:";
         std::cout << " shear takes an unrealisable value: shear = ";
         std::cout << shear_ << " [1/s]" << std::endl;
         exit(-1);
     }
 
-    if ( emissionDOY_ <= 0.0 ) {
+    if ( emissionDOY_ < 1  || emissionDOY_ > 365) {
         std::cout << " In Input::Input:";
         std::cout << " emissionDOY takes an unrealisable value: emissionDOY = ";
         std::cout << emissionDOY_ << " [-]" << std::endl;
+        exit(-1);
+    }
+
+    if ( emissionTime_ < 0 || emissionTime_ > 24) {
+        std::cout << " In Input::Input:";
+        std::cout << " emissionTime takes an unrealisable value: emissionDOY = ";
+        std::cout << emissionTime_ << " [-]" << std::endl;
         exit(-1);
     }
 
@@ -266,7 +321,23 @@ Input::Input( unsigned int iCase,             \
         std::cout << bypassArea_ << " [m^2]" << std::endl;
         exit(-1);
     }
+}
 
+void Input::adjustLatLong(){
+    while ( longitude_deg_ > 180 )
+        longitude_deg_ -= 360;
+    
+    while ( longitude_deg_ < -180 )
+        longitude_deg_ += 360;
+
+    while ( latitude_deg_ > 90 )
+        latitude_deg_ -= 180;
+    
+    while ( latitude_deg_ < -90 )
+        latitude_deg_ += 180;
+}
+
+void Input::calculate_emissionMonth(){
     if ( emissionDOY_ <= 31 ) {
         emissionMonth_ = 1;
         emissionDay_   = emissionDOY_;
@@ -308,15 +379,4 @@ Input::Input( unsigned int iCase,             \
         std::cout << " Could not figure out what month this is" << std::endl;
         exit(-1);
     }
-
-
-} /* End of Input::Input */
-
-Input::~Input()
-{
-
-    /* Destructor */
-
-} /* End of Input::~Input */
-
-/* End of Input.cpp */
+}

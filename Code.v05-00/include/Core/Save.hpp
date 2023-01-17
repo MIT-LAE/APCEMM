@@ -23,7 +23,6 @@
 #include "Core/Species.hpp"
 #include "Core/Ambient.hpp"
 #include "Core/Cluster.hpp"
-#include "Core/FileHandler.hpp"
 #include "Core/Util.hpp"
 
 namespace output

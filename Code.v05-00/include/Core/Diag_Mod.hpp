@@ -20,12 +20,15 @@
 #include <algorithm>
 
 #include "Core/Interface.hpp"
-#include "Core/FileHandler.hpp"
 #include "Core/Structure.hpp"
 #include "Core/Mesh.hpp"
 #include "Core/Meteorology.hpp"
 #include "Core/Util.hpp"
 #include "KPP/KPP_Global.h"
+#include <netcdf>
+
+using namespace netCDF;
+using namespace netCDF::exceptions;
 
 static const int SAVE_SUCCESS = 1;
 static const int SAVE_FAILURE = 0;

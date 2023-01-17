@@ -27,8 +27,12 @@
 #include "Core/Input_Mod.hpp"
 #include "Util/PhysConstant.hpp"
 #include "Util/MetFunction.hpp"
-#include <netcdfcpp.h>
+/*#include <netcdfcpp.h>*/
+#include <netcdf>
 #include <limits>
+
+using namespace netCDF;
+using namespace netCDF::exceptions;
 
 class Meteorology
 {
@@ -39,7 +43,7 @@ class Meteorology
         Meteorology( const OptInput &USERINPUT,      \
                      const RealDouble solarTime_h,   \
                      const Mesh &m,                  \
-                     const RealDouble temperature_,  \
+                     const RealDouble temperature_K,  \
                      const RealDouble relHumidity_i, \
                      const RealDouble pressure_Pa,   \
                      const RealDouble shear_pm,   \
@@ -51,6 +55,15 @@ class Meteorology
                      const RealDouble simTime_h, \
                      const Mesh &m, const RealDouble dTrav_x, const RealDouble dTrav_y, \
 		     const bool DBG = 0 );
+        
+        void loadMet(const OptInput &USERINPUT,      \
+                     const RealDouble solarTime_h,   \
+                     const Mesh &m,                  \
+                     const RealDouble temperature_K,  \
+                     const RealDouble relHumidity_i, \
+                     const RealDouble pressure_Pa,   \
+                     const RealDouble shear_pm,   \
+                     const bool DBG = 0 );
 
         RealDouble alt( UInt j ) const { return alt_[j]; }
 	RealDouble press( UInt j ) const { return press_[j]; }
@@ -112,6 +125,7 @@ class Meteorology
         Vector_2D temp_;
         Vector_2D airDens_;
         Vector_2D H2O_;
+
 
         /* Temperature input from user can be 2D [T(z,t)] */
 	Vector_2D temperature_store_;
