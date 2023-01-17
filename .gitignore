@@ -54,6 +54,7 @@ rundirs/*
 # netCDF files #
 ################
 *.nc
+!examples/Example3_met_input/example_met_file.nc
 
 # Debug files #
 ###############
