@@ -5,8 +5,6 @@
 APCEMM stands for Aircraft Plume Chemistry Emission and Microphysics Model. The model aims to assess the chemical and microphysical perturbations introduced by a conventional aircraft, equipped with gas turbine engines. Global chemistry transport models commonly assume that emissions are released in grid-boxes that can be several orders of magnitude greater than an airplane's typical dimensions. APCEMM accounts for the fine-scale representation of an aircraft plume. To account for
 plume-scale processes, APCEMM has the option of computing effective emissions that correspond to what should be released in a grid-box model to match the plume model's output.
 
-The source code for APCEMM can be found in this repository (https://github.com/fritzt/APCEMM).
-
 ## APCEMM Development
 
 The development of APCEMM in C++ started in September 2018. 
