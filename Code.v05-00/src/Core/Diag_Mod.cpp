@@ -25,7 +25,8 @@ bool Diag_TS_Chem( const char* rootName,                     \
                    const Solution& Data, const Mesh& m )
 {
 
-    std::string fileName( rootName );
+    std::filesystem::path rootPath( rootName );
+    std::string fileName = rootPath.filename().generic_string();
     size_t start_pos;
     bool found;
 
@@ -72,7 +73,8 @@ bool Diag_TS_Chem( const char* rootName,                     \
         fileName.replace(start_pos, 2, ss_string);
         start_pos += 2;
     }
-
+    
+    fileName = std::filesystem::path(rootPath.parent_path() / fileName).generic_string();
     const char* outFile = fileName.c_str();
 
     // Open the file for writing - replacing anything already there
@@ -191,8 +193,8 @@ bool Diag_TS_Phys( const char* rootName,                     \
                    const int outputPDF, \
 		   const float partNum_lost, const float iceMass_lost )
 {
-
-    std::string fileName( rootName );
+    std::filesystem::path rootPath( rootName );
+    std::string fileName = rootPath.filename().generic_string();
     size_t start_pos;
     bool found;
 
@@ -239,7 +241,7 @@ bool Diag_TS_Phys( const char* rootName,                     \
         fileName.replace(start_pos, 2, ss_string);
         start_pos += 2;
     }
-
+    fileName = std::filesystem::path(rootPath.parent_path() / fileName).generic_string();
     const char* outFile = fileName.c_str();
 
     // Open file and don't worry about overwrite

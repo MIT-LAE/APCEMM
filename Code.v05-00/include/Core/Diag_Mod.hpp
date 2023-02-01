@@ -26,6 +26,7 @@
 #include "Core/Util.hpp"
 #include "KPP/KPP_Global.h"
 #include <netcdf>
+#include <filesystem>
 
 using namespace netCDF;
 using namespace netCDF::exceptions;

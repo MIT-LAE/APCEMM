@@ -26,6 +26,8 @@ Catch2
 
 FFTW3
 
+OpenMP
+
 Boost libraries
 
 yaml-cpp
