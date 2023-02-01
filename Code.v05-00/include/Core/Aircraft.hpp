@@ -30,7 +30,7 @@ class Aircraft
         /* Constructors */
 
         Aircraft( );
-        Aircraft( const char *aircraftName, RealDouble aircraftMass, \
+        Aircraft( const char *aircraftName, std::string engineFilePath, RealDouble aircraftMass, \
                   RealDouble temperature_K, RealDouble pressure_Pa,  \
                   RealDouble relHumidity_w );
 
@@ -57,27 +57,27 @@ class Aircraft
         /* Getters: */
 
         /* Aircraft name */
-        std::string Name() const { return Name_; }
+        inline std::string Name() const { return Name_; }
         /* Flight velocity */
-        RealDouble VFlight() const { return vFlight_ms_; }
+        inline RealDouble VFlight() const { return vFlight_ms_; }
         /* Mach number */
-        RealDouble Mach() const { return machNumber_; }
+        inline RealDouble Mach() const { return machNumber_; }
         /* Wingspan */
-        RealDouble Wingspan() const { return wingspan_; }
+        inline RealDouble Wingspan() const { return wingspan_; }
         /* Max take-off weight */
-        RealDouble MTOW() const { return MTOW_; }
+        inline RealDouble MTOW() const { return MTOW_; }
         /* Current mass */
-        RealDouble currMass() const { return currMass_; }
+        inline RealDouble currMass() const { return currMass_; }
         /* Fuel flow */
-        RealDouble FuelFlow() const { return engine_.getFuelFlow() * engNumber_; }
+        inline RealDouble FuelFlow() const { return engine_.getFuelFlow() * engNumber_; }
         /* Engine number */
-        UInt EngNumber() const { return engNumber_; }
+        inline UInt EngNumber() const { return engNumber_; }
         /* Mean vertical displacement */
-        RealDouble deltaz1() const { return vortex_.delta_z1(); }
+        inline RealDouble deltaz1() const { return vortex_.delta_z1(); }
         /* Maximum vertical displacement */
-        RealDouble deltazw() const { return vortex_.delta_zw(); }
+        inline RealDouble deltazw() const { return vortex_.delta_zw(); }
         /* Engine */
-        Engine engine() const { return engine_; }
+        inline const Engine& engine() const { return engine_; }
 
         /* Setters for engine properties */
         void setEI_NOx(const RealDouble NOx);

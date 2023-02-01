@@ -320,7 +320,8 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     /* Define aircraft */
     char const *aircraftName("B747-800");
     RealDouble aircraftMass = input.aircraftMass();
-    Aircraft aircraft( aircraftName, aircraftMass, \
+    std::string engineInputFile = Input_Opt.SIMULATION_INPUT_ENG_EI;
+    Aircraft aircraft( aircraftName, engineInputFile, aircraftMass, \
                        temperature_K, pressure_Pa, \
                        relHumidity_w );
 

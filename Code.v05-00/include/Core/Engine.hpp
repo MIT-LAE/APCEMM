@@ -35,7 +35,7 @@ class Engine
     public:
         
         Engine( );
-        Engine( const char *engineName, double tempe_K, double pres_Pa, double relHum_w, double machNumber );
+        Engine( const char *engineName, std::string engineFileName, double tempe_K, double pres_Pa, double relHum_w, double machNumber );
         Engine( const Engine &e );
         Engine& operator=( const Engine &e );
         ~Engine( );

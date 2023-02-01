@@ -13,8 +13,6 @@
 
 #include "Core/Engine.hpp"
 
-const char * const Engine::engineFileName = "/home/aa681/Documents/APCEMM_Data/ENG_EI.txt";
-
 Engine::Engine( )
 {
 
@@ -22,12 +20,12 @@ Engine::Engine( )
 
 } /* End of Engine::Engine */
 
-Engine::Engine( const char *engineName, double tempe_K, double pres_Pa, double relHum_w, double machNumber )
+Engine::Engine( const char *engineName, std::string engineFileName, double tempe_K, double pres_Pa, double relHum_w, double machNumber )
 {
     Name = engineName;
 
     std::ifstream engineFile;
-    OpenFile( engineFileName, engineFile );
+    OpenFile( engineFileName.c_str(), engineFile );
     
     std::string idle, approach, climbout, takeoff;
     bool foundEngine;

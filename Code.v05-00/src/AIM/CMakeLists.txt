@@ -10,4 +10,4 @@ set(SRCS
 add_library(AIM STATIC ${SRCS})
 
 # This command defines the dependencies of libAIM.a
-target_link_libraries(AIM Util)
+target_link_libraries(AIM Util OpenMP::OpenMP_CXX)

@@ -52,14 +52,12 @@ class AIM::Coagulation
         Coagulation( const Coagulation& k );
         Coagulation& operator=( const Coagulation& k );
         void buildBeta( const Vector_1D &bin_Centers );
-        void buildF( Vector_1D &bin_VCenters );
-        void buildF( Vector_3D &bin_VCenters, const UInt jNy, const UInt iNx );
+        void buildF( const Vector_1D &bin_VCenters );
+        void buildF( const Vector_3D &bin_VCenters, const UInt jNy, const UInt iNx );
         Vector_2D getKernel() const;
         Vector_1D getKernel_1D() const;
         Vector_2D getBeta() const;
         Vector_3D getF() const;
-        void printKernel_1D( const char* fileName ) const;
-        void printKernel_2D( const char* fileName ) const;
         
         Vector_3D f;
         std::vector<std::vector<std::vector<UInt> > > indices;

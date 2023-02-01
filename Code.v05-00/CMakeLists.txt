@@ -5,8 +5,20 @@ project(APCEMM)
 # Options
 SET(DEBUG 0)
 SET(RINGS 0)
+SET(OMP 1)
 option(BUILD_TEST ON)
 
+if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")	
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)	
+endif()
+
+execute_process(COMMAND git rev-parse --short HEAD 
+                    OUTPUT_VARIABLE APCEMM_VERSION_BUILD_NUMBER 
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+set(APCEMM_VERSION_BUILD_NUMBER "${APCEMM_VERSION_BUILD_NUMBER}" CACHE STRING "Git Version/Commit Hash")
+set(CMAKE_CXX_STANDARD 20)
 configure_file(${CMAKE_SOURCE_DIR}/include/APCEMM.h.in ${CMAKE_SOURCE_DIR}/include/APCEMM.h @ONLY)
 
 # Include .cmake files in this directory to find the required packages
@@ -91,3 +103,4 @@ include(CTest)
 enable_testing()
 add_subdirectory(tests)
 #endif()
+

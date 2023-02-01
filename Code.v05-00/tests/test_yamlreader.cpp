@@ -5,9 +5,11 @@
 using namespace YamlInputReader;
 using std::cout;
 using std::endl;
+
+//APCEMM_TEST_DIR is a preprocessor macro
 TEST_CASE("YamlInputReader Helper Functions"){
     SECTION("Yaml Compiles"){
-        string filename = "tests/test.yaml";
+        string filename = string(APCEMM_TESTS_DIR)+"/test.yaml";
         YAML::Node n = YAML::LoadFile(filename);
     }
     SECTION("String Trim"){
@@ -183,7 +185,8 @@ TEST_CASE("YamlInputReader Helper Functions"){
     }
 }
 TEST_CASE("Read Yaml File"){
-    string filename = "tests/test.yaml";
+    string filename = string(APCEMM_TESTS_DIR)+"/test.yaml";
+
     YAML::Node data = YAML::LoadFile(filename);
     SECTION("Read Simulation Menu"){
         OptInput input;
@@ -197,13 +200,13 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.SIMULATION_PARAMETER_SWEEP == true);
         REQUIRE(input.SIMULATION_MONTECARLO == true);
         REQUIRE(input.SIMULATION_MCRUNS == 2);
-        REQUIRE(input.SIMULATION_OUTPUT_FOLDER == "./");
+        //REQUIRE(input.SIMULATION_OUTPUT_FOLDER == "./");
         REQUIRE(input.SIMULATION_OVERWRITE == true);
-        REQUIRE(input.SIMULATION_RUN_DIRECTORY == "./");
         REQUIRE(input.SIMULATION_THREADED_FFT == true);
         REQUIRE(input.SIMULATION_USE_FFTW_WISDOM == true);
-        REQUIRE(input.SIMULATION_DIRECTORY_W_WRITE_PERMISSION == "./");
-        REQUIRE(input.SIMULATION_INPUT_BACKG_COND == "/net/d07/data/fritzt/APCEMM_Data/init.txt");
+        //REQUIRE(input.SIMULATION_DIRECTORY_W_WRITE_PERMISSION == "./");
+        //REQUIRE(input.SIMULATION_INPUT_BACKG_COND == "../../input_data/init.txt");
+        //REQUIRE(input.SIMULATION_INPUT_ENG_EI == "../../input_data/ENG_EI.txt");
         REQUIRE(input.SIMULATION_SAVE_FORWARD == true);
         REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
         REQUIRE(input.SIMULATION_ADJOINT == true);
@@ -217,8 +220,6 @@ TEST_CASE("Read Yaml File"){
         OptInput input;
         string err;
         readParamMenu(input, data["PARAMETER MENU"]);
-        REQUIRE(input.PARAMETER_FILEINPUT == true);
-        REQUIRE(input.PARAMETER_FILENAME == "/path/to/input/");
 
         REQUIRE(input.PARAMETER_PARAM_MAP["PLUMEPROCESS"][0] == 24);
         REQUIRE(input.PARAMETER_PARAM_MAP["TEMPERATURE"].size() == 3);
@@ -312,6 +313,10 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.MET_FIXLAPSERATE == true);
         REQUIRE(input.MET_LAPSERATE == -6.0e-3);
         REQUIRE(input.MET_DIURNAL == true);
+        REQUIRE(input.MET_ENABLE_TEMP_PERTURB == true);
+        REQUIRE(input.MET_TEMP_PERTURB_AMPLITUDE == 2.0);
+        REQUIRE(input.MET_TEMP_PERTURB_TIMESCALE == 10);
+
 
         REQUIRE(error == "When using met. input, only one of \"Init temp. from met.\" or \"Impose lapse rate\" must be selected.");
     }
@@ -364,7 +369,7 @@ TEST_CASE("Generate All Cases"){
     REQUIRE(combinations.size() == 72);
 }
 TEST_CASE("Generate Input Objects"){
-    string filename = "tests/test1.yaml";
+    string filename = string(APCEMM_TESTS_DIR)+"/test1.yaml";
     OptInput input;
     YamlInputReader::readYamlInputFile(input, filename);
     vector<std::unordered_map<string,double>> cases = generateCases(input);

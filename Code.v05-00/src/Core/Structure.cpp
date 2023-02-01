@@ -97,38 +97,9 @@ void Solution::Initialize( char const *fileName,      \
 
     Vector_1D amb_Value(NSPECALL, 0.0);
     Vector_2D aer_Value(nAer, Vector_1D(2, 0.0));
-    std::ifstream file;
-
 
     /* Read input background conditions */
-    file.open( fileName );
-
-    if ( file.is_open() ) {
-        std::string line;
-        UInt i = 0;
-
-        while ( ( std::getline( file, line ) ) && ( i < nVariables + nAer ) ) {
-            if ( ( line.length() > 0 ) && ( line != "\r" ) && ( line != "\n" ) && ( line[0] != '#' ) ) {
-                std::istringstream iss(line);
-                if ( i < nVariables ) {
-                    iss >> amb_Value[i];
-                }
-                else if ( ( i >= nVariables ) && ( i < nVariables + nAer ) ) {
-                    iss >> aer_Value[i - nVariables][0];
-                    std::getline( file, line );
-                    std::istringstream iss(line);
-                    iss >> aer_Value[i - nVariables][1];
-                }
-                i++;
-            }
-        }
-        file.close();
-    }
-    else {
-        std::string const currFunc("Structure::Initialize");
-        std::cout << "ERROR: In " << currFunc << ": Can't read (" << fileName << ")" << std::endl;
-        exit(-1);
-    }
+    readInputBackgroundConditions(input, amb_Value, aer_Value, fileName);
 
     SpinUp( amb_Value, input, airDens, \
             /* Time for which ambient file is valid in hr */ (const RealDouble) 8.0 );
@@ -140,97 +111,12 @@ void Solution::Initialize( char const *fileName,      \
 
     /* Inputs are in ppb */
 
-    if ( input.backgNOx() > 0.0E+00 ) {
-        const RealDouble NONO2rat = amb_Value[ind_NO]/amb_Value[ind_NO2];
-        /* NOx = NO + NO2 = NO2 * ( r + 1 )
-         * NO2 = NOx / ( r + 1 );
-         * NO  = NOx - NO2; */
-        amb_Value[ind_NO2] = input.backgNOx() / ( NONO2rat + 1 );
-        amb_Value[ind_NO]  = input.backgNOx() - amb_Value[ind_NO2];
+    Vector_1D amb_Value_old = amb_Value;
 
-        /* Convert to mixing ratio */
-        amb_Value[ind_NO2] /= 1.0E+09;
-        amb_Value[ind_NO]  /= 1.0E+09;
-    }
+    setAmbientConcentrations(input, amb_Value);
 
-    if ( input.backgHNO3() > 0.0E+00 ) {
-        /* Convert from ppb to mixing ratio */
-        amb_Value[ind_HNO3] = input.backgHNO3() / 1.0E+09;
-    }
-
-    if ( input.backgO3() > 0.0E+00 ) {
-        /* Convert from ppb to mixing ratio */
-        amb_Value[ind_O3] = input.backgO3() / 1.0E+09;
-    }
-
-    if ( input.backgCO() > 0.0E+00 ) {
-        /* Convert from ppb to mixing ratio */
-        amb_Value[ind_CO] = input.backgCO() / 1.0E+09;
-    }
-
-    if ( input.backgCH4() > 0.0E+00 ) {
-        /* Convert from ppb to mixing ratio */
-        amb_Value[ind_CH4] = input.backgCH4() / 1.0E+09;
-    }
-
-    if ( input.backgSO2() > 0.0E+00 ) {
-        /* Convert from ppb to mixing ratio */
-        amb_Value[ind_SO2] = input.backgSO2() / 1.0E+09;
-    }
-
-
-    /* Initialize and allocate space for species */
-
-    UInt actualX = size_x;
-    UInt actualY = size_y;
-    if ( !Input_Opt.CHEMISTRY_CHEMISTRY ) {
-        actualX = 1;
-        actualY = 1;
-
-        reducedSize = 1;
-    }
-
-    Vector_2D tmpArray( size_y, Vector_1D( size_x, 0.0E+00 ) );
-    Vector_2D tmpArray_Reduced( actualY, Vector_1D( actualX, 0.0E+00 ) );
-
-    for ( UInt N = 0; N < NSPECALL; N++ ) {
-        if ( ( N == ind_H2O      ) || \
-             ( N == ind_H2Omet   ) || \
-             ( N == ind_H2Oplume ) || \
-             ( N == ind_H2OL     ) || \
-             ( N == ind_H2OS     ) ) {
-            SetShape( tmpArray, size_x, size_y, amb_Value[N] * airDens );
-            Species.push_back( tmpArray );
-        } else {
-            SetShape( tmpArray_Reduced, actualX, actualY, amb_Value[N] * airDens );
-            Species.push_back( tmpArray_Reduced );
-        }
-    }
-
-    if ( Input_Opt.MET_LOADMET ) {
-        /* Use meteorological input? */
-        //H2O = met.H2O_;
-        Species[ind_H2Omet] = met.H2O_;
-        /* Update H2O */
-        for ( UInt i = 0; i < size_x; i++ ) {
-            for ( UInt j = 0; j < size_y; j++ ) {
-                Species[ind_H2O][j][i] = Species[ind_H2Omet][j][i] \
-                                       + Species[ind_H2Oplume][j][i];
-            }
-        }
-    } else {
-        /* Else use user-defined H2O profile */
-        RealDouble H2Oval = (input.relHumidity_w()/((RealDouble) 100.0) * \
-                          physFunc::pSat_H2Ol( input.temperature_K() ) / ( physConst::kB * input.temperature_K() )) / 1.00E+06;
-        for ( UInt i = 0; i < size_x; i++ ) {
-            for ( UInt j = 0; j < size_y; j++ ) {
-                //H2O[j][i] = H2Oval;
-                Species[ind_H2Omet][j][i] = H2Oval;
-                /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
-                Species[ind_H2O][j][i] = Species[ind_H2Omet][j][i] + Species[ind_H2Oplume][j][i];
-            }
-        }
-    }
+      /* Initialize and allocate space for species */
+    initializeSpeciesH2O(input, Input_Opt, amb_Value, airDens, met);
 
     Vector_1D stratData{ Species[ind_SO4][0][0],   Species[ind_HNO3][0][0],  \
                          Species[ind_HCl][0][0],   Species[ind_HOCl][0][0],  \
@@ -259,37 +145,9 @@ void Solution::Initialize( char const *fileName,      \
                            input.latitude_deg(), stratData,                      \
                            boxArea, KHETI_SLA, SOLIDFRAC,                        \
                            AERFRAC, RAD, RHO, KG, NDENS, SAD, DBG );
+                    
 
-    /* Liquid/solid species */
-    SetToValue( Species[ind_SO4L], (RealDouble) AERFRAC[0]                          * stratData[0] );
-    SetToValue( Species[ind_SO4] , (RealDouble) ( 1.0 - AERFRAC[0] )                * stratData[0] );
-
-    AERFRAC[6] = 0.0E+00;
-    SOLIDFRAC[6] = 0.0E+00;
-    SetToValue( Species[ind_H2OL] , (RealDouble) AERFRAC[6]                          * stratData[6] );
-    SetToValue( Species[ind_H2OS] , (RealDouble) SOLIDFRAC[6]                        * stratData[6] );
-    /* Do not overwrite H2O!! */
-//    SetToValue( Species[ind_H2O]  , (RealDouble) ( 1.0 - AERFRAC[6] - SOLIDFRAC[6] ) * stratData[6] );
-
-    SetToValue( Species[ind_HNO3L], (RealDouble) AERFRAC[1]                          * stratData[1] );
-    SetToValue( Species[ind_HNO3S], (RealDouble) SOLIDFRAC[1]                        * stratData[1] );
-    SetToValue( Species[ind_HNO3] , (RealDouble) ( 1.0 - AERFRAC[1] - SOLIDFRAC[1] ) * stratData[1] );
-
-    SetToValue( Species[ind_HClL] , (RealDouble) AERFRAC[2]                          * stratData[2] );
-    SetToValue( Species[ind_HCl]  , (RealDouble) ( 1.0 - AERFRAC[2] )                * stratData[2] );
-
-    SetToValue( Species[ind_HOClL], (RealDouble) AERFRAC[3]                          * stratData[3] );
-    SetToValue( Species[ind_HOCl] , (RealDouble) ( 1.0 - AERFRAC[3] )                * stratData[3] );
-
-    SetToValue( Species[ind_HBrL] , (RealDouble) AERFRAC[4]                          * stratData[4] );
-    SetToValue( Species[ind_HBr]  , (RealDouble) ( 1.0 - AERFRAC[4] )                * stratData[4] );
-
-    SetToValue( Species[ind_HOBrL], (RealDouble) AERFRAC[5]                          * stratData[5] );
-    SetToValue( Species[ind_HOBr] , (RealDouble) ( 1.0 - AERFRAC[5] )                * stratData[5] );
-
-    SetToValue( Species[ind_NIT]  , (RealDouble) stratData[ 9] );
-    SetToValue( Species[ind_NAT]  , (RealDouble) stratData[10] );
-
+    setSpeciesValues(AERFRAC, SOLIDFRAC, stratData);
 
     /* Aerosols */
     /* Assume that soot particles are monodisperse */
@@ -405,7 +263,7 @@ void Solution::Initialize( char const *fileName,      \
 
     PA_Kernel = kernel2;
 
-    if ( DBG ) {
+    if ( true ) {
         std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
         std::cout << "         " << solidAerosol.Moment( 0, 0, 0 ) << " v " << PA_nDens << " [#/cm^3]\n";
         std::cout << " DEBUG : Comparing PDF's effective radius to actual effective radius:\n";
@@ -413,6 +271,165 @@ void Solution::Initialize( char const *fileName,      \
     }
 
 } /* End of Solution::Initialize */
+
+void Solution::readInputBackgroundConditions(const Input& input, Vector_1D& amb_Value, Vector_2D& aer_Value, const char* fileName){
+    std::ifstream file;
+    file.open( fileName );
+    if ( file.is_open() ) {
+        std::string line;
+        UInt i = 0;
+
+        while ( ( std::getline( file, line ) ) && ( i < nVariables + nAer ) ) {
+            if ( ( line.length() > 0 ) && ( line != "\r" ) && ( line != "\n" ) && ( line[0] != '#' ) ) {
+                std::istringstream iss(line);
+                if ( i < nVariables ) {
+                    iss >> amb_Value[i];
+                }
+                else if ( ( i >= nVariables ) && ( i < nVariables + nAer ) ) {
+                    iss >> aer_Value[i - nVariables][0];
+                    std::getline( file, line );
+                    std::istringstream iss(line);
+                    iss >> aer_Value[i - nVariables][1];
+                }
+                i++;
+            }
+        }
+        file.close();
+    }
+    else {
+        std::string const currFunc("Structure::Initialize");
+        std::cout << "ERROR: In " << currFunc << ": Can't read (" << fileName << ")" << std::endl;
+        exit(-1);
+    }
+}
+
+void Solution::setAmbientConcentrations(const Input& input, Vector_1D& amb_Value){
+    if ( input.backgNOx() > 0.0E+00 ) {
+        const RealDouble NONO2rat = amb_Value[ind_NO]/amb_Value[ind_NO2];
+        /* NOx = NO + NO2 = NO2 * ( r + 1 )
+         * NO2 = NOx / ( r + 1 );
+         * NO  = NOx - NO2; */
+        amb_Value[ind_NO2] = input.backgNOx() / ( NONO2rat + 1 );
+        amb_Value[ind_NO]  = input.backgNOx() - amb_Value[ind_NO2];
+
+        /* Convert to mixing ratio */
+        amb_Value[ind_NO2] /= 1.0E+09;
+        amb_Value[ind_NO]  /= 1.0E+09;
+    }
+
+    if ( input.backgHNO3() > 0.0E+00 ) {
+        /* Convert from ppb to mixing ratio */
+        amb_Value[ind_HNO3] = input.backgHNO3() / 1.0E+09;
+    }
+
+    if ( input.backgO3() > 0.0E+00 ) {
+        /* Convert from ppb to mixing ratio */
+        amb_Value[ind_O3] = input.backgO3() / 1.0E+09;
+    }
+
+    if ( input.backgCO() > 0.0E+00 ) {
+        /* Convert from ppb to mixing ratio */
+        amb_Value[ind_CO] = input.backgCO() / 1.0E+09;
+    }
+
+    if ( input.backgCH4() > 0.0E+00 ) {
+        /* Convert from ppb to mixing ratio */
+        amb_Value[ind_CH4] = input.backgCH4() / 1.0E+09;
+    }
+
+    if ( input.backgSO2() > 0.0E+00 ) {
+        /* Convert from ppb to mixing ratio */
+        amb_Value[ind_SO2] = input.backgSO2() / 1.0E+09;
+    }
+
+}
+
+void Solution::initializeSpeciesH2O(const Input& input, const OptInput& Input_Opt, Vector_1D& amb_Value, const double airDens, const Meteorology& met){
+    UInt actualX = size_x;
+    UInt actualY = size_y;
+    if ( !Input_Opt.CHEMISTRY_CHEMISTRY ) {
+        actualX = 1;
+        actualY = 1;
+
+        reducedSize = 1;
+    }
+
+    Vector_2D tmpArray( size_y, Vector_1D( size_x, 0.0E+00 ) );
+    Vector_2D tmpArray_Reduced( actualY, Vector_1D( actualX, 0.0E+00 ) );
+
+    for ( UInt N = 0; N < NSPECALL; N++ ) {
+        if ( ( N == ind_H2O      ) || \
+             ( N == ind_H2Omet   ) || \
+             ( N == ind_H2Oplume ) || \
+             ( N == ind_H2OL     ) || \
+             ( N == ind_H2OS     ) ) {
+            SetShape( tmpArray, size_x, size_y, amb_Value[N] * airDens );
+            Species.push_back( tmpArray );
+        } else {
+            SetShape( tmpArray_Reduced, actualX, actualY, amb_Value[N] * airDens );
+            Species.push_back( tmpArray_Reduced );
+        }
+    }
+
+    if ( Input_Opt.MET_LOADMET ) {
+        /* Use meteorological input? */
+        //H2O = met.H2O_;
+        Species[ind_H2Omet] = met.H2O_;
+        /* Update H2O */
+        for ( UInt i = 0; i < size_x; i++ ) {
+            for ( UInt j = 0; j < size_y; j++ ) {
+                Species[ind_H2O][j][i] = Species[ind_H2Omet][j][i] \
+                                       + Species[ind_H2Oplume][j][i];
+            }
+        }
+    } else {
+        /* Else use user-defined H2O profile */
+        RealDouble H2Oval = (input.relHumidity_w()/((RealDouble) 100.0) * \
+                          physFunc::pSat_H2Ol( input.temperature_K() ) / ( physConst::kB * input.temperature_K() )) / 1.00E+06;
+        for ( UInt i = 0; i < size_x; i++ ) {
+            for ( UInt j = 0; j < size_y; j++ ) {
+                //H2O[j][i] = H2Oval;
+                Species[ind_H2Omet][j][i] = H2Oval;
+                /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
+                Species[ind_H2O][j][i] = Species[ind_H2Omet][j][i] + Species[ind_H2Oplume][j][i];
+            }
+        }
+    }
+
+}
+
+void Solution::setSpeciesValues(Vector_1D& AERFRAC,  Vector_1D& SOLIDFRAC, const Vector_1D& stratData){
+    /* Liquid/solid species */
+    SetToValue( Species[ind_SO4L], (RealDouble) AERFRAC[0]                          * stratData[0] );
+    SetToValue( Species[ind_SO4] , (RealDouble) ( 1.0 - AERFRAC[0] )                * stratData[0] );
+
+    AERFRAC[6] = 0.0E+00;
+    SOLIDFRAC[6] = 0.0E+00;
+    SetToValue( Species[ind_H2OL] , (RealDouble) AERFRAC[6]                          * stratData[6] );
+    SetToValue( Species[ind_H2OS] , (RealDouble) SOLIDFRAC[6]                        * stratData[6] );
+    /* Do not overwrite H2O!! */
+    //SetToValue( Species[ind_H2O]  , (RealDouble) ( 1.0 - AERFRAC[6] - SOLIDFRAC[6] ) * stratData[6] );
+
+    SetToValue( Species[ind_HNO3L], (RealDouble) AERFRAC[1]                          * stratData[1] );
+    SetToValue( Species[ind_HNO3S], (RealDouble) SOLIDFRAC[1]                        * stratData[1] );
+    SetToValue( Species[ind_HNO3] , (RealDouble) ( 1.0 - AERFRAC[1] - SOLIDFRAC[1] ) * stratData[1] );
+
+    SetToValue( Species[ind_HClL] , (RealDouble) AERFRAC[2]                          * stratData[2] );
+    SetToValue( Species[ind_HCl]  , (RealDouble) ( 1.0 - AERFRAC[2] )                * stratData[2] );
+
+    SetToValue( Species[ind_HOClL], (RealDouble) AERFRAC[3]                          * stratData[3] );
+    SetToValue( Species[ind_HOCl] , (RealDouble) ( 1.0 - AERFRAC[3] )                * stratData[3] );
+
+    SetToValue( Species[ind_HBrL] , (RealDouble) AERFRAC[4]                          * stratData[4] );
+    SetToValue( Species[ind_HBr]  , (RealDouble) ( 1.0 - AERFRAC[4] )                * stratData[4] );
+
+    SetToValue( Species[ind_HOBrL], (RealDouble) AERFRAC[5]                          * stratData[5] );
+    SetToValue( Species[ind_HOBr] , (RealDouble) ( 1.0 - AERFRAC[5] )                * stratData[5] );
+
+    SetToValue( Species[ind_NIT]  , (RealDouble) stratData[ 9] );
+    SetToValue( Species[ind_NAT]  , (RealDouble) stratData[10] );
+}
+
 
 void Solution::getData( const UInt i, \
                         const UInt j, \
@@ -529,7 +546,6 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
     UInt innerRing;
     UInt iNx, jNy;
     RealDouble w;
-
     RealDouble E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, \
                E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
     RealDouble E_Soot;

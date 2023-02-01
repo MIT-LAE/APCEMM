@@ -52,14 +52,17 @@ namespace SANDS
                              const RealDouble fillVal_,    \
                              const UInt fillOpt_ )
     {
-    
+        //Have to do this badness to save the FFTs in the right directory since
+        //the code originally didn't use a filesystem library
+        std::string fftw_dir_string(FFTW_DIR);
+        fftw_dir_string += '/';
         FFT_1D = new FourierTransform_1D<RealDouble>( MULTITHREADED_FFT, \
                                                       USE_FFTW_WISDOM,   \
-                                                      FFTW_DIR,          \
+                                                      fftw_dir_string.c_str(),          \
                                                       n_x );
         FFT_2D = new FourierTransform_2D<RealDouble>( MULTITHREADED_FFT, \
                                                       USE_FFTW_WISDOM,   \
-                                                      FFTW_DIR,          \
+                                                      fftw_dir_string.c_str(),          \
                                                       n_x,               \
                                                       n_y );
 

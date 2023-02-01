@@ -35,11 +35,11 @@ class OptInput
         int         SIMULATION_MCRUNS;
         std::string SIMULATION_OUTPUT_FOLDER;
         bool        SIMULATION_OVERWRITE;
-        std::string SIMULATION_RUN_DIRECTORY;
         bool        SIMULATION_THREADED_FFT;
         bool        SIMULATION_USE_FFTW_WISDOM;
         std::string SIMULATION_DIRECTORY_W_WRITE_PERMISSION;
         std::string SIMULATION_INPUT_BACKG_COND;
+        std::string SIMULATION_INPUT_ENG_EI;
         bool        SIMULATION_SAVE_FORWARD;
         std::string SIMULATION_FORWARD_FILENAME;
         bool        SIMULATION_ADJOINT;
@@ -51,8 +51,6 @@ class OptInput
         /* ---- PARAMETER MENU ---------------------- */
         /* ========================================== */
 
-        bool        PARAMETER_FILEINPUT;
-        std::string PARAMETER_FILENAME;
         std::unordered_map<std::string, Vector_1D> PARAMETER_PARAM_MAP;    
             
         /* ========================================== */
@@ -104,6 +102,9 @@ class OptInput
         bool        MET_FIXLAPSERATE;
         RealDouble  MET_LAPSERATE;
         bool        MET_DIURNAL;
+        bool        MET_ENABLE_TEMP_PERTURB;
+        double        MET_TEMP_PERTURB_AMPLITUDE;
+        double        MET_TEMP_PERTURB_TIMESCALE;
         
         /* ========================================== */
         /* ---- DIAGNOSTIC MENU --------------------- */
@@ -130,8 +131,6 @@ class OptInput
 
         bool PL_PL;
         bool PL_O3;
-
-
 };
 
 

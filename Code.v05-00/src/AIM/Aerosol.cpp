@@ -1259,7 +1259,7 @@ namespace AIM
 
             #pragma omp for                                                               \
             private ( iNx, jNy, iBin                                            ) \
-            schedule( dynamic, 1                                                )
+            schedule( static, 1                                                )
             for ( jNy = 0; jNy < Ny_max; jNy++ ) {
                 for ( iNx = 0; iNx < Nx_max; iNx++ ) {
                     for ( iBin = 0; iBin < nBin; iBin++ ) {
@@ -1273,9 +1273,8 @@ namespace AIM
             #pragma omp for                                                               \
             private ( iNx, jNy, iBin, jBin, locP, locT              ) \
             private ( partVol, icePart_, iceVol_                                ) \
-            schedule( dynamic, 1                                                )
+            schedule( static, 1                                                )
             for ( jNy = 0; jNy < Ny_max; jNy++ ) {
-
                 /* Store local pressure.
                 * TODO: 
                 * That might be moved into the loop over iNx eventually to 

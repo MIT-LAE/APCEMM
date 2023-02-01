@@ -183,6 +183,9 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     /* Input options from the METEOROLOGY MENU are read in the Meteorology
      * subroutine */
 
+    const bool TEMP_PERTURB = Input_Opt.MET_ENABLE_TEMP_PERTURB;
+    const double TEMP_PERTURB_DT = Input_Opt.MET_TEMP_PERTURB_TIMESCALE;
+
     /* ======================================================================= */
     /* ---- Input options from the DIAGNOSTIC MENU --------------------------- */
     /* ======================================================================= */
@@ -202,13 +205,13 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 
     std::string TS_FILE1, TS_FILE2;
     const bool TS_SPEC                  = Input_Opt.TS_SPEC;
-    TS_FILE1                            = TS_FOLDER + Input_Opt.TS_FILENAME;
+    TS_FILE1                            = TS_FOLDER + "/" + Input_Opt.TS_FILENAME;
     const char* TS_SPEC_FILENAME        = TS_FILE1.c_str();
     const std::vector<int> TS_SPEC_LIST = Input_Opt.TS_SPECIES;
     const RealDouble TS_FREQ            = Input_Opt.TS_FREQ;
 
     const bool TS_AERO                  = Input_Opt.TS_AERO;
-    TS_FILE2                            = TS_FOLDER + Input_Opt.TS_AERO_FILENAME;
+    TS_FILE2                            = TS_FOLDER + "/" + Input_Opt.TS_AERO_FILENAME;
     const char* TS_AERO_FILENAME        = TS_FILE2.c_str();
     const std::vector<int> TS_AERO_LIST = Input_Opt.TS_AEROSOL;
     const RealDouble TS_AERO_FREQ       = Input_Opt.TS_AERO_FREQ;
@@ -440,9 +443,13 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     bool ITS_TIME_FOR_LIQ_COAGULATION = 0;
     bool ITS_TIME_FOR_ICE_COAGULATION = 0;
     bool ITS_TIME_FOR_ICE_GROWTH      = 0;
+    bool ITS_TIME_FOR_TEMPPERTURB = 0;
+
     RealDouble lastTimeLiqCoag        = curr_Time_s;
     RealDouble lastTimeIceCoag        = curr_Time_s;
     RealDouble lastTimeIceGrowth      = curr_Time_s;
+    RealDouble lastTimeTempPerturb = curr_Time_s;
+
     RealDouble dtLiqCoag              = 0.0E+00;
     RealDouble dtIceCoag              = 0.0E+00;
     RealDouble dtIceGrowth            = 0.0E+00;
@@ -589,7 +596,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     /* Define aircraft */
     char const *aircraftName("B747-800");
     RealDouble aircraftMass = input.aircraftMass();
-    Aircraft aircraft( aircraftName, aircraftMass, \
+    std::string engineInputFile = Input_Opt.SIMULATION_INPUT_ENG_EI;
+    Aircraft aircraft( aircraftName, engineInputFile, aircraftMass, \
                        temperature_K, pressure_Pa, relHumidity_w );
 
     /* Overwrite engine conditions with input parameters */
@@ -1305,6 +1313,11 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             }
         }
 
+        ITS_TIME_FOR_TEMPPERTURB = ( ( ( curr_Time_s + dt - lastTimeTempPerturb ) >= TEMP_PERTURB_DT * 60.0 ) || LAST_STEP );
+        if (TEMP_PERTURB && ITS_TIME_FOR_TEMPPERTURB){
+            Met.applyTempPerturb(Input_Opt, m);
+            lastTimeTempPerturb = curr_Time_s + dt;
+        }
         if ( printDEBUG ) printf("DEBUG: T%06d -> %12.2e particles\n", 80, Data.solidAerosol.TotalNumber_sum( cellAreas ));
         /* ======================================================================= */
         /* ----------------------------------------------------------------------- */

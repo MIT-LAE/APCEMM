@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <yaml-cpp/yaml.h> 
+#include <filesystem>
 #include "Core/Input_Mod.hpp"
 #include "Util/ForwardDecl.hpp"
 #include "Util/MC_Rand.hpp"   
@@ -11,6 +12,7 @@ using std::string;
 using std::vector;
 
 namespace YamlInputReader{
+    static std::filesystem::path INPUT_FILE_PATH;
     void readYamlInputFile(OptInput& input, string filename);
     void readSimMenu(OptInput& input, const YAML::Node& inputNode);
     void readParamMenu(OptInput& input, const YAML::Node& paramNode);
@@ -92,5 +94,6 @@ namespace YamlInputReader{
     }
 
     vector<int> parseVectorIntString(const string paramString, const string paramLocation = "");
+    std::string parseFileSystemPath(std::string str);
 }
 #endif

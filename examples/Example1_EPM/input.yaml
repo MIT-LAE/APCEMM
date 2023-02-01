@@ -8,12 +8,12 @@ SIMULATION MENU:
   OUTPUT SUBMENU:
     Output folder (string): APCEMM_out/
     Overwrite if folder exists (T/F): T
-  Run directory (string): ./
   Use threaded FFT (T/F): F
   FFTW WISDOM SUBMENU:
     Use FFTW WISDOM (T/F): T
     Dir w/ write permission (string): ./
   Input background condition (string): ../../input_data/init.txt
+  Input engine emissions (string): ../../input_data/ENG_EI.txt
   SAVE FORWARD RESULTS SUBMENU:
     Save forward results (T/F): F
     netCDF filename format (string): APCEMM_Case_*
@@ -27,8 +27,6 @@ SIMULATION MENU:
 # Format of parameter items:
 # Param name [unit] (Variable type)
 PARAMETER MENU:
-  Use input file (T/F): F
-  Input file name (string): /path/to/input/
   # Parameter sweep format : Format is either: x1 x2 x3 or start:increment:end
   #                        : Example: 200 220 240 and 200:20:240 are identical
 
@@ -120,7 +118,11 @@ METEOROLOGY MENU:
     Impose lapse rate (T/F): F
     Lapse rate [K/m] (T/F): -6.0E-03
   Add diurnal variations (T/F): T
-
+  TEMPERATURE PERTURBATION SUBMENU:
+    Enable Temp. Pert. (T/F): F
+    Temp. Perturb. Amplitude (double): 1.0
+    Temp. Perturb. Timescale (min): 10
+    
 DIAGNOSTIC MENU:
   netCDF filename format (string): trac_avg.apcemm.hhmm
   SPECIES TIMESERIES SUBMENU:

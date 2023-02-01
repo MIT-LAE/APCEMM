@@ -69,6 +69,10 @@ class Solution
                          const Meteorology &met,    \
                          const OptInput &Input_Opt, \
                          const bool DBG );
+        void readInputBackgroundConditions(const Input& input, Vector_1D& amb_Value, Vector_2D& aer_Value, const char* filename);
+        void setAmbientConcentrations(const Input& input, Vector_1D& amb_Value);
+        void initializeSpeciesH2O(const Input& input, const OptInput& input_Opt, Vector_1D& amb_Value, const double airDens, const Meteorology& met);
+        void setSpeciesValues( Vector_1D& AERFRAC,  Vector_1D& SOLIDFRAC, const Vector_1D& stratData);
 
         void getData( const UInt i = 0, \
                       const UInt j = 0, \

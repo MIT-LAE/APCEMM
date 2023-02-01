@@ -19,8 +19,7 @@
  * 2. Each case is run one at a time on multiple CPUs (efficient for contrail
  *    simulations) */
 
-extern int PARALLEL_CASES;
-
+#define PARALLEL_CASES 0
 /* Grid parameters */
 
 /* Choose grid for simulation */

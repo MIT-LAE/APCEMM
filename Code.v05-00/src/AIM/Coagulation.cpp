@@ -322,7 +322,7 @@ namespace AIM
 
     } /* End of Coagulation::buildBeta */
 
-    void Coagulation::buildF( Vector_1D &bin_VCenters )
+    void Coagulation::buildF(const Vector_1D &bin_VCenters )
     {
 
         RealDouble vij;
@@ -372,7 +372,7 @@ namespace AIM
 
     } /* End of Coagulation::buildF */
 
-    void Coagulation::buildF( Vector_3D &bin_VCenters, const UInt jNy, const UInt iNx )
+    void Coagulation::buildF( const Vector_3D &bin_VCenters, const UInt jNy, const UInt iNx )
     {
 
         RealDouble vij;
@@ -449,24 +449,6 @@ namespace AIM
         return f;
 
     } /* End of Coagulation::getF */
-
-    void Coagulation::printKernel_1D( const char* fileName ) const
-    {
-
-        printKernel2File( Kernel_1D, fileName ); 
-
-        return;
-
-    } /* End of Coagulation::printKernel_1D */
-
-    void Coagulation::printKernel_2D( const char* fileName) const
-    {
-
-        printKernel2File( Kernel, fileName ); 
-
-        return;
-
-    } /* End of Coagulation::printKernel_2D */
 
 }
 

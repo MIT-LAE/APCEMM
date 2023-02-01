@@ -19,6 +19,7 @@
 #include <vector>
 #include <cstring>
 #include <boost/math/special_functions/gamma.hpp>
+#include "APCEMM.h"
 #ifdef OMP
     #include "omp.h"
 #endif /* OMP */

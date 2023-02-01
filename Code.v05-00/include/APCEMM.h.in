@@ -1,2 +1,3 @@
 #cmakedefine DEBUG
 #cmakedefine RINGS
+#cmakedefine OMP

@@ -294,7 +294,7 @@ void Input::checkInputValidity(){
         exit(-1);
     }
     
-    if ( !( numEngines_ == 2 || numEngines_ == 4 ) ) {
+    if ( !( numEngines_ == 2 || numEngines_ == 3 ||  numEngines_ == 4 ) ) {
         std::cout << " In Input::Input:";
         std::cout << " Number of engines takes an unrealisable value: numEngines = ";
         std::cout << numEngines_ << " []" << std::endl;

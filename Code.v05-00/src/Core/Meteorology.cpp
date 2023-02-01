@@ -12,6 +12,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "Core/Meteorology.hpp"
+#include "Util/MC_Rand.hpp"
 
 Meteorology::Meteorology( ) :
     TEMPERATURE( 220 ),
@@ -85,8 +86,8 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
 
     if ( USERINPUT.MET_DIURNAL ) {
         /* Based on values around 220 hPa */
-        DIURNAL_AMPL  = 0.1 ; /* [K] */
-        DIURNAL_PHASE = 14.0; /* [hrs] */
+        DIURNAL_AMPL  = 0.2 ; /* [K] */
+        DIURNAL_PHASE = 12.0; /* [hrs] */
     } else {
         DIURNAL_AMPL  = 0.0 ; /* [K] */
         DIURNAL_PHASE = 12.0; /* [hrs] */
@@ -94,7 +95,6 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
     std::cout << "loadmet=" << USERINPUT.MET_LOADMET << std::endl;
 
     diurnalPert = DIURNAL_AMPL * cos( 2.0E+00 * physConst::PI * ( solarTime_h - DIURNAL_PHASE ) / 24.0E+00 );
-
     if ( USERINPUT.MET_LOADMET ) {
         loadMet(USERINPUT, solarTime_h, m, temperature_K, pressure_Pa, relHumidity_i, shear_pm, 0);
 
@@ -111,7 +111,9 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
             shear_[jNy] = SHEAR;
 
         /* Set temperature input type if user-defined */
-        //Not sure what these types are trying to do -Michael
+        // Not sure what these types are trying to do -Michael
+        // The code for TYPE = 1 and TYPE = 2 seem incomplete. 
+        // Therefore, this should be kept at TYPE = 3 since it's the only thing that makes sense
         TYPE = 3; 
 
 
@@ -134,8 +136,9 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
                 for ( iNx = 0; iNx < X.size(); iNx++ ) {
                     if ( ( X[iNx] < -LEFT ) || ( X[iNx] > RIGHT ) ) {
                         /* Add a 1K depression in that region */
+                        // Doesn't this add 1K instead of a "depression"? -MX
                         temp_[jNy][iNx] = temp_[jNy][X.size()/2] + DELTAT;
-                        H2O_[jNy][iNx]  = H2O_[jNy][X.size()/2];
+                        H2O_[jNy][iNx]  = H2O_[jNy][X.size()/2]; //Not sure where H2O_ at that x index is initialized here? -MX
                     } else {
                         temp_[jNy][iNx] = temp_[jNy][X.size()/2];
                         H2O_[jNy][iNx]  = H2O_[jNy][X.size()/2];
@@ -176,7 +179,7 @@ Meteorology::Meteorology( const OptInput &USERINPUT,      \
                                    * ( 0.0 + 0.5 * ( std::tanh( ( X[iNx] + RIGHT) / 1.0E+03 ) + 1.0 ));
     //                               * ( 1.0 - 0.5 * ( std::tanh( ( Y[jNy] - TOP  ) / 1.0E+02 ) + 1.0 )) \
     //                               * ( 0.0 + 0.5 * ( std::tanh( ( Y[jNy] + BOT  ) / 1.0E+02 ) + 1.0 ))
-                    H2O_[jNy][iNx]  = H2O_[jNy][0];
+                    H2O_[jNy][iNx]  = H2O_[jNy][0]; //So, this just sets the entire RH field to zero? -MX
                 }
             }
 
@@ -317,8 +320,8 @@ void Meteorology::loadMet(const OptInput &USERINPUT,      \
     */
 
     /* Met is loaded in */
-    /* TYPE = 0; */
-    TYPE = 3; /* TYPE = 0 means met for every time step */
+    /* TYPE must be kept at 3 to not run incomplete code*/
+    TYPE = 3; 
 
     /* Open the netcdf file for read access */
     NcFile dataFile( USERINPUT.MET_FILENAME.c_str(), NcFile::read  );
@@ -519,7 +522,6 @@ void Meteorology::Update( const OptInput &USERINPUT, const RealDouble solarTime_
 
     Vector_1D X = m.x();
     Vector_1D Y = m.y();
-
     diurnalPert = DIURNAL_AMPL * cos( 2.0E+00 * physConst::PI * ( solarTime_h - DIURNAL_PHASE ) / 24.0E+00 );
 
     
@@ -659,42 +661,12 @@ void Meteorology::Update( const OptInput &USERINPUT, const RealDouble solarTime_
 	    }
 
 	} else if ( TYPE == 3 ) {
-
-    //        /* RHi layer centered on y = 0 */
-
-    //        RH_star = RHI;
-    //        RH_far  = 50;
-
-    //#pragma omp parallel for            \
-    //        if      ( !PARALLEL_CASES ) \
-    //        default ( shared          ) \
-    //        private ( iNx, jNy        ) \
-    //        schedule( dynamic, 1      )
-    //        for ( jNy = 0; jNy < Y.size(); jNy++ ) {
-    //            temp_[jNy][0] = TEMPERATURE + Y[jNy] * LAPSERATE + diurnalPert;
-    //            /* Unit check: Y [m] * LapseRate [K/m] */
-
-    //            if ( ( Y[jNy] < TOP ) && ( Y[jNy] > -BOT ) ) {
-    //                RH = RH_star;
-    //                H2O_[jNy][0] = RH / 1.0E+02 * physFunc::pSat_H2Os( temp_[jNy][0] ) / ( physConst::kB * temp_[jNy][0] * 1.0E+06 );
-    //            } else {
-    //                if ( Y[jNy] < 0 ) {
-    //                    RH = RH_star - ( Y[jNy] + BOT ) / BOT * ( RH_far - RH_star );
-    //                } else {
-    //                    RH = RH_star + ( Y[jNy] - TOP ) / TOP * ( RH_far - RH_star );
-    //                }
-    //                if ( ( Y[jNy] < -2.0*BOT ) || ( Y[jNy] > 2.0*TOP ) )
-    //                    RH = RH_far;
-    //                H2O_[jNy][0] = RH / 1.0E+02 * physFunc::pSat_H2Os( temp_[jNy][0] ) / ( physConst::kB * temp_[jNy][0] * 1.0E+06 );
-    //            }
-
-    //            for ( iNx = 0; iNx < X.size(); iNx++ ) {
-    //                temp_[jNy][iNx] = temp_[jNy][0];
-    //                H2O_[jNy][iNx]  = H2O_[jNy][0];
-    //            }
-    //        }
-
-
+        for ( jNy = 0; jNy < Y.size(); jNy++ ) {
+            /* Unit check: Y [m] * LapseRate [K/m] */
+            for ( iNx = 0; iNx < X.size(); iNx++ ) {
+                temp_[jNy][iNx] = TEMPERATURE + Y[jNy] * LAPSERATE + diurnalPert;
+            }
+        }
 	} else {
 
 	    std::cout << " In Meteorology::Meteorology: Undefined value for user-input type: ";
@@ -728,5 +700,21 @@ RealDouble invkB = 1.00E-06 / physConst::kB;
 
 } /* End of Meteorology::UpdateMet */
 
+void Meteorology::applyTempPerturb(const OptInput& USERINPUT, const Mesh& m){
+    double epsilon1, epsilon2, turbTempPert;
+    #pragma omp parallel for\
+    if(!PARALLEL_CASES) \
+    default(shared) \
+    private(epsilon1, epsilon2, turbTempPert) \
+    schedule(dynamic, 1)
+    for (UInt j = 0; j < m.y().size(); j++){
+        for(UInt i = 0; i < m.x().size(); i++){
+            epsilon1 = fRand(-1.0, 1.0);
+            epsilon2 = fRand(-1.0, 1.0);
+            turbTempPert = epsilon1 * epsilon2 * USERINPUT.MET_TEMP_PERTURB_AMPLITUDE;
+            temp_[j][i] += turbTempPert;
+        }
+    }
+}
 /* End of Meteorology.cpp */
 

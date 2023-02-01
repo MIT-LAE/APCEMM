@@ -19,11 +19,9 @@
 #include <fstream>
 #include <cstdio>
 #include <ctime>
+#include <filesystem>
 #include <unistd.h>
 #include <limits.h>
-#ifdef OMP
-    #include "omp.h"
-#endif /* OMP */
 #include <sys/stat.h>
 #include <YamlInputReader/YamlInputReader.hpp>
 #include "Core/Interface.hpp"
@@ -31,7 +29,6 @@
 #include "Core/Input.hpp"
 
 static int DIR_FAIL = -9;
-int PARALLEL_CASES;
 
 void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
@@ -70,30 +67,27 @@ int main( int argc, char* argv[])
      *                  +
      *              Plume Model
      */
-    
-
+    if(argc < 2){
+        std::cout << "No Input File Detected!" << std::endl;
+        std::cout << "Exiting ... " << std::endl;
+        return 1;
+    }
+    else if(argc > 2){
+        std::cout << "Unexpected Input: " << argv[2] << std::endl;
+        std::cout << "Exiting ... " << std::endl;
+        return 1;
+    }
 
     #pragma omp master
     {
         std::string FILESEP = "/";
-        std::string FILENAME = "input.yaml";
-        std::string fullPath = "";
-        if ( const char* simDir = std::getenv("APCEMM_runDir") )
-            fullPath += simDir;
-        else {
-            std::cout << " \n Simulation Directory is not defined!" << std::endl;
-            const char* currDir = std::getenv("PWD");
-            fullPath += currDir;
-            std::cout << " Reading from PWD: " << currDir << std::endl;
-            std::cout << " For future runs, make sure that the variable";
-            std::cout << " 'APCEMM_runDir' is exported" << std::endl;
-        }
-
-        fullPath += FILESEP;
-        fullPath += FILENAME;
+        std::string FILENAME = argv[1];
         
-        /* Read in input file */
-        YamlInputReader::readYamlInputFile( Input_Opt, fullPath );
+        std::string fullPath = std::getenv("PWD") + FILESEP + FILENAME;
+        std::filesystem::path INPUT_FILE_PATH(fullPath);
+        INPUT_FILE_PATH = std::filesystem::canonical(INPUT_FILE_PATH);
+
+        YamlInputReader::readYamlInputFile( Input_Opt, INPUT_FILE_PATH.generic_string() );
 
         /* Collect parameters and create cases */
         parameters = YamlInputReader::generateCases( Input_Opt );
@@ -148,7 +142,7 @@ int main( int argc, char* argv[])
         #endif /* OMP */
     }
 
-    PARALLEL_CASES = Input_Opt.SIMULATION_PARAMETER_SWEEP;
+    //PARALLEL_CASES = Input_Opt.SIMULATION_PARAMETER_SWEEP;
 
     /* ====================================================================== */
     /* ---- CASE LOOP STARTS HERE ------------------------------------------- */

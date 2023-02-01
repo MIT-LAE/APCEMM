@@ -1,8 +1,10 @@
 #include "YamlInputReader/YamlInputReader.hpp"
+
 using std::cout;
 using std::endl;
 namespace YamlInputReader{
     void readYamlInputFile(OptInput& input, string filename){
+        INPUT_FILE_PATH = std::filesystem::path(filename);
         YAML::Node data = YAML::LoadFile(filename);
         readSimMenu(input, data["SIMULATION MENU"]);
         readParamMenu(input, data["PARAMETER MENU"]);
@@ -19,17 +21,15 @@ namespace YamlInputReader{
         input.SIMULATION_MCRUNS =  parseIntString(paramSweepSubmenu["Num Monte Carlo runs (int)"].as<string>(), "Num Monte Carlo runs (int)");
 
         YAML::Node outputSubmenu = simNode["OUTPUT SUBMENU"];
-        input.SIMULATION_OUTPUT_FOLDER = outputSubmenu["Output folder (string)"].as<string>();
+        input.SIMULATION_OUTPUT_FOLDER = parseFileSystemPath(outputSubmenu["Output folder (string)"].as<string>());
         input.SIMULATION_OVERWRITE = parseBoolString(outputSubmenu["Overwrite if folder exists (T/F)"].as<string>(), "Overwrite if folder exists (T/F)");
-        
-        input.SIMULATION_RUN_DIRECTORY = simNode["Run directory (string)"].as<string>();
         input.SIMULATION_THREADED_FFT = parseBoolString(simNode["Use threaded FFT (T/F)"].as<string>(), "Use threaded FFT (T/F)");
 
         YAML::Node fftwWisdomSubmenu = simNode["FFTW WISDOM SUBMENU"];
         input.SIMULATION_USE_FFTW_WISDOM = parseBoolString(fftwWisdomSubmenu["Use FFTW WISDOM (T/F)"].as<string>(), "Use FFTW WISDOM (T/F)");
-        input.SIMULATION_DIRECTORY_W_WRITE_PERMISSION = fftwWisdomSubmenu["Dir w/ write permission (string)"].as<string>();
-        
-        input.SIMULATION_INPUT_BACKG_COND = simNode["Input background condition (string)"].as<string>();
+        input.SIMULATION_DIRECTORY_W_WRITE_PERMISSION = parseFileSystemPath(fftwWisdomSubmenu["Dir w/ write permission (string)"].as<string>());
+        input.SIMULATION_INPUT_BACKG_COND = parseFileSystemPath(simNode["Input background condition (string)"].as<string>());
+        input.SIMULATION_INPUT_ENG_EI = parseFileSystemPath(simNode["Input engine emissions (string)"].as<string>());
 
         YAML::Node saveForwardSubmenu = simNode["SAVE FORWARD RESULTS SUBMENU"];
         input.SIMULATION_SAVE_FORWARD = parseBoolString(saveForwardSubmenu["Save forward results (T/F)"].as<string>(), "Save forward results (T/F)");
@@ -48,8 +48,6 @@ namespace YamlInputReader{
         }
     }
     void readParamMenu(OptInput& input, const YAML::Node& paramNode){
-        input.PARAMETER_FILEINPUT = parseBoolString(paramNode["Use input file (T/F)"].as<string>(), "Use input file (T/F)");
-        input.PARAMETER_FILENAME = paramNode["Input file name (string)"].as<string>();
 
         input.PARAMETER_PARAM_MAP["PLUMEPROCESS"] = parseParamSweepInput(paramNode["Plume Process [hr] (double)"].as<string>(), "Plume Process [hr] (double)");
 
@@ -116,7 +114,7 @@ namespace YamlInputReader{
         input.CHEMISTRY_CHEMISTRY = parseBoolString(chemNode["Turn on Chemistry (T/F)"].as<string>(), "Turn on Chemistry (T/F)");
         input.CHEMISTRY_HETCHEM = parseBoolString(chemNode["Perform hetero. chem. (T/F)"].as<string>(), "Perform hetero. chem. (T/F)");
         input.CHEMISTRY_TIMESTEP = parseDoubleString(chemNode["Chemistry Timestep [min] (double)"].as<string>(), "Chemistry Timestep [min] (double)");
-        input.CHEMISTRY_JRATE_FOLDER = chemNode["Photolysis rates folder (string)"].as<string>();
+        input.CHEMISTRY_JRATE_FOLDER = parseFileSystemPath(chemNode["Photolysis rates folder (string)"].as<string>());
     }
     void readAeroMenu(OptInput& input, const YAML::Node& aeroNode){
         input.AEROSOL_GRAVSETTLING = parseBoolString(aeroNode["Turn on grav. settling (T/F)"].as<string>(), "Turn on grav. settling (T/F)");
@@ -128,7 +126,7 @@ namespace YamlInputReader{
     void readMetMenu(OptInput& input, const YAML::Node& metNode){
         YAML::Node metInputSubmenu = metNode["METEOROLOGICAL INPUT SUBMENU"];
         input.MET_LOADMET = parseBoolString(metInputSubmenu["Use met. input (T/F)"].as<string>(), "Use met. input (T/F)");
-        input.MET_FILENAME = metInputSubmenu["Met input file path (string)"].as<string>();
+        input.MET_FILENAME = parseFileSystemPath(metInputSubmenu["Met input file path (string)"].as<string>());
         input.MET_DT = parseDoubleString(metInputSubmenu["Time series data timestep [hr] (double)"].as<string>(), "Time series data timestep [hr] (double)");
         input.MET_LOADTEMP = parseBoolString(metInputSubmenu["Init temp. from met. (T/F)"].as<string>(), "Init temp. from met. (T/F)");
         input.MET_TEMPTIMESERIES = parseBoolString(metInputSubmenu["Temp. time series input (T/F)"].as<string>(), "Temp. time series input (T/F)");
@@ -146,7 +144,11 @@ namespace YamlInputReader{
         input.MET_LAPSERATE = parseDoubleString(lapseRateSubmenu["Lapse rate [K/m] (T/F)"].as<string>(), "Lapse rate [K/m] (T/F)");
 
         input.MET_DIURNAL = parseBoolString(metNode["Add diurnal variations (T/F)"].as<string>(), "Add diurnal variations (T/F)");
-
+        
+        YAML::Node tempPerturbMenu = metNode["TEMPERATURE PERTURBATION SUBMENU"];
+        input.MET_ENABLE_TEMP_PERTURB = parseBoolString( tempPerturbMenu["Enable Temp. Pert. (T/F)"].as<string>(), "Enable Temp. Pert. (T/F)" );
+        input.MET_TEMP_PERTURB_AMPLITUDE = parseDoubleString( tempPerturbMenu["Temp. Perturb. Amplitude (double)"].as<string>(), "Temp. Perturb. Amplitude (double)" );
+        input.MET_TEMP_PERTURB_TIMESCALE = parseDoubleString( tempPerturbMenu["Temp. Perturb. Timescale (min)"].as<string>(), "Temp. Perturb. Timescale (min)" );
         //At least one of load met, impose depth, and fix lapse rate must be on.
         if(input.MET_LOADMET + input.MET_FIXDEPTH + input.MET_FIXLAPSERATE == 0){
             throw std::invalid_argument("At least one of \"Use met. input\", \"Impose moist layer depth\", or \"Impose lapse rate\" must be on!");
@@ -285,5 +287,10 @@ namespace YamlInputReader{
             vecint.push_back((int)(d));
         }
         return vecint;
+    }
+
+    std::string parseFileSystemPath(std::string str){
+        std::filesystem::path p(str);
+        return p.is_absolute() ? str : std::filesystem::weakly_canonical(INPUT_FILE_PATH.parent_path() / str).generic_string();
     }
 }

@@ -130,10 +130,6 @@ namespace EPM
        
         const Vector_1D KernelSO4Soot = Kernel_SO4_Soot.getKernel_1D();
 
-        /* For debug purposes */
-        if ( DEBUG_COAGKERNEL )
-            Kernel.printKernel_1D( "Kernel_Debug_File.out" );
-
         /* Create SO4 aerosol number distribution.
          * We allocate the PDF with a very small number of existing particles */
 
@@ -476,8 +472,6 @@ namespace EPM
         Vector_2D obs_Var;
         Vector_1D obs_Time;
 
-        /* EPM::streamingObserver observer( obs_Var, obs_Time, EPM_ind, "/home/fritzt/CAPCEMM/data/Micro.out", 2 ); */
-        //EPM::streamingObserver observer( obs_Var, obs_Time, EPM_ind, "/net/d13/data/aa681/statistical_global_contrails/Simulations/C-APCEMM/rundirs/SampleRunDir/Micro.out", 2 );
         EPM::streamingObserver observer( obs_Var, obs_Time, EPM_ind, micro_data_out, 2 );
 
         /* Creating ode's right hand side */

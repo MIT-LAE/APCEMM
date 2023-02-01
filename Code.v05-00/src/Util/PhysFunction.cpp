@@ -469,7 +469,7 @@ namespace physFunc
             /* r_M = r_1 and r_m = r_2 */
             s = Stokes_p( r_2, rho_2, r_1, rho_1, T, P );
             if ( s > 1.214 ) {
-                E_V = 1.0 / ( ( 1.0 + 0.75 * log( 2.0 * s ) / ( s - 1.214 ) ) * ( 1.0 + 0.75 * log( 2.0 * s ) / ( s - 1.214 ) ) );
+                E_V = pow(1 + 0.75*log(2*s)/(s - 1.214), -2);
             } else {
                 E_V = 0.0;
             }
@@ -479,7 +479,7 @@ namespace physFunc
             /* r_M = r_2 and r_m = r_1 */
             s = Stokes_p( r_1, rho_1, r_2, rho_2, T, P );
             if ( s > 1.214 ) {
-                E_V = 1.0 / ( ( 1.0 + 0.75 * log( 2.0 * s ) / ( s - 1.214 ) ) * ( 1.0 + 0.75 * log( 2.0 * s ) / ( s - 1.214 ) ) );
+                E_V = pow(1 + 0.75*log(2*s)/(s - 1.214), -2);
             } else {
                 E_V = 0.0;
             }

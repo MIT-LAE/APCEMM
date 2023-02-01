@@ -367,14 +367,7 @@ void Mesh::Ring2Mesh( Cluster &c )
         } 
 
         if ( nCell != 0 ) {
-            if ( !c.halfRing() )
-                nCellMap[iRing] = nCell;
-            else {
-                if ( iRing < nRing )
-                    nCellMap[iRing] = nCell;
-                else
-                    nCellMap[iRing] = nCell;
-            }
+            nCellMap[iRing] = nCell;
             /* Map should be such that \iint w dA = A_ring
              * <=> \sum w_ij A_ij = A_ring 
              * For a uniform mesh, this comes down to:

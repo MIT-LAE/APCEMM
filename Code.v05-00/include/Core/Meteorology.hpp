@@ -15,13 +15,13 @@
 #define METEOROLOGY_H_INCLUDED
 
 #include <iostream>
+#include "APCEMM.h"
 #ifdef OMP
     #include "omp.h"
 #endif /* OMP */
 
 /* Include Parameters.hpp for multithreading option */
 #include "Core/Parameters.hpp"
-
 #include "Util/ForwardDecl.hpp"
 #include "Core/Mesh.hpp"
 #include "Core/Input_Mod.hpp"
@@ -64,7 +64,8 @@ class Meteorology
                      const RealDouble pressure_Pa,   \
                      const RealDouble shear_pm,   \
                      const bool DBG = 0 );
-
+        
+        void applyTempPerturb(const OptInput& USERINPUT, const Mesh& m);
         RealDouble alt( UInt j ) const { return alt_[j]; }
 	RealDouble press( UInt j ) const { return press_[j]; }
         RealDouble shear( UInt j ) const { return shear_[j]; }
@@ -106,7 +107,7 @@ class Meteorology
         RealDouble DIURNAL_AMPL;
         RealDouble DIURNAL_PHASE;
         RealDouble diurnalPert;
-
+        
         /* Non-uniformity length scales and temperature perturbations */
         RealDouble DELTAT;
         RealDouble TOP, BOT, LEFT, RIGHT;

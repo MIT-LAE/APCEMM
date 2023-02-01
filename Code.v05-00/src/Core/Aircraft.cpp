@@ -20,7 +20,7 @@ Aircraft::Aircraft( )
 
 } /* End of Aircraft::Aircraft */
 
-Aircraft::Aircraft( const char *aircraftName, RealDouble aircraftMass, \
+Aircraft::Aircraft( const char *aircraftName, std::string engineFilePath, RealDouble aircraftMass, \
                     RealDouble temperature_K, RealDouble pressure_Pa,  \
                     RealDouble relHumidity_w )
 {
@@ -36,12 +36,12 @@ Aircraft::Aircraft( const char *aircraftName, RealDouble aircraftMass, \
 
         /* Engine characteristics */
         const char *engineName = "GEnx-2B67B";
-        engine_ = Engine( engineName, temperature_K, pressure_Pa, \
+        engine_ = Engine( engineName, engineFilePath, temperature_K, pressure_Pa, \
                           relHumidity_w, machNumber_ );
         engNumber_ = 4;
 
         /* Dimensions */
-        wingspan_ = 69.8; /* [m] */
+        wingspan_ = 68.4; /* [m] */
 
         /* Weight */
         if ( aircraftMass > 0.0E+00 ) {
@@ -118,8 +118,8 @@ RealDouble Aircraft::VortexLosses( const RealDouble EI_Soot,    \
     const bool ACDEBUG = 0;
 
     /* Compute volume and mass of soot particles emitted */
-    const RealDouble volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 );
-    const RealDouble massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03;
+    const RealDouble volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 ); //EI_SootRad in m -> volume in m3
+    const RealDouble massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
 
     /* Declare and initialize remaining fraction of ice crystals */
     RealDouble iceNumFrac = 0.0E+00;
@@ -149,7 +149,7 @@ RealDouble Aircraft::VortexLosses( const RealDouble EI_Soot,    \
 
     /* Number of particles emitted */
     const RealDouble EIice     = EI_Soot / massParticle; /* [#/kg_fuel] */
-
+    
     /* z_Atm = Depth of the supersaturated layer */
     z_Atm  = wetDepth;
 
@@ -157,7 +157,7 @@ RealDouble Aircraft::VortexLosses( const RealDouble EI_Soot,    \
     if ( vortex_.N_BV() < 1.0E-05 )
         z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * 1.3E-02        ), 0.5 );
     else
-        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 );
+        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 ); //Equation 4
 
     /* z_Emit = ... */
     z_Emit = 90;
