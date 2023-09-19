@@ -14,23 +14,19 @@ This repository contains multiple branches. Each branch pertains to a specific f
 * The __master__ branch always contains the most up-to-date and stable version. New code should never be added to that branch directly. Instead, a new branch, forked from master, should be created.
 * The __dev*__ and __feature/*__ branches contain in-development code for future versions.
 
+For VSCode users, a Docker Dev Container is defined in `.devcontainer`. See [the tutorial](https://code.visualstudio.com/docs/devcontainers/tutorial) to develop inside a containerized environment.
+
 ## Dependencies 
 
-APCEMM requires the following libraries to build:
+- netcdf-c (requires HDF5 and zlib)
+- netcdf-cxx4
+- Catch2
+- FFTW3
+- OpenMP
+- Boost libraries
+- yaml-cpp
 
-netcdf-c (requires HDF5 and zlib)
-
-netcdf-cxx4
-
-Catch2
-
-FFTW3
-
-OpenMP
-
-Boost libraries
-
-yaml-cpp
+See the [Dockerfile](.devcontainer/Dockerfile.apcemm) in the .devcontainer directory for specifics.
 
 ## APCEMM: Installation instructions
 
