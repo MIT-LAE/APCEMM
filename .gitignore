@@ -1,3 +1,15 @@
+**/*.a
+**/*.pl
+**/_deps/
+**/generated-includes/
+**/Makefile
+**/APCEMM_out/
+**/*.cmake
+**/*.tcl
+
+APCEMM
+unittest
+
 # Compiled source #
 ###################
 *.com
@@ -46,7 +58,6 @@ Code*/build
 Code*/trash
 Code*/lib*
 Code*/debug*
-doc*
 rundirs/*
 !rundirs/SampleRunDir
 !rundirs/CreateRunFolder.sh
