@@ -6,15 +6,78 @@ namespace YamlInputReader{
     void readYamlInputFile(OptInput& input, string filename){
         INPUT_FILE_PATH = std::filesystem::path(filename);
         YAML::Node data = YAML::LoadFile(filename);
-        readSimMenu(input, data["SIMULATION MENU"]);
-        readParamMenu(input, data["PARAMETER MENU"]);
-        readTransportMenu(input, data["TRANSPORT MENU"]);
-        readChemMenu(input, data["CHEMISTRY MENU"]);
-        readAeroMenu(input, data["AEROSOL MENU"]);
-        readMetMenu(input, data["METEOROLOGY MENU"]);
-        readDiagMenu(input, data["DIAGNOSTIC MENU"]);
+
+        try {
+            readSimMenu(input, data["SIMULATION MENU"]);
+        }
+
+        catch (...) {
+            std::cout << "Something went wrong in reading the SIMULATION MENU! Please double-check your input file with the reference in SampleRunDir!";
+            exit(1);
+        }
+
+        try {
+            readParamMenu(input, data["PARAMETER MENU"]);
+        }
+        catch (...) {
+            std::cout << "Something went wrong in reading the PARAMETER MENU! Please double-check your input file with the reference in SampleRunDir!";
+            exit(1);
+        }
+
+        try {
+            readTransportMenu(input, data["TRANSPORT MENU"]);
+        }
+        catch (...) {
+            std::cout << "Something went wrong in reading the TRANSPORT MENU! Please double-check your input file with the reference in SampleRunDir!";
+            exit(1);
+        }
+        
+        try {
+            readChemMenu(input, data["CHEMISTRY MENU"]);
+        }
+        catch (...) {
+            std::cout << "Something went wrong in reading the CHEMISTRY MENU! Please double-check your input file with the reference in SampleRunDir!";
+            exit(1);
+        }
+
+        try {
+            readAeroMenu(input, data["AEROSOL MENU"]);  
+        }
+        catch (...) {
+            std::cout << "Something went wrong in reading the AEROSOL MENU! Please double-check your input file with the reference in SampleRunDir!";
+            exit(1);
+        }
+
+        try {
+            readMetMenu(input, data["METEOROLOGY MENU"]);
+        }
+        catch (...) {
+            std::cout << "Something went wrong in reading the METEOROLOGY MENU! Please double-check your input file with the reference in SampleRunDir!";
+            exit(1);
+        }
+
+        try {
+            readDiagMenu(input, data["DIAGNOSTIC MENU"]);
+        }
+        catch (...) {
+            std::cout << "Something went wrong in reading the DIAGNOSTIC MENU! Please double-check your input file with the reference in SampleRunDir!";
+            exit(1);
+        }
+
+        try {
+            readAdvancedMenu(input, data["ADVANCED OPTIONS MENU"]);
+        }
+        catch (...) {
+            std::cout << "Something went wrong in reading the ADVANCED OPTIONS MENU! Please double-check your input file with the reference in SampleRunDir!";
+            exit(1);
+        }
     }
     void readSimMenu(OptInput& input, const YAML::Node& simNode){
+        input.SIMULATION_OMP_NUM_THREADS = parseIntString(simNode["OpenMP Num Threads (positive int)"].as<string>(), "OpenMP Num Threads (positive int)");
+        if(input.SIMULATION_OMP_NUM_THREADS < 1){
+            throw std::invalid_argument("OpenMP Num Threads (under SIMULATION MENU) cannot be less than 1!");
+        }
+
         YAML::Node paramSweepSubmenu = simNode["PARAM SWEEP SUBMENU"];
         input.SIMULATION_PARAMETER_SWEEP = parseBoolString(paramSweepSubmenu["Parameter sweep (T/F)"].as<string>(), "Parameter sweep (T/F");
         input.SIMULATION_MONTECARLO = parseBoolString(paramSweepSubmenu["Run Monte Carlo (T/F)"].as<string>(), "Run Monte Carlo (T/F)");
@@ -58,6 +121,7 @@ namespace YamlInputReader{
         input.PARAMETER_PARAM_MAP["DH"] = parseParamSweepInput(metParamSubmenu["Horiz. diff. coeff. [m^2/s] (double)"].as<string>(), "Horiz. diff. coeff. [m^2/s] (double)");
         input.PARAMETER_PARAM_MAP["DV"] = parseParamSweepInput(metParamSubmenu["Verti. diff. [m^2/s] (double)"].as<string>(), "Verti. diff. [m^2/s] (double)");
         input.PARAMETER_PARAM_MAP["SHEAR"] = parseParamSweepInput(metParamSubmenu["Wind shear [1/s] (double)"].as<string>(), "Wind shear [1/s] (double)");
+        input.PARAMETER_PARAM_MAP["NBV"] = parseParamSweepInput(metParamSubmenu["Brunt-Vaisala Frequency [s^-1] (double)"].as<string>(), "Brunt-Vaisala Frequency [s^-1] (double)");
 
         YAML::Node locTimeSubmenu = paramNode["LOCATION AND TIME SUBMENU"];
         input.PARAMETER_PARAM_MAP["LONGITUDE"] = parseParamSweepInput(locTimeSubmenu["LON [deg] (double)"].as<string>(), "LAT [deg] (double)");
@@ -103,7 +167,6 @@ namespace YamlInputReader{
         input.TRANSPORT_TRANSPORT = parseBoolString(transportNode["Turn on Transport (T/F)"].as<string>(), "Turn on Transport (T/F)");
         input.TRANSPORT_FILL = parseBoolString(transportNode["Fill Negative Values (T/F)"].as<string>(), "Fill Negative Values (T/F)");
         input.TRANSPORT_TIMESTEP = parseDoubleString(transportNode["Transport Timestep [min] (double)"].as<string>(), "Transport Timestep [min] (double)");
-        input.TRANSPORT_PART_FLUX = parseBoolString(transportNode["Particle flux correction (T/F)"].as<string>(), "Particle flux correction (T/F)");
 
         YAML::Node updraftSubmenu = transportNode["PLUME UPDRAFT SUBMENU"];
         input.TRANSPORT_UPDRAFT = parseBoolString(updraftSubmenu["Turn on plume updraft (T/F)"].as<string>(), "Turn on plume updraft (T/F)");
@@ -122,6 +185,7 @@ namespace YamlInputReader{
         input.AEROSOL_COAGULATION_LIQUID = parseBoolString(aeroNode["Turn on liquid coagulation (T/F)"].as<string>(), "Turn on liquid coagulation (T/F)");
         input.AEROSOL_COAGULATION_TIMESTEP = parseDoubleString(aeroNode["Coag. timestep [min] (double)"].as<string>(), "Coag. timestep [min] (double)");
         input.AEROSOL_ICE_GROWTH = parseBoolString(aeroNode["Turn on ice growth (T/F)"].as<string>(), "Turn on ice growth (T/F)");
+        input.AEROSOL_ICE_GROWTH_TIMESTEP = parseDoubleString(aeroNode["Ice growth timestep [min] (double)"].as<string>(), "Ice growth timestep [min] (double)");
     }
     void readMetMenu(OptInput& input, const YAML::Node& metNode){
         YAML::Node metInputSubmenu = metNode["METEOROLOGICAL INPUT SUBMENU"];
@@ -130,10 +194,22 @@ namespace YamlInputReader{
         input.MET_DT = parseDoubleString(metInputSubmenu["Time series data timestep [hr] (double)"].as<string>(), "Time series data timestep [hr] (double)");
         input.MET_LOADTEMP = parseBoolString(metInputSubmenu["Init temp. from met. (T/F)"].as<string>(), "Init temp. from met. (T/F)");
         input.MET_TEMPTIMESERIES = parseBoolString(metInputSubmenu["Temp. time series input (T/F)"].as<string>(), "Temp. time series input (T/F)");
+        input.MET_INTERPTEMPDATA = parseBoolString(metInputSubmenu["Interpolate temp. met. data (T/F)"].as<string>(), "Interpolate temp. met. data (T/F)");
         input.MET_LOADRH = parseBoolString(metInputSubmenu["Init RH from met. (T/F)"].as<string>(), "Init RH from met. (T/F)");
         input.MET_RHTIMESERIES = parseBoolString(metInputSubmenu["RH time series input (T/F)"].as<string>(), "RH time series input (T/F)");
+        input.MET_INTERPRHDATA = parseBoolString(metInputSubmenu["Interpolate RH met. data (T/F)"].as<string>(), "Interpolate RH met. data (T/F)");
         input.MET_LOADSHEAR = parseBoolString(metInputSubmenu["Init wind shear from met. (T/F)"].as<string>(), "Init wind shear from met. (T/F)");
         input.MET_SHEARTIMESERIES = parseBoolString(metInputSubmenu["Wind shear time series input (T/F)"].as<string>(), "Wind shear time series input (T/F)");
+        input.MET_INTERPSHEARDATA = parseBoolString(metInputSubmenu["Interpolate shear met. data (T/F)"].as<string>(), "Interpolate shear met. data (T/F)");
+        input.MET_LOADVERTVELOC = parseBoolString(metInputSubmenu["Init vert. veloc. from met. data (T/F)"].as<string>(), "Init vert. veloc. from met. data (T/F)");
+        input.MET_VERTVELOCTIMESERIES = parseBoolString(metInputSubmenu["Vert. veloc. time series input (T/F)"].as<string>(), "Vert. veloc. time series input (T/F)");
+        input.MET_INTERPVERTVELOC = parseBoolString(metInputSubmenu["Interpolate vert. veloc. met. data (T/F)"].as<string>(), "Interpolate vert. veloc. met. data (T/F)");
+        YAML::Node humidScalingOpts = metInputSubmenu["HUMIDITY SCALING OPTIONS"];
+        input.MET_HUMIDSCAL_MODIFICATION_SCHEME = humidScalingOpts["Humidity modification scheme (none / constant / scaling)"].as<string>();
+        input.MET_HUMIDSCAL_CONST_RHI = parseDoubleString(humidScalingOpts["Constant RHi [%] (double)"].as<string>(), "Constant RHi [%] (double)");
+        input.MET_HUMIDSCAL_SCALING_A = parseDoubleString(humidScalingOpts["Humidity scaling constant a (double)"].as<string>(), "Humidity scaling constant a (double)");
+        input.MET_HUMIDSCAL_SCALING_B = parseDoubleString(humidScalingOpts["Humidity scaling constant b (double)"].as<string>(), "Humidity scaling constant b (double)");
+
 
         YAML::Node moistLayerSubmenu = metNode["IMPOSE MOIST LAYER DEPTH SUBMENU"];
         input.MET_FIXDEPTH = parseBoolString(moistLayerSubmenu["Impose moist layer depth (T/F)"].as<string>(), "Impose moist layer depth (T/F)");
@@ -149,6 +225,18 @@ namespace YamlInputReader{
         input.MET_ENABLE_TEMP_PERTURB = parseBoolString( tempPerturbMenu["Enable Temp. Pert. (T/F)"].as<string>(), "Enable Temp. Pert. (T/F)" );
         input.MET_TEMP_PERTURB_AMPLITUDE = parseDoubleString( tempPerturbMenu["Temp. Perturb. Amplitude (double)"].as<string>(), "Temp. Perturb. Amplitude (double)" );
         input.MET_TEMP_PERTURB_TIMESCALE = parseDoubleString( tempPerturbMenu["Temp. Perturb. Timescale (min)"].as<string>(), "Temp. Perturb. Timescale (min)" );
+        
+        //Humidity mod scheme must be none, constant, or scaling
+        string modSchemeCaps = input.MET_HUMIDSCAL_MODIFICATION_SCHEME;
+        for (auto & c: modSchemeCaps) c = toupper(c);
+
+        if(modSchemeCaps != "NONE" && modSchemeCaps != "CONSTANT" && modSchemeCaps != "SCALING") {
+            throw std::invalid_argument("Humidity modification scheme must be one of none, constant, or scaling.");
+        }
+        else {
+            for (auto & c: input.MET_HUMIDSCAL_MODIFICATION_SCHEME) c = tolower(c);
+        }
+
         //At least one of load met, impose depth, and fix lapse rate must be on.
         if(input.MET_LOADMET + input.MET_FIXDEPTH + input.MET_FIXLAPSERATE == 0){
             throw std::invalid_argument("At least one of \"Use met. input\", \"Impose moist layer depth\", or \"Impose lapse rate\" must be on!");
@@ -182,37 +270,61 @@ namespace YamlInputReader{
         input.PL_PL = parseBoolString(plSubmenu["Turn on P/L diag (T/F)"].as<string>(), "Turn on P/L diag (T/F)");
         input.PL_O3 = parseBoolString(plSubmenu["Save O3 P/L (T/F)"].as<string>(), "Save O3 P/L (T/F)");
     }
-    void performOtherInputValidnessChecks(OptInput& input){
 
+    void readAdvancedMenu(OptInput& input, const YAML::Node& advancedNode) {
+        YAML::Node gridSubmenu = advancedNode["GRID SUBMENU"];
+        input.ADV_GRID_NX = parseIntString(gridSubmenu["NX (positive int)"].as<string>(), "NX (positive int)");
+        input.ADV_GRID_NY = parseIntString(gridSubmenu["NY (positive int)"].as<string>(), "NY (positive int)");
+        input.ADV_GRID_XLIM_RIGHT = parseDoubleString(gridSubmenu["XLIM_RIGHT (positive double)"].as<string>(), "XLIM_RIGHT (positive double)");
+        input.ADV_GRID_XLIM_LEFT = parseDoubleString(gridSubmenu["XLIM_LEFT (positive double)"].as<string>(), "XLIM_LEFT (positive double)");
+        input.ADV_GRID_YLIM_UP = parseDoubleString(gridSubmenu["YLIM_UP (positive double)"].as<string>(), "YLIM_UP (positive double)");
+        input.ADV_GRID_YLIM_DOWN = parseDoubleString(gridSubmenu["YLIM_DOWN (positive double)"].as<string>(), "YLIM_DOWN (positive double)");
+
+        if(input.ADV_GRID_NX < 0 ||
+           input.ADV_GRID_NY < 0 ||
+           input.ADV_GRID_XLIM_LEFT < 0 || 
+           input.ADV_GRID_XLIM_RIGHT < 0 ||
+           input.ADV_GRID_YLIM_UP < 0 ||
+           input.ADV_GRID_YLIM_DOWN < 0) {
+            
+            throw std::invalid_argument("No values in GRID SUBMENU can be less than zero!");
+        }
     }
+
     vector<std::unordered_map<string, double>> generateCasesHelper(vector<std::unordered_map<string, double>>& allCases, const vector<std::pair<string, Vector_1D>>& params, const int row){
         if(row ==  params.size()){
             return allCases;
         }
+
+        //For first row, just add maps with one entry for each case, these will be duplicated and filled up.
         string paramName = params[row].first;
         Vector_1D paramCases = params[row].second;
         if(allCases.empty()){
-            for(int i = 0; i < paramCases.size(); i++){
-                allCases.push_back(std::unordered_map<string, double>({{paramName, paramCases[i]}}));
+            for(const auto& c: paramCases){
+                allCases.push_back(std::unordered_map<string, double>({{paramName, c}}));
             }   
         }
         else{
+            //Generate new cases from existing ones as we go down the parameter list
             vector<std::unordered_map<string,double>> newCases;
-            for(int i = 0; i < allCases.size(); i++){
-                for(int j = 0; j < paramCases.size(); j++){
-                    std::unordered_map<string,double> tempMap = allCases[i];
-                    tempMap[paramName] = paramCases[j];
+            for(const auto& i: allCases){
+                for(const auto& j: paramCases){
+                    std::unordered_map<string,double> tempMap = i;
+                    tempMap[paramName] = j;
                     newCases.push_back(tempMap);
                 }
             }
-            allCases = newCases;
+            allCases = std::move(newCases);
         }
-        return generateCasesHelper(allCases, params, row+1);
+        //Repeat pattern of adding to the list of cases as we go down the param list until end and all cases have been generated
+        return generateCasesHelper(allCases, params, row + 1);
     }
 
     vector<std::unordered_map<string, double>> generateCases(const OptInput& input){
+
+        //Convert parameter map to vector, each row of the vector represents one parameter
         vector<std::pair<string, Vector_1D>> params;
-        for (std::pair<string, Vector_1D> p: input.PARAMETER_PARAM_MAP){
+        for (const auto& p: input.PARAMETER_PARAM_MAP){
             params.push_back(p);
         }
         vector<std::unordered_map<string, double>> allCases;
@@ -282,7 +394,7 @@ namespace YamlInputReader{
     vector<int> parseVectorIntString(const string paramString, const string paramLocation){
         Vector_1D vec1d = parseParamSweepInput(paramString, paramLocation);
         vector<int> vecint;
-        for (RealDouble d: vec1d){
+        for (double d: vec1d){
             if(std::fmod(d,1.0) > 1e-40) throw (std::invalid_argument("Decimals not allowed in int inputs at " + paramLocation + "!"));
             vecint.push_back((int)(d));
         }

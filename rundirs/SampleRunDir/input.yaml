@@ -2,6 +2,7 @@ SIMULATION MENU:
   # Only one of parameter sweep or MC simulation can be on.
   # Parameter sweep lets you specify an arbitrary number of custom values for each parameter; Monte Carlo simulation is self-explanatory.
   # At the moment, you cannot mix and match MC sim and param sweep on each individual parameter.
+  OpenMP Num Threads (positive int): 8
   PARAM SWEEP SUBMENU:
     Parameter sweep (T/F): T
   #-OR---------------
@@ -50,6 +51,7 @@ PARAMETER MENU:
     Horiz. diff. coeff. [m^2/s] (double): 15.0
     Verti. diff. [m^2/s] (double): 0.15
     Wind shear [1/s] (double): 0.002
+    Brunt-Vaisala Frequency [s^-1] (double): 0.013
   LOCATION AND TIME SUBMENU:
     LON [deg] (double): -15
     LAT [deg] (double): 60
@@ -83,7 +85,6 @@ TRANSPORT MENU:
   Turn on Transport (T/F): T
   Fill Negative Values (T/F): T
   Transport Timestep [min] (double): 10
-  Particle flux correction (T/F): T
   PLUME UPDRAFT SUBMENU:
     Turn on plume updraft (T/F): F
     Updraft timescale [s] (double): 3600
@@ -103,6 +104,7 @@ AEROSOL MENU:
   Turn on liquid coagulation (T/F): F
   Coag. timestep [min] (double): 60
   Turn on ice growth (T/F): T
+  Ice growth timestep [min] (double): 10
 
 # At least one of "Use met. input", "Impose moist layer depth", or "Impose lapse rate" must be true
 # Imposing moist layer depth will automatically calculate the lapse rate and override the imposed lapse rate
@@ -118,10 +120,26 @@ METEOROLOGY MENU:
     Time series data timestep [hr] (double): 1.0
     Init temp. from met. (T/F): T
     Temp. time series input (T/F): T
+    Interpolate temp. met. data (T/F): T
     Init RH from met. (T/F): T
     RH time series input (T/F): T
+    Interpolate RH met. data (T/F): T
     Init wind shear from met. (T/F): T
     Wind shear time series input (T/F): T
+    Interpolate shear met. data (T/F): T
+    Init vert. veloc. from met. data (T/F): F
+    Vert. veloc. time series input (T/F): F
+    Interpolate vert. veloc. met. data (T/F): F
+
+    # For reference on humidity scaling option, see 
+    # Teoh et al, "Aviation contrail climate effects in the North Atlantic from 2016 to 2021" (2022)
+    HUMIDITY SCALING OPTIONS:
+      Humidity modification scheme (none / constant / scaling): none
+      Constant RHi [%] (double): 110.0
+      Humidity scaling constant a (double): 0.9779
+      Humidity scaling constant b (double): 1.635
+
+
   #- OR -------------------+
   IMPOSE MOIST LAYER DEPTH SUBMENU:
     Impose moist layer depth (T/F): T
@@ -165,6 +183,18 @@ DIAGNOSTIC MENU:
   PRODUCTION & LOSS SUBMENU:
     Turn on P/L diag (T/F): F
     Save O3 P/L (T/F): F
+
+#Sometimes you have to change YLIM_DOWN here if the supersaturated layer is very thick
+#because YLIM_DOWN must be larger than the layer thickness.
+ADVANCED OPTIONS MENU:
+  #Domain is defined as: X [-XLIM_LEFT, XLIM_RIGHT], Y [-YLIM_DOWN, YLIM_UP]
+  GRID SUBMENU:
+    NX (positive int): 2048
+    NY (positive int): 192
+    XLIM_RIGHT (positive double): 1.0e+5 
+    XLIM_LEFT (positive double): 1.0e+5
+    YLIM_UP (positive double): 6.5e+2
+    YLIM_DOWN (positive double): 1.5e+3
 
 
 

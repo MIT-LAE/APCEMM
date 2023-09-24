@@ -17,8 +17,8 @@
 namespace met
 {
 
-    void ISA( const RealDouble &z, RealDouble &pressure, \
-              RealDouble &temperature )
+    void ISA( const double &z, double &pressure, \
+              double &temperature )
     {
         
         /* DESCRIPTION: Implements the mathematical representation of the
@@ -26,10 +26,10 @@ namespace met
          * pressure for the input geopotential altitude. */
 
         /* INPUTS:
-         * RealDouble z : Geopotential altitude in m */
+         * double z : Geopotential altitude in m */
 
-        RealDouble expon = 0.0E+00;
-        RealDouble theta = 0.0E+00;
+        double expon = 0.0E+00;
+        double theta = 0.0E+00;
 
         if ( z > ISA_HTS ) {
             temperature = ISA_T0 - ISA_LAPSERATE * ISA_HTS;
@@ -82,7 +82,7 @@ namespace met
 
     } /* End of ISA */
 
-    void ISA( const RealDouble &z, RealDouble &pressure )
+    void ISA( const double &z, double &pressure )
     {
         
         /* DESCRIPTION: Implements the mathematical representation of the
@@ -90,11 +90,11 @@ namespace met
          * pressure for the input geopotential altitude. */
 
         /* INPUTS:
-         * RealDouble z : Geopotential altitude in m */
+         * double z : Geopotential altitude in m */
 
-        RealDouble expon = 0.0E+00;
-        RealDouble theta = 0.0E+00;
-        RealDouble temperature = 0.0E+00;
+        double expon = 0.0E+00;
+        double theta = 0.0E+00;
+        double temperature = 0.0E+00;
 
         if ( z > ISA_HTS ) {
             temperature = ISA_T0 - ISA_LAPSERATE * ISA_HTS;
@@ -106,7 +106,7 @@ namespace met
         }
 
         theta = temperature / ISA_T0;
-
+        
         pressure = ISA_P0 \
                    * pow( theta, physConst::g / ( ISA_LAPSERATE * physConst::R_Air ) ) \
                    * expon;
@@ -147,18 +147,18 @@ namespace met
 
     } /* End of ISA */
     
-    void ISA_pAlt( RealDouble &z, const RealDouble &pressure )
+    void ISA_pAlt( double &z, const double &pressure )
     {
 
         /* DESCRIPTION: Find altitude corresponding to the prescribed 
          * pressure using dichotomy search algorithm */
 
         /* INPUTS:
-         * RealDouble p : Pressure in Pa */
+         * double p : Pressure in Pa */
 
         const UInt nLUT = 500;
-        const RealDouble zMAX = 50.0E+03;
-        const RealDouble DZ = zMAX / RealDouble( nLUT );
+        const double zMAX = 50.0E+03;
+        const double DZ = zMAX / double( nLUT );
         Vector_1D zLUT( nLUT, 0.0E+00 );
         Vector_1D pLUT( nLUT, 0.0E+00 );
 
@@ -194,8 +194,8 @@ namespace met
          * Vector_1D p : Pressure in Pa */
 
         const UInt nLUT = 500;
-        const RealDouble zMAX = 50.0E+03;
-        const RealDouble DZ = zMAX / RealDouble( nLUT );
+        const double zMAX = 50.0E+03;
+        const double DZ = zMAX / double( nLUT );
         Vector_1D zLUT( nLUT, 0.0E+00 );
         Vector_1D pLUT( nLUT, 0.0E+00 );
 
@@ -223,8 +223,8 @@ namespace met
 
     } /* End of ISA_pAlt */
 
-    RealDouble ComputeLapseRate( const RealDouble TEMP, const RealDouble RHi, \
-                                 const RealDouble DEPTH )
+    double ComputeLapseRate( const double TEMP, const double RHi, \
+                                 const double DEPTH )
     {
 
         /* DESCRIPTION: Computes the temperature lapse rate from the 
@@ -233,24 +233,24 @@ namespace met
          * concentration */
 
         /* INPUTS:
-         * RealDouble TEMP  : Temperature at flight level in [K]
-         * RealDouble RHi   : RH w.r.t. ice at flight level in [%]
-         * RealDouble DEPTH : Depth of the moist layer in [m] */
+         * double TEMP  : Temperature at flight level in [K]
+         * double RHi   : RH w.r.t. ice at flight level in [%]
+         * double DEPTH : Depth of the moist layer in [m] */
 
         /* Solve pSat_H2Os(T)/T = x_star using a Newton-Raphson iteration 
          * scheme */
         UInt counter    = 0;
-        RealDouble T    = TEMP;
-        RealDouble Tpre = 0.0E+00;
-        RealDouble pSat = 0.0E+00;
-        RealDouble pSat_= 0.0E+00;
+        double T    = TEMP;
+        double Tpre = 0.0E+00;
+        double pSat = 0.0E+00;
+        double pSat_= 0.0E+00;
 
         /* H2O concentration, assumed constant, computed from flight level
          * conditions in molec/cm^3 */
-        const RealDouble H2O = RHi / RealDouble(100.0) * \
+        const double H2O = RHi / double(100.0) * \
             physFunc::pSat_H2Os( TEMP ) / physConst::kB / TEMP * 1.00E-06;
 
-        const RealDouble x_star = H2O * physConst::kB * 1.00E+06;
+        const double x_star = H2O * physConst::kB * 1.00E+06;
 
         while ( counter < 100 ) {
 
@@ -270,65 +270,26 @@ namespace met
 
     } /* End of ComputeLapseRate */
 
-    UInt nearestNeighbor( float xq[], const float &x , size_t xq_size) {
+    int nearestNeighbor( const Vector_1D& xq, double x ) {
 
         /* DESCRIPTION: Finds the closest of x in xq, returning the index */
 
         /* INPUTS:
-         * (1-D Vector) xq: query values
-         * float x:  desired value */
+         * (1-D Vector) xq: query values, must be sorted
+         * double x:  desired value */
 
-        /*This function passes in a float array which means the size of the array is unknown. Therefore, we actually 
-        have no idea when to stop if the query value is past the end of the array.
-        */
-        UInt i_Z = 0;
-
-        /* Identify increasing direction */
-        if ( xq[0]-xq[1]<0 ) {
-            while ( xq[i_Z] <= x ) {
-
-                if(i_Z == xq_size-1) return i_Z;
-                i_Z += 1;
+        double diff = std::numeric_limits<double>::max();
+        for(int i = 0; i < xq.size(); i++) {
+            double newDiff = std::abs(xq[i] - x);
+            if(newDiff >= diff) {
+                return i - 1;
             }
-            /* Check if out of bounds*/
-            if(x < xq[0]){
-                return 0;
-            }
-            /* Check if previous altitude closer */
-            else if ( xq[i_Z]-x >= x-xq[i_Z-1] ) {
-                i_Z -= 1;
-            }
+            diff = newDiff;
         }
-        else {
-            while ( xq[i_Z] >= x ) {
-                if(i_Z == xq_size-1) return i_Z;
-                i_Z += 1;
-            }
-            /* Check if out of bounds */
-            if(x>xq[0]){
-                return 0;
-            }
-            else if ( x-xq[i_Z] >= xq[i_Z-1]-x ) {
-                i_Z -= 1;
-            }
-        }
-        return i_Z;
-
+        return xq.size() - 1;
     } /* End of nearestNeighbor */
 
-    UInt nearestNeighbor( Vector_1D xq, const float &x ) {
-        //Just a temporary solution to get rid of this redundant high maint code. Ideally want to template it later or something - Michael
-        float* floatArray = new float[xq.size()];
-        for (int i = 0 ; i < xq.size(); i++)
-        {
-            floatArray[i] = (float) xq[i];
-        }
-        UInt i = nearestNeighbor(floatArray, x, xq.size());
-        delete[] floatArray;
-        return i;
-    } /* End of nearestNeighbor */ 
-
-    float linearInterp( float xq[], float yq[], const float &x , size_t xq_size) {
+    double linearInterp( const Vector_1D& xq, const Vector_1D& yq, double x ) {
 
         /* DESCRIPTION: Linearly interpolated around the desired x value */
 
@@ -338,12 +299,11 @@ namespace met
          * float x: desired value to interpolate around*/
 
         /* Initialize variables */
-        UInt i_X;
-        UInt i_X2;
-        float y;
+        int i_X, i_X2;
+        auto xq_size = xq.size();
 
         /* Find closest point */
-        i_X = nearestNeighbor( xq, x , xq_size);
+        i_X = nearestNeighbor( xq, x );
         i_X2 = i_X;
 
         /* Disallow extrapolation for now*/
@@ -375,26 +335,73 @@ namespace met
         }
 
         /* Linear interpolation */
-        y = yq[i_X] + ( x-xq[i_X] ) * ( yq[i_X2]-yq[i_X] ) / ( xq[i_X2]-xq[i_X] );
-        return y;
-
+        return yq[i_X] + ( x-xq[i_X] ) * ( yq[i_X2]-yq[i_X] ) / ( xq[i_X2]-xq[i_X] );
     }
 
-    RealDouble satdepth_calc( float RHw[], float T[], float alt[], UInt iFlight, UInt var_length ) {
+    double linearInterp(double x1, double y1, double x2, double y2, double xq, bool support_extrapolation){
+        //Check for out of range inputs
+        if(!support_extrapolation){
+            if( (x1 < x2) && (xq < x1 || xq > x2)){
+                throw std::range_error("In met::linearInterp: Query point is out of range! Extrapolation support set to false.");
+            }
+            else if( (x1 > x2) && (xq > x1 || xq < x2)){
+                throw std::range_error("In met::linearInterp: Query point is out of range! Extrapolation support set to false.");
+            }
+        }
+
+        return y1 + (xq - x1) / (x2 - x1) * (y2 - y1);
+    }
+    double linInterpMetData(const Vector_1D& altitude_init, const Vector_1D& metVar_init, double altitude_query){
+        // Alt input is increasing
+        int i_Z = nearestNeighbor( altitude_init, altitude_query );
+        int idx_x1;
+
+        //Edge cases
+        const double epsilon = 1e-3;
+        if((i_Z == 0 || i_Z == altitude_init.size() - 1) && std::abs(altitude_init[i_Z] - altitude_query) < epsilon) {
+            return metVar_init[i_Z];
+        }
+
+        if(altitude_init[0] < altitude_init[1]){
+            idx_x1 = altitude_query > altitude_init[i_Z] ? i_Z : i_Z - 1;
+        }
+        // Alt input is decreasing
+        else {
+            idx_x1 = altitude_query <= altitude_init[i_Z] ? i_Z : i_Z - 1;
+        }
+        
+
+        int idx_x2 = idx_x1 + 1;
+        if(idx_x1 < 0) { 
+            std::cout << "min alt: " << altitude_init[0] << ", query alt: " << altitude_query << std::endl;
+            throw std::range_error("Input flight altitude out of range of met. data!"); 
+        }
+        if(idx_x2 >= altitude_init.size()) { 
+            std::cout << "max alt: " << altitude_init[altitude_init.size() - 1] << ", query alt: " << altitude_query << std::endl;
+            throw std::range_error("Input flight altitude out of range of met. data!"); 
+        }
+        /* Loop round horizontal coordinates to assign temperature */
+        double metVar_local = met::linearInterp(altitude_init[idx_x1], metVar_init[idx_x1], \
+                                                altitude_init[idx_x2], metVar_init[idx_x2], \
+                                                altitude_query);
+        return metVar_local;
+    }
+    
+    double satdepth_calc( const Vector_1D& RHw, const Vector_1D& T, const Vector_1D& alt, int iFlight, double YLIM_DOWN ) {
 
         /* DESCRIPTION: Finds the saturation depth RHw and T profiles */
 
         /* INPUTS:
-         * float RHw[]: Relative humidity wrt water [%] profile
-         * float T[]: Temperature [K] profile
-         * float alt[]: Altitude [m] associated with profile
-         * UInt iFlight: index at flight altitude
-         * UInt var_length: length of RHw and T profiles */
+         * RHw: Relative humidity wrt water [%] profile
+         * T: Temperature [K] profile
+         * alt: Altitude [m] associated with profile
+         * iFlight: index at flight altitude
+         * YLIM_DOWN: bottom limit of domain */
 
-        RealDouble satdepth = 0.00E+00;
-        RealDouble curdepth = 0.00E+00;
+        double satdepth = 0.00E+00;
+        double curdepth = 0.00E+00;
         int iCur = iFlight;
-        RealDouble RHi_cur, RHi_prev;
+        double RHi_cur, RHi_prev;
 
         /* Loop over altitudes till sat depth found or end of profile reached */
         while ( satdepth==0.00E+00 && iCur >= 0 ) {
@@ -431,13 +438,28 @@ namespace met
             throw std::out_of_range("In met::satdepth_calc: No end of ice supersaturated layer found.");
         }
         else if (satdepth > YLIM_DOWN){
-            throw std::out_of_range("In met::satdepth_calc: Ice supersatured layer depth exceeds domain limits.");
+            throw std::out_of_range(std::string("\nIn met::satdepth_calc: Ice supersatured layer depth exceeds domain limits. \n") + 
+                                    "YLIM_DOWN: " + std::to_string(YLIM_DOWN) + "\n" + 
+                                    "satdepth: " + std::to_string(satdepth));
         }
 
         return satdepth;
 
     } /* End of satdepth_calc */ 
 
+
+    newXCoordsPair calcNewXCoords(const Vector_1D& dy_old, const Vector_1D& dy_new, const Vector_1D& x0_old, const Vector_1D& dx_old, int nx){
+        int ny = dy_old.size();
+        Vector_1D dx_new(ny);
+        Vector_1D x0_new(ny);
+
+        for(int j = 0; j < ny; j++) {
+            dx_new[j] = dx_old[j] * dy_new[j] / dy_old[j];
+            x0_new[j] = x0_old[j] - (dx_new[j] - dx_old[j]) * static_cast<double>(nx) / 2.0;
+        }
+
+        return newXCoordsPair {std::move(x0_new), std::move(dx_new)};
+    }
 }
 
 /* End of MetFunction.cpp */

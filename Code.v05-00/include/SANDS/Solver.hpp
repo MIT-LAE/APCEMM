@@ -45,6 +45,13 @@ namespace SANDS
 
             Solver();
 
+            Solver(int nx, int ny,
+                   double xlim_left, double xlim_right,
+                   double ylim_up, double ylim_down,
+                   bool doFill = true,
+                   int fillOpt = 1,
+                   double fillVal = 0);
+
             /** 
              * Initializer 
              *
@@ -62,7 +69,7 @@ namespace SANDS
                              const bool WISDOM = 0,                \
                              const char* FFTW_DIR = "",            \
                              const bool fill = 1,                  \
-                             const RealDouble fillValue = 0.0E+00, \
+                             const double fillValue = 0.0E+00, \
                              const UInt fillOpt_ = 1 );
 
             /**
@@ -87,7 +94,7 @@ namespace SANDS
              * Returns an error if T <= 0.0
              */
 
-            void UpdateTimeStep( const RealDouble T );
+            void UpdateTimeStep( const double T );
 
             /**
              * Update diffusion field 
@@ -98,7 +105,7 @@ namespace SANDS
              * Returns an error if dH or dV is non positive 
              */
 
-            void UpdateDiff( const RealDouble dH, const RealDouble dV );
+            void UpdateDiff( const double dH, const double dV );
 
             /**
              * Update advection field 
@@ -107,7 +114,7 @@ namespace SANDS
              * @param vV (double) : Vertical advection velocity [m/s]
              */
 
-            void UpdateAdv( const RealDouble vH, const RealDouble vV, const bool artFilt = 0 );
+            void UpdateAdv( const double vH, const double vV, const bool artFilt = 0 );
  
             /**
              * Update shear value
@@ -116,7 +123,7 @@ namespace SANDS
              * @param m (Mesh)
              * */
  
-            void UpdateShear( const RealDouble shear, const Vector_1D &y, const bool artFilt = 0 );
+            void UpdateShear( const double shear, const Vector_1D &y, const bool artFilt = 0 );
             void UpdateShear( const Vector_1D shear, const Vector_1D &y, const bool artFilt = 0 );
 
             /**
@@ -139,8 +146,8 @@ namespace SANDS
              * @param threshold (double) : Threshold (default = 0.0)
              */
 
-            void Fill( Vector_2D &V, const RealDouble val, \
-                       const RealDouble threshold = 0.0 );
+            void Fill( Vector_2D &V, const double val, \
+                       const double threshold = 0.0 );
             
             /**
              * Apply correction scheme to get rid of Gibbs oscillations
@@ -150,32 +157,32 @@ namespace SANDS
              * @param cellAreas (2D vector) : Cell areas in m^2
              */
     
-            void ScinoccaCorr( Vector_2D &V, const RealDouble mass0, \
+            void ScinoccaCorr( Vector_2D &V, const double mass0, \
                                const Vector_2D &cellAreas );
 
             /** 
              * Returns the 2D diffusion field 
              */
 
-            Vector_2D getDiffFactor( ) const;
+            inline const Vector_2D& getDiffFactor( ) const{ return DiffFactor; }
             
             /** 
              * Returns the 2D advection field 
              */
 
-            Vector_2Dc getAdvFactor( ) const;
+            inline const Vector_2Dc& getAdvFactor( ) const{ return AdvFactor; }
 
         protected:
 
             unsigned int n_x, n_y;
-            RealDouble xlim_right, xlim_left, ylim_up, ylim_down;
+            double xlim_right, xlim_left, ylim_up, ylim_down;
             bool doFill;
             UInt fillOpt;
-            RealDouble fillVal;
-            RealDouble dt;
-            RealDouble dH, dV;
-            RealDouble vH, vV;
-            RealDouble shear;
+            double fillVal;
+            double dt;
+            double dH, dV;
+            double vH, vV;
+            double shear;
 
         private:
 
@@ -189,8 +196,8 @@ namespace SANDS
             Vector_1D kxx, kyy;
             
             /* FFT Solver */
-            FourierTransform_1D<RealDouble> *FFT_1D;
-            FourierTransform_2D<RealDouble> *FFT_2D;
+            FourierTransform_1D<double> *FFT_1D;
+            FourierTransform_2D<double> *FFT_2D;
 
 
 

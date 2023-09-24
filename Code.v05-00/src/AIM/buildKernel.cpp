@@ -16,7 +16,7 @@
 namespace AIM
 {
 
-    Vector_1D buildBrownianKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers, RealDouble rho_1 , RealDouble bin_R, RealDouble rho_2 )
+    Vector_1D buildBrownianKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers, double rho_1 , double bin_R, double rho_2 )
     {
 
         /* Returns the 1D coagulation kernel associated with Brownian coagulation */
@@ -26,15 +26,15 @@ namespace AIM
 
         /* Declare particle diffusion coefficients */
         Vector_1D  diffCoef_1( bin_Centers.size() );
-        RealDouble diffCoef_2;
+        double diffCoef_2;
        
         /* Declare mean distance from the center of a sphere reach by particles leaving */
         Vector_1D delta_1( bin_Centers.size() );
-        RealDouble delta_2;
+        double delta_2;
 
         /* Declare particle velocities */
         Vector_1D velp_1( bin_Centers.size() );
-        RealDouble velp_2;
+        double velp_2;
 
         /* Initialize particle diffusion coefficients */
         for ( unsigned int iBin = 0; iBin < bin_Centers.size(); iBin++ ) {
@@ -65,7 +65,7 @@ namespace AIM
 
     } /* End of buildBrownianKernel */
 
-    Vector_2D buildBrownianKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers_1, RealDouble rho_1 , Vector_1D const &bin_Centers_2, RealDouble rho_2 )
+    Vector_2D buildBrownianKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers_1, double rho_1 , Vector_1D const &bin_Centers_2, double rho_2 )
     {
 
         /* Returns the 2D coagulation kernel associated with Brownian coagulation */
@@ -123,7 +123,7 @@ namespace AIM
 
     } /* End of buildBrownianKernel */
     
-    Vector_1D buildDEKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers, RealDouble rho_1, RealDouble bin_R, RealDouble rho_2, Vector_1D const &K_Brow )
+    Vector_1D buildDEKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers, double rho_1, double bin_R, double rho_2, Vector_1D const &K_Brow )
     {
 
         /* Returns the 1D coagulation kernel linked to convective 
@@ -156,7 +156,7 @@ namespace AIM
 
     } /* End of buildDEKernel */
 
-    Vector_2D buildDEKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers_1, RealDouble rho_1, Vector_1D const &bin_Centers_2, RealDouble rho_2, Vector_2D const &K_Brow )
+    Vector_2D buildDEKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers_1, double rho_1, Vector_1D const &bin_Centers_2, double rho_2, Vector_2D const &K_Brow )
     {
 
         /* Returns the 2D coagulation kernel linked to convective 
@@ -193,7 +193,7 @@ namespace AIM
 
     } /* End of buildDEKernel */
     
-    Vector_1D buildGCKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers, RealDouble rho_1, RealDouble bin_R, RealDouble rho_2 )
+    Vector_1D buildGCKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers, double rho_1, double bin_R, double rho_2 )
     {
 
         /* Returns the 1D coagulation kernel linked to gravitational 
@@ -213,7 +213,7 @@ namespace AIM
 
     } /* End of buildGCKernel */
 
-    Vector_2D buildGCKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers_1, RealDouble rho_1, Vector_1D const &bin_Centers_2, RealDouble rho_2 )
+    Vector_2D buildGCKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers_1, double rho_1, Vector_1D const &bin_Centers_2, double rho_2 )
     {
         
         /* Returns the 2D coagulation kernel linked to gravitational 
@@ -237,7 +237,7 @@ namespace AIM
     } /* End of buildGCKernel */
 
 
-    Vector_1D buildTIKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers, RealDouble rho_1, RealDouble bin_R, RealDouble rho_2 )
+    Vector_1D buildTIKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers, double rho_1, double bin_R, double rho_2 )
     {
 
         /* Returns the 1D coagulation kernel linked to turbulent inertial motion.
@@ -256,7 +256,7 @@ namespace AIM
 
     } /* End of buildTIKernel */
     
-    Vector_2D buildTIKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers_1, RealDouble rho_1, Vector_1D const &bin_Centers_2, RealDouble rho_2 )
+    Vector_2D buildTIKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers_1, double rho_1, Vector_1D const &bin_Centers_2, double rho_2 )
     {
 
         /* Returns the 2D coagulation kernel linked to turbulent inertial motion.
@@ -278,7 +278,7 @@ namespace AIM
 
     } /* End of buildTIKernel */
 
-    Vector_1D buildTSKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers, RealDouble rho_1, RealDouble bin_R, RealDouble rho_2 )
+    Vector_1D buildTSKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers, double rho_1, double bin_R, double rho_2 )
     {
 
         /* Returns the 1D coagulation kernel linked to turbulent shear. 
@@ -297,7 +297,7 @@ namespace AIM
 
     } /* End of buildTSKernel */
     
-    Vector_2D buildTSKernel( RealDouble temperature_K, RealDouble pressure_Pa, Vector_1D const &bin_Centers_1, RealDouble rho_1, Vector_1D const &bin_Centers_2, RealDouble rho_2 )
+    Vector_2D buildTSKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers_1, double rho_1, Vector_1D const &bin_Centers_2, double rho_2 )
     {
 
         /* Returns the 2D coagulation kernel linked to turbulent shear. 

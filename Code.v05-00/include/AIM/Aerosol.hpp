@@ -17,9 +17,12 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <numeric>
 #include <cstring>
 #include <boost/math/special_functions/gamma.hpp>
 #include "APCEMM.h"
+#include <Util/VectorUtils.hpp>
+#include <type_traits>
 #ifdef OMP
     #include "omp.h"
 #endif /* OMP */
@@ -36,61 +39,52 @@ namespace AIM
 {
     class Aerosol;
     class Grid_Aerosol;
-    static const RealDouble DEFAULT_MIN_RADIUS = 1.0e-8; 
-    static const RealDouble TINY = 1.0e-50;
+    static const double DEFAULT_MIN_RADIUS = 1.0e-8; 
+    static const double TINY = 1.0e-50;
 }
 
 class AIM::Aerosol
 {
 
     public:
-
-        /* Default constructor */
-        Aerosol( );
+        
+        /* Default constructor (Needed because EPM is terribly engineered. Ideally should be deleted.) */
+        Aerosol( ) = default;
 
         /* Constructor */
-        Aerosol( Vector_1D bin_Centers, Vector_1D bin_Edges, RealDouble nPart, RealDouble mu, RealDouble sigma, const char* distType = "lognormal", RealDouble alpha_ = -1.0, RealDouble gamma_ = -1.0, RealDouble b_ = 0.0 );
-
-        /* Copy */
-        Aerosol( const Aerosol &rhs );
-
-        /* Destructor */
-        ~Aerosol();
+        Aerosol( const Vector_1D& bin_Centers, const Vector_1D& bin_Edges, double nPart, double mu, double sigma, const char* distType = "lognormal", double alpha_ = -1.0, double gamma_ = -1.0, double b_ = 0.0 );
 
         /* Operators */
-        Aerosol& operator=( const Aerosol &rhs );
-        Aerosol operator+=( const Aerosol &rhs );
-        Aerosol operator-=( const Aerosol &rhs );
-        Aerosol operator+( const Aerosol &rhs ) const;
-        Aerosol operator-( const Aerosol &rhs ) const;
+        void addAerosolToPDF( const Aerosol &rhs );
 
         /* Coagulation */
-        void Coagulate( const RealDouble dt, const Coagulation &kernel );
-        void Coagulate( const RealDouble dt, const Vector_2D &beta, const Vector_3D &f );
+        void Coagulate( const double dt, const Coagulation &kernel );
+        void Coagulate( const double dt, const Vector_2D &beta, const Vector_3D &f );
         
         /* Moments */
-        RealDouble Moment( UInt n = 0 ) const;
-        RealDouble Radius( ) const;
-        RealDouble EffRadius( ) const;
-        RealDouble StdDev( ) const;
+        //NOTE: This gives the moment in [- / cm3]. You need to multiply by factors to get it in [ / m] or something.
+        inline double binMoment(int iBin, int n = 0) const {
+            return (log(bin_Edges[iBin + 1]) - log(bin_Edges[iBin])) * pow(bin_Centers[iBin], n) * pdf[iBin];
+        }
+        //NOTE: This gives the moment in [- / cm3]. You need to multiply by factors to get it in [ / m] or something.
+        double Moment( UInt n = 0 ) const;
+        double Radius( ) const;
+        double EffRadius( ) const;
+        double StdDev( ) const;
 
         /* utils */
-        void scalePdf( RealDouble factor );
-        void updatePdf( Vector_1D pdf_ );
+        void scalePdf( double factor );
+        void updatePdf( const Vector_1D& pdf_ );
 
         /* gets */
-        Vector_1D getBinCenters() const;
-        Vector_1D getBinVCenters() const;
-        Vector_1D getBinEdges() const;
-        Vector_1D getBinSizes() const;
-        UInt getNBin() const;
-        RealDouble getNPart() const;
-        const char* getType() const;
-        RealDouble getAlpha() const;
-        Vector_1D getPDF() const;
-
-        static Vector_1D generateEndOfEPMTestPDF(const Vector_1D& bin_Centers);
-
+        inline const Vector_1D& getBinCenters() const { return bin_Centers; };
+        inline const Vector_1D& getBinVCenters() const { return bin_VCenters; };
+        inline const Vector_1D& getBinEdges() const { return bin_Edges; };
+        inline const Vector_1D& getBinSizes() const { return bin_Sizes; };
+        inline UInt getNBin() const { return nBin; };
+        inline const char* getType() const { return type; };
+        inline double getAlpha() const { return alpha; };
+        inline const Vector_1D& getPDF() const { return pdf; };
 
     protected:
 
@@ -99,12 +93,11 @@ class AIM::Aerosol
         Vector_1D bin_Edges;
         Vector_1D bin_Sizes;
         UInt nBin;
-        RealDouble nPart;
         const char* type;
-        RealDouble mu;
-        RealDouble sigma;
-        RealDouble alpha;
-        Vector_1D pdf;
+        double mu;
+        double sigma;
+        double alpha;
+        Vector_1D pdf; // represents dN [-/cm3] / d(ln r)
 
     private:
 
@@ -115,31 +108,18 @@ class AIM::Grid_Aerosol
 
     public:
 
-        /* Default constructor */
-        Grid_Aerosol( );
+        /* Default constructor (Needed because EPM is terribly engineered. Ideally should be deleted.)*/
+        Grid_Aerosol( ) = default;
 
         /* Constructor */
-        Grid_Aerosol( UInt Nx_, UInt Ny_, Vector_1D bin_Centers, Vector_1D bin_Edges, RealDouble nPart, RealDouble mu, RealDouble sigma, const char* distType = "lognormal", RealDouble alpha_ = -1.0, RealDouble gamma_ = -1.0, RealDouble b_ = 0.0 );
-
-        /* Copy */
-        Grid_Aerosol( const Grid_Aerosol &rhs );
-
-        /* Destructor */
-        ~Grid_Aerosol();
-
-        /* Operators */
-        Grid_Aerosol& operator=( const Grid_Aerosol &rhs );
-        Grid_Aerosol operator+=( const Grid_Aerosol &rhs );
-        Grid_Aerosol operator-=( const Grid_Aerosol &rhs );
-        Grid_Aerosol operator+( const Grid_Aerosol &rhs ) const;
-        Grid_Aerosol operator-( const Grid_Aerosol &rhs ) const;
+        Grid_Aerosol( UInt Nx_, UInt Ny_, const Vector_1D& bin_Centers, const Vector_1D& bin_Edges, double nPart, double mu, double sigma, const char* distType = "lognormal", double alpha_ = -1.0, double gamma_ = -1.0, double b_ = 0.0 );
 
         /* Coagulation */
-        void Coagulate( const RealDouble dt, Coagulation &kernel, const UInt N = 2, const UInt SYM = 0 );
+        void Coagulate( const double dt, Coagulation &kernel, const UInt N = 2, const UInt SYM = 0 );
 
         /* Ice crystal growth */
-        void Grow( const RealDouble dt, Vector_2D &H2O, const Vector_2D &T, const Vector_1D &P, const UInt N = 2, const UInt SYM = 0 );
-        RealDouble EffDiffCoef( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O) const;
+        void Grow( const double dt, Vector_2D &H2O, const Vector_2D &T, const Vector_1D &P, const UInt N = 2, const UInt SYM = 0 );
+        double EffDiffCoef( const double r, const double T, const double P, const double H2O) const;
         void APC_Scheme(const UInt jNy, const UInt iNx, const double T, const double P,
                             const double dt, Vector_2D& H2O, Vector_2D& totH2O, Vector_3D& icePart, Vector_3D& iceVol);
         std::vector<int> ComputeBinParticleFlux(const int x_index, const int y_index, const Vector_3D& iceVol, const Vector_3D& icePart) const;
@@ -150,70 +130,85 @@ class AIM::Grid_Aerosol
         void CoagAndGrowApplySymmetry(const UInt N, const UInt SYM, const UInt Nx_max, const UInt Ny_max, const char* funcName, Vector_2D& H2O);
         /* Update bin centers - Used after aerosol transport */
         void UpdateCenters( const Vector_3D &iceV, const Vector_3D &PDF );
+        inline void updateNx(int nx_new) { Nx = nx_new; };
+        inline void updateNy(int ny_new) { Ny = ny_new; };
 
         /* Moments */
         Vector_2D Moment( UInt n ) const;
-        RealDouble Moment( UInt n, Vector_1D PDF ) const;
-        RealDouble Moment( UInt n, UInt iNx, UInt jNy ) const;
+        double Moment( UInt n, const Vector_1D& PDF ) const;
+        double Moment( UInt n, UInt iNx, UInt jNy ) const;
 
         /* Extra utils */
         Vector_3D Number( ) const;
+        //Gives number concentration field in part / cm3
         Vector_2D TotalNumber( ) const;
-        RealDouble TotalNumber_sum( const Vector_2D cellAreas ) const;
-        Vector_1D Overall_Size_Dist( const Vector_2D cellAreas ) const;
+        double TotalNumber_sum( const Vector_2D& cellAreas ) const;
+        Vector_1D Overall_Size_Dist( const Vector_2D& cellAreas ) const;
+        //Gives 3D volume field in m3 / cm3
         Vector_3D Volume( ) const;
         Vector_2D TotalVolume( ) const;
         Vector_2D TotalArea( ) const;
-        RealDouble TotalIceMass_sum( const Vector_2D cellAreas ) const;
+        double TotalIceMass_sum( const Vector_2D& cellAreas ) const;
         Vector_2D IWC( ) const;
         Vector_2D Extinction( ) const;
+        double extinctionWidth(const Vector_1D& xCoord, double thres = 0.1) const;
+        double extinctionDepth(const Vector_1D& yCoord, double thres = 0.1) const;
+        double intYOD(const Vector_1D& dx, const Vector_1D& dy) const;
         Vector_1D PDF_Total( const Vector_2D &cellAreas ) const;
         Vector_1D PDF_Total( const Mesh &m ) const;
-        Vector_1D xOD( const Vector_1D dx ) const;
-        Vector_1D yOD( const Vector_1D dy ) const;
+        Vector_1D xOD( const Vector_1D& dx ) const;
+        Vector_1D yOD( const Vector_1D& dy ) const;
         Vector_2D Radius( ) const;
-        RealDouble Radius( UInt iNx, UInt jNy ) const;
+        double Radius( UInt iNx, UInt jNy ) const;
         Vector_2D EffRadius( ) const;
-        RealDouble EffRadius( UInt iNx, UInt jNy ) const;
+        double EffRadius( UInt iNx, UInt jNy ) const;
         Vector_2D StdDev( ) const;
-        RealDouble StdDev( UInt iNx, UInt jNy ) const;
+        double StdDev( UInt iNx, UInt jNy ) const;
 
+        //This template just lets us minimize copies/moves without writing a bunch of different overloads
+        template< typename Vector3D_t, 
+                  typename _  = std::enable_if_t<std::is_same_v<std::decay_t<Vector3D_t>, Vector_3D>> 
+                >
+        void updatePdf( Vector3D_t&& pdf_new ) {
+            pdf = std::forward<Vector3D_t>(pdf_new);
+        }
         /* utils */
-        void updatePdf( Vector_3D pdf_ );
         Vector_1D Average( const Vector_2D &weights,   \
-                           const RealDouble &totWeight ) const;
+                           const double &totWeight ) const;
         void addPDF( const Aerosol &PDF, const Vector_2D &weights,  \
-                     const Vector_2D &cellAreas, const RealDouble nCell );
+                     const Vector_2D &cellAreas, const double nCell );
         void addPDF( const Vector_1D &PDF, const Vector_2D &weights, \
-                     const Vector_2D &cellAreas, const RealDouble nCell );
+                     const Vector_2D &cellAreas, const double nCell );
 
         /* gets */
-        Vector_1D getBinCenters() const;
-        Vector_1D binCenters() const { return bin_Centers; };
-        Vector_3D getBinVCenters() const;
-        Vector_1D getBinEdges() const;
-        Vector_1D binEdges() const { return bin_Edges; };
-        Vector_1D getBinSizes() const;
-        Vector_1D binSizes() const { return bin_Sizes; };
-        UInt getNBin() const;
-        Vector_3D getPDF() const;
+        inline const Vector_1D& getBinCenters() const { return bin_Centers; };
+        inline const Vector_3D& getBinVCenters() const { return bin_VCenters; };
+        inline Vector_3D& getBinVCenters_nonConstRef() { return bin_VCenters; };
+        inline const Vector_1D& getBinEdges() const { return bin_Edges; };
+        inline const Vector_1D& getBinSizes() const { return bin_Sizes; };
+        inline UInt getNBin() const { return nBin; };
+        inline const char* getType() const { return type; };
+        inline double getAlpha() const { return alpha; };
+        inline const Vector_3D& getPDF() const { return pdf; };
+        inline Vector_3D& getPDF_nonConstRef() { return pdf; };
+        inline int getNx() const { return Nx; }
+        inline int getNy() const { return Ny; }
 
-        Vector_3D pdf;
-        Vector_3D bin_VCenters;
 
     protected:
 
         unsigned int Nx, Ny;
+        Vector_3D pdf; //Everything with the pdf is implicitly in [ / cm3]
+        Vector_3D bin_VCenters;
         Vector_1D bin_Centers;
         Vector_1D bin_Edges;
         Vector_1D bin_VEdges;
         Vector_1D bin_Sizes;
         UInt nBin;
-        RealDouble nPart;
         const char* type;
-        RealDouble mu;
-        RealDouble sigma;
-        RealDouble alpha;
+        double mu;
+        double sigma;
+        double alpha;
 
     private:
 

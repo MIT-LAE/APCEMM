@@ -70,11 +70,6 @@ TEST_CASE ("Aerosol", "[single-file]" ) {
         REQUIRE(retrieved_Nbin == nBins);
     }
 
-    // SECTION("getNPart") {
-    //     int retrieved_NPart = test_pdf.getNPart();
-    //     REQUIRE(retrieved_NPart == Catch::Approx(nPart));
-    // }
-
     SECTION("getType") {
         const char* retrieved_type = test_pdf.getType();
         REQUIRE(strcmp(retrieved_type, "lognormal") == 0);

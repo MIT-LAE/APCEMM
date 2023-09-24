@@ -44,16 +44,12 @@ static int SUCCESS     =  1;
 #include "Core/Aircraft.hpp"
 #include "Core/Emission.hpp"
 
-#ifdef TIME_IT
-    #include "Core/Timer.hpp"
-#endif /* TIME_IT */
-
 #include "Core/Save.hpp"
 static int SAVE_FAIL    = -2;
 
-Vector_1D BuildTime( const RealDouble tStart, const RealDouble tEnd,    \
-                     const RealDouble sunRise, const RealDouble sunSet, \
-                     const RealDouble DYN_DT );
+Vector_1D BuildTime( const double tStart, const double tEnd,    \
+                     const double sunRise, const double sunSet, \
+                     const double DYN_DT );
 int BoxModel( const OptInput &Input_Opt, const Input &input )
 {
 
@@ -85,13 +81,13 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
    
     /* Make sure that same timesteps as plume model are used */
 
-    const RealDouble CHEMISTRY_DT = Input_Opt.CHEMISTRY_TIMESTEP;
+    const double CHEMISTRY_DT = Input_Opt.CHEMISTRY_TIMESTEP;
 
     /* ======================================================================= */
     /* ---- Input options from the TRANSPORT MENU ---------------------------- */
     /* ======================================================================= */
 
-    const RealDouble TRANSPORT_DT = Input_Opt.TRANSPORT_TIMESTEP;
+    const double TRANSPORT_DT = Input_Opt.TRANSPORT_TIMESTEP;
 
     /* ======================================================================= */
     /* ---- Input options from the TIMESERIES MENU --------------------------- */
@@ -100,7 +96,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     const std::vector<int> TS_SPEC_LIST = Input_Opt.TS_SPECIES;
 
     /* Define dynamic timestep in s */
-    RealDouble DYN_DT;
+    double DYN_DT;
 
     /* If either TRANSPORT or CHEMISTRY is set to 0, then pick the non-zero 
      * timestep.
@@ -119,37 +115,23 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         exit(1);
     }
 
-#ifndef XLIM
-    const RealDouble BOX_AREA = ( XLIM_LEFT + XLIM_RIGHT ) * ( YLIM_UP + YLIM_DOWN );
-#else
-    const RealDouble BOX_AREA = 2.0 * XLIM * ( YLIM_UP + YLIM_DOWN );
-#endif
-    
+    const double BOX_AREA = ( Input_Opt.ADV_GRID_XLIM_LEFT + Input_Opt.ADV_GRID_XLIM_RIGHT ) * ( Input_Opt.ADV_GRID_YLIM_UP + Input_Opt.ADV_GRID_YLIM_DOWN );
+
     /* Assign parameters */
     
-    RealDouble temperature_K = input.temperature_K();
-    RealDouble pressure_Pa   = input.pressure_Pa();
-    RealDouble relHumidity_w = input.relHumidity_w();
-    RealDouble relHumidity;
-    RealDouble AerosolArea[NAERO];
-    RealDouble AerosolRadi[NAERO];
-    RealDouble IWC = 0;
+    double temperature_K = input.temperature_K();
+    double pressure_Pa   = input.pressure_Pa();
+    double relHumidity_w = input.relHumidity_w();
+    double relHumidity;
+    double AerosolArea[NAERO];
+    double AerosolRadi[NAERO];
+    double IWC = 0;
 
     /* Compute relative humidity w.r.t ice */
-    RealDouble relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
+    double relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
                                              / physFunc::pSat_H2Os( temperature_K );
 
     int IERR;
-    
-#ifdef TIME_IT
-
-    Timer Stopwatch, Stopwatch_cumul;
-    unsigned long KPP_clock;
-    unsigned long KPP_clock_cumul = 0;
-    unsigned long clock_cumul = 0;
-    bool reset = 1;
-    
-#endif /* TIME_IT */
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -177,16 +159,16 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
      */ 
 
     /* Define emission and simulation time */
-    const RealDouble tEmission_h = input.emissionTime();                 /* [hr] */
-    const RealDouble tInitial_h  = tEmission_h;                          /* [hr] */
-    const RealDouble tFinal_h    = tInitial_h + input.simulationTime();  /* [hr] */
-    const RealDouble tInitial_s  = tInitial_h * 3600.0;                  /* [s] */
-    const RealDouble tFinal_s    = tFinal_h   * 3600.0;                  /* [s] */
+    const double tEmission_h = input.emissionTime();                 /* [hr] */
+    const double tInitial_h  = tEmission_h;                          /* [hr] */
+    const double tFinal_h    = tInitial_h + input.simulationTime();  /* [hr] */
+    const double tInitial_s  = tInitial_h * 3600.0;                  /* [s] */
+    const double tFinal_s    = tFinal_h   * 3600.0;                  /* [s] */
 
     /* Current time in [s] */
-    RealDouble curr_Time_s = tInitial_s; /* [s] */
+    double curr_Time_s = tInitial_s; /* [s] */
     /* Time step in [s] */
-    RealDouble dt = 0;                   /* [s] */
+    double dt = 0;                   /* [s] */
 
     /* Create time array */
 
@@ -203,10 +185,10 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     /* ======================================================================= */
     
     /* Declare solution structure */
-    Solution Data;
+    Solution Data(Input_Opt);
 
     /* Compute airDens from pressure and temperature */
-    RealDouble airDens = pressure_Pa / ( physConst::kB   * temperature_K ) * 1.00E-06;
+    double airDens = pressure_Pa / ( physConst::kB   * temperature_K ) * 1.00E-06;
     /* [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K]           ) * [m3/cm3] */
    
     /* Read ambient concentrations */
@@ -243,7 +225,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     }
 
     Data.SpinUp( amb_Value, input, airDens, \
-            /* Time for which ambient file is valid in hr */ (const RealDouble) 8.0 );
+            /* Time for which ambient file is valid in hr */ (const double) 8.0 );
 
     /* Enforce pre-defined values? *
      * Read input defined values for background concentrations */
@@ -253,7 +235,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     /* Inputs are in ppb */
 
     if ( input.backgNOx() > 0.0E+00 ) {
-        const RealDouble NONO2rat = amb_Value[ind_NO]/amb_Value[ind_NO2];
+        const double NONO2rat = amb_Value[ind_NO]/amb_Value[ind_NO2];
         /* NOx = NO + NO2 = NO2 * ( r + 1 ) 
          * NO2 = NOx / ( r + 1 );
          * NO  = NOx - NO2; */
@@ -293,7 +275,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     for ( UInt iSpec = 0; iSpec < amb_Value.size(); iSpec++ )
         amb_Value[iSpec] *= airDens;
 
-    amb_Value[ind_H2O] = input.relHumidity_w() / ((RealDouble) 100.0) * \
+    amb_Value[ind_H2O] = input.relHumidity_w() / ((double) 100.0) * \
                          physFunc::pSat_H2Ol( input.temperature_K() ) / ( physConst::kB * input.temperature_K() ) / 1.00E+06;
 
     /* Create ambient struture */
@@ -319,11 +301,11 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
 
     /* Define aircraft */
     char const *aircraftName("B747-800");
-    RealDouble aircraftMass = input.aircraftMass();
+    double aircraftMass = input.aircraftMass();
     std::string engineInputFile = Input_Opt.SIMULATION_INPUT_ENG_EI;
     Aircraft aircraft( aircraftName, engineInputFile, aircraftMass, \
                        temperature_K, pressure_Pa, \
-                       relHumidity_w );
+                       relHumidity_w, input.nBV() );
 
     if ( BUILD_LUT ) {
         aircraft.setEI_NOx( input.EI_NOx() );
@@ -332,7 +314,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         aircraft.setEI_Soot( input.EI_Soot() );
         aircraft.setSootRad( input.sootRad() );
         aircraft.setFuelFlow( input.fuelFlow() );
-        JetA.setFSC( input.EI_SO2() * (RealDouble) 500.0 );
+        JetA.setFSC( input.EI_SO2() * (double) 500.0 );
     }
 
     /* Print AC Debug? */
@@ -347,10 +329,10 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         EI.Debug();
 
     /* Add emissions */
-    RealDouble E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
-    RealDouble E_Soot;
-    const RealDouble rad = EI.getSootRad();
-    const RealDouble fuelPerDist = aircraft.FuelFlow() / aircraft.VFlight();
+    double E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
+    double E_Soot;
+    const double rad = EI.getSootRad();
+    const double fuelPerDist = aircraft.FuelFlow() / aircraft.VFlight();
     /* Unit check:  [kg/m]   =   [kg fuel/s]    /     [m/s] */
     E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * fuelPerDist * physConst::Na / BOX_AREA * 1.0E-06;
     /*     = [g/kg fuel]  / ( [kg/mol]* [g/kg]  ) * [kg fuel/m] * [molec/mol]   / [m^2]    * [m^3/cm^3]
@@ -403,13 +385,13 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
 
     /* Allocate arrays for KPP */
 
-    RealDouble STEPMIN = (RealDouble)0.0;
+    double STEPMIN = (double)0.0;
 
-    RealDouble RTOL[NVAR];
-    RealDouble ATOL[NVAR];
+    double RTOL[NVAR];
+    double ATOL[NVAR];
 
     /* Allocate photolysis rate array */
-    RealDouble jRate[NPHOTOL];
+    double jRate[NPHOTOL];
 
     for( UInt i = 0; i < NVAR; i++ ) {
         RTOL[i] = KPP_RTOLS; 
@@ -417,7 +399,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     }
 
     /* aerArray stores all the number concentrations of aerosols */
-    RealDouble aerArray[N_AER][2];
+    double aerArray[N_AER][2];
 
     /* Ambient chemistry */
     ambientData.getData( aerArray, nTime );
@@ -429,11 +411,6 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
 
-#ifdef TIME_IT
-
-    Stopwatch_cumul.Start( );
-
-#endif /* TIME_IT */
     while ( curr_Time_s < tFinal_s ) {
         if ( printDEBUG ) {
             /* Print message */
@@ -493,13 +470,6 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         /* ----------------------------------------------------------------------- */
         /* ======================================================================= */
 
-
-#ifdef TIME_IT
-
-        Stopwatch.Start( reset );
-
-#endif /* TIME_IT */
-
         /* Ambient chemistry */
         ambientData.getData( aerArray, nTime );
 
@@ -555,15 +525,6 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
         
         curr_Time_s += dt;
         nTime++;
-
-#ifdef TIME_IT
-
-        Stopwatch.Stop( );
-        KPP_clock = Stopwatch.Elapsed( );
-
-#endif /* TIME_IT */
-    
-
     }
 
     /* ======================================================================= */
@@ -572,27 +533,6 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
     /* ----------------------------------------------------------------------- */
     /* ======================================================================= */
 
-
-#ifdef TIME_IT
-
-    Stopwatch_cumul.Stop( );
-    clock_cumul = Stopwatch_cumul.Elapsed( );
-
-    std::cout << "\n";
-    std::cout << " ** Final clock breakdown: " << "\n";
-
-    std::cout << " ** -> KPP  : ";
-    std::cout << std::setw(6) << KPP_clock_cumul / RealDouble(1000) << " [s] (" << 100 * KPP_clock_cumul / RealDouble(clock_cumul) << " %)" << "\n";
-
-    std::cout << " ** -> Rem. : ";
-    std::cout << std::setw(6) << ( clock_cumul - KPP_clock_cumul ) / RealDouble(1000) << " [s] (" << 100 * ( clock_cumul - KPP_clock_cumul ) / RealDouble(clock_cumul) << " %)" << "\n";
-
-    std::cout << " ** ----------------- " << "\n";
-    std::cout << " ** Total   : ";
-    std::cout << std::setw(6) << clock_cumul / RealDouble(1000) << " [s]" << "\n";
-    std::cout << "\n";
-
-#endif /* TIME_IT */
     
     #pragma omp critical
     {

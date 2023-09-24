@@ -30,6 +30,7 @@ class OptInput
         /* ---- SIMULATION MENU --------------------- */
         /* ========================================== */
 
+        int         SIMULATION_OMP_NUM_THREADS;
         bool        SIMULATION_PARAMETER_SWEEP;
         bool        SIMULATION_MONTECARLO;
         int         SIMULATION_MCRUNS;
@@ -59,11 +60,10 @@ class OptInput
 
         bool        TRANSPORT_TRANSPORT;
         bool        TRANSPORT_FILL;
-        RealDouble  TRANSPORT_TIMESTEP;
-        bool        TRANSPORT_PART_FLUX;
+        double      TRANSPORT_TIMESTEP;
         bool        TRANSPORT_UPDRAFT;
-        RealDouble  TRANSPORT_UPDRAFT_TIMESCALE;
-        RealDouble  TRANSPORT_UPDRAFT_VELOCITY;
+        double      TRANSPORT_UPDRAFT_TIMESCALE;
+        double      TRANSPORT_UPDRAFT_VELOCITY;
 
         /* ========================================== */
         /* ---- CHEMISTRY MENU ---------------------- */
@@ -71,7 +71,7 @@ class OptInput
 
         bool        CHEMISTRY_CHEMISTRY;
         bool        CHEMISTRY_HETCHEM;
-        RealDouble  CHEMISTRY_TIMESTEP;
+        double      CHEMISTRY_TIMESTEP;
         std::string CHEMISTRY_JRATE_FOLDER;
 
         /* ========================================== */
@@ -81,8 +81,9 @@ class OptInput
         bool        AEROSOL_GRAVSETTLING;
         bool        AEROSOL_COAGULATION_SOLID;
         bool        AEROSOL_COAGULATION_LIQUID;
-        RealDouble  AEROSOL_COAGULATION_TIMESTEP;
+        double      AEROSOL_COAGULATION_TIMESTEP;
         bool        AEROSOL_ICE_GROWTH;
+        double      AEROSOL_ICE_GROWTH_TIMESTEP;
         
         /* ========================================== */
         /* ---- METEOROLOGY MENU -------------------- */
@@ -90,21 +91,31 @@ class OptInput
 
         bool        MET_LOADMET;
         std::string MET_FILENAME;
-        RealDouble  MET_DT;
+        double      MET_DT;
         bool        MET_LOADTEMP;
         bool        MET_TEMPTIMESERIES;
+        bool        MET_INTERPTEMPDATA;
         bool        MET_LOADRH;
         bool        MET_RHTIMESERIES;
+        bool        MET_INTERPRHDATA;
         bool        MET_LOADSHEAR;
         bool        MET_SHEARTIMESERIES;
+        bool        MET_INTERPSHEARDATA;
+        bool        MET_LOADVERTVELOC;
+        bool        MET_VERTVELOCTIMESERIES;
+        bool        MET_INTERPVERTVELOC;
         bool        MET_FIXDEPTH;
-        RealDouble  MET_DEPTH;
+        double      MET_DEPTH;
         bool        MET_FIXLAPSERATE;
-        RealDouble  MET_LAPSERATE;
+        double      MET_LAPSERATE;
         bool        MET_DIURNAL;
         bool        MET_ENABLE_TEMP_PERTURB;
-        double        MET_TEMP_PERTURB_AMPLITUDE;
-        double        MET_TEMP_PERTURB_TIMESCALE;
+        double      MET_TEMP_PERTURB_AMPLITUDE;
+        double      MET_TEMP_PERTURB_TIMESCALE;
+        std::string MET_HUMIDSCAL_MODIFICATION_SCHEME;
+        double      MET_HUMIDSCAL_CONST_RHI;
+        double      MET_HUMIDSCAL_SCALING_A;
+        double      MET_HUMIDSCAL_SCALING_B;
         
         /* ========================================== */
         /* ---- DIAGNOSTIC MENU --------------------- */
@@ -119,11 +130,11 @@ class OptInput
         bool             TS_SPEC;
         std::string      TS_FILENAME;
         std::vector<int> TS_SPECIES;
-        RealDouble       TS_FREQ;
+        double           TS_FREQ;
         bool             TS_AERO;
         std::string      TS_AERO_FILENAME;
         std::vector<int> TS_AEROSOL;
-        RealDouble       TS_AERO_FREQ;
+        double           TS_AERO_FREQ;
 
         /* ========================================== */
         /* ---- PROD & LOSS MENU -------------------- */
@@ -131,6 +142,19 @@ class OptInput
 
         bool PL_PL;
         bool PL_O3;
+
+        /* =============================================== */
+        /* ---- ADVANCED OPTIONS MENU -------------------- */
+        /* =============================================== */
+
+        int ADV_GRID_NX;
+        int ADV_GRID_NY;
+        double ADV_GRID_XLIM_RIGHT;
+        double ADV_GRID_XLIM_LEFT;
+        double ADV_GRID_YLIM_UP;
+        double ADV_GRID_YLIM_DOWN;
+        
+
 };
 
 

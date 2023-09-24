@@ -9,7 +9,16 @@ SET(OMP 1)
 option(BUILD_TEST ON)
 
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")	
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)	
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+    include(CheckCXXCompilerFlag)
+    CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
+    if(COMPILER_SUPPORTS_MARCH_NATIVE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    endif()
+    
+    #Enabling unsafe optimizations doesn't seem to affect the runtime much, but could be something to check just in case later.
+    #-Michael
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -fno-trapping-math -funsafe-math-optimizations")
 endif()
 
 execute_process(COMMAND git rev-parse --short HEAD 
@@ -18,7 +27,7 @@ execute_process(COMMAND git rev-parse --short HEAD
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(APCEMM_VERSION_BUILD_NUMBER "${APCEMM_VERSION_BUILD_NUMBER}" CACHE STRING "Git Version/Commit Hash")
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 configure_file(${CMAKE_SOURCE_DIR}/include/APCEMM.h.in ${CMAKE_SOURCE_DIR}/include/APCEMM.h @ONLY)
 
 # Include .cmake files in this directory to find the required packages
@@ -53,6 +62,7 @@ find_package(FFTW REQUIRED)
 find_package(OpenMP REQUIRED)
 #find_package(Catch2 3 REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 # Try to get Catch2 automatically
 Include(FetchContent)
@@ -95,7 +105,7 @@ add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/Core/Main.cpp)
 # Defines the libraries necessary for compiling the executable
 target_link_libraries(${PROJECT_NAME}
                       ${netCDFCxx_LIBRARIES} ${NETCDF_LIBRARIES} ${FFTW_LIBRARIES} ${YAML_CPP_LIBRARIES}
-                      OpenMP::OpenMP_CXX Util AIM KPP EPM SANDS Core YamlInputReader)
+                      OpenMP::OpenMP_CXX Eigen3::Eigen FVM_ANDS Util AIM KPP EPM Core YamlInputReader LAGRID)
 
 # Tests
 #if (BUILD_TEST)

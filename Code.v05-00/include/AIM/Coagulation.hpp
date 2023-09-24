@@ -44,9 +44,9 @@ class AIM::Coagulation
     public:
 
         Coagulation( );
-        Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, RealDouble rho_1, Vector_1D const &bin_Centers_2, RealDouble rho_2, RealDouble temperature_K_, RealDouble pressure_Pa_ );
-        Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, RealDouble rho_1, RealDouble temperature_K_, RealDouble pressure_Pa_ );
-        Coagulation( const char* phase, Vector_1D const &bin_Centers_1, RealDouble rho_1, RealDouble bin_Centers_2, RealDouble rho_2, RealDouble temperature_K_, RealDouble pressure_Pa_ );
+        Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, double rho_1, Vector_1D const &bin_Centers_2, double rho_2, double temperature_K_, double pressure_Pa_ );
+        Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, double rho_1, double temperature_K_, double pressure_Pa_ );
+        Coagulation( const char* phase, Vector_1D const &bin_Centers_1, double rho_1, double bin_Centers_2, double rho_2, double temperature_K_, double pressure_Pa_ );
             
         ~Coagulation( );
         Coagulation( const Coagulation& k );
@@ -70,10 +70,10 @@ class AIM::Coagulation
 
     private:
 
-        const RealDouble A0 = 5.07;
-        const RealDouble A1 = -5.94;
-        const RealDouble A2 = 7.27;
-        const RealDouble A3 = -5.29;
+        const double A0 = 5.07;
+        const double A1 = -5.94;
+        const double A2 = 7.27;
+        const double A3 = -5.29;
 
 
 };

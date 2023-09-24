@@ -21,6 +21,8 @@ namespace YamlInputReader{
     void readAeroMenu(OptInput& input, const YAML::Node& aeroNode);
     void readMetMenu(OptInput& input, const YAML::Node& metNode);
     void readDiagMenu(OptInput& input, const YAML::Node& diagNode);
+    void readAdvancedMenu(OptInput& input, const YAML::Node& advancedNode);
+    
     void performOtherInputValidnessChecks(OptInput& input);
     vector<std::unordered_map<string, double>> generateCases(const OptInput& input);
     Vector_1D parseParamSweepInput(const string paramString, const string paramLocation = "", bool monteCarlo = false, int nRuns = 0);
@@ -41,7 +43,7 @@ namespace YamlInputReader{
                             }).base(), s.end());
         return s;
     }
-    inline RealDouble strToDouble(const string str, bool sciNotation = true){
+    inline double strToDouble(const string str, bool sciNotation = true){
         string s = trim(str);
         bool foundDot = false;
         bool hasSign = false;
@@ -80,7 +82,7 @@ namespace YamlInputReader{
             throw std::invalid_argument("Unable to read boolean value at parameter " + paramLocation); 
         }
     }
-    inline RealDouble parseDoubleString(const string paramString, const string paramLocation = ""){
+    inline double parseDoubleString(const string paramString, const string paramLocation = ""){
         try{
             return strToDouble(paramString);
         }

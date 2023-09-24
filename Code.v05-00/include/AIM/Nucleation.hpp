@@ -22,13 +22,13 @@
 namespace AIM
 {
 
-    RealDouble sigma( RealDouble x_m, RealDouble T );
-    RealDouble rho( RealDouble x_m, RealDouble T );
-    RealDouble x_star( RealDouble T, RealDouble RH, RealDouble nSulf );
-    RealDouble nuclRate( RealDouble T, RealDouble x_m, RealDouble RH, RealDouble nSulf );
-    RealDouble nTot( RealDouble T, RealDouble x_m, RealDouble RH, RealDouble nSulf );
-    RealDouble radCluster( RealDouble x_m, RealDouble n );
-    RealDouble nThresh( RealDouble T, RealDouble RH );
+    double sigma( double x_m, double T );
+    double rho( double x_m, double T );
+    double x_star( double T, double RH, double nSulf );
+    double nuclRate( double T, double x_m, double RH, double nSulf );
+    double nTot( double T, double x_m, double RH, double nSulf );
+    double radCluster( double x_m, double n );
+    double nThresh( double T, double RH );
 
 }
 

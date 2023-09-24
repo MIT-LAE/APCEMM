@@ -24,96 +24,85 @@ class Vortex
 {
         
     public:
+        constexpr static double Cz1  = 0.25;
+        constexpr static double CD_0 = 0.5;
+        constexpr static double N_BVt_threshold = 0.8;  /* Unit : - */
+        constexpr static double eps_threshold = 0.36;   /* Unit : - */
+        constexpr static double delta_zw_default = 200; /* Unit : m */
 
         /* Constructors */
-        Vortex( );
-        Vortex( RealDouble temperature_K, RealDouble pressure_Pa,  \
-                RealDouble n_BV, RealDouble span, RealDouble mass, \
-                RealDouble vFlight );
-
-        /* Destructor */
-        ~Vortex( );
-
-        /* Copy */
-        Vortex( const Vortex &v );
-
-        /* Copy */
-        Vortex& operator=( const Vortex &v ); 
+        Vortex( ) = default;
+        Vortex( double temperature_K, double pressure_Pa,  \
+                double n_BV, double span, double mass, \
+                double vFlight );
 
         /* Getters: */
 
         /* Brunt-Väisala frequency */
-        RealDouble N_BV() const { return N_BV_; }
+        double N_BV() const { return N_BV_; }
 
         /* Wake vortex separation */
-        RealDouble b() const { return b_; }
+        double b() const { return b_; }
 
         /* Initial circulation */
-        RealDouble gamma() const { return gamma_; }
+        double gamma() const { return gamma_; }
 
         /* Effective time scale */
-        RealDouble t() const { return t_; }
+        double t() const { return t_; }
 
         /* Initial velocity scale */
-        RealDouble w() const { return w_; }
+        double w() const { return w_; }
 
         /* Normalized dissipation rate */
-        RealDouble eps_star() const { return eps_star_; }
+        double eps_star() const { return eps_star_; }
 
         /* Maximum downwash displacement */
-        RealDouble delta_zw() const { return delta_zw_; }
+        double delta_zw() const { return delta_zw_; }
 
         /* Mean downwash displacement */
-        RealDouble delta_z1() const { return delta_z1_; }
+        double delta_z1() const { return delta_z1_; }
 
         /* Initial contrail depth */
-        RealDouble D1() const { return D_1_; }
+        double D1() const { return D_1_; }
 
     protected:
 
         /* Brunt-Väisala frequency
          * Unit: s^-1 */
-        RealDouble N_BV_;
+        double N_BV_;
 
         /* Wake vortex separation 
          * Unit: m */
-        RealDouble b_;
+        double b_;
         
         /* Initial circulation
          * Unit: m^2/s */
-        RealDouble gamma_;
+        double gamma_;
         
         /* Effective time scale
          * Unit: s */
-        RealDouble t_;
+        double t_;
         
         /* Initial velocity scale
          * Unit: s */
-        RealDouble w_;
+        double w_;
         
         /* Normalized dissipation rate
          * Unit: - */
-        RealDouble eps_star_;
+        double eps_star_;
         
         /* Maximum downwash displacement
          * Unit: m */
-        RealDouble delta_zw_;
+        double delta_zw_;
         
         /* Mean downwash displacement
          * Unit: m */
-        RealDouble delta_z1_;
+        double delta_z1_;
         
         /* Initial contrail depth
          * Unit: m */
-        RealDouble D_1_;
+        double D_1_;
 
-    private:
-
-        const RealDouble Cz1  = 0.25;
-        const RealDouble CD_0 = 0.5;
-        const RealDouble N_BVt_threshold = 0.8;  /* Unit : - */
-        const RealDouble eps_threshold = 0.36;   /* Unit : - */
-        const RealDouble delta_zw_default = 200; /* Unit : m */
 
 };
 

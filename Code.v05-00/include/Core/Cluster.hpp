@@ -28,10 +28,10 @@ class Cluster
 
         Cluster( );
         Cluster( const UInt n, const bool sRing,    \
-                 const RealDouble sigma1 = 0.0E+00, \
-                 const RealDouble sigma2 = 0.0E+00, \
-                 const RealDouble d1 = 0.0E+00,     \
-                 const RealDouble d2 = 0.0E+00 );
+                 const double sigma1 = 0.0E+00, \
+                 const double sigma2 = 0.0E+00, \
+                 const double d1 = 0.0E+00,     \
+                 const double d2 = 0.0E+00 );
         Cluster( const Cluster& cl );
         Cluster& operator=( const Cluster& cl );
         ~Cluster( );
@@ -50,8 +50,8 @@ class Cluster
 
         UInt nR;
         bool semiRing;
-        RealDouble sigmaX, sigmaY;
-        RealDouble dH, dV;
+        double sigmaX, sigmaY;
+        double dH, dV;
         std::vector<Ring> Rings;
         std::vector<int> ringIndices;
         Vector_1D ringAreas;

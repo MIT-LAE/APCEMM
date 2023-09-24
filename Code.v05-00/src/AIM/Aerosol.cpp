@@ -17,42 +17,7 @@
 namespace AIM
 {
 
-    Aerosol::Aerosol() : bin_Centers(2),
-                         bin_VCenters(2),
-                         bin_Edges(3),
-                         bin_Sizes(2),
-                         nBin(2),
-                         pdf(2)
-    {
-
-        /* Default constructor */
-
-        for (UInt iBin = 0; iBin < nBin + 1; iBin++)
-        {
-            bin_Edges[iBin] = DEFAULT_MIN_RADIUS * pow(1.2, iBin / 3.0);
-        }
-
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            bin_Centers[iBin] = 0.5 * (bin_Edges[iBin] + bin_Edges[iBin + 1]);
-            bin_VCenters[iBin] = 4.0 / 3.0 * physConst::PI * (pow(bin_Edges[iBin], 3) + pow(bin_Edges[iBin + 1], 3)) * 0.5;
-            bin_Sizes[iBin] = bin_Edges[iBin + 1] - bin_Edges[iBin];
-        }
-
-        nPart = 1.0;
-
-        type = "lognormal";
-
-        mu = 0;
-        sigma = 0;
-        alpha = 0;
-
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-            pdf[iBin] = 0.0E+00;
-
-    } /* End of Aerosol::Aerosol */
-
-    Aerosol::Aerosol(Vector_1D bin_Centers_, Vector_1D bin_Edges_, RealDouble nPart_, RealDouble mu_, RealDouble sigma_, const char *distType, RealDouble alpha_, RealDouble gamma_, RealDouble b_) : bin_VCenters(bin_Centers_.size()),
+Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, double nPart_, double mu_, double sigma_, const char *distType, double alpha_, double gamma_, double b_) : bin_VCenters(bin_Centers_.size()),
                                                                                                                                                                                                       bin_Sizes(bin_Centers_.size()),
                                                                                                                                                                                                       type(distType),
                                                                                                                                                                                                       pdf(bin_Centers_.size())
@@ -81,9 +46,6 @@ namespace AIM
             bin_VCenters[iBin] = 4.0 / 3.0 * physConst::PI * (pow(bin_Edges_[iBin], 3) + pow(bin_Edges_[iBin + 1], 3)) * 0.5;
         }
 
-        /* Allocate number of particles */
-        nPart = nPart_;
-
         /* Allocate mean and standard deviation */
         if (mu_ <= 0) { std::cout << "\nIn Aerosol::Aerosol: mean/mode is negative: mu = " << mu_ << "\n"; }
         mu = mu_;
@@ -105,7 +67,7 @@ namespace AIM
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin] = nPart * exp(-0.5 * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma)) * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma))) / (sqrt(2.0 * physConst::PI) * log(sigma));
+                pdf[iBin] = nPart_ * exp(-0.5 * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma)) * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma))) / (sqrt(2.0 * physConst::PI) * log(sigma));
             }
         }
         else if ((strcmp(type, "norm") == 0) || (strcmp(type, "normal") == 0))
@@ -115,7 +77,7 @@ namespace AIM
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin] = nPart * exp(-0.5 * ((bin_Centers[iBin] - mu) / sigma) * ((bin_Centers[iBin] - mu) / sigma)) / (sqrt(2.0 * physConst::PI) * sigma);
+                pdf[iBin] = nPart_ * exp(-0.5 * ((bin_Centers[iBin] - mu) / sigma) * ((bin_Centers[iBin] - mu) / sigma)) / (sqrt(2.0 * physConst::PI) * sigma);
             }
         }
         else if ((strcmp(type, "pow") == 0) || (strcmp(type, "power") == 0) || (strcmp(type, "junge") == 0))
@@ -127,7 +89,7 @@ namespace AIM
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin] = nPart * alpha * pow(bin_Centers[iBin] / bin_Centers[0], -alpha);
+                pdf[iBin] = nPart_ * alpha * pow(bin_Centers[iBin] / bin_Centers[0], -alpha);
             }
         }
         else if ((strcmp(type, "gam") == 0) || (strcmp(type, "gamma") == 0) || (strcmp(type, "generalized gamma") == 0))
@@ -143,7 +105,7 @@ namespace AIM
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin] = nPart * gamma_ * pow(b_, (alpha + 1) / gamma_) / boost::math::tgamma((alpha + 1) / gamma_) * pow(bin_Centers[iBin], alpha + 1) * exp(-b_ * pow(bin_Centers[iBin], gamma_));
+                pdf[iBin] = nPart_ * gamma_ * pow(b_, (alpha + 1) / gamma_) / boost::math::tgamma((alpha + 1) / gamma_) * pow(bin_Centers[iBin], alpha + 1) * exp(-b_ * pow(bin_Centers[iBin], gamma_));
             }
         }
         else
@@ -152,79 +114,15 @@ namespace AIM
             std::cout << "\nCurrent type is " << type << "\n";
         }
 
-        /* Check that we get the right number of particles */
-        if ((std::abs(Moment() - nPart) / nPart > 0.10) && (nPart > 1.0E-10))
-        {
-            std::cout << "\nIn Aerosol::Aerosol: the size range doesn't cover the full distribution";
-            std::cout << "\nPrescribed number: " << nPart << ", Number covered: " << Moment() << " [#/cm^3]\n";
-            if ((strcmp(type, "log") == 0) || (strcmp(type, "lognormal") == 0))
-            {
-                std::cout << "For lognormal distribution, prescribed mode is: " << mu << " [m]\n";
-            }
-            else if ((strcmp(type, "norm") == 0) || (strcmp(type, "normal") == 0))
-            {
-                std::cout << "For normal distribution, prescribed mode is: " << mu << " [m]\n";
-            }
-        }
-
-        /* For lognormal distributions:
-         * rMode = rMean * exp( - ln(sigma)^2 );
-         * rMedi = rMean * exp( 0.5 * ln(sigma)^2 ); */
-
     } /* End of Aerosol::Aerosol */
 
-    Aerosol::Aerosol(const Aerosol &rhs)
-    {
 
-        bin_Centers = rhs.bin_Centers;
-        bin_VCenters = rhs.bin_VCenters;
-        bin_Edges = rhs.bin_Edges;
-        bin_Sizes = rhs.bin_Sizes;
-        nBin = rhs.nBin;
-        nPart = rhs.nPart;
-        type = rhs.type;
-        mu = rhs.mu;
-        sigma = rhs.sigma;
-        alpha = rhs.alpha;
-        pdf = rhs.pdf;
-
-    } /* End of Aerosol::Aerosol */
-
-    Aerosol::~Aerosol()
-    {
-
-        /* Destructor */
-
-    } /* End of Aerosol::~Aerosol */
-
-    Aerosol &Aerosol::operator=(const Aerosol &rhs)
-    {
-
-        if (&rhs == this)
-            return *this;
-
-        bin_Centers = rhs.bin_Centers;
-        bin_VCenters = rhs.bin_VCenters;
-        bin_Edges = rhs.bin_Edges;
-        bin_Sizes = rhs.bin_Sizes;
-        nBin = rhs.nBin;
-        nPart = rhs.nPart;
-        type = rhs.type;
-        mu = rhs.mu;
-        sigma = rhs.sigma;
-        alpha = rhs.alpha;
-        pdf = rhs.pdf;
-        return *this;
-
-    } /* End of Aerosol::operator= */
-
-    Aerosol Aerosol::operator+=(const Aerosol &rhs)
+    void Aerosol::addAerosolToPDF( const Aerosol &rhs )
     {
 
         if (nBin != rhs.getNBin())
         {
-            std::cout << "\nIn Aerosol::operator+=: aerosol distributions do not have the same number of bins: " << nBin << " != " << rhs.getNBin();
-            return *this;
+            throw std::runtime_error("In Aerosol::addAerosolToPDF: aerosol distributions do not have the same number of bins: " + std::to_string(nBin) + " != " + std::to_string(rhs.getNBin()));
         }
 
         Vector_1D bin_Centers_rhs = rhs.getBinCenters();
@@ -232,113 +130,18 @@ namespace AIM
         {
             if (std::abs(bin_Centers[iBin] - bin_Centers_rhs[iBin]) > 1.0E-10)
             {
-                std::cout << "\nIn Aerosol::operator+=: aerosol distributions do not have the same bin centers!";
-                return *this;
+                throw std::runtime_error("In Aerosol::addAerosolToPDF: aerosol distributions do not have the same bin centers!");
             }
         }
 
-        Vector_1D pdf_rhs = rhs.getPDF();
+        const Vector_1D& pdf_rhs = rhs.getPDF();
         for (UInt iBin = 0; iBin < nBin; iBin++)
         {
             pdf[iBin] += pdf_rhs[iBin];
         }
-
-        return *this;
-
     } /* End of Aerosol::operator+= */
 
-    Aerosol Aerosol::operator-=(const Aerosol &rhs)
-    {
-
-        if (nBin != rhs.getNBin())
-        {
-            std::cout << "\nIn Aerosol::operator+=: aerosol distributions do not have the same number of bins: " << nBin << " != " << rhs.getNBin();
-            return *this;
-        }
-
-        Vector_1D bin_Centers_rhs = rhs.getBinCenters();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            if (std::abs(bin_Centers[iBin] - bin_Centers_rhs[iBin]) > 1.0E-10)
-            {
-                std::cout << "\nIn Aerosol::operator+=: aerosol distributions do not have the same bin centers!";
-                return *this;
-            }
-        }
-
-        Vector_1D pdf_rhs = rhs.getPDF();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            pdf[iBin] -= pdf_rhs[iBin];
-        }
-
-        return *this;
-
-    } /* End of Aerosol::operator-= */
-
-    Aerosol Aerosol::operator+(const Aerosol &rhs) const
-    {
-
-        Aerosol result = *this;
-
-        if (nBin != rhs.getNBin())
-        {
-            std::cout << "\nIn Aerosol::operator+=: aerosol distributions do not have the same number of bins: " << nBin << " != " << rhs.getNBin();
-            return *this;
-        }
-
-        Vector_1D bin_Centers_rhs = rhs.getBinCenters();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            if (std::abs(bin_Centers[iBin] - bin_Centers_rhs[iBin]) > 1.0E-10)
-            {
-                std::cout << "\nIn Aerosol::operator+=: aerosol distributions do not have the same bin centers!";
-                return *this;
-            }
-        }
-
-        Vector_1D pdf_rhs = rhs.getPDF();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            result.pdf[iBin] += pdf_rhs[iBin];
-        }
-
-        return result;
-
-    } /* End of Aerosol::operator+ */
-
-    Aerosol Aerosol::operator-(const Aerosol &rhs) const
-    {
-
-        Aerosol result = *this;
-
-        if (nBin != rhs.getNBin())
-        {
-            std::cout << "\nIn Aerosol::operator+=: aerosol distributions do not have the same number of bins: " << nBin << " != " << rhs.getNBin();
-            return *this;
-        }
-
-        Vector_1D bin_Centers_rhs = rhs.getBinCenters();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            if (std::abs(bin_Centers[iBin] - bin_Centers_rhs[iBin]) > 1.0E-10)
-            {
-                std::cout << "\nIn Aerosol::operator+=: aerosol distributions do not have the same bin centers!";
-                return *this;
-            }
-        }
-
-        Vector_1D pdf_rhs = rhs.getPDF();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            result.pdf[iBin] -= pdf_rhs[iBin];
-        }
-
-        return result;
-
-    } /* End of Aerosol::operator- */
-
-    void Aerosol::Coagulate(const RealDouble dt, const Coagulation &kernel)
+    void Aerosol::Coagulate(const double dt, const Coagulation &kernel)
     {
 
         /* DESCRIPTION:
@@ -347,7 +150,7 @@ namespace AIM
          * M.Z. Jacobson, Fundamentals of atmospheric modeling. Cambridge university press, 2005.*/
 
         /* INPUT:
-         * - RealDouble dt      :: Timestep in s
+         * - double dt      :: Timestep in s
          * - Coagulation kernel :: Coagulation structure containing the coagulation kernels
          *
          * OUTPUT:
@@ -429,7 +232,7 @@ namespace AIM
 
     } /* End of Aerosol::Coagulate */
 
-    void Aerosol::Coagulate(const RealDouble dt, const Vector_2D &beta, const Vector_3D &f)
+    void Aerosol::Coagulate(const double dt, const Vector_2D &beta, const Vector_3D &f)
     {
 
         /* DESCRIPTION:
@@ -438,7 +241,7 @@ namespace AIM
          * M.Z. Jacobson, Fundamentals of atmospheric modeling. Cambridge university press, 2005.*/
 
         /* INPUT:
-         * - RealDouble dt   :: Timestep in s
+         * - double dt   :: Timestep in s
          * - Vector_2D  beta :: Coagulation kernel
          * - Vector_3D  f    :: Coagulation vector: "In which bin does the result of the coagulation of two other bins end up?"
          *
@@ -494,10 +297,10 @@ namespace AIM
 
     } /* End of Aerosol::Coagulate */
 
-    RealDouble Aerosol::Moment(UInt n) const
+    double Aerosol::Moment(UInt n) const
     {
 
-        RealDouble moment = 0;
+        double moment = 0;
 
         for (UInt iBin = 0; iBin < nBin; iBin++)
         {
@@ -508,10 +311,10 @@ namespace AIM
 
     } /* End of Aerosol::Moment */
 
-    RealDouble Aerosol::Radius() const
+    double Aerosol::Radius() const
     {
 
-        const RealDouble N = Moment(0);
+        const double N = Moment(0);
 
         if (N > 0)
         {
@@ -525,10 +328,10 @@ namespace AIM
 
     } /* End of Aerosol::Radius */
 
-    RealDouble Aerosol::EffRadius() const
+    double Aerosol::EffRadius() const
     {
 
-        const RealDouble m2 = Moment(2);
+        const double m2 = Moment(2);
 
         if (m2 > 0)
         {
@@ -542,10 +345,10 @@ namespace AIM
 
     } /* End of Aerosol::EffRadius */
 
-    RealDouble Aerosol::StdDev() const
+    double Aerosol::StdDev() const
     {
 
-        const RealDouble N = Moment(0);
+        const double N = Moment(0);
 
         if (N > 0)
         {
@@ -559,7 +362,7 @@ namespace AIM
 
     } /* End of Aerosol::StdDev */
 
-    void Aerosol::scalePdf(RealDouble scalFactor)
+    void Aerosol::scalePdf(double scalFactor)
     {
 
         if (scalFactor < 0)
@@ -574,7 +377,7 @@ namespace AIM
 
     } /* End of Aerosol::scalePdf */
 
-    void Aerosol::updatePdf(Vector_1D pdf_)
+    void Aerosol::updatePdf(const Vector_1D& pdf_)
     {
 
         if (pdf_.size() != pdf.size())
@@ -588,137 +391,13 @@ namespace AIM
 
     } /* End of Aerosol::updatePdf */
 
-    Vector_1D Aerosol::getBinCenters() const
-    {
-
-        return bin_Centers;
-
-    } /* End of Aerosol::getBinCenters */
-
-    Vector_1D Aerosol::getBinVCenters() const
-    {
-
-        return bin_VCenters;
-
-    } /* End of Aerosol::getBinVCenters */
-
-    Vector_1D Aerosol::getBinEdges() const
-    {
-
-        return bin_Edges;
-
-    } /* End of Aerosol::getBinEdges */
-
-    Vector_1D Aerosol::getBinSizes() const
-    {
-
-        return bin_Sizes;
-
-    } /* End of Aerosol::getBinSizes */
-
-    UInt Aerosol::getNBin() const
-    {
-
-        return nBin;
-
-    } /* End of Aerosol::getNBin */
-
-    RealDouble Aerosol::getNPart() const
-    {
-
-        return nPart;
-
-    } /* End of Aerosol::getNPart */
-
-    const char *Aerosol::getType() const
-    {
-
-        return type;
-
-    } /* End of Aerosol::getType */
-
-    RealDouble Aerosol::getAlpha() const
-    {
-
-        return alpha;
-
-    } /* End of Aerosol::getAlpha */
-
-    Vector_1D Aerosol::getPDF() const
-    {
-
-        return pdf;
-
-    } /* End of Aerosol::getPDF */
-
-    Grid_Aerosol::Grid_Aerosol() : Nx(2),
-                                   Ny(2),
-                                   bin_Centers(2),
-                                   bin_Edges(3),
-                                   bin_VEdges(3),
-                                   bin_Sizes(2),
-                                   nBin(2)
-    {
-
-        /* Default constructor */
-
-        for (UInt iBin = 0; iBin < nBin + 1; iBin++)
-        {
-            bin_Edges[iBin] = DEFAULT_MIN_RADIUS * pow(1.2, iBin / 3.0);
-            bin_VEdges[iBin] = 4.0 / 3.0 * physConst::PI * bin_Edges[iBin] *
-                               bin_Edges[iBin] * bin_Edges[iBin];
-        }
-
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            bin_Centers[iBin] = 0.5 * (bin_Edges[iBin] + bin_Edges[iBin + 1]);
-            bin_Sizes[iBin] = bin_Edges[iBin + 1] - bin_Edges[iBin];
-        }
-
-        bin_VCenters.resize(nBin, Vector_2D(Ny, Vector_1D(Nx, 0.0)));
-
-        RealDouble vol = 0.0E+00;
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            vol = 0.5 * (bin_VEdges[iBin] + bin_VEdges[iBin + 1]);
-            for (UInt jNy = 0; jNy < Ny; jNy++)
-            {
-                for (UInt iNx = 0; iNx < Nx; iNx++)
-                {
-                    bin_VCenters[iBin][jNy][iNx] = vol;
-                }
-            }
-        }
-
-        nPart = 1.0;
-
-        type = "lognormal";
-
-        mu = 0;
-        sigma = 0;
-        alpha = 0;
-
-        pdf.resize(nBin, Vector_2D(Ny, Vector_1D(Nx, 0.0E+00)));
-
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            for (UInt jNy = 0; jNy < Ny; jNy++)
-            {
-                for (UInt iNx = 0; iNx < Nx; iNx++)
-                {
-                    pdf[iBin][jNy][iNx] = 0.0E+00;
-                }
-            }
-        }
-
-    } /* End of Grid_Aerosol::Grid_Aerosol */
-
-    Grid_Aerosol::Grid_Aerosol(UInt Nx_, UInt Ny_, Vector_1D bin_Centers_, Vector_1D bin_Edges_, RealDouble nPart_, RealDouble mu_, RealDouble sigma_, const char *distType, RealDouble alpha_, RealDouble gamma_, RealDouble b_) : Nx(Nx_),
-                                                                                                                                                                                                                                    Ny(Ny_),
-                                                                                                                                                                                                                                    bin_VEdges(bin_Centers_.size() + 1),
-                                                                                                                                                                                                                                    bin_Sizes(bin_Centers_.size()),
-                                                                                                                                                                                                                                    type(distType)
-    {
+     Grid_Aerosol::Grid_Aerosol(UInt Nx_, UInt Ny_, const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, double nPart_, double mu_, double sigma_, const char *distType, double alpha_, double gamma_, double b_) 
+     :  Nx(Nx_), 
+        Ny(Ny_), 
+        bin_VEdges(bin_Centers_.size() + 1),
+        bin_Sizes(bin_Centers_.size()),
+        type(distType)
+{
 
         /* Constructor */
 
@@ -757,9 +436,6 @@ namespace AIM
 
         pdf.resize(nBin, Vector_2D(Ny, Vector_1D(Nx, 0.0E+00)));
 
-        /* Allocate number of particles */
-        nPart = nPart_;
-
         /* Allocate mean and standard deviation */
         if (mu_ <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: mean/mode is negative: mu = " << mu_ << "\n"; }
         mu = mu_;
@@ -781,7 +457,7 @@ namespace AIM
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin][0][0] = nPart * exp(-0.5 * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma)) * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma))) / (sqrt(2.0 * physConst::PI) * log(sigma));
+                pdf[iBin][0][0] = nPart_ * exp(-0.5 * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma)) * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma))) / (sqrt(2.0 * physConst::PI) * log(sigma));
                 for (UInt jNy = 0; jNy < Ny; jNy++)
                 {
                     for (UInt iNx = 0; iNx < Nx; iNx++)
@@ -798,7 +474,7 @@ namespace AIM
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin][0][0] = nPart * exp(-0.5 * ((bin_Centers[iBin] - mu) / sigma) * ((bin_Centers[iBin] - mu) / sigma)) / (sqrt(2.0 * physConst::PI) * sigma);
+                pdf[iBin][0][0] = nPart_ * exp(-0.5 * ((bin_Centers[iBin] - mu) / sigma) * ((bin_Centers[iBin] - mu) / sigma)) / (sqrt(2.0 * physConst::PI) * sigma);
                 for (UInt jNy = 0; jNy < Ny; jNy++)
                 {
                     for (UInt iNx = 0; iNx < Nx; iNx++)
@@ -818,7 +494,7 @@ namespace AIM
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin][0][0] = nPart * alpha * pow(bin_Centers[iBin] / bin_Centers[0], -alpha);
+                pdf[iBin][0][0] = nPart_ * alpha * pow(bin_Centers[iBin] / bin_Centers[0], -alpha);
                 for (UInt jNy = 0; jNy < Ny; jNy++)
                 {
                     for (UInt iNx = 0; iNx < Nx; iNx++)
@@ -841,7 +517,7 @@ namespace AIM
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin][0][0] = nPart * gamma_ * pow(b_, (alpha + 1) / gamma_) / boost::math::tgamma((alpha + 1) / gamma_) * pow(bin_Centers[iBin], alpha + 1) * exp(-b_ * pow(bin_Centers[iBin], gamma_));
+                pdf[iBin][0][0] = nPart_ * gamma_ * pow(b_, (alpha + 1) / gamma_) / boost::math::tgamma((alpha + 1) / gamma_) * pow(bin_Centers[iBin], alpha + 1) * exp(-b_ * pow(bin_Centers[iBin], gamma_));
                 for (UInt jNy = 0; jNy < Ny; jNy++)
                 {
                     for (UInt iNx = 0; iNx < Nx; iNx++)
@@ -858,196 +534,7 @@ namespace AIM
         }
     } /* End of Grid_Aerosol::Grid_Aerosol */
 
-    Grid_Aerosol::Grid_Aerosol(const Grid_Aerosol &rhs)
-    {
-
-        bin_Centers = rhs.bin_Centers;
-        bin_VCenters = rhs.bin_VCenters;
-        bin_Edges = rhs.bin_Edges;
-        bin_VEdges = rhs.bin_VEdges;
-        bin_Sizes = rhs.bin_Sizes;
-        nBin = rhs.nBin;
-        nPart = rhs.nPart;
-        type = rhs.type;
-        mu = rhs.mu;
-        sigma = rhs.sigma;
-        alpha = rhs.alpha;
-        pdf = rhs.pdf;
-        Nx = rhs.Nx;
-        Ny = rhs.Ny;
-
-    } /* End of Grid_Aerosol::Grid_Aerosol */
-
-    Grid_Aerosol::~Grid_Aerosol()
-    {
-        /* Destructor */
-
-    } /* End of Grid_Aerosol::~Grid_Aerosol */
-
-    Grid_Aerosol &Grid_Aerosol::operator=(const Grid_Aerosol &rhs)
-    {
-
-        if (&rhs == this)
-            return *this;
-
-        Nx = rhs.Nx;
-        Ny = rhs.Ny;
-        bin_Centers = rhs.bin_Centers;
-        bin_VCenters = rhs.bin_VCenters;
-        bin_Edges = rhs.bin_Edges;
-        bin_VEdges = rhs.bin_VEdges;
-        bin_Sizes = rhs.bin_Sizes;
-        nBin = rhs.nBin;
-        nPart = rhs.nPart;
-        type = rhs.type;
-        mu = rhs.mu;
-        sigma = rhs.sigma;
-        alpha = rhs.alpha;
-        pdf = rhs.pdf;
-        return *this;
-
-    } /* End of Grid_Aerosol::operator= */
-
-    Grid_Aerosol Grid_Aerosol::operator+=(const Grid_Aerosol &rhs)
-    {   
-        if (nBin != rhs.getNBin())
-        {
-            std::cout << "\nIn Aerosol::operator+=: aerosol distributions do not have the same number of bins: " << nBin << " != " << rhs.getNBin();
-            return *this;
-        }
-
-        Vector_1D bin_Centers_rhs = rhs.getBinCenters();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            if (std::abs(bin_Centers[iBin] - bin_Centers_rhs[iBin]) > 1.0E-10)
-            {
-                std::cout << "\nIn Aerosol::operator+=: aerosol distributions do not have the same bin centers!";
-                return *this;
-            }
-        }
-
-        Vector_3D pdf_rhs = rhs.getPDF();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            for (UInt jNy = 0; jNy < Ny; jNy++)
-            {
-                for (UInt iNx = 0; iNx < Nx; iNx++)
-                {
-                    pdf[iBin][jNy][iNx] += pdf_rhs[iBin][jNy][iNx];
-                }
-            }
-        }
-
-        return *this;
-
-    } /* End of Grid_Aerosol::operator+= */
-
-    Grid_Aerosol Grid_Aerosol::operator-=(const Grid_Aerosol &rhs)
-    {
-        if (nBin != rhs.getNBin())
-        {
-            std::cout << "\nIn Grid_Aerosol::operator+=: aerosol distributions do not have the same number of bins: " << nBin << " != " << rhs.getNBin();
-            return *this;
-        }
-
-        Vector_1D bin_Centers_rhs = rhs.getBinCenters();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            if (std::abs(bin_Centers[iBin] - bin_Centers_rhs[iBin]) > 1.0E-10)
-            {
-                std::cout << "\nIn Grid_Aerosol::operator+=: aerosol distributions do not have the same bin centers!";
-                return *this;
-            }
-        }
-
-        Vector_3D pdf_rhs = rhs.getPDF();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            for (UInt jNy = 0; jNy < Ny; jNy++)
-            {
-                for (UInt iNx = 0; iNx < Nx; iNx++)
-                {
-                    pdf[iBin][jNy][iNx] -= pdf_rhs[iBin][jNy][iNx];
-                }
-            }
-        }
-
-        return *this;
-
-    } /* End of Grid_Aerosol::operator-= */
-
-    Grid_Aerosol Grid_Aerosol::operator+(const Grid_Aerosol &rhs) const
-    {
-        Grid_Aerosol result = *this;
-
-        if (nBin != rhs.getNBin())
-        {
-            std::cout << "\nIn Grid_Aerosol::operator+=: aerosol distributions do not have the same number of bins: " << nBin << " != " << rhs.getNBin();
-            return *this;
-        }
-
-        Vector_1D bin_Centers_rhs = rhs.getBinCenters();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            if (std::abs(bin_Centers[iBin] - bin_Centers_rhs[iBin]) > 1.0E-10)
-            {
-                std::cout << "\nIn Grid_Aerosol::operator+=: aerosol distributions do not have the same bin centers!";
-                return *this;
-            }
-        }
-
-        Vector_3D pdf_rhs = rhs.getPDF();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            for (UInt jNy = 0; jNy < Ny; jNy++)
-            {
-                for (UInt iNx = 0; iNx < Nx; iNx++)
-                {
-                    result.pdf[iBin][jNy][iNx] += pdf_rhs[iBin][jNy][iNx];
-                }
-            }
-        }
-
-        return result;
-
-    } /* End of Grid_Aerosol::operator+ */
-
-    Grid_Aerosol Grid_Aerosol::operator-(const Grid_Aerosol &rhs) const
-    {
-        Grid_Aerosol result = *this;
-
-        if (nBin != rhs.getNBin())
-        {
-            std::cout << "\nIn Grid_Aerosol::operator+=: aerosol distributions do not have the same number of bins: " << nBin << " != " << rhs.getNBin();
-            return *this;
-        }
-
-        Vector_1D bin_Centers_rhs = rhs.getBinCenters();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            if (std::abs(bin_Centers[iBin] - bin_Centers_rhs[iBin]) > 1.0E-10)
-            {
-                std::cout << "\nIn Grid_Aerosol::operator+=: aerosol distributions do not have the same bin centers!";
-                return *this;
-            }
-        }
-
-        Vector_3D pdf_rhs = rhs.getPDF();
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            for (UInt jNy = 0; jNy < Ny; jNy++)
-            {
-                for (UInt iNx = 0; iNx < Nx; iNx++)
-                {
-                    result.pdf[iBin][jNy][iNx] -= pdf_rhs[iBin][jNy][iNx];
-                }
-            }
-        }
-
-        return result;
-    } /* End of Grid_Aerosol::operator- */
-
-    void Grid_Aerosol::Coagulate(const RealDouble dt, Coagulation &kernel, const UInt N, const UInt SYM)
+    void Grid_Aerosol::Coagulate(const double dt, Coagulation &kernel, const UInt N, const UInt SYM)
     {
 
         /* DESCRIPTION:
@@ -1056,7 +543,7 @@ namespace AIM
          * M.Z. Jacobson, Fundamentals of atmospheric modeling. Cambridge university press, 2005.*/
 
         /* INPUT:
-         * - RealDouble dt      :: Timestep in s
+         * - double dt      :: Timestep in s
          * - Coagulation kernel :: Coagulation structure containing the coagulation kernels
          * - UInt N             :: Coagulation scenarios ( 0, 1 or 2 )
          * - UInt SYM           :: Symmetry?
@@ -1094,11 +581,11 @@ namespace AIM
         Vector_3D v_new = v;
 
         /* Allocate variables */
-        RealDouble P[nBin];
-        RealDouble L[nBin];
+        double P[nBin];
+        double L[nBin];
 
         /* Total volume and number per grid cell */
-        RealDouble totVol, nPart;
+        double totVol, nPart;
 
         /* Description of the algorithm:
          * \frac{dv}{dt}[iBin] = P - L * v[iBin]
@@ -1196,7 +683,7 @@ namespace AIM
 
     } /* End of Grid_Aerosol::Coagulate */
 
-    void Grid_Aerosol::Grow( const RealDouble dt, Vector_2D &H2O, const Vector_2D &T, const Vector_1D &P, const UInt N, const UInt SYM )
+    void Grid_Aerosol::Grow( const double dt, Vector_2D &H2O, const Vector_2D &T, const Vector_1D &P, const UInt N, const UInt SYM )
     {
 
         /* DESCRIPTION:
@@ -1205,7 +692,7 @@ namespace AIM
          * M.Z. Jacobson, Fundamentals of atmospheric modeling. Cambridge university press, 2005.*/
 
         /* INPUT:
-         * - RealDouble dt :: Timestep in s
+         * - double dt :: Timestep in s
          * - Vector_2D H2O :: Vector containing water vapor molecular concentrations [molec/cm^3]
          *    -> ( Ny x Nx )
          * - Vector_2D T   :: Vector containing temperature values [K]
@@ -1226,26 +713,26 @@ namespace AIM
         UInt iNx  = 0, jNy  = 0, iBin = 0;
 
         /* Conversion factor from ice volume [m^3] to [molecules] */ 
-        const RealDouble UNITCONVERSION = physConst::RHO_ICE / MW_H2O * physConst::Na;
+        const double UNITCONVERSION = physConst::RHO_ICE / MW_H2O * physConst::Na;
 
         /* Scaled Boltzmann constant */
-        const RealDouble kB_ = physConst::kB * 1.00E+06;
+        const double kB_ = physConst::kB * 1.00E+06;
 
         /* Declare and initialize particle totals and water vapor array */
         Vector_3D icePart = Number( );
         Vector_3D iceVol  = Volume( );
         Vector_2D totH2O  = H2O;
         
-        RealDouble pSat;
+        double pSat;
 
         #pragma omp parallel if( !PARALLEL_CASES ) default( shared )
         {
 
             /* All declarations here are enforced as thread private */
 
-            RealDouble partVol  = 0.0E+00;
-            RealDouble icePart_ = 0.0E+00;
-            RealDouble iceVol_  = 0.0E+00;
+            double partVol  = 0.0E+00;
+            double icePart_ = 0.0E+00;
+            double iceVol_  = 0.0E+00;
 
             int jBin = -1;
             std::vector<int> toBin( nBin, 0 );
@@ -1253,8 +740,8 @@ namespace AIM
 
             /* Declare and initialize variable to store saturation quantities,
             * pressure and temperature */
-            RealDouble locT = 0.0E+00;
-            RealDouble locP = 0.0E+00;
+            double locT = 0.0E+00;
+            double locP = 0.0E+00;
 
 
             #pragma omp for                                                               \
@@ -1312,13 +799,13 @@ namespace AIM
     void Grid_Aerosol::APC_Scheme(const UInt jNy, const UInt iNx, const double T, const double P,
                             const double dt, Vector_2D& H2O, Vector_2D& totH2O, Vector_3D& icePart, Vector_3D& iceVol){
         
-        RealDouble totPart = 0.0, totalkGrowth = 0.0, totalkGrowth_kelvin = 0.0, totH2Oi = 0.0;
-        RealDouble pSat = physFunc::pSat_H2Os( T );
+        double totPart = 0.0, totalkGrowth = 0.0, totalkGrowth_kelvin = 0.0, totH2Oi = 0.0;
+        double pSat = physFunc::pSat_H2Os( T );
         Vector_1D  kGrowth(nBin, 0);
-        RealDouble MAXVOL = bin_VEdges[nBin]; 
-        RealDouble kB_ = physConst::kB * 1.00E+06; //SCALED boltzmann constant [J cm^3/K]
-        RealDouble c_qit, C_qt, C_qsi; //Quantities used in APC scheme.
-        RealDouble UNITCONVERSION = physConst::RHO_ICE / MW_H2O * physConst::Na; // Conversion factor from ice volume [m^3] to [molecules]
+        double MAXVOL = bin_VEdges[nBin]; 
+        double kB_ = physConst::kB * 1.00E+06; //SCALED boltzmann constant [J cm^3/K]
+        double c_qit, C_qt, C_qsi; //Quantities used in APC scheme.
+        double UNITCONVERSION = physConst::RHO_ICE / MW_H2O * physConst::Na; // Conversion factor from ice volume [m^3] to [molecules]
         /* -------------------------------------------------
         * Analytical predictor of condensation (APC) scheme
         * -------------------------------------------------
@@ -1381,7 +868,7 @@ namespace AIM
         H2O[jNy][iNx] = totH2O[jNy][iNx] - totH2Oi; 
     } //End of Grid_Aerosol::APC_Scheme
 
-    RealDouble Grid_Aerosol::EffDiffCoef( const RealDouble r, const RealDouble T, const RealDouble P, const RealDouble H2O ) const
+    double Grid_Aerosol::EffDiffCoef( const double r, const double T, const double P, const double H2O ) const
     {
 
         /* DESCRIPTION:
@@ -1392,26 +879,26 @@ namespace AIM
          * Uses Jacobson's D_{eff} expression with a Kelvin effect correction in the numerator from Toon (1989) and other literature*/
 
         /* INPUT PARAMETERS:
-         * - RealDouble r     :: radius in m
-         * - RealDouble T     :: temperature in K
-         * - RealDouble P     :: pressure in Pa
-         * - RealDouble H2O   :: gaseous water concentration in molec/cm^3 air
+         * - double r     :: radius in m
+         * - double T     :: temperature in K
+         * - double P     :: pressure in Pa
+         * - double H2O   :: gaseous water concentration in molec/cm^3 air
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Effective Diffusion Coefficient in m^2/s */
+         * - double :: Effective Diffusion Coefficient in m^2/s */
 
-         const RealDouble dCoef = physFunc::CorrDiffCoef_H2O( r, T, P ); /* [m^2/s] */
-         const RealDouble p_sat = physFunc::pSat_H2Os( T );
-         const RealDouble p_h2o = physConst::R * T * H2O /(physConst::Na*1e-6);
-         const RealDouble latS  = physFunc::LHeatSubl_H2O( T ); /* [J/kg] */
-         const RealDouble nSat  = physFunc::pSat_H2Os( T ) / ( physConst::kB * T ); /* [#/m^3] */
+         const double dCoef = physFunc::CorrDiffCoef_H2O( r, T, P ); /* [m^2/s] */
+         const double p_sat = physFunc::pSat_H2Os( T );
+         const double p_h2o = physConst::R * T * H2O /(physConst::Na*1e-6);
+         const double latS  = physFunc::LHeatSubl_H2O( T ); /* [J/kg] */
+         const double nSat  = physFunc::pSat_H2Os( T ) / ( physConst::kB * T ); /* [#/m^3] */
         
         //Base D_{eff} expression in Jacobson (1995), equation 2
         //We can NOT directly use expressions for something like dm/dt, dr/dt, dv/dt, etc because of the (S' - 1) term in the 
         //numerator. Plugging one of those expressions into APC results in double-multiplication of (S' - 1), leading to a 1000%
         //for 110% ice supersaturation.
         //TODO Currently does not take into account Knudsen number effects for dCoef & ThermalCond or radiation effects.
-         RealDouble Deff = dCoef/(1 + (dCoef * latS*latS*MW_H2O*MW_H2O * (H2O*1.0e6/physConst::Na)) / (physFunc::ThermalCond(r,T,P)*  physConst::R*T*T) );
+         double Deff = dCoef/(1 + (dCoef * latS*latS*MW_H2O*MW_H2O * (H2O*1.0e6/physConst::Na)) / (physFunc::ThermalCond(r,T,P)*  physConst::R*T*T) );
 
          return Deff;
     } // End of Grid_Aerosol::EffDiffCoef 
@@ -1623,30 +1110,25 @@ namespace AIM
     
     void Grid_Aerosol::UpdateCenters(const Vector_3D &iceV, const Vector_3D &PDF)
     {
-
-        UInt iNx = 0;
-        UInt jNy = 0;
-        UInt iBin = 0;
-
-        RealDouble ratio = 0.0E+00;
-
-        #pragma omp parallel for default(shared) private(iNx, jNy, iBin, ratio) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+        #pragma omp parallel for default(shared)
         for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            ratio = log(bin_Edges[iBin + 1] / bin_Edges[iBin]);
+        {   
+            //Must resize the bin_VCenters to avoid indexing errors
+            bin_VCenters[iBin] = Vector_2D(Ny, Vector_1D(Nx));
+            double ratio = log(bin_Edges[iBin + 1] / bin_Edges[iBin]);
             for (UInt jNy = 0; jNy < Ny; jNy++)
             {
                 for (UInt iNx = 0; iNx < Nx; iNx++)
                 {
-                    if (PDF[iBin][jNy][iNx] > TINY)
+                    if (PDF[iBin][jNy][iNx] > 0) {
                         bin_VCenters[iBin][jNy][iNx] =
                             std::max(std::min(iceV[iBin][jNy][iNx] / PDF[iBin][jNy][iNx] / ratio,
                                               0.9999 * bin_VEdges[iBin + 1]),
                                      1.0001 * bin_VEdges[iBin]);
-                    else
-                        bin_VCenters[iBin][jNy][iNx] =
-                            0.5 * (bin_VEdges[iBin] + bin_VEdges[iBin + 1]);
+                    }
+                    else {
+                        bin_VCenters[iBin][jNy][iNx] = 0.5 * (bin_VEdges[iBin] + bin_VEdges[iBin + 1]);
+                    }
                 }
             }
         }
@@ -1661,17 +1143,17 @@ namespace AIM
         UInt iBin = 0;
 
         Vector_2D moment(Ny, Vector_1D(Nx, 0.0E+00));
-        const RealDouble FACTOR = 3.0 / RealDouble(4.0 * physConst::PI);
+        const double FACTOR = 3.0 / double(4.0 * physConst::PI);
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
             schedule(dynamic, 1) if (!PARALLEL_CASES)
-        for (jNy = 0; jNy < Ny; jNy++)
+        for (iBin = 0; iBin < nBin; iBin++)
         {
-            for (iNx = 0; iNx < Nx; iNx++)
+            for (jNy = 0; jNy < Ny; jNy++)
             {
-                for (iBin = 0; iBin < nBin; iBin++)
+                for (iNx = 0; iNx < Nx; iNx++)
                 {
-                    moment[jNy][iNx] += (log(bin_Edges[iBin + 1] / bin_Edges[iBin])) * pow(FACTOR * bin_VCenters[iBin][jNy][iNx], n / RealDouble(3.0)) * pdf[iBin][jNy][iNx];
+                    moment[jNy][iNx] += (log(bin_Edges[iBin + 1] / bin_Edges[iBin])) * pow(FACTOR * bin_VCenters[iBin][jNy][iNx], n / 3.0) * pdf[iBin][jNy][iNx];
                 }
             }
         }
@@ -1688,7 +1170,7 @@ namespace AIM
         UInt iBin = 0;
 
         Vector_3D number(nBin, Vector_2D(Ny, Vector_1D(Nx, 0.0E+00)));
-        RealDouble ratio = 0.0E+00;
+        double ratio = 0.0E+00;
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin, ratio) \
             schedule(dynamic, 1) if (!PARALLEL_CASES)
@@ -1716,11 +1198,11 @@ namespace AIM
 
     } /* End of Grid_Aerosol::TotalNumber */
 
-    RealDouble Grid_Aerosol::TotalNumber_sum(const Vector_2D cellAreas) const
+    double Grid_Aerosol::TotalNumber_sum(const Vector_2D& cellAreas) const
     {
 
         Vector_2D TotalNumber_pcell = TotalNumber();
-        RealDouble totalnumber_sum = 0;
+        double totalnumber_sum = 0;
         UInt iNx = 0;
         UInt jNy = 0;
 
@@ -1740,7 +1222,7 @@ namespace AIM
         return totalnumber_sum;
     }
 
-    Vector_1D Grid_Aerosol::Overall_Size_Dist(const Vector_2D cellAreas) const
+    Vector_1D Grid_Aerosol::Overall_Size_Dist(const Vector_2D& cellAreas) const
     {
 
         Vector_1D overall_size_dist(nBin, 0.00E+00);
@@ -1772,7 +1254,7 @@ namespace AIM
         UInt iBin = 0;
 
         Vector_3D volume(nBin, Vector_2D(Ny, Vector_1D(Nx, 0.0E+00)));
-        RealDouble ratio = 0.0E+00;
+        double ratio = 0.0E+00;
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin, ratio) \
             schedule(dynamic, 1) if (!PARALLEL_CASES)
@@ -1803,7 +1285,7 @@ namespace AIM
         UInt iNx = 0;
 
         Vector_2D m2 = Moment(2);
-        const RealDouble FACTOR = 4.0 * physConst::PI;
+        const double FACTOR = 4.0 * physConst::PI;
         /* A = 4.0*pi*m2 */
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
@@ -1825,7 +1307,7 @@ namespace AIM
         UInt iNx = 0;
 
         Vector_2D m3 = Moment(3);
-        const RealDouble FACTOR = 4.0 / RealDouble(3.0) * physConst::PI;
+        const double FACTOR = 4.0 / double(3.0) * physConst::PI;
         /* V = 4.0/3.0*pi*m3 */
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
@@ -1840,10 +1322,10 @@ namespace AIM
 
     } /* End of Grid_Aerosol::TotalVolume */
 
-    RealDouble Grid_Aerosol::TotalIceMass_sum(const Vector_2D cellAreas) const
+    double Grid_Aerosol::TotalIceMass_sum(const Vector_2D& cellAreas) const
     {
         Vector_2D iwc = IWC();
-        RealDouble totalicemass_sum = 0;
+        double totalicemass_sum = 0;
         UInt iNx = 0;
         UInt jNy = 0;
 
@@ -1868,7 +1350,7 @@ namespace AIM
         UInt iNx = 0;
 
         Vector_2D TVol = TotalVolume();
-        const RealDouble FACTOR = physConst::RHO_ICE * 1.0E+06;
+        const double FACTOR = physConst::RHO_ICE * 1.0E+06;
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
             schedule(dynamic, 1) if (!PARALLEL_CASES)
@@ -1892,8 +1374,8 @@ namespace AIM
         Vector_2D chi = IWC();
         Vector_2D rE = EffRadius();
 
-        const RealDouble a = 3.448E+00; /* [m^2/kg] */
-        const RealDouble b = 2.431E-03; /* [m^3/kg] */
+        const double a = 3.448E+00; /* [m^2/kg] */
+        const double b = 2.431E-03; /* [m^3/kg] */
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
             schedule(dynamic, 1) if (!PARALLEL_CASES)
@@ -1915,7 +1397,42 @@ namespace AIM
         return chi;
 
     } /* End of Grid_Aerosol::Extinction */
-
+    double Grid_Aerosol::extinctionWidth(const Vector_1D& xCoord, double thres) const {
+        Vector_2D chi = Extinction();
+        Vector_1D chiMax_x = VectorUtils::VecMax2D(Extinction(), 1);
+        double chiMax = *std::max_element(chiMax_x.begin(), chiMax_x.end());
+        int i_left = -1;
+        int i_right = -1;
+        for (int i = 0; i < Nx; i++) {
+            bool inContrail = chiMax_x[i] > thres*chiMax;
+            if(inContrail) {
+                i_right = i;
+                if(i_left == -1) i_left = i;
+            }
+        }
+        double width = std::abs(xCoord[i_right] - xCoord[i_left]);
+        return width;
+    }
+    double Grid_Aerosol::extinctionDepth(const Vector_1D& yCoord, double thres) const {
+        Vector_2D chi = Extinction();
+        Vector_1D chiMax_y = VectorUtils::VecMax2D(Extinction(), 0);
+        double chiMax = *std::max_element(chiMax_y.begin(), chiMax_y.end());
+        int j_bot = -1;
+        int j_top = -1;
+        for (int j = 0; j < Ny; j++) {
+            bool inContrail = chiMax_y[j] > thres*chiMax;
+            if(inContrail) {
+                j_top = j;
+                if(j_bot == -1) j_bot = j;
+            }
+        }
+        double depth = std::abs(yCoord[j_top] - yCoord[j_bot]);
+        return depth;
+    }
+    double Grid_Aerosol::intYOD(const Vector_1D& dx, const Vector_1D& dy) const {
+        Vector_1D vertOD = yOD(dy);
+        return std::inner_product(vertOD.begin(), vertOD.end(), dx.begin(), 0.0);
+    }
     Vector_1D Grid_Aerosol::PDF_Total(const Vector_2D &cellAreas) const
     {
 
@@ -1974,7 +1491,7 @@ namespace AIM
 
     } /* End of Grid_Aerosol::PDF_Total */
 
-    Vector_1D Grid_Aerosol::xOD(const Vector_1D dx) const
+    Vector_1D Grid_Aerosol::xOD(const Vector_1D& dx) const
     {
 
         UInt jNy = 0;
@@ -1995,7 +1512,7 @@ namespace AIM
 
     } /* End of Grid_Aerosol::tau_x */
 
-    Vector_1D Grid_Aerosol::yOD(const Vector_1D dy) const
+    Vector_1D Grid_Aerosol::yOD(const Vector_1D& dy) const
     {
 
         UInt jNy = 0;
@@ -2101,12 +1618,12 @@ namespace AIM
 
     } /* End of Grid_Aerosol::StdDev */
 
-    RealDouble Grid_Aerosol::Moment(UInt n, Vector_1D PDF) const
+    double Grid_Aerosol::Moment(UInt n, const Vector_1D& PDF) const
     {
 
         UInt iBin = 0;
 
-        RealDouble moment = 0.0E+00;
+        double moment = 0.0E+00;
 
         #pragma omp parallel for default(shared) private(iBin) \
             reduction(+                                        \
@@ -2121,29 +1638,29 @@ namespace AIM
 
     } /* End of Grid_Aerosol::Moment */
 
-    RealDouble Grid_Aerosol::Moment(UInt n, UInt jNy, UInt iNx) const
+    double Grid_Aerosol::Moment(UInt n, UInt jNy, UInt iNx) const
     {
 
         UInt iBin = 0;
 
-        RealDouble moment = 0.0E+00;
-        const RealDouble FACTOR = 3.0 / RealDouble(4.0 * physConst::PI);
+        double moment = 0.0E+00;
+        const double FACTOR = 3.0 / double(4.0 * physConst::PI);
 
         #pragma omp parallel for default(shared) private(iBin) \
             reduction(+                                        \
                     : moment)                                \
                 schedule(dynamic, 1) if (!PARALLEL_CASES)
         for (iBin = 0; iBin < nBin; iBin++)
-            moment += (log(bin_Edges[iBin + 1] / bin_Edges[iBin])) * pow(FACTOR * bin_VCenters[iBin][jNy][iNx], n / RealDouble(3.0)) * pdf[iBin][jNy][iNx];
+            moment += (log(bin_Edges[iBin + 1] / bin_Edges[iBin])) * pow(FACTOR * bin_VCenters[iBin][jNy][iNx], n / double(3.0)) * pdf[iBin][jNy][iNx];
 
         return moment;
 
     } /* End of Grid_Aerosol::Moment */
 
-    RealDouble Grid_Aerosol::Radius(UInt jNy, UInt iNx) const
+    double Grid_Aerosol::Radius(UInt jNy, UInt iNx) const
     {
 
-        const RealDouble N = Moment(0, jNy, iNx);
+        const double N = Moment(0, jNy, iNx);
 
         if (N > 0)
         {
@@ -2157,10 +1674,10 @@ namespace AIM
 
     } /* End of Grid_Aerosol::Radius */
 
-    RealDouble Grid_Aerosol::EffRadius(UInt jNy, UInt iNx) const
+    double Grid_Aerosol::EffRadius(UInt jNy, UInt iNx) const
     {
 
-        const RealDouble m2 = Moment(2, jNy, iNx);
+        const double m2 = Moment(2, jNy, iNx);
 
         if (m2 > 0)
         {
@@ -2174,10 +1691,10 @@ namespace AIM
 
     } /* End of Aerosol::EffRadius */
 
-    RealDouble Grid_Aerosol::StdDev(UInt jNy, UInt iNx) const
+    double Grid_Aerosol::StdDev(UInt jNy, UInt iNx) const
     {
 
-        const RealDouble N = Moment(0, jNy, iNx);
+        const double N = Moment(0, jNy, iNx);
 
         if (N > 0)
         {
@@ -2191,22 +1708,8 @@ namespace AIM
 
     } /* End of Grid_Aerosol::StdDev */
 
-    void Grid_Aerosol::updatePdf(Vector_3D pdf_)
-    {
-
-        if (pdf_.size() != pdf.size())
-        {
-            std::cout << "\nIn Grid_Aerosol::updatePdf:: sizes differ ( " << pdf_.size() << " != " << pdf.size() << " )\n";
-        }
-        else
-        {
-            pdf = pdf_;
-        }
-
-    } /* End of Grid_Aerosol::updatePdf */
-
     Vector_1D Grid_Aerosol::Average(const Vector_2D &weights,
-                                    const RealDouble &totalWeight) const
+                                    const double &totalWeight) const
     {
 
         UInt iNx = 0;
@@ -2217,7 +1720,7 @@ namespace AIM
 
         Vector_1D PDF(nBin, 0.0E+00);
 
-        RealDouble w = 0.0E+00;
+        double w = 0.0E+00;
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
             schedule(dynamic, 1) if (!PARALLEL_CASES)
@@ -2249,33 +1752,14 @@ namespace AIM
     } /* End of Grid_Aerosol::Average */
 
     void Grid_Aerosol::addPDF(const Aerosol &aerosol, const Vector_2D &weights,
-                              const Vector_2D &cellAreas, const RealDouble nCell)
+                              const Vector_2D &cellAreas, const double nCell)
     {
-
-        UInt iNx = 0;
-        UInt jNy = 0;
-        UInt iBin = 0;
-
-        Vector_1D AerPDF = aerosol.getPDF();
-
-        #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
-        for (jNy = 0; jNy < Ny; jNy++)
-        {
-            for (iNx = 0; iNx < Nx; iNx++)
-            {
-                if (weights[jNy][iNx] != 0.0E+00)
-                {
-                    for (iBin = 0; iBin < nBin; iBin++)
-                        pdf[iBin][jNy][iNx] += AerPDF[iBin] / (nCell * cellAreas[jNy][iNx]);
-                }
-            }
-        }
+        addPDF(aerosol.getPDF(), weights, cellAreas, nCell);
 
     } /* End of Grid_Aerosol::addPDF */
 
     void Grid_Aerosol::addPDF(const Vector_1D &PDF, const Vector_2D &weights,
-                              const Vector_2D &cellAreas, const RealDouble nCell)
+                              const Vector_2D &cellAreas, const double nCell)
     {
 
         UInt iNx = 0;
@@ -2289,7 +1773,8 @@ namespace AIM
             for (iNx = 0; iNx < Nx; iNx++)
             {
                 if (weights[jNy][iNx] != 0.0E+00)
-                {
+                {   
+                    /* Doesn't this just make the pdf uniform in space across bins? Am I missing something? -Michael */
                     for (iBin = 0; iBin < nBin; iBin++)
                         pdf[iBin][jNy][iNx] += PDF[iBin] / (nCell * cellAreas[jNy][iNx]);
                 }
@@ -2298,75 +1783,6 @@ namespace AIM
 
     } /* End of Grid_Aerosol::addPDF */
 
-    Vector_1D Grid_Aerosol::getBinCenters() const
-    {
-
-        return bin_Centers;
-
-    } /* End of Grid_Aerosol::getBinCenters */
-
-    Vector_3D Grid_Aerosol::getBinVCenters() const
-    {
-
-        return bin_VCenters;
-
-    } /* End of Grid_Aerosol::getBinVCenters */
-
-    Vector_1D Grid_Aerosol::getBinEdges() const
-    {
-
-        return bin_Edges;
-
-    } /* End of Grid_Aerosol::getBinEdges */
-
-    Vector_1D Grid_Aerosol::getBinSizes() const
-    {
-
-        return bin_Sizes;
-
-    } /* End of Grid_Aerosol::getBinSizes */
-
-    UInt Grid_Aerosol::getNBin() const
-    {
-
-        return nBin;
-
-    } /* End of Grid_Aerosol::getNBin */
-
-    Vector_3D Grid_Aerosol::getPDF() const
-    {
-
-        return pdf;
-
-    } /* End of Grid_Aerosol::getPDF */
-
-}
-
-Vector_1D AIM::Aerosol::generateEndOfEPMTestPDF(const Vector_1D& bin_Centers){
-    const int nBin = bin_Centers.size();
-    Vector_1D pdf (bin_Centers.size(), 0);
-    const double R_MIN = bin_Centers[0];
-    const double R_MAX = bin_Centers[nBin-1];
-    double slope, radius;
-    for (int i = 0; i < nBin; i++){
-        radius = bin_Centers[i];
-        if(radius < 0.500e-6) {
-            pdf[i] = std::max(0.00, 378.65543+22.652366*log(radius));
-        }
-        else if (radius >= 0.500e-6 && radius <= 2.00e-6){
-            pdf[i] = 465.22382 + 28.67319*log(radius); 
-        }
-        else if (radius > 2.00e-6 && radius <= 5.0e-6){
-            pdf[i] = -979.1635 - 81.28436*log(radius);
-        }
-        else if (radius > 5.0e-6 && radius <= 9.0e-6){
-            pdf[i] = -275.7263 - 23.81817*log(radius);
-        }
-        else{
-            pdf[i] = std::max(0.0, -21.74413 - 1.957615 * log(radius));
-        }
-    }
-    return pdf;
 }
 
 /* End of Aerosol.cpp */

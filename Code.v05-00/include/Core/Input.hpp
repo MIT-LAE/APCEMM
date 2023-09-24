@@ -24,46 +24,47 @@ class Input
 
     UInt Case_;
 
-    RealDouble simulationTime_;
+    double simulationTime_;
 
-    RealDouble temperature_K_;
-    RealDouble pressure_Pa_;
-    RealDouble relHumidity_w_;
-    RealDouble horizDiff_;
-    RealDouble vertiDiff_;
-    RealDouble shear_;
+    double temperature_K_;
+    double pressure_Pa_;
+    double relHumidity_w_;
+    double horizDiff_;
+    double vertiDiff_;
+    double shear_;
+    double nBV_;
 
-    RealDouble longitude_deg_;
-    RealDouble latitude_deg_;
+    double longitude_deg_;
+    double latitude_deg_;
 
     UInt emissionDOY_;
     UInt emissionDay_;
     UInt emissionMonth_;
-    RealDouble emissionTime_;
+    double emissionTime_;
 
-    RealDouble EI_NOx_;
-    RealDouble EI_CO_;
-    RealDouble EI_HC_;
-    RealDouble EI_SO2_;
-    RealDouble EI_SO2TOSO4_;
-    RealDouble EI_Soot_;
-    RealDouble sootRad_;
+    double EI_NOx_;
+    double EI_CO_;
+    double EI_HC_;
+    double EI_SO2_;
+    double EI_SO2TOSO4_;
+    double EI_Soot_;
+    double sootRad_;
 
-    RealDouble fuelFlow_;
+    double fuelFlow_;
 
-    RealDouble aircraftMass_;
-    RealDouble flightSpeed_;
-    RealDouble numEngines_;
-    RealDouble wingspan_;
-    RealDouble coreExitTemp_;
-    RealDouble bypassArea_;
+    double aircraftMass_;
+    double flightSpeed_;
+    double numEngines_;
+    double wingspan_;
+    double coreExitTemp_;
+    double bypassArea_;
 
-    RealDouble backgNOx_;
-    RealDouble backgHNO3_;
-    RealDouble backgO3_;
-    RealDouble backgCO_;
-    RealDouble backgCH4_;
-    RealDouble backgSO2_;
+    double backgNOx_;
+    double backgHNO3_;
+    double backgO3_;
+    double backgCO_;
+    double backgCH4_;
+    double backgSO2_;
 
     std::string fileName_;
     std::string fileName_ADJ_;
@@ -96,45 +97,46 @@ class Input
         ~Input();
         UInt Case() const { return Case_; }
 
-        RealDouble simulationTime() const { return simulationTime_; }
-        RealDouble temperature_K() const { return temperature_K_; }
-        RealDouble pressure_Pa() const { return pressure_Pa_; }
-        RealDouble relHumidity_w() const { return relHumidity_w_; }
-        RealDouble horizDiff() const { return horizDiff_; }
-        RealDouble vertiDiff() const { return vertiDiff_; }
-        RealDouble shear() const { return shear_; }
+        double simulationTime() const { return simulationTime_; }
+        double temperature_K() const { return temperature_K_; }
+        double pressure_Pa() const { return pressure_Pa_; }
+        double relHumidity_w() const { return relHumidity_w_; }
+        double horizDiff() const { return horizDiff_; }
+        double vertiDiff() const { return vertiDiff_; }
+        double shear() const { return shear_; }
+        inline double nBV() const { return nBV_; }
         
-        RealDouble longitude_deg() const { return longitude_deg_; }
-        RealDouble latitude_deg() const { return latitude_deg_; }
+        double longitude_deg() const { return longitude_deg_; }
+        double latitude_deg() const { return latitude_deg_; }
 
         UInt emissionDOY() const { return emissionDOY_; }
         UInt emissionDay() const { return emissionDay_; }
         UInt emissionMonth() const { return emissionMonth_; }
-        RealDouble emissionTime() const { return emissionTime_; }
+        double emissionTime() const { return emissionTime_; }
 
-        RealDouble EI_NOx() const { return EI_NOx_; }
-        RealDouble EI_CO() const { return EI_CO_; }
-        RealDouble EI_HC() const { return EI_HC_; }
-        RealDouble EI_SO2() const { return EI_SO2_; }
-        RealDouble EI_SO2TOSO4() const { return EI_SO2TOSO4_; }
-        RealDouble EI_Soot() const { return EI_Soot_; }
-        RealDouble sootRad() const { return sootRad_; }
+        double EI_NOx() const { return EI_NOx_; }
+        double EI_CO() const { return EI_CO_; }
+        double EI_HC() const { return EI_HC_; }
+        double EI_SO2() const { return EI_SO2_; }
+        double EI_SO2TOSO4() const { return EI_SO2TOSO4_; }
+        double EI_Soot() const { return EI_Soot_; }
+        double sootRad() const { return sootRad_; }
         
-        RealDouble fuelFlow() const { return fuelFlow_; }
+        double fuelFlow() const { return fuelFlow_; }
 
-        RealDouble aircraftMass() const { return aircraftMass_; }
-        RealDouble flightSpeed() const { return flightSpeed_; }
-        RealDouble numEngines() const { return numEngines_; }
-        RealDouble wingspan() const { return wingspan_; }
-        RealDouble coreExitTemp() const { return coreExitTemp_; }
-        RealDouble bypassArea() const { return bypassArea_; }
+        double aircraftMass() const { return aircraftMass_; }
+        double flightSpeed() const { return flightSpeed_; }
+        double numEngines() const { return numEngines_; }
+        double wingspan() const { return wingspan_; }
+        double coreExitTemp() const { return coreExitTemp_; }
+        double bypassArea() const { return bypassArea_; }
         
-        RealDouble backgNOx() const { return backgNOx_; }
-        RealDouble backgHNO3() const { return backgHNO3_; }
-        RealDouble backgO3() const { return backgO3_; }
-        RealDouble backgCO() const { return backgCO_; }
-        RealDouble backgCH4() const { return backgCH4_; }
-        RealDouble backgSO2() const { return backgSO2_; }
+        double backgNOx() const { return backgNOx_; }
+        double backgHNO3() const { return backgHNO3_; }
+        double backgO3() const { return backgO3_; }
+        double backgCO() const { return backgCO_; }
+        double backgCH4() const { return backgCH4_; }
+        double backgSO2() const { return backgSO2_; }
 
         std::string fileName() const { return fileName_; }
         std::string fileName_ADJ() const { return fileName_ADJ_; }

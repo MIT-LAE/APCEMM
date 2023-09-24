@@ -20,7 +20,6 @@
 #include "Util/PhysFunction.hpp"
 #include "Util/Error.hpp"
 #include "Core/Parameters.hpp"
-#include "Core/Ambient.hpp"
 
 double H2SO4_GASFRAC( const double temperature_K, const double SO4 );
 unsigned int STRAT_AER( const double temperature_K     , const double pressure_Pa       , const double airDens ,               \

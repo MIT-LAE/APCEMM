@@ -126,7 +126,7 @@ TEST_CASE("YamlInputReader Helper Functions"){
         vec = parseParamSweepInput(teststr, "", true, 10);
         REQUIRE(vec.size() == 10);
         REQUIRE(vec[0] != vec[1]);
-        for (RealDouble d: vec){
+        for (double d: vec){
             REQUIRE (d >= 20);
             REQUIRE (d <= 40);
         }
@@ -197,6 +197,7 @@ TEST_CASE("Read Yaml File"){
         catch (std::invalid_argument e){
             err = e.what();
         }
+        REQUIRE(input.SIMULATION_OMP_NUM_THREADS == 8);
         REQUIRE(input.SIMULATION_PARAMETER_SWEEP == true);
         REQUIRE(input.SIMULATION_MONTECARLO == true);
         REQUIRE(input.SIMULATION_MCRUNS == 2);
@@ -232,6 +233,7 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.PARAMETER_PARAM_MAP["DH"][0] == 15.0);
         REQUIRE(input.PARAMETER_PARAM_MAP["DV"][0] == 0.15);
         REQUIRE(input.PARAMETER_PARAM_MAP["SHEAR"][0] == 0.002);
+        REQUIRE(input.PARAMETER_PARAM_MAP["NBV"][0] == 0.013);
 
         REQUIRE(input.PARAMETER_PARAM_MAP["LONGITUDE"][0] == -15);
         REQUIRE(input.PARAMETER_PARAM_MAP["LATITUDE"][0] == 60);
@@ -267,7 +269,6 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.TRANSPORT_TRANSPORT == true);
         REQUIRE(input.TRANSPORT_FILL == true);
         REQUIRE(input.TRANSPORT_TIMESTEP == 10);
-        REQUIRE(input.TRANSPORT_PART_FLUX == true);
         REQUIRE(input.TRANSPORT_UPDRAFT == true);
         REQUIRE(input.TRANSPORT_UPDRAFT_TIMESCALE == 3600);
         REQUIRE(input.TRANSPORT_UPDRAFT_VELOCITY == 5);
@@ -288,6 +289,7 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.AEROSOL_COAGULATION_LIQUID == true);
         REQUIRE(input.AEROSOL_COAGULATION_TIMESTEP == 60);
         REQUIRE(input.AEROSOL_ICE_GROWTH == true);
+        REQUIRE(input.AEROSOL_ICE_GROWTH_TIMESTEP == 10);
     }
     SECTION("Read Met Menu"){
         OptInput input;
@@ -304,10 +306,20 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.MET_DT == 1.0);
         REQUIRE(input.MET_LOADTEMP == true);
         REQUIRE(input.MET_TEMPTIMESERIES == true);
+        REQUIRE(input.MET_INTERPTEMPDATA == true);
         REQUIRE(input.MET_LOADRH == true);
         REQUIRE(input.MET_RHTIMESERIES == true);
+        REQUIRE(input.MET_INTERPRHDATA == true);
         REQUIRE(input.MET_LOADSHEAR == true);
         REQUIRE(input.MET_SHEARTIMESERIES == true);
+        REQUIRE(input.MET_INTERPSHEARDATA == true);
+        REQUIRE(input.MET_LOADVERTVELOC == true);
+        REQUIRE(input.MET_VERTVELOCTIMESERIES == true);
+        REQUIRE(input.MET_INTERPVERTVELOC == true);
+        REQUIRE(input.MET_HUMIDSCAL_MODIFICATION_SCHEME == "none");
+        REQUIRE(input.MET_HUMIDSCAL_CONST_RHI == 110.0);
+        REQUIRE(input.MET_HUMIDSCAL_SCALING_A == 0.9779);
+        REQUIRE(input.MET_HUMIDSCAL_SCALING_B == 1.635);
         REQUIRE(input.MET_FIXDEPTH == true);
         REQUIRE(input.MET_DEPTH == 200);
         REQUIRE(input.MET_FIXLAPSERATE == true);
@@ -336,6 +348,16 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.TS_AERO_FREQ == 10);
         REQUIRE(input.PL_PL == true);
         REQUIRE(input.PL_O3 == true);
+    }
+    SECTION("Read Advanced Options Menu") {
+        OptInput input;
+        readAdvancedMenu(input, data["ADVANCED OPTIONS MENU"]);
+        REQUIRE(input.ADV_GRID_NX == 2048);
+        REQUIRE(input.ADV_GRID_NY == 192);
+        REQUIRE(input.ADV_GRID_XLIM_LEFT == 1.0e+5);
+        REQUIRE(input.ADV_GRID_XLIM_RIGHT == 1.0e+5);
+        REQUIRE(input.ADV_GRID_YLIM_DOWN == 1.5e+3);
+        REQUIRE(input.ADV_GRID_YLIM_UP == 6.5e+2);
     }
 
 }
@@ -382,6 +404,7 @@ TEST_CASE("Generate Input Objects"){
     REQUIRE(caseInput.horizDiff() == 15.0);
     REQUIRE(caseInput.vertiDiff() == 0.15);
     REQUIRE(caseInput.shear() == 0.002);
+    REQUIRE(caseInput.nBV() == 0.013);
     REQUIRE(caseInput.longitude_deg() == -15);
     REQUIRE(caseInput.latitude_deg() == 60);
     REQUIRE(caseInput.emissionDOY() == 81);

@@ -21,7 +21,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-int INTEGRATE( double VAR[] , double TIN   , double TOUT, \
+int INTEGRATE( double VAR[] , double FIX[], double TIN   , double TOUT, \
                double ATOL[], double RTOL[], double STEPMIN );
 int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                   const double temperature_K, const double pressure_Pa, \

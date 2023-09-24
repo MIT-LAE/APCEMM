@@ -32,8 +32,8 @@ Cluster::Cluster( )
 } /* End of Cluster::Cluster */
 
 Cluster::Cluster( const UInt n, const bool sRing,                   \
-                  const RealDouble sigma1, const RealDouble sigma2, \
-                  const RealDouble d1, const RealDouble d2 )
+                  const double sigma1, const double sigma2, \
+                  const double d1, const double d2 )
 {
 
     /* Constructor */
@@ -64,7 +64,7 @@ Cluster::Cluster( const UInt n, const bool sRing,                   \
     }
 
     /* Create rings */
-    RealDouble sigmaXRing, sigmaYRing;
+    double sigmaXRing, sigmaYRing;
     for ( UInt iRing = 0; iRing < nR; iRing++ ) {
         
         /* Add new element */
@@ -144,7 +144,7 @@ Cluster::~Cluster( )
 void Cluster::ComputeRingAreas( const Vector_2D &cellAreas, const Vector_3D &weights ) 
 {
 
-    RealDouble currRingArea;
+    double currRingArea;
     UInt iNx, jNy, iRing;
 
     UInt size = 0;

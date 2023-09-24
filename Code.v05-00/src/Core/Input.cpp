@@ -81,6 +81,7 @@ Input::Input( unsigned int iCase,               \
     horizDiff_     ( parameters[iCase].at("DH")),
     vertiDiff_     ( parameters[iCase].at("DV")),
     shear_         ( parameters[iCase].at("SHEAR")),
+    nBV_           ( parameters[iCase].at("NBV")),
     longitude_deg_ ( parameters[iCase].at("LONGITUDE")),
     latitude_deg_  ( parameters[iCase].at("LATITUDE")),
     emissionDOY_   ( parameters[iCase].at("EDAY")),

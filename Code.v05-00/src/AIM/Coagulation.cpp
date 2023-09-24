@@ -23,13 +23,13 @@ namespace AIM
 
     } /* End of Coagulation::Coagulation */
 
-    Coagulation::Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, RealDouble rho_1, Vector_1D const &bin_Centers_2, RealDouble rho_2, RealDouble temperature_K_, RealDouble pressure_Pa_ ): Kernel( bin_Centers_1.size() )
+    Coagulation::Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, double rho_1, Vector_1D const &bin_Centers_2, double rho_2, double temperature_K_, double pressure_Pa_ ): Kernel( bin_Centers_1.size() )
     {
 
         /* Constructor */
 
-        RealDouble temperature_K = temperature_K_;
-        RealDouble pressure_Pa = pressure_Pa_;
+        double temperature_K = temperature_K_;
+        double pressure_Pa = pressure_Pa_;
 
         /* Set shape */
         for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
@@ -105,13 +105,13 @@ namespace AIM
 
     } /* End of Coagulation::Coagulation */
 
-    Coagulation::Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, RealDouble rho_1, RealDouble temperature_K_, RealDouble pressure_Pa_ ): Kernel( bin_Centers_1.size() )
+    Coagulation::Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, double rho_1, double temperature_K_, double pressure_Pa_ ): Kernel( bin_Centers_1.size() )
     {
 
         /* Constructor */
 
-        RealDouble temperature_K = temperature_K_;
-        RealDouble pressure_Pa = pressure_Pa_;
+        double temperature_K = temperature_K_;
+        double pressure_Pa = pressure_Pa_;
 
         /* Set shape */
         for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
@@ -186,14 +186,14 @@ namespace AIM
 
     } /* End of Coagulation::Coagulation */
             
-    Coagulation::Coagulation( const char* phase, Vector_1D const &bin_Centers_1, RealDouble rho_1, RealDouble bin_Centers_2, RealDouble rho_2, RealDouble temperature_K_, RealDouble pressure_Pa_ ):
+    Coagulation::Coagulation( const char* phase, Vector_1D const &bin_Centers_1, double rho_1, double bin_Centers_2, double rho_2, double temperature_K_, double pressure_Pa_ ):
         Kernel_1D( bin_Centers_1.size() )
     {
 
         /* Constructor */
 
-        RealDouble temperature_K = temperature_K_;
-        RealDouble pressure_Pa = pressure_Pa_;
+        double temperature_K = temperature_K_;
+        double pressure_Pa = pressure_Pa_;
 
         /* Declare coagulation kernel and set shape */
 
@@ -284,11 +284,11 @@ namespace AIM
 
         Vector_1D E_coal( bin_Centers.size() );
         Vector_1D E_prev( bin_Centers.size() );
-        RealDouble r1, r2;
+        double r1, r2;
 
         /* For Newton-Raphson iteration process */
         bool notConverged = 1;
-        RealDouble metric = 0;
+        double metric = 0;
         
         for ( UInt iBin = 0; iBin < bin_Centers.size(); iBin++ ) {
             beta.push_back( Vector_1D( bin_Centers.size() ) );
@@ -310,7 +310,7 @@ namespace AIM
 
                     E_prev[jBin] = E_coal[jBin];
                     E_coal[jBin] = std::max( std::min( E_coal[jBin] - \
-                                   ( A0 + E_coal[jBin] * ( A1 + E_coal[jBin] * ( A2 + E_coal[jBin] * A3 )) - log( r1 ) - log( r2 / RealDouble(200.0) ) ) / ( A1 + E_coal[jBin] * ( 2.0 * A2 + E_coal[jBin] * 3.0 * A3 ) ), 1.0 ), 0.0 );
+                                   ( A0 + E_coal[jBin] * ( A1 + E_coal[jBin] * ( A2 + E_coal[jBin] * A3 )) - log( r1 ) - log( r2 / double(200.0) ) ) / ( A1 + E_coal[jBin] * ( 2.0 * A2 + E_coal[jBin] * 3.0 * A3 ) ), 1.0 ), 0.0 );
 
                     metric = std::abs( E_coal[jBin] - E_prev[jBin] );
                     notConverged = ( metric > 1.0E-03 );
@@ -325,7 +325,7 @@ namespace AIM
     void Coagulation::buildF(const Vector_1D &bin_VCenters )
     {
 
-        RealDouble vij;
+        double vij;
         UInt iBin, jBin, index;
         UInt size = bin_VCenters.size();
 
@@ -375,7 +375,7 @@ namespace AIM
     void Coagulation::buildF( const Vector_3D &bin_VCenters, const UInt jNy, const UInt iNx )
     {
 
-        RealDouble vij;
+        double vij;
         UInt iBin, jBin, kBin, index;
         UInt size = bin_VCenters.size();
         Vector_1D bin_VCentersCopy( size, 0.0E+00 );

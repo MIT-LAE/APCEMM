@@ -57,18 +57,18 @@
 
 
 /*~~~> Function headers */   
- void FunTemplate(double, double [], double []); 
- void JacTemplate(double, double [], double []) ;
+ void FunTemplate(double, double [], double [], double*); 
+ void JacTemplate(double, double [], double [], double*) ;
  int Rosenbrock(double Y[], double Tstart, double Tend,
      double AbsTol[], double RelTol[],
-     void (*ode_Fun)(double, double [], double []), 
-     void (*ode_Jac)(double, double [], double []),
-     double RPAR[], int IPAR[]);
+     void (*ode_Fun)(double, double [], double [], double*), 
+     void (*ode_Jac)(double, double [], double [], double*),
+     double RPAR[], int IPAR[], double* FIX);
  int RosenbrockIntegrator(
      double Y[], double Tstart, double Tend ,     
      double  AbsTol[], double  RelTol[],
-     void (*ode_Fun)(double, double [], double []), 
-     void (*ode_Jac)(double, double [], double []),
+     void (*ode_Fun)(double, double [], double [], double*), 
+     void (*ode_Jac)(double, double [], double [], double*),
      int ros_S,
      double ros_M[], double ros_E[], 
      double ros_A[], double ros_C[],
@@ -77,7 +77,7 @@
      char Autonomous, char VectorTol, int Max_no_steps,  
      double Roundoff, double Hmin, double Hmax, double Hstart,
      double FacMin, double FacMax, double FacRej, double FacSafe, 
-     double *Texit, double *Hexit ); 
+     double *Texit, double *Hexit, double* FIX ); 
  char ros_PrepareMatrix (
      double* H, 
      int Direction,  double gam, double Jac0[], 
@@ -90,12 +90,13 @@
  void ros_FunTimeDerivative ( 
      double T, double Roundoff, 
      double Y[], double Fcn0[], 
-     void ode_Fun(double, double [], double []), 
-     double dFdT[] );
+     void ode_Fun(double, double [], double [], double*), 
+     double dFdT[],
+     double* FIX );
  void Fun( double Y[], double FIX[], double RCONST[], double Ydot[] );
  void Jac_SP( double Y[], double FIX[], double RCONST[], double Ydot[] );
- void FunTemplate( double T, double Y[], double Ydot[] );
- void JacTemplate( double T, double Y[], double Ydot[] );
+ void FunTemplate( double T, double Y[], double Ydot[], double* );
+ void JacTemplate( double T, double Y[], double Ydot[], double* );
  void DecompTemplate( double A[], int Pivot[], int* ising );
  void SolveTemplate( double A[], int Pivot[], double b[] );
  void WCOPY(int N, double X[], int incX, double Y[], int incY);
@@ -126,7 +127,7 @@
  void KppSolve ( double A[], double b[] );
  
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-int INTEGRATE( double VAR[] , double TIN   , double TOUT,
+int INTEGRATE( double VAR[] , double FIX[], double TIN   , double TOUT,
                double ATOL[], double RTOL[], double STEPMIN )
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 {
@@ -151,7 +152,7 @@ int INTEGRATE( double VAR[] , double TIN   , double TOUT,
    IERR = Rosenbrock(VAR, TIN, TOUT,
            ATOL, RTOL,
            &FunTemplate, &JacTemplate,
-           RPAR, IPAR);
+           RPAR, IPAR, FIX);
 
 	     
    Ns=Ns+IPAR[12];
@@ -175,9 +176,9 @@ int INTEGRATE( double VAR[] , double TIN   , double TOUT,
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 int Rosenbrock(double Y[], double Tstart, double Tend,
         double AbsTol[], double RelTol[],
-        void (*ode_Fun)(double, double [], double []), 
-	void (*ode_Jac)(double, double [], double []),
-        double RPAR[], int IPAR[])
+        void (*ode_Fun)(double, double [], double [], double*), 
+	void (*ode_Jac)(double, double [], double [], double*),
+        double RPAR[], int IPAR[], double* FIX)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
     Solves the system y'=F(t,y) using a Rosenbrock method defined by:
@@ -459,7 +460,7 @@ int Rosenbrock(double Y[], double Tstart, double Tend,
         Roundoff, Hmin, Hmax, Hstart,
         FacMin, FacMax, FacRej, FacSafe, 
       /* Output parameters */ 
-	&Texit, &Hexit );
+	&Texit, &Hexit, FIX);
 
 
   /*~~~>  Collect run statistics */
@@ -489,8 +490,8 @@ int RosenbrockIntegrator(
   /*~~~> Input: tolerances  */        
      double  AbsTol[], double  RelTol[],
   /*~~~> Input: ode function and its Jacobian */      
-     void (*ode_Fun)(double, double [], double []), 
-     void (*ode_Jac)(double, double [], double []) ,
+     void (*ode_Fun)(double, double [], double [], double*), 
+     void (*ode_Jac)(double, double [], double [], double*) ,
   /*~~~> Input: The Rosenbrock method parameters */   
      int ros_S,
      double ros_M[], double ros_E[], 
@@ -504,7 +505,8 @@ int RosenbrockIntegrator(
      double FacMin, double FacMax, double FacRej, double FacSafe, 
   /*~~~> Output: time at which the solution is returned (T=Tend  if success)   
              and last accepted step  */     
-     double *Texit, double *Hexit ) 
+     double *Texit, double *Hexit,
+     double *FIX ) 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       Template for the implementation of a generic Rosenbrock method 
       defined by ros_S (no of stages) and coefficients ros_{A,C,M,E,Alpha,Gamma}
@@ -558,14 +560,14 @@ int RosenbrockIntegrator(
    H = MIN(H,ABS(Tend-T));
 
   /*~~~>   Compute the function at current time  */
-   (*ode_Fun)(T,Y,Fcn0);
+   (*ode_Fun)(T,Y,Fcn0, FIX);
 
   /*~~~>  Compute the function derivative with respect to T  */
    if (!Autonomous) 
-      ros_FunTimeDerivative ( T, Roundoff, Y, Fcn0, ode_Fun, dFdT );
+      ros_FunTimeDerivative ( T, Roundoff, Y, Fcn0, ode_Fun, dFdT, FIX );
   
   /*~~~>   Compute the Jacobian at current time  */
-   (*ode_Jac)(T,Y,Jac0);
+   (*ode_Jac)(T,Y,Jac0, FIX);
  
   /*~~~>  Repeat step calculation until current step accepted  */
    while (1) { /* WHILE STEP NOT ACCEPTED */
@@ -593,7 +595,7 @@ int RosenbrockIntegrator(
 	     WAXPY(127,ros_A[(istage-1)*(istage-2)/2+j-1],
                    &K[127*(j-1)],1,Ynew,1); 
 	   Tau = T + ros_Alpha[istage-1]*Direction*H;
-           (*ode_Fun)(Tau,Ynew,Fcn);
+           (*ode_Fun)(Tau,Ynew,Fcn, FIX);
 	} /*end if ros_NewF(istage)*/
       } /* end if istage */
 	 
@@ -698,9 +700,9 @@ void ros_FunTimeDerivative (
     /*~~~> Input arguments: */ 
         double T, double Roundoff, 
         double Y[], double Fcn0[], 
-	void (*ode_Fun)(double, double [], double []), 
+	void (*ode_Fun)(double, double [], double [], double*), 
     /*~~~> Output arguments: */ 
-        double dFdT[] )
+        double dFdT[], double* FIX )
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     The time partial derivative of the function by finite differences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/   
@@ -709,7 +711,7 @@ void ros_FunTimeDerivative (
    double Delta;    
    
    Delta = SQRT(Roundoff)*MAX(DeltaMin,ABS(T));
-   (*ode_Fun)(T+Delta,Y,dFdT);
+   (*ode_Fun)(T+Delta,Y,dFdT, FIX);
    WAXPY(127,(-ONE),Fcn0,1,dFdT,1);
    WSCAL(127,(ONE/Delta),dFdT,1);
 
@@ -1215,7 +1217,7 @@ void DecompTemplate( double A[], int Pivot[], int* ising )
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/   
-void FunTemplate( double T, double Y[], double Ydot[] )
+void FunTemplate( double T, double Y[], double Ydot[], double* FIX )
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
     Template for the ODE function call.
     Updates the rate coefficients (and possibly the fixed species) at each call    
@@ -1240,7 +1242,7 @@ void FunTemplate( double T, double Y[], double Ydot[] )
 
  
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/   
-void JacTemplate( double T, double Y[], double Jcb[] )
+void JacTemplate( double T, double Y[], double Jcb[], double* FIX )
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
     Template for the ODE Jacobian call.
     Updates the rate coefficients (and possibly the fixed species) at each call    

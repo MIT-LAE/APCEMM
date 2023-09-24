@@ -27,6 +27,7 @@
 #include "Core/Interface.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Input.hpp"
+#include "Core/LAGRIDPlumeModel.hpp"
 
 static int DIR_FAIL = -9;
 
@@ -82,9 +83,7 @@ int main( int argc, char* argv[])
     {
         std::string FILESEP = "/";
         std::string FILENAME = argv[1];
-        
-        std::string fullPath = std::getenv("PWD") + FILESEP + FILENAME;
-        std::filesystem::path INPUT_FILE_PATH(fullPath);
+        std::filesystem::path INPUT_FILE_PATH(FILENAME);
         INPUT_FILE_PATH = std::filesystem::canonical(INPUT_FILE_PATH);
 
         YamlInputReader::readYamlInputFile( Input_Opt, INPUT_FILE_PATH.generic_string() );
@@ -122,25 +121,25 @@ int main( int argc, char* argv[])
     /* ====================================================================== */
     /* ---- Synchronize the threads ----------------------------------------- */
     /* ====================================================================== */
-    #pragma omp barrier
+    // #pragma omp barrier
 
-    /* Print number of cases considered */
-    #pragma omp single
-    {
-        #ifdef OMP 
-            const char* numberprocs = std::getenv("SLURM_CPUS_ON_NODE");
-            if ( nCases > 1 )
-                std::cout << "\n Running model for " << nCases << " cases on ";
-            else
-                std::cout << "\n Running model for " << nCases << " case on ";
-            std::cout << numberprocs << " processors." << std::endl;
-        #else
-            if ( nCases > 1 )
-                std::cout << "\n Running model for " << nCases << " cases." << std::endl; 
-            else
-                std::cout << "\n Running model for " << nCases << " case." << std::endl; 
-        #endif /* OMP */
-    }
+    // /* Print number of cases considered */
+    // #pragma omp single
+    // {
+    //     #ifdef OMP 
+    //         const char* numberprocs = std::getenv("SLURM_CPUS_ON_NODE");
+    //         if ( nCases > 1 )
+    //             std::cout << "\n Running model for " << nCases << " cases on ";
+    //         else
+    //             std::cout << "\n Running model for " << nCases << " case on ";
+    //         std::cout << numberprocs << " processors." << std::endl;
+    //     #else
+    //         if ( nCases > 1 )
+    //             std::cout << "\n Running model for " << nCases << " cases." << std::endl; 
+    //         else
+    //             std::cout << "\n Running model for " << nCases << " case." << std::endl; 
+    //     #endif /* OMP */
+    // }
 
     //PARALLEL_CASES = Input_Opt.SIMULATION_PARAMETER_SWEEP;
 
@@ -222,10 +221,14 @@ int main( int argc, char* argv[])
                     break;
 
                 /* Plume Model (APCEMM) */
-                case 1:
-
-                    iERR = PlumeModel( Input_Opt, inputCase );
+                case 1: {
+                    std::cout << "running epm... " << std::endl;
+                    LAGRIDPlumeModel LAGRID_Model(Input_Opt, inputCase);
+                    iERR = LAGRID_Model.runFullModel();
+                    // iERR = PlumeModel( Input_Opt, inputCase );
                     break;
+                    
+                }
 
                 /* Adjoint Model */
                 case 2:

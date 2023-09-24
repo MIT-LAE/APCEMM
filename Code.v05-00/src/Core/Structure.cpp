@@ -13,15 +13,15 @@
 
 #include "Core/Structure.hpp"
 
-Solution::Solution( ) : \
+Solution::Solution(const OptInput& optInput) : \
         liquidAerosol( ), 
         solidAerosol( ),
         LA_Kernel( ), 
         PA_Kernel( ),
         nVariables( NSPEC ), 
         nAer( N_AER ), 
-        size_x( NX ), 
-        size_y( NY ),
+        size_x( optInput.ADV_GRID_NX ), 
+        size_y( optInput.ADV_GRID_NY ),
         reducedSize( 0 )
 {
 
@@ -36,6 +36,7 @@ Solution::~Solution()
 
 } /* End of Solution::~Solution */
 
+/* FIXME: This function is not unique to this specific class. Move it to some utility functions namespace or sth idk */
 void Solution::Clear( Vector_2D& vector_2D )
 {
 
@@ -46,10 +47,11 @@ void Solution::Clear( Vector_2D& vector_2D )
 
 } /* End of Solution::Clear */
 
+/* FIXME: see above comment on clear() */
 void Solution::SetShape( Vector_2D& vector_2D, \
                          const UInt n_x,       \
                          const UInt n_y,       \
-                         const RealDouble value )
+                         const double value )
 {
 
     Clear( vector_2D );
@@ -61,8 +63,9 @@ void Solution::SetShape( Vector_2D& vector_2D, \
 
 } /* End of Solution::SetShape */
 
+/* FIXME: see above comment on clear() */
 void Solution::SetToValue( Vector_2D& vector_2D, \
-                           const RealDouble value )
+                           const double value )
 {
 
     for ( UInt i = 0; i < vector_2D.size(); i++ ) {
@@ -73,6 +76,7 @@ void Solution::SetToValue( Vector_2D& vector_2D, \
 
 } /* End of Solution::SetToValue */
 
+/* FIXME: see above comment on clear() */
 void Solution::Print( const Vector_2D& vector_2D, \
                       const UInt i_max,           \
                       const UInt j_max ) const
@@ -89,9 +93,10 @@ void Solution::Print( const Vector_2D& vector_2D, \
 
 void Solution::Initialize( char const *fileName,      \
                            const Input &input,        \
-                           const RealDouble airDens,  \
+                           const double airDens,  \
                            const Meteorology &met,    \
                            const OptInput &Input_Opt, \
+                           double* varSpeciesArray, double* fixSpeciesArray, 
                            const bool DBG )
 {
 
@@ -101,8 +106,8 @@ void Solution::Initialize( char const *fileName,      \
     /* Read input background conditions */
     readInputBackgroundConditions(input, amb_Value, aer_Value, fileName);
 
-    SpinUp( amb_Value, input, airDens, \
-            /* Time for which ambient file is valid in hr */ (const RealDouble) 8.0 );
+    const double AMBIENT_VALID_TIME = 8.0; //hours
+    SpinUp( amb_Value, input, airDens, AMBIENT_VALID_TIME, varSpeciesArray, fixSpeciesArray );
 
     /* Enforce pre-defined values? *
      * Read input defined values for background concentrations */
@@ -136,11 +141,7 @@ void Solution::Initialize( char const *fileName,      \
     NDENS.assign( 2, 0.0 );
     SAD.assign( 2, 0.0 );
 
-#ifndef XLIM
-    const RealDouble boxArea = (XLIM_LEFT+XLIM_RIGHT)*(YLIM_UP+YLIM_DOWN);
-#else
-    const RealDouble boxArea = 2.0*XLIM*(YLIM_UP+YLIM_DOWN);
-#endif
+    const double boxArea = (Input_Opt.ADV_GRID_XLIM_LEFT + Input_Opt.ADV_GRID_XLIM_RIGHT) * (Input_Opt.ADV_GRID_YLIM_UP + Input_Opt.ADV_GRID_YLIM_DOWN);
     STATE_PSC = STRAT_AER( input.temperature_K(), input.pressure_Pa(), airDens,  \
                            input.latitude_deg(), stratData,                      \
                            boxArea, KHETI_SLA, SOLIDFRAC,                        \
@@ -151,34 +152,25 @@ void Solution::Initialize( char const *fileName,      \
 
     /* Aerosols */
     /* Assume that soot particles are monodisperse */
-    SetShape( sootDens , size_x, size_y, (RealDouble) aer_Value[  0][0] );
-    SetShape( sootRadi , size_x, size_y, (RealDouble) aer_Value[  0][1] );
-    SetShape( sootArea , size_x, size_y, (RealDouble) 4.0 / RealDouble(3.0) * physConst::PI * aer_Value[  0][0] * aer_Value[  0][1] * aer_Value[  0][1] * aer_Value[  0][1] );
+    SetShape( sootDens , size_x, size_y, (double) aer_Value[  0][0] );
+    SetShape( sootRadi , size_x, size_y, (double) aer_Value[  0][1] );
+    SetShape( sootArea , size_x, size_y, (double) 4.0 / double(3.0) * physConst::PI * aer_Value[  0][0] * aer_Value[  0][1] * aer_Value[  0][1] * aer_Value[  0][1] );
 
 
     nBin_LA = std::floor( 1 + log( pow( (LA_R_HIG/LA_R_LOW), 3.0 ) ) / log( LA_VRAT ) );
-
-    if ( DBG ) {
-        std::cout << "\n DEBUG : LA_R_LOW  = " << LA_R_LOW * 1.00E+09 << " [nm]\n";
-        std::cout << " DEBUG : LA_R_HIG  = "   << LA_R_HIG * 1.00E+09 << " [nm]\n";
-        std::cout << " DEBUG : LA_VRAT   = "   << LA_VRAT             << " [-]\n";
-        std::cout << " DEBUG : nBin_LA   = "   << nBin_LA             << "\n";
-        std::cout << " DEBUG : NDENS     = "   << NDENS[1] * 1.00E-06 << " [#/cm^3]\n";
-        std::cout << " DEBUG : REFF      = "   << RAD[1] * 1.00E+06   << " [mum]\n";
-    }
 
     Vector_1D LA_rE( nBin_LA + 1, 0.0 ); /* Bin edges in m */
     Vector_1D LA_rJ( nBin_LA    , 0.0 ); /* Bin center radius in m */
     Vector_1D LA_vJ( nBin_LA    , 0.0 ); /* Bin volume centers in m^3 */
 
-    const RealDouble LA_RRAT = pow( LA_VRAT, 1.0 / RealDouble(3.0) );
+    const double LA_RRAT = pow( LA_VRAT, 1.0 / double(3.0) );
     LA_rE[0] = LA_R_LOW;
-    for ( UInt iBin_LA = 1; iBin_LA < nBin_LA + 1; iBin_LA++ )                              /* [m] */
-        LA_rE[iBin_LA] = LA_rE[iBin_LA-1] * LA_RRAT;
+    for ( UInt iBin_LA = 1; iBin_LA < nBin_LA + 1; iBin_LA++ )                             
+        LA_rE[iBin_LA] = LA_rE[iBin_LA-1] * LA_RRAT; /* [m] */
 
     for ( UInt iBin_LA = 0; iBin_LA < nBin_LA; iBin_LA++ ) {
         LA_rJ[iBin_LA] = 0.5 * ( LA_rE[iBin_LA] + LA_rE[iBin_LA+1] );                       /* [m] */
-        LA_vJ[iBin_LA] = 4.0 / RealDouble(3.0) * physConst::PI * \
+        LA_vJ[iBin_LA] = 4.0 / double(3.0) * physConst::PI * \
                          ( LA_rE[iBin_LA] * LA_rE[iBin_LA] * LA_rE[iBin_LA] \
                          + LA_rE[iBin_LA+1] * LA_rE[iBin_LA+1] * LA_rE[iBin_LA+1] ) * 0.5;  /* [m^3] */
     }
@@ -187,7 +179,7 @@ void Solution::Initialize( char const *fileName,      \
     LA_rEff  = RAD[1]   * 1.00E+09; /* [nm]          */
     LA_SAD   = SAD[1]   * 1.00E+06; /* [\mum^2/cm^3] */
 
-    if ( LA_nDens >= 0.0E+00 ) {
+    if ( LA_nDens > 0.0E+00 && LA_rEff > 0 && LA_SAD > 0) {
         /* For a lognormal distribution:
          * r_eff = r_m * exp( 5/2 * ln(S)^2 )
          * A     = 4\pi N0 r_m^2 * exp ( 2 * ln(S)^2 )
@@ -196,63 +188,47 @@ void Solution::Initialize( char const *fileName,      \
          * ln(S) = sqrt(-1/3*ln(A/(4\pi r_eff^2 * N0)));
          * r_m = r_eff * exp( -5/2 * ln(S)^2 ); */
 
-        const RealDouble sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * physConst::PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
-        const RealDouble rLA = std::max( RAD[1] * exp( - 2.5 * sLA * sLA ), 1.5 * LA_R_LOW );
+        const double sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * physConst::PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
+        const double rLA = std::max( RAD[1] * exp( - 2.5 * sLA * sLA ), 1.5 * LA_R_LOW );
         const AIM::Grid_Aerosol LAAerosol( size_x, size_y, LA_rJ, LA_rE, LA_nDens, rLA, exp(sLA), "lognormal" );
 
         liquidAerosol = LAAerosol;
     }
-
+    else {
+        nBin_LA = 2;
+        //dumb hardcoded Grid_Aerosol default constructor
+    }
     const AIM::Coagulation kernel1( "liquid", LA_rJ, LA_vJ, physConst::RHO_SULF, \
                                     input.temperature_K(), input.pressure_Pa() );
 
     LA_Kernel = kernel1;
 
-    if ( DBG ) {
-
-        std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
-        std::cout << "         " << liquidAerosol.Moment( 0, 0, 0 ) << " v " << LA_nDens << " [#/cm^3]\n";
-        std::cout << " DEBUG : Comparing PDF's surface area to Grainger's surface area:\n";
-        std::cout << "         " << 4.0 * physConst::PI * liquidAerosol.Moment( 2, 0, 0 ) * 1.00E+12 << " v " << LA_SAD << " [mum^2/cm^3]\n";
-        std::cout << " DEBUG : Comparing PDF's effective radius to Grainger's effective radius:\n";
-        std::cout << "         " << liquidAerosol.EffRadius( 0, 0 ) * 1.00E+09 << " v " << LA_rEff << " [nm]\n";
-
-    }
-
     nBin_PA = std::floor( 1 + log( pow( (PA_R_HIG/PA_R_LOW), 3.0 ) ) / log( PA_VRAT ) );
-
-    if ( DBG ) {
-        std::cout << "\n DEBUG : PA_R_LOW  = " << PA_R_LOW * 1.00E+06 << " [mum]\n";
-        std::cout << " DEBUG : PA_R_HIG  = "   << PA_R_HIG * 1.00E+06 << " [mum]\n";
-        std::cout << " DEBUG : PA_VRAT   = "   << PA_VRAT             << " [-]\n";
-        std::cout << " DEBUG : nBin_PA   = "   << nBin_PA             << "\n";
-        std::cout << " DEBUG : NDENS     = "   << NDENS[0] * 1.00E-06 << " [#/cm^3]\n";
-        std::cout << " DEBUG : REFF      = "   << RAD[0] * 1.00E+06   << " [mum]\n";
-    }
 
     Vector_1D PA_rE( nBin_PA + 1, 0.0 ); /* Bin edges in m */
     Vector_1D PA_rJ( nBin_PA    , 0.0 ); /* Bin center radius in m */
     Vector_1D PA_vJ( nBin_PA    , 0.0 ); /* Bin volume centers in m^3 */
 
-    const RealDouble PA_RRAT = pow( PA_VRAT, 1.0 / RealDouble(3.0) );
+    const double PA_RRAT = pow( PA_VRAT, 1.0 / double(3.0) );
     PA_rE[0] = PA_R_LOW;
     for ( UInt iBin_PA = 1; iBin_PA < nBin_PA + 1; iBin_PA++ )
         PA_rE[iBin_PA] = PA_rE[iBin_PA-1] * PA_RRAT;                                        /* [m]   */
 
     for ( UInt iBin_PA = 0; iBin_PA < nBin_PA; iBin_PA++ ) {
         PA_rJ[iBin_PA] = 0.5 * ( PA_rE[iBin_PA] + PA_rE[iBin_PA+1] );                       /* [m]   */
-        PA_vJ[iBin_PA] = 4.0 / RealDouble(3.0) * physConst::PI * \
+        PA_vJ[iBin_PA] = 4.0 / double(3.0) * physConst::PI * \
                          ( PA_rE[iBin_PA] * PA_rE[iBin_PA] * PA_rE[iBin_PA] \
                          + PA_rE[iBin_PA+1] * PA_rE[iBin_PA+1] * PA_rE[iBin_PA+1] ) * 0.5;  /* [m^3] */
     }
 
+    /* TODO: Figure out what PA_nDens and LA_nDens are. They seem to be only used at the original timestep and never updated? -MX */
     PA_nDens = NDENS[0] * 1.00E-06; /* [#/cm^3]      */
     PA_rEff  = RAD[0]   * 1.00E+09; /* [nm]          */
     PA_SAD   = SAD[0]   * 1.00E+06; /* [\mum^2/cm^3] */
 
     if ( PA_nDens >= 0.0E+00 ) {
-        const RealDouble expsPA = 1.6;
-        const RealDouble rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW );
+        const double expsPA = 1.6;
+        const double rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW );
         AIM::Grid_Aerosol PAAerosol( size_x, size_y, PA_rJ, PA_rE, PA_nDens, rPA, expsPA, "lognormal" );
 
         solidAerosol = PAAerosol;
@@ -262,13 +238,6 @@ void Solution::Initialize( char const *fileName,      \
                                     input.temperature_K(), input.pressure_Pa() );
 
     PA_Kernel = kernel2;
-
-    if ( true ) {
-        std::cout << "\n DEBUG : Comparing PDF's number density to exact number density :\n";
-        std::cout << "         " << solidAerosol.Moment( 0, 0, 0 ) << " v " << PA_nDens << " [#/cm^3]\n";
-        std::cout << " DEBUG : Comparing PDF's effective radius to actual effective radius:\n";
-        std::cout << "         " << solidAerosol.EffRadius( 0, 0 ) * 1.00E+09 << " v " << PA_rEff << " [nm]\n";
-    }
 
 } /* End of Solution::Initialize */
 
@@ -305,7 +274,7 @@ void Solution::readInputBackgroundConditions(const Input& input, Vector_1D& amb_
 
 void Solution::setAmbientConcentrations(const Input& input, Vector_1D& amb_Value){
     if ( input.backgNOx() > 0.0E+00 ) {
-        const RealDouble NONO2rat = amb_Value[ind_NO]/amb_Value[ind_NO2];
+        const double NONO2rat = amb_Value[ind_NO]/amb_Value[ind_NO2];
         /* NOx = NO + NO2 = NO2 * ( r + 1 )
          * NO2 = NOx / ( r + 1 );
          * NO  = NOx - NO2; */
@@ -373,8 +342,9 @@ void Solution::initializeSpeciesH2O(const Input& input, const OptInput& Input_Op
 
     if ( Input_Opt.MET_LOADMET ) {
         /* Use meteorological input? */
-        //H2O = met.H2O_;
-        Species[ind_H2Omet] = met.H2O_;
+
+        //TODO: Fix this insanely wasteful copy. Probably not happening without significant refactoring everything.
+        Species[ind_H2Omet] = met.H2O_field();
         /* Update H2O */
         for ( UInt i = 0; i < size_x; i++ ) {
             for ( UInt j = 0; j < size_y; j++ ) {
@@ -384,7 +354,7 @@ void Solution::initializeSpeciesH2O(const Input& input, const OptInput& Input_Op
         }
     } else {
         /* Else use user-defined H2O profile */
-        RealDouble H2Oval = (input.relHumidity_w()/((RealDouble) 100.0) * \
+        double H2Oval = (input.relHumidity_w()/((double) 100.0) * \
                           physFunc::pSat_H2Ol( input.temperature_K() ) / ( physConst::kB * input.temperature_K() )) / 1.00E+06;
         for ( UInt i = 0; i < size_x; i++ ) {
             for ( UInt j = 0; j < size_y; j++ ) {
@@ -400,55 +370,55 @@ void Solution::initializeSpeciesH2O(const Input& input, const OptInput& Input_Op
 
 void Solution::setSpeciesValues(Vector_1D& AERFRAC,  Vector_1D& SOLIDFRAC, const Vector_1D& stratData){
     /* Liquid/solid species */
-    SetToValue( Species[ind_SO4L], (RealDouble) AERFRAC[0]                          * stratData[0] );
-    SetToValue( Species[ind_SO4] , (RealDouble) ( 1.0 - AERFRAC[0] )                * stratData[0] );
+    SetToValue( Species[ind_SO4L], (double) AERFRAC[0]                          * stratData[0] );
+    SetToValue( Species[ind_SO4] , (double) ( 1.0 - AERFRAC[0] )                * stratData[0] );
 
     AERFRAC[6] = 0.0E+00;
     SOLIDFRAC[6] = 0.0E+00;
-    SetToValue( Species[ind_H2OL] , (RealDouble) AERFRAC[6]                          * stratData[6] );
-    SetToValue( Species[ind_H2OS] , (RealDouble) SOLIDFRAC[6]                        * stratData[6] );
+    SetToValue( Species[ind_H2OL] , (double) AERFRAC[6]                          * stratData[6] );
+    SetToValue( Species[ind_H2OS] , (double) SOLIDFRAC[6]                        * stratData[6] );
     /* Do not overwrite H2O!! */
-    //SetToValue( Species[ind_H2O]  , (RealDouble) ( 1.0 - AERFRAC[6] - SOLIDFRAC[6] ) * stratData[6] );
+    //SetToValue( Species[ind_H2O]  , (double) ( 1.0 - AERFRAC[6] - SOLIDFRAC[6] ) * stratData[6] );
 
-    SetToValue( Species[ind_HNO3L], (RealDouble) AERFRAC[1]                          * stratData[1] );
-    SetToValue( Species[ind_HNO3S], (RealDouble) SOLIDFRAC[1]                        * stratData[1] );
-    SetToValue( Species[ind_HNO3] , (RealDouble) ( 1.0 - AERFRAC[1] - SOLIDFRAC[1] ) * stratData[1] );
+    SetToValue( Species[ind_HNO3L], (double) AERFRAC[1]                          * stratData[1] );
+    SetToValue( Species[ind_HNO3S], (double) SOLIDFRAC[1]                        * stratData[1] );
+    SetToValue( Species[ind_HNO3] , (double) ( 1.0 - AERFRAC[1] - SOLIDFRAC[1] ) * stratData[1] );
 
-    SetToValue( Species[ind_HClL] , (RealDouble) AERFRAC[2]                          * stratData[2] );
-    SetToValue( Species[ind_HCl]  , (RealDouble) ( 1.0 - AERFRAC[2] )                * stratData[2] );
+    SetToValue( Species[ind_HClL] , (double) AERFRAC[2]                          * stratData[2] );
+    SetToValue( Species[ind_HCl]  , (double) ( 1.0 - AERFRAC[2] )                * stratData[2] );
 
-    SetToValue( Species[ind_HOClL], (RealDouble) AERFRAC[3]                          * stratData[3] );
-    SetToValue( Species[ind_HOCl] , (RealDouble) ( 1.0 - AERFRAC[3] )                * stratData[3] );
+    SetToValue( Species[ind_HOClL], (double) AERFRAC[3]                          * stratData[3] );
+    SetToValue( Species[ind_HOCl] , (double) ( 1.0 - AERFRAC[3] )                * stratData[3] );
 
-    SetToValue( Species[ind_HBrL] , (RealDouble) AERFRAC[4]                          * stratData[4] );
-    SetToValue( Species[ind_HBr]  , (RealDouble) ( 1.0 - AERFRAC[4] )                * stratData[4] );
+    SetToValue( Species[ind_HBrL] , (double) AERFRAC[4]                          * stratData[4] );
+    SetToValue( Species[ind_HBr]  , (double) ( 1.0 - AERFRAC[4] )                * stratData[4] );
 
-    SetToValue( Species[ind_HOBrL], (RealDouble) AERFRAC[5]                          * stratData[5] );
-    SetToValue( Species[ind_HOBr] , (RealDouble) ( 1.0 - AERFRAC[5] )                * stratData[5] );
+    SetToValue( Species[ind_HOBrL], (double) AERFRAC[5]                          * stratData[5] );
+    SetToValue( Species[ind_HOBr] , (double) ( 1.0 - AERFRAC[5] )                * stratData[5] );
 
-    SetToValue( Species[ind_NIT]  , (RealDouble) stratData[ 9] );
-    SetToValue( Species[ind_NAT]  , (RealDouble) stratData[10] );
+    SetToValue( Species[ind_NIT]  , (double) stratData[ 9] );
+    SetToValue( Species[ind_NAT]  , (double) stratData[10] );
 }
 
 
-void Solution::getData( const UInt i, \
+void Solution::getData(  double* varSpeciesArray, double* fixSpeciesArray, const UInt i, \
                         const UInt j, \
 	                const bool CHEMISTRY )
 {
 
     for ( UInt N = 0; N < NVAR; N++ ) {
 	if ( CHEMISTRY )
-            VAR[N] = Species[N][j][i];
+            varSpeciesArray[N] = Species[N][j][i];
 	else {
             if ( ( N == ind_H2O      ) || \
                  ( N == ind_H2Omet   ) || \
                  ( N == ind_H2Oplume ) || \
                  ( N == ind_H2OL     ) || \
                  ( N == ind_H2OS     ) ) {
-                VAR[N] = Species[N][j][i];
+                varSpeciesArray[N] = Species[N][j][i];
             }
 	    else {
-                VAR[N] = Species[N][0][0];
+                varSpeciesArray[N] = Species[N][0][0];
 	    }
 	
 	}
@@ -456,17 +426,17 @@ void Solution::getData( const UInt i, \
 
     for ( UInt N = 0; N < NFIX; N++ ) {
 	if ( CHEMISTRY )
-            FIX[N] = Species[N+NVAR][j][i];
+            fixSpeciesArray[N] = Species[N+NVAR][j][i];
 	else {
             if ( ( N == ind_H2O      ) || \
                  ( N == ind_H2Omet   ) || \
                  ( N == ind_H2Oplume ) || \
                  ( N == ind_H2OL     ) || \
                  ( N == ind_H2OS     ) ) {
-                FIX[N] = Species[N+NVAR][j][i];
+                fixSpeciesArray[N] = Species[N+NVAR][j][i];
             }
 	    else {
-                FIX[N] = Species[N+NVAR][0][0];
+                fixSpeciesArray[N] = Species[N+NVAR][0][0];
 	    }
 	
 	}
@@ -475,16 +445,17 @@ void Solution::getData( const UInt i, \
 
 } /* End of Solution::getData */
 
-void Solution::applyData( const UInt i, \
+void Solution::applyData( const double* varSpeciesArray, const UInt i, \
                           const UInt j )
 {
 
     for ( UInt N = 0; N < NVAR; N++ )
-        Species[N][j][i] = VAR[N];
+        Species[N][j][i] = varSpeciesArray[N];
 
 } /* End of Solution::applyData */
 
-void Solution::applyRing( RealDouble tempArray[],        \
+void Solution::applyRing( const double* varSpeciesArray,
+                          double tempArray[],        \
                           const Vector_2Dui &mapIndices, \
                           const UInt iRing )
 {
@@ -493,18 +464,18 @@ void Solution::applyRing( RealDouble tempArray[],        \
     UInt jNy = 0;
     UInt N   = 0;
 
-    for ( jNy = 0; jNy < NY; jNy++ ) {
-        for ( iNx = 0; iNx < NX; iNx++ ) {
+    for ( jNy = 0; jNy < size_y; jNy++ ) {
+        for ( iNx = 0; iNx < size_x; iNx++ ) {
             if ( mapIndices[jNy][iNx] == iRing ) {
 
                 for ( N = 0; N < NVAR; N++ ) {
                     if ( ( N == ind_N ) || ( N == ind_O ) || ( N == ind_O1D ) ) {
                         /* Special handlings! */
-                        Species[ind_N][jNy][iNx]     = VAR[ind_N];
-                        Species[ind_O][jNy][iNx]     = VAR[ind_O];
-                        Species[ind_O1D][jNy][iNx]   = VAR[ind_O1D];
+                        Species[ind_N][jNy][iNx]     = varSpeciesArray[ind_N];
+                        Species[ind_O][jNy][iNx]     = varSpeciesArray[ind_O];
+                        Species[ind_O1D][jNy][iNx]   = varSpeciesArray[ind_O1D];
                     } else
-                        Species[N][jNy][iNx] *= VAR[N] / tempArray[N];
+                        Species[N][jNy][iNx] *= varSpeciesArray[N] / tempArray[N];
                 }
 
             }
@@ -513,7 +484,7 @@ void Solution::applyRing( RealDouble tempArray[],        \
 
 } /* End of Solution::applyRing */
 
-void Solution::applyAmbient( const Vector_2Dui &mapIndices, \
+void Solution::applyAmbient( const double* varSpeciesArray, const Vector_2Dui &mapIndices, \
                              const UInt iRing )
 {
 
@@ -521,36 +492,39 @@ void Solution::applyAmbient( const Vector_2Dui &mapIndices, \
     UInt jNy = 0;
     UInt N   = 0;
 
-    for ( jNy = 0; jNy < NY; jNy++ ) {
-        for ( iNx = 0; iNx < NX; iNx++ ) {
+    for ( jNy = 0; jNy < size_y; jNy++ ) {
+        for ( iNx = 0; iNx < size_x; iNx++ ) {
             if ( mapIndices[jNy][iNx] == iRing ) {
                 for ( N = 0; N < NVAR; N++ )
-                    Species[N][jNy][iNx] = VAR[N];
+                    Species[N][jNy][iNx] = varSpeciesArray[N];
             }
         }
     }
 
 } /* End of Solution::applyAmbient */
 
-
+/* TODO !!!! : Write an addEmission that doesn't have to deal with the archaic RINGS framework.
+Though first we need to figure out what this function does... hahaha */
 void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                             const Mesh &m,                                 \
                             bool halfRing,                                 \
                             const double temperature, bool set2Saturation, \
                             AIM::Aerosol liqAer, AIM::Aerosol iceAer,      \
                             const double Soot_Den,                         \
-                            const Meteorology &met, const RealDouble areaPlume )
+                            const Meteorology &met, const double areaPlume )
 {
-    /* TODO: Release as Gaussian instead of top-hat? */
+    /*  TODO: Release as Gaussian instead of top-hat? 
+        Also, there has to be a better way add to liquidAerosol and solidAerosol than passing by value and wasting memory,
+        but will need proper unit tests to bother with.*/
 
     UInt innerRing;
     UInt iNx, jNy;
-    RealDouble w;
-    RealDouble E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, \
+    double w;
+    double E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, \
                E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
-    RealDouble E_Soot;
-    const RealDouble rad = EI.getSootRad();
-    const RealDouble fuelPerDist = AC.FuelFlow() / AC.VFlight();
+    double E_Soot;
+    const double rad = EI.getSootRad();
+    const double fuelPerDist = AC.FuelFlow() / AC.VFlight();
 
     /* Unit check:  [kg/m]   =   [kg fuel/s] /     [m/s] */
     E_CO2  = EI.getCO2()  / ( MW_CO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
@@ -600,10 +574,10 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
         /* Full rings */
         innerRing = 0;
         nCell     = nCellMap[innerRing];
-        for ( jNy = 0; jNy < NY; jNy++ ) {
-            for ( iNx = 0; iNx < NX; iNx++ ) {
+        for ( jNy = 0; jNy < size_y; jNy++ ) {
+            for ( iNx = 0; iNx < size_x; iNx++ ) {
 
-                Species[ind_H2Omet][jNy][iNx] = met.H2O_[jNy][iNx];
+                Species[ind_H2Omet][jNy][iNx] = met.H2O(jNy, iNx);
 
                 w = weights[innerRing][jNy][iNx];
 
@@ -635,7 +609,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                     if ( set2Saturation ) {
                         /* If supersaturated, then set water vapor to saturation and no bare soot particles
                          * as they are all covered with ice */
-                        Species[ind_H2Oplume][jNy][iNx] += physFunc::pSat_H2Os( met.temp_[jNy][iNx] ) / ( physConst::kB * met.temp_[jNy][iNx] * 1.00E+06 ) - Species[ind_H2Omet][jNy][iNx]; /* [molec / cm^3] */
+                        Species[ind_H2Oplume][jNy][iNx] += physFunc::pSat_H2Os( met.temp(jNy, iNx) ) / ( physConst::kB * met.temp(jNy, iNx) * 1.00E+06 ) - Species[ind_H2Omet][jNy][iNx]; /* [molec / cm^3] */
                     } else {
                         /* If subsaturated, then emit water and soot */
                         Species[ind_H2Oplume][jNy][iNx]      += ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
@@ -664,10 +638,10 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
              * full rings. Therefore, make sure that nCell is doubled when
              * using half-rings! */
             nCell     = 2.0 * nCellMap[innerRing];
-            for ( jNy = 0; jNy < NY; jNy++ ) {
-                for ( iNx = 0; iNx < NX; iNx++ ) {
+            for ( jNy = 0; jNy < size_y; jNy++ ) {
+                for ( iNx = 0; iNx < size_x; iNx++ ) {
 
-                    Species[ind_H2Omet][jNy][iNx] = met.H2O_[jNy][iNx];
+                    Species[ind_H2Omet][jNy][iNx] = met.H2O(jNy, iNx);
 
                     w = weights[innerRing][jNy][iNx];
 
@@ -698,7 +672,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
                         if ( set2Saturation ) {
                             /* If supersaturated, then set water vapor to saturation and no
                              * bare soot particles as they are all covered with ice */
-                            Species[ind_H2Oplume][jNy][iNx] += physFunc::pSat_H2Os( met.temp_[jNy][iNx] ) / ( physConst::kB * met.temp_[jNy][iNx] * 1.00E+06 ) - Species[ind_H2Omet][jNy][iNx]; /* [molec / cm^3] */
+                            Species[ind_H2Oplume][jNy][iNx] += physFunc::pSat_H2Os( met.temp(jNy, iNx) ) / ( physConst::kB * met.temp(jNy, iNx) * 1.00E+06 ) - Species[ind_H2Omet][jNy][iNx]; /* [molec / cm^3] */
                         } else {
                             /* If subsaturated, then emit water and soot */
                             Species[ind_H2Oplume][jNy][iNx]      += ( E_H2O * 1.0E-06 / ( nCell * cellAreas[jNy][iNx] ) ); /* [molec / cm^3] */
@@ -720,8 +694,8 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
 
     }
 
-    for ( jNy = 0; jNy < NY; jNy++ ) {
-        for ( iNx = 0; iNx < NX; iNx++ ) {
+    for ( jNy = 0; jNy < size_y; jNy++ ) {
+        for ( iNx = 0; iNx < size_x; iNx++ ) {
             Species[ind_H2O][jNy][iNx] = Species[ind_H2Omet][jNy][iNx] + Species[ind_H2Oplume][jNy][iNx];
         }
     }
@@ -817,19 +791,19 @@ Vector_1D Solution::getAerosolArea( ) const
 
 } /* End of Solution::getAerosolArea */
 
-void Solution::getAerosolProp( RealDouble ( &radi )[4], \
-                               RealDouble ( &area )[4], \
-                               RealDouble &IWC,         \
+void Solution::getAerosolProp( double ( &radi )[4], \
+                               double ( &area )[4], \
+                               double &IWC,         \
                                const Vector_2D &weights ) const
 {
 
     UInt jNy, iNx;
 
     Vector_1D aerosolProp( 4, 0.0E+00 );
-    RealDouble totalWeight = 0.0E+00;
+    double totalWeight = 0.0E+00;
 
-    for ( jNy = 0; jNy < NY; jNy++ ) {
-        for ( iNx = 0; iNx < NX; iNx++ )
+    for ( jNy = 0; jNy < size_y; jNy++ ) {
+        for ( iNx = 0; iNx < size_x; iNx++ )
             totalWeight += weights[jNy][iNx];
     }
 
@@ -856,8 +830,8 @@ void Solution::getAerosolProp( RealDouble ( &radi )[4], \
     radi[3] = 0.0E+00;
     area[3] = 0.0E+00;
 
-    for ( jNy = 0; jNy < NY; jNy++ ) {
-        for ( iNx = 0; iNx < NX; iNx++ ) {
+    for ( jNy = 0; jNy < size_y; jNy++ ) {
+        for ( iNx = 0; iNx < size_x; iNx++ ) {
             area[3] += sootDens[jNy][iNx] * 4.0 * physConst::PI * \
                        sootRadi[jNy][iNx] * sootRadi[jNy][iNx] *  \
                        weights[jNy][iNx] / totalWeight;
@@ -870,20 +844,20 @@ void Solution::getAerosolProp( RealDouble ( &radi )[4], \
 
 int Solution::SpinUp( Vector_1D &amb_Value,       \
                       const Input &input,         \
-                      const RealDouble airDens,   \
-                      const RealDouble startTime, \
-                      const bool DBG )
+                      const double airDens,   \
+                      const double startTime, \
+                      double* varSpeciesArray, double* fixSpeciesArray, const bool DBG )
 {
 
     /* Chemistry timestep
      * DT_CHEM               = 10 mins */
-    const RealDouble DT_CHEM = 10.0 * 60.0;
-    RealDouble curr_Time_s   = startTime * 3600.0;
+    const double DT_CHEM = 10.0 * 60.0;
+    double curr_Time_s   = startTime * 3600.0;
 
     /* Integrate chemistry from startTime until endTime
      * Make sure than endTime is greater than startTime,
      * if not integrate until next day at the same time */
-    RealDouble RunUntil = input.emissionTime();
+    double RunUntil = input.emissionTime();
 
 //    /* If emission time corresponds to data from file exit here */
 //    if ( startTime == RunUntil )
@@ -898,10 +872,10 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
 
     /* Allocate arrays for KPP */
     int IERR = 0;
-    RealDouble STEPMIN = (RealDouble)0.0;
+    double STEPMIN = (double)0.0;
 
-    RealDouble RTOL[NVAR];
-    RealDouble ATOL[NVAR];
+    double RTOL[NVAR];
+    double ATOL[NVAR];
 
     for( UInt i = 0; i < NVAR; i++ ) {
         RTOL[i] = KPP_RTOLS;
@@ -911,12 +885,13 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
 
     /* Initialize arrays */
     for ( UInt iVar = 0; iVar < NVAR; iVar++ )
-        VAR[iVar] = amb_Value[iVar] * airDens;
+        varSpeciesArray[iVar] = amb_Value[iVar] * airDens;
 
     for ( UInt iFix = 0; iFix < NFIX; iFix++ )
-        FIX[iFix] = amb_Value[NVAR+iFix] * airDens;
+        fixSpeciesArray[iFix] = amb_Value[NVAR+iFix] * airDens;
 
     /* Define sun parameters */
+    /* FIXME: We don't need this on the heap. It's a goddamn local variable. */
     SZA *sun = new SZA( input.latitude_deg(), input.emissionDOY() );
 
     if ( DBG )
@@ -943,13 +918,13 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
         for ( UInt iReact = 0; iReact < NREACT; iReact++ )
             RCONST[iReact] = 0.0E+00;
 
-        Update_RCONST( input.temperature_K(), input.pressure_Pa(), airDens, VAR[ind_H2O] );
+        Update_RCONST( input.temperature_K(), input.pressure_Pa(), airDens, varSpeciesArray[ind_H2O] );
 
         /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
         /* ~~~~~ Integration ~~~~~~ */
         /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-        IERR = INTEGRATE( VAR, curr_Time_s, curr_Time_s + DT_CHEM, \
+        IERR = INTEGRATE( varSpeciesArray, fixSpeciesArray, curr_Time_s, curr_Time_s + DT_CHEM, \
                           ATOL, RTOL, STEPMIN );
 
         if ( IERR < 0 ) {
@@ -968,7 +943,7 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
                 }
                 std::cout << " ~~~ Printing concentrations:\n";
                 for ( UInt iSpec = 0; iSpec < NVAR; iSpec++ ) {
-                    std::cout << "Species " << iSpec << ": " << VAR[iSpec]/airDens*1.0E+09 << " [ppb]\n";
+                    std::cout << "Species " << iSpec << ": " << varSpeciesArray[iSpec]/airDens*1.0E+09 << " [ppb]\n";
                 }
             }
 
@@ -980,7 +955,7 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
     }
 
     for ( UInt iVar = 0; iVar < NVAR; iVar++ )
-        amb_Value[iVar] = VAR[iVar] / airDens;
+        amb_Value[iVar] = varSpeciesArray[iVar] / airDens;
 
 
     /* Clear dynamically allocated variable(s) */
@@ -990,7 +965,7 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
 
 } /* End of Solution::SpinUp */
 
-void Solution::Debug( const RealDouble airDens )
+void Solution::Debug( const double airDens )
 {
 
     UInt iNx, jNy;

@@ -13,7 +13,7 @@
 
 #include "Core/Species.hpp"
 
-static const RealDouble ZERO = 1.00E-50;
+static const double ZERO = 1.00E-50;
 
 SpeciesArray::SpeciesArray( )
 {
@@ -185,8 +185,8 @@ void SpeciesArray::FillIn( Solution &Data,             \
     Vector_1D properties_PA( 4, 0.0E+00 );
 
     UInt jNy, iNx, iRing, N;
-    RealDouble w = 0.0E+00;
-    RealDouble totW = 0.0E+00;
+    double w = 0.0E+00;
+    double totW = 0.0E+00;
 
     for ( iRing = 0; iRing < nRing; iRing++ ) {
 
@@ -227,44 +227,44 @@ void SpeciesArray::FillIn( Solution &Data,             \
 
 } /* End of SpeciesArray::FillIn */
 
-void SpeciesArray::FillIn( UInt iTime, UInt iRing )
+void SpeciesArray::FillIn( UInt iTime, UInt iRing, double* varSpeciesArray )
 {
 
     /* Ensure positiveness */
     for ( UInt N = 0; N < NVAR; N++ ) {
-        if ( VAR[N] <= 0.0 ) {
-            VAR[N] = ZERO;
+        if ( varSpeciesArray[N] <= 0.0 ) {
+            varSpeciesArray[N] = ZERO;
         }
-        Species[N][iTime][iRing] = VAR[N];
+        Species[N][iTime][iRing] = varSpeciesArray[N];
     }
 
 } /* End of SpeciesArray::FillIn */
 
-void SpeciesArray::getData( UInt iTime, UInt iRing )
+void SpeciesArray::getData( UInt iTime, UInt iRing, double* varSpeciesArray, double* fixSpeciesArray )
 {
 
     for ( UInt N = 0; N < NVAR; N++ )
-        VAR[N] = Species[N][iTime][iRing];
+        varSpeciesArray[N] = Species[N][iTime][iRing];
 
     for ( UInt N = 0; N < NFIX; N++ )
-        FIX[N] = Species[NVAR+N][iTime][iRing];
+        fixSpeciesArray[N] = Species[NVAR+N][iTime][iRing];
 
     /* Ensure positiveness */
     for ( UInt N = 0; N < NVAR; N++ ) {
-        if ( VAR[N] <= 0.0 ) {
-            VAR[N] = ZERO;
+        if ( varSpeciesArray[N] <= 0.0 ) {
+            varSpeciesArray[N] = ZERO;
         }
     }
 
 } /* End of SpeciesArray::getData */
 
-Vector_1D SpeciesArray::RingAverage( const Vector_1D ringArea, const RealDouble totArea, \
+Vector_1D SpeciesArray::RingAverage( const Vector_1D ringArea, const double totArea, \
                                      const UInt iNt ) const
 {
 
     Vector_1D ringAverage( NVAR, 0.0E+00 );
     UInt iRing, N;
-    RealDouble area;
+    double area;
 
     for ( iRing = 0; iRing < nRing; iRing++ ) {
         area = ringArea[iRing] / totArea;
@@ -277,12 +277,12 @@ Vector_1D SpeciesArray::RingAverage( const Vector_1D ringArea, const RealDouble 
 } /* End of SpeciesArray::RingAverage */
 
 Vector_2D SpeciesArray::RingAverage( const Vector_1D ringArea, \
-                                     const RealDouble totArea ) const
+                                     const double totArea ) const
 {
 
     Vector_2D ringAverage( nTime, Vector_1D( NVAR, 0.0E+00 ) );
     UInt iRing, iTime, N;
-    RealDouble area;
+    double area;
 
     for ( iRing = 0; iRing < nRing; iRing++ ) {
         area = ringArea[iRing] / totArea;

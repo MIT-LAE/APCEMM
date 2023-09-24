@@ -46,37 +46,37 @@ template<class System> class EPM::odeSolver
 
     public:
     
-        odeSolver( System system, Vector_1D &x, bool adaptive = 1, bool stop = 0, RealDouble threshold = 0.0 );
-        inline odeSolver( System system, Vector_1D &x, bool stop, RealDouble threshold ) {
+        odeSolver( System system, Vector_1D &x, bool adaptive = 1, bool stop = 0, double threshold = 0.0 );
+        inline odeSolver( System system, Vector_1D &x, bool stop, double threshold ) {
             odeSolver( system, x, 0, stop, threshold );
         }
         ~odeSolver();
         odeSolver( const odeSolver &solver );
         odeSolver& operator=( const odeSolver &solver );
-        void updateTime( RealDouble t );
-        void updateStep( RealDouble dt );
+        void updateTime( double t );
+        void updateStep( double dt );
 
-        UInt integrate( RealDouble start_time, RealDouble end_time, RealDouble dt, streamingObserver observer );
+        UInt integrate( double start_time, double end_time, double dt, streamingObserver observer );
        
-        UInt integrate( RealDouble start_time, RealDouble end_time, RealDouble dt );
+        UInt integrate( double start_time, double end_time, double dt );
        
-        void observer( const Vector_1D &x, const RealDouble t );
+        void observer( const Vector_1D &x, const double t );
 
-        void updateThreshold( RealDouble t );
+        void updateThreshold( double t );
 
-        bool done( const RealDouble &x );
+        bool done( const double &x );
         Vector_1D getState() const;
 
     protected:
 
         const System *system;
         Vector_1D vars;
-        RealDouble currentTime;
-        RealDouble timeStep;
+        double currentTime;
+        double timeStep;
         bool adaptive;
         controlled_stepper_type controlled_stepper;
         bool stop;
-        RealDouble threshold;
+        double threshold;
 
     private:
 
@@ -92,7 +92,7 @@ class EPM::streamingObserver
         ~streamingObserver( );
         streamingObserver& operator=( const streamingObserver &obs );
         void operator()( const Vector_1D &x, double t );
-        RealDouble getLastElement() const;
+        double getLastElement() const;
         void print2File( ) const;
         bool checkwatersat( ) const;
 

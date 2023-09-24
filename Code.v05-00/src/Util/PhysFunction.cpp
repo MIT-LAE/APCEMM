@@ -17,7 +17,7 @@
 namespace physFunc
 {
 
-    RealDouble pSat_H2Ol( const RealDouble T )
+    double pSat_H2Ol( const double T )
     {
         
         /* DESCRIPTION:
@@ -25,10 +25,10 @@ namespace physFunc
          * Source: Sonntag (1994) */
 
         /* INPUT PARAMETERS:
-         * - RealDouble T :: temperature expressed in K 
+         * - double T :: temperature expressed in K 
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: H2O liquid saturation pressure in Pascal */
+         * - double :: H2O liquid saturation pressure in Pascal */
 
         return 100.0 * exp( - 6096.9385 / T \
                             + 16.635794 \
@@ -38,7 +38,7 @@ namespace physFunc
 
     } /* End of pSat_H2Ol */
 
-    RealDouble pSat_H2Os( const RealDouble T )
+    double pSat_H2Os( const double T )
     {
         
         /* DESCRIPTION:
@@ -46,10 +46,10 @@ namespace physFunc
          * Source: Sonntag (1990) */
 
         /* INPUT PARAMETERS:
-         * - RealDouble T :: temperature expressed in K 
+         * - double T :: temperature expressed in K 
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: H2O solid saturation pressure in Pascal */
+         * - double :: H2O solid saturation pressure in Pascal */
         
         return 100.0 * exp( - 6024.5282 / T \
                             + 24.7219 \
@@ -59,7 +59,7 @@ namespace physFunc
 
     } /* End of pSat_H2Os */
 
-    RealDouble dpSat_H2Os( const RealDouble T )
+    double dpSat_H2Os( const double T )
     {
 
         /* DESCRIPTION:
@@ -67,10 +67,10 @@ namespace physFunc
          * respect to temperature in Pascal/K. */
 
         /* INPUT PARAMETERS:
-         * - RealDouble T :: temperature expressed in K 
+         * - double T :: temperature expressed in K 
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: dPsat/dT(T) in Pa/K */
+         * - double :: dPsat/dT(T) in Pa/K */
 
         /* pSat(T) = C * exp( g )
          * dpSat(T)/dT = pSat(T) * g' */
@@ -80,7 +80,7 @@ namespace physFunc
 
     } /* End of dpSat_H2Os */
 
-    RealDouble pSat_H2SO4( const RealDouble T )
+    double pSat_H2SO4( const double T )
     {
         
         /* DESCRIPTION:
@@ -88,10 +88,10 @@ namespace physFunc
          * Source: Noppel et al. (2002) */
 
         /* INPUT PARAMETERS:
-         * - RealDouble T :: temperature expressed in K 
+         * - double T :: temperature expressed in K 
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: H2SO4 liquid saturation pressure in Pascal */
+         * - double :: H2SO4 liquid saturation pressure in Pascal */
         
         return physConst::ATM * exp(-11.94 \
                             + 10156.0 * ( 1.0 / 360.15 \
@@ -103,7 +103,7 @@ namespace physFunc
 
     } /* End of pSat_H2SO4 */
 
-    RealDouble pSat_HNO3( const RealDouble T , const RealDouble PPH2O ) 
+    double pSat_HNO3( const double T , const double PPH2O ) 
     {
         
         /* DESCRIPTION:
@@ -111,159 +111,159 @@ namespace physFunc
          * Source: Hanson and Mauersberger (1988) */
 
         /* INPUT PARAMETERS:
-         * - RealDouble T     :: temperature expressed in K 
-         * - RealDouble PPH2O :: H2O partial pressure in Pa
+         * - double T     :: temperature expressed in K 
+         * - double PPH2O :: H2O partial pressure in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: HNO3 saturation pressure in Pascal */
+         * - double :: HNO3 saturation pressure in Pascal */
         
         return ( physConst::ATM / 760.0 ) * pow( 10.0, ( ( ( - 2.7836 - 0.00088 * T ) * log10( PPH2O * ( 760.0 / physConst::ATM ) ) ) + ( 38.9855 - 11397.0 / T + 0.009179 * T ) ) );  
 
     } /* End of pSat_HNO3 */
 
-    RealDouble rhoAir( const RealDouble T, const RealDouble P )
+    double rhoAir( const double T, const double P )
     {
 
         /* DESCRIPTION:
          * Returns the density of air in kg/m^3 */
 
         /* INPUT PARAMETERS:
-         * - RealDouble T :: temperature in K
-         * - RealDouble P :: pressure in Pa
+         * - double T :: temperature in K
+         * - double P :: pressure in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Air density in kg/m^3 */
+         * - double :: Air density in kg/m^3 */
 
         return P / ( physConst::R_Air * T );
 
     } /* End of airDens */ 
 
-    RealDouble dynVisc( const RealDouble T )
+    double dynVisc( const double T )
     {
 
         /* DESCRIPTION:
          * Returns the dynamic viscosity of air in kg/m/s */
 
         /* INPUT PARAMETERS:
-         * - RealDouble T :: temperature in K
+         * - double T :: temperature in K
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Dynamic viscosity in kg/m/s */
+         * - double :: Dynamic viscosity in kg/m/s */
 
         return 1.8325E-05 * ( 416.16 / ( T + 120.0 ) ) * pow( T / 296.16, 1.5 );
 
     } /* End of dynVisc */
 
-    RealDouble kinVisc( const RealDouble T, const RealDouble P )
+    double kinVisc( const double T, const double P )
     {
 
         /* DESCRIPTION:
          * Returns the kinematic viscosity of air in m^2/s */
 
         /* INPUT PARAMETERS:
-         * - RealDouble T :: temperature in K
-         * - RealDouble P :: pressure in Pa
+         * - double T :: temperature in K
+         * - double P :: pressure in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Kinematic viscosity in m^2/s */
+         * - double :: Kinematic viscosity in m^2/s */
 
         return dynVisc( T ) / rhoAir( T, P );
 
     } /* End of kinVisc */
 
-    RealDouble thermalSpeed( const RealDouble T, const RealDouble m )
+    double thermalSpeed( const double T, const double m )
     {
 
         /* DESCRIPTION:
          * Returns the thermal speed of a molecule/particle in m/s */
 
         /* INPUT PARAMETERS:
-         * - RealDouble T :: temperature in K
-         * - RealDouble m :: mass of the molecule/particle in kg ( set to the mass
+         * - double T :: temperature in K
+         * - double m :: mass of the molecule/particle in kg ( set to the mass
          *               of an air molecule by default )
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Thermal speed in m/s */
+         * - double :: Thermal speed in m/s */
 
         return sqrt( 8.0 * physConst::kB * T / ( physConst::PI * m ) );
 
     } /* End of thermalSpeed */
 
-    RealDouble lambda( const RealDouble T, const RealDouble P )
+    double lambda( const double T, const double P )
     {
 
         /* DESCRIPTION:
          * Returns the mean free path of an air molecule in m */
 
         /* INPUT PARAMETERS:
-         * - RealDouble T :: temperature in K
-         * - RealDouble P :: pressure in Pa
+         * - double T :: temperature in K
+         * - double P :: pressure in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Mean free path in m */
+         * - double :: Mean free path in m */
 
         return 2.0 * kinVisc( T, P ) / thermalSpeed( T );
 
     } /* End of lambda */
 
-    RealDouble mass_sphere( const RealDouble r, const RealDouble rho )
+    double mass_sphere( const double r, const double rho )
     {
     
         /* DESCRIPTION:
          * Returns the mass of a sphere in kg */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r   :: radius of the spherical particle in m
-         * - RealDouble rho :: density of the particle in kg/m^3
+         * - double r   :: radius of the spherical particle in m
+         * - double rho :: density of the particle in kg/m^3
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Mass in kg */
+         * - double :: Mass in kg */
 
-        return 4.0 / RealDouble(3.0) * physConst::PI * rho * r * r * r;
+        return 4.0 / double(3.0) * physConst::PI * rho * r * r * r;
 
     } /* End of mass_sphere */
 
-    RealDouble vFall( const RealDouble r, const RealDouble rho, \
-                      const RealDouble T, const RealDouble P )
+    double vFall( const double r, const double rho, \
+                      const double T, const double P )
     {
 
         /* DESCRIPTION:
          * Returns the terminal fall speed of a spherical particle in m/s */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r   :: radius of the spherical particle in m
-         * - RealDouble rho :: density of the particle in kg/m^3
-         * - RealDouble T   :: temperature in K
-         * - RealDouble P   :: pressure in Pa
+         * - double r   :: radius of the spherical particle in m
+         * - double rho :: density of the particle in kg/m^3
+         * - double T   :: temperature in K
+         * - double P   :: pressure in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Terminal fall speed in m/s */
+         * - double :: Terminal fall speed in m/s */
 
         return 2.0 * rho * physConst::g * r * r / ( 9.0 * dynVisc( T ) ) * slip_flowCorrection( Kn( r, T, P ) ); 
 
     } /* End of vFall */
     
-    RealDouble Kn( const RealDouble r, const RealDouble T, \
-                   const RealDouble P )
+    double Kn( const double r, const double T, \
+                   const double P )
     {
 
         /* DESCRIPTION:
          * Returns the dimensionless particle Knudsen number */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: radius of the spherical particle in m
-         * - RealDouble T :: temperature expressed in K
-         * - RealDouble P :: pressure expressed in Pa
+         * - double r :: radius of the spherical particle in m
+         * - double T :: temperature expressed in K
+         * - double P :: pressure expressed in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Particle Knudsen number */
+         * - double :: Particle Knudsen number */
 
         return lambda( T, P ) / r;
 
     } /* End of Kn */
 
-    RealDouble partDiffCoef( const RealDouble r, const RealDouble T, \
-                             const RealDouble P )
+    double partDiffCoef( const double r, const double T, \
+                             const double P )
     {
 
         /* DESCRIPTION:
@@ -271,18 +271,18 @@ namespace physFunc
          * Source: Jacobson (2005) Equation 15.29*/
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: radius of the spherical particle in m
-         * - RealDouble T :: temperature expressed in K
-         * - RealDouble P :: pressure expressed in Pa
+         * - double r :: radius of the spherical particle in m
+         * - double T :: temperature expressed in K
+         * - double P :: pressure expressed in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Particle diffusion coefficient in m^2/s */
+         * - double :: Particle diffusion coefficient in m^2/s */
 
         return physConst::kB * T / ( 6.0 * physConst::PI * dynVisc( T ) * r ) * slip_flowCorrection( Kn ( r, T, P ) );
 
     } /* End of partDiffCoef */
 
-    RealDouble slip_flowCorrection( const RealDouble Kn )
+    double slip_flowCorrection( const double Kn )
     {
 
         /* DESCRIPTION:
@@ -290,21 +290,21 @@ namespace physFunc
          * Source: Jacobson (2005) page 509 */
 
         /* INPUT PARAMETERS:
-         * - RealDouble Kn :: particle Knudsen number
+         * - double Kn :: particle Knudsen number
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: slip-flow correction factor */
+         * - double :: slip-flow correction factor */
 
-        static const RealDouble A = 1.249;
-        static const RealDouble B = 0.42;
-        static const RealDouble C = 0.87;
+        static const double A = 1.249;
+        static const double B = 0.42;
+        static const double C = 0.87;
 
         return 1 + Kn * ( A + B * exp( - C / Kn ) );
 
     } /* End of slip_flowCorrection */
     
-    RealDouble lambda_p( const RealDouble r, const RealDouble m, \
-                         const RealDouble T, const RealDouble P )
+    double lambda_p( const double r, const double m, \
+                         const double T, const double P )
     {
 
         /* DESCRIPTION:
@@ -312,20 +312,20 @@ namespace physFunc
          * Source: Jacobson (2005) Equation 15.34 */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: particle radius in m
-         * - RealDouble m :: particle mass in kg
-         * - RealDouble T :: temperature in K
-         * - RealDouble P :: pressure in Pa
+         * - double r :: particle radius in m
+         * - double m :: particle mass in kg
+         * - double T :: temperature in K
+         * - double P :: pressure in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Particle mean free path in m */
+         * - double :: Particle mean free path in m */
 
         return 8.0 * partDiffCoef( r, T, P ) / ( physConst::PI * thermalSpeed( T, m ) );
 
     } /* End of lambda_p */
 
-    RealDouble delta_p( const RealDouble r, const RealDouble m, \
-                        const RealDouble T, const RealDouble P )
+    double delta_p( const double r, const double m, \
+                        const double T, const double P )
     {
 
         /* DESCRIPTION:
@@ -335,22 +335,22 @@ namespace physFunc
          * Source: Jacobson (2005) Equation */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: particle radius in m
-         * - RealDouble m :: particle mass in kg
-         * - RealDouble T :: temperature in K
-         * - RealDouble P :: pressure in Pa
+         * - double r :: particle radius in m
+         * - double m :: particle mass in kg
+         * - double T :: temperature in K
+         * - double P :: pressure in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Mean distance from the center reached by particles leaving the surface in m */
+         * - double :: Mean distance from the center reached by particles leaving the surface in m */
 
-        RealDouble l = lambda_p( r, m, T, P );
+        double l = lambda_p( r, m, T, P );
 
         return ( pow( 2.0 * r + l , 3.0 ) - pow( 4.0 * r * r + l * l , 1.5 ) ) / ( 6.0 * r * l ) - 2.0 * r;
 
     } /* End of delta_p */
 
-    RealDouble Reynolds_p( const RealDouble r, const RealDouble rho, \
-                           const RealDouble T, const RealDouble P )
+    double Reynolds_p( const double r, const double rho, \
+                           const double T, const double P )
     {
         
         /* DESCRIPTION:
@@ -363,20 +363,20 @@ namespace physFunc
          * Re = 2 * r * V_t( r, rho ) / kinVisc( T, P ); */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r   :: particle radius in m
-         * - RealDouble rho :: particle density in kg/m^3
-         * - RealDouble T   :: temperature in K
-         * - RealDouble P   :: pressure in Pa
+         * - double r   :: particle radius in m
+         * - double rho :: particle density in kg/m^3
+         * - double T   :: temperature in K
+         * - double P   :: pressure in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Particle Reynolds number */
+         * - double :: Particle Reynolds number */
 
         return 2 * r * vFall( r, rho, T, P ) / kinVisc( T, P );
 
     } /* End of Reynolds_p */
 
-    RealDouble Schmidt_p( const RealDouble r, const RealDouble T, \
-                          const RealDouble P )
+    double Schmidt_p( const double r, const double T, \
+                          const double P )
     {
 
         /* DESCRIPTION:
@@ -387,20 +387,20 @@ namespace physFunc
          * Sc = kinVisc( T, P ) / partDiffCoef( r, T, P ); */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r   :: particle radius in m
-         * - RealDouble T   :: temperature in K
-         * - RealDouble P   :: pressure in Pa
+         * - double r   :: particle radius in m
+         * - double T   :: temperature in K
+         * - double P   :: pressure in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Particle Schmidt number */
+         * - double :: Particle Schmidt number */
 
         return kinVisc( T, P )/ partDiffCoef( r, T, P );
 
     } /* End of Schmidt_p */
 
-    RealDouble Stokes_p( const RealDouble r_1, const RealDouble rho_1, \
-                         const RealDouble r_2, const RealDouble rho_2, \
-                         const RealDouble T, const RealDouble P )
+    double Stokes_p( const double r_1, const double rho_1, \
+                         const double r_2, const double rho_2, \
+                         const double T, const double P )
     {
 
         /* DESCRIPTION:
@@ -411,15 +411,15 @@ namespace physFunc
          * where r_M = max( r_1, r_2 ) and r_m = min( r_1, r_2 ); */
          
         /* INPUT PARAMETERS:
-         * - RealDouble r_1   :: particle 1 radius in m
-         * - RealDouble rho_1 :: particle 1 density in kg/m^3
-         * - RealDouble r_2   :: particle 2 radius in m
-         * - RealDouble rho_2 :: particle 2 density in kg/m^3
-         * - RealDouble T     :: temperature in K
-         * - RealDouble P     :: pressure in Pa
+         * - double r_1   :: particle 1 radius in m
+         * - double rho_1 :: particle 1 density in kg/m^3
+         * - double r_2   :: particle 2 radius in m
+         * - double rho_2 :: particle 2 density in kg/m^3
+         * - double T     :: temperature in K
+         * - double P     :: pressure in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Particle Stokes number */
+         * - double :: Particle Stokes number */
 
         if ( r_1 >= r_2 )
             return vFall( r_2, rho_2, T, P ) * std::abs( vFall( r_1, rho_1, T, P ) - vFall( r_2, rho_2, T, P ) ) / ( r_1 * physConst::g );
@@ -428,9 +428,9 @@ namespace physFunc
 
     } /* End of Stokes_p */
 
-    RealDouble E_agg( const RealDouble r_1, const RealDouble rho_1, \
-                      const RealDouble r_2, const RealDouble rho_2, \
-                      const RealDouble T, const RealDouble P )
+    double E_agg( const double r_1, const double rho_1, \
+                      const double r_2, const double rho_2, \
+                      const double T, const double P )
     {
 
         /* DESCRIPTION:
@@ -452,18 +452,18 @@ namespace physFunc
          * (M.Z. Jacobson, Fundamentals of Atmospheric Modeling, 2005) */
          
         /* INPUT PARAMETERS:
-         * - RealDouble r_1   :: particle 1 radius in m
-         * - RealDouble rho_1 :: particle 1 density in kg/m^3
-         * - RealDouble r_2   :: particle 2 radius in m
-         * - RealDouble rho_2 :: particle 2 density in kg/m^3
-         * - RealDouble T     :: temperature in K
-         * - RealDouble P     :: pressure in Pa
+         * - double r_1   :: particle 1 radius in m
+         * - double rho_1 :: particle 1 density in kg/m^3
+         * - double r_2   :: particle 2 radius in m
+         * - double rho_2 :: particle 2 density in kg/m^3
+         * - double T     :: temperature in K
+         * - double P     :: pressure in Pa
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Liquid particles aggregation efficiency */
+         * - double :: Liquid particles aggregation efficiency */
 
-        RealDouble s;
-        RealDouble E_V, E_A;
+        double s;
+        double E_V, E_A;
 
         if ( r_1 >= r_2 ) {
             /* r_M = r_1 and r_m = r_2 */
@@ -489,7 +489,7 @@ namespace physFunc
 
     } /* End of E_agg */
 
-    RealDouble DiffCoef_H2O( const RealDouble T, const RealDouble P )
+    double DiffCoef_H2O( const double T, const double P )
     {
 
         /* DESCRIPTION: 
@@ -497,30 +497,30 @@ namespace physFunc
          * Source: Pruppacher and Klett (2010), Equation 13.3 */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: particle radius expressed in m
-         * - RealDouble T :: temperature expressed in K
-         * - RealDouble P :: pressure expressed in Pa 
+         * - double r :: particle radius expressed in m
+         * - double T :: temperature expressed in K
+         * - double P :: pressure expressed in Pa 
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Water diffusion coefficient */
+         * - double :: Water diffusion coefficient */
 
         return 2.1100E-05 * pow( ( T / physConst::TEMP_REF ), 1.94 ) * physConst::ATM / P;
 
     } /* End of DiffCoef_H2O */
     
-    RealDouble DiffCoef_H2SO4( const RealDouble T, const RealDouble P )
+    double DiffCoef_H2SO4( const double T, const double P )
     {
 
         /* DESCRIPTION: 
          * Returns the gas phase diffusion coefficient of sulfuric acid in m^2/s */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: particle radius expressed in m
-         * - RealDouble T :: temperature expressed in K
-         * - RealDouble P :: pressure expressed in Pa 
+         * - double r :: particle radius expressed in m
+         * - double T :: temperature expressed in K
+         * - double P :: pressure expressed in Pa 
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Sulfuric acid diffusion coefficient 
+         * - double :: Sulfuric acid diffusion coefficient 
          *
          * (M.J. Tang, Gas phase diffusion coefficients: inorganic compounds, 
          * Atmospheric Chemistry and Physics, 2014)
@@ -531,19 +531,19 @@ namespace physFunc
 
     } /* End of DiffCoef_H2SO4 */
     
-    RealDouble DiffCoef_HNO3( const RealDouble T, const RealDouble P )
+    double DiffCoef_HNO3( const double T, const double P )
     {
 
         /* DESCRIPTION: 
          * Returns the gas phase diffusion coefficient of nitric acid in m^2/s */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: particle radius expressed in m
-         * - RealDouble T :: temperature expressed in K
-         * - RealDouble P :: pressure expressed in Pa 
+         * - double r :: particle radius expressed in m
+         * - double T :: temperature expressed in K
+         * - double P :: pressure expressed in Pa 
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Nitric acid diffusion coefficient 
+         * - double :: Nitric acid diffusion coefficient 
          *
          * (M.J. Tang, Gas phase diffusion coefficients: inorganic compounds, 
          * Atmospheric Chemistry and Physics, 2014)
@@ -554,8 +554,8 @@ namespace physFunc
 
     } /* End of DiffCoef_HNO3 */
     
-    RealDouble CorrDiffCoef_H2O( const RealDouble r, const RealDouble T, \
-                                 const RealDouble P )
+    double CorrDiffCoef_H2O( const double r, const double T, \
+                                 const double P )
     {
 
         /* DESCRIPTION: 
@@ -565,17 +565,17 @@ namespace physFunc
          * Source: Pruppacher and Klett (2010) Equation 13.14 */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: particle radius expressed in m
-         * - RealDouble T :: temperature expressed in K
-         * - RealDouble P :: pressure expressed in Pa 
+         * - double r :: particle radius expressed in m
+         * - double T :: temperature expressed in K
+         * - double P :: pressure expressed in Pa 
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Corrected water diffusion coefficient */
+         * - double :: Corrected water diffusion coefficient */
 
         /* alpha represents the deposition coefficient for H2O molecules impinging on the 
          * surface. It is experimentally derived */
 
-        static const RealDouble alpha = 0.036; //Pruppacher and Klett Table 5.5
+        static const double alpha = 0.036; //Pruppacher and Klett Table 5.5
 
         return DiffCoef_H2O( T, P ) \
             / ( r / ( r + lambda( T, P ) ) \
@@ -583,8 +583,8 @@ namespace physFunc
 
     } /* End of CorrDiffCoef_H2O */
     
-    RealDouble CorrDiffCoef_H2SO4( const RealDouble r, const RealDouble T, \
-                                   const RealDouble P )
+    double CorrDiffCoef_H2SO4( const double r, const double T, \
+                                   const double P )
     {
 
         /* DESCRIPTION: 
@@ -594,17 +594,17 @@ namespace physFunc
          * Source: Pruppacher and Klett (2010) Equation 13.14 */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: particle radius expressed in m
-         * - RealDouble T :: temperature expressed in K
-         * - RealDouble P :: pressure expressed in Pa 
+         * - double r :: particle radius expressed in m
+         * - double T :: temperature expressed in K
+         * - double P :: pressure expressed in Pa 
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Corrected sulfuric acid diffusion coefficient */
+         * - double :: Corrected sulfuric acid diffusion coefficient */
 
         /* alpha represents the deposition coefficient for H2SO4 molecules impinging on the 
          * surface. It is experimentally derived */
 
-        static const RealDouble alpha = 1.0;
+        static const double alpha = 1.0;
 
         return DiffCoef_H2SO4( T, P ) \
             / ( r / ( r + lambda( T, P ) ) \
@@ -612,8 +612,8 @@ namespace physFunc
 
     } /* End of CorrDiffCoef_H2SO4 */
 
-    RealDouble CorrDiffCoef_HNO3( const RealDouble r, const RealDouble T, \
-                                  const RealDouble P )
+    double CorrDiffCoef_HNO3( const double r, const double T, \
+                                  const double P )
     {
 
         /* DESCRIPTION: 
@@ -623,17 +623,17 @@ namespace physFunc
          * Source: Pruppacher and Klett (2010) Equation 13.14 */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: particle radius expressed in m
-         * - RealDouble T :: temperature expressed in K
-         * - RealDouble P :: pressure expressed in Pa 
+         * - double r :: particle radius expressed in m
+         * - double T :: temperature expressed in K
+         * - double P :: pressure expressed in Pa 
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Corrected nitric acid diffusion coefficient */
+         * - double :: Corrected nitric acid diffusion coefficient */
 
         /* alpha represents the deposition coefficient for HNO3 molecules impinging on the 
          * surface. It is experimentally derived */
 
-        static const RealDouble alpha = 1.0;
+        static const double alpha = 1.0;
 
         return DiffCoef_HNO3( T, P ) \
             / ( r / ( r + lambda( T, P ) ) \
@@ -641,8 +641,8 @@ namespace physFunc
 
     } /* End of CorrDiffCoef_HNO3 */
 
-    RealDouble ThermalCond( const RealDouble r, const RealDouble T, \
-                            const RealDouble P )
+    double ThermalCond( const double r, const double T, \
+                            const double P )
     {
 
         /* DESCRIPTION:
@@ -650,20 +650,20 @@ namespace physFunc
          * through which heat is transported */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: particle radius expressed in m
-         * - RealDouble T :: temperature expressed in K
-         * - RealDouble P :: pressure expressed in Pa 
+         * - double r :: particle radius expressed in m
+         * - double T :: temperature expressed in K
+         * - double P :: pressure expressed in Pa 
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Thermal conductivity of dry air in J / ( m s K ) 
+         * - double :: Thermal conductivity of dry air in J / ( m s K ) 
          *
          * (H.R. Pruppacher and J.D. Klett, Microphysics of Clouds and Precipitation,
          *  Kluwer Academic Publishers, 1997)*/
 
         /* alpha_T is experimentally derived */
 
-        static const RealDouble k_a = 2.50E-02; /* [J / (m s K)] */
-        static const RealDouble alpha_T = 0.7;
+        static const double k_a = 2.50E-02; /* [J / (m s K)] */
+        static const double alpha_T = 0.7;
 
         return k_a \
             / ( r / ( r + 2.16E-07 ) \
@@ -671,7 +671,7 @@ namespace physFunc
 
     } /* End of ThermalCond */
 
-    RealDouble LHeatSubl_H2O( const RealDouble T )
+    double LHeatSubl_H2O( const double T )
     {
 
         /* DESCRIPTION:
@@ -679,32 +679,32 @@ namespace physFunc
          * Source: Polynomial curve fit to Table 2.1 of Rogers and Yau (1989)*/
 
         /* INPUT PARAMETERS:
-         * - RealDouble T :: temperature in K
+         * - double T :: temperature in K
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Latent heat of sublimation in J/kg*/
+         * - double :: Latent heat of sublimation in J/kg*/
 
         return ( 2.8341E+06 - 2.90E+02 * ( T - physConst::TEMP_REF ) - 4.00E+00 * ( T - physConst::TEMP_REF ) * ( T - physConst::TEMP_REF ) );
 
     } /* End of LHeatSubl_H2O */
 
-    RealDouble Kelvin( const RealDouble r )
+    double Kelvin( const double r )
     {
         
         /* DESCRIPTION:
          * Returns the saturation pressure correction factor to account for the Kelvin effect */
 
         /* INPUT PARAMETERS:
-         * - RealDouble r :: particle radius expressed in m
+         * - double r :: particle radius expressed in m
          *
          * OUTPUT PARAMETERS:
-         * - RealDouble :: Dimensionless Kelvin factor */
+         * - double :: Dimensionless Kelvin factor */
 
         /* The parameter a_k is taken from:
          * (J. Picot et al., Large-eddy simulation of contrail evolution in the vortex phase 
          * and its interaction with atmospheric turbulence, Atmospheric Chemistry and Physics, 2015)*/
 
-        static const RealDouble a_k = 5.00E-10; /* [m] */
+        static const double a_k = 5.00E-10; /* [m] */
 
         return exp( a_k / r );
 

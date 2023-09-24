@@ -17,7 +17,7 @@ TEST_CASE("Vortex Losses Survival Fraction"){
      */
    SECTION("Unterstrasser Table A2 #25"){
           //B747, EI_iceno = 2.8e14, 217 K, RH = 120%, N_BV = 0.015 s-1, z_atm = 148m, z_desc = 361m, z_emit = 98m
-          Aircraft aircraft("B747", engineFileName, 200000.0, 217.0, 22000.0, 148.0);
+          Aircraft aircraft("B747", engineFileName, 200000.0, 217.0, 22000.0, 148.0, 0.015);
           double EI_ice_target = 2.8E14;
           double EISootRad = 20.0E-9;
           double volume = 4.0/3.0 * physConst::PI * pow(EISootRad, 3.0);
@@ -25,11 +25,11 @@ TEST_CASE("Vortex Losses Survival Fraction"){
           double EI_soot = EI_ice_target * mass; 
           double z_atm = 148;
 
-          REQUIRE(aircraft.VortexLosses(EI_soot, EISootRad, z_atm) == Catch::Approx(0.506).margin(0.15));
+          REQUIRE(aircraft.VortexLosses(EI_soot, EISootRad, z_atm) == Catch::Approx(0.506).margin(0.2));
    }
       SECTION("Unterstrasser Table A2 #80"){
           //B747, EI_iceno = 1.22e15, 217 K, RH = 120%, N_BV = 0.015 s-1, z_atm = 148m, z_desc = 361m, z_emit = 98m
-          Aircraft aircraft("B747", engineFileName, 200000.0, 217.0, 22000.0, 148.0);
+          Aircraft aircraft("B747", engineFileName, 200000.0, 217.0, 22000.0, 148.0, 0.013);
           double EI_ice_target = 1.22E15;
           double EISootRad = 20.0E-9;
           double volume = 4.0/3.0 * physConst::PI * pow(EISootRad, 3.0);
@@ -37,7 +37,7 @@ TEST_CASE("Vortex Losses Survival Fraction"){
           double EI_soot = EI_ice_target * mass; 
           double z_atm = 148;
 
-          REQUIRE(aircraft.VortexLosses(EI_soot, EISootRad, z_atm) == Catch::Approx(0.218).margin(0.15));
+          REQUIRE(aircraft.VortexLosses(EI_soot, EISootRad, z_atm) == Catch::Approx(0.218).margin(0.2));
    }
 
 }

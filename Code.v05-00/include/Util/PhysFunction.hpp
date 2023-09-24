@@ -25,107 +25,130 @@ namespace physFunc
     /* Defined physical functions */
 
     /* Saturation pressures [Pa] */
-    RealDouble pSat_H2Ol( const RealDouble T );
-    RealDouble pSat_H2Os( const RealDouble T );
-    RealDouble pSat_H2SO4( const RealDouble T );
-    RealDouble pSat_HNO3( const RealDouble T , const RealDouble PPH2O );
+    double pSat_H2Ol( const double T );
+    double pSat_H2Os( const double T );
+    double pSat_H2SO4( const double T );
+    double pSat_HNO3( const double T , const double PPH2O );
 
     /* Derivative of the saturation pressures wrt to the temperature [Pa/K] */
-    RealDouble dpSat_H2Os( const RealDouble T );
+    double dpSat_H2Os( const double T );
 
     /* Density of air [kg/m^3] */
-    RealDouble rhoAir( const RealDouble T, const RealDouble P );
+    double rhoAir( const double T, const double P );
 
     /* Dynamic viscosity [kg/(m s)] */
-    RealDouble dynVisc( const RealDouble T );
+    double dynVisc( const double T );
 
     /* Kinematic viscosity [m^2/s] */
-    RealDouble kinVisc( const RealDouble T, const RealDouble P );
+    double kinVisc( const double T, const double P );
 
     /* Thermal speed of an air molecule/particle [m/s] */
-    RealDouble thermalSpeed( const RealDouble T, \
-                             const RealDouble m = physConst::M_Air );
+    double thermalSpeed( const double T, \
+                             const double m = physConst::M_Air );
 
     /* Mean free path in air [m] */
-    RealDouble lambda( const RealDouble T, const RealDouble P );
+    double lambda( const double T, const double P );
 
     /* Mass of spherical particle [kg] */
-    RealDouble mass_sphere( const RealDouble r, const RealDouble rho );
+    double mass_sphere( const double r, const double rho );
     
     /* Terminal fall speed of a spherical particle [m/s] */
-    RealDouble vFall( const RealDouble r, const RealDouble rho, \
-                      const RealDouble T, const RealDouble P );
+    double vFall( const double r, const double rho, \
+                      const double T, const double P );
 
     /* Knudsen number [-] */
-    RealDouble Kn( const RealDouble r, const RealDouble T, \
-                   const RealDouble P );
+    double Kn( const double r, const double T, \
+                   const double P );
 
     /* Particle diffusion coefficient [m^2/s] */
-    RealDouble partDiffCoef( const RealDouble r, const RealDouble T, \
-                             const RealDouble P );
+    double partDiffCoef( const double r, const double T, \
+                             const double P );
 
     /* Cunningham slip-flow correction factor [-] */
-    RealDouble slip_flowCorrection( const RealDouble Kn );
+    double slip_flowCorrection( const double Kn );
     
     /* Mean free path of particles in air [m] */
-    RealDouble lambda_p( const RealDouble r, const RealDouble m, \
-                         const RealDouble T, const RealDouble P );
+    double lambda_p( const double r, const double m, \
+                         const double T, const double P );
     
     /* Mean distance [m] from the center of a sphere reach by particles leaving */
-    RealDouble delta_p( const RealDouble r, const RealDouble m, \
-                        const RealDouble T, const RealDouble P );
+    double delta_p( const double r, const double m, \
+                        const double T, const double P );
     
     /* Particle Reynolds number [-] */
-    RealDouble Reynolds_p( const RealDouble r, const RealDouble rho, \
-                           const RealDouble T, const RealDouble P );
+    double Reynolds_p( const double r, const double rho, \
+                           const double T, const double P );
     
     /* Particle Schmidt number [-] */
-    RealDouble Schmidt_p( const RealDouble r, const RealDouble T, \
-                          const RealDouble P );
+    double Schmidt_p( const double r, const double T, \
+                          const double P );
 
     /* Particle Stokes number [-] */
-    RealDouble Stokes_p( const RealDouble r_1, const RealDouble rho_1, \
-                         const RealDouble r_2, const RealDouble rho_2, \
-                         const RealDouble T, const RealDouble P );
+    double Stokes_p( const double r_1, const double rho_1, \
+                         const double r_2, const double rho_2, \
+                         const double T, const double P );
     
     /* Aggregation efficiency for liquid particles [-] */
-    RealDouble E_agg( const RealDouble r_1, const RealDouble rho_1, \
-                      const RealDouble r_2, const RealDouble rho_2, \
-                      const RealDouble T, const RealDouble P );
+    double E_agg( const double r_1, const double rho_1, \
+                      const double r_2, const double rho_2, \
+                      const double T, const double P );
     
     /* H2O gas phase diffusion coefficient in [m^2/s] */
-    RealDouble DiffCoef_H2O( const RealDouble T, const RealDouble P );
+    double DiffCoef_H2O( const double T, const double P );
     
     /* H2SO4 gas phase diffusion coefficient in [m^2/s] */
-    RealDouble DiffCoef_H2SO4( const RealDouble T, const RealDouble P );
+    double DiffCoef_H2SO4( const double T, const double P );
     
     /* HNO3 gas phase diffusion coefficient in [m^2/s] */
-    RealDouble DiffCoef_HNO3( const RealDouble T, const RealDouble P );
+    double DiffCoef_HNO3( const double T, const double P );
 
     /* Corrected H2O gas phase diffusion coefficient in [m^2/s] */
-    RealDouble CorrDiffCoef_H2O( const RealDouble r, const RealDouble T, \
-                                 const RealDouble P );
+    double CorrDiffCoef_H2O( const double r, const double T, \
+                                 const double P );
     
     /* Corrected H2SO4 gas phase diffusion coefficient in [m^2/s] */
-    RealDouble CorrDiffCoef_H2SO4( const RealDouble r, const RealDouble T, \
-                                   const RealDouble P );
+    double CorrDiffCoef_H2SO4( const double r, const double T, \
+                                   const double P );
 
     /* Corrected HNO3 gas phase diffusion coefficient in [m^2/s] */
-    RealDouble CorrDiffCoef_HNO3( const RealDouble r, const RealDouble T, \
-                                  const RealDouble P );
+    double CorrDiffCoef_HNO3( const double r, const double T, \
+                                  const double P );
     
     /* Thermal conductivity of dry air in [J/(msK)] */
-    RealDouble ThermalCond( const RealDouble r, const RealDouble T, \
-                            const RealDouble P );
+    double ThermalCond( const double r, const double T, \
+                            const double P );
 
     /* Latent heat of sublimation of water vapor in [J/kg] */
-    RealDouble LHeatSubl_H2O( const RealDouble T );
+    double LHeatSubl_H2O( const double T );
 
     /* Kelvin factor [-] */
-    RealDouble Kelvin( const RealDouble r );
+    double Kelvin( const double r );
 
     /* RH Field */
     Vector_2D RHi_Field(const Vector_2D& H2O, const Vector_2D& T, const Vector_1D& P);
+
+    inline double RHwToRHi(double rhw, double temp) {
+        return rhw * pSat_H2Ol( temp ) / pSat_H2Os( temp );
+    }
+
+    inline double RHiToRHw(double rhi, double temp) {
+        return rhi * pSat_H2Os( temp ) / pSat_H2Ol( temp );
+    }
+
+    inline double H2OToRHw(double h2o, double temp) {
+        //h2o is in molec / cm3
+        return h2o / 1.0e-6 * physConst::kB * temp / pSat_H2Ol(temp) * 100;
+    }
+
+    inline double RHwToH2O(double rhw, double temp) {
+        //returns h2o conc in molec / cm3
+        return rhw / 100 * pSat_H2Ol(temp) / (physConst::kB * temp) * 1e-6;
+    }
+
+    inline double RHiToH2O(double rhi, double temp) {
+        //returns h2o conc in molec / cm3
+        return rhi / 100 * pSat_H2Os(temp) / (physConst::kB * temp) * 1e-6;
+    }
 
 }
 

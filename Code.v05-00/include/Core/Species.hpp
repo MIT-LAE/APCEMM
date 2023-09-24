@@ -45,16 +45,16 @@ class SpeciesArray
                      const Vector_3D &weights,   \
                      UInt nCounter );
 
-        void FillIn( UInt iTime, UInt iRing );
-
-        void getData( UInt iTime, UInt iRing );
+        /* FIXME: See comment in Ambient.hpp about classes modifying global state variables */
+        void FillIn( UInt iTime, UInt iRing, double* varSpeciesArray);
+        void getData( UInt iTime, UInt iRing, double* varSpeciesArray, double* fixSpeciesArray );
 
         Vector_1D RingAverage( const Vector_1D ringArea, \
-                               const RealDouble totArea, \
+                               const double totArea, \
                                const UInt iNt ) const;
 
         Vector_2D RingAverage( const Vector_1D ringArea, \
-                               const RealDouble totArea ) const;
+                               const double totArea ) const;
 
         UInt getnRing() const { return nRing; }
         UInt getnTime() const { return nTime; }

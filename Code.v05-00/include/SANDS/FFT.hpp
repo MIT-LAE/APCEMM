@@ -29,28 +29,6 @@
 #define REAL      0
 #define IMAG      1
 
-
-template<typename T>
-inline T* fftw_cast( const T* p )
-{
-    return const_cast<T*>( p);
-}
-
-inline fftw_complex* fftw_cast( const std::complex<double> *p )
-{
-    return const_cast<fftw_complex*>( reinterpret_cast<const fftw_complex*>(p) );
-}
-
-inline fftwf_complex* fftw_cast( const std::complex<float> *p )
-{
-    return const_cast<fftwf_complex*>( reinterpret_cast<const fftwf_complex*>(p) );
-}
-
-inline fftwl_complex* fftw_cast( const std::complex<long double> *p )
-{
-    return const_cast<fftwl_complex*>( reinterpret_cast<const fftwl_complex*>(p) );
-}
-
 /* Fourier Transform Interface */
 
 template <typename T>

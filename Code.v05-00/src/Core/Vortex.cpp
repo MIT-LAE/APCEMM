@@ -13,16 +13,9 @@
 
 #include "Core/Vortex.hpp"
 
-Vortex::Vortex( ) 
-{
-
-    /* Default Constructor */
-
-} /* End of Vortex::Vortex */
-
-Vortex::Vortex( RealDouble temperature_K, RealDouble pressure_Pa,  \
-                RealDouble N_BV, RealDouble span, RealDouble mass, \
-                RealDouble vFlight ) 
+Vortex::Vortex( double temperature_K, double pressure_Pa,  \
+                double N_BV, double span, double mass, \
+                double vFlight ) 
 {
 
     /* This function uses a parametric model to estimate the initial depth, 
@@ -53,7 +46,7 @@ Vortex::Vortex( RealDouble temperature_K, RealDouble pressure_Pa,  \
 
     /* Constructor */
 
-    RealDouble rho = pressure_Pa / ( temperature_K * physConst::R_Air );
+    double rho = pressure_Pa / ( temperature_K * physConst::R_Air );
 
     /* Wake vortex separation, [ m ] */
     b_ = physConst::PI * span / 4;
@@ -68,7 +61,7 @@ Vortex::Vortex( RealDouble temperature_K, RealDouble pressure_Pa,  \
     w_ = gamma_ / ( 2 * physConst::PI * b_ );
     
     /* Normalized dissipation rate, [ - ] */
-    eps_star_ = pow( physConst::EPSILON * b_, RealDouble(1.0/3.0) ) / w_;
+    eps_star_ = pow( physConst::EPSILON * b_, 1.0 / 3.0 ) / w_;
     if ( N_BV <= 0 ) {
         std::cout << "In Vortex::Vortex: Brunt-Vaisala frequency takes negative value, N_BV = " << N_BV << " [s^-1]\n";
         N_BV = 1.3E-02;
@@ -101,45 +94,5 @@ Vortex::Vortex( RealDouble temperature_K, RealDouble pressure_Pa,  \
 
 } /* End of Vortex::Vortex */
 
-Vortex::~Vortex( )
-{
-
-    /* Destructor */
-
-} /* End of Vortex::~Vortex */
-
-Vortex::Vortex( const Vortex &v )
-{
-
-    N_BV_     = v.N_BV_;
-    b_        = v.b_;
-    gamma_    = v.gamma_;
-    t_        = v.t_;
-    w_        = v.w_;
-    eps_star_ = v.eps_star_;
-    delta_zw_ = v.delta_zw_;
-    delta_z1_ = v.delta_z1_;
-    D_1_      = v.D_1_;
-
-} /* End of Vortex::Vortex */
-
-Vortex& Vortex::operator=( const Vortex &v )
-{
-
-    if ( &v == this )
-        return *this;
-
-    N_BV_     = v.N_BV_;
-    b_        = v.b_;
-    gamma_    = v.gamma_;
-    t_        = v.t_;
-    w_        = v.w_;
-    eps_star_ = v.eps_star_;
-    delta_zw_ = v.delta_zw_;
-    delta_z1_ = v.delta_z1_;
-    D_1_      = v.D_1_;
-    return *this;
-
-} /* End of Vortex::operator= */
 
 /* End of Vortex.cpp */

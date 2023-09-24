@@ -55,6 +55,7 @@ rundirs/*
 ################
 *.nc
 !examples/Example3_met_input/example_met_file.nc
+!Code*/tests/test_meteorology_metfile.nc
 
 # Debug files #
 ###############

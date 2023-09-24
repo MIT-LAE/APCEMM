@@ -16,7 +16,7 @@
 namespace EPM
 {
      
-    template<class System> odeSolver<System>::odeSolver( System system_, Vector_1D &x_, bool adapt, bool stop_, RealDouble t ):
+    template<class System> odeSolver<System>::odeSolver( System system_, Vector_1D &x_, bool adapt, bool stop_, double t ):
         system( system_ ),
         vars( x_ ),
         currentTime( 0.0 ),
@@ -64,21 +64,21 @@ namespace EPM
 
     } /* End of odeSolver::operator= */
 
-    template<class System> void odeSolver<System>::updateTime( RealDouble t_ )
+    template<class System> void odeSolver<System>::updateTime( double t_ )
     {
 
         currentTime = t_;
 
     } /* End of odeSolver::updateTime */
     
-    template<class System> void odeSolver<System>::updateStep( RealDouble dt_ )
+    template<class System> void odeSolver<System>::updateStep( double dt_ )
     {
 
         timeStep = dt_;
 
     } /* End of odeSolver::updateStep */
 
-    template<class System> UInt odeSolver<System>::integrate( RealDouble start_time, RealDouble end_time, RealDouble dt, streamingObserver observer )
+    template<class System> UInt odeSolver<System>::integrate( double start_time, double end_time, double dt, streamingObserver observer )
     {
 
         unsigned int nStep;
@@ -103,7 +103,7 @@ namespace EPM
 
     } /* End of odeSolver::integrate */
     
-    template<class System> UInt odeSolver<System>::integrate( RealDouble start_time, RealDouble end_time, RealDouble dt )
+    template<class System> UInt odeSolver<System>::integrate( double start_time, double end_time, double dt )
     {
 
         unsigned int nStep;
@@ -128,7 +128,7 @@ namespace EPM
     } /* End of odeSolver::integrate */
         
     template<class System> 
-    void odeSolver<System>::updateThreshold( RealDouble t )
+    void odeSolver<System>::updateThreshold( double t )
     {
 
         threshold = t;
@@ -137,7 +137,7 @@ namespace EPM
 
         
     template<class System> 
-    bool odeSolver<System>::done( const RealDouble &x )
+    bool odeSolver<System>::done( const double &x )
     {
 
         return ( x <= threshold );
@@ -201,7 +201,7 @@ namespace EPM
 
     } /* End of streamingObserver::operator() */
 
-    RealDouble streamingObserver::getLastElement( ) const
+    double streamingObserver::getLastElement( ) const
     {
 
         return m_states[m_count][0];
@@ -224,7 +224,7 @@ namespace EPM
             const char* sep = ", ";
             const unsigned int prec = 6;
 
-            RealDouble n_air; 
+            double n_air; 
 
             /* Variable list: 
              * - Temperature [K]
@@ -376,7 +376,7 @@ namespace EPM
 
     } /* End of streamingObserver::checkwatersat */
 
-    template class odeSolver<void ( const Vector_1D&, Vector_1D&, RealDouble )>;
+    template class odeSolver<void ( const Vector_1D&, Vector_1D&, double )>;
 }
 
 /* End of odeSolver.cpp */

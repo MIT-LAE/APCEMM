@@ -20,19 +20,17 @@
 /* List typedefs */
 typedef unsigned int UInt;
 typedef unsigned long ULong;
-typedef double RealDouble;
-typedef float RealFloat;
 typedef long double LongDouble;
 typedef std::complex<double> ComplexDouble;
 typedef std::complex<float> ComplexFloat;
 typedef std::complex<long double> ComplexlDouble;
 
 /* List vector typedefs */
-typedef std::vector<RealDouble> Vector_1D;
+typedef std::vector<double> Vector_1D;
 typedef std::vector<Vector_1D> Vector_2D;
 typedef std::vector<Vector_2D> Vector_3D;
 typedef std::vector<Vector_3D> Vector_4D;
-typedef std::vector<RealFloat> Vector_1Df;
+typedef std::vector<float> Vector_1Df;
 typedef std::vector<Vector_1Df> Vector_2Df;
 typedef std::vector<Vector_2Df> Vector_3Df;
 typedef std::vector<Vector_3Df> Vector_4Df;

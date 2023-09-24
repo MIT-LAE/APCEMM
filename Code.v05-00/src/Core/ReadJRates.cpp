@@ -26,9 +26,9 @@ void ReadJRates( const char* ROOTDIR,                          \
     std::string fullPath;
     std::stringstream mm, dd;
     std::string varName;
-    //RealDouble lonIn[72];
-    //RealDouble latIn[46];
-    //RealDouble pMidIn[59];
+    //double lonIn[72];
+    //double latIn[46];
+    //double pMidIn[59];
     double lonIn[72];
     double latIn[46];
     double pMidIn[59];
@@ -101,9 +101,9 @@ void ReadJRates( const char* ROOTDIR,                          \
     const double PRES_HIGH = pmid[PRES_INDEX - 1];
     const double PRES_LOW  = pmid[PRES_INDEX];
 
-    //RealDouble jRate[59][46][72];
+    //double jRate[59][46][72];
     double jRate[59][46][72];
-    RealDouble jRateNEL, jRateNEH, jRateNWL, jRateNWH, jRateSEL, jRateSEH, jRateSWL, jRateSWH;
+    double jRateNEL, jRateNEH, jRateNWL, jRateNWH, jRateSEL, jRateSEH, jRateSWL, jRateSWH;
 
     /* Read the photolysis rates ... */
 

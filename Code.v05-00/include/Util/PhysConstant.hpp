@@ -32,82 +32,82 @@ namespace physConst
     /* ABSOLUTE PHYSICAL CONSTANTS */
 
     /* Double-precision value of \pi */
-    static constexpr RealDouble PI = 3.141592653589793238460;
+    static constexpr double PI = 3.141592653589793238460;
 
     /* Double-precision 1j ( 1j * 1j = -1 ) */
     static const ComplexDouble _1j ( 0.0E+00, 1.0E+00 );
 
     /* Avogadro number   , Unit : [ molecules / mol ] */
-    static constexpr RealDouble Na = 6.022140857E+23;  
+    static constexpr double Na = 6.022140857E+23;  
 
     /* Boltzmann constant, Unit : [ J /  K ] */
-    static constexpr RealDouble kB = 1.380648528E-23;
+    static constexpr double kB = 1.380648528E-23;
 
     /* Ideal gas constant, Unit : [ J / ( K.mol ) ] */
-    static constexpr RealDouble R = 8.314459848E+00;
+    static constexpr double R = 8.314459848E+00;
 
     /* Specific gas constant, Unit : [ J / (K.kg) ] */
-    static constexpr RealDouble R_Air = R / MW_Air;
+    static constexpr double R_Air = R / MW_Air;
 
     
     /* THERMODYNAMIC QUANTITIES */
 
     /* Specific heat capacity of air at 300K, Unit : [ kJ / ( kg K ) ] */
-    static constexpr RealDouble CP_Air = 1.005E+00;
+    static constexpr double CP_Air = 1.005E+00;
 
     /* Heat capacity ratio of air, Unit : [ - ] */
-    static constexpr RealDouble GAMMA_Air = 1.4;
+    static constexpr double GAMMA_Air = 1.4;
 
 
     /* MOLECULAR PROPERTIES */
 
     /* Mass of one air molecule, Unit : [ kg ] */
-    static constexpr RealDouble M_Air = MW_Air / Na;
+    static constexpr double M_Air = MW_Air / Na;
 
     /* Density of water, Unit : [ kg / m ^ 3 ] */
-    static constexpr RealDouble RHO_H2O = 1.000E+03;
+    static constexpr double RHO_H2O = 1.000E+03;
 
     /* Density of ice, Unit : [ kg / m ^ 3 ] */
-    static constexpr RealDouble RHO_ICE = 9.167E+02;
+    static constexpr double RHO_ICE = 9.167E+02;
     
     /* Density of ice, Unit : [ kg / m ^ 3 ] */
-    static constexpr RealDouble RHO_NAT = 1.626E+03;
+    static constexpr double RHO_NAT = 1.626E+03;
 
     /* Density of sulfuric acid, Unit : [ kg / m ^ 3 ] */
-    static constexpr RealDouble RHO_SULF = 1.600E+03;
+    static constexpr double RHO_SULF = 1.600E+03;
     
     /* Density of soot, Unit : [ kg / m ^ 3 ] */
-    static constexpr RealDouble RHO_SOOT = 2.000E+03;
+    static constexpr double RHO_SOOT = 2.000E+03;
 
 
     /* EARTH'S PHYSICAL PARAMETERS */
 
     /* Acceleration due to gravity at the surface, Unit : [ m / s^2 ] */
-    static constexpr RealDouble g = 9.80665E+00;
+    static constexpr double g = 9.80665E+00;
 
     /* Pressure at sea level, Unit : [ Pa ] */
-    static constexpr RealDouble PRES_SL = 101325.0;
+    static constexpr double PRES_SL = 101325.0;
 
     /* 1 Atmosphere, Unit : [ Pa ] */
-    static constexpr RealDouble ATM = PRES_SL;
+    static constexpr double ATM = PRES_SL;
 
     /* Temperature at sea level, Unit : [ K ] */
-    static constexpr RealDouble TEMP_SL = 288.15;
+    static constexpr double TEMP_SL = 288.15;
 
     /* Reference temperature, Unit : [ K ] */
-    static constexpr RealDouble TEMP_REF = 273.15;
+    static constexpr double TEMP_REF = 273.15;
 
 
     /* ATMOSPHERIC PARAMETERS */
 
     /* Adiabatic temperature lapse rate, Unit : [ K / km ] */
-    static constexpr RealDouble GAMMA_AD = -g / CP_Air;
+    static constexpr double GAMMA_AD = -g / CP_Air;
 
     /* Turbulent dissipation rate, 
      * Range : ( 1.0E-08 - 1.0E-02 ), 
      * Unit  : [ m ^ 2 / s ^ 3 ]
      * Source: U. Schumann, A contrail cirrus prediction model, Geo. Sc. Dev., 2012 */
-    static constexpr RealDouble EPSILON = 1.00E-05;
+    static constexpr double EPSILON = 1.00E-05;
 
 }
 
