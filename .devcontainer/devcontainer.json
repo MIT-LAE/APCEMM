@@ -1,0 +1,17 @@
+{
+   "build": {
+      "dockerfile": "Dockerfile.apcemm"
+   },
+   "customizations": {
+      "vscode": {
+         "extensions": [
+            "dbaeumer.vscode-eslint",
+            "ms-vscode.cpptools-themes",
+            "ms-vscode.cpptools",
+            "ms-vscode.cpptools-extension-pack"
+         ]
+      }
+   },
+   "workspaceMount": "source=${localWorkspaceFolder},target=/home/APCEMM,type=bind,consistency=cached",
+   "workspaceFolder": "/home/APCEMM"
+}
