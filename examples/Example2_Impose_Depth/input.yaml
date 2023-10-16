@@ -33,7 +33,7 @@ PARAMETER MENU:
 
   # Monte Carlo simulation : min:max 
   #                        : Example: 200:240 will generate values for the parameter in between 200 and 240
-  Plume Process [hr] (double): 5
+  Plume Process [hr] (double): 6
   # Temperature, RH, and wind shear can be overwritten if using meteorological input files
   METEOROLOGICAL PARAMETERS SUBMENU:
     Temperature [K] (double): 217
@@ -161,7 +161,7 @@ ADVANCED OPTIONS MENU:
   GRID SUBMENU:
     NX (positive int): 2048
     NY (positive int): 192
-    XLIM_RIGHT (positive double): 1.0e+5 
-    XLIM_LEFT (positive double): 1.0e+5
+    XLIM_RIGHT (positive double): 5.0e+4 
+    XLIM_LEFT (positive double): 5.0e+4
     YLIM_UP (positive double): 6.5e+2
     YLIM_DOWN (positive double): 1.5e+3

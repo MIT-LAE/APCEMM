@@ -102,6 +102,7 @@ double totalH2OMass(const Solution& Data, const Vector_2D& cellAreas){
 }
 int PlumeModel( OptInput &Input_Opt, const Input &input )
 {
+    auto start = std::chrono::high_resolution_clock::now();
 
     double C[NSPEC];             /* Concentration of all species */
     double * VAR = &C[0];        /* Concentration of variable species */
@@ -1042,14 +1043,14 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
             std::cout<<"Ice Mass: " << Data.solidAerosol.TotalIceMass_sum(cellAreas)<<std::endl;
         }
 
-        // // If we do not perform chemistry, let's abort the simulation if there's no ice mass left
-        // if ( !simVars.CHEMISTRY && timestepVars.totalIceParticles_initial > 0.0E+00 ) {
-        //     timestepVars.totalIceParticles_after = Data.solidAerosol.TotalNumber_sum( cellAreas );
-        //     if ( timestepVars.totalIceParticles_after / timestepVars.totalIceParticles_initial < timestepVars.ABORT_THRESHOLD ) {
-        //         std::cout << "Only " << 100 * timestepVars.totalIceParticles_after / timestepVars.totalIceParticles_initial << " % of initial (post-vortex sinking) ice particles remaining. Let's abort!" << std::endl;
-        //         early_stop = true;
-        //     }
-        // }
+        // If we do not perform chemistry, let's abort the simulation if there's no ice mass left
+        if ( !simVars.CHEMISTRY && timestepVars.totalIceParticles_initial > 0.0E+00 ) {
+            timestepVars.totalIceParticles_after = Data.solidAerosol.TotalNumber_sum( cellAreas );
+            if ( timestepVars.totalIceParticles_after / timestepVars.totalIceParticles_initial < timestepVars.ABORT_THRESHOLD ) {
+                std::cout << "Only " << 100 * timestepVars.totalIceParticles_after / timestepVars.totalIceParticles_initial << " % of initial (post-vortex sinking) ice particles remaining. Let's abort!" << std::endl;
+                early_stop = true;
+            }
+        }
         //FINAL H2O MASS CHECK
         std::cout << "Final total H2O Mass: " << totalH2OMass(Data, cellAreas) << std::endl;
 
@@ -1080,7 +1081,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                           m.x(), m.y(), m.xE(), m.yE(), Met );    
             float totalIceParticles = Data.solidAerosol.TotalNumber_sum( cellAreas );
             float totalIceMass = Data.solidAerosol.TotalIceMass_sum( cellAreas );
-	    std::cout << "# particles: " << totalIceParticles << ", ice mass: " << totalIceMass << std::endl;
+	        std::cout << "# particles: " << totalIceParticles << ", ice mass: " << totalIceMass << std::endl;
             if ( totalIceParticles <= 1.00E+6 && totalIceMass <= 1.00E-2 && !simVars.CHEMISTRY ) {
                 std::cout << "EndSim: no particles remain" << std::endl;
                 std::cout << "# ice particles: " << totalIceParticles << std::endl;
@@ -1089,14 +1090,18 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                 early_stop = true;
             }
         }
-
+        if(early_stop) {
+            break;
+        }
     }
  
     /* ===================================================================== */
     /* ------------------------ TIME LOOP ENDS HERE ------------------------ */
     /* ===================================================================== */
 
-
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
+    std::cout << "APCEMM LAGRID Plume Model Run Finished! Run time: " << duration.count() << "ms" << std::endl;
     return SUCCESS;
 
 } /* End of PlumeModel */

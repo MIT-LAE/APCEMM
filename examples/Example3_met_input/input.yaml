@@ -162,7 +162,7 @@ ADVANCED OPTIONS MENU:
   GRID SUBMENU:
     NX (positive int): 2048
     NY (positive int): 192
-    XLIM_RIGHT (positive double): 1.0e+5 
-    XLIM_LEFT (positive double): 1.0e+5
+    XLIM_RIGHT (positive double): 5.0e+4 
+    XLIM_LEFT (positive double): 5.0e+4
     YLIM_UP (positive double): 6.5e+2
     YLIM_DOWN (positive double): 1.5e+3

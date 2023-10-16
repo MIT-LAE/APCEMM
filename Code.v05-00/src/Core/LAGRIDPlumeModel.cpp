@@ -41,6 +41,7 @@ int LAGRIDPlumeModel::runFullModel() {
     //Set altitude at bottom of domain
     alt_y0_ = met_.AltEdges()[0];
 
+    bool EARLY_STOP = false;
     //Start time loop
     while ( timestepVars_.curr_Time_s < timestepVars_.tFinal_s ) {
         /* Print message */
@@ -96,7 +97,7 @@ int LAGRIDPlumeModel::runFullModel() {
         std::cout << "Ice Mass: " << iceAerosol_.TotalIceMass_sum(areas) << std::endl;
         if(numparts / initNumParts_ < 1e-5) {
             std::cout << "Less than 0.001% of the particles remain, stopping sim" << std::endl;
-            return APCEMM_LAGRID_SUCCESS;
+            EARLY_STOP = true;
         }
 
         //Save
@@ -104,6 +105,10 @@ int LAGRIDPlumeModel::runFullModel() {
         timestepVars_.curr_Time_s += timestepVars_.dt;
         timestepVars_.nTime++;
         saveTSAerosol();
+
+        if(EARLY_STOP) {
+            break;
+        }
     }
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
