@@ -37,17 +37,17 @@ PARAMETER MENU:
   # Temperature, RH, and wind shear can be overwritten if using meteorological input files
   METEOROLOGICAL PARAMETERS SUBMENU:
     Temperature [K] (double): 217
-    R.Hum. wrt water [%] (double): 63.94
-    Pressure [hPa] (double): 250
+    R.Hum. wrt water [%] (double): 100
+    Pressure [hPa] (double): 227
     Horiz. diff. coeff. [m^2/s] (double): 15.0
     Verti. diff. [m^2/s] (double): 0.15
     Wind shear [1/s] (double): 0.002
-    Brunt-Vaisala Frequency [s^-1] (double): 0.013
+    Brunt-Vaisala Frequency [s^-1] (double): 0.01
   LOCATION AND TIME SUBMENU:
-    LON [deg] (double): -15
-    LAT [deg] (double): 60
-    Emission day [1-365] (int): 81
-    Emission time [hr] (double) : 8
+    LON [deg] (double): -1.58
+    LAT [deg] (double): 53.55
+    Emission day [1-365] (int): 1
+    Emission time [hr] (double) : 14.00
   BACKGROUND MIXING RATIOS SUBMENU:
     NOx [ppt] (double): 5100
     HNO3 [ppt] (double): 81.5
@@ -56,18 +56,18 @@ PARAMETER MENU:
     CH4 [ppm] (double): 1.76
     SO2 [ppt] (double): 7.25
   EMISSION INDICES SUBMENU:
-    NOx [g(NO2)/kg_fuel] (double): 10
-    CO [g/kg_fuel] (double): 1
+    NOx [g(NO2)/kg_fuel] (double): 11.46
+    CO [g/kg_fuel] (double): 1.2
     UHC [g/kg_fuel] (double): 0.6
-    SO2 [g/kg_fuel] (double): 0.1
+    SO2 [g/kg_fuel] (double): 1.0
     SO2 to SO4 conv [%] (double): 5
     Soot [g/kg_fuel] (double): 0.008
   Soot Radius [m] (double): 20.0E-09
-  Total fuel flow [kg/s] (double) : 2.8
-  Aircraft mass [kg] (double): 3.10e+05
-  Flight speed [m/s] (double): 250.0
-  Num. of engines [2/4] (int): 4 
-  Wingspan [m] (double): 60.0
+  Total fuel flow [kg/s] (double) : 1.602
+  Aircraft mass [kg] (double): 224658.4
+  Flight speed [m/s] (double): 250.9
+  Num. of engines [2/4] (int): 2 
+  Wingspan [m] (double): 64.75
   Core exit temp. [K] (double): 547.3
   Exit bypass area [m^2] (double): 1.804
 
@@ -108,7 +108,7 @@ METEOROLOGY MENU:
     Init temp. from met. (T/F): T
     Temp. time series input (T/F): T
     Interpolate temp. met. data (T/F): T
-    Init RH from met. (T/F): T
+    Init RH from met. (T/F): F
     RH time series input (T/F): T
     Interpolate RH met. data (T/F): T
     Init wind shear from met. (T/F): T
