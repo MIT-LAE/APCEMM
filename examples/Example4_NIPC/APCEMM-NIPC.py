@@ -121,6 +121,18 @@ def set_core_exit_temp_K(lines : list, T_core_exit : float) -> list:
 
     return newlines
 
+def default_APCEMM_vars():
+    location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
+    # Read the input file
+    ip_file = open(os.path.join(location,'original.yaml'), 'r')
+    op_lines = ip_file.readlines()
+    ip_file.close()
+
+    op_file = open(os.path.join(location,'input.yaml'), 'w')
+    op_file.writelines(op_lines)
+    op_file.close()
+
 def write_APCEMM_vars(temp_K = 217, RH_percent = 63.94, p_hPa = 250.0, lat_deg = 20.2, 
                lon_deg = 20.2, day = 20, time_hrs_UTC = 20.0, EI_soot_gPerkg = 0.008,
                fuel_flow_kgPers = 2.8, aircraft_mass_kg = 3.10e+05, 
@@ -216,8 +228,8 @@ def read_nc_file(filename):
     
 def read_apcemm_data(directory):
     t_mins = []
-    optical_depth_vert_int = []
-    # ice_particles = []
+    # optical_depth_vert_int = []
+    ice_particles = []
     # ds_t = []
     # optical_depth_vert = []
     # optical_depth_horiz = []
@@ -231,13 +243,13 @@ def read_apcemm_data(directory):
             hrs = int(tokens[-2][-4:-2])
             t_mins.append(hrs*60 + mins)
             #print(ds.variables['Number Ice Particles'])
-            # ice_particles.append(ds.variables['Number Ice Particles'][:].values[0])
-            optical_depth_vert_int.append(ds.variables['intOD'][:].values[0])
+            ice_particles.append(ds.variables['Number Ice Particles'][:].values[0])
+            # optical_depth_vert_int.append(ds.variables['intOD'][:].values[0])
             # optical_depth_horiz.append(ds["Horizontal optical depth"])
             # optical_depth_vert.append(ds["Vertical optical depth"])
             # ds_t.append(ds)
 
-    return t_mins, optical_depth_vert_int
+    return t_mins, ice_particles
     # return apce_data_struct(t_mins, ds_t, optical_depth_vert, optical_depth_horiz)
 
 def removeLow(arr, cutoff = 1e-3):
@@ -266,7 +278,7 @@ def eval_model(sample):
     nipc_vars = [var_rh]
 
     # Default the variables
-    write_APCEMM_vars()
+    default_APCEMM_vars()
 
     # Write the specific variables one by one
     write_APCEMM_nipc_vars(nipc_vars)
@@ -302,7 +314,7 @@ if __name__ == "__main__" :
     directory = directory + "/APCEMM_out"
 
     var_rh = NIPC_var("RH_percent", 150)
-    write_APCEMM_vars() # Default the variables
+    default_APCEMM_vars() # Default the variables
     write_APCEMM_nipc_vars([var_rh]) # Write the specific variables one by one
     os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
     times, optical_depth_int = read_apcemm_data(directory)
@@ -316,7 +328,7 @@ if __name__ == "__main__" :
     # Multivar: dist_germ = chaospy.J(chaospy.Normal(0, 1), chaospy.Normal(0, 1))
 
     # Sample the germ
-    samples_r = dist_germ.sample(10, rule="sobol", seed=0)
+    samples_r = dist_germ.sample(1, rule="sobol", seed=0)
 
     # Match the germ samples to the input variable space
     samples_q = transform(samples_r, dist_input, dist_germ)
