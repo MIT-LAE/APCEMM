@@ -325,7 +325,7 @@ if __name__ == "__main__" :
     times, ice = read_apcemm_data(directory)
 
     # Initialise the RH quantities
-    RH_inputs = np.arange(70, 141, 5)
+    RH_inputs = np.arange(0, 141, 10)
     var_rh = NIPC_var("RH_percent", 100)
 
     for RH_input in RH_inputs:
@@ -339,7 +339,7 @@ if __name__ == "__main__" :
 
 
     # Initialise the vector containing the Temperature input
-    T_inputs = np.arange(217 - 10, 217 + 11, 1)
+    T_inputs = np.arange(217 - 10, 217 + 21, 1)
     var_T = NIPC_var("temp_K", 217)
 
     for T_input in T_inputs:
