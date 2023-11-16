@@ -3,6 +3,7 @@ import chaospy
 import os.path
 import pickle
 import time
+import shutil
 import numpy as np
 import netCDF4 as nc
 import xarray as xr
@@ -253,6 +254,18 @@ def read_apcemm_data(directory):
     return t_mins, ice_particles
     # return apce_data_struct(t_mins, ds_t, optical_depth_vert, optical_depth_horiz)
 
+def reset_APCEMM_outputs(directory):
+    for file in sorted(os.listdir(directory)):
+        if(file.startswith('ts_aerosol') and file.endswith('.nc')):
+            file_path = os.path.join(directory,file)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+
 def removeLow(arr, cutoff = 1e-3):
     func = lambda x: (x > cutoff) * x
     vfunc = np.vectorize(func)
@@ -307,60 +320,61 @@ MAIN FUNCTION
 **********************************
 """
 if __name__ == "__main__" :
-    timing = False
+    # timing = False
 
-    # Chaospy code from https://chaospy.readthedocs.io/en/master/user_guide/advanced_topics/generalized_polynomial_chaos.html
-    # Using point collocation
+    # # Chaospy code from https://chaospy.readthedocs.io/en/master/user_guide/advanced_topics/generalized_polynomial_chaos.html
+    # # Using point collocation
     directory = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     directory = directory + "/APCEMM_out"
 
-    # Initialise the evaluations
-    evaluations_RH = []
-    evaluations_T = []
+    # # Initialise the evaluations
+    # evaluations_RH = []
+    # evaluations_T = []
 
-    var = NIPC_var("RH_percent", 150)
-    default_APCEMM_vars() # Default the variables
-    write_APCEMM_nipc_vars([var]) # Write the specific variables one by one
-    os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
-    times, ice = read_apcemm_data(directory)
+    # var = NIPC_var("RH_percent", 150)
+    # default_APCEMM_vars() # Default the variables
+    # write_APCEMM_nipc_vars([var]) # Write the specific variables one by one
+    # os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
+    # times, ice = read_apcemm_data(directory)
 
-    # Initialise the RH quantities
-    RH_inputs = np.arange(0, 141, 10)
-    var_rh = NIPC_var("RH_percent", 100)
+    # # Initialise the RH quantities
+    # RH_inputs = np.arange(0, 141, 10)
+    # var_rh = NIPC_var("RH_percent", 100)
 
-    for RH_input in RH_inputs:
-        var_rh.data = RH_input
-        default_APCEMM_vars() # Default the variables
-        write_APCEMM_nipc_vars([var_rh]) # Write the specific variables one by one
-        os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
-        times, RH_ice_number = read_apcemm_data(directory)
-        evaluations_RH.append(RH_ice_number)
+    # for RH_input in RH_inputs:
+    #     var_rh.data = RH_input
+    #     default_APCEMM_vars() # Default the variables
+    #     write_APCEMM_nipc_vars([var_rh]) # Write the specific variables one by one
+    #     os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
+    #     times, RH_ice_number = read_apcemm_data(directory)
+    #     evaluations_RH.append(RH_ice_number)
 
 
 
-    # Initialise the vector containing the Temperature input
-    T_inputs = np.arange(217 - 10, 217 + 21, 1)
-    var_T = NIPC_var("temp_K", 217)
+    # # Initialise the vector containing the Temperature input
+    # T_inputs = np.arange(217 - 10, 217 + 21, 1)
+    # var_T = NIPC_var("temp_K", 217)
 
-    for T_input in T_inputs:
-        var_T.data = T_input
-        default_APCEMM_vars() # Default the variables
-        write_APCEMM_nipc_vars([var_T]) # Write the specific variables one by one
-        os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
-        times, T_ice_number = read_apcemm_data(directory)
-        evaluations_T.append(T_ice_number)
+    # for T_input in T_inputs:
+    #     var_T.data = T_input
+    #     default_APCEMM_vars() # Default the variables
+    #     write_APCEMM_nipc_vars([var_T]) # Write the specific variables one by one
+    #     os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
+    #     times, T_ice_number = read_apcemm_data(directory)
+    #     evaluations_T.append(T_ice_number)
 
     
-    # Save the evaluations
-    DF = pd.DataFrame(evaluations_RH)
-    DF.to_csv("APCEMM-sweep-evaluations-RH.csv")
+    # # Save the evaluations
+    # DF = pd.DataFrame(evaluations_RH)
+    # DF.to_csv("APCEMM-sweep-evaluations-RH.csv")
 
-    # Save the evaluations
-    DF = pd.DataFrame(evaluations_T)
-    DF.to_csv("APCEMM-sweep-evaluations-T.csv")
+    # # Save the evaluations
+    # DF = pd.DataFrame(evaluations_T)
+    # DF.to_csv("APCEMM-sweep-evaluations-T.csv")
 
-    # Save the time vector
-    DF = pd.DataFrame(times)
-    DF.to_csv("APCEMM-sweep-times.csv")
+    # # Save the time vector
+    # DF = pd.DataFrame(times)
+    # DF.to_csv("APCEMM-sweep-times.csv")
 
+    reset_APCEMM_outputs(directory)
     

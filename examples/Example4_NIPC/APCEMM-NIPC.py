@@ -1,5 +1,6 @@
 import os
 import chaospy
+import shutil
 import os.path
 import pickle
 import time
@@ -251,6 +252,18 @@ def read_apcemm_data(directory):
 
     return t_mins, ice_particles
     # return apce_data_struct(t_mins, ds_t, optical_depth_vert, optical_depth_horiz)
+
+def reset_APCEMM_outputs(directory):
+    for file in sorted(os.listdir(directory)):
+        if(file.startswith('ts_aerosol') and file.endswith('.nc')):
+            file_path = os.path.join(directory,file)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 def removeLow(arr, cutoff = 1e-3):
     func = lambda x: (x > cutoff) * x
