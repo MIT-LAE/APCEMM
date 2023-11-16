@@ -364,6 +364,10 @@ if __name__ == "__main__" :
         times, RH_ice_number = read_APCEMM_data(directory)
         evaluations_RH.append(RH_ice_number)
 
+    # Save the RH inputs
+    DF = pd.DataFrame(RH_inputs)
+    DF.to_csv("APCEMM-sweep-inputs-RH.csv")
+
     # Save the evaluations
     DF = pd.DataFrame(evaluations_RH)
     DF.to_csv("APCEMM-sweep-evaluations-RH.csv")
@@ -381,6 +385,10 @@ if __name__ == "__main__" :
         os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
         times, T_ice_number = read_APCEMM_data(directory)
         evaluations_T.append(T_ice_number)
+
+    # Save the T inputs
+    DF = pd.DataFrame(T_inputs)
+    DF.to_csv("APCEMM-sweep-inputs-T.csv")
 
     # Save the evaluations
     DF = pd.DataFrame(evaluations_T)
