@@ -354,6 +354,7 @@ if __name__ == "__main__" :
         var_rh.data = RH_input
         default_APCEMM_vars() # Default the variables
         write_APCEMM_nipc_vars([var_rh]) # Write the specific variables one by one
+        reset_APCEMM_outputs(directory) # Delete the output folder to avoid false results
         os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
         times, RH_ice_number = read_APCEMM_data(directory)
         evaluations_RH.append(RH_ice_number)
@@ -368,6 +369,7 @@ if __name__ == "__main__" :
         var_T.data = T_input
         default_APCEMM_vars() # Default the variables
         write_APCEMM_nipc_vars([var_T]) # Write the specific variables one by one
+        reset_APCEMM_outputs(directory) # Delete the output folder to avoid false results
         os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
         times, T_ice_number = read_APCEMM_data(directory)
         evaluations_T.append(T_ice_number)

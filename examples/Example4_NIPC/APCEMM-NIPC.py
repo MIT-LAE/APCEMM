@@ -302,6 +302,9 @@ def eval_model(sample):
     # Default the variables
     default_APCEMM_vars()
 
+    # Delete the output folder to avoid false results
+    reset_APCEMM_outputs(directory)
+
     # Write the specific variables one by one
     write_APCEMM_nipc_vars(nipc_vars)
 
@@ -337,6 +340,7 @@ if __name__ == "__main__" :
 
     var_rh = NIPC_var("RH_percent", 150)
     default_APCEMM_vars() # Default the variables
+    reset_APCEMM_outputs(directory) # Delete the output folder to avoid false results
     write_APCEMM_nipc_vars([var_rh]) # Write the specific variables one by one
     os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
     times, optical_depth_int = read_APCEMM_data(directory)
