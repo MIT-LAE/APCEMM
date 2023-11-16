@@ -346,6 +346,11 @@ if __name__ == "__main__" :
     os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
     times, ice = read_APCEMM_data(directory)
 
+    # Save the time vector
+    DF = pd.DataFrame(times)
+    DF.to_csv("APCEMM-sweep-times.csv")
+
+
     # Initialise the RH quantities
     RH_inputs = np.arange(0, 141, 10)
     var_rh = NIPC_var("RH_percent", 100)
@@ -359,6 +364,9 @@ if __name__ == "__main__" :
         times, RH_ice_number = read_APCEMM_data(directory)
         evaluations_RH.append(RH_ice_number)
 
+    # Save the evaluations
+    DF = pd.DataFrame(evaluations_RH)
+    DF.to_csv("APCEMM-sweep-evaluations-RH.csv")
 
 
     # Initialise the vector containing the Temperature input
@@ -374,16 +382,7 @@ if __name__ == "__main__" :
         times, T_ice_number = read_APCEMM_data(directory)
         evaluations_T.append(T_ice_number)
 
-    
-    # Save the evaluations
-    DF = pd.DataFrame(evaluations_RH)
-    DF.to_csv("APCEMM-sweep-evaluations-RH.csv")
-
     # Save the evaluations
     DF = pd.DataFrame(evaluations_T)
     DF.to_csv("APCEMM-sweep-evaluations-T.csv")
-
-    # Save the time vector
-    DF = pd.DataFrame(times)
-    DF.to_csv("APCEMM-sweep-times.csv")
     
