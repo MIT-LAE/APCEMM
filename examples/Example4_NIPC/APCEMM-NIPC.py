@@ -227,7 +227,7 @@ def read_nc_file(filename):
 
     return ds
     
-def read_apcemm_data(directory):
+def read_APCEMM_data(directory):
     t_mins = []
     # optical_depth_vert_int = []
     ice_particles = []
@@ -249,6 +249,15 @@ def read_apcemm_data(directory):
             # optical_depth_horiz.append(ds["Horizontal optical depth"])
             # optical_depth_vert.append(ds["Vertical optical depth"])
             # ds_t.append(ds)
+
+    if len(t_mins) == 0:
+        t_mins.append(0)
+
+    while len(t_mins) < 37:
+        t_mins.append(t_mins[-1] + 10)
+
+    while len(ice_particles) < 37:
+        ice_particles.append(0)
 
     return t_mins, ice_particles
     # return apce_data_struct(t_mins, ds_t, optical_depth_vert, optical_depth_horiz)
@@ -302,7 +311,7 @@ def eval_model(sample):
     # Read the output
     directory = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     directory = directory + "/APCEMM_out"
-    t_mins, output = read_apcemm_data(directory)
+    t_mins, output = read_APCEMM_data(directory)
 
     # Return the integrated optical depth
     return output
@@ -330,7 +339,7 @@ if __name__ == "__main__" :
     default_APCEMM_vars() # Default the variables
     write_APCEMM_nipc_vars([var_rh]) # Write the specific variables one by one
     os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
-    times, optical_depth_int = read_apcemm_data(directory)
+    times, optical_depth_int = read_APCEMM_data(directory)
 
     # Input variable distribution
     dist_input = chaospy.Uniform(95,105)
