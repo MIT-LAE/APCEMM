@@ -249,7 +249,7 @@ def read_APCEMM_data(directory, output_id):
             hrs = int(tokens[-2][-4:-2])
             t_mins.append(hrs*60 + mins)
 
-            if output_id == "Horizontal optical depth" | output_id == "Vertical optical depth":
+            if (output_id == "Horizontal optical depth") | (output_id == "Vertical optical depth"):
                 output.append(ds[output_id])
             else:
                 output.append(ds.variables[output_id][:].values[0])
