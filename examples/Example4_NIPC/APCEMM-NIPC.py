@@ -163,7 +163,7 @@ def write_APCEMM_vars(temp_K = 217, RH_percent = 63.94, p_hPa = 250.0, lat_deg =
     op_file.writelines(op_lines)
     op_file.close()
 
-def write_APCEMM_nipc_vars(nipc_vars):
+def write_APCEMM_NIPC_vars(NIPC_vars):
     
     location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -172,7 +172,7 @@ def write_APCEMM_nipc_vars(nipc_vars):
     op_lines = ip_file.readlines()
     ip_file.close()
 
-    for var in nipc_vars:
+    for var in NIPC_vars:
         if var.name == "temp_K":
             op_lines = set_temp_K(op_lines, var.data)
             continue
@@ -227,13 +227,17 @@ def read_nc_file(filename):
 
     return ds
     
-def read_APCEMM_data(directory):
+def read_APCEMM_data(directory, output_id):
+    """ 
+    Supported output_id values:
+        - "Horizontal optical depth"
+        - "Vertical optical depth"
+        - "Number Ice Particles" (#/m)
+        - "Ice Mass" (Ice mass of contrail section per unit length (kg/m))
+        - "intOD" (Vertical optical depth integrated over the grid)
+    """
     t_mins = []
-    # optical_depth_vert_int = []
-    ice_particles = []
-    # ds_t = []
-    # optical_depth_vert = []
-    # optical_depth_horiz = []
+    output = []
 
     for file in sorted(os.listdir(directory)):
         if(file.startswith('ts_aerosol') and file.endswith('.nc')):
@@ -243,12 +247,11 @@ def read_APCEMM_data(directory):
             mins = int(tokens[-2][-2:])
             hrs = int(tokens[-2][-4:-2])
             t_mins.append(hrs*60 + mins)
-            #print(ds.variables['Number Ice Particles'])
-            ice_particles.append(ds.variables['Number Ice Particles'][:].values[0])
-            # optical_depth_vert_int.append(ds.variables['intOD'][:].values[0])
-            # optical_depth_horiz.append(ds["Horizontal optical depth"])
-            # optical_depth_vert.append(ds["Vertical optical depth"])
-            # ds_t.append(ds)
+
+            if (output_id == "Horizontal optical depth") | (output_id == "Vertical optical depth"):
+                output.append(ds[output_id])
+            else:
+                output.append(ds.variables[output_id][:].values[0])
 
     if len(t_mins) == 0:
         t_mins.append(0)
@@ -256,11 +259,10 @@ def read_APCEMM_data(directory):
     while len(t_mins) < 37:
         t_mins.append(t_mins[-1] + 10)
 
-    while len(ice_particles) < 37:
-        ice_particles.append(0)
+    while len(output) < 37:
+        output.append(0)
 
-    return t_mins, ice_particles
-    # return apce_data_struct(t_mins, ds_t, optical_depth_vert, optical_depth_horiz)
+    return t_mins, output
 
 def reset_APCEMM_outputs(directory):
     for file in sorted(os.listdir(directory)):
@@ -291,30 +293,52 @@ class NIPC_var:
         self.name = name
         self.data = data
 
-# The model NIPC is being applied on
-def eval_model(sample):
-    if sample.ndim < 1:
-        sample = np.array([sample])
-
-    var_rh = NIPC_var("RH_percent", sample[0])
-    nipc_vars = [var_rh]
+def eval_APCEMM(NIPC_vars, directory, output_id = "Number Ice Particles"):
+    # Supported NIPC_var.names:
+    #   - "temp_K"
+    #   - "RH_percent"
+    #   - "EI_soot_gPerkg"
+    #   - "fuel_flow_kgPers"
+    #   - "aircraft_mass_kg"
+    #   - "flight_speed_mPers"
+    #   - "core_exit_temp_K"
+    #   - "time_hrs_UTC"
+    #   - "p_hPa"
+    #
+    #
+    # Supported output_id values:
+    #     - "Horizontal optical depth"
+    #     - "Vertical optical depth"
+    #     - "Number Ice Particles" (#/m)
+    #     - "Ice Mass" (Ice mass of contrail section per unit length (kg/m))
+    #     - "intOD" (Vertical optical depth integrated over the grid)
 
     # Default the variables
     default_APCEMM_vars()
 
-    # Delete the output folder to avoid false results
-    reset_APCEMM_outputs(directory)
-
     # Write the specific variables one by one
-    write_APCEMM_nipc_vars(nipc_vars)
+    write_APCEMM_NIPC_vars(NIPC_vars)
 
     # Run APCEMM
     os.system('./../../Code.v05-00/APCEMM input.yaml')
 
     # Read the output
-    directory = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    directory = directory + "/APCEMM_out"
-    t_mins, output = read_APCEMM_data(directory)
+    t_mins, output = read_APCEMM_data(directory, output_id=output_id)
+
+    # Return the output
+    return t_mins, output
+
+# The model NIPC is being applied on
+def eval_model(sample, directory, output_id = "Number Ice Particles"):
+    if sample.ndim < 1:
+        sample = np.array([sample])
+
+    var_RH = NIPC_var("RH_percent", sample[0])
+    NIPC_vars = [var_RH]
+
+    # Read the output
+    t_mins, output = eval_APCEMM(NIPC_vars=NIPC_vars, 
+                                 directory=directory, output_id=output_id)
 
     # Return the integrated optical depth
     return output
@@ -331,19 +355,16 @@ MAIN FUNCTION
 **********************************
 """
 if __name__ == "__main__" :
-    timing = False
-
     # Chaospy code from https://chaospy.readthedocs.io/en/master/user_guide/advanced_topics/generalized_polynomial_chaos.html
     # Using point collocation
+    timing = False
+    output_id = "Ice Mass"
+
     directory = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     directory = directory + "/APCEMM_out"
 
-    var_rh = NIPC_var("RH_percent", 150)
-    default_APCEMM_vars() # Default the variables
-    reset_APCEMM_outputs(directory) # Delete the output folder to avoid false results
-    write_APCEMM_nipc_vars([var_rh]) # Write the specific variables one by one
-    os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
-    times, optical_depth_int = read_APCEMM_data(directory)
+    var_RH = NIPC_var("RH_percent", 150)
+    times, optical_depth_int = eval_APCEMM([var_RH], directory = directory, output_id=output_id)
 
     # Input variable distribution
     dist_input = chaospy.Uniform(95,105)
@@ -366,30 +387,30 @@ if __name__ == "__main__" :
         start = time.time()
     
     # Evaluate the deterministic samples of the output variable
-    evaluations = np.array([eval_model(sample) for sample in samples_q.T])
+    evaluations = np.array([eval_model(sample, directory = directory, output_id=output_id) 
+                            for sample in samples_q.T])
 
     if timing:
         end = time.time()
         print("\n\n" + str(end - start))
 
-    if np.any(evaluations < 0):
-        print("Negative optical depth value found!")
+    directory = directory + "/"
 
     # Save the evaluations
     DF = pd.DataFrame(evaluations)
-    DF.to_csv("APCEMM-NIPC-evaluations.csv")
+    DF.to_csv(directory + "APCEMM-NIPC-evaluations.csv")
 
     # Save the time vector
     DF = pd.DataFrame(times)
-    DF.to_csv("APCEMM-NIPC-times.csv")
+    DF.to_csv(directory + "APCEMM-NIPC-times.csv")
 
     # Pickle the PCE of the germ
-    file = open("APCEMM-NIPC-expansion.chp", 'wb')
+    file = open(directory + "APCEMM-NIPC-expansion.chp", 'wb')
     pickle.dump(expansion, file)
     file.close()
 
     # Pickle the germ samples
-    file = open("APCEMM-NIPC-samples_r.chp", 'wb')
+    file = open(directory + "APCEMM-NIPC-samples_r.chp", 'wb')
     pickle.dump(samples_r, file)
     file.close()
-    
+
