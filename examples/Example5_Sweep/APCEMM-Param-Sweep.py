@@ -164,7 +164,7 @@ def write_APCEMM_vars(temp_K = 217, RH_percent = 63.94, p_hPa = 250.0, lat_deg =
     op_file.writelines(op_lines)
     op_file.close()
 
-def write_APCEMM_nipc_vars(nipc_vars):
+def write_APCEMM_NIPC_vars(NIPC_vars):
     
     location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -173,7 +173,7 @@ def write_APCEMM_nipc_vars(nipc_vars):
     op_lines = ip_file.readlines()
     ip_file.close()
 
-    for var in nipc_vars:
+    for var in NIPC_vars:
         if var.name == "temp_K":
             op_lines = set_temp_K(op_lines, var.data)
             continue
@@ -228,14 +228,17 @@ def read_nc_file(filename):
 
     return ds
     
-def read_APCEMM_data(directory):
+def read_APCEMM_data(directory, output_id = "Number Ice Particles"):
+    """ 
+    Supported output_id values:
+        - "Horizontal optical depth"
+        - "Vertical optical depth"
+        - "Number Ice Particles" (#/m)
+        - "Ice Mass" (Ice mass of contrail section per unit length (kg/m))
+        - "intOD" (Vertical optical depth integrated over the grid)
+    """
     t_mins = []
-    # optical_depth_vert_int = []
-    # ice_particles = []
-    ice_mass = []
-    # ds_t = []
-    # optical_depth_vert = []
-    # optical_depth_horiz = []
+    output = []
 
     for file in sorted(os.listdir(directory)):
         if(file.startswith('ts_aerosol') and file.endswith('.nc')):
@@ -245,13 +248,11 @@ def read_APCEMM_data(directory):
             mins = int(tokens[-2][-2:])
             hrs = int(tokens[-2][-4:-2])
             t_mins.append(hrs*60 + mins)
-            #print(ds.variables['Number Ice Particles'])
-            ice_mass.append(ds.variables['Ice Mass'][:].values[0])
-            # ice_particles.append(ds.variables['Number Ice Particles'][:].values[0])
-            # optical_depth_vert_int.append(ds.variables['intOD'][:].values[0])
-            # optical_depth_horiz.append(ds["Horizontal optical depth"])
-            # optical_depth_vert.append(ds["Vertical optical depth"])
-            # ds_t.append(ds)
+
+            if output_id == "Horizontal optical depth" | output_id == "Vertical optical depth":
+                output.append(ds[output_id])
+            else:
+                output.append(ds.variables[output_id][:].values[0])
 
     if len(t_mins) == 0:
         t_mins.append(0)
@@ -259,11 +260,10 @@ def read_APCEMM_data(directory):
     while len(t_mins) < 37:
         t_mins.append(t_mins[-1] + 10)
 
-    while len(ice_mass) < 37:
-        ice_mass.append(0)
+    while len(output) < 37:
+        output.append(0)
 
-    return t_mins, ice_mass
-    # return apce_data_struct(t_mins, ds_t, optical_depth_vert, optical_depth_horiz)
+    return t_mins, output
 
 def reset_APCEMM_outputs(directory):
     for file in sorted(os.listdir(directory)):
@@ -299,14 +299,14 @@ def eval_model(sample):
     if sample.ndim < 1:
         sample = np.array([sample])
 
-    var_rh = NIPC_var("RH_percent", sample[0])
-    nipc_vars = [var_rh]
+    var_RH = NIPC_var("RH_percent", sample[0])
+    NIPC_vars = [var_RH]
 
     # Default the variables
     default_APCEMM_vars()
 
     # Write the specific variables one by one
-    write_APCEMM_nipc_vars(nipc_vars)
+    write_APCEMM_NIPC_vars(NIPC_vars)
 
     # Run APCEMM
     os.system('./../../Code.v05-00/APCEMM input.yaml')
@@ -333,6 +333,14 @@ MAIN FUNCTION
 if __name__ == "__main__" :
     timing = False
 
+    # Supported output_id values:
+    #     - "Horizontal optical depth"
+    #     - "Vertical optical depth"
+    #     - "Number Ice Particles" (#/m)
+    #     - "Ice Mass" (Ice mass of contrail section per unit length (kg/m))
+    #     - "intOD" (Vertical optical depth integrated over the grid)
+    output_id = "Ice Mass"
+
     # # Chaospy code from https://chaospy.readthedocs.io/en/master/user_guide/advanced_topics/generalized_polynomial_chaos.html
     # # Using point collocation
     directory = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -344,27 +352,28 @@ if __name__ == "__main__" :
 
     var = NIPC_var("RH_percent", 150)
     default_APCEMM_vars() # Default the variables
-    write_APCEMM_nipc_vars([var]) # Write the specific variables one by one
+    write_APCEMM_NIPC_vars([var]) # Write the specific variables one by one
     os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
-    times, ice = read_APCEMM_data(directory)
+    times, output = read_APCEMM_data(directory)
 
     # Save the time vector
     DF = pd.DataFrame(times)
     DF.to_csv("APCEMM-sweep-times.csv")
 
 
+
     # Initialise the RH quantities
     RH_inputs = np.arange(0, 141, 5)
-    var_rh = NIPC_var("RH_percent", 100)
+    var_RH = NIPC_var("RH_percent", 100)
 
     for RH_input in RH_inputs:
-        var_rh.data = RH_input
+        var_RH.data = RH_input
         default_APCEMM_vars() # Default the variables
-        write_APCEMM_nipc_vars([var_rh]) # Write the specific variables one by one
+        write_APCEMM_NIPC_vars([var_RH]) # Write the specific variables one by one
         reset_APCEMM_outputs(directory) # Delete the output folder to avoid false results
         os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
-        times, RH_ice_number = read_APCEMM_data(directory)
-        evaluations_RH.append(RH_ice_number)
+        times, output = read_APCEMM_data(directory)
+        evaluations_RH.append(output)
 
     # Save the RH inputs
     DF = pd.DataFrame(RH_inputs)
@@ -375,6 +384,7 @@ if __name__ == "__main__" :
     DF.to_csv("APCEMM-sweep-evaluations-RH.csv")
 
 
+
     # Initialise the vector containing the Temperature input
     T_inputs = np.arange(217 - 20, 217 + 21, 1)
     var_T = NIPC_var("temp_K", 217)
@@ -382,11 +392,11 @@ if __name__ == "__main__" :
     for T_input in T_inputs:
         var_T.data = T_input
         default_APCEMM_vars() # Default the variables
-        write_APCEMM_nipc_vars([var_T]) # Write the specific variables one by one
+        write_APCEMM_NIPC_vars([var_T]) # Write the specific variables one by one
         reset_APCEMM_outputs(directory) # Delete the output folder to avoid false results
         os.system('./../../Code.v05-00/APCEMM input.yaml') # Run APCEMM
-        times, T_ice_number = read_APCEMM_data(directory)
-        evaluations_T.append(T_ice_number)
+        times, output = read_APCEMM_data(directory)
+        evaluations_T.append(output)
 
     # Save the T inputs
     DF = pd.DataFrame(T_inputs)
