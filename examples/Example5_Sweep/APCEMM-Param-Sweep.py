@@ -231,7 +231,8 @@ def read_nc_file(filename):
 def read_APCEMM_data(directory):
     t_mins = []
     # optical_depth_vert_int = []
-    ice_particles = []
+    # ice_particles = []
+    ice_mass = []
     # ds_t = []
     # optical_depth_vert = []
     # optical_depth_horiz = []
@@ -245,7 +246,8 @@ def read_APCEMM_data(directory):
             hrs = int(tokens[-2][-4:-2])
             t_mins.append(hrs*60 + mins)
             #print(ds.variables['Number Ice Particles'])
-            ice_particles.append(ds.variables['Number Ice Particles'][:].values[0])
+            ice_mass.append(ds.variables['Ice Mass'][:].values[0])
+            # ice_particles.append(ds.variables['Number Ice Particles'][:].values[0])
             # optical_depth_vert_int.append(ds.variables['intOD'][:].values[0])
             # optical_depth_horiz.append(ds["Horizontal optical depth"])
             # optical_depth_vert.append(ds["Vertical optical depth"])
@@ -257,10 +259,10 @@ def read_APCEMM_data(directory):
     while len(t_mins) < 37:
         t_mins.append(t_mins[-1] + 10)
 
-    while len(ice_particles) < 37:
-        ice_particles.append(0)
+    while len(ice_mass) < 37:
+        ice_mass.append(0)
 
-    return t_mins, ice_particles
+    return t_mins, ice_mass
     # return apce_data_struct(t_mins, ds_t, optical_depth_vert, optical_depth_horiz)
 
 def reset_APCEMM_outputs(directory):
