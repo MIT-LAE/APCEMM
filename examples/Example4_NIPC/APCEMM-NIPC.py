@@ -319,6 +319,9 @@ def eval_APCEMM(NIPC_vars, directory, output_id = "Number Ice Particles"):
     # Write the specific variables one by one
     write_APCEMM_NIPC_vars(NIPC_vars)
 
+    # Eliminate the output files
+    reset_APCEMM_outputs(directory)
+
     # Run APCEMM
     os.system('./../../Code.v05-00/APCEMM input.yaml')
 
@@ -334,6 +337,7 @@ def eval_model(sample, directory, output_id = "Number Ice Particles"):
         sample = np.array([sample])
 
     var_RH = NIPC_var("RH_percent", sample[0])
+    var_T = NIPC_var("temp_K", sample[1])
     NIPC_vars = [var_RH]
 
     # Read the output
@@ -367,15 +371,17 @@ if __name__ == "__main__" :
     times, optical_depth_int = eval_APCEMM([var_RH], directory = directory, output_id=output_id)
 
     # Input variable distribution
-    dist_input = chaospy.Uniform(95,105)
+    # dist_input = chaospy.Uniform(95,105)
     # Multivar: dist_input = chaospy.MvNormal(mu=[10, 1], sigma=[[1.0, 0.09], [0.09, 0.1]])
+    dist_input = chaospy.J(chaospy.Uniform(100,110), chaospy.Uniform(215,225))
     
     # Germ distribution
-    dist_germ = chaospy.Uniform(-1, 1)
+    # dist_germ = chaospy.Uniform(-1, 1)
     # Multivar: dist_germ = chaospy.J(chaospy.Normal(0, 1), chaospy.Normal(0, 1))
+    dist_germ = chaospy.J(chaospy.Uniform(-1, 1), chaospy.Uniform(-1, 1))
 
     # Sample the germ
-    samples_r = dist_germ.sample(1, rule="sobol", seed=0)
+    samples_r = dist_germ.sample(100, rule="sobol", seed=0)
 
     # Match the germ samples to the input variable space
     samples_q = transform(samples_r, dist_input, dist_germ)

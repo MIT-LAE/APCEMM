@@ -328,6 +328,9 @@ def eval_APCEMM(NIPC_vars, directory, output_id = "Number Ice Particles"):
     # Write the specific variables one by one
     write_APCEMM_NIPC_vars(NIPC_vars)
 
+    # Eliminate the output files
+    reset_APCEMM_outputs(directory)
+
     # Run APCEMM
     os.system('./../../Code.v05-00/APCEMM input.yaml')
 
