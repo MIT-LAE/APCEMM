@@ -303,7 +303,16 @@ SWEEP FUNCTIONS
 """
 def eval_APCEMM(NIPC_vars, directory, output_id = "Number Ice Particles"):
     # Supported NIPC_var.names:
-    #     - ""
+    #   - "temp_K"
+    #   - "RH_percent"
+    #   - "EI_soot_gPerkg"
+    #   - "fuel_flow_kgPers"
+    #   - "aircraft_mass_kg"
+    #   - "flight_speed_mPers"
+    #   - "core_exit_temp_K"
+    #   - "time_hrs_UTC"
+    #   - "p_hPa"
+    #
     #
     # Supported output_id values:
     #     - "Horizontal optical depth"
@@ -311,6 +320,7 @@ def eval_APCEMM(NIPC_vars, directory, output_id = "Number Ice Particles"):
     #     - "Number Ice Particles" (#/m)
     #     - "Ice Mass" (Ice mass of contrail section per unit length (kg/m))
     #     - "intOD" (Vertical optical depth integrated over the grid)
+
 
     # Default the variables
     default_APCEMM_vars()
@@ -389,4 +399,4 @@ if __name__ == "__main__" :
     # Save the time vector
     DF = pd.DataFrame(times)
     DF.to_csv(directory + "/" + "APCEMM-sweep-times.csv")
-    
+
