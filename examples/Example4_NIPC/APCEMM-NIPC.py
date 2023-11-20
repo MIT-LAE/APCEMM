@@ -332,13 +332,17 @@ def eval_APCEMM(NIPC_vars, directory, output_id = "Number Ice Particles"):
     return t_mins, output
 
 # The model NIPC is being applied on
-def eval_model(sample, directory, output_id = "Number Ice Particles"):
+def eval_model_NIPC(sample, directory, output_id = "Number Ice Particles"):
     if sample.ndim < 1:
         sample = np.array([sample])
 
     var_RH = NIPC_var("RH_percent", sample[0])
-    var_T = NIPC_var("temp_K", sample[1])
-    NIPC_vars = [var_RH]
+        
+    if len(sample) > 1:
+        var_T = NIPC_var("temp_K", sample[1])
+        NIPC_vars = [var_RH, var_T]
+    else:
+        NIPC_vars = [var_RH]
 
     # Read the output
     t_mins, output = eval_APCEMM(NIPC_vars=NIPC_vars, 
@@ -362,7 +366,7 @@ if __name__ == "__main__" :
     # Chaospy code from https://chaospy.readthedocs.io/en/master/user_guide/advanced_topics/generalized_polynomial_chaos.html
     # Using point collocation
     timing = False
-    output_id = "Ice Mass"
+    output_id = "Number Ice Particles"
 
     directory = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     directory = directory + "/APCEMM_out"
@@ -393,7 +397,7 @@ if __name__ == "__main__" :
         start = time.time()
     
     # Evaluate the deterministic samples of the output variable
-    evaluations = np.array([eval_model(sample, directory = directory, output_id=output_id) 
+    evaluations = np.array([eval_model_NIPC(sample, directory = directory, output_id=output_id) 
                             for sample in samples_q.T])
 
     if timing:
