@@ -380,6 +380,7 @@ if __name__ == "__main__" :
     # Using point collocation
     timing = False
     output_id = "Number Ice Particles"
+    runs = 100
 
     directory = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     directory = directory + "/APCEMM_out"
@@ -398,7 +399,7 @@ if __name__ == "__main__" :
     dist_germ = chaospy.J(chaospy.Uniform(-1, 1), chaospy.Uniform(-1, 1))
 
     # Sample the germ
-    samples_r = dist_germ.sample(100, rule="sobol", seed=0)
+    samples_r = dist_germ.sample(runs, rule="sobol", seed=0)
 
     # Match the germ samples to the input variable space
     samples_q = transform(samples_r, dist_input, dist_germ)
