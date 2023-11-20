@@ -354,7 +354,7 @@ if __name__ == "__main__" :
     #     - "Number Ice Particles" (#/m)
     #     - "Ice Mass" (Ice mass of contrail section per unit length (kg/m))
     #     - "intOD" (Vertical optical depth integrated over the grid)
-    output_id = "Ice Mass"
+    output_id = "Number Ice Particles"
 
     directory = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     directory = directory + "/APCEMM_out"
