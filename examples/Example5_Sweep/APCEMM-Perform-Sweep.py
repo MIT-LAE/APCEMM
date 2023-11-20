@@ -290,6 +290,18 @@ NIPC FUNCTIONS
 **********************************
 """
 class NIPC_var:
+    """
+    Supported NIPC_var.names:
+       - "temp_K": Air Temperature in K
+       - "RH_percent": Relative humidity wrt water in %
+       - "EI_soot_gPerkg": Soot emissions index in grams per kg
+       - "fuel_flow_kgPers": Fuel flow in kg per seconds
+       - "aircraft_mass_kg": Aircraft mass in kg
+       - "flight_speed_mPers": TAS at cruise in m/s
+       - "core_exit_temp_K": Engine core exit temperature in K
+       - "time_hrs_UTC": Time in hours UTC
+       - "p_hPa": Pressure at the flight altitude in hPa
+    """
     def __init__(self, name, data):
         self.name = name
         self.data = data
