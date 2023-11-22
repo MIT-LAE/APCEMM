@@ -62,7 +62,7 @@ find_package(FFTW REQUIRED)
 find_package(OpenMP REQUIRED)
 #find_package(Catch2 3 REQUIRED)
 find_package(yaml-cpp REQUIRED)
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(Eigen3 3.3 REQUIRED)
 
 # Try to get Catch2 automatically
 Include(FetchContent)
