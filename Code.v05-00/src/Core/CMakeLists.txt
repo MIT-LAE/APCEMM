@@ -29,6 +29,8 @@ set(SRCS
 # This command ensures the static library gets build
 add_library(Core STATIC ${SRCS})
 
+target_link_libraries(Core PRIVATE netCDF::netcdf netCDF::netcdf-cxx4)
+target_link_libraries(Core PRIVATE yaml-cpp::yaml-cpp)
+
 # This command defines the dependencies of libCore.a
-target_link_libraries(Core ${netCDFCxx_LIBRARIES} ${NETCDF_LIBRARIES} ${YAML_CPP_LIBRARIES}
-                     FVM_ANDS AIM Util EPM KPP YamlInputReader)
+target_link_libraries(Core PRIVATE FVM_ANDS AIM Util EPM KPP YamlInputReader)

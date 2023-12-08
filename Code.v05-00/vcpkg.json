@@ -1,0 +1,13 @@
+{
+  "dependencies": [
+    "boost-array",
+    "boost-math",
+    "boost-odeint",
+    "boost-range",
+    "catch2",
+    "eigen3",
+    "fftw3",
+    "netcdf-cxx4",
+    "yaml-cpp"
+  ]
+}
