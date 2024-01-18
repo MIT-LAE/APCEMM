@@ -19,6 +19,8 @@ For VSCode users, a Docker Dev Container is defined in `.devcontainer`. See [the
 
 ## Dependencies 
 
+These are all managed using the `vcpkg` tool (see below) so do not need to be installed explicitly.
+
 - netcdf-c (requires HDF5 and zlib)
 - netcdf-cxx4
 - Catch2
@@ -32,24 +34,27 @@ See the [Dockerfile](.devcontainer/Dockerfile.apcemm) in the .devcontainer direc
 
 ## APCEMM: Installation instructions
 
-APCEMM can be built using CMake. Previously, the dependency structure and compile instructions were specified using manually generated Makefiles. CMake generates these Makefiles automatically, and should lead to a more pleasant software build experience. 
+APCEMM can be built using CMake. Previously, the dependency structure and compile instructions were specified using manually generated Makefiles. CMake generates these Makefiles automatically, and should lead to a more pleasant software build experience. Dependencies on external libraries are managed using the [vcpkg](https://vcpkg.io/en/) tool, which is installed as a Git submodule. (This means that you just need to run the `git submodule update` command below to set it up.)
 
-CMake will generate a single executable `APCEMM` that can receive an input file `input.yaml`. To compile this executable, you can call cmake as follows
+CMake will generate a single executable `APCEMM` that can receive an input file `input.yaml`. To compile this executable, you can call CMake as follows:
 
 ```
-cd APCEMM/Code.v05-00
-cmake .
+git submodule update --init --recursive
+mkdir build
+cd build
+cmake ../Code.v05-00
 cmake --build .
 ```
-This will generate the `APCEMM` executable in the `Code.v05-00` directory. You can also perform an "out-of-source" build, by simply calling cmake from within a different directory. For example,
+
+The `git submodule update` command installs the `vcpkg` dependency management tool, and the first time that you run CMake, all of the C++ dependencies will be installed. This will take some time, but subsequent runs of CMake will use cached binary builds of the dependencies, so will be much quicker.
+
+The above commands will generate the `APCEMM` executable in the `build` directory (an "out-of-source" build). It is also possible to perform a build directly in the `Code.v05-00` directory, but this is not preferred. You can perform an "out-of-source" build anywhere that it's convenient, simply by calling CMake from within a different directory. For example,
 ```
 cd APCEMM/rundirs/SampleRunDir/
 cmake ../../Code.v05-00
 cmake --build .
 ```
 will generate the executable in the `rundirs/SampleRunDir/` directory. 
-
-APCEMM now requires a working installation of yaml-cpp. If you did not install yaml-cpp in a standard location, pass the argument `-DCMAKE_PREFIX_PATH=/path/to/yaml-cpp` as part of the original `cmake` command.
 
 ## Getting Started
 To start a run from the aforementioned `rundirs/SampleRunDir`, simply call:

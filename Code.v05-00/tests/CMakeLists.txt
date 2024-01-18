@@ -1,7 +1,5 @@
 include(Catch)
 
-set(TARGET_TEST unittest)
-
 set(SRC_TEST
 	testmain.cpp
     test_physfunction.cpp
@@ -17,35 +15,14 @@ set(SRC_TEST
 #Add preprocessor def of the tests dir
 add_definitions(-DAPCEMM_TESTS_DIR="${CMAKE_SOURCE_DIR}/tests")
 
-add_executable(
-	${TARGET_TEST}
-	${SRC_TEST}
-)
-target_link_libraries(${TARGET_TEST}  Catch2::Catch2WithMain yaml-cpp Util AIM EPM YamlInputReader)
-catch_discover_tests(${TARGET_TEST})
+add_executable(unittest ${SRC_TEST})
+target_link_libraries(unittest  Catch2::Catch2WithMain Util AIM EPM YamlInputReader)
+catch_discover_tests(unittest)
 
-set(TARGET_TEST test_solver)
+add_executable(test_solver test_adv_diff_solver.cpp)
+target_link_libraries(test_solver  Catch2::Catch2WithMain FVM_ANDS Core)
+catch_discover_tests(test_solver)
 
-set(SRC_TEST
-	test_adv_diff_solver.cpp
-)
-
-add_executable(
-	${TARGET_TEST}
-	${SRC_TEST}
-)
-target_link_libraries(${TARGET_TEST}  Catch2::Catch2WithMain FVM_ANDS Core)
-catch_discover_tests(${TARGET_TEST})
-
-set(TARGET_TEST test_LAGRID)
-
-set(SRC_TEST
-	test_LAGRID.cpp
-)
-
-add_executable(
-	${TARGET_TEST}
-	${SRC_TEST}
-)
-target_link_libraries(${TARGET_TEST}  Catch2::Catch2WithMain LAGRID)
-catch_discover_tests(${TARGET_TEST})
+add_executable(test_LAGRID test_LAGRID.cpp)
+target_link_libraries(test_LAGRID  Catch2::Catch2WithMain LAGRID)
+catch_discover_tests(test_LAGRID)
