@@ -37,9 +37,6 @@ int LAGRIDPlumeModel::runFullModel() {
         vFall_ = AIM::SettlingVelocity( iceAerosol_.getBinCenters(), \
                                        met_.tempRef(), simVars_.pressure_Pa );
     }
-    
-    //Set altitude at bottom of domain
-    alt_y0_ = met_.AltEdges()[0];
 
     bool EARLY_STOP = false;
     //Start time loop
@@ -64,10 +61,18 @@ int LAGRIDPlumeModel::runFullModel() {
             runTransport(timestepVars_.TRANSPORT_DT);
         }
 
+        /*  With LAGRID remapping every transport timestep, it fundamentally only makes physical sense to update
+            the temperature perturbations at the same interval as the transport timestep. Turbulence timestep is one
+            tool used to tune the intensity of the simulated turbulence, but we can also just vary the amplitude.
+        */
+        if (simVars_.TEMP_PERTURB){
+            met_.updateTempPerturb();
+        }
+
         solarTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.TRANSPORT_DT / 2 ) / 3600.0;
         simTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.TRANSPORT_DT / 2 - timestepVars_.timeArray[0] ) / 3600;
         if(COCIP_MIXING) {
-            Meteorology met_temp = met_; //Extremely wasteful copy, but whatever.
+            Meteorology met_temp = met_;
             met_temp.Update( timestepVars_.TRANSPORT_DT, solarTime_h_, simTime_h_);
             H2O_amb_after_cocip = met_temp.H2O_field();
             numberMask_after_cocip = iceNumberMask();
@@ -87,6 +92,9 @@ int LAGRIDPlumeModel::runFullModel() {
         //Perform Met Update, which includes the vertical advection and timestepping in other met variables
         std::cout << "Updating Met..." << std::endl;
         met_.Update( timestepVars_.TRANSPORT_DT, solarTime_h_, simTime_h_);
+        //Vertical advection shifts the y coordinates which are synced to altitude, so we need to update the y edges and coordinates here too.
+        yEdges_ = met_.yEdges();
+        yCoords_ = met_.yCoords(); 
         //Remap the grid to account for changes in shape due to vertical advection and the growth of the contrail
         std::cout << "Remapping... " << std::endl;
         remapAllVars(timestepVars_.TRANSPORT_DT);
@@ -152,7 +160,7 @@ int LAGRIDPlumeModel::runEPM() {
        EXCEPT FOR H2O which is user defined via met input or rhw input */
     epmSolution.Initialize( simVars_.BACKG_FILENAME.c_str(), input_, airDens, met_, optInput_, VAR, FIX, false );
 
-    double aerArray[N_AER][2];   /* aerArray stores all the number concentrations of aerosols */
+    Vector_2D aerArray = epmSolution.getAerosol();
 
     int i_0 = std::floor( optInput_.ADV_GRID_XLIM_LEFT / optInput_.ADV_GRID_NX ); //index i where x = 0
     int j_0 = std::floor( -yEdges_[0] / dy ); //index j where y = 0
@@ -315,10 +323,19 @@ void LAGRIDPlumeModel::updateDiffVecs() {
 void LAGRIDPlumeModel::runTransport(double timestep) {
     //Update the zero bc to reflect grid size changes
     auto ZERO_BC = FVM_ANDS::bcFrom2DVector(iceAerosol_.getPDF()[0], true);
-    //Transport the Ice Aerosol PDF
-    const FVM_ANDS::AdvDiffParams fvmSolverInitParams(0, 0, met_.shearRef(), input_.horizDiff(), input_.vertiDiff(), timestepVars_.TRANSPORT_DT);
+
+    //TODO: Implement height dependent shear. For now, just taking shear of y coordinate with highest xOD to avoid bugs.
+    auto xOD = iceAerosol_.xOD(Vector_1D(xCoords_.size(), xCoords_[1] - xCoords_[0]));
+    double maxIdx = 0;
+    for (int i = 0; i < xOD.size(); i++) {
+        if(xOD[i] > xOD[maxIdx]) maxIdx = i;
+    }
+    shear_rep_ = met_.shear(maxIdx);
+
+    const FVM_ANDS::AdvDiffParams fvmSolverInitParams(0, 0, shear_rep_, input_.horizDiff(), input_.vertiDiff(), timestepVars_.TRANSPORT_DT);
     const FVM_ANDS::BoundaryConditions ZERO_BC_INIT = FVM_ANDS::bcFrom2DVector(iceAerosol_.getPDF()[0], true);
     updateDiffVecs();
+    //Transport the Ice Aerosol PDF
     #pragma omp parallel for default(shared)
     for ( int n = 0; n < iceAerosol_.getNBin(); n++ ) {
         /* Transport particle number and volume for each bin and
@@ -328,7 +345,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         //Update solver params
         solver.updateTimestep(timestep);
         solver.updateDiffusion(diffCoeffX_, diffCoeffY_);
-        solver.updateAdvection(0, -vFall_[n], met_.shearRef());
+        solver.updateAdvection(0, -vFall_[n], shear_rep_);
 
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
         solver.operatorSplitSolve2DVec(iceAerosol_.getPDF_nonConstRef()[n], ZERO_BC, false);
@@ -356,9 +373,10 @@ LAGRID::twoDGridVariable LAGRIDPlumeModel::remapVariable(const VectorUtils::Mask
     // if the boxes' and remapping's minX, maxX, minY, maxY are the same.
     auto boxGrid = LAGRID::rectToBoxGrid(dy_grid_old, met_.dy_vec(), dx_grid_old, xEdges_[0], met_.y0(), phi, mask);
 
+    //Enforce at least x many points in the contrail while limiting minimum/maximum dx and dy
+    double dx_grid_new =  std::max(20.0, std::min((maskInfo.maxX - maskInfo.minX) / 50.0, 50.0));
+    double dy_grid_new = std::max(5.0, std::min((maskInfo.maxY - maskInfo.minY) / 50.0, 7.0));
     //Need 2 extra points account for the buffer
-    double dx_grid_new =  std::min((maskInfo.maxX - maskInfo.minX) / 50.0, 50.0);
-    double dy_grid_new = std::min((maskInfo.maxY - maskInfo.minY) / 50.0, 7.0);
     int nx_new = floor((maskInfo.maxX - maskInfo.minX) / dx_grid_new) + 2;
     int ny_new = floor((maskInfo.maxY - maskInfo.minY) / dy_grid_new) + 2;
     LAGRID::Remapping remapping(maskInfo.minX - dx_grid_new, maskInfo.minY - dy_grid_new, dx_grid_new, dy_grid_new, nx_new, ny_new);
@@ -391,12 +409,12 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
 
     double settlingLengthScale = vFall_[vFall_.size() - 1] * remapTimestep;
     // shearTop: same sign as shear. shears left if shear > 0, right if shear < 0
-    double shearTop = met_.shearRef() * maskInfo.maxY * remapTimestep; 
+    double shearTop = shear_rep_ * maskInfo.maxY * remapTimestep; 
     // shearBot: Takes into account how much the largest crystals will fall, same sign as shear. shears right if shear > 0, left if shear < 0 
-    double shearBot = met_.shearRef() * -(maskInfo.minY - settlingLengthScale) * remapTimestep;  
+    double shearBot = shear_rep_ * -(maskInfo.minY - settlingLengthScale) * remapTimestep;  
     
-    double shearLengthScaleRight = met_.shearRef() > 0 ? shearBot : shearTop; 
-    double shearLengthScaleLeft = met_.shearRef() > 0 ? shearTop : shearBot;
+    double shearLengthScaleRight = shear_rep_ > 0 ? shearBot : shearTop; 
+    double shearLengthScaleLeft = shear_rep_ > 0 ? shearTop : shearBot;
 
     shearLengthScaleRight = std::max(shearLengthScaleRight, 0.0);
     shearLengthScaleLeft = std::max(shearLengthScaleLeft, 0.0);
@@ -429,8 +447,7 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     double dy = H2ORemap.dy;
     double dx = H2ORemap.dx;
     std::cout << "dx: " << dx << ", dy: " << dy << std::endl;
-    alt_y0_ += ((H2ORemap.yCoords[0] - 0.5*dy) - yEdges_[0]);
-    // std::cout << "Updating coordinates..." << std::endl;
+
     //Update Coordinates
     yCoords_ = std::move(H2ORemap.yCoords);
     xCoords_ = std::move(H2ORemap.xCoords);
@@ -440,7 +457,6 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     std::generate(xEdges_.begin(), xEdges_.end(), [dx, this, i = 0.0]() mutable { return xCoords_[0] + dx*(i++ - 0.5); });
 
     //Regenerate Met based on new grid 
-    // std::cout << "Reference Altitude: " << met_.referenceAlt() << std::endl;
     if(!optInput_.MET_LOADMET) {
         //This way of regenning met is extremely stupid
         OptInput temp_opt = optInput_;
@@ -451,26 +467,21 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
         temp_opt.ADV_GRID_YLIM_DOWN = -yEdges_[0];
         temp_opt.ADV_GRID_YLIM_UP = -yEdges_[yEdges_.size() - 1];
         AmbientMetParams ambParamsTemp;
-        double alt_ref = alt_y0_ - yEdges_[0]; //Updated from previous alt_ref due to alt_y0 change
-        double press_ref;
-        met::ISA(alt_ref, press_ref);
-        ambParamsTemp.press_Pa = press_ref;
+        ambParamsTemp.press_Pa = met_.referencePress();
         ambParamsTemp.solarTime_h = solarTime_h_;
-        ambParamsTemp.temp_K = met_.tempAtAlt(alt_ref);
-        ambParamsTemp.rhi = met_.rhiAtAlt(alt_ref);
-        ambParamsTemp.shear = met_.shearAtAlt(alt_ref);
+        ambParamsTemp.temp_K = met_.tempRef();
+        ambParamsTemp.rhi = met_.rhiRef();
+        ambParamsTemp.shear = met_.shearRef();
         met_ = Meteorology(temp_opt, ambParamsTemp, yCoords_, yEdges_);
     }
     else {
-        met_.regenerate(yCoords_, yEdges_, alt_y0_, xCoords_.size());
+        met_.regenerate(yCoords_, yEdges_, xCoords_.size());
     }
 
     //With new met, set boundary conditions of H2O to ambient.
     //FIXME: Fix this issue with boundary nodes on the H2O
     trimH2OBoundary();
     VectorUtils::fill2DVec(H2O_, met_.H2O_field(), [](double val) { return val == 0;  } );
-    //Update Temperature Perturbation
-
 }
 
 void LAGRIDPlumeModel::trimH2OBoundary() {
@@ -507,7 +518,7 @@ double LAGRIDPlumeModel::totalAirMass() {
     return totalAirMass; // kg/m 
 }
 
-void LAGRIDPlumeModel::runCocipH2OMixing(Vector_2D& h2o_old, Vector_2D& h2o_amb_new, MaskType& mask_old, MaskType& mask_new) {
+void LAGRIDPlumeModel::runCocipH2OMixing(const Vector_2D& h2o_old, const Vector_2D& h2o_amb_new, MaskType& mask_old, MaskType& mask_new) {
     //h2o_old is the actual H2O field of the "before" timestep
     double molec_h2o_old = 0;
     for (int j = 0; j < h2o_old.size(); j++) {

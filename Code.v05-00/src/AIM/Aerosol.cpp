@@ -1397,7 +1397,8 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         return chi;
 
     } /* End of Grid_Aerosol::Extinction */
-    double Grid_Aerosol::extinctionWidth(const Vector_1D& xCoord, double thres) const {
+
+    std::tuple<double, int, int> Grid_Aerosol::extinctionWidthIndices(const Vector_1D& xCoord, double thres) const {
         Vector_2D chi = Extinction();
         Vector_1D chiMax_x = VectorUtils::VecMax2D(Extinction(), 1);
         double chiMax = *std::max_element(chiMax_x.begin(), chiMax_x.end());
@@ -1411,9 +1412,14 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
             }
         }
         double width = std::abs(xCoord[i_right] - xCoord[i_left]);
-        return width;
+        return std::make_tuple(width, i_left, i_right);
     }
-    double Grid_Aerosol::extinctionDepth(const Vector_1D& yCoord, double thres) const {
+
+    double Grid_Aerosol::extinctionWidth(const Vector_1D& xCoord, double thres) const {
+        return std::get<0>(extinctionWidthIndices(xCoord, thres));
+    }
+
+    std::tuple<double, int, int> Grid_Aerosol::extinctionDepthIndices(const Vector_1D& yCoord, double thres) const {
         Vector_2D chi = Extinction();
         Vector_1D chiMax_y = VectorUtils::VecMax2D(Extinction(), 0);
         double chiMax = *std::max_element(chiMax_y.begin(), chiMax_y.end());
@@ -1427,12 +1433,17 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
             }
         }
         double depth = std::abs(yCoord[j_top] - yCoord[j_bot]);
-        return depth;
+        return std::make_tuple(depth, j_bot, j_top);
     }
+    double Grid_Aerosol::extinctionDepth(const Vector_1D& xCoord, double thres) const {
+        return std::get<0>(extinctionDepthIndices(xCoord, thres));
+    }
+
     double Grid_Aerosol::intYOD(const Vector_1D& dx, const Vector_1D& dy) const {
         Vector_1D vertOD = yOD(dy);
         return std::inner_product(vertOD.begin(), vertOD.end(), dx.begin(), 0.0);
     }
+
     Vector_1D Grid_Aerosol::PDF_Total(const Vector_2D &cellAreas) const
     {
 
@@ -1550,7 +1561,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         {
             for (iNx = 0; iNx < Nx; iNx++)
             {
-                if (m0[jNy][iNx] > TINY)
+                if (m0[jNy][iNx] > 0.0)
                     r[jNy][iNx] = m1[jNy][iNx] / m0[jNy][iNx];
                 else
                     r[jNy][iNx] = 0.0E+00;
@@ -1578,7 +1589,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         {
             for (iNx = 0; iNx < Nx; iNx++)
             {
-                if (m2[jNy][iNx] > TINY)
+                if (m2[jNy][iNx] > 0.0)
                     r_eff[jNy][iNx] = m3[jNy][iNx] / m2[jNy][iNx];
                 else
                     r_eff[jNy][iNx] = 0.0E+00;
@@ -1607,7 +1618,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         {
             for (iNx = 0; iNx < Nx; iNx++)
             {
-                if (m0[jNy][iNx] > TINY)
+                if (m0[jNy][iNx] > 0.0)
                     sigma[jNy][iNx] = sqrt(m2[jNy][iNx] / m0[jNy][iNx] - m1[jNy][iNx] * m1[jNy][iNx] / (m0[jNy][iNx] * m0[jNy][iNx]));
                 else
                     sigma[jNy][iNx] = 0.0E+00;
@@ -1734,7 +1745,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         }
 
         out[0] = Moment(0, PDF);
-        if (out[0] > TINY)
+        if (out[0] > 0.0)
         {
             out[2] = 4.0 * physConst::PI * Moment(2, PDF);
             out[3] = 4.0 / 3.0 * physConst::PI * Moment(3, PDF);

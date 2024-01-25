@@ -18,7 +18,7 @@
 namespace EPM
 {
     int Integrate( double &temperature_K, double pressure_Pa, double relHumidity_w, double varArray[], \
-                   double aerArray[][2], const Aircraft &AC, const Emission &EI, \
+                   const Vector_2D& aerArray, const Aircraft &AC, const Emission &EI, \
                    double &Ice_rad, double &Ice_den, double &Soot_den, double &H2O_mol, \
                    double &SO4g_mol, double &SO4l_mol, AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, \
                    double &Area, double &Ab0, double &Tc0, const bool CHEMISTRY, std::string micro_data_out )
@@ -46,7 +46,7 @@ namespace EPM
 
     /* TODO: Make the original integrate function work with the new EPMOutput struct directly, and then delete this function.*/
     std::pair<EPMOutput, int> Integrate(double tempInit_K, double pressure_Pa, double rhw, double bypassArea, double coreExitTemp, double varArray[], 
-                            double aerArray[][2], const Aircraft& AC,const Emission& EI, bool CHEMISTRY, 
+                            const Vector_2D& aerArray, const Aircraft& AC,const Emission& EI, bool CHEMISTRY, 
                             std::string micro_data_out) 
     {
         EPMOutput out;
@@ -61,7 +61,7 @@ namespace EPM
 
     /* FIXME: See above comment on integrate() */
     int RunMicrophysics( double &temperature_K, double pressure_Pa, double relHumidity_w, double varArray[], \
-                        double aerArray[][2], const Aircraft &AC, const Emission &EI, \
+                        const Vector_2D& aerArray, const Aircraft &AC, const Emission &EI, \
                          double delta_T_ad, double delta_T, double &Ice_rad, double &Ice_den, \
                          double &Soot_den, double &H2O_mol, double &SO4g_mol, double &SO4l_mol, \
                          AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, double &Area, double &Ab0, double &Tc0, const bool CHEMISTRY, std::string micro_data_out )
@@ -178,7 +178,6 @@ namespace EPM
         double SO4l_amb, SO4g_amb;               /* [molec/cm^3] */
         double HNO3_amb = varArray[ind_HNO3]/n_air_amb;    /* [molec/cm^3] */
         double Soot_amb = aerArray[ind_SOOT][0]/n_air_amb; ///n_air_amb; /* [#/cm^3] */
-
 
         /* Add emissions of one engine to concentration arrays */
         varArray[ind_H2O] += EI.getH2O() / ( MW_H2O  * 1.0E+03 ) * AC.FuelFlow() / double(AC.EngNumber()) / AC.VFlight() * physConst::Na / Ab0     * 1.00E-06 ;

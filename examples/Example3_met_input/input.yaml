@@ -1,20 +1,27 @@
 SIMULATION MENU:
-  OpenMP Num Threads (positive int): 8
   # Only one of parameter sweep or MC simulation can be on.
+  # Parameter sweep lets you specify an arbitrary number of custom values for each parameter; Monte Carlo simulation is self-explanatory.
+  # At the moment, you cannot mix and match MC sim and param sweep on each individual parameter.
+  OpenMP Num Threads (positive int): 8
   PARAM SWEEP SUBMENU:
     Parameter sweep (T/F): T
   #-OR---------------
     Run Monte Carlo (T/F): F
     Num Monte Carlo runs (int): 2
+  # Where APCEMM output for this set of runs will go
   OUTPUT SUBMENU:
     Output folder (string): APCEMM_out/
     Overwrite if folder exists (T/F): T
+  # FFT options (for spectral solver)
   Use threaded FFT (T/F): F
   FFTW WISDOM SUBMENU:
     Use FFTW WISDOM (T/F): T
     Dir w/ write permission (string): ./
+  # This mostly contains information on background aerosol concentration; Not too relevant for contrail behavior
   Input background condition (string): ../../input_data/init.txt
+  # All parameters here are overwritten in EMISSION INDICES SUBMENU
   Input engine emissions (string): ../../input_data/ENG_EI.txt
+  # Ignore/Don't change these, these are deprecated features. 
   SAVE FORWARD RESULTS SUBMENU:
     Save forward results (T/F): F
     netCDF filename format (string): APCEMM_Case_*
@@ -33,22 +40,31 @@ PARAMETER MENU:
 
   # Monte Carlo simulation : min:max 
   #                        : Example: 200:240 will generate values for the parameter in between 200 and 240
+
+  # Maximum simulation time if contrail isn't gone by then:
   Plume Process [hr] (double): 12
+
   # Temperature, RH, and wind shear can be overwritten if using meteorological input files
   METEOROLOGICAL PARAMETERS SUBMENU:
+    # Can be overwritten if met file is passed
     Temperature [K] (double): 217
+    # Can be overwritten if met file is passed
     R.Hum. wrt water [%] (double): 63.94
+    # Pressure altitude at which the contrail is initialized
     Pressure [hPa] (double): 300
     Horiz. diff. coeff. [m^2/s] (double): 15.0
+    # Can be overwritten if met file is passed
     Verti. diff. [m^2/s] (double): 0.15
     Wind shear [1/s] (double): 0.002
     Brunt-Vaisala Frequency [s^-1] (double): 0.013
   LOCATION AND TIME SUBMENU:
+  # Affects for solar zenith angle and photolysis which affect EPM/diurnal variations of temperature
     LON [deg] (double): -15
     LAT [deg] (double): 60
     Emission day [1-365] (int): 81
     Emission time [hr] (double) : 8
   BACKGROUND MIXING RATIOS SUBMENU:
+  # Affects the EPM only
     NOx [ppt] (double): 5100
     HNO3 [ppt] (double): 81.5
     O3 [ppb] (double): 100
@@ -56,30 +72,40 @@ PARAMETER MENU:
     CH4 [ppm] (double): 1.76
     SO2 [ppt] (double): 7.25
   EMISSION INDICES SUBMENU:
-    NOx [g(NO2)/kg_fuel] (double): 10
+  # Engine specific parameters
+  # Default parameters are estimates for a 737-800 at 35k ft
+    # Affects EPM mostly:
+    NOx [g(NO2)/kg_fuel] (double): 10 # EDB for CFM56-5B3
     CO [g/kg_fuel] (double): 1
     UHC [g/kg_fuel] (double): 0.6
-    SO2 [g/kg_fuel] (double): 0.1
-    SO2 to SO4 conv [%] (double): 5
-    Soot [g/kg_fuel] (double): 0.008
+    # Affects contrail diffusion model:
+    SO2 [g/kg_fuel] (double): 1.2 # Assuming 600ppm of Sulfur
+    SO2 to SO4 conv [%] (double): 2 # AEDT paper, Barrett et al. (2010)
+    Soot [g/kg_fuel] (double): 0.008 # Assuming EI(nvPM) = 10^14
   Soot Radius [m] (double): 20.0E-09
-  Total fuel flow [kg/s] (double) : 2.8
-  Aircraft mass [kg] (double): 3.10e+05
-  Flight speed [m/s] (double): 250.0
-  Num. of engines [2/4] (int): 4 
-  Wingspan [m] (double): 60.0
-  Core exit temp. [K] (double): 547.3
-  Exit bypass area [m^2] (double): 1.804
+  # Total fuel flow is then divided per engine
+  Total fuel flow [kg/s] (double) : 0.7
+  Aircraft mass [kg] (double): 1.00e+05 # At beginning of cruise (35k ft), NPSS 
+  Flight speed [m/s] (double): 265.42  # NPSS
+  Num. of engines [2/4] (int): 2
+  Wingspan [m] (double): 34.32 # https://www.skybrary.aero/aircraft/b738
+  # Values depend on where we assume condensation/freezing to occur and engine type
+  Core exit temp. [K] (double): 553.65 # NPSS
+  Exit bypass area [m^2] (double): 0.9772
 
 TRANSPORT MENU:
+  # Keep on
   Turn on Transport (T/F): T
+  # Outdated, not used (was used by spectral solver)
   Fill Negative Values (T/F): T
   Transport Timestep [min] (double): 10
+  # Keep off: not sure of the effect yet + met updraft is included (if met file input)
   PLUME UPDRAFT SUBMENU:
     Turn on plume updraft (T/F): F
     Updraft timescale [s] (double): 3600
     Updraft veloc. [cm/s] (double): 5
 
+# Chemistry component of APCEMM hasn't been touched in a long time; leave off if only interested in contrail simulation
 CHEMISTRY MENU:
   Turn on Chemistry (T/F): F
   Perform hetero. chem. (T/F): F
@@ -87,10 +113,14 @@ CHEMISTRY MENU:
   Photolysis rates folder (string): /path/to/input/
 
 AEROSOL MENU:
+  # Keep on
   Turn on grav. settling (T/F): T
+  # Keep on
   Turn on solid coagulation (T/F): T
+  # Keep off
   Turn on liquid coagulation (T/F): F
   Coag. timestep [min] (double): 60
+  # Keep on
   Turn on ice growth (T/F): T
   Ice growth timestep [min] (double): 10
 
@@ -101,68 +131,94 @@ AEROSOL MENU:
 # Exactly one of "Init temp. from met." and "Impose lapse rate" must be true
 # Exactly one of "Init RH from met." and "Impose moist layer depth" must be true
 METEOROLOGY MENU:
+  # --- MET INPUT OPTIONS ---+
   METEOROLOGICAL INPUT SUBMENU:
     Use met. input (T/F): T
     Met input file path (string): example_met_file.nc
+    # Frequency of met data availability
     Time series data timestep [hr] (double): 1.0
+    # If off, uses the parameter specified in METEOROLOGICAL PARAMETERS SUBMENU
     Init temp. from met. (T/F): T
     Temp. time series input (T/F): T
+    # Always interpolates in time, this controls spatial interpolation
     Interpolate temp. met. data (T/F): F
+    # Same options as the ones for Temperature:
     Init RH from met. (T/F): T
     RH time series input (T/F): F
     Interpolate RH met. data (T/F): F
     Init wind shear from met. (T/F): T
     Wind shear time series input (T/F): T
     Interpolate shear met. data (T/F): F
-    Init vertical velocity from met. data: F
     Init vert. veloc. from met. data (T/F): F
     Vert. veloc. time series input (T/F): F
     Interpolate vert. veloc. met. data (T/F): F
+    # Option to modify NWP RH data 
     HUMIDITY SCALING OPTIONS:
+    # For reference on humidity scaling option, see 
+    # Teoh et al, "Aviation contrail climate effects in the North Atlantic from 2016 to 2021" (2022)
+    # Constant is a fixed value at initialization
       Humidity modification scheme (none / constant / scaling): none
+      # "Overwrite initial RHi":
       Constant RHi [%] (double): 110.0
       Humidity scaling constant a (double): 0.9779
       Humidity scaling constant b (double): 1.635
+
+
   #- OR -------------------+
   IMPOSE MOIST LAYER DEPTH SUBMENU:
+  # Sets constant RHi for the entire layer defined by Moist layer depth
     Impose moist layer depth (T/F): F
     Moist layer depth [m] (double): 1000
-  #--- OR -----------------+
+  #- OR -----------------+
   IMPOSE LAPSE RATE SUBMENU:
+  # Sets constant lapse rate
     Impose lapse rate (T/F): F
     Lapse rate [K/m] (T/F): -6.0E-03
+  # ---END MET INPUT OPTIONS --- 
   Add diurnal variations (T/F): T
+
+  # Perturbations to the temperature field can be added to the contrail simulation to account for some effects of 
+  # atmospheric turbulence and gravity waves.
+  # Every N minutes, a temperature perturbation of e1*e2*T_amp where e1 and e2 are random variables
+  # uniformly distributed between -1 and 1 generated individually for each grid cell.
+  # The importance of turbulence and grav. waves can be increased by increasing T_amp
+  # The relative importance of grav. waves vs. turb. is increased by increasing the timescale
+  # See Lewellen, Persistent Contrails and Contrail Cirrus (2014) for full details.
   TEMPERATURE PERTURBATION SUBMENU:
     Enable Temp. Pert. (T/F): F
     Temp. Perturb. Amplitude (double): 1.0
     Temp. Perturb. Timescale (min): 10
-  
+
+# The only thing that should be changed here is the save frequency
 DIAGNOSTIC MENU:
   netCDF filename format (string): trac_avg.apcemm.hhmm
+  # Leave "save species timeseries" off. It will do nothing without also turning chemistry on.
   SPECIES TIMESERIES SUBMENU:
     Save species timeseries (T/F): F
     Inst timeseries file (string): ts_hhmm.nc
     #list input: separate by spaces. e.g. 1 2 3 4 5
     Species indices to include (list of ints): 1
     Save frequency [min] (double): 10
+  # Index 1 (ice) is the only relevant thing to save
   AEROSOL TIMESERIES SUBMENU:
     Save aerosol timeseries (T/F): T
     Inst timeseries file (string): ts_aerosol_hhmm.nc
     #list input: separate by spaces. e.g. 1 2 3 4 5
     Aerosol indices to include (list of ints): 1
     Save frequency [min] (double): 10
+  # Keep off if chemistry is also off
   PRODUCTION & LOSS SUBMENU:
     Turn on P/L diag (T/F): F
     Save O3 P/L (T/F): F
 
-#Sometimes you have to change YLIM_DOWN here if the supersaturated layer is very thick
-#because YLIM_DOWN must be larger than the layer thickness.
+# Sometimes you have to change YLIM_DOWN here if the supersaturated layer is very thick
+# because YLIM_DOWN must be larger than the layer thickness.
 ADVANCED OPTIONS MENU:
-  #Domain is defined as: X [-XLIM_LEFT, XLIM_RIGHT], Y [-YLIM_DOWN, YLIM_UP]
+  # Domain is defined as: X [-XLIM_LEFT, XLIM_RIGHT], Y [-YLIM_DOWN, YLIM_UP]
   GRID SUBMENU:
-    NX (positive int): 2048
-    NY (positive int): 192
-    XLIM_RIGHT (positive double): 5.0e+4 
-    XLIM_LEFT (positive double): 5.0e+4
-    YLIM_UP (positive double): 6.5e+2
+    NX (positive int): 200
+    NY (positive int): 180
+    XLIM_RIGHT (positive double): 1.0e+3
+    XLIM_LEFT (positive double): 1.0e+3
+    YLIM_UP (positive double): 300
     YLIM_DOWN (positive double): 1.5e+3

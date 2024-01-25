@@ -151,7 +151,9 @@ class AIM::Grid_Aerosol
         double TotalIceMass_sum( const Vector_2D& cellAreas ) const;
         Vector_2D IWC( ) const;
         Vector_2D Extinction( ) const;
+        std::tuple<double, int, int> extinctionWidthIndices(const Vector_1D& xCoord, double thres = 0.1) const;
         double extinctionWidth(const Vector_1D& xCoord, double thres = 0.1) const;
+        std::tuple<double, int, int> extinctionDepthIndices(const Vector_1D& yCoord, double thres = 0.1) const;
         double extinctionDepth(const Vector_1D& yCoord, double thres = 0.1) const;
         double intYOD(const Vector_1D& dx, const Vector_1D& dy) const;
         Vector_1D PDF_Total( const Vector_2D &cellAreas ) const;

@@ -47,6 +47,9 @@ Meteorology::Meteorology( const OptInput &optInput,
     //Set lapse rate (either calculated using saturation depth, or specified.)
     lapseRate_ = optInput.MET_FIXDEPTH ? met::ComputeLapseRate( ambParams_.temp_K, ambParams_.rhi, optInput.MET_DEPTH )
                                        : optInput.MET_LAPSERATE;
+                                    
+    //Set met depth for cases where we don't load rh from met input
+    met_depth_ =  optInput.MET_FIXDEPTH ? optInput.MET_DEPTH : 200.0;
 
     /* The temperature can vary depending on the time of day. (Diurnal variations)
      * The data on the diurnal temperature amplitude and phase is gathered
@@ -120,10 +123,10 @@ Meteorology::Meteorology( const OptInput &optInput,
 
 } /* End of Meteorology::Meteorology */
 
-void Meteorology::regenerate( const Vector_1D& yCoord_new, const Vector_1D& yEdges_new, double alt_y0, int nx_new ) {
+void Meteorology::regenerate( const Vector_1D& yCoord_new, const Vector_1D& yEdges_new, int nx_new ) {
     double dy_new = yEdges_new[1] - yEdges_new[0];
     int ny_new = yCoord_new.size();
-
+    double alt_y0 = altitudeEdges_[0] + (yEdges_new[0] - yEdges_[0]);
     Vector_1D alt_new(ny_new);
     Vector_1D altEdges_new(ny_new + 1);
     Vector_1D press_new(ny_new);
@@ -141,29 +144,6 @@ void Meteorology::regenerate( const Vector_1D& yCoord_new, const Vector_1D& yEdg
     H2O_ = Vector_2D(ny_new, Vector_1D(nx_new));
     airMolecDens_ = Vector_2D(ny_new, Vector_1D(nx_new));
     shear_.resize(ny_new);
-    if(vertVelocLoadType_ != MetVarLoadType::NoMetInput) {
-        vertVeloc_.resize(ny_new);
-    }
-    //#pragma omp parallel for default(shared)
-    for ( int j = 0;  j < ny_new; j++ ) {
-        int i_Z = met::nearestNeighbor( altitudeInit_, alt_new[j]);
-        double tempInterp = met::linInterpMetData(altitudeInit_, tempInit_, alt_new[j]);
-        tempBase_[j] = interpTemp_ ? tempInterp : tempInit_[i_Z];
-        tempTotal_[j].assign(nx_new, tempBase_[j]);
-
-        double rhiInterp = met::linInterpMetData(altitudeInit_, rhiInit_, alt_new[j]);
-        double rhiToUse = interpRH_ ? rhiInterp : rhiInit_[i_Z];
-        H2O_[j].assign(nx_new, physFunc::RHiToH2O(rhiToUse, tempBase_[j]));
-
-        double shear_local = met::linInterpMetData(altitudeInit_, shearInit_, alt_new[j]);
-        shear_[j] = interpShear_ ? shear_local : shearInit_[i_Z];
-        if(vertVelocLoadType_ != MetVarLoadType::NoMetInput) {
-            double w_local = met::linInterpMetData(altitudeInit_, vertVelocInit_, alt_new[j]);
-            vertVeloc_[j] = interpVertVeloc_ ? w_local : vertVelocInit_[i_Z];
-        }
-    }
-
-
     yCoords_ = yCoord_new;
     yEdges_ = yEdges_new;
     ny_ = ny_new;
@@ -172,11 +152,57 @@ void Meteorology::regenerate( const Vector_1D& yCoord_new, const Vector_1D& yEdg
     pressure_ = press_new;
     altitudeEdges_ = altEdges_new;
     pressureEdges_ = pressEdges_new;
+    if(vertVelocLoadType_ != MetVarLoadType::NoMetInput) {
+        vertVeloc_.resize(ny_new);
+    }
 
+    //Regenerate temp field
+    if(tempLoadType_ == MetVarLoadType::NoMetInput) {
+        initTempNoMet(yCoord_new);
+    }
+    else {
+        for(int j = 0; j < ny_new; j++) {
+            int i_Z = met::nearestNeighbor( altitudeInit_, alt_new[j]);
+            double tempInterp = met::linInterpMetData(altitudeInit_, tempInit_, alt_new[j]);
+            tempBase_[j] = interpTemp_ ? tempInterp : tempInit_[i_Z];
+            tempTotal_[j].assign(nx_new, tempBase_[j]);
+        }
+    }
+    
+    //Regenerate H2O
+    if(rhLoadType_ == MetVarLoadType::NoMetInput) {
+        initH2ONoMet(yCoord_new);
+    }
+    else {
+        for(int j = 0; j < ny_new; j++) {
+            int i_Z = met::nearestNeighbor( altitudeInit_, alt_new[j]);
+            double rhiInterp = met::linInterpMetData(altitudeInit_, rhiInit_, alt_new[j]);
+            double rhiToUse = interpRH_ ? rhiInterp : rhiInit_[i_Z];
+            H2O_[j].assign(nx_new, physFunc::RHiToH2O(rhiToUse, tempBase_[j]));
+        }
+    }
+
+    // Regenerate shear
+    for ( int j = 0;  j < ny_new; j++ ) {
+        int i_Z = met::nearestNeighbor( altitudeInit_, alt_new[j]);
+        if(shearLoadType_ == MetVarLoadType::NoMetInput) {
+            shear_[j] = ambParams_.shear;
+        }
+        else {
+            double shear_local = met::linInterpMetData(altitudeInit_, shearInit_, alt_new[j]);
+            shear_[j] = interpShear_ ? shear_local : shearInit_[i_Z];
+        }
+    }
+
+    // Regenerate vert veloc
+    if(vertVelocLoadType_ != MetVarLoadType::NoMetInput) {
+        for ( int j = 0;  j < ny_new; j++ ) {
+            int i_Z = met::nearestNeighbor( altitudeInit_, alt_new[j]);
+            double w_local = met::linInterpMetData(altitudeInit_, vertVelocInit_, alt_new[j]);
+            vertVeloc_[j] = interpVertVeloc_ ? w_local : vertVelocInit_[i_Z];
+        }
+    }
     updateAirMolecDens();
-    /* FIXME: Figure out what to do with turbulent temp perturbations when the grid size changes. */
-    // updateTempPerturb();
-
 }
 
 void Meteorology::Update( const double dt, const double solarTime_h, \
@@ -283,16 +309,20 @@ void Meteorology::readMetVar( const NcFile& dataFile, std::string varName, Vecto
         }
     }
 }
+
+void Meteorology::initTempNoMet (const Vector_1D& yCoords) {
+    #pragma omp parallel for default(shared)
+    for ( int j = 0; j < yCoords.size(); j++ ) {
+        //Convention: lower altitude than reference= negative y, higher = positive y
+        double temp_local = ambParams_.temp_K + yCoords[j] * lapseRate_ + diurnalPert_;
+        tempBase_[j] = temp_local;
+        tempTotal_[j].assign(nx_, tempBase_[j]);
+    }
+}
 void Meteorology::initTemperature( const NcFile& dataFile ) {
 
     if ( tempLoadType_ == MetVarLoadType::NoMetInput ) {
-
-        #pragma omp parallel for if(!PARALLEL_CASES)
-        for ( int j = 0; j < ny_; j++ ) {
-            double temp_local = ambParams_.temp_K + yCoords_[j] * lapseRate_ + diurnalPert_;
-            tempBase_[j] = temp_local;
-            tempTotal_[j].assign(nx_, tempBase_[j]);
-        }
+        initTempNoMet(yCoords_);
         return;
     }
 
@@ -317,45 +347,28 @@ void Meteorology::initTemperature( const NcFile& dataFile ) {
     }
 }
 
+void Meteorology::initH2ONoMet (const Vector_1D& yCoords) {
+    //TODO: fix these hardcoded default boundary coordinates and rh's.
+
+    /* RHi layer centered on y = 0 */
+    const double TOP = 200.0;
+    const double BOT = met_depth_;
+    satdepth_user_ = BOT;
+
+    const double RH_star = ambParams_.rhi;
+
+    #pragma omp parallel for default(shared)
+    for ( int jNy = 0; jNy < yCoords.size(); jNy++ ) {
+        double H2O_local = physFunc::RHiToH2O(RH_star, tempBase_[jNy]);
+        H2O_[jNy].assign(nx_, H2O_local);
+    }
+}
+
 void Meteorology::initH2O( const NcFile& dataFile, const OptInput& optInput ) { 
     //Cannot call this before initTemperature!
 
     if( rhLoadType_ == MetVarLoadType::NoMetInput ) {
-
-        //TODO: fix these hardcoded default boundary coordinates and rh's.
-
-        /* RHi layer centered on y = 0 */
-        const double TOP = 200.0;
-        const double BOT = optInput.MET_FIXDEPTH ? optInput.MET_DEPTH : 200.0;
-
-        const double RH_star = ambParams_.rhi;
-        const double RH_far  = 50;
-
-
-        #pragma omp parallel for\
-        if      ( !PARALLEL_CASES ) \
-        default ( shared          )
-        for ( int jNy = 0; jNy < ny_; jNy++ ) {
-            
-            double RH_local;
-            if ( ( yCoords_[jNy] < TOP ) && ( yCoords_[jNy] > -BOT ) ) {
-                RH_local = RH_star;
-            } 
-            else {
-                if ( yCoords_[jNy] < 0 ) {
-                    RH_local = RH_star - ( yCoords_[jNy] + BOT ) / BOT * ( RH_far - RH_star );
-                } else {
-                    RH_local = RH_star + ( yCoords_[jNy] - TOP ) / TOP * ( RH_far - RH_star );
-                }
-                if ( ( yCoords_[jNy] < -2.0*BOT ) || ( yCoords_[jNy] > 2.0*TOP ) )
-                    RH_local = RH_far;
-            }
-
-            double H2O_local = physFunc::RHiToH2O(RH_local, tempBase_[jNy]);
-            H2O_[jNy].assign(nx_, H2O_local);
-        }
-
-        satdepth_user_ = optInput.MET_DEPTH;
+        initH2ONoMet(yCoords_);
         return;
     }
 
@@ -595,6 +608,10 @@ void Meteorology::vertAdvectAltPress(double dt) {
     if(vertVelocLoadType_ == MetVarLoadType::NoMetInput) {
         return;
     }
+    //Save old altitude edges and centers to update y coordinates
+    Vector_1D altEdges_old = altitudeEdges_;
+    Vector_1D altCenters_old = altitude_;
+
     //Convert w at current alt to pressure velocity (omega)
     //Use 4th order central finite difference to estimate derivative
     double p_jm2, p_jm1, p_jp1, p_jp2;
@@ -631,6 +648,14 @@ void Meteorology::vertAdvectAltPress(double dt) {
     //Update reference pressures/altitudes for next timestep
     pressureRef_ += omega * dt;
     met::ISA_pAlt(altitudeRef_, pressureRef_);
+
+    //Update y coordinates based on these changes
+    for (int i = 0; i < ny_; i++) {
+        yCoords_[i] += (altitude_[i] - altCenters_old[i]);
+    }
+    for (int i = 0; i < ny_ + 1; i++) {
+        yEdges_[i] += (altitudeEdges_[i] - altEdges_old[i]);
+    }
 }
 
 /* End of Meteorology.cpp */

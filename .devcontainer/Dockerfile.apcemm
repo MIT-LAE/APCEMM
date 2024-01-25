@@ -85,11 +85,6 @@ RUN git clone https://github.com/catchorg/Catch2.git --depth 1 --branch v3.2.1 &
   cmake -Bbuild -H. -DBUILD_TESTING=OFF && \
   cmake --build build/ --target install --parallel 4
 
-RUN git clone https://gitlab.com/libeigen/eigen.git --depth 1 --branch 3.4.1 && \
-  cd eigen && \
-  cmake -S . -B build && \
-  cmake --build build --target install
-
 RUN zsh -c 'git clone --depth 1 --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"' && \
   cd ${ZDOTDIR:-$HOME}/.zprezto && \ 
   git pull && \
@@ -97,3 +92,5 @@ RUN zsh -c 'git clone --depth 1 --recursive https://github.com/sorin-ionescu/pre
   git submodule update --init --recursive && \
   zsh -c 'setopt EXTENDED_GLOB; for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}"; done' && \
   chsh -s /bin/zsh
+
+CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_config"]  

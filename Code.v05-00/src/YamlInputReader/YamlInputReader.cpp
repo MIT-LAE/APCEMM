@@ -10,7 +10,6 @@ namespace YamlInputReader{
         try {
             readSimMenu(input, data["SIMULATION MENU"]);
         }
-
         catch (...) {
             std::cout << "Something went wrong in reading the SIMULATION MENU! Please double-check your input file with the reference in SampleRunDir!";
             exit(1);
@@ -50,6 +49,10 @@ namespace YamlInputReader{
 
         try {
             readMetMenu(input, data["METEOROLOGY MENU"]);
+        }
+        catch (const std::invalid_argument& e) {
+            std::cerr << "ERROR: " << e.what() << std::endl;
+            exit(1);
         }
         catch (...) {
             std::cout << "Something went wrong in reading the METEOROLOGY MENU! Please double-check your input file with the reference in SampleRunDir!";
@@ -241,12 +244,15 @@ namespace YamlInputReader{
         if(input.MET_LOADMET + input.MET_FIXDEPTH + input.MET_FIXLAPSERATE == 0){
             throw std::invalid_argument("At least one of \"Use met. input\", \"Impose moist layer depth\", or \"Impose lapse rate\" must be on!");
         }
+        if(input.MET_FIXDEPTH + input.MET_FIXLAPSERATE > 1) {
+            throw std::invalid_argument("Cannot fix both moist layer depth and lapse rate");
+        }
         if(input.MET_LOADMET){
-            if(input.MET_LOADTEMP + input.MET_FIXLAPSERATE != 1){
-                throw std::invalid_argument("When using met. input, only one of \"Init temp. from met.\" or \"Impose lapse rate\" must be selected.");
+            if(input.MET_LOADTEMP + input.MET_FIXLAPSERATE + input.MET_FIXDEPTH != 1){
+                throw std::invalid_argument("When using met. input, only one of \"Init temp. from met.\", \"Impose moist layer depth\", or \"Impose lapse rate\" must be selected.");
             }
-            else if (input.MET_LOADRH + input.MET_FIXDEPTH != 1){
-                throw std::invalid_argument("When using met. input, only one of \"Init RH from met.\" or \"Impose moist layer depth\" must be selected.");
+            else if (input.MET_LOADRH + input.MET_FIXLAPSERATE + input.MET_FIXDEPTH != 1){
+                throw std::invalid_argument("When using met. input, only one of \"Init RH from met.\" or \"Impose moist layer depth\", or \"Impose lapse rate\" must be selected.");
             }
 
         }

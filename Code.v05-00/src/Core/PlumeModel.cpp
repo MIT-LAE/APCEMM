@@ -387,10 +387,6 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         RTOL[i] = KPP_RTOLS;
         ATOL[i] = KPP_ATOLS;
     }
-
-
-    /* aerArray stores all the number concentrations of aerosols */
-    double aerArray[N_AER][2];
     
     /* Assign */
     UInt i_0 = std::floor( xE[0]/(xE[0]-xE[1]) ); //index i where x = 0
@@ -410,6 +406,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     double Tc0 = input.coreExitTemp();
     AIM::Aerosol liquidAer, iceAer;
 
+    Vector_2D aerArray = Data.getAerosol();
     int EPM_RC = EPM::Integrate( simVars.temperature_K, simVars.pressure_Pa, simVars.relHumidity_w, VAR, \
                                  aerArray, aircraft, EI, Ice_rad, Ice_den, Soot_den,  \
                                  H2O_mol, SO4g_mol, SO4l_mol, liquidAer, iceAer, areaPlume, \

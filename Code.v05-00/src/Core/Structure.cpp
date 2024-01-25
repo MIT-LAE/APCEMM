@@ -892,7 +892,7 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
 
     /* Define sun parameters */
     /* FIXME: We don't need this on the heap. It's a goddamn local variable. */
-    SZA *sun = new SZA( input.latitude_deg(), input.emissionDOY() );
+    SZA sun( input.latitude_deg(), input.emissionDOY() );
 
     if ( DBG )
         std::cout << "\n Running spin-up from " << curr_Time_s / 3600.0 << " to " << RunUntil / 3600.0 << " [hr]\n";
@@ -900,13 +900,13 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
     while ( curr_Time_s < RunUntil ) {
 
         /* Compute the cosize of solar zenith angle midway through the integration step */
-        sun->Update( curr_Time_s + DT_CHEM/2 );
+        sun.Update( curr_Time_s + DT_CHEM/2 );
 
         for ( UInt iPhotol = 0; iPhotol < NPHOTOL; iPhotol++ )
             PHOTOL[iPhotol] = 0.0E+00;
 
-        if ( sun->CSZA > 0.0E+00 )
-            Update_JRates( PHOTOL, sun->CSZA );
+        if ( sun.CSZA > 0.0E+00 )
+            Update_JRates( PHOTOL, sun.CSZA );
 
         if ( DBG ) {
             std::cout << "\n DEBUG : (In SpinUp)\n";
@@ -956,10 +956,6 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
 
     for ( UInt iVar = 0; iVar < NVAR; iVar++ )
         amb_Value[iVar] = varSpeciesArray[iVar] / airDens;
-
-
-    /* Clear dynamically allocated variable(s) */
-    sun->~SZA();
 
     return IERR;
 

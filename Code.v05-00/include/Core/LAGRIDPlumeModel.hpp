@@ -55,10 +55,10 @@ class LAGRIDPlumeModel {
         Vector_1D xEdges_;
         Vector_2D H2O_;
         Vector_1D vFall_;
-        double alt_y0_;
         double initNumParts_;
         double simTime_h_;
         double solarTime_h_;
+        double shear_rep_;
 
         typedef std::pair<std::vector<std::vector<int>>, VectorUtils::MaskInfo> MaskType;
         inline MaskType iceNumberMask(double cutoff_ratio = NUM_FILTER_RATIO) {
@@ -80,7 +80,7 @@ class LAGRIDPlumeModel {
         void trimH2OBoundary();
         LAGRID::twoDGridVariable remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask);
         double totalAirMass();
-        void runCocipH2OMixing(Vector_2D& h2o_old, Vector_2D& h2o_amb_new, MaskType& mask_old, MaskType& mask_new);
+        void runCocipH2OMixing(const Vector_2D& h2o_old, const Vector_2D& h2o_amb_new, MaskType& mask_old, MaskType& mask_new);
 
 
 };

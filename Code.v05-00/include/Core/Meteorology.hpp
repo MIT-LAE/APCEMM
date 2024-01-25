@@ -62,7 +62,7 @@ class Meteorology
                      const Vector_1D& yEdges);
 
 
-        void regenerate(const Vector_1D& yCoord_new, const Vector_1D& yEdges_new, double alt_y0, int nx_new );
+        void regenerate(const Vector_1D& yCoord_new, const Vector_1D& yEdges_new, int nx_new );
         void Update( const double dt, const double solarTime_h, \
                      const double simTime_h, const double dTrav_x = 0, const double dTrav_y = 0);
         
@@ -118,6 +118,8 @@ class Meteorology
         inline const Vector_1D& AltEdges() const { return altitudeEdges_; }
         inline const Vector_1D& PressEdges() const { return pressureEdges_; }
         inline const Vector_1D& Altitude() const { return altitude_; }
+        inline const Vector_1D& yCoords() const { return yCoords_; }
+        inline const Vector_1D& yEdges() const { return yEdges_; }
 
         inline Vector_1D dy_vec() const {
             Vector_1D dy(ny_);
@@ -175,7 +177,9 @@ class Meteorology
 
         void initAltitudeAndPress( const NcFile& dataFile );
         void readMetVar( const NcFile& dataFile, std::string varName, Vector_2D& vec_ts, bool timeseries);
+        void initTempNoMet(const Vector_1D& yCoords);
         void initTemperature( const NcFile& dataFile );
+        void initH2ONoMet( const Vector_1D& yCoords);
         void initH2O( const NcFile& dataFile, const OptInput& OptInput );
         void initShear( const NcFile& dataFile );
         void initVertVeloc ( const NcFile& dataFile );
@@ -194,11 +198,11 @@ class Meteorology
         double temp_user_;
         double shear_user_;
         double rhw_user_;
+        double met_depth_; //Only for cases where we're not reading rh from met
         double satdepth_user_;
 
 
         //Grid data
-        //Only for initialization. These aren't necessarily synced with the yCoords, yEdges of the contrail model.
         int nx_;
         int ny_;
         Vector_1D yCoords_;
