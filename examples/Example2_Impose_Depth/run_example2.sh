@@ -1,5 +1,7 @@
-cd ../../Code.v05-00/
-cmake . && cmake --build . || exit 1
+cd ../../
+mkdir build
+cd build
+cmake ../Code.v05-00 && cmake --build . || exit 1
 cd ../examples/Example2_Impose_Depth
 export APCEMM_runDir="."
-./../../Code.v05-00/APCEMM input.yaml
+./../../build/APCEMM input.yaml
