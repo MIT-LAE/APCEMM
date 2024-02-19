@@ -57,10 +57,12 @@ cmake --build .
 will generate the executable in the `rundirs/SampleRunDir/` directory. 
 
 ## Getting Started
-To start a run from the aforementioned `rundirs/SampleRunDir`, simply call:
+To start a run from the aforementioned `rundirs/SampleRunDir`, simply call the following if the `APCEMM` executable was built in the `Code.v05-00` directory:
 ```
-./../../Code.v05-00 input.yaml
+./../../Code.v05-00/APCEMM input.yaml
 ```
+You can replace the `Code.v05-00` directory from the above command with the location where your `APCEMM` executable is.
+
 Three examples and their accompanying jupyter notebooks for postprocessing tutorials are provided in the `examples` folder. The first example is one where the contrail doesn't persists, and only focuses on analyzing the output of the early plume model (EPM) module of APCEMM. The second example is a persistent contrail simulation where the ice supersaturated layer depth is specified. The third example features using a meteorological input file.
 
 The input file options are explained via comments in the file `rundirs/SampleRunDir/input.yaml`
