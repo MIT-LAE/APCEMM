@@ -369,6 +369,45 @@ def transform(samples, distribution_input, distribution_germ):
     return distribution_input.inv(distribution_germ.fwd(samples))
 
 
+"""
+**********************************
+THERMODYNAMICS FUNCTIONS
+**********************************
+"""
+def compute_p_sat_liq(T_K):
+    # Calculates the liquid saturation pressure "p_sat_liq" (in units of Pa).
+    # This equation can be found in Schumann 2012.
+    # % 
+    # % The inputs are as follows
+    # %	- T_K is the absolute temperature in Kelvin
+    a = -6096.9385
+    b = 16.635794
+    c = -0.02711193
+    d = 1.673952e-5
+    e = 2.433502
+
+    return 100 * np.exp(a / T_K + b + c * T_K + d * T_K * T_K + e * np.log(T_K))
+
+def compute_p_sat_ice(T_K):
+    # Calculates the ice saturation pressure "p_sat_ice" (in units of Pa)
+    # The equation can be found in Schumann 2012.
+    #  
+    # The inputs are as follows
+    # - T_K is the absolute temperature in Kelvin
+
+    a = -6024.5282
+    b = 24.7219
+    c = 0.010613868
+    d = -1.3198825e-5
+    e = -0.49382577
+
+    return 100 * np.exp(a / T_K + b + c * T_K + d * T_K * T_K + e * np.log(T_K))
+
+def convert_RH_to_RHi(T_K, RH):
+    return RH * compute_p_sat_liq(T_K) / compute_p_sat_ice(T_K)
+
+def convert_RHi_to_RH(T_K, RHi):
+    return RHi * compute_p_sat_ice(T_K) / compute_p_sat_liq(T_K)
 
 """
 **********************************
@@ -379,7 +418,7 @@ if __name__ == "__main__" :
     # Chaospy code from https://chaospy.readthedocs.io/en/master/user_guide/advanced_topics/generalized_polynomial_chaos.html
     # Using point collocation
     timing = False
-    output_id = "Number Ice Particles"
+    output_id = "Ice Mass"
     runs = 100
 
     directory = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
