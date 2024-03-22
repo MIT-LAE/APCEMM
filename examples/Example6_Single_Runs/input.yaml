@@ -1,0 +1,167 @@
+SIMULATION MENU:
+  # Only one of parameter sweep or MC simulation can be on.
+  OpenMP Num Threads (positive int): 6
+  PARAM SWEEP SUBMENU:
+    Parameter sweep (T/F): T
+  #-OR---------------
+    Run Monte Carlo (T/F): F
+    Num Monte Carlo runs (int): 2
+  OUTPUT SUBMENU:
+    Output folder (string): APCEMM_out/
+    Overwrite if folder exists (T/F): T
+  Use threaded FFT (T/F): F
+  FFTW WISDOM SUBMENU:
+    Use FFTW WISDOM (T/F): T
+    Dir w/ write permission (string): ./
+  Input background condition (string): ../../input_data/init.txt
+  Input engine emissions (string): ../../input_data/ENG_EI.txt
+  SAVE FORWARD RESULTS SUBMENU:
+    Save forward results (T/F): F
+    netCDF filename format (string): APCEMM_Case_*
+  ADJOINT OPTIMIZATION SUBMENU:
+    Turn on adjoint optim. (T/F): F
+    netCDF filename format (string): APCEMM_ADJ_Case_*
+  BOX MODEL SUBMENU:
+    Run box model (T/F): F
+    netCDF filename format (string): APCEMM_BOX_CASE_*
+
+# Format of parameter items:
+# Param name [unit] (Variable type)
+PARAMETER MENU:
+  # Parameter sweep format : Format is either: x1 x2 x3 or start:increment:end
+  #                        : Example: 200 220 240 and 200:20:240 are identical
+
+  # Monte Carlo simulation : min:max 
+  #                        : Example: 200:240 will generate values for the parameter in between 200 and 240
+  Plume Process [hr] (double): 6
+  # Temperature, RH, and wind shear can be overwritten if using meteorological input files
+  METEOROLOGICAL PARAMETERS SUBMENU:
+    Temperature [K] (double): 217
+    R.Hum. wrt water [%] (double): 86.35250621242163
+    Pressure [hPa] (double): 227
+    Horiz. diff. coeff. [m^2/s] (double): 15.0
+    Verti. diff. [m^2/s] (double): 0.15
+    Wind shear [1/s] (double): 0.002
+    Brunt-Vaisala Frequency [s^-1] (double): 0.01
+  LOCATION AND TIME SUBMENU:
+    LON [deg] (double): -1.58
+    LAT [deg] (double): 53.55
+    Emission day [1-365] (int): 1
+    Emission time [hr] (double) : 14.00
+  BACKGROUND MIXING RATIOS SUBMENU:
+    NOx [ppt] (double): 5100
+    HNO3 [ppt] (double): 81.5
+    O3 [ppb] (double): 100
+    CO [ppb] (double): 40
+    CH4 [ppm] (double): 1.76
+    SO2 [ppt] (double): 7.25
+  EMISSION INDICES SUBMENU:
+    NOx [g(NO2)/kg_fuel] (double): 11.46
+    CO [g/kg_fuel] (double): 1.2
+    UHC [g/kg_fuel] (double): 0.6
+    SO2 [g/kg_fuel] (double): 1.0
+    SO2 to SO4 conv [%] (double): 5
+    Soot [g/kg_fuel] (double): 0.008
+  Soot Radius [m] (double): 20.0E-09
+  Total fuel flow [kg/s] (double) : 1.602
+  Aircraft mass [kg] (double): 224658.4
+  Flight speed [m/s] (double): 250.9
+  Num. of engines [2/4] (int): 2 
+  Wingspan [m] (double): 64.75
+  Core exit temp. [K] (double): 547.3
+  Exit bypass area [m^2] (double): 1.804
+
+TRANSPORT MENU:
+  Turn on Transport (T/F): T
+  Fill Negative Values (T/F): T
+  Transport Timestep [min] (double): 10
+  PLUME UPDRAFT SUBMENU:
+    Turn on plume updraft (T/F): F
+    Updraft timescale [s] (double): 3600
+    Updraft veloc. [cm/s] (double): 5
+
+CHEMISTRY MENU:
+  Turn on Chemistry (T/F): F
+  Perform hetero. chem. (T/F): F
+  Chemistry Timestep [min] (double): 10
+  Photolysis rates folder (string): /path/to/input/
+
+AEROSOL MENU:
+  Turn on grav. settling (T/F): T
+  Turn on solid coagulation (T/F): T
+  Turn on liquid coagulation (T/F): F
+  Coag. timestep [min] (double): 60
+  Turn on ice growth (T/F): T
+  Ice growth timestep [min] (double): 10
+
+# At least one of "Use met. input", "Impose moist layer depth", or "Impose lapse rate" must be true
+# Imposing moist layer depth will automatically calculate the lapse rate and override the imposed lapse rate
+
+# If using met. input:
+# Exactly one of "Init temp. from met." and "Impose lapse rate" must be true
+# Exactly one of "Init RH from met." and "Impose moist layer depth" must be true
+METEOROLOGY MENU:
+  METEOROLOGICAL INPUT SUBMENU:
+    Use met. input (T/F): F
+    Met input file path (string): /path/to/input/
+    Time series data timestep [hr] (double): 1.0
+    Init temp. from met. (T/F): T
+    Temp. time series input (T/F): T
+    Interpolate temp. met. data (T/F): T
+    Init RH from met. (T/F): F
+    RH time series input (T/F): T
+    Interpolate RH met. data (T/F): T
+    Init wind shear from met. (T/F): T
+    Wind shear time series input (T/F): T
+    Interpolate shear met. data (T/F): T
+    Init vert. veloc. from met. data (T/F): F
+    Vert. veloc. time series input (T/F): F
+    Interpolate vert. veloc. met. data (T/F): F
+    HUMIDITY SCALING OPTIONS:
+      Humidity modification scheme (none / constant / scaling): none
+      Constant RHi [%] (double): 110.0
+      Humidity scaling constant a (double): 0.9779
+      Humidity scaling constant b (double): 1.635
+  #- OR -------------------+
+  IMPOSE MOIST LAYER DEPTH SUBMENU:
+    Impose moist layer depth (T/F): T
+    Moist layer depth [m] (double): 1000
+  #--- OR -----------------+
+  IMPOSE LAPSE RATE SUBMENU:
+    Impose lapse rate (T/F): F
+    Lapse rate [K/m] (T/F): -6.0E-03
+  Add diurnal variations (T/F): T
+  TEMPERATURE PERTURBATION SUBMENU:
+    Enable Temp. Pert. (T/F): F
+    Temp. Perturb. Amplitude (double): 1.0
+    Temp. Perturb. Timescale (min): 10
+    
+DIAGNOSTIC MENU:
+  netCDF filename format (string): trac_avg.apcemm.hhmm
+  SPECIES TIMESERIES SUBMENU:
+    Save species timeseries (T/F): F
+    Inst timeseries file (string): ts_hhmm.nc
+    #list input: separate by spaces. e.g. 1 2 3 4 5
+    Species indices to include (list of ints): 1
+    Save frequency [min] (double): 10
+  AEROSOL TIMESERIES SUBMENU:
+    Save aerosol timeseries (T/F): T
+    Inst timeseries file (string): ts_aerosol_hhmm.nc
+    #list input: separate by spaces. e.g. 1 2 3 4 5
+    Aerosol indices to include (list of ints): 1
+    Save frequency [min] (double): 10
+  PRODUCTION & LOSS SUBMENU:
+    Turn on P/L diag (T/F): F
+    Save O3 P/L (T/F): F
+
+#Sometimes you have to change YLIM_DOWN here if the supersaturated layer is very thick
+#because YLIM_DOWN must be larger than the layer thickness.
+ADVANCED OPTIONS MENU:
+  #Domain is defined as: X [-XLIM_LEFT, XLIM_RIGHT], Y [-YLIM_DOWN, YLIM_UP]
+  GRID SUBMENU:
+    NX (positive int): 2048
+    NY (positive int): 192
+    XLIM_RIGHT (positive double): 5.0e+4 
+    XLIM_LEFT (positive double): 5.0e+4
+    YLIM_UP (positive double): 6.5e+2
+    YLIM_DOWN (positive double): 1.5e+3
