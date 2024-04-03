@@ -65,6 +65,8 @@ static int SUCCESS     =  1;
 /* For DIAGNOSTIC */
 #include "Core/Diag_Mod.hpp"
 
+#include "Core/Status.hpp"
+
 /* (URGENT) FIXME: Whoever works on chemistry, REFACTOR THESE REMAINING GLOBAL VARIABLES by refactoring!
             Using non-const global variables is the biggest software engineering antipattern ever */
 int isSaved = 1;
@@ -100,7 +102,7 @@ double totalH2OMass(const Solution& Data, const Vector_2D& cellAreas){
     return totIceMass + mass_H2O;
         
 }
-int PlumeModel( OptInput &Input_Opt, const Input &input )
+SimStatus PlumeModel( OptInput &Input_Opt, const Input &input )
 {
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -407,14 +409,13 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     AIM::Aerosol liquidAer, iceAer;
 
     Vector_2D aerArray = Data.getAerosol();
-    int EPM_RC = EPM::Integrate( simVars.temperature_K, simVars.pressure_Pa, simVars.relHumidity_w, VAR, \
+    SimStatus EPM_RC = EPM::Integrate( simVars.temperature_K, simVars.pressure_Pa, simVars.relHumidity_w, VAR, \
                                  aerArray, aircraft, EI, Ice_rad, Ice_den, Soot_den,  \
                                  H2O_mol, SO4g_mol, SO4l_mol, liquidAer, iceAer, areaPlume, \
-        		             Ab0, Tc0, simVars.CHEMISTRY, input.fileName_micro() );
-    // Did this end early?
-    if ((!simVars.CHEMISTRY) && (EPM_RC == EPM::EPM_EARLY))
-    {
-        return SUCCESS;
+        		             Ab0, Tc0, simVars.CHEMISTRY, Input_Opt.ADV_AMBIENT_LAPSERATE, input.fileName_micro() );
+
+    if((!simVars.CHEMISTRY) && (EPM_RC != SimStatus::EPMSuccess)) {
+        return EPM_RC;
     }
 
     /* Compute initial plume area and scale initial ice aerosol properties based on number engines.
@@ -441,7 +442,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         if ( iceNumFrac <= 0.00E+00 && !simVars.CHEMISTRY ) {
             std::cout << "EndSim: vortex sinking" << std::endl;
             //exit(0);
-            return SUCCESS;
+            return SimStatus::NoSurvivalVortex;
         }
         iceAer.scalePdf( iceNumFrac );
     }
@@ -592,7 +593,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
 	std::cout << "# particles: " << totalIceParticles << ", ice mass: " << totalIceMass << std::endl;
         if ( totalIceParticles <= 1.00E+6 && totalIceMass <= 1.00E-2 && !simVars.CHEMISTRY ) {
             std::cout << "EndSim: no particles remain" << std::endl;
-            return SUCCESS;
+            return SimStatus::Complete;
         }
     }
 
@@ -885,7 +886,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                         GC_SETHET( Met.temp(jNy,iNx), Met.press(jNy), \
                                     Met.airMolecDens(jNy,iNx), relHumidity, \
                                     Data.STATE_PSC, VAR, AerosolArea,  \
-                                    AerosolRadi, IWC, &(Data.KHETI_SLA[0]) );
+                                    AerosolRadi, IWC, &(Data.KHETI_SLA[0]), Input_Opt.ADV_TROPOPAUSE_PRESSURE);
                     }
 
                     /* Zero-out reaction rate */
@@ -963,7 +964,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                                 physConst::kB * simVars.temperature_K * 1.00E+06 / \
                                 physFunc::pSat_H2Ol( simVars.temperature_K );
                 GC_SETHET( simVars.temperature_K, simVars.pressure_Pa, airDens, relHumidity, \
-                            Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, &(Data.KHETI_SLA[0]) );
+                            Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, &(Data.KHETI_SLA[0]), Input_Opt.ADV_TROPOPAUSE_PRESSURE );
             }
 
             /* Zero-out reaction rate */
@@ -992,7 +993,8 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
                     std::cout << " on " << omp_get_thread_num();
                 #endif /* OMP */
                 std::cout << " for ambient conditions at time t = " << timestepVars.curr_Time_s/3600.0 << " ( nTime = " << timestepVars.nTime << " )\n";
-                return KPP_FAIL;
+                // return KPP_FAIL;
+                return SimStatus::Failed;
             }
 
         }
@@ -1092,6 +1094,12 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
         }
     }
  
+    SimStatus status;
+    if (early_stop){
+        status = SimStatus::Complete;
+    } else {
+        status = SimStatus::Incomplete;
+    }
     /* ===================================================================== */
     /* ------------------------ TIME LOOP ENDS HERE ------------------------ */
     /* ===================================================================== */
@@ -1099,7 +1107,7 @@ int PlumeModel( OptInput &Input_Opt, const Input &input )
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
     std::cout << "APCEMM LAGRID Plume Model Run Finished! Run time: " << duration.count() << "ms" << std::endl;
-    return SUCCESS;
+    return status;
 
 } /* End of PlumeModel */
 

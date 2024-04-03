@@ -26,14 +26,8 @@
 #define LA_VRAT               1.80E+00    /* Size ratio between two consecutive bins */
 #define PA_VRAT               1.80E+00    /* Size ratio between two consecutive bins */
 
-
-
 /* Ring structure */
 #define NRING             15          /* Number of rings */
-
-/* Atmospheric parameters */
-#define GAMMA            -3.0E+00     /* Ambient temperature lapse rate [K/km] */
-#define TROPP             2.0E+04     /* Pressure at the tropopause [Pa] */
 
 /* Diffusion */
 /* The following parameters are now passed as user input parameters */
@@ -47,7 +41,6 @@
                                        * 0: Step
                                        * 1: Linear
                                        * 2: Exponential
-                                       */
 
 /* Advection  */
 #define VX                0.0E+00     /* Steady-state horizontal advection velocity [m/s] */
@@ -58,7 +51,6 @@
 #define SYNPROF           1           /* Time profile of the initial synoptic lifting [0,1]
                                        * 0: Step
                                        * 1: Exponential
-                                       */
 
 /* Chemistry parameters */
 #define KPP_RTOLS             1.00E-03    /* Relative tolerances in KPP */
@@ -84,6 +76,5 @@
 #define EPM_RTOLS             1.00E-05    /* Relative tolerances in EPM */
 #define EPM_ATOLS             1.00E-07    /* Absolute tolerances in EPM */
 #define SO2TOSO4              0.005       /* Percent conversion from SO2 to SO4 */
-#define SATDEPTH_MIN          100         /* Minimum depth of saturation depth if loading met [m] */
 
 #endif /* PARAMETERS_H_INCLUDED */

@@ -30,7 +30,8 @@ Meteorology::Meteorology( const OptInput &optInput,
     interpRH_(optInput.MET_INTERPRHDATA),
     interpShear_(optInput.MET_INTERPSHEARDATA),
     interpVertVeloc_(optInput.MET_INTERPVERTVELOC),
-    turbTempPertAmplitude_(optInput.MET_TEMP_PERTURB_AMPLITUDE)
+    turbTempPertAmplitude_(optInput.MET_TEMP_PERTURB_AMPLITUDE),
+    rhi_far_(optInput.MET_SUBSAT_RHI)
 {
 
     zeroVectors();
@@ -39,7 +40,6 @@ Meteorology::Meteorology( const OptInput &optInput,
 
     //Set reference altitude from reference pressure
     met::ISA_pAlt(altitudeRef_, pressureRef_);
-
     //Steps:
     // 1) Calculate lapse rate based on params
     // 2) Initalize the initial and time-dependent temperature, h2o, and shear
@@ -348,19 +348,23 @@ void Meteorology::initTemperature( const NcFile& dataFile ) {
 }
 
 void Meteorology::initH2ONoMet (const Vector_1D& yCoords) {
-    //TODO: fix these hardcoded default boundary coordinates and rh's.
 
+    //Unfortunately, need to set some arbitrary values for thickness of supersaturated layer above, as well as the farfield RH. 
+    //We set the moist layer depth to be the same on the top and bottom, essentially assuming the contrail spawns in the middle of the layer.
+    //Statistically, ^ might be inaccurate and could have room for calibration.
     /* RHi layer centered on y = 0 */
-    const double TOP = 200.0;
-    const double BOT = met_depth_;
-    satdepth_user_ = BOT;
+    double moist_layer_top_y = met_depth_;
+    double moist_layer_bot_y = -met_depth_;
+    satdepth_user_ = met_depth_;
 
-    const double RH_star = ambParams_.rhi;
-
+    double RH_star = ambParams_.rhi;
+    double RH_far = rhi_far_;
     #pragma omp parallel for default(shared)
-    for ( int jNy = 0; jNy < yCoords.size(); jNy++ ) {
-        double H2O_local = physFunc::RHiToH2O(RH_star, tempBase_[jNy]);
-        H2O_[jNy].assign(nx_, H2O_local);
+    for ( int j = 0; j < yCoords.size(); j++ ) {
+        double H2O_local = yCoords[j] > moist_layer_bot_y && yCoords[j] < moist_layer_top_y
+                            ? physFunc::RHiToH2O(RH_star, tempBase_[j])
+                            : physFunc::RHiToH2O(RH_far, tempBase_[j]);
+        H2O_[j].assign(nx_, H2O_local);
     }
 }
 

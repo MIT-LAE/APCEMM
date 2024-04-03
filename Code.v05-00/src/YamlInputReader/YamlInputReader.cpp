@@ -217,6 +217,7 @@ namespace YamlInputReader{
         YAML::Node moistLayerSubmenu = metNode["IMPOSE MOIST LAYER DEPTH SUBMENU"];
         input.MET_FIXDEPTH = parseBoolString(moistLayerSubmenu["Impose moist layer depth (T/F)"].as<string>(), "Impose moist layer depth (T/F)");
         input.MET_DEPTH = parseDoubleString(moistLayerSubmenu["Moist layer depth [m] (double)"].as<string>(), "Moist layer depth [m] (double)");
+        input.MET_SUBSAT_RHI = parseDoubleString(moistLayerSubmenu["Subsaturated air RHi [%] (double)"].as<string>(), "Subsaturated air RHi [%] (double)");
 
         YAML::Node lapseRateSubmenu = metNode["IMPOSE LAPSE RATE SUBMENU"];
         input.MET_FIXLAPSERATE = parseBoolString(lapseRateSubmenu["Impose lapse rate (T/F)"].as<string>(), "Impose lapse rate (T/F)");
@@ -285,6 +286,15 @@ namespace YamlInputReader{
         input.ADV_GRID_XLIM_LEFT = parseDoubleString(gridSubmenu["XLIM_LEFT (positive double)"].as<string>(), "XLIM_LEFT (positive double)");
         input.ADV_GRID_YLIM_UP = parseDoubleString(gridSubmenu["YLIM_UP (positive double)"].as<string>(), "YLIM_UP (positive double)");
         input.ADV_GRID_YLIM_DOWN = parseDoubleString(gridSubmenu["YLIM_DOWN (positive double)"].as<string>(), "YLIM_DOWN (positive double)");
+        
+        YAML::Node csizeSubmenu = advancedNode["INITIAL CONTRAIL SIZE SUBMENU"];
+        input.ADV_CSIZE_DEPTH_BASE = parseDoubleString(csizeSubmenu["Base Contrail Depth [m] (double)"].as<string>(), "Base Contrail Depth [m] (double)");
+        input.ADV_CSIZE_DEPTH_SCALING_FACTOR = parseDoubleString(csizeSubmenu["Contrail Depth Scaling Factor [-] (double)"].as<string>(), "Contrail Depth Scaling Factor [-] (double)");
+        input.ADV_CSIZE_WIDTH_BASE = parseDoubleString(csizeSubmenu["Base Contrail Width [m] (double)"].as<string>(), "Base Contrail Width [m] (double)");
+        input.ADV_CSIZE_WIDTH_SCALING_FACTOR = parseDoubleString(csizeSubmenu["Contrail Width Scaling Factor [-] (double)"].as<string>(), "Contrail Width Scaling Factor [-] (double)");
+
+        input.ADV_AMBIENT_LAPSERATE = parseDoubleString(advancedNode["Ambient Lapse Rate [K/km] (double)"].as<string>(), "Ambient Lapse Rate [K/km] (double)");
+        input.ADV_TROPOPAUSE_PRESSURE = parseDoubleString(advancedNode["Tropopause Pressure [Pa] (double)"].as<string>(), "Tropopause Pressure [Pa] (double)");
 
         if(input.ADV_GRID_NX < 0 ||
            input.ADV_GRID_NY < 0 ||

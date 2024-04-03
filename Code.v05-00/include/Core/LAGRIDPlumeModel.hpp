@@ -12,11 +12,10 @@
 #include "Util/VectorUtils.hpp"
 #include "Util/PlumeModelUtils.hpp"
 #include <filesystem>
+#include "Core/Status.hpp"
 class LAGRIDPlumeModel {
     public:
         static constexpr bool COCIP_MIXING = 0; // Results in less accurate mixing representation, only meant for comparisions vs. the CoCiP model.
-        static constexpr int APCEMM_LAGRID_SUCCESS = 0;
-        static constexpr int APCEMM_LAGRID_EARLY_RETURN = 1;
         static constexpr double NUM_FILTER_RATIO = 1e-5;
         static constexpr double TOP_BUFFER_SCALING = 1.5;
         static constexpr double BOT_BUFFER_SCALING = 1.1;
@@ -25,8 +24,8 @@ class LAGRIDPlumeModel {
 
         LAGRIDPlumeModel() = delete;
         LAGRIDPlumeModel(const OptInput &Input_Opt, const Input &input);
-        int runFullModel();
-        int runEPM();
+        SimStatus runFullModel();
+        SimStatus runEPM();
         struct BufferInfo {
             double leftBuffer;
             double rightBuffer;
@@ -44,7 +43,7 @@ class LAGRIDPlumeModel {
         MPMSimVarsWrapper simVars_;
         TimestepVarsWrapper timestepVars_;
         AIM::Grid_Aerosol iceAerosol_;
-        std::pair<EPM::EPMOutput, int> EPM_result_;
+        std::pair<EPM::EPMOutput, SimStatus> EPM_result_;
         Meteorology met_;
         Vector_2D diffCoeffX_;
         Vector_2D diffCoeffY_;

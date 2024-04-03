@@ -116,6 +116,7 @@ METEOROLOGY MENU:
   IMPOSE MOIST LAYER DEPTH SUBMENU:
     Impose moist layer depth (T/F): T
     Moist layer depth [m] (double): 200
+    Subsaturated air RHi [%] (double): 80
   #--- OR -----------------+
   IMPOSE LAPSE RATE SUBMENU:
     Impose lapse rate (T/F): F
@@ -149,9 +150,18 @@ DIAGNOSTIC MENU:
 ADVANCED OPTIONS MENU:
   #Domain is defined as: X [-XLIM_LEFT, XLIM_RIGHT], Y [-YLIM_DOWN, YLIM_UP]
   GRID SUBMENU:
-    NX (positive int): 2048
-    NY (positive int): 192
-    XLIM_RIGHT (positive double): 1.0e+5 
-    XLIM_LEFT (positive double): 1.0e+5
-    YLIM_UP (positive double): 6.5e+2
+    NX (positive int): 200
+    NY (positive int): 180
+    XLIM_RIGHT (positive double): 1.0e+3
+    XLIM_LEFT (positive double): 1.0e+3
+    YLIM_UP (positive double): 300
     YLIM_DOWN (positive double): 1.5e+3
+  INITIAL CONTRAIL SIZE SUBMENU:
+    #Depth = BaseDepth + DepthScalingFactor * Default_Depth
+    #Same formula for width
+    Base Contrail Depth [m] (double): 180.0
+    Contrail Depth Scaling Factor [-] (double): 0.5
+    Base Contrail Width [m] (double): 100.0
+    Contrail Width Scaling Factor [-] (double): 0.5
+  Ambient Lapse Rate [K/km] (double): -3.0
+  Tropopause Pressure [Pa] (double): 2.0e+4

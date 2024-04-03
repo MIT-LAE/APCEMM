@@ -28,11 +28,13 @@
 #include "Core/Parameters.hpp"
 #include "Core/Input.hpp"
 #include "Core/LAGRIDPlumeModel.hpp"
+#include "Core/Status.hpp"
 
 static int DIR_FAIL = -9;
 
 void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
+void CreateStatusOutput(const std::string folder, const int caseNumber, const SimStatus status);
 int PlumeModel( OptInput &Input_Opt, const Input &inputCase );
 
 inline bool exist( const std::string &name )
@@ -211,7 +213,7 @@ int main( int argc, char* argv[])
             }
             Input_Opt.TS_AERO_FILENAME = "ts_aerosol_case" + std::to_string(iCase) + "_hhmm.nc";
 
-            int iERR = 0;
+            SimStatus case_status;
             switch (model) {
 
                 /* Box Model */
@@ -224,7 +226,7 @@ int main( int argc, char* argv[])
                 case 1: {
                     std::cout << "running epm... " << std::endl;
                     LAGRIDPlumeModel LAGRID_Model(Input_Opt, inputCase);
-                    iERR = LAGRID_Model.runFullModel();
+                    case_status = LAGRID_Model.runFullModel();
                     // iERR = PlumeModel( Input_Opt, inputCase );
                     break;
                     
@@ -252,14 +254,15 @@ int main( int argc, char* argv[])
 
             #pragma omp critical 
             {
-                if ( iERR < 0 ) {
+                if ( case_status == SimStatus::Failed ) {
                     std::cout.precision(3);
                     std::cout << "\n APCEMM Case: " << iCase << " failed";
                     #ifdef OMP
                         std::cout << " on thread " << omp_get_thread_num();
                     #endif /* OMP */
                     std::cout << "." << std::endl;
-                    std::cout << " Error: " << iERR << "" << std::endl;
+                    // This error reporting is not being used right now
+                    // std::cout << " Error: " << iERR << "" << std::endl;
                     std::cout << std::fixed;
                     std::cout << std::setprecision(3);
                     std::cout << " T   : " << std::setw(8) << inputCase.temperature_K();
@@ -274,6 +277,8 @@ int main( int argc, char* argv[])
                     std::cout << " [deg]" << std::endl;
                 }
                 else { std::cout << " APCEMM Case: " << iCase << " completed." << std::endl; }
+                
+                CreateStatusOutput(Input_Opt.SIMULATION_OUTPUT_FOLDER, iCase, case_status);
             }
 
         }
@@ -374,5 +379,42 @@ void CreateREADME( const std::string folder, const std::string fileName, const s
     README.close();
 
 } /* End of PrintMessage */
+
+void CreateStatusOutput(const std::string folder, const int caseNumber, const SimStatus status)
+{
+    std::string fileName = "status_case" + std::to_string(caseNumber);
+    std::ofstream statusFile;
+
+    const std::string fullPath = folder + "/" + fileName;
+    statusFile.open( fullPath.c_str() );
+
+    switch (status)
+    {
+    case SimStatus::Complete:
+        statusFile << "Complete" << std::endl;
+        break;
+    case SimStatus::Incomplete:
+        statusFile << "Incomplete" << std::endl;
+        break;
+    case SimStatus::NoWaterSaturation:
+        statusFile << "NoWaterSaturation" << std::endl;
+        break;
+    case SimStatus::NoPersistence:
+        statusFile << "NoPersistence" << std::endl;
+        break;
+    case SimStatus::NoSurvivalVortex:
+        statusFile << "NoSurvivalVortex" << std::endl;
+        break;
+    case SimStatus::Failed:
+        statusFile << "Failed" << std::endl;
+        break;
+    default:
+        statusFile << "Unknown exit code" << std::endl;
+        break;
+    }
+
+    statusFile.close();
+
+} /* End of CreateStatusOutput */
 
 /* End of Main.cpp */

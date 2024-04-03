@@ -373,11 +373,9 @@ namespace met
 
         int idx_x2 = idx_x1 + 1;
         if(idx_x1 < 0) { 
-            std::cout << "min alt: " << altitude_init[0] << ", query alt: " << altitude_query << std::endl;
             throw std::range_error("Input flight altitude out of range of met. data!"); 
         }
         if(idx_x2 >= altitude_init.size()) { 
-            std::cout << "max alt: " << altitude_init[altitude_init.size() - 1] << ", query alt: " << altitude_query << std::endl;
             throw std::range_error("Input flight altitude out of range of met. data!"); 
         }
         /* Loop round horizontal coordinates to assign temperature */

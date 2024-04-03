@@ -29,6 +29,7 @@
 #include "Core/Monitor.hpp"
 #include "Core/Aircraft.hpp"
 #include "Core/Emission.hpp"
+#include "Core/Status.hpp"
 #include "AIM/Coagulation.hpp"
 #include "AIM/Nucleation.hpp"
 #include "AIM/Aerosol.hpp"
@@ -50,9 +51,6 @@ namespace EPM
         double bypassArea;
         double coreExitTemp;
     };
-    static const int EPM_SUCCESS = 1;
-    // Stopped early (no ice)
-    static const int EPM_EARLY   = 2;
 
     /* Vortex sinking timescales, taken from Unterstrasser et al., 2008 */
     const double t_Vortex_0 = 8.00E+00;
@@ -82,22 +80,21 @@ namespace EPM
     /* const double Ab0 = 1.804; */
     /* double Ab0 */
 
-    int Integrate( double &temperature_K, double pressure_Pa, double relHumidity_w, double varArray[], \
+    SimStatus Integrate( double &temperature_K, double pressure_Pa, double relHumidity_w, double varArray[], \
                    const Vector_2D& aerArray, const Aircraft &AC, const Emission &EI, \
                    double &Ice_rad, double &Ice_den, double &Soot_den, double &H2O_mol, \
                    double &SO4g_mol, double &SO4l_mol, AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, \
-                   double &Area, double &Ab0, double &Tc0, const bool CHEMISTRY, std::string micro_data_out );
+                   double &Area, double &Ab0, double &Tc0, const bool CHEMISTRY, double ambientLapseRate, std::string micro_data_out );
 
-    std::pair<EPMOutput, int> Integrate(double tempInit_K, double pressure_Pa, double rhw, double bypassArea, double coreExitTemp, double varArray[], 
-                            const Vector_2D& aerArray, const Aircraft& AC,const Emission& EI, bool CHEMISTRY, 
-                            std::string micro_data_out);
+    std::pair<EPMOutput, SimStatus> Integrate(double tempInit_K, double pressure_Pa, double rhw, double bypassArea, double coreExitTemp, double varArray[], 
+                            const Vector_2D& aerArray, const Aircraft& AC,const Emission& EI, bool CHEMISTRY, double ambientLapseRate, std::string micro_data_out);
 
-    int RunMicrophysics( double &temperature_K, double pressure_Pa, double relHumidity_w, \
+    SimStatus RunMicrophysics( double &temperature_K, double pressure_Pa, double relHumidity_w, \
                          double varArray[], const Vector_2D& aerArray, \
                          const Aircraft &AC, const Emission &EI, double delta_T_ad, double delta_T, \
                          double &Ice_rad, double &Ice_den, double &Soot_den, double &H2O_mol, \
                          double &SO4g_mol, double &SO4l_mol, AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, \
-                         double &Area, double &Ab0, double &Tc0, const bool CHEMISTRY, std::string micro_data_out );
+                         double &Area, double &Ab0, double &Tc0, const bool CHEMISTRY, double ambientLapseRate, std::string micro_data_out );
     double dT_Vortex( const double time, const double delta_T, bool deriv = 0 );
     double entrainmentRate( const double time );
     double depositionRate( const double r, const double T, const double P, const double H2O, \

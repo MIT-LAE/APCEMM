@@ -47,7 +47,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
                         std::vector<double> &KHETI_SLA , std::vector<double> &SOLIDFRAC ,                                      \
                         std::vector<double> &AERFRAC   , std::vector<double> &RAD_AER   ,                                      \
                         std::vector<double> &RHO_AER   , std::vector<double> &KG_AER    ,                                      \
-                        std::vector<double> &NDENS_AER , std::vector<double> &SAD_AER   , const bool DBG_IN )
+                        std::vector<double> &NDENS_AER , std::vector<double> &SAD_AER   , double tropopausePressure, const bool DBG_IN )
 {
 
     /* DESCRIPTION: Calculates areosol properties in the stratosphere using the thermodynamic

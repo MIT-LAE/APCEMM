@@ -128,11 +128,7 @@ class Meteorology
             }  
             return dy;
         }
-
-        inline double y0() const {
-            return altitudeEdges_[0] - altitudeRef_;
-        }
-
+        
     private:
         inline void zeroVectors() { 
             tempTotal_ = Vector_2D(ny_, Vector_1D (nx_, 0));
@@ -200,7 +196,7 @@ class Meteorology
         double rhw_user_;
         double met_depth_; //Only for cases where we're not reading rh from met
         double satdepth_user_;
-
+        double rhi_far_; // Only for fix metdepth cases
 
         //Grid data
         int nx_;

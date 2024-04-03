@@ -27,7 +27,8 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
                         std::vector<double> &KHETI_SLA , std::vector<double> &SOLIDFRAC ,                                      \
                         std::vector<double> &AERFRAC   , std::vector<double> &RAD_AER   ,                                      \
                         std::vector<double> &RHO_AER   , std::vector<double> &KG_AER    ,                                      \
-                        std::vector<double> &NDENS_AER , std::vector<double> &SAD_AER   , const bool DBG_IN );
+                        std::vector<double> &NDENS_AER , std::vector<double> &SAD_AER   , 
+                        double tropopausePressure, bool DBG_IN );
 std::vector<double> SLA_GAMMA( const double T_K         , const double P_Pa     , \
                                const double WT_FRC      ,                         \
                                const double H2OSUM      , const double HClSUM   , \

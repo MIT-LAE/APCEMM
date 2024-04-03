@@ -322,6 +322,7 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.MET_HUMIDSCAL_SCALING_B == 1.635);
         REQUIRE(input.MET_FIXDEPTH == true);
         REQUIRE(input.MET_DEPTH == 200);
+        REQUIRE(input.MET_SUBSAT_RHI == 80);
         REQUIRE(input.MET_FIXLAPSERATE == true);
         REQUIRE(input.MET_LAPSERATE == -6.0e-3);
         REQUIRE(input.MET_DIURNAL == true);
@@ -330,7 +331,7 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.MET_TEMP_PERTURB_TIMESCALE == 10);
 
 
-        REQUIRE(error == "When using met. input, only one of \"Init temp. from met.\" or \"Impose lapse rate\" must be selected.");
+        REQUIRE(error == "Cannot fix both moist layer depth and lapse rate");
     }
     SECTION("Read Diagnostic Menu"){
         OptInput input;
@@ -352,12 +353,19 @@ TEST_CASE("Read Yaml File"){
     SECTION("Read Advanced Options Menu") {
         OptInput input;
         readAdvancedMenu(input, data["ADVANCED OPTIONS MENU"]);
-        REQUIRE(input.ADV_GRID_NX == 2048);
-        REQUIRE(input.ADV_GRID_NY == 192);
-        REQUIRE(input.ADV_GRID_XLIM_LEFT == 1.0e+5);
-        REQUIRE(input.ADV_GRID_XLIM_RIGHT == 1.0e+5);
+        REQUIRE(input.ADV_GRID_NX == 200);
+        REQUIRE(input.ADV_GRID_NY == 180);
+        REQUIRE(input.ADV_GRID_XLIM_LEFT == 1.0e+3);
+        REQUIRE(input.ADV_GRID_XLIM_RIGHT == 1.0e+3);
         REQUIRE(input.ADV_GRID_YLIM_DOWN == 1.5e+3);
-        REQUIRE(input.ADV_GRID_YLIM_UP == 6.5e+2);
+        REQUIRE(input.ADV_GRID_YLIM_UP == 300);
+        REQUIRE(input.ADV_CSIZE_DEPTH_BASE == 180.0);
+        REQUIRE(input.ADV_CSIZE_DEPTH_SCALING_FACTOR == 0.5);
+        REQUIRE(input.ADV_CSIZE_WIDTH_BASE == 100.0);
+        REQUIRE(input.ADV_CSIZE_WIDTH_SCALING_FACTOR == 0.5);
+        REQUIRE(input.ADV_AMBIENT_LAPSERATE == -3.0);
+        REQUIRE(input.ADV_TROPOPAUSE_PRESSURE == 2.0e+4);
+
     }
 
 }

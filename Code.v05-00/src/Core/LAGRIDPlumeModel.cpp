@@ -1,4 +1,5 @@
 #include "Core/LAGRIDPlumeModel.hpp"
+#include "Core/Status.hpp"
 LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input ):
     optInput_(optInput),
     input_(input),
@@ -19,12 +20,12 @@ LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input
 
     createOutputDirectories();
 }
-int LAGRIDPlumeModel::runFullModel() {
+SimStatus LAGRIDPlumeModel::runFullModel() {
     auto start = std::chrono::high_resolution_clock::now();
     omp_set_num_threads(numThreads_);
-    int EPM_RC = runEPM();
-    if(EPM_RC == EPM::EPM_EARLY) {
-        return APCEMM_LAGRID_EARLY_RETURN;
+    SimStatus EPM_RC = runEPM();
+    if(EPM_RC != SimStatus::EPMSuccess) {
+        return EPM_RC;
     }
 
     //Initialize aerosol into grid and init H2O
@@ -39,6 +40,7 @@ int LAGRIDPlumeModel::runFullModel() {
     }
 
     bool EARLY_STOP = false;
+    SimStatus status = SimStatus::Incomplete;
     //Start time loop
     while ( timestepVars_.curr_Time_s < timestepVars_.tFinal_s ) {
         /* Print message */
@@ -92,9 +94,11 @@ int LAGRIDPlumeModel::runFullModel() {
         //Perform Met Update, which includes the vertical advection and timestepping in other met variables
         std::cout << "Updating Met..." << std::endl;
         met_.Update( timestepVars_.TRANSPORT_DT, solarTime_h_, simTime_h_);
+
         //Vertical advection shifts the y coordinates which are synced to altitude, so we need to update the y edges and coordinates here too.
         yEdges_ = met_.yEdges();
         yCoords_ = met_.yCoords(); 
+
         //Remap the grid to account for changes in shape due to vertical advection and the growth of the contrail
         std::cout << "Remapping... " << std::endl;
         remapAllVars(timestepVars_.TRANSPORT_DT);
@@ -115,16 +119,17 @@ int LAGRIDPlumeModel::runFullModel() {
         saveTSAerosol();
 
         if(EARLY_STOP) {
+            status = SimStatus::Complete;
             break;
         }
     }
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
     std::cout << "APCEMM LAGRID Plume Model Run Finished! Run time: " << duration.count() << "ms" << std::endl;
-    return APCEMM_LAGRID_SUCCESS;
+    return status;
 }
 
-int LAGRIDPlumeModel::runEPM() {
+SimStatus LAGRIDPlumeModel::runEPM() {
     double C[NSPEC];             /* Concentration of all species */
     double * VAR = &C[0];        /* Concentration of variable species */
     double * FIX = &C[NVAR];     /* Concentration of fixed species */
@@ -169,12 +174,12 @@ int LAGRIDPlumeModel::runEPM() {
     epmSolution.getData(VAR, FIX, i_0, j_0);
 
     //RUN EPM
-    EPM_result_ = EPM::Integrate(met_.tempRef(), simVars_.pressure_Pa, met_.rhwRef(), input_.bypassArea(), input_.coreExitTemp(), VAR, aerArray, aircraft_, EI_, simVars_.CHEMISTRY, input_.fileName_micro() );
+    EPM_result_ = EPM::Integrate(met_.tempRef(), simVars_.pressure_Pa, met_.rhwRef(), input_.bypassArea(), input_.coreExitTemp(), VAR, aerArray, aircraft_, EI_, simVars_.CHEMISTRY, optInput_.ADV_AMBIENT_LAPSERATE, input_.fileName_micro() );
     EPM::EPMOutput& epmOutput = EPM_result_.first;
-    int EPM_RC = EPM_result_.second;
+    SimStatus EPM_RC = EPM_result_.second;
 
-    if(EPM_RC == EPM::EPM_EARLY) {
-        return EPM::EPM_EARLY;
+    if(EPM_RC != SimStatus::EPMSuccess) {
+        return EPM_RC;
     }
 
     /* Compute initial plume area and scale initial ice aerosol properties based on number engines.
@@ -200,11 +205,11 @@ int LAGRIDPlumeModel::runEPM() {
     std::cout << "Parameterized vortex sinking survival fraction: " << iceNumFrac << std::endl;
     if ( iceNumFrac <= 0.00E+00) {
         std::cout << "EndSim: vortex sinking" << std::endl;
-        return EPM::EPM_EARLY;
+        return SimStatus::NoSurvivalVortex;
     }
     epmOutput.IceAer.scalePdf( iceNumFrac );
 
-    return EPM::EPM_SUCCESS;
+    return SimStatus::EPMSuccess;
 }
 
 void LAGRIDPlumeModel::initializeGrid() {
@@ -233,20 +238,21 @@ void LAGRIDPlumeModel::initializeGrid() {
     iceAerosol_ = AIM::Grid_Aerosol(nx_init, yCoords_.size(), epmIceAer.getBinCenters(), epmIceAer.getBinEdges(), 0, 1, 1.6);
 
     /* Estimate initial contrail depth/width to estimate aspect ratio, from Schumann, U. "A contrail cirrus prediction model." Geoscientific Model Development 5.3 (2012) */
-    double D1 = 0.5 * aircraft_.vortex().delta_zw(); // initial contrail depth [m]
+    double D1 = optInput_.ADV_CSIZE_DEPTH_BASE + optInput_.ADV_CSIZE_DEPTH_SCALING_FACTOR * 0.5 * aircraft_.vortex().delta_zw();
     auto N_dil = [](double t0) -> double {
         double ts = 1; 
         return 7000 * pow(t0/ts, 0.8);
     };
     double m_F = aircraft_.FuelFlow() / aircraft_.VFlight(); //fuel consumption per flight distance [kg / m]
     double rho_air = simVars_.pressure_Pa / (physConst::R_Air * epmOut.finalTemp);
-    double B1 = N_dil(aircraft_.vortex().t()) * m_F / ( physConst::PI/4 * rho_air * D1); // initial contrail width [m]
+    double B1 = optInput_.ADV_CSIZE_WIDTH_BASE + optInput_.ADV_CSIZE_WIDTH_SCALING_FACTOR * N_dil(aircraft_.vortex().t()) * m_F / ( physConst::PI/4 * rho_air * D1); // initial contrail width [m]
 
     Vector_3D pdf_init;
     
     //Initialize area assuming ellipse-like shape
     double initPlumeArea = EPM_result_.first.area;
     double aspectRatio = D1/B1;
+    //Currently ignoring EPM area results.
     double initWidth = 2 * std::sqrt(initPlumeArea / (physConst::PI * aspectRatio));
     double initDepth = aspectRatio * initWidth;
 
@@ -371,7 +377,7 @@ LAGRID::twoDGridVariable LAGRIDPlumeModel::remapVariable(const VectorUtils::Mask
     // TODO: Add adaptive mesh size. This current implementation causes memory corruptions.
     // We need an extra grid cell on each side to avoid dealing with nasty indexing edge cases
     // if the boxes' and remapping's minX, maxX, minY, maxY are the same.
-    auto boxGrid = LAGRID::rectToBoxGrid(dy_grid_old, met_.dy_vec(), dx_grid_old, xEdges_[0], met_.y0(), phi, mask);
+    auto boxGrid = LAGRID::rectToBoxGrid(dy_grid_old, met_.dy_vec(), dx_grid_old, xEdges_[0], yEdges_[0], phi, mask);
 
     //Enforce at least x many points in the contrail while limiting minimum/maximum dx and dy
     double dx_grid_new =  std::max(20.0, std::min((maskInfo.maxX - maskInfo.minX) / 50.0, 50.0));
@@ -393,9 +399,6 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     //Generate free box grid from met post-advection
     Vector_2D iceTotalNum = iceAerosol_.TotalNumber();
     double maxNum = VectorUtils::VecMax2D(iceTotalNum);
-    auto iceNumMaskFunc = [maxNum](double val) {
-        return val > maxNum * NUM_FILTER_RATIO;
-    };
     auto numberMask = iceNumberMask();
     auto& mask = numberMask.first;
     auto& maskInfo = numberMask.second;
@@ -408,16 +411,22 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     double horizDiffLengthScale = sqrt(VectorUtils::VecMax2D(diffCoeffX_) * remapTimestep);
 
     double settlingLengthScale = vFall_[vFall_.size() - 1] * remapTimestep;
-    // shearTop: same sign as shear. shears left if shear > 0, right if shear < 0
-    double shearTop = shear_rep_ * maskInfo.maxY * remapTimestep; 
-    // shearBot: Takes into account how much the largest crystals will fall, same sign as shear. shears right if shear > 0, left if shear < 0 
-    double shearBot = shear_rep_ * -(maskInfo.minY - settlingLengthScale) * remapTimestep;  
-    
-    double shearLengthScaleRight = shear_rep_ > 0 ? shearBot : shearTop; 
-    double shearLengthScaleLeft = shear_rep_ > 0 ? shearTop : shearBot;
 
-    shearLengthScaleRight = std::max(shearLengthScaleRight, 0.0);
+    double shear_abs = abs(shear_rep_);
+
+    double shearTop = shear_abs * maskInfo.maxY * remapTimestep; 
+    // Bot: Takes into account how much the largest crystals will fall
+    double shearBot = shear_abs * -(maskInfo.minY - settlingLengthScale) * remapTimestep;  
+    
+
+    // Top shears left if shear > 0, right if shear < 0. Bottom, the opposite.
+    double shearLengthScaleLeft = shear_rep_ > 0 ? shearTop : shearBot;
+    double shearLengthScaleRight = shear_rep_ > 0 ? shearBot : shearTop; 
+
+    // shearLengthScaleLeft and shearLengthScaleRight can become negative if the contrail sinks a lot.
+    // This prevents addBuffer() from throwing an error.
     shearLengthScaleLeft = std::max(shearLengthScaleLeft, 0.0);
+    shearLengthScaleRight = std::max(shearLengthScaleRight, 0.0);
 
     BufferInfo buffers;
     buffers.leftBuffer = (shearLengthScaleLeft + horizDiffLengthScale) * LEFT_BUFFER_SCALING;
@@ -432,6 +441,7 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
         pdfRef[n] = remapVariable(maskInfo, buffers, pdfRef[n], mask).phi;
         volume[n] = remapVariable(maskInfo, buffers, volume[n], mask).phi;
     }
+
     //Only update nx and ny of iceAerosol after the loop, otherwise functions will get messed up if we later add other calls in the loop above
     iceAerosol_.updateNx(pdfRef[0][0].size());
     iceAerosol_.updateNy(pdfRef[0].size());

@@ -2,7 +2,7 @@
 #ifndef FVM_ANDS_ENUMS_H
 #define FVM_ANDS_ENUMS_H
 namespace FVM_ANDS{
-    enum BoundaryConditionFlag: unsigned char {
+    enum class BoundaryConditionFlag: unsigned char {
         INTERIOR = 0,
         DIRICHLET_INT_BPOINT = 1,
         PERIODIC_INT_BPOINT = 2,

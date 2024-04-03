@@ -12,16 +12,16 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "EPM/Integrate.hpp"
-
+#include "Core/Status.hpp"
 
 
 namespace EPM
 {
-    int Integrate( double &temperature_K, double pressure_Pa, double relHumidity_w, double varArray[], \
+    SimStatus Integrate( double &temperature_K, double pressure_Pa, double relHumidity_w, double varArray[], \
                    const Vector_2D& aerArray, const Aircraft &AC, const Emission &EI, \
                    double &Ice_rad, double &Ice_den, double &Soot_den, double &H2O_mol, \
                    double &SO4g_mol, double &SO4l_mol, AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, \
-                   double &Area, double &Ab0, double &Tc0, const bool CHEMISTRY, std::string micro_data_out )
+                   double &Area, double &Ab0, double &Tc0, const bool CHEMISTRY, double ambientLapseRate, std::string micro_data_out )
     {
 
         /* Get mean vortex displacement in [m] */
@@ -33,38 +33,38 @@ namespace EPM
 
         /* Compute adiabatic and real temperature changes */
         double delta_T_ad = - physConst::GAMMA_AD * delta_z * 1.0E-03;
-        double delta_T    = -            GAMMA    * delta_z * 1.0E-03;
+        double delta_T    = -            ambientLapseRate   * delta_z * 1.0E-03;
         /*          [ K ]     =              [ K/km ] *  [ m ]  * [ km/m ] 
          * The minus sign is because delta_z is the distance pointing down */
 
-        int EPM_RC = RunMicrophysics( temperature_K, pressure_Pa, relHumidity_w, varArray, aerArray, AC, EI, delta_T_ad, delta_T, \
-                                      Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, SO4Aer, IceAer, Area, Ab0, Tc0, CHEMISTRY, micro_data_out );
+        SimStatus EPM_RC = RunMicrophysics( temperature_K, pressure_Pa, relHumidity_w, varArray, aerArray, AC, EI, delta_T_ad, delta_T, \
+                                      Ice_rad, Ice_den, Soot_den, H2O_mol, SO4g_mol, SO4l_mol, SO4Aer, IceAer, Area, Ab0, Tc0, CHEMISTRY, ambientLapseRate, micro_data_out );
 
         return EPM_RC;
 
     } /* End of Integrate */
 
     /* TODO: Make the original integrate function work with the new EPMOutput struct directly, and then delete this function.*/
-    std::pair<EPMOutput, int> Integrate(double tempInit_K, double pressure_Pa, double rhw, double bypassArea, double coreExitTemp, double varArray[], 
-                            const Vector_2D& aerArray, const Aircraft& AC,const Emission& EI, bool CHEMISTRY, 
-                            std::string micro_data_out) 
+    std::pair<EPMOutput, SimStatus> Integrate(double tempInit_K, double pressure_Pa, double rhw, double bypassArea, double coreExitTemp, double varArray[], 
+                            const Vector_2D& aerArray, const Aircraft& AC,const Emission& EI, bool CHEMISTRY, double ambientLapseRate, std::string micro_data_out) 
     {
         EPMOutput out;
         out.finalTemp = tempInit_K;
         out.bypassArea = bypassArea;
         out.coreExitTemp = coreExitTemp;
-        int returnCode = Integrate(out.finalTemp, pressure_Pa, rhw, varArray, aerArray, AC, EI, out.iceRadius,
+        SimStatus returnCode = Integrate(out.finalTemp, pressure_Pa, rhw, varArray, aerArray, AC, EI, out.iceRadius,
                                     out.iceDensity, out.sootDensity, out.H2O_mol, out.SO4g_mol, out.SO4l_mol,
-                                    out.SO4Aer, out.IceAer, out.area, out.bypassArea, out.coreExitTemp, CHEMISTRY, micro_data_out);
+                                    out.SO4Aer, out.IceAer, out.area, out.bypassArea, out.coreExitTemp, CHEMISTRY, ambientLapseRate, micro_data_out);
         return std::make_pair(out, returnCode);
     }
 
     /* FIXME: See above comment on integrate() */
-    int RunMicrophysics( double &temperature_K, double pressure_Pa, double relHumidity_w, double varArray[], \
+    SimStatus RunMicrophysics( double &temperature_K, double pressure_Pa, double relHumidity_w, double varArray[], \
                         const Vector_2D& aerArray, const Aircraft &AC, const Emission &EI, \
                          double delta_T_ad, double delta_T, double &Ice_rad, double &Ice_den, \
                          double &Soot_den, double &H2O_mol, double &SO4g_mol, double &SO4l_mol, \
-                         AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, double &Area, double &Ab0, double &Tc0, const bool CHEMISTRY, std::string micro_data_out )
+                         AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, double &Area, double &Ab0, double &Tc0, 
+                         const bool CHEMISTRY, double ambientLapseRate, std::string micro_data_out )
     {
     
         double relHumidity_i_Amb, relHumidity_i_postVortex, relHumidity_i_Final;
@@ -600,7 +600,7 @@ namespace EPM
         if ( !CHEMISTRY && !observer.checkwatersat() ) {
             std::cout << "EndSim: Never reaches water saturation... ending simulation" << std::endl;
             //exit(0);
-            return EPM_EARLY;
+            return SimStatus::NoWaterSaturation;
         }
 
         /* Persistent contrail */
@@ -620,7 +620,7 @@ namespace EPM
              Soot_den = PartDens_3mins;
              H2O_mol  = H2OMol_3mins;
 	         std::cout << "No persistent contrail..." << std::endl;
-             if ( !CHEMISTRY ) return EPM_EARLY;
+             if ( !CHEMISTRY ) return SimStatus::NoPersistence;
 
         }
 	    std::cout << "Ice_den=" << Ice_den << std::endl;
@@ -642,7 +642,7 @@ namespace EPM
         /* Update temperature after vortex sinking */
         temperature_K = final_Temp;
 
-        return EPM_SUCCESS;
+        return SimStatus::EPMSuccess;
 
     } /* End of RunMicrophysics */
 

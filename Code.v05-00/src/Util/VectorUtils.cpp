@@ -96,8 +96,8 @@ namespace VectorUtils {
         int nonMaskedElems = 0;
         double minX = std::numeric_limits<double>::max();
         double minY = std::numeric_limits<double>::max();
-        double maxX = std::numeric_limits<double>::min();
-        double maxY = std::numeric_limits<double>::min();
+        double maxX = std::numeric_limits<double>::lowest();
+        double maxY = std::numeric_limits<double>::lowest();
 
         for (int j = 0; j < vec.size(); j++) {
             for (int i = 0; i < vec[0].size(); i++) {

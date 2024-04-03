@@ -26,7 +26,7 @@ static const double GAMMA_HO2 = 0.2;
 double ARSL1K( const double AREA,  const double RADI,  const double AIRDENS, \
                const double STKCF, const double XTEMP, const double SQM );
 void CHECK_NAT( bool &IS_NAT, bool &IS_PSC,   bool &IS_STRAT,    \
-                const unsigned int STATE_PSC, const double PATM );
+                const unsigned int STATE_PSC, const double PATM, double tropopausePressure );
 double N2O5( unsigned int N, const double TEMP, const double RH );
 double CLD1K_BrNO3( const double AIRDENS, const double TEMP, \
                     const double QL,      const double CLDF, \
@@ -104,7 +104,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
                 const double RELHUM, const unsigned int STATE_PSC,          \
                 const double SPC[], const double AREA[NAERO],               \
                 const double RADI[NAERO], const double IWC,                 \
-                const double KHETI_SLA[11] )
+                const double KHETI_SLA[11], double tropopausePressure )
 {
 
     /* Sets up the array of heterogeneous chemistry rates for the KPP chemistry solver */
@@ -286,7 +286,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
 
 
     /* Check surface type of PSCs */
-    CHECK_NAT( NATSURFACE, PSCBOX, STRATBOX, STATE_PSC, PATM );
+    CHECK_NAT( NATSURFACE, PSCBOX, STRATBOX, STATE_PSC, PATM, tropopausePressure );
 
     if ( !PSCBOX )
         CLD_BrNO3_RC = CLD1K_BrNO3( AIRDENS, TEMP, QLIQ, CLDF, IS_LAND, IS_ICE );
@@ -520,7 +520,7 @@ void GC_SETHET( const double TEMP, const double PATM, const double AIRDENS, \
 } /* End of GC_SETHET */
 
 void CHECK_NAT( bool &IS_NAT, bool &IS_PSC, bool &IS_STRAT, \
-                const unsigned int STATE_PSC, const double PATM )
+                const unsigned int STATE_PSC, const double PATM, double tropopausePressure )
 {
 
     /* This function determines whether the solid PSC is composed of ice
@@ -530,7 +530,7 @@ void CHECK_NAT( bool &IS_NAT, bool &IS_PSC, bool &IS_STRAT, \
     bool IS_TROP;
 
     /* Check if box is in the troposphere */
-    IS_TROP  = ( PATM > TROPP );
+    IS_TROP  = ( PATM > tropopausePressure );
 
     /* Check if box is in the stratosphere */
     IS_STRAT = ( !IS_TROP );

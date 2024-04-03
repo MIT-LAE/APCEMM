@@ -145,7 +145,7 @@ void Solution::Initialize( char const *fileName,      \
     STATE_PSC = STRAT_AER( input.temperature_K(), input.pressure_Pa(), airDens,  \
                            input.latitude_deg(), stratData,                      \
                            boxArea, KHETI_SLA, SOLIDFRAC,                        \
-                           AERFRAC, RAD, RHO, KG, NDENS, SAD, DBG );
+                           AERFRAC, RAD, RHO, KG, NDENS, SAD, Input_Opt.ADV_TROPOPAUSE_PRESSURE, DBG );
                     
 
     setSpeciesValues(AERFRAC, SOLIDFRAC, stratData);

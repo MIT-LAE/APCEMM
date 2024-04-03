@@ -169,6 +169,7 @@ METEOROLOGY MENU:
   # Sets constant RHi for the entire layer defined by Moist layer depth
     Impose moist layer depth (T/F): F
     Moist layer depth [m] (double): 1000
+    Subsaturated air RHi [%] (double): 80
   #- OR -----------------+
   IMPOSE LAPSE RATE SUBMENU:
   # Sets constant lapse rate
@@ -222,3 +223,12 @@ ADVANCED OPTIONS MENU:
     XLIM_LEFT (positive double): 1.0e+3
     YLIM_UP (positive double): 300
     YLIM_DOWN (positive double): 1.5e+3
+  INITIAL CONTRAIL SIZE SUBMENU:
+    #Depth = BaseDepth + DepthScalingFactor * Default_Depth
+    #Same formula for width
+    Base Contrail Depth [m] (double): 0.0
+    Contrail Depth Scaling Factor [-] (double): 1.0
+    Base Contrail Width [m] (double): 0.0
+    Contrail Width Scaling Factor [-] (double): 1.0
+  Ambient Lapse Rate [K/km] (double): -3.0
+  Tropopause Pressure [Pa] (double): 2.0e+4
