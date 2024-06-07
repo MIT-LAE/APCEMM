@@ -588,6 +588,7 @@ void Meteorology::updateTempPerturb() {
             double epsilon1 = fRand(-1.0, 1.0);
             double epsilon2 = fRand(-1.0, 1.0);
             tempPerturbation_[j][i] = epsilon1 * epsilon2 * turbTempPertAmplitude_;
+            tempTotal_[j][i] = tempBase_[j] + tempPerturbation_[j][i]; //Bad practice of having 1 function update both the temp perturb and the total temp but whatever
         }
     }
 }
