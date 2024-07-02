@@ -83,3 +83,4 @@ CMakeCache.txt
 cmake_install.cmake
 
 /Code.v05-00/vcpkg_installed/
+/Code.v05-00/include/APCEMM.h

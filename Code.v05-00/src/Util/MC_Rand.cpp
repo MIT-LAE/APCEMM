@@ -10,14 +10,20 @@
 /* File                 : MC_Rand.cpp                               */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
+#include "APCEMM.h"
 #include "Util/MC_Rand.hpp"
 
 void setSeed() {
 
-    /* Sets seed for pseudo-random generator.
-     * For that use the current unix timestamp as our random seed. */
-    srand(time(0));
+    // Sets seed for pseudo-random generator.
+    #ifdef DEBUG
+        // With DEBUG compile flag set a constant seed for reproducibility
+        std::cout << "Compiled in DEBUG mode: random seed is set to 0 for all simulations" << std::endl;
+        srand(0);
+    #else
+        // Otherwise use the current unix timestamp as our random seed. 
+        srand(time(NULL));
+    #endif
 
 } /* End of setSeed */
 

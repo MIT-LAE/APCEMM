@@ -54,6 +54,13 @@ int main( int argc, char* argv[])
     
     const unsigned int model = 1;
 
+    #ifdef DEBUG
+        std::cout << "-------- DEBUG is enabled --------" << std::endl;
+    #endif
+
+    // Set the seed once at the top-level
+    setSeed();
+
     /* Declaring the Input Option object for use in APCEMM */
     OptInput Input_Opt; // Input Option object
 

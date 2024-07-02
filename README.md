@@ -66,3 +66,52 @@ Three examples and their accompanying jupyter notebooks for postprocessing tutor
 The input file options are explained via comments in the file `rundirs/SampleRunDir/input.yaml`
 
 Advanced simulation parameters hidden in the input files (e.g. Aerosol bin size ratios, minimum/max bin aerosol sizes, etc) can be modified in `Code.v05-00/src/include/Parameters.hpp`. 
+
+## Debugging
+
+APCEMM can be compiled in debug mode to ensure reproducible results during testing. This fixes the seed of the random number generator and enforces single threaded computation. It can be enabled by passing the ```-DDEBUG=ON``` flag to CMake:
+
+```
+cmake ../Code.v05-00 -DDEBUG=ON
+```
+
+To debug APCEMM using gdb and the VSCode debugger the binary can be compiled with debug instructions by adding the ```-DCMAKE_BUILD_TYPE="Debug"``` flag. This comes at a significant cost in performance.
+
+ ```
+cmake ../Code.v05-00 -DCMAKE_BUILD_TYPE="Debug"
+ ```
+ 
+ Here's an example configuration of the VSCode debugger in ```APCEMM/.vscode/launch.json```:
+
+```
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch APCEMM debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/rundirs/debug/APCEMM",
+            "cwd": "${workspaceFolder}/rundirs/debug/test_rundir/",
+            "args": ["${workspaceFolder}/examples/Example1_EPM/input.yaml"],
+            "environment": [
+                {
+                    "name": "LD_LIBRARY_PATH",
+                    "value": "${workspaceFolder}/build/lib"
+                },
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+    ]
+}
+```
+
+This configuration runs the APCEMM binary located in ```"${workspaceFolder}/rundirs/debug/``` using the input file located in ```${workspaceFolder}/examples/Example1_EPM/input.yaml``` and the working directory ``` ${workspaceFolder}/rundirs/debug/test_rundir/```. Paths can be changed to suit the case to debug.
