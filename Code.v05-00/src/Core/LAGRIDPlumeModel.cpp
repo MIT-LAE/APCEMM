@@ -432,7 +432,8 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     buffers.leftBuffer = (shearLengthScaleLeft + horizDiffLengthScale) * LEFT_BUFFER_SCALING;
     buffers.rightBuffer = (shearLengthScaleRight + horizDiffLengthScale) * RIGHT_BUFFER_SCALING;
     buffers.topBuffer = std::max(vertDiffLengthScale * TOP_BUFFER_SCALING, 100.0);
-    buffers.botBuffer = (vertDiffLengthScale + settlingLengthScale) * BOT_BUFFER_SCALING;
+    buffers.botBuffer = std::min((vertDiffLengthScale + settlingLengthScale) * BOT_BUFFER_SCALING, 300.0);
+    std::cout << buffers.botBuffer << std::endl;
 
     /* TODO: Benchmark various ways of parallelizing this section, mainly the volume calculation that requires a reduction */
     #pragma omp parallel for default(shared)
@@ -571,9 +572,10 @@ void LAGRIDPlumeModel::createOutputDirectories() {
 }
 
 void LAGRIDPlumeModel::saveTSAerosol() {
+    const double MOD_EPS = 1e-3;
     if ( simVars_.TS_AERO && \
         (( simVars_.TS_AERO_FREQ == 0 ) || \
-        ( std::fmod((timestepVars_.curr_Time_s - timestepVars_.timeArray[0])/60.0, simVars_.TS_AERO_FREQ) == 0.0E+00 )) ) 
+        ( std::fmod((timestepVars_.curr_Time_s - timestepVars_.timeArray[0])/60.0, simVars_.TS_AERO_FREQ) < MOD_EPS )) ) 
     {
         int hh = (int) (timestepVars_.curr_Time_s - timestepVars_.timeArray[0])/3600;
         int mm = (int) (timestepVars_.curr_Time_s - timestepVars_.timeArray[0])/60   - 60 * hh;
