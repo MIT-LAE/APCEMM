@@ -9,7 +9,6 @@ namespace FVM_ANDS{
         solver_.setMaxIterations(maxIters_);
 
         //For SOR solves only, normally Eigen solvers come pre-packed with diagonal preconditioner.
-        int numTotalPoints = advDiffSys_.getCoefMatrix().rows();
         if(useDiagPreCond_){
             auto diagonalVec = advDiffSys_.getCoefMatrix().diagonal();
             auto diagonalMat = diagonalVec.asDiagonal();

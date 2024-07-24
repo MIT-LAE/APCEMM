@@ -40,7 +40,7 @@
 #define DPROF             1           /* Time profile of the initial diffusion parameter [0,1,2]
                                        * 0: Step
                                        * 1: Linear
-                                       * 2: Exponential
+                                       * 2: Exponential */
 
 /* Advection  */
 #define VX                0.0E+00     /* Steady-state horizontal advection velocity [m/s] */
@@ -50,7 +50,7 @@
 //#define V_SYN             5.0E-02     /* Velocity magnitude [m/s] */
 #define SYNPROF           1           /* Time profile of the initial synoptic lifting [0,1]
                                        * 0: Step
-                                       * 1: Exponential
+                                       * 1: Exponential */
 
 /* Chemistry parameters */
 #define KPP_RTOLS             1.00E-03    /* Relative tolerances in KPP */

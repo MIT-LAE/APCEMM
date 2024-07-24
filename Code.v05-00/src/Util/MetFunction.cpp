@@ -270,7 +270,7 @@ namespace met
 
     } /* End of ComputeLapseRate */
 
-    int nearestNeighbor( const Vector_1D& xq, double x ) {
+    std::size_t nearestNeighbor( const Vector_1D& xq, double x ) {
 
         /* DESCRIPTION: Finds the closest of x in xq, returning the index */
 
@@ -279,7 +279,7 @@ namespace met
          * double x:  desired value */
 
         double diff = std::numeric_limits<double>::max();
-        for(int i = 0; i < xq.size(); i++) {
+        for(std::size_t i = 0; i < xq.size(); i++) {
             double newDiff = std::abs(xq[i] - x);
             if(newDiff >= diff) {
                 return i - 1;
@@ -353,8 +353,8 @@ namespace met
     }
     double linInterpMetData(const Vector_1D& altitude_init, const Vector_1D& metVar_init, double altitude_query){
         // Alt input is increasing
-        int i_Z = nearestNeighbor( altitude_init, altitude_query );
-        int idx_x1;
+        std::size_t i_Z = nearestNeighbor( altitude_init, altitude_query );
+        std::size_t idx_x1;
 
         //Edge cases
         const double epsilon = 1e-3;
@@ -371,7 +371,7 @@ namespace met
         }
         
 
-        int idx_x2 = idx_x1 + 1;
+        std::size_t idx_x2 = idx_x1 + 1;
         if(idx_x1 < 0) { 
             throw std::range_error("Input flight altitude out of range of met. data!"); 
         }
@@ -397,7 +397,7 @@ namespace met
          * YLIM_DOWN: bottom limit of domain */
 
         double satdepth = 0.00E+00;
-        double curdepth = 0.00E+00;
+        // double curdepth = 0.00E+00;
         int iCur = iFlight;
         double RHi_cur, RHi_prev;
 

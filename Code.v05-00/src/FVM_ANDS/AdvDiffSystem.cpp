@@ -10,19 +10,19 @@ namespace FVM_ANDS{
         v_double_ (params.v),
         shear_ (params.shear),
         dt_ (params.dt),
-        bcType_top_ (bc.bcType_top),
-        bcType_left_ (bc.bcType_left),
-        bcType_bot_ (bc.bcType_bot),
-        bcType_right_ (bc.bcType_right),
-        bcVals_top_ (bc.bcVals_top),
-        bcVals_left_ (bc.bcVals_left),
-        bcVals_bot_ (bc.bcVals_bot),
-        bcVals_right_ (bc.bcVals_right),
         dx_ (xCoords[1] - xCoords[0]),
         dy_ (yCoords[1] - yCoords[0]),
         nx_ (xCoords.size()),
         ny_ (yCoords.size()),
         yCoord_(yCoords),
+        bcType_top_ (bc.bcType_top),
+        bcType_left_ (bc.bcType_left),
+        bcType_right_ (bc.bcType_right),
+        bcType_bot_ (bc.bcType_bot),
+        bcVals_top_ (bc.bcVals_top),
+        bcVals_left_ (bc.bcVals_left),
+        bcVals_right_ (bc.bcVals_right),
+        bcVals_bot_ (bc.bcVals_bot),
         phi_(phi_init)
     {
         invdx_ = 1.0/dx_;
@@ -318,6 +318,8 @@ namespace FVM_ANDS{
                         case FaceDirection::WEST:
                             rhs_[i] += u_vec_[i] * dt_ / dx_ * points_[i]->bcVal();
                             break;
+                        case FaceDirection::ERROR:
+                            throw std::runtime_error("Invalid FaceDirection in Dirichlet boundary condition");
                     }
                     if (!points_[i]->secondBoundaryConds()) break;
                     BoundaryCondDescription bc_2 = points_[i]->secondBoundaryConds().value();

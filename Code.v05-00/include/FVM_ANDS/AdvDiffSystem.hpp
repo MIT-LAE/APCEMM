@@ -226,6 +226,9 @@ namespace FVM_ANDS{
                             break;
                         }
                     }
+                    case FaceDirection::ERROR:{
+                        throw std::runtime_error("Received invalid face direction");
+                    }
                 }
                 return std::max(0.0, std::min(r, 1.0));
             }
@@ -322,12 +325,12 @@ namespace FVM_ANDS{
                     
                     case FaceDirection::WEST:
                         return pointID - ny_;
+                    
+                    // For consistency with previous implementation
+                    default:
+                        return -1;
                 }
-                return -1;
             }
-
-
     };
-
 }
 #endif

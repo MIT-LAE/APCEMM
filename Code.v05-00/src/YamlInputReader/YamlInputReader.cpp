@@ -314,7 +314,7 @@ namespace YamlInputReader{
         }
     }
 
-    vector<std::unordered_map<string, double>> generateCasesHelper(vector<std::unordered_map<string, double>>& allCases, const vector<std::pair<string, Vector_1D>>& params, const int row){
+    vector<std::unordered_map<string, double>> generateCasesHelper(vector<std::unordered_map<string, double>>& allCases, const vector<std::pair<string, Vector_1D>>& params, const std::size_t row){
         if(row ==  params.size()){
             return allCases;
         }

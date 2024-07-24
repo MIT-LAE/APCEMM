@@ -728,13 +728,6 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         #pragma omp parallel if( !PARALLEL_CASES ) default( shared )
         {
 
-            /* All declarations here are enforced as thread private */
-
-            double partVol  = 0.0E+00;
-            double icePart_ = 0.0E+00;
-            double iceVol_  = 0.0E+00;
-
-            int jBin = -1;
             std::vector<int> toBin( nBin, 0 );
             std::vector<int>::iterator iterBegin, iterCurr, iterEnd;
 
@@ -758,8 +751,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
             }
 
             #pragma omp for                                                               \
-            private ( iNx, jNy, iBin, jBin, locP, locT              ) \
-            private ( partVol, icePart_, iceVol_                                ) \
+            private ( iNx, jNy, iBin, locP, locT              ) \
             schedule( static, 1                                                )
             for ( jNy = 0; jNy < Ny_max; jNy++ ) {
                 /* Store local pressure.
@@ -888,10 +880,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
          * - double :: Effective Diffusion Coefficient in m^2/s */
 
          const double dCoef = physFunc::CorrDiffCoef_H2O( r, T, P ); /* [m^2/s] */
-         const double p_sat = physFunc::pSat_H2Os( T );
-         const double p_h2o = physConst::R * T * H2O /(physConst::Na*1e-6);
          const double latS  = physFunc::LHeatSubl_H2O( T ); /* [J/kg] */
-         const double nSat  = physFunc::pSat_H2Os( T ) / ( physConst::kB * T ); /* [#/m^3] */
         
         //Base D_{eff} expression in Jacobson (1995), equation 2
         //We can NOT directly use expressions for something like dm/dt, dr/dt, dv/dt, etc because of the (S' - 1) term in the 
@@ -910,7 +899,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
     {
         std::vector<int> toBin(nBin, 0);
         double partVol;
-        for (int iBin = 0; iBin < nBin; iBin++)
+        for (UInt iBin = 0; iBin < nBin; iBin++)
         {
 
             toBin[iBin] = -1;
@@ -941,7 +930,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         std::vector<int>::const_iterator iterBegin, iterCurr, iterEnd;
         double icePart_, iceVol_;
         int jBin;
-        for (int iBin = 0; iBin < nBin; iBin++)
+        for (UInt iBin = 0; iBin < nBin; iBin++)
         {
 
             icePart_ = 0.0E+00;
@@ -1404,7 +1393,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         double chiMax = *std::max_element(chiMax_x.begin(), chiMax_x.end());
         int i_left = -1;
         int i_right = -1;
-        for (int i = 0; i < Nx; i++) {
+        for (UInt i = 0; i < Nx; i++) {
             bool inContrail = chiMax_x[i] > thres*chiMax;
             if(inContrail) {
                 i_right = i;
@@ -1425,7 +1414,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         double chiMax = *std::max_element(chiMax_y.begin(), chiMax_y.end());
         int j_bot = -1;
         int j_top = -1;
-        for (int j = 0; j < Ny; j++) {
+        for (UInt j = 0; j < Ny; j++) {
             bool inContrail = chiMax_y[j] > thres*chiMax;
             if(inContrail) {
                 j_top = j;
@@ -1730,8 +1719,6 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         Vector_1D out(4, 0.0E+00);
 
         Vector_1D PDF(nBin, 0.0E+00);
-
-        double w = 0.0E+00;
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
             schedule(dynamic, 1) if (!PARALLEL_CASES)
