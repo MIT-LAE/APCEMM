@@ -10,6 +10,7 @@
 /* File                 : Diag_Mod.cpp                              */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#include <format>
 
 #include "Core/Diag_Mod.hpp"
 namespace Diag {
@@ -24,52 +25,8 @@ namespace Diag {
 
         std::filesystem::path rootPath( rootName );
         std::string fileName = rootPath.filename().generic_string();
-        size_t start_pos;
-        bool found;
 
-        char hh_string[10];
-        sprintf(hh_string, "%02d", hh );
-        char mm_string[10];
-        sprintf(mm_string, "%02d", mm );
-        char ss_string[10];
-        sprintf(ss_string, "%02d", ss );
-
-        /* Replacing "hh" with hour number since start */
-        start_pos = 0; 
-        found = 0;
-        while ( (start_pos = fileName.find("hh", start_pos)) != std::string::npos ) {
-            fileName.replace(start_pos, 2, hh_string);
-            start_pos += 2;
-            found = 1;
-        }
-
-        if ( found = 0 ) {
-            std::cout << " Diagnostic filename must be of the form *hhmmss.nc or *hhmm.nc. Aborting!" << std::endl;
-            std::cout << " filename: " << rootName << std::endl;
-            exit(1);
-        }
-
-        /* Replacing "mm" with minute number since start */
-        start_pos = 0; 
-        found = 0;
-        while ( (start_pos = fileName.find("mm", start_pos)) != std::string::npos ) {
-            fileName.replace(start_pos, 2, mm_string);
-            start_pos += 2;
-        }
-        
-        if ( found = 0 ) {
-            std::cout << " Diagnostic filename must be of the form *hhmmss.nc or *hhmm.nc. Aborting!" << std::endl;
-            std::cout << " filename: " << rootName << std::endl;
-            exit(1);
-        }
-
-        /* Replacing "ss" with minute number since start if possible */
-        start_pos = 0;
-        found = 0;
-        while ( (start_pos = fileName.find("ss", start_pos)) != std::string::npos ) {
-            fileName.replace(start_pos, 2, ss_string);
-            start_pos += 2;
-        }
+        replace_hhmmss(fileName, hh, mm, ss);
         
         fileName = std::filesystem::path(rootPath.parent_path() / fileName).generic_string();
         const char* outFile = fileName.c_str();
@@ -83,7 +40,7 @@ namespace Diag {
         strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
         // Create time as seconds since start
-        const float cur_time = hh+mm/60.0+ss/3600.0;
+        // const float cur_time = hh+mm/60.0+ss/3600.0;
 
         // Create dimensions - make time unlimited (record dimension)
         const NcDim xDim       = currFile.addDim( "x", long(m.Nx()) );
@@ -119,7 +76,7 @@ namespace Diag {
         const char* outputType = "double";
     #else
         float* array;
-        const char* outputType = "float";
+        // const char* outputType = "float";
     #endif /* SAVE_TO_DOUBLE */
 
         /* Start saving species ... */
@@ -157,10 +114,12 @@ namespace Diag {
 
                     #pragma omp critical
                     {
-                    //NcVar var = currFile.addVar( &(array)[0],  \
-                    //                             (const char*)charSpc, yDim, xDim,  \
-                    //                             outputType, (const char*)charUnit, \
-                    //                             (const char*)charName );
+                    /*
+                    NcVar var = currFile.addVar( &(array)[0],  \
+                                                (const char*)charSpc, yDim, xDim,  \
+                                                outputType, (const char*)charUnit, \
+                                                (const char*)charName );
+                    */
                     NcVar var = currFile.addVar( charSpc, varDataType, xyDims );
                     var.putAtt("units", charUnit );
                     var.putAtt("long_name", charName );
@@ -190,13 +149,10 @@ namespace Diag {
         start_pos = 0; 
         found = 0;
 
-        //We dont have access to c++20 format library so these C functions will have to stay
-        char hh_string[10];
-        sprintf(hh_string, "%02d", hh );
-        char mm_string[10];
-        sprintf(mm_string, "%02d", mm );
-        char ss_string[10];
-        sprintf(ss_string, "%02d", ss );
+        // Make zero padded string representations with C++20 format
+        auto hh_string = std::format("{:02}", hh);
+        auto mm_string = std::format("{:02}", mm);
+        auto ss_string = std::format("{:02}", ss);
 
         while ( (start_pos = fileName.find("hh", start_pos)) != std::string::npos ) {
             fileName.replace(start_pos, 2, hh_string);
@@ -204,10 +160,10 @@ namespace Diag {
             found = 1;
         }
 
-        if ( found = 0 ) {
+        if ( found == 0 ) {
             std::cout << " Diagnostic filename must be of the form *hhmmss.nc or *hhmm.nc. Aborting!" << std::endl;
             std::cout << " filename: " << fileName << std::endl;
-            throw std::runtime_error("");
+            throw std::runtime_error("Did not find pattern hh");
         }
 
         /* Replacing "mm" with minute number since start */
@@ -216,12 +172,13 @@ namespace Diag {
         while ( (start_pos = fileName.find("mm", start_pos)) != std::string::npos ) {
             fileName.replace(start_pos, 2, mm_string);
             start_pos += 2;
+            found = 1;
         }
         
-        if ( found = 0 ) {
+        if ( found == 0 ) {
             std::cout << " Diagnostic filename must be of the form *hhmmss.nc or *hhmm.nc. Aborting!" << std::endl;
             std::cout << " filename: " << fileName << std::endl;
-            throw std::runtime_error("");
+            throw std::runtime_error("Did not find pattern mm");
         }
 
         /* Replacing "ss" with minute number since start if possible */

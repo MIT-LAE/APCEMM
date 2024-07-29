@@ -94,7 +94,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     const double PSC_PMIN   =   5.0E+02;
 
     /* Peak pressure at which NAT can form homogeneously */
-    const double P_MAXNAT   =  1.40E+04; /* [Pa] */
+    // const double P_MAXNAT   =  1.40E+04; /* [Pa] */
 
     /* Maximum temperature for PSC formation */
     const double T_MAX = 215.0E+00; /* [K] */
@@ -113,7 +113,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     bool IS_POLAR, IS_STRAT, IS_VALID;
 
     /* Mass of dry air per grid box [m/mol] */
-    const double INVAIR = MW_Air / ( pressure_Pa / ( physConst::R_Air * temperature_K ) * Area ); 
+    // const double INVAIR = MW_Air / ( pressure_Pa / ( physConst::R_Air * temperature_K ) * Area ); 
     /* Unit check :
      * kg/mol / ( kg/m^3 * m^2 ) = m / mol*/
    
@@ -132,7 +132,8 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     double HCl_BOX_G   , HCl_BOX_L;
     double HOCl_BOX_G  , HOCl_BOX_L;
     double HBr_BOX_G   , HBr_BOX_L;
-    double HOBr_BOX_G  , HOBr_BOX_L;
+    // double HOBr_BOX_G  , HOBr_BOX_L;
+    double HOBr_BOX_L;
     double HNO3_GASFRAC, HCl_GASFRAC, HOCl_GASFRAC, \
            HBr_GASFRAC , HOBr_GASFRAC;
     double VOL_NAT, VOL_ICE, VOL_SLA, VOL_TOT;
@@ -198,7 +199,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     HOCl_BOX_L         = 0.0E+00;
     HBr_BOX_G          = 0.0E+00;
     HBr_BOX_L          = 0.0E+00;
-    HOBr_BOX_G         = 0.0E+00;
+    // HOBr_BOX_G         = 0.0E+00;
     HOBr_BOX_L         = 0.0E+00;
     HNO3_GASFRAC       = 0.0E+00;
     HCl_GASFRAC        = 0.0E+00;
@@ -573,7 +574,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
         HOCl_BOX_L = HOClSUM - HOCl_BOX_G;
         HBr_BOX_G  = HBrSUM * HBr_GASFRAC;
         HBr_BOX_L  = HBrSUM - HBr_BOX_G;
-        HOBr_BOX_G = HOBrSUM * HOBr_GASFRAC;
+        // HOBr_BOX_G = HOBrSUM * HOBr_GASFRAC;
         HOBr_BOX_L = HOBrSUM - HBr_BOX_G;
 
         /* Calculate SLA parameters (Grainger 1995) */
@@ -762,7 +763,8 @@ std::vector<double> SLA_GAMMA( const double T_K         , const double P_Pa     
     double H2OPP;
     
     /* Partial pressures of HCl, HBr, HOBr, ClONO2, BrONO3 in atm */
-    double HClPP, HBrPP, HOBrPP, ClNO3PP, BrNO3PP;
+    // double HClPP, HBrPP, HOBrPP, ClNO3PP, BrNO3PP;
+    double HClPP, HOBrPP, ClNO3PP;
 
     /* Water vapor saturation pressure in Pa */
     double PSATH2O;
@@ -771,13 +773,14 @@ std::vector<double> SLA_GAMMA( const double T_K         , const double P_Pa     
     double ACTH2O;
 
     /* Molality of H2SO4 (mol H2SO4/kg solvent) */
-    double MOLAL;
+    // double MOLAL;
 
     /* Mass of H2SO4 */
     double M_H2SO4;
 
     /* HOBr parameters */
-    double c_HOBr, SHOBr, HHOBr, DHOBr, kHOBr_HCl, GHOBrrxn, lHOBr, fHOBr, gHOBr_HCl;
+    // double c_HOBr, SHOBr, HHOBr, DHOBr, kHOBr_HCl, GHOBrrxn, lHOBr, fHOBr, gHOBr_HCl;
+    double c_HOBr, HHOBr, DHOBr, kHOBr_HCl, GHOBrrxn, lHOBr, fHOBr, gHOBr_HCl;
 
     /* HOCl parameters */
     double c_HOCl, SHOCl, HHOCl, DHOCl, kHOCl_HCl, GHOClrxn, lHOCl, fHOCl, gHOCl_HCl;
@@ -789,7 +792,8 @@ std::vector<double> SLA_GAMMA( const double T_K         , const double P_Pa     
     std::vector<double> AK( 3, 0.0 );
 
     /* Other parameters */
-    double kH2O, kH, khdr, GbH2O, HHCl, MHCl, kHCl, GbHCl, Gs, FHCl, Gsp, GbHClp, Gb, khydr, kII, k_dl;
+    // double kH2O, kH, khdr, GbH2O, HHCl, MHCl, kHCl, GbHCl, Gs, FHCl, Gsp, GbHClp, Gb, khydr, kII, k_dl;
+    double kH2O, kH, GbH2O, HHCl, MHCl, kHCl, GbHCl, Gs, FHCl, Gsp, GbHClp, Gb, khydr, kII, k_dl;
 
     /* Interim variables */
     double X, A, H, T_THRESHOLD, aH;
@@ -803,16 +807,16 @@ std::vector<double> SLA_GAMMA( const double T_K         , const double P_Pa     
     WT          = 0.0E+00;
     H2OPP       = 0.0E+00;
     HClPP       = 0.0E+00;
-    HBrPP       = 0.0E+00;
+    // HBrPP       = 0.0E+00;
     HOBrPP      = 0.0E+00;
     ClNO3PP     = 0.0E+00;
-    BrNO3PP     = 0.0E+00;
+    // BrNO3PP     = 0.0E+00;
     PSATH2O     = 0.0E+00;
     ACTH2O      = 0.0E+00;
-    MOLAL       = 0.0E+00;
+    // MOLAL       = 0.0E+00;
     M_H2SO4     = 0.0E+00;
     c_HOBr      = 0.0E+00;
-    SHOBr       = 0.0E+00;
+    // SHOBr       = 0.0E+00;
     HHOBr       = 0.0E+00;
     DHOBr       = 0.0E+00;
     kHOBr_HCl   = 0.0E+00;
@@ -841,7 +845,7 @@ std::vector<double> SLA_GAMMA( const double T_K         , const double P_Pa     
     gClNO3_H2O  = 0.0E+00;
     kH2O        = 0.0E+00;
     kH          = 0.0E+00;
-    khdr        = 0.0E+00;
+    // khdr        = 0.0E+00;
     GbH2O       = 0.0E+00;
     HHCl        = 0.0E+00;
     MHCl        = 0.0E+00;
@@ -875,7 +879,7 @@ std::vector<double> SLA_GAMMA( const double T_K         , const double P_Pa     
 
     /* Calculate molality of solution */
     WT = 1.00E+02 * WT_FRC; /* Convert from fraction to % */
-    MOLAL = 1.0E+03 * ( WT / 9.80E+01 / ( 1.00E+02 - WT ) );
+    // MOLAL = 1.0E+03 * ( WT / 9.80E+01 / ( 1.00E+02 - WT ) );
 
     /* Parameters for H2SO4 solution
      * The solution density is calculated earlier, including
@@ -903,7 +907,7 @@ std::vector<double> SLA_GAMMA( const double T_K         , const double P_Pa     
     /* All the following partial pressures are computed in atm */
     HClPP   = HClSUM   * P_Pa / physConst::ATM;
     ClNO3PP = ClNO3SUM * P_Pa / physConst::ATM;
-    BrNO3PP = BrNO3SUM * P_Pa / physConst::ATM;
+    // BrNO3PP = BrNO3SUM * P_Pa / physConst::ATM;
     HOBrPP  = HOBrSUM  * P_Pa / physConst::ATM;
  
     /* Should we bother running calculations? */
@@ -1006,7 +1010,7 @@ std::vector<double> SLA_GAMMA( const double T_K         , const double P_Pa     
      /* Reaction 10. HOBr + HCl */
      if ( ( HClOK ) && ( HOBrOK ) ) {
          c_HOBr    =  physFunc::thermalSpeed( T_K , 9.691E+01 );
-         SHOBr     =  7.76E-02 + 5.918E+01 / T_K;
+        //  SHOBr     =  7.76E-02 + 5.918E+01 / T_K;
          HHOBr     =  exp( -9.86E+00 + 5.427E+03 / T_K );
          DHOBr     =  1.00E-08;
          kII       =  exp( 1.54E+02 - 1.63E+00 * WT ) * exp( -( 3.85E+04 - 4.78E+02 * WT ) / T_K );

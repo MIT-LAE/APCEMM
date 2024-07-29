@@ -66,7 +66,6 @@ Engine::Engine( const char *engineName, std::string engineFileName, double tempe
 
     std::vector<std::string> tokens;
     std::string token;
-    std::string::size_type sz;
     std::istringstream tokenStream;
 
     /* Idle */

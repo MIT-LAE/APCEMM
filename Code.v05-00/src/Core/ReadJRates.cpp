@@ -21,7 +21,7 @@ void ReadJRates( const char* ROOTDIR,                          \
 {
 
     /* Set up for error messages */
-    static const int NC_ERR = 2;
+    // static const int NC_ERR = 2;
 
     std::string fullPath;
     std::stringstream mm, dd;

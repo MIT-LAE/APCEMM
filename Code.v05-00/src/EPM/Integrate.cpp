@@ -67,33 +67,17 @@ namespace EPM
                          const bool CHEMISTRY, double ambientLapseRate, std::string micro_data_out )
     {
     
-        double relHumidity_i_Amb, relHumidity_i_postVortex, relHumidity_i_Final;
+        double relHumidity_i_Final;
 
         /* relHumidity_w is in % */
-        relHumidity_i_Amb        = relHumidity_w * physFunc::pSat_H2Ol( temperature_K ) \
-                                                 / physFunc::pSat_H2Os( temperature_K ) / 100.0;
-        relHumidity_i_postVortex = relHumidity_w * physFunc::pSat_H2Ol( temperature_K + delta_T_ad ) \
-                                                 / physFunc::pSat_H2Os( temperature_K + delta_T_ad ) / 100.0;
         relHumidity_i_Final      = relHumidity_w * physFunc::pSat_H2Ol( temperature_K + delta_T ) \
                                                  / physFunc::pSat_H2Os( temperature_K + delta_T ) / 100.0;
 
         
-        double partPHNO3_Hom, partPHNO3_Het, satHNO3_Hom, satHNO3_Het;
         double final_Temp = temperature_K + delta_T;
-        double offset_Temp = final_Temp + T_NAT_SUPERCOOL; // NAT = Nitric acid trihydrate
 
         /* Homogeneous NAT, using supercooling requirement *
          * Heterogeneous NAT, no supercooling requirement */
-        partPHNO3_Hom = varArray[ind_HNO3] * physConst::kB * offset_Temp * 1.00E+06;
-        partPHNO3_Het = varArray[ind_HNO3] * physConst::kB * final_Temp  * 1.00E+06;
-        if ( relHumidity_i_Amb > 1.0 ) {
-            /* partPH2O = pSat_H2Os( temperature_K ) */
-            satHNO3_Hom = partPHNO3_Hom / physFunc::pSat_HNO3( offset_Temp, physFunc::pSat_H2Os( final_Temp ));
-            satHNO3_Het = partPHNO3_Het / physFunc::pSat_HNO3( final_Temp , physFunc::pSat_H2Os( final_Temp ));
-        } else {
-            satHNO3_Hom = partPHNO3_Hom / physFunc::pSat_HNO3( offset_Temp, relHumidity_i_Final * physFunc::pSat_H2Os( final_Temp ) );
-            satHNO3_Het = partPHNO3_Het / physFunc::pSat_HNO3( final_Temp , relHumidity_i_Final * physFunc::pSat_H2Os( final_Temp ) );
-        }
         
         /* Number of SO4 size distribution bins based on specified min and max radii *
         * and volume ratio between two adjacent bins */
@@ -501,7 +485,7 @@ namespace EPM
         double currTimeStep;
 
         /* Dilution factor */
-        double dilFactor, dilFactor_b;
+        // double dilFactor, dilFactor_b;
 
         /* Freshly nucleated aerosol characteristics */
         double SO4l, SO4l_b, T_b, P_b, n_air_prev, n_air;
@@ -527,11 +511,11 @@ namespace EPM
 
             /* Get dilution factor */
             if ( iTime == 0 ) {
-                dilFactor_b = 1.0;
+                // dilFactor_b = 1.0;
                 SO4l_b = 0.0;
             }
             else {
-                dilFactor_b = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
+                // dilFactor_b = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
                 SO4l_b = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l];
                 T_b = observer.m_states[observer.m_states.size()-1][EPM_ind_T];
                 P_b = observer.m_states[observer.m_states.size()-1][EPM_ind_P];
@@ -545,11 +529,11 @@ namespace EPM
                 totSteps += boost::numeric::odeint::integrate( rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0, observer );
             }
             
-            dilFactor = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac] / dilFactor_b;
+            // dilFactor = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac] / dilFactor_b;
             SO4l = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l] ;
 
             n_air = physConst::Na * x[EPM_ind_P]/(physConst::R * x[EPM_ind_T] * 1.0e6);
-            n_air_prev = physConst::Na *  P_b/(physConst::R * T_b * 1.0e6);
+            n_air_prev = physConst::Na *  P_b/(physConst::R * T_b * 1.0e6);  // P_b and T_b seems to be used uninitialized during the first timestep with iTime = 0
 
             nPDF_new = ( SO4l*n_air - SO4l_b*n_air_prev);
 
