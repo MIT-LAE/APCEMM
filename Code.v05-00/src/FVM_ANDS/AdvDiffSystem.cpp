@@ -622,49 +622,50 @@ namespace FVM_ANDS{
         return soln;
     }
     
-    const Eigen::VectorXd& AdvDiffSystem::sor_solve(double omega, double threshold, int n_iters) {
-        double residual = 1;
-        while(residual > threshold){
-            const double* valuePtr = totalCoefMatrix_.valuePtr();
-            const int* innerIdxPtr = totalCoefMatrix_.innerIndexPtr();
-            const int* outerIdxPtr = totalCoefMatrix_.outerIndexPtr();
+void sor_solve(const Eigen::SparseMatrix<double, Eigen::RowMajor> &A, const Eigen::VectorXd &rhs, Eigen::VectorXd &phi, double omega, double threshold, int n_iters) {
+    /*
+    diagCoeff should always be overwritten in the for loop
+    before we get to "x_i *= omega / diagCoeff;"
+    Setting it to 0 instead of leaving uninitialized guarantees
+    that we get an error if for some reason diagCoeff is not overwritten
+    Not sure how to do this better for now...
+    */ 
+    double diagCoeff = 0;
+    double residual = 1;
 
-            for(int i = 0; i < n_iters; i++){
-                int valueIdx = 0;
-                int innerIdx = 0;
-                int outerIdx = 0;
+    while(residual > threshold){
+        const double* valuePtr = A.valuePtr();
+        const int* innerIdxPtr = A.innerIndexPtr();
+        const int* outerIdxPtr = A.outerIndexPtr();
 
-                for (int i = 0; i < nTotalPoints_; i++) {
-                    double x_i = 0;
-                    double diagCoeff; // will always have a diagonal coeff
-                    int rowStartIdx = outerIdxPtr[outerIdx];
-                    int rowEndIdx = outerIdxPtr[outerIdx + 1];
-                    for (int j = rowStartIdx; j < rowEndIdx; j++) {
+        for(int iteration = 0; iteration < n_iters; iteration++){
+            int outerIdx = 0;
 
-                        if (innerIdxPtr[j] == i) {
-                            diagCoeff = valuePtr[j];
-                            continue;
-                        }
-                        x_i -= valuePtr[j] * phi_[innerIdxPtr[j]];
+            for (int i = 0; i < rhs.size(); i++) {
+                double x_i = 0;
+                int rowStartIdx = outerIdxPtr[outerIdx];
+                int rowEndIdx = outerIdxPtr[outerIdx + 1];
+                for (int j = rowStartIdx; j < rowEndIdx; j++) {
+
+                    if (innerIdxPtr[j] == i) {
+                        diagCoeff = valuePtr[j];
+                        continue;
                     }
-                    x_i += rhs_[i];
+                    x_i -= valuePtr[j] * phi[innerIdxPtr[j]];
+                }
+                x_i += rhs[i];
 
-                    x_i *= omega / diagCoeff;
-                    x_i += (1 - omega) * phi_[i];
-                    phi_[i] = x_i;
-                    outerIdx++;
-                } // end inner for loop
-            } // end iters for loop
-        
-            residual = (totalCoefMatrix_ * phi_ - rhs_).eval().lpNorm<2>()/ rhs_.lpNorm<2>();
-            if (isnan(residual)) throw std::runtime_error("NaN residual encountered");
-            //std::cout << residual << std::endl;
-        } // end while loop
+                x_i *= omega / diagCoeff;
+                x_i += (1 - omega) * phi[i];
+                phi[i] = x_i;
+                outerIdx++;
+            } // end inner for loop
+        } // end iters for loop
+    
+        residual = (A * phi - rhs).eval().lpNorm<2>()/ rhs.lpNorm<2>();
+        if (isnan(residual)) throw std::runtime_error("NaN residual encountered");
+    } // end while loop
 
-        return phi_;
-    }
-
-
-
+}
 
 }
