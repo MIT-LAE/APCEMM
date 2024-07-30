@@ -6,12 +6,12 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/submodules/vcpkg/scripts/b
 project(APCEMM)
 
 # Options
-SET(DEBUG 0)
+option(DEBUG "Enable debug mode" OFF)
 SET(RINGS 0)
 SET(OMP 1)
 option(BUILD_TEST ON)
 
-if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")	
+if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
     include(CheckCXXCompilerFlag)
     CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
@@ -88,3 +88,6 @@ enable_testing()
 add_subdirectory(tests)
 #endif()
 
+if (DEBUG)
+  message(STATUS "DEBUG mode is enabled")
+endif()

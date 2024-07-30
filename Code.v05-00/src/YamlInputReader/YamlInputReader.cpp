@@ -1,3 +1,4 @@
+#include "APCEMM.h"
 #include "YamlInputReader/YamlInputReader.hpp"
 
 using std::cout;
@@ -80,6 +81,12 @@ namespace YamlInputReader{
         if(input.SIMULATION_OMP_NUM_THREADS < 1){
             throw std::invalid_argument("OpenMP Num Threads (under SIMULATION MENU) cannot be less than 1!");
         }
+
+        #ifdef DEBUG
+            // In DEBUG, force single threaded code to avoid non-reproducibility due to multithreading
+            std::cout << "Compiled in DEBUG mode: setting OMP_NUM_THREADS = 1 to force single threading" << std::endl;
+            input.SIMULATION_OMP_NUM_THREADS = 1;
+        #endif
 
         YAML::Node paramSweepSubmenu = simNode["PARAM SWEEP SUBMENU"];
         input.SIMULATION_PARAMETER_SWEEP = parseBoolString(paramSweepSubmenu["Parameter sweep (T/F)"].as<string>(), "Parameter sweep (T/F");
@@ -354,7 +361,6 @@ namespace YamlInputReader{
             if(colon_split_tokens.size() != 0 && colon_split_tokens.size() != 2){
                 throw std::invalid_argument("Monte Carlo Simulation requires parameter input format of min:max or a singular (constant) value at " + paramLocation + "!");
             }
-            setSeed();
             Vector_1D paramVector;
             const double min = parseDoubleString(colon_split_tokens[0], "");
             const double max = parseDoubleString(colon_split_tokens[1], "");

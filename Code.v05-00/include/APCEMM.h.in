@@ -1,3 +1,5 @@
+/* Template for CMake to generate an APCEMM.h with appropriate preprocessor definitions
+given boolean values of the parameters during CMake compilation. */
 #cmakedefine DEBUG
 #cmakedefine RINGS
 #cmakedefine OMP
