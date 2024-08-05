@@ -83,9 +83,9 @@ namespace Diag {
 
         /* Define conversion factor */
         double scalingFactor;
-        char charSpc[30];
-        char charName[50];
-        char charUnit[20];
+        std::string charSpc;
+        std::string charName;
+        std::string charUnit;
 
         // Define vector of dimensions
         std::vector<NcDim> xyDims{ yDim, xDim };
@@ -93,16 +93,20 @@ namespace Diag {
         std::vector<size_t> startp2( 2, 0 );
         std::vector<size_t> countp2{ m.Ny(), m.Nx() };
 
-        for ( UInt N = 0; N < NSPECALL; N++ ) {
+        // Provide type information for the variable defined by the KPP macro
+        // By default is casted as a UInt but we want int here for consistency
+        int NSpecAll = NSPECALL;
+
+        for ( int N = 0; N < NSpecAll; N++ ) {
             for ( UInt i = 0; i < speciesIndices.size(); i++ ) {
             
                 if ( speciesIndices[i] - 1 == N ) {
 
-                    strncpy( charSpc, SPC_NAMES[N], sizeof(charSpc) );
-                    strncpy( charName, SPC_NAMES[N], sizeof(charName) );
-                    strcat(  charName, " molecular concentration" );
+                    charSpc = SPC_NAMES[N];
+                    charName = SPC_NAMES[N];
+                    charName += " molecular concentration";
+                    charUnit = "molec/cm^3";
                     scalingFactor = 1.0E+00;
-                    strncpy( charUnit, "molec/cm^3", sizeof(charUnit) );
             
     #if ( SAVE_TO_DOUBLE )
                     array = util::vect2double( Data.Species[N], m.Ny(), m.Nx(), scalingFactor );

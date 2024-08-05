@@ -232,9 +232,11 @@ namespace FVM_ANDS{
                             break;
                         }
                     }
-                    case FaceDirection::ERROR:{
-                        throw std::runtime_error("Received invalid face direction");
-                    }
+                    /* Function is never called with FaceDirection::ERROR, see call stack
+                    Placeholder value instead of throwing exception because function
+                    is marked as noexcept... */
+                    default:
+                        return -1;
                 }
                 return std::max(0.0, std::min(r, 1.0));
             }

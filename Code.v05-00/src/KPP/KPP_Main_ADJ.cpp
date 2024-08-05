@@ -556,7 +556,7 @@ int KPP_Main_ADJ( const double finalPlume[], const double initBackg[],  \
                         && ( VAR_INIT[ind_NO] > 0.0E+00 ) \
                         && ( VAR_INIT[ind_NO2] > 0.0E+00 ) \
                         && ( VAR_INIT[ind_O3] > 0.0E+00 ) \
-                        && ( VAR_INIT[ind_HNO3] > 0.0E+00 ) \ 
+                        && ( VAR_INIT[ind_HNO3] > 0.0E+00 ) \
                         && ( VAR_RUN[ind_NO] > 0.0E+00 ) \
                         && ( VAR_RUN[ind_NO2] > 0.0E+00 ) \
                         && ( VAR_RUN[ind_O3] > 0.0E+00 ) \

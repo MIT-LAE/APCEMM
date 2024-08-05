@@ -842,7 +842,10 @@ void Solution::getAerosolProp( double ( &radi )[4], \
 
 } /* End of Solution::getAerosolProp */
 
-int Solution::SpinUp( Vector_1D &amb_Value,       \
+/* 
+No functions check the return code of this function, temp fix is to return void
+*/
+void Solution::SpinUp( Vector_1D &amb_Value,       \
                       const Input &input,         \
                       const double airDens,   \
                       const double startTime, \
@@ -947,7 +950,7 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
                 }
             }
 
-            return KPP_FAIL;
+            // return KPP_FAIL;
         }
 
         curr_Time_s += DT_CHEM;
@@ -957,7 +960,7 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
     for ( UInt iVar = 0; iVar < NVAR; iVar++ )
         amb_Value[iVar] = varSpeciesArray[iVar] / airDens;
 
-    return IERR;
+    // return IERR;
 
 } /* End of Solution::SpinUp */
 
