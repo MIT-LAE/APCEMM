@@ -513,6 +513,8 @@ namespace EPM
             if ( iTime == 0 ) {
                 // dilFactor_b = 1.0;
                 SO4l_b = 0.0;
+                T_b = Tc0; // Set initial temperature in plume to core exit temp
+                P_b = pressure_Pa; // Set initial pressure in plume to ambient pressure
             }
             else {
                 // dilFactor_b = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
