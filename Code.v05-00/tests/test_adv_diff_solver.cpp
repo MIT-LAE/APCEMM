@@ -88,8 +88,15 @@ namespace FVM_ANDS{
     std::tuple<double, double, double> interiorMax(const Eigen::VectorXd& vec, double xmin, double xmax, double ymin, double ymax, int nx, int ny){
         double dx = (xmax - xmin) / nx;
         double dy = (ymax - ymin) / ny;
-        double max = std::numeric_limits<double>::min();
-        double maxx, maxy;
+
+        /* Initialize maximum to be the first value in the vector
+        Avoids compiler complaining about edge case where all
+        values are equal to std::numeric_limits::min() which leaves
+        variables uninitialized */
+        double max = vec(0);
+        double maxx = dx * 0.5;
+        double maxy = dy * 0.5;
+
         for(int i = 0; i < nx; i++){
             for(int j = 0; j < ny; j++){
                 double x = dx * (0.5 + i);
@@ -106,8 +113,15 @@ namespace FVM_ANDS{
     std::tuple<double, double, double> interiorMin(const Eigen::VectorXd& vec, double xmin, double xmax, double ymin, double ymax, int nx, int ny){
         double dx = (xmax - xmin) / nx;
         double dy = (ymax - ymin) / ny;
-        double min = std::numeric_limits<double>::max();
-        double minx, miny;
+
+        /* Initialize minimum to be the first value in the vector
+        Avoids compiler complaining about edge case where all
+        values are equal to std::numeric_limits::max() which leaves
+        variables uninitialized */
+        double min = vec(0);
+        double minx = dx * 0.5;
+        double miny = dy * 0.5;
+
         for(int i = 0; i < nx; i++){
             for(int j = 0; j < ny; j++){
                 double x = dx * (0.5 + i);
@@ -284,8 +298,8 @@ namespace FVM_ANDS{
         
         double u = 0, v = 0, shear = 0, Dh = 1.0, Dv = 1.0, xlim_left = 0.1, xlim_right = 0.8, ylim_bot = 0.2, ylim_top = 0.9;
         int nx = 100, ny = 100;
-        double dx = 1.0/nx;
-        double dy = 1.0/ny;
+        // double dx = 1.0/nx;
+        // double dy = 1.0/ny;
         //double dt = 0.24 * std::min( (dx*dx) / (2*Dh) , (dy*dy) / (2*Dv));
         double dt = 0.1;
         std::cout << "dt: " << dt << std::endl;
@@ -465,11 +479,12 @@ namespace FVM_ANDS{
         cout << "Soln Maximum: " << solver.phi().maxCoeff() << "\n";
         cout << "Soln Interior Minimum: " << solver.phi()(Eigen::seq(0,nx*ny-1)).minCoeff() << "\n";
 
-        double t = 0, t_max = 1;
+        // double t;
+        double t_max = 1;
         int n_timesteps = t_max/dt;
         double max, maxx, maxy, min, minx, miny;
         for(int i = 0; i < n_timesteps; i++){
-            t = dt*(i + 1); //implicit method
+            // t = dt*(i + 1); //implicit method
             cout << "solving" << endl;
             Eigen::VectorXd soln = solver.solve();
             auto interior_idxs = Eigen::seq(0, nx*ny - 1);
