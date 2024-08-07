@@ -370,7 +370,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     }
 }
 
-LAGRID::twoDGridVariable LAGRIDPlumeModel::remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask) {
+std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> LAGRIDPlumeModel::remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask) {
     double dy_grid_old = yCoords_[1] - yCoords_[0];
     double dx_grid_old = xCoords_[1] - xCoords_[0];
 
@@ -388,11 +388,13 @@ LAGRID::twoDGridVariable LAGRIDPlumeModel::remapVariable(const VectorUtils::Mask
     LAGRID::Remapping remapping(maskInfo.minX - dx_grid_new, maskInfo.minY - dy_grid_new, dx_grid_new, dy_grid_new, nx_new, ny_new);
 
     auto remappedGrid = LAGRID::mapToStructuredGrid(boxGrid, remapping);
+    auto unusedFraction = LAGRID::getUnusedFraction(boxGrid, remapping);
 
-    remappedGrid.addBuffer(buffers.leftBuffer, buffers.rightBuffer, buffers.topBuffer, buffers.botBuffer);
+    remappedGrid.addBuffer(buffers.leftBuffer, buffers.rightBuffer, buffers.topBuffer, buffers.botBuffer,0.0);
+    unusedFraction.addBuffer(buffers.leftBuffer, buffers.rightBuffer, buffers.topBuffer, buffers.botBuffer,1.0);
+
     // std::cout << "remap successful" << std::endl;
-    return remappedGrid;
-
+    return std::make_pair(remappedGrid,unusedFraction);
 }
 
 void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
@@ -439,8 +441,8 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     #pragma omp parallel for default(shared)
     for(int n = 0; n < iceAerosol_.getNBin(); n++) {
         //Update pdf and volume
-        pdfRef[n] = remapVariable(maskInfo, buffers, pdfRef[n], mask).phi;
-        volume[n] = remapVariable(maskInfo, buffers, volume[n], mask).phi;
+        pdfRef[n] = remapVariable(maskInfo, buffers, pdfRef[n], mask).first.phi;
+        volume[n] = remapVariable(maskInfo, buffers, volume[n], mask).first.phi;
     }
 
     //Only update nx and ny of iceAerosol after the loop, otherwise functions will get messed up if we later add other calls in the loop above
@@ -450,8 +452,8 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     //Recalculate VCenters
     iceAerosol_.UpdateCenters(volume, pdfRef);
 
-    //Remap H2O (Set the zeroes to met later)
-    auto H2ORemap = remapVariable(maskInfo, buffers, H2O_, mask);
+    //Remap H2O - but also return the fraction of each cell not written to
+    auto [H2ORemap,unusedFraction] = remapVariable(maskInfo, buffers, H2O_, mask);
     H2O_ = std::move(H2ORemap.phi);
     
     //Need to update bottom-of-domain altitude before updating coordinates
@@ -489,10 +491,15 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
         met_.regenerate(yCoords_, yEdges_, xCoords_.size());
     }
 
-    //With new met, set boundary conditions of H2O to ambient.
-    //FIXME: Fix this issue with boundary nodes on the H2O
-    trimH2OBoundary();
-    VectorUtils::fill2DVec(H2O_, met_.H2O_field(), [](double val) { return val == 0;  } );
+    // Set boundary locations to use meteorological H2O
+    auto met_H2O = met_.H2O_field();
+    int ny = H2O_.size();
+    int nx = H2O_[0].size();
+    for(int j=1; j < (ny-1); j++) {
+        for(int i=1; i < (nx-1); i++) {
+            H2O_[j][i] += std::max(0.0,unusedFraction.phi[j][i]) * met_H2O[j][i];
+        }
+    }
 }
 
 void LAGRIDPlumeModel::trimH2OBoundary() {

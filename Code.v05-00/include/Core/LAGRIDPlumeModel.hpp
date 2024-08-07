@@ -77,7 +77,7 @@ class LAGRIDPlumeModel {
         void runTransport(double timestep);
         void remapAllVars(double remapTimestep);
         void trimH2OBoundary();
-        LAGRID::twoDGridVariable remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask);
+        std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask);
         double totalAirMass();
         void runCocipH2OMixing(const Vector_2D& h2o_old, const Vector_2D& h2o_amb_new, MaskType& mask_old, MaskType& mask_new);
 

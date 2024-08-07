@@ -84,7 +84,7 @@ TEST_CASE("FreeCoordBoxGrid and Remapping") {
     }
 
     SECTION("Adding Buffer") {
-        twoDGrid.addBuffer(6, 10, 4, 8);
+        twoDGrid.addBuffer(6, 10, 4, 8, 0.0);
         REQUIRE(twoDGrid.yCoords.size() == 12);
         REQUIRE(twoDGrid.xCoords.size() == 19);
         REQUIRE(twoDGrid.xCoords[0] == -6);
