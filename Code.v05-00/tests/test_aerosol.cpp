@@ -18,7 +18,7 @@ TEST_CASE ("Aerosol", "[single-file]" ) {
     int nBins = 100;
     double r_min = 1e-8;
     double r_max = 10e-6;
-    double bin_size = (r_max - r_min)/nBins;
+    // double bin_size = (r_max - r_min)/nBins;
 
     Vector_1D bin_centers(nBins);
     Vector_1D bin_edges(nBins+1);
@@ -153,12 +153,12 @@ TEST_CASE ("Aerosol", "[single-file]" ) {
     SECTION("Coagulation, Smoluchowski monodisperse analytical solution") {
         // Test against figure 15.2 from Jacobson (2005)
         double T = 298.;
-        double p = 101325.;
-        double rho = 1.0e3;
+        // double p = 101325.;
+        // double rho = 1.0e3;
         double n0 = 10.e6; 
         double r0 = 3.0e-9; 
         double V0 = (4/3.0)*physConst::PI*pow(r0, 3);
-        double h = 12.0 * 3600;
+        // double h = 12.0 * 3600;
         double kb = 1.38064852e-23;
         double eta = 1.8235e-5;
         double beta = 1.0e6 * 8*kb*T/(3*eta);

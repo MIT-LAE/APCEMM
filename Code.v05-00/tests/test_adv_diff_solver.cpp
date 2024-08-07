@@ -88,8 +88,15 @@ namespace FVM_ANDS{
     std::tuple<double, double, double> interiorMax(const Eigen::VectorXd& vec, double xmin, double xmax, double ymin, double ymax, int nx, int ny){
         double dx = (xmax - xmin) / nx;
         double dy = (ymax - ymin) / ny;
-        double max = std::numeric_limits<double>::min();
-        double maxx, maxy;
+
+        /* Initialize maximum to be the first value in the vector
+        Avoids compiler complaining about edge case where all
+        values are equal to std::numeric_limits::min() which leaves
+        variables uninitialized */
+        double max = vec(0);
+        double maxx = dx * 0.5;
+        double maxy = dy * 0.5;
+
         for(int i = 0; i < nx; i++){
             for(int j = 0; j < ny; j++){
                 double x = dx * (0.5 + i);
@@ -106,8 +113,15 @@ namespace FVM_ANDS{
     std::tuple<double, double, double> interiorMin(const Eigen::VectorXd& vec, double xmin, double xmax, double ymin, double ymax, int nx, int ny){
         double dx = (xmax - xmin) / nx;
         double dy = (ymax - ymin) / ny;
-        double min = std::numeric_limits<double>::max();
-        double minx, miny;
+
+        /* Initialize minimum to be the first value in the vector
+        Avoids compiler complaining about edge case where all
+        values are equal to std::numeric_limits::max() which leaves
+        variables uninitialized */
+        double min = vec(0);
+        double minx = dx * 0.5;
+        double miny = dy * 0.5;
+
         for(int i = 0; i < nx; i++){
             for(int j = 0; j < ny; j++){
                 double x = dx * (0.5 + i);
@@ -209,6 +223,74 @@ namespace FVM_ANDS{
             REQUIRE(mat.coeffRef(25,25) == 0.5);
         }
     }
+
+    TEST_CASE("SOR Solver"){
+        /*
+        Check that the SOR iterative solver for linear systems is correct
+        Setup prescribed solution test for Ax = b:
+        - Specify A and x to compute b
+        - Use the solver with A and b to recover x
+
+        Here A = [
+        0.50 0.25 0.00 0.00 ... 0.00
+        0.25 0.50 0.25 0.00 ... 0.00
+        0.00 0.25 0.50 0.25 ... 0.00
+        .
+        .
+        0.00 ... 0.00 0.25 0.50 0.25
+        0.00 ... 0.00 0.00 0.25 0.50]
+
+        and ExactSolution = [0 1 ... Npoints].T
+        */
+
+        int Npoints = 1000;
+
+        Eigen::SparseMatrix<double, Eigen::RowMajor> A(Npoints, Npoints);
+        std::vector<Eigen::Triplet<double>> tripletList;
+
+        Eigen::VectorXd ExactSolution(Npoints);
+        Eigen::VectorXd SORSolution(Npoints);
+
+        // Make a tri-banded symetric matrix and solution
+        for (int i = 0; i < Npoints; ++i){
+            // Set diagonal to 0.5
+            tripletList.emplace_back(i, i, 0.5);
+            // Set lower-diagonal to 0.25
+            if (i > 1)
+                tripletList.emplace_back(i, i-1, 0.25);
+            // Set upper-diagonal to 0.25
+            if (i < Npoints - 1)
+                tripletList.emplace_back(i, i+1, 0.25);
+
+            // Impose the values of x
+            ExactSolution[i] = i;
+            // Impose first guess of solution to be all 0
+            SORSolution[i] = 0;
+        }
+
+        // Set the values in the matrix A
+        A.setFromTriplets(tripletList.begin(), tripletList.end());
+
+        // Construct the right hand side vector b using x
+        Eigen::VectorXd rhs = (A * ExactSolution).eval();
+
+        // Relaxation parameter
+        double omega = 1.0;
+        // Residual tolerance (% [0-1])
+        double max_res = 1e-3;
+        // Number iterations between evaluations of residual
+        int n_iters = 3;
+
+        // Pretend we don't know x and solve Ax = b
+        FVM_ANDS::sor_solve(A, rhs, SORSolution, omega, max_res, n_iters);
+
+        // Error as percentage of L2 norm of differences relative to L2 norm of exact solution
+        auto error = 100 * (SORSolution - ExactSolution).eval().lpNorm<2>()/ ExactSolution.lpNorm<2>();
+
+        // Impose error to be less than 1%
+        REQUIRE(error < 1);
+    }
+
     TEST_CASE("Pure Diffusion, Inhomog. Dirichlet BC, Prescribed Solution 10k Points"){
         // Dh = 0.9, Dv = 0.4
         // Test solver accuracy on 10k interior points
@@ -216,8 +298,8 @@ namespace FVM_ANDS{
         
         double u = 0, v = 0, shear = 0, Dh = 1.0, Dv = 1.0, xlim_left = 0.1, xlim_right = 0.8, ylim_bot = 0.2, ylim_top = 0.9;
         int nx = 100, ny = 100;
-        double dx = 1.0/nx;
-        double dy = 1.0/ny;
+        // double dx = 1.0/nx;
+        // double dy = 1.0/ny;
         //double dt = 0.24 * std::min( (dx*dx) / (2*Dh) , (dy*dy) / (2*Dv));
         double dt = 0.1;
         std::cout << "dt: " << dt << std::endl;
@@ -397,11 +479,12 @@ namespace FVM_ANDS{
         cout << "Soln Maximum: " << solver.phi().maxCoeff() << "\n";
         cout << "Soln Interior Minimum: " << solver.phi()(Eigen::seq(0,nx*ny-1)).minCoeff() << "\n";
 
-        double t = 0, t_max = 1;
+        // double t;
+        double t_max = 1;
         int n_timesteps = t_max/dt;
         double max, maxx, maxy, min, minx, miny;
         for(int i = 0; i < n_timesteps; i++){
-            t = dt*(i + 1); //implicit method
+            // t = dt*(i + 1); //implicit method
             cout << "solving" << endl;
             Eigen::VectorXd soln = solver.solve();
             auto interior_idxs = Eigen::seq(0, nx*ny - 1);

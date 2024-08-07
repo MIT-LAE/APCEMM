@@ -518,7 +518,7 @@ int BoxModel( const OptInput &Input_Opt, const Input &input )
             /* Clear dynamically allocated variable(s) */
             if ( sun != NULL )
                 sun->~SZA();
-            return KPP_FAIL;
+            return IERR;
         }
 
         ambientData.FillIn( nTime + 1 );

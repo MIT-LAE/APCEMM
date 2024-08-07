@@ -77,21 +77,17 @@ Input::Input( unsigned int iCase,               \
     simulationTime_( parameters[iCase].at("PLUMEPROCESS")),
     temperature_K_ ( parameters[iCase].at("TEMPERATURE")),
     relHumidity_w_ ( parameters[iCase].at("RHW")),
-    pressure_Pa_   ( parameters[iCase].at("PRESSURE")),
     horizDiff_     ( parameters[iCase].at("DH")),
     vertiDiff_     ( parameters[iCase].at("DV")),
     shear_         ( parameters[iCase].at("SHEAR")),
-    nBV_           ( parameters[iCase].at("NBV")),
+
     longitude_deg_ ( parameters[iCase].at("LONGITUDE")),
     latitude_deg_  ( parameters[iCase].at("LATITUDE")),
+    pressure_Pa_   ( parameters[iCase].at("PRESSURE")),
+
     emissionDOY_   ( parameters[iCase].at("EDAY")),
     emissionTime_  ( parameters[iCase].at("ETIME")),
-    backgNOx_      ( parameters[iCase].at("BACKG_NOX")),
-    backgHNO3_     ( parameters[iCase].at("BACKG_HNO3")),
-    backgO3_       ( parameters[iCase].at("BACKG_O3")),
-    backgCO_       ( parameters[iCase].at("BACKG_CO")),
-    backgCH4_      ( parameters[iCase].at("BACKG_CH4")),
-    backgSO2_      ( parameters[iCase].at("BACKG_SO2")),
+
     EI_NOx_        ( parameters[iCase].at("EI_NOX")),
     EI_CO_         ( parameters[iCase].at("EI_CO")),
     EI_HC_         ( parameters[iCase].at("EI_UHC")),
@@ -99,8 +95,17 @@ Input::Input( unsigned int iCase,               \
     EI_SO2TOSO4_   ( parameters[iCase].at("EI_SO2TOSO4")),
     EI_Soot_       ( parameters[iCase].at("EI_SOOT")),
     sootRad_       ( parameters[iCase].at("EI_SOOTRAD")),
+
     fuelFlow_      ( parameters[iCase].at("FF")),
     aircraftMass_  ( parameters[iCase].at("AMASS")),
+
+    backgNOx_      ( parameters[iCase].at("BACKG_NOX")),
+    backgHNO3_     ( parameters[iCase].at("BACKG_HNO3")),
+    backgO3_       ( parameters[iCase].at("BACKG_O3")),
+    backgCO_       ( parameters[iCase].at("BACKG_CO")),
+    backgCH4_      ( parameters[iCase].at("BACKG_CH4")),
+    backgSO2_      ( parameters[iCase].at("BACKG_SO2")),
+
     flightSpeed_   ( parameters[iCase].at("FSPEED")),
     numEngines_    ( parameters[iCase].at("NUMENG")),
     wingspan_      ( parameters[iCase].at("WINGSPAN")),
@@ -110,7 +115,10 @@ Input::Input( unsigned int iCase,               \
     fileName_ADJ_  ( fileName_ADJ ),
     fileName_BOX_  ( fileName_BOX ),
     fileName_micro_ ( fileName_micro ),
-    author_        ( author )
+    author_        ( author ),
+
+    nBV_           ( parameters[iCase].at("NBV"))
+
 {
 
 }

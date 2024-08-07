@@ -60,8 +60,9 @@ class Mesh
         void initCoordVectors(MeshDomainLimitsSpec limitsSpec);
 
         inline void calcAreas() {
-            for ( int j = 0; j < ny; j++ ) {
-                for ( int i = 0; i < nx; i++ ) {
+            // UInt to be consistent with mesh size definition
+            for ( UInt j = 0; j < ny; j++ ) {
+                for ( UInt i = 0; i < nx; i++ ) {
                     areas_[j][i] = dx_[i] * dy_[j];
                 }
             }

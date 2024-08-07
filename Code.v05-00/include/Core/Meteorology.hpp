@@ -86,7 +86,7 @@ class Meteorology
         inline double rhwAtAlt(double alt) const {
             Vector_1D rhwVec(yCoords_.size());
             Vector_1D h2o1D = H2O_1D();
-            for(int j = 0; j < yCoords_.size(); j++) {
+            for(std::size_t j = 0; j < yCoords_.size(); j++) {
                 rhwVec[j] = physFunc::H2OToRHw(h2o1D[j], tempBase_[j]);
             }
             return met::linInterpMetData(altitude_, rhwVec, alt);
@@ -105,7 +105,7 @@ class Meteorology
         inline const Vector_1D& tempBase() const { return tempBase_; }
         inline const Vector_1D H2O_1D() const {
             Vector_1D h2o1D(yCoords_.size());
-            for(int j = 0; j < yCoords_.size(); j++) {
+            for(std::size_t j = 0; j < yCoords_.size(); j++) {
                 h2o1D[j] = H2O_[j][0];
             }
             return h2o1D;

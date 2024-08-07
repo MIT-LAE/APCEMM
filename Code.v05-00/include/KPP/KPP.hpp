@@ -47,8 +47,8 @@ void Update_JRates ( double JRates[], const double CSZA );
 void ComputeFamilies( const double V[], const double F[], const double RCT[], \
                       double familyRates[] );
 
-static int KPP_FAIL    = -1;
-static int KPPADJ_FAIL = -5;
+// static int KPP_FAIL    = -1;
+// static int KPPADJ_FAIL = -5;
     
 
 #ifdef __cplusplus

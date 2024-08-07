@@ -16,8 +16,8 @@ namespace VectorUtils {
 
     double VecMin2D (const Vector_2D& vec) {
         double min = std::numeric_limits<double>::max();
-        for (int j = 0; j < vec.size(); j++) {
-            for (int i = 0; i < vec[0].size(); i++) {
+        for (std::size_t j = 0; j < vec.size(); j++) {
+            for (std::size_t i = 0; i < vec[0].size(); i++) {
                 if(std::isinf(vec[j][i]) || std::isnan(vec[j][i])) throw std::out_of_range("in VectorUtils::VecMin2D: inf or nan found in vector");
                 if(vec[j][i] < min) min = vec[j][i];
             }
@@ -27,8 +27,8 @@ namespace VectorUtils {
 
     double VecMax2D (const Vector_2D& vec) {
         double max = std::numeric_limits<double>::min();
-        for (int j = 0; j < vec.size(); j++) {
-            for (int i = 0; i < vec[0].size(); i++) {
+        for (std::size_t j = 0; j < vec.size(); j++) {
+            for (std::size_t i = 0; i < vec[0].size(); i++) {
                 if(std::isinf(vec[j][i]) || std::isnan(vec[j][i])) throw std::out_of_range("in VectorUtils::VecMax2D: inf or nan found in vector");
                 if(vec[j][i] > max) max = vec[j][i];
             }
@@ -41,9 +41,9 @@ namespace VectorUtils {
 
         if(axis == 0) {
             axis_max = Vector_1D(vec.size());
-            for (int j = 0; j < vec.size(); j++) {
+            for (std::size_t j = 0; j < vec.size(); j++) {
                 double rowMax = std::numeric_limits<double>::min();
-                for (int i = 0; i < vec[0].size(); i++) {
+                for (std::size_t i = 0; i < vec[0].size(); i++) {
                     if(std::isinf(vec[j][i]) || std::isnan(vec[j][i])) throw std::out_of_range("in VectorUtils::VecMax2D: inf or nan found in vector");
                     if(vec[j][i] > rowMax) rowMax = vec[j][i];
                 }
@@ -52,9 +52,9 @@ namespace VectorUtils {
         }
         else {
             axis_max = Vector_1D(vec[0].size());
-            for (int i = 0; i < vec[0].size(); i++) {
+            for (std::size_t i = 0; i < vec[0].size(); i++) {
                 double colMax = std::numeric_limits<double>::min();
-                for (int j = 0; j < vec.size(); j++) {
+                for (std::size_t j = 0; j < vec.size(); j++) {
                     if(std::isinf(vec[j][i]) || std::isnan(vec[j][i])) throw std::out_of_range("in VectorUtils::VecMax2D: inf or nan found in vector");
                     if(vec[j][i] > colMax) colMax = vec[j][i];
                 }
@@ -67,8 +67,8 @@ namespace VectorUtils {
 
     double Vec2DSum (const Vector_2D& vec) {
         double sum = 0;
-        for (int j = 0; j < vec.size(); j++) {
-            for (int i = 0; i < vec[0].size(); i++) {
+        for (std::size_t j = 0; j < vec.size(); j++) {
+            for (std::size_t i = 0; i < vec[0].size(); i++) {
                 sum += vec[j][i];
             }
         }
@@ -78,8 +78,8 @@ namespace VectorUtils {
     std::pair<vector<vector<int>>, int> Vec2DMask (const Vector_2D& vec, std::function<bool (double)> maskFunc) {
         vector<vector<int>> mask(vec.size(), vector<int>(vec[0].size()));
         int nonMaskedElems = 0;
-        for (int j = 0; j < vec.size(); j++) {
-            for (int i = 0; i < vec[0].size(); i++) {
+        for (std::size_t j = 0; j < vec.size(); j++) {
+            for (std::size_t i = 0; i < vec[0].size(); i++) {
                 mask[j][i] = maskFunc(vec[j][i]);
                 if(mask[j][i]) {
                     nonMaskedElems++;
@@ -99,8 +99,8 @@ namespace VectorUtils {
         double maxX = std::numeric_limits<double>::lowest();
         double maxY = std::numeric_limits<double>::lowest();
 
-        for (int j = 0; j < vec.size(); j++) {
-            for (int i = 0; i < vec[0].size(); i++) {
+        for (std::size_t j = 0; j < vec.size(); j++) {
+            for (std::size_t i = 0; i < vec[0].size(); i++) {
                 mask[j][i] = maskFunc(vec[j][i]);
                 if(mask[j][i]){
                     nonMaskedElems++;
@@ -128,8 +128,8 @@ namespace VectorUtils {
         Vector_2D result(vec1.size(), Vector_1D(vec1[0].size()));
 
         #pragma omp parallel for
-        for(int j = 0; j < vec1.size(); j++) {
-            for(int i = 0; i < vec1[0].size(); i++) {
+        for(std::size_t j = 0; j < vec1.size(); j++) {
+            for(std::size_t i = 0; i < vec1[0].size(); i++) {
                 result[j][i] = transformFunc(vec1[j][i], vec2[j][i]);
             }
         }

@@ -2,6 +2,7 @@
 #include <YamlInputReader/YamlInputReader.hpp>
 #include <Core/Input.hpp>
 #include <iostream>
+#include "APCEMM.h"
 using namespace YamlInputReader;
 using std::cout;
 using std::endl;
@@ -44,7 +45,7 @@ TEST_CASE("YamlInputReader Helper Functions"){
         try{
             tokens = split(" ", "");
         }
-        catch(std::invalid_argument e){
+        catch(std::invalid_argument &e){
             err = string(e.what());
         }
         REQUIRE(err.find("In YamlInputReader::split: Delimiter length cannot be zero") == 0);
@@ -61,7 +62,7 @@ TEST_CASE("YamlInputReader Helper Functions"){
             try{
                 strToDouble("asdf");
             }
-            catch (std::invalid_argument e){
+            catch (std::invalid_argument &e){
                 error = e.what();
             }
             REQUIRE (error.find("Something went wrong with processing a number") == 0);
@@ -69,7 +70,7 @@ TEST_CASE("YamlInputReader Helper Functions"){
             try{
                 strToDouble("10 2e3");
             }
-            catch (std::invalid_argument e){
+            catch (std::invalid_argument &e){
                 error = e.what();
             }
             REQUIRE (error.find("Something went wrong with processing a number") == 0);
@@ -77,7 +78,7 @@ TEST_CASE("YamlInputReader Helper Functions"){
             try{
                 strToDouble("1e3e3");
             }
-            catch (std::invalid_argument e){
+            catch (std::invalid_argument &e){
                 error = e.what();
             }
             REQUIRE (error.find("Something went wrong with processing a number") == 0);
@@ -85,7 +86,7 @@ TEST_CASE("YamlInputReader Helper Functions"){
             try{
                 strToDouble("2e-4.");
             }
-            catch (std::invalid_argument e){
+            catch (std::invalid_argument &e){
                 error = e.what();
             }
             REQUIRE (error.find("Something went wrong with processing a number") == 0);
@@ -93,7 +94,7 @@ TEST_CASE("YamlInputReader Helper Functions"){
             try{
                 strToDouble("10e3.3");
             }
-            catch (std::invalid_argument e){
+            catch (std::invalid_argument &e){
                 error = e.what();
             }
             REQUIRE (error.find("Something went wrong with processing a number") == 0);
@@ -113,7 +114,7 @@ TEST_CASE("YamlInputReader Helper Functions"){
         try{
             parseBoolString("");
         }
-        catch(std::invalid_argument e){
+        catch(std::invalid_argument &e){
             err = e.what();
         }
         REQUIRE(err.find("Unable to read boolean value") == 0);
@@ -150,35 +151,35 @@ TEST_CASE("YamlInputReader Helper Functions"){
         try{
             vec = parseParamSweepInput("1:2:3:4", "", true, 10);
         }
-        catch (std::invalid_argument e){
+        catch (std::invalid_argument &e){
             err = e.what();
         }
         REQUIRE(err.find("Monte Carlo Simulation requires") == 0);
         try{
             vec = parseParamSweepInput("1:2");
         }
-        catch (std::invalid_argument e){
+        catch (std::invalid_argument &e){
             err = e.what();
         }
         REQUIRE(err.find("Parameter sweep step input requires") == 0);
         try{
             vec = parseParamSweepInput("1 asdf ed 3");
         }
-        catch (std::invalid_argument e){
+        catch (std::invalid_argument &e){
             err = e.what();
         }
         REQUIRE(err.find("Something went wrong with processing a number") == 0);
         try{
             vec = parseParamSweepInput("10:10:20 0");
         }
-        catch(std::invalid_argument e){
+        catch(std::invalid_argument &e){
             if(string(e.what()).find("Something went wrong with processing a number") == 0) err = "stod fail 1";
         }
         REQUIRE(err == "stod fail 1");
         try{
             vec = parseParamSweepInput("10:10:20..0");
         }
-        catch(std::invalid_argument e){
+        catch(std::invalid_argument &e){
             if(string(e.what()).find("Something went wrong with processing a number") == 0) err = "stod fail 2";
         }
         REQUIRE(err == "stod fail 2");
@@ -194,10 +195,13 @@ TEST_CASE("Read Yaml File"){
         try{
             readSimMenu(input, data["SIMULATION MENU"]);
         }
-        catch (std::invalid_argument e){
+        catch (std::invalid_argument &e){
             err = e.what();
         }
-        REQUIRE(input.SIMULATION_OMP_NUM_THREADS == 8);
+        // If in DEBUG, SIMULATION_OMP_NUM_THREADS is set to 1 which fails the test
+        #ifndef DEBUG
+            REQUIRE(input.SIMULATION_OMP_NUM_THREADS == 8);
+        #endif
         REQUIRE(input.SIMULATION_PARAMETER_SWEEP == true);
         REQUIRE(input.SIMULATION_MONTECARLO == true);
         REQUIRE(input.SIMULATION_MCRUNS == 2);
@@ -297,7 +301,7 @@ TEST_CASE("Read Yaml File"){
         try{
             readMetMenu(input, data["METEOROLOGY MENU"]);
         }
-        catch(std::invalid_argument e){
+        catch(std::invalid_argument &e){
             error = e.what();
         }
     

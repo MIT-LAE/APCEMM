@@ -137,8 +137,6 @@ SpeciesArray& SpeciesArray::operator+( const SpeciesArray &sp )
 SpeciesArray& SpeciesArray::operator-( const SpeciesArray &sp )
 {
 
-    UInt iRing, iTime, N;
-
     if ( nRing != sp.getnRing() ) {
         std::cout << "Can't perform + on SpeciesArray: nRing exception: " << nRing << " != " << sp.nRing << std::endl;
         return *this;
@@ -151,7 +149,7 @@ SpeciesArray& SpeciesArray::operator-( const SpeciesArray &sp )
 
     for ( UInt iRing = 0; iRing < nRing; iRing++ ) {
         for ( UInt iTime = 0; iTime < nTime; iTime++ ) {
-            for ( N = 0; N < NSPECREACT; N++ )
+            for ( UInt N = 0; N < NSPECREACT; N++ )
                 Species[N][iTime][iRing] -= sp.Species[N][iTime][iRing];
 
             sootDens[iTime][iRing] -= sp.sootDens[iTime][iRing];

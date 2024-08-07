@@ -26,6 +26,10 @@ elseif (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
     endif()
     
+    # Turn on warnings always
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fopenmp")
+
+
     #Enabling unsafe optimizations doesn't seem to affect the runtime much, but could be something to check just in case later.
     #-Michael
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -fno-trapping-math -funsafe-math-optimizations")
@@ -71,12 +75,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
 
 
 # This ensures the header files of the necessary libraries are included
-include_directories(${Boost_INCLUDES})
-include_directories(${OpenMP_INCLUDES})
-include_directories(${FFTW_INCLUDES})
-include_directories(${NETCDF_INCLUDES})
-include_directories(${netCDFCxx_INCLUDE_DIRS})
-include_directories(${YAML_CPP_INCLUDE_DIR})
+# SYSTEM flag silences the compiler warnings from external dependencies 
+include_directories(SYSTEM ${Boost_INCLUDES})
+include_directories(SYSTEM ${OpenMP_INCLUDES})
+include_directories(SYSTEM ${FFTW_INCLUDES})
+include_directories(SYSTEM ${NETCDF_INCLUDES})
+include_directories(SYSTEM ${netCDFCxx_INCLUDE_DIRS})
+include_directories(SYSTEM ${YAML_CPP_INCLUDE_DIR})
 
 # Ensure header files of APCEMM are included
 include_directories(${CMAKE_SOURCE_DIR}/include)

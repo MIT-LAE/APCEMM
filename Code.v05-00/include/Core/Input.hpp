@@ -27,19 +27,16 @@ class Input
     double simulationTime_;
 
     double temperature_K_;
-    double pressure_Pa_;
     double relHumidity_w_;
     double horizDiff_;
     double vertiDiff_;
     double shear_;
-    double nBV_;
 
     double longitude_deg_;
     double latitude_deg_;
+    double pressure_Pa_;
 
     UInt emissionDOY_;
-    UInt emissionDay_;
-    UInt emissionMonth_;
     double emissionTime_;
 
     double EI_NOx_;
@@ -51,13 +48,7 @@ class Input
     double sootRad_;
 
     double fuelFlow_;
-
     double aircraftMass_;
-    double flightSpeed_;
-    double numEngines_;
-    double wingspan_;
-    double coreExitTemp_;
-    double bypassArea_;
 
     double backgNOx_;
     double backgHNO3_;
@@ -65,12 +56,23 @@ class Input
     double backgCO_;
     double backgCH4_;
     double backgSO2_;
+    
+    double flightSpeed_;
+    double numEngines_;
+    double wingspan_;
+    double coreExitTemp_;
+    double bypassArea_;
 
     std::string fileName_;
     std::string fileName_ADJ_;
     std::string fileName_BOX_;
     std::string fileName_micro_;
     std::string author_;
+
+    double nBV_;
+
+    UInt emissionDay_;
+    UInt emissionMonth_;
 
     private:
         void checkInputValidity();

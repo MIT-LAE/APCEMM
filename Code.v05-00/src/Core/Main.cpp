@@ -30,7 +30,6 @@
 #include "Core/LAGRIDPlumeModel.hpp"
 #include "Core/Status.hpp"
 
-static int DIR_FAIL = -9;
 
 void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
@@ -49,7 +48,9 @@ int main( int argc, char* argv[])
 {
 
     std::vector<std::unordered_map<std::string, double> > parameters;
-    unsigned int iCase, nCases;
+    unsigned int iCase;
+    // Help compiler tell this variable is initialized
+    unsigned int nCases = 0;
     const unsigned int iOFFSET = 0;
     
     const unsigned int model = 1;
@@ -102,6 +103,14 @@ int main( int argc, char* argv[])
 
         /* Number of cases */
         nCases  = parameters.size();
+        
+        /* Ensure cases were created properly */
+        if (nCases == 0)
+        {
+            std::cout << "Failed generating cases from input file" << std::endl;
+            std::cout << "Exiting ... " << std::endl;
+            exit(1);
+        }
         
         /* Create output directory */
         struct stat sb;
@@ -307,6 +316,7 @@ int main( int argc, char* argv[])
 
 } /* End of Main */
 
+// TODO rewrite all of this with std::filesystem
 void CreateREADME( const std::string folder, const std::string fileName, const std::string purpose )
 {
 
@@ -362,8 +372,8 @@ void CreateREADME( const std::string folder, const std::string fileName, const s
     README << "\n## Simulation start date " << buffer << "\n";
 
     /* Print source code directory */
-    char cwd[PATH_MAX];
-    getcwd(cwd, sizeof(cwd));
+    // Calling with args (NULL, 0) allocates a new buffer of the correct size
+    char *cwd = getcwd(NULL, 0);
     if ( cwd != NULL )
         README << "\n## Source files: " << cwd << "\n";
     else

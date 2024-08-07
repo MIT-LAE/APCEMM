@@ -522,7 +522,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
     double w;
     double E_CO2, E_H2O, E_NO, E_NO2, E_HNO2, E_SO2, E_CO, E_CH4, E_C2H6, \
                E_PRPE, E_ALK4, E_CH2O, E_ALD2, E_GLYX, E_MGLY;
-    double E_Soot;
+    // double E_Soot;
     const double rad = EI.getSootRad();
     const double fuelPerDist = AC.FuelFlow() / AC.VFlight();
 
@@ -551,7 +551,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
     E_SO2  = ( 1.0 - SO2TOSO4 ) * \
              EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
 
-    E_Soot = EI.getSoot() / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * rad * rad * rad ) * fuelPerDist;
+    // E_Soot = EI.getSoot() / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * rad * rad * rad ) * fuelPerDist;
     /*     = [g_soot/kg_fuel]/ (                        * [kg_soot/m^3]       * [g/kg]   * [m^3]           ) * [kg_fuel/m]
      *     = [part/m]
      */
@@ -842,7 +842,10 @@ void Solution::getAerosolProp( double ( &radi )[4], \
 
 } /* End of Solution::getAerosolProp */
 
-int Solution::SpinUp( Vector_1D &amb_Value,       \
+/* 
+No functions check the return code of this function, temp fix is to return void
+*/
+void Solution::SpinUp( Vector_1D &amb_Value,       \
                       const Input &input,         \
                       const double airDens,   \
                       const double startTime, \
@@ -947,7 +950,7 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
                 }
             }
 
-            return KPP_FAIL;
+            // return KPP_FAIL;
         }
 
         curr_Time_s += DT_CHEM;
@@ -957,7 +960,7 @@ int Solution::SpinUp( Vector_1D &amb_Value,       \
     for ( UInt iVar = 0; iVar < NVAR; iVar++ )
         amb_Value[iVar] = varSpeciesArray[iVar] / airDens;
 
-    return IERR;
+    // return IERR;
 
 } /* End of Solution::SpinUp */
 

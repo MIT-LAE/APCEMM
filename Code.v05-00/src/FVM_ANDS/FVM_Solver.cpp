@@ -1,15 +1,14 @@
 #include "FVM_ANDS/FVM_Solver.hpp"
 namespace FVM_ANDS{
     FVM_Solver::FVM_Solver(const AdvDiffParams& params, const Vector_1D xCoords, const Vector_1D yCoords, const BoundaryConditions& bc, const Eigen::VectorXd& phi_init, bool useDiagPreCond, int maxIters, double convergenceThres)
-    :   advDiffSys_(AdvDiffSystem(params, xCoords, yCoords, bc, phi_init)),
-        maxIters_(maxIters),
+    :   maxIters_(maxIters),
         convergenceThres_(convergenceThres),
+        advDiffSys_(AdvDiffSystem(params, xCoords, yCoords, bc, phi_init)),
         useDiagPreCond_(useDiagPreCond){
         solver_.setTolerance(convergenceThres_);
         solver_.setMaxIterations(maxIters_);
 
         //For SOR solves only, normally Eigen solvers come pre-packed with diagonal preconditioner.
-        int numTotalPoints = advDiffSys_.getCoefMatrix().rows();
         if(useDiagPreCond_){
             auto diagonalVec = advDiffSys_.getCoefMatrix().diagonal();
             auto diagonalMat = diagonalVec.asDiagonal();

@@ -28,8 +28,8 @@ namespace VectorUtils {
     template<typename FillWithType>
     void fill2DVec(Vector_2D& toFill, const FillWithType& fillWith, std::function<bool (double)> fillCondFunction) {
         #pragma omp parallel for
-        for(int j = 0; j < toFill.size(); j++) {
-            for(int i = 0; i < toFill[0].size(); i++) {
+        for(std::size_t j = 0; j < toFill.size(); j++) {
+            for(std::size_t i = 0; i < toFill[0].size(); i++) {
                 double fillWithValue;
                 if constexpr(std::is_arithmetic_v<FillWithType>) {
                     fillWithValue = fillWith;

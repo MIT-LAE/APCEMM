@@ -3,7 +3,7 @@ namespace LAGRID {
 
     void twoDGridVariable::addBuffer(double bufLen_left, double bufLen_right, double bufLen_top, double bufLen_bot, double fillValue) {
         int nx_before = xCoords.size();
-        int ny_before = yCoords.size();
+        // int ny_before = yCoords.size();
 
         //Generate coords of buffer areas
         int numRows_topBuffer = std::floor(bufLen_top / dy);
@@ -35,7 +35,7 @@ namespace LAGRID {
 
         //rotate right by numRows_botBuffer to get those on the other side.
         std::rotate(phi.rbegin(), phi.rbegin() + numRows_botBuffer, phi.rend());
-        for(int j = 0; j < yCoords.size(); j++) {
+        for(std::size_t j = 0; j < yCoords.size(); j++) {
             phi[j].insert(phi[j].begin(), numCols_leftBuffer, fillValue);
             phi[j].insert(phi[j].end(), numCols_rightBuffer, fillValue);
         }
@@ -89,7 +89,7 @@ namespace LAGRID {
             const MassBox& b = boxGrid.boxes[box_idx];
             int startGridIdx_x = std::floor((b.topLeftX - remapping.x0) / remapping.dx);
             int endGridIdx_x = std::floor((b.botRightX - remapping.x0) / remapping.dx);
-            int startGridIdx_y = std::floor((b.topLeftY - remapping.y0) / remapping.dy);
+            // int startGridIdx_y = std::floor((b.topLeftY - remapping.y0) / remapping.dy);
             int endGridIdx_y = std::floor((b.botRightY - remapping.y0) / remapping.dy);
 
             for (int j = endGridIdx_y; j <= endGridIdx_y; j++) {

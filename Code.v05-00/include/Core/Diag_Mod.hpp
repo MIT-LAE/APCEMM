@@ -72,10 +72,12 @@ namespace Diag {
     * NY x NX x NFAM 
     * into netCDF files at a frequency specified by the input file */
 
-    //bool Diag_PL( const char* ROOTNAME,                     \
-    //              const int hh, const int mm, const int ss, \
-    //              const Solution& Data,                     \
-    //              const Mesh& m );
+    /*
+    bool Diag_PL( const char* ROOTNAME,                     \
+                 const int hh, const int mm, const int ss, \
+                 const Solution& Data,                     \
+                 const Mesh& m );
+    */
 
     #endif /* DIAG_MOD_H_INCLUDED */
 

@@ -27,6 +27,10 @@
 #include "KPP/KPP_Global.h"
 #include "KPP/KPP_Sparse.h"
 
+// Ignore compiler warning in auto-generated code
+// Warning is restored at the end of the file
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /*                                                                  */
@@ -1921,4 +1925,4 @@ void WADD(int N, double X[], double Y[], double Z[])
 /* End of BLAS_UTIL function                                        */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
+#pragma GCC diagnostic pop

@@ -47,7 +47,7 @@ TEST_CASE("Build kernel", "[single-file]") {
         bin_centers2[0] = 0.5*0.002e-6;
         double rho_1 =  1.0e3;
         double rho_2 = 1.0e3;
-        double bin_R = 0.5*0.002e-6;
+        // double bin_R = 0.5*0.002e-6;
 
         Vector_2D kernel = buildBrownianKernel(T, p, bin_centers1, rho_1, bin_centers2, rho_2);
 

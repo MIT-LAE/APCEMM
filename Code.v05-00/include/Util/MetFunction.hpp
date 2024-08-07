@@ -50,7 +50,7 @@ namespace met
     double ComputeLapseRate( const double TEMP, const double RHi, \
                                  const double DEPTH );
                                  
-    int nearestNeighbor( const Vector_1D& xq, double x);
+    std::size_t nearestNeighbor( const Vector_1D& xq, double x);
     double linearInterp( const Vector_1D& xq, const Vector_1D& yq, double x );
     double linearInterp( double x1, double y1, double x2, double y2, double xq, bool support_extrapolation = false);
 
