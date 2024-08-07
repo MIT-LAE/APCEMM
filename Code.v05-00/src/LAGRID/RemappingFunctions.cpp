@@ -35,7 +35,7 @@ namespace LAGRID {
 
         //rotate right by numRows_botBuffer to get those on the other side.
         std::rotate(phi.rbegin(), phi.rbegin() + numRows_botBuffer, phi.rend());
-        for(int j = 0; j < yCoords.size(); j++) {
+        for(std::size_t j = 0; j < yCoords.size(); j++) {
             phi[j].insert(phi[j].begin(), numCols_leftBuffer, fillValue);
             phi[j].insert(phi[j].end(), numCols_rightBuffer, fillValue);
         }
