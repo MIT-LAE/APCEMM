@@ -495,8 +495,8 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     auto met_H2O = met_.H2O_field();
     int ny = H2O_.size();
     int nx = H2O_[0].size();
-    for(int j=1; j < (ny-1); j++) {
-        for(int i=1; i < (nx-1); i++) {
+    for(int j=0; j < ny; j++) {
+        for(int i=0; i < nx; i++) {
             H2O_[j][i] += std::max(0.0,unusedFraction.phi[j][i]) * met_H2O[j][i];
         }
     }
