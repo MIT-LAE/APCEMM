@@ -356,17 +356,33 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
         solver.operatorSplitSolve2DVec(iceAerosol_.getPDF_nonConstRef()[n], ZERO_BC, false);
     }
+
     //Transport H2O
     {   
-        //Dont use enhanced diffusion on the H2O, and turn off advection
+        //Dont use enhanced diffusion on the H2O (and zero settling velocity)
         FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, FVM_ANDS::std2dVec_to_eigenVec(H2O_));
         solver.updateTimestep(timestep);
         solver.updateDiffusion(input_.horizDiff(), input_.vertiDiff());
-        solver.updateAdvection(0, 0, 0);
+        solver.updateAdvection(0, 0, shear_rep_);
 
-        //Ambient met is the boundary condition
-        auto H2O_BC = FVM_ANDS::bcFrom2DVector(met_.H2O_field());
-        solver.operatorSplitSolve2DVec(H2O_, H2O_BC);
+        // Calculate diffusion relative to a vertically-varying background H2O field
+        // This prevents APCEMM from smoothing out pre-existing meteorological gradients
+        // which will remain in the background/boundary conditions.
+        Vector_2D H2O_Delta;
+        H2O_Delta = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size()));
+        auto H2O_Background = met_.H2O_field();
+        for (int j=0; j<yCoords_.size(); j++){
+            for (int i=0; i<xCoords_.size(); i++){
+                H2O_Delta[j][i] = H2O_[j][i] - H2O_Background[j][i];
+            }
+        }
+        // BC is zero, since we're calculating the difference relative to background.
+        solver.operatorSplitSolve2DVec(H2O_Delta, ZERO_BC);
+        for (int j=0; j<yCoords_.size(); j++){
+            for (int i=0; i<xCoords_.size(); i++){
+                H2O_[j][i] = H2O_Delta[j][i] + H2O_Background[j][i];
+            }
+        }
     }
 }
 
