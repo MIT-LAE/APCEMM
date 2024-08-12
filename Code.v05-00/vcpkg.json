@@ -6,6 +6,7 @@
     "boost-range",
     "catch2",
     "eigen3",
+    "fmt",
     "fftw3",
     "netcdf-cxx4",
     "yaml-cpp"

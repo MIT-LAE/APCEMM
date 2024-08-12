@@ -94,7 +94,10 @@ namespace YamlInputReader{
         input.SIMULATION_MCRUNS =  parseIntString(paramSweepSubmenu["Num Monte Carlo runs (int)"].as<string>(), "Num Monte Carlo runs (int)");
 
         YAML::Node outputSubmenu = simNode["OUTPUT SUBMENU"];
-        input.SIMULATION_OUTPUT_FOLDER = parseFileSystemPath(outputSubmenu["Output folder (string)"].as<string>());
+        std::string outputFolder =  parseFileSystemPath(outputSubmenu["Output folder (string)"].as<string>());
+        // Ensure path to save directory is terminated by "/"
+        if ( outputFolder.back() != '/' ) {outputFolder = outputFolder + "/";}
+        input.SIMULATION_OUTPUT_FOLDER = outputFolder;
         input.SIMULATION_OVERWRITE = parseBoolString(outputSubmenu["Overwrite if folder exists (T/F)"].as<string>(), "Overwrite if folder exists (T/F)");
         input.SIMULATION_THREADED_FFT = parseBoolString(simNode["Use threaded FFT (T/F)"].as<string>(), "Use threaded FFT (T/F)");
 

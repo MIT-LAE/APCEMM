@@ -59,6 +59,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Catch2::Catch2 Catch2::Catch2WithM
 find_package(Eigen3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Eigen3::Eigen)
 
+find_package(fmt CONFIG REQUIRED)
+# target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)
+
 find_package(FFTW3 CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE FFTW3::fftw3)
 

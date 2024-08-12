@@ -10,9 +10,13 @@
 /* File                 : Diag_Mod.cpp                              */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-#include <format>
+#ifndef FMT_HEADER_ONLY
+#define FMT_HEADER_ONLY
+#endif
 
+#include <fmt/core.h>
 #include "Core/Diag_Mod.hpp"
+
 namespace Diag {
 
     static const NcType& varDataType = ncFloat;
@@ -153,10 +157,10 @@ namespace Diag {
         start_pos = 0; 
         found = 0;
 
-        // Make zero padded string representations with C++20 format
-        auto hh_string = std::format("{:02}", hh);
-        auto mm_string = std::format("{:02}", mm);
-        auto ss_string = std::format("{:02}", ss);
+        // Make zero padded string representations with fmt
+        auto hh_string = fmt::format("{:02}", hh);
+        auto mm_string = fmt::format("{:02}", mm);
+        auto ss_string = fmt::format("{:02}", ss);
 
         while ( (start_pos = fileName.find("hh", start_pos)) != std::string::npos ) {
             fileName.replace(start_pos, 2, hh_string);
