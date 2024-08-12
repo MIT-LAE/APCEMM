@@ -94,7 +94,7 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
      * */
 
     /* Debug flag? */
-    const bool ACDEBUG = 0;
+    // const bool ACDEBUG = 0;
 
     /* Compute volume and mass of soot particles emitted */
     const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 ); //EI_SootRad in m -> volume in m3
@@ -241,10 +241,10 @@ void Aircraft::setFuelFlow(const double ff)
 void Aircraft::setVFlight(const double Vf, double temperature_K)
 {
 
-    if ( Vf > 0.0E+00 )
+    if ( Vf > 0.0E+00 ){
         vFlight_ms_ = Vf;
-        machNumber_ = vFlight_ms_ \
-                    / sqrt( physConst::GAMMA_Air * physConst::R_Air * temperature_K );
+        machNumber_ = vFlight_ms_ / sqrt( physConst::GAMMA_Air * physConst::R_Air * temperature_K );
+    }
 
 
 } /* End of Aircraft::setVFlight */

@@ -78,8 +78,8 @@ namespace FVM_ANDS{
             }
             static double eigenSqVectorNorm_double(const Vector_2D& vec) {
                 double sum = 0;
-                for (int j = 0; j < vec.size(); j++) {
-                    for (int i = 0; i < vec[0].size(); i++) {
+                for (std::size_t j = 0; j < vec.size(); j++) {
+                    for (std::size_t i = 0; i < vec[0].size(); i++) {
                         if(isnan(vec[j][i])){
                             //std::cout << j << " " << i << std::endl;
                         }

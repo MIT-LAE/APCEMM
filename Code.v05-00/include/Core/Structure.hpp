@@ -80,7 +80,7 @@ class Solution
                       const UInt j = 0, \
 		      const bool CHEMISTRY = 0 );
 
-        int SpinUp( Vector_1D &amb_Value,       \
+        void SpinUp( Vector_1D &amb_Value,       \
                     const Input &input,         \
                     const double airDens,   \
                     const double startTime, \

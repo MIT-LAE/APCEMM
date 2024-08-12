@@ -72,8 +72,8 @@ TEST_CASE("FreeCoordBoxGrid and Remapping") {
         REQUIRE(twoDGrid.xCoords[10] == 20);
 
         double mass_after = 0;
-        for (int j = 0; j < twoDGrid.phi.size(); j++){
-            for (int i = 0; i < twoDGrid.phi[0].size(); i++) {
+        for (std::size_t j = 0; j < twoDGrid.phi.size(); j++){
+            for (std::size_t i = 0; i < twoDGrid.phi[0].size(); i++) {
                 mass_after += twoDGrid.phi[j][i] * twoDGrid.dx * twoDGrid.dy;
             }
         }
@@ -101,8 +101,8 @@ TEST_CASE("FreeCoordBoxGrid and Remapping") {
         REQUIRE(twoDGrid.phi.size() == 12);
         REQUIRE(twoDGrid.phi[0].size() == 19);
         double mass = 0;
-        for (int j = 0; j < twoDGrid.phi.size(); j++){
-            for (int i = 0; i < twoDGrid.phi[0].size(); i++) {
+        for (std::size_t j = 0; j < twoDGrid.phi.size(); j++){
+            for (std::size_t i = 0; i < twoDGrid.phi[0].size(); i++) {
                 mass += twoDGrid.phi[j][i] * twoDGrid.dx * twoDGrid.dy;
             }
         }

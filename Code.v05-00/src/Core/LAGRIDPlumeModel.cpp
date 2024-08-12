@@ -4,12 +4,11 @@ LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input
     optInput_(optInput),
     input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
-    simVars_(MPMSimVarsWrapper(input, optInput)),
     sun_(SZA(input.latitude_deg(), input.emissionDOY())),
-    timestepVars_(TimestepVarsWrapper(input, optInput)),
     aircraft_(Aircraft(input, optInput.SIMULATION_INPUT_ENG_EI)),
-    jetA_(Fuel("C12H24"))
-
+    jetA_(Fuel("C12H24")),
+    simVars_(MPMSimVarsWrapper(input, optInput)),
+    timestepVars_(TimestepVarsWrapper(input, optInput))
 {
     /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */ 
     jetA_.setFSC( input.EI_SO2() * 500.0 );
@@ -261,7 +260,7 @@ void LAGRIDPlumeModel::initializeGrid() {
     std::cout << "Initial Contrail Width: " << initWidth << std::endl;
     std::cout << "Initial Contrail Depth: " << initDepth << std::endl;
 
-    for (int n = 0; n < iceAerosol_.getNBin(); n++) {
+    for (UInt n = 0; n < iceAerosol_.getNBin(); n++) {
         double EPM_nPart_bin = epmIceAer.binMoment(n) * epmOut.area;
         double logBinRatio = log(iceAerosol_.getBinEdges()[n+1] / iceAerosol_.getBinEdges()[n]);
         //Start contrail at altitude -D1/2 to reflect the sinking.
@@ -292,13 +291,13 @@ void LAGRIDPlumeModel::initH2O() {
 
     auto areas = VectorUtils::cellAreas(xEdges_, yEdges_);
 
-    auto localPlumeEmission = [&](int j, int i) -> double {
+    auto localPlumeEmission = [&](std::size_t j, std::size_t i) -> double {
         if(mask[j][i] == 0) return 0;
         return E_H2O * 1.0E-06 / ( nonMaskCount * areas[j][i] );
     };
     //We could technically pre-compute all the masked indices and arrange them in a vector, but whatever.
-    for(int j = 0; j < mask.size(); j++) {
-        for(int i = 0; i < mask[0].size(); i++) {
+    for(std::size_t j = 0; j < mask.size(); j++) {
+        for(std::size_t i = 0; i < mask[0].size(); i++) {
             if(mask[j][i] == 1) {
                 double localPlumeH2O = localPlumeEmission(j, i);
                 H2O_[j][i] += localPlumeH2O;
@@ -319,8 +318,8 @@ void LAGRIDPlumeModel::updateDiffVecs() {
     diffCoeffY_ = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size()));
     
     #pragma omp parallel for
-    for(int j = 0; j < yCoords_.size(); j++) {
-        for(int i = 0; i < xCoords_.size(); i++) {
+    for(std::size_t j = 0; j < yCoords_.size(); j++) {
+        for(std::size_t i = 0; i < xCoords_.size(); i++) {
             diffCoeffX_[j][i] = number[j][i] > num_max * 1e-4 ? dh_enhanced : input_.horizDiff();
             diffCoeffY_[j][i] = number[j][i] > num_max * 1e-4 ? dv_enhanced : input_.vertiDiff();
         }
@@ -332,8 +331,8 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
 
     //TODO: Implement height dependent shear. For now, just taking shear of y coordinate with highest xOD to avoid bugs.
     auto xOD = iceAerosol_.xOD(Vector_1D(xCoords_.size(), xCoords_[1] - xCoords_[0]));
-    double maxIdx = 0;
-    for (int i = 0; i < xOD.size(); i++) {
+    int maxIdx = 0;
+    for (std::size_t i = 0; i < xOD.size(); i++) {
         if(xOD[i] > xOD[maxIdx]) maxIdx = i;
     }
     shear_rep_ = met_.shear(maxIdx);
@@ -343,7 +342,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     updateDiffVecs();
     //Transport the Ice Aerosol PDF
     #pragma omp parallel for default(shared)
-    for ( int n = 0; n < iceAerosol_.getNBin(); n++ ) {
+    for ( UInt n = 0; n < iceAerosol_.getNBin(); n++ ) {
         /* Transport particle number and volume for each bin and
             * recompute centers of each bin for each grid cell
             * accordingly */
@@ -416,13 +415,11 @@ std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> LAGRIDPlumeModel::r
 void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     //Generate free box grid from met post-advection
     Vector_2D iceTotalNum = iceAerosol_.TotalNumber();
-    double maxNum = VectorUtils::VecMax2D(iceTotalNum);
     auto numberMask = iceNumberMask();
     auto& mask = numberMask.first;
     auto& maskInfo = numberMask.second;
 
     Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
-    Vector_3D& vCentersRef = iceAerosol_.getBinVCenters_nonConstRef();
     Vector_3D volume = iceAerosol_.Volume();
 
     double vertDiffLengthScale = sqrt(VectorUtils::VecMax2D(diffCoeffY_) * remapTimestep);
@@ -455,7 +452,7 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
 
     /* TODO: Benchmark various ways of parallelizing this section, mainly the volume calculation that requires a reduction */
     #pragma omp parallel for default(shared)
-    for(int n = 0; n < iceAerosol_.getNBin(); n++) {
+    for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
         //Update pdf and volume
         pdfRef[n] = remapVariable(maskInfo, buffers, pdfRef[n], mask).first.phi;
         volume[n] = remapVariable(maskInfo, buffers, volume[n], mask).first.phi;
@@ -544,8 +541,8 @@ double LAGRIDPlumeModel::totalAirMass() {
     double totalAirMass = 0;
     double cellArea = (xEdges_[1] - xEdges_[0]) * (yEdges_[1] - yEdges_[0]);
     double conversion_factor = 1.0e6 * MW_Air / physConst::Na; // molec/cm3 * cm3/m3 * kg/mol * mol/molec = kg/m3
-    for(int j = 0; j < yCoords_.size(); j++) {
-        for(int i = 0; i < xCoords_.size(); i++) {
+    for(std::size_t j = 0; j < yCoords_.size(); j++) {
+        for(std::size_t i = 0; i < xCoords_.size(); i++) {
             totalAirMass += mask[j][i] * met_.airMolecDens(j, i) * cellArea * conversion_factor;
         }
     }
@@ -555,15 +552,15 @@ double LAGRIDPlumeModel::totalAirMass() {
 void LAGRIDPlumeModel::runCocipH2OMixing(const Vector_2D& h2o_old, const Vector_2D& h2o_amb_new, MaskType& mask_old, MaskType& mask_new) {
     //h2o_old is the actual H2O field of the "before" timestep
     double molec_h2o_old = 0;
-    for (int j = 0; j < h2o_old.size(); j++) {
-        for (int i = 0; i < h2o_old[0].size(); i++) {
+    for (std::size_t j = 0; j < h2o_old.size(); j++) {
+        for (std::size_t i = 0; i < h2o_old[0].size(); i++) {
             molec_h2o_old += mask_old.first[j][i] * h2o_old[j][i];
         }
     }
     //h2o_amb_new is the *ambient met* H2O field of the next timestep
     double molec_h2o_amb_added = 0;
-    for (int j = 0; j < h2o_amb_new.size(); j++) {
-        for (int i = 0; i < h2o_amb_new[0].size(); i++) {
+    for (std::size_t j = 0; j < h2o_amb_new.size(); j++) {
+        for (std::size_t i = 0; i < h2o_amb_new[0].size(); i++) {
             molec_h2o_amb_added += (mask_new.first[j][i] == 1 && mask_old.first[j][i] == 0) * h2o_amb_new[j][i];
         }
     }
@@ -571,8 +568,8 @@ void LAGRIDPlumeModel::runCocipH2OMixing(const Vector_2D& h2o_old, const Vector_
     double molec_h2o_final = molec_h2o_old + molec_h2o_amb_added; // molec/cm3
     double average_amb_humidity_final = molec_h2o_final / mask_new.second.count;
 
-    for (int j = 0; j < H2O_.size(); j++)  {
-        for (int i = 0; i < H2O_[0].size(); i++) {
+    for (std::size_t j = 0; j < H2O_.size(); j++)  {
+        for (std::size_t i = 0; i < H2O_[0].size(); i++) {
             if(mask_new.first[j][i] == 1) {
                 H2O_[j][i] = average_amb_humidity_final;
             }

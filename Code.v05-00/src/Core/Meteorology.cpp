@@ -18,20 +18,20 @@ Meteorology::Meteorology( const OptInput &optInput,
                           const AmbientMetParams& ambParams,
                           const Vector_1D& yCoords,
                           const Vector_1D& yEdges):
-    ambParams_(ambParams),
-    pressureRef_(ambParams.press_Pa),
-    yCoords_(yCoords),
-    yEdges_(yEdges),
+    rhi_far_(optInput.MET_SUBSAT_RHI),
     nx_(optInput.ADV_GRID_NX),
     ny_(optInput.ADV_GRID_NY),
+    yCoords_(yCoords),
+    yEdges_(yEdges),
     met_dt_h_(optInput.MET_DT),
+    ambParams_(ambParams),
+    pressureRef_(ambParams.press_Pa),
+    turbTempPertAmplitude_(optInput.MET_TEMP_PERTURB_AMPLITUDE),
     useMetFileInput_(optInput.MET_LOADMET),
     interpTemp_(optInput.MET_INTERPTEMPDATA),
     interpRH_(optInput.MET_INTERPRHDATA),
     interpShear_(optInput.MET_INTERPSHEARDATA),
-    interpVertVeloc_(optInput.MET_INTERPVERTVELOC),
-    turbTempPertAmplitude_(optInput.MET_TEMP_PERTURB_AMPLITUDE),
-    rhi_far_(optInput.MET_SUBSAT_RHI)
+    interpVertVeloc_(optInput.MET_INTERPVERTVELOC)
 {
 
     zeroVectors();
@@ -312,7 +312,7 @@ void Meteorology::readMetVar( const NcFile& dataFile, std::string varName, Vecto
 
 void Meteorology::initTempNoMet (const Vector_1D& yCoords) {
     #pragma omp parallel for default(shared)
-    for ( int j = 0; j < yCoords.size(); j++ ) {
+    for ( std::size_t j = 0; j < yCoords.size(); j++ ) {
         //Convention: lower altitude than reference= negative y, higher = positive y
         double temp_local = ambParams_.temp_K + yCoords[j] * lapseRate_ + diurnalPert_;
         tempBase_[j] = temp_local;
@@ -360,7 +360,7 @@ void Meteorology::initH2ONoMet (const Vector_1D& yCoords) {
     double RH_star = ambParams_.rhi;
     double RH_far = rhi_far_;
     #pragma omp parallel for default(shared)
-    for ( int j = 0; j < yCoords.size(); j++ ) {
+    for ( std::size_t j = 0; j < yCoords.size(); j++ ) {
         double H2O_local = yCoords[j] > moist_layer_bot_y && yCoords[j] < moist_layer_top_y
                             ? physFunc::RHiToH2O(RH_star, tempBase_[j])
                             : physFunc::RHiToH2O(RH_far, tempBase_[j]);
@@ -423,7 +423,7 @@ void Meteorology::initH2O( const NcFile& dataFile, const OptInput& optInput ) {
     try {
         satdepth_user_ = met::satdepth_calc(localRHw, tempBase_, altitude_, i_Z, std::abs(yCoords_[0]) + dy/2);
     }
-    catch (std::out_of_range e){
+    catch (std::out_of_range &e){
         if(optInput.MET_HUMIDSCAL_MODIFICATION_SCHEME != "constant")
             std::cout << "WARNING: end of initial domain does not cover saturation depth." << std::endl;
         satdepth_user_ = 1000.0;
@@ -543,7 +543,6 @@ void Meteorology::updateH2O(double simTime_h) {
 
     #pragma omp parallel for if (!PARALLEL_CASES)
     for ( int j = 0; j < ny_; j++ ) {
-        int i_Z = met::nearestNeighbor( altitudeInit_, altitude_[j] );
         double rh_local = met::linInterpMetData(altitudeInit_, rhiInit_, altitude_[j]);
         double h2o_local = physFunc::RHiToH2O(rh_local, tempBase_[j]);
         H2O_[j].assign(nx_, h2o_local);
@@ -639,7 +638,7 @@ void Meteorology::vertAdvectAltPress(double dt) {
         pE += omega * dt;
     }
     
-    double ytop_old = altitudeEdges_[altitudeEdges_.size() - 1];
+    // double ytop_old = altitudeEdges_[altitudeEdges_.size() - 1];
     //Update altitude edges to go with updated pressure edges
     met::ISA_pAlt(altitudeEdges_, pressureEdges_);
     //Re-calculate geometric altitude centers

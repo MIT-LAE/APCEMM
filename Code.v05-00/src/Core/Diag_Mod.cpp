@@ -10,8 +10,13 @@
 /* File                 : Diag_Mod.cpp                              */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#ifndef FMT_HEADER_ONLY
+#define FMT_HEADER_ONLY
+#endif
 
+#include <fmt/core.h>
 #include "Core/Diag_Mod.hpp"
+
 namespace Diag {
 
     static const NcType& varDataType = ncFloat;
@@ -24,52 +29,8 @@ namespace Diag {
 
         std::filesystem::path rootPath( rootName );
         std::string fileName = rootPath.filename().generic_string();
-        size_t start_pos;
-        bool found;
 
-        char hh_string[10];
-        sprintf(hh_string, "%02d", hh );
-        char mm_string[10];
-        sprintf(mm_string, "%02d", mm );
-        char ss_string[10];
-        sprintf(ss_string, "%02d", ss );
-
-        /* Replacing "hh" with hour number since start */
-        start_pos = 0; 
-        found = 0;
-        while ( (start_pos = fileName.find("hh", start_pos)) != std::string::npos ) {
-            fileName.replace(start_pos, 2, hh_string);
-            start_pos += 2;
-            found = 1;
-        }
-
-        if ( found = 0 ) {
-            std::cout << " Diagnostic filename must be of the form *hhmmss.nc or *hhmm.nc. Aborting!" << std::endl;
-            std::cout << " filename: " << rootName << std::endl;
-            exit(1);
-        }
-
-        /* Replacing "mm" with minute number since start */
-        start_pos = 0; 
-        found = 0;
-        while ( (start_pos = fileName.find("mm", start_pos)) != std::string::npos ) {
-            fileName.replace(start_pos, 2, mm_string);
-            start_pos += 2;
-        }
-        
-        if ( found = 0 ) {
-            std::cout << " Diagnostic filename must be of the form *hhmmss.nc or *hhmm.nc. Aborting!" << std::endl;
-            std::cout << " filename: " << rootName << std::endl;
-            exit(1);
-        }
-
-        /* Replacing "ss" with minute number since start if possible */
-        start_pos = 0;
-        found = 0;
-        while ( (start_pos = fileName.find("ss", start_pos)) != std::string::npos ) {
-            fileName.replace(start_pos, 2, ss_string);
-            start_pos += 2;
-        }
+        replace_hhmmss(fileName, hh, mm, ss);
         
         fileName = std::filesystem::path(rootPath.parent_path() / fileName).generic_string();
         const char* outFile = fileName.c_str();
@@ -83,7 +44,7 @@ namespace Diag {
         strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
         // Create time as seconds since start
-        const float cur_time = hh+mm/60.0+ss/3600.0;
+        // const float cur_time = hh+mm/60.0+ss/3600.0;
 
         // Create dimensions - make time unlimited (record dimension)
         const NcDim xDim       = currFile.addDim( "x", long(m.Nx()) );
@@ -119,16 +80,16 @@ namespace Diag {
         const char* outputType = "double";
     #else
         float* array;
-        const char* outputType = "float";
+        // const char* outputType = "float";
     #endif /* SAVE_TO_DOUBLE */
 
         /* Start saving species ... */
 
         /* Define conversion factor */
         double scalingFactor;
-        char charSpc[30];
-        char charName[50];
-        char charUnit[20];
+        std::string charSpc;
+        std::string charName;
+        std::string charUnit;
 
         // Define vector of dimensions
         std::vector<NcDim> xyDims{ yDim, xDim };
@@ -136,16 +97,20 @@ namespace Diag {
         std::vector<size_t> startp2( 2, 0 );
         std::vector<size_t> countp2{ m.Ny(), m.Nx() };
 
-        for ( UInt N = 0; N < NSPECALL; N++ ) {
+        // Provide type information for the variable defined by the KPP macro
+        // By default is casted as a UInt but we want int here for consistency
+        int NSpecAll = NSPECALL;
+
+        for ( int N = 0; N < NSpecAll; N++ ) {
             for ( UInt i = 0; i < speciesIndices.size(); i++ ) {
             
                 if ( speciesIndices[i] - 1 == N ) {
 
-                    strncpy( charSpc, SPC_NAMES[N], sizeof(charSpc) );
-                    strncpy( charName, SPC_NAMES[N], sizeof(charName) );
-                    strcat(  charName, " molecular concentration" );
+                    charSpc = SPC_NAMES[N];
+                    charName = SPC_NAMES[N];
+                    charName += " molecular concentration";
+                    charUnit = "molec/cm^3";
                     scalingFactor = 1.0E+00;
-                    strncpy( charUnit, "molec/cm^3", sizeof(charUnit) );
             
     #if ( SAVE_TO_DOUBLE )
                     array = util::vect2double( Data.Species[N], m.Ny(), m.Nx(), scalingFactor );
@@ -157,10 +122,12 @@ namespace Diag {
 
                     #pragma omp critical
                     {
-                    //NcVar var = currFile.addVar( &(array)[0],  \
-                    //                             (const char*)charSpc, yDim, xDim,  \
-                    //                             outputType, (const char*)charUnit, \
-                    //                             (const char*)charName );
+                    /*
+                    NcVar var = currFile.addVar( &(array)[0],  \
+                                                (const char*)charSpc, yDim, xDim,  \
+                                                outputType, (const char*)charUnit, \
+                                                (const char*)charName );
+                    */
                     NcVar var = currFile.addVar( charSpc, varDataType, xyDims );
                     var.putAtt("units", charUnit );
                     var.putAtt("long_name", charName );
@@ -190,13 +157,10 @@ namespace Diag {
         start_pos = 0; 
         found = 0;
 
-        //We dont have access to c++20 format library so these C functions will have to stay
-        char hh_string[10];
-        sprintf(hh_string, "%02d", hh );
-        char mm_string[10];
-        sprintf(mm_string, "%02d", mm );
-        char ss_string[10];
-        sprintf(ss_string, "%02d", ss );
+        // Make zero padded string representations with fmt
+        auto hh_string = fmt::format("{:02}", hh);
+        auto mm_string = fmt::format("{:02}", mm);
+        auto ss_string = fmt::format("{:02}", ss);
 
         while ( (start_pos = fileName.find("hh", start_pos)) != std::string::npos ) {
             fileName.replace(start_pos, 2, hh_string);
@@ -204,10 +168,10 @@ namespace Diag {
             found = 1;
         }
 
-        if ( found = 0 ) {
+        if ( found == 0 ) {
             std::cout << " Diagnostic filename must be of the form *hhmmss.nc or *hhmm.nc. Aborting!" << std::endl;
             std::cout << " filename: " << fileName << std::endl;
-            throw std::runtime_error("");
+            throw std::runtime_error("Did not find pattern hh");
         }
 
         /* Replacing "mm" with minute number since start */
@@ -216,12 +180,13 @@ namespace Diag {
         while ( (start_pos = fileName.find("mm", start_pos)) != std::string::npos ) {
             fileName.replace(start_pos, 2, mm_string);
             start_pos += 2;
+            found = 1;
         }
         
-        if ( found = 0 ) {
+        if ( found == 0 ) {
             std::cout << " Diagnostic filename must be of the form *hhmmss.nc or *hhmm.nc. Aborting!" << std::endl;
             std::cout << " filename: " << fileName << std::endl;
-            throw std::runtime_error("");
+            throw std::runtime_error("Did not find pattern mm");
         }
 
         /* Replacing "ss" with minute number since start if possible */

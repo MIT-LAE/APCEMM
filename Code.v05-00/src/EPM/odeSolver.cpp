@@ -354,7 +354,7 @@ namespace EPM
     {
 
         /* Variable definitions */
-        int counter = 0;
+        std::size_t counter = 0;
         float RHw;
         bool watersup { false };
 

@@ -10,6 +10,9 @@
 /* File                 : Main.cpp                                  */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#ifndef FMT_HEADER_ONLY
+#define FMT_HEADER_ONLY
+#endif
 
 #include <iostream>
 #include <iomanip>
@@ -23,6 +26,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <sys/stat.h>
+#include <fmt/core.h>
 #include <YamlInputReader/YamlInputReader.hpp>
 #include "Core/Interface.hpp"
 #include "Core/Parameters.hpp"
@@ -30,7 +34,6 @@
 #include "Core/LAGRIDPlumeModel.hpp"
 #include "Core/Status.hpp"
 
-static int DIR_FAIL = -9;
 
 void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
@@ -49,7 +52,9 @@ int main( int argc, char* argv[])
 {
 
     std::vector<std::unordered_map<std::string, double> > parameters;
-    unsigned int iCase, nCases;
+    unsigned int iCase;
+    // Help compiler tell this variable is initialized
+    unsigned int nCases = 0;
     const unsigned int iOFFSET = 0;
     
     const unsigned int model = 1;
@@ -102,6 +107,14 @@ int main( int argc, char* argv[])
 
         /* Number of cases */
         nCases  = parameters.size();
+        
+        /* Ensure cases were created properly */
+        if (nCases == 0)
+        {
+            std::cout << "Failed generating cases from input file" << std::endl;
+            std::cout << "Exiting ... " << std::endl;
+            exit(1);
+        }
         
         /* Create output directory */
         struct stat sb;
@@ -161,32 +174,19 @@ int main( int argc, char* argv[])
 
         unsigned int jCase = iOFFSET + iCase;
 
-        std::string fullPath, fullPath_ADJ, fullPath_BOX, fullPath_micro;
-        std::stringstream ss, ss_ADJ, ss_BOX, ss_micro;
-        ss     << std::setw(6) << std::setfill('0') << jCase;
-        std::string file     = Input_Opt.SIMULATION_FORWARD_FILENAME + ss.str();
-        ss_ADJ << std::setw(6) << std::setfill('0') << jCase;
-        std::string file_ADJ = Input_Opt.SIMULATION_ADJOINT_FILENAME + ss_ADJ.str();
-        ss_BOX << std::setw(6) << std::setfill('0') << jCase;
-        std::string file_BOX = Input_Opt.SIMULATION_BOX_FILENAME + ss_BOX.str();
-        ss_micro << std::setw(6) << std::setfill('0') << jCase;
-        std::string file_micro = "Micro" + ss_micro.str();
+        std::string fullPath, fullPath_ADJ, fullPath_BOX, fullPath_micro, jCaseString;
 
-        if ( Input_Opt.SIMULATION_OUTPUT_FOLDER.back() == '/' ) {
-            fullPath       = Input_Opt.SIMULATION_OUTPUT_FOLDER + file;
-            fullPath_ADJ   = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_ADJ;
-            fullPath_BOX   = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_BOX;
-            fullPath_micro = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_micro;
-        } else {
-            fullPath       = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file;
-            fullPath_ADJ   = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file_ADJ;
-            fullPath_BOX   = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file_BOX;
-            fullPath_micro = Input_Opt.SIMULATION_OUTPUT_FOLDER + '/' + file_micro;
-        }
-        fullPath = fullPath + ".nc";
-        fullPath_ADJ = fullPath_ADJ + ".nc";
-        fullPath_BOX = fullPath_BOX + ".nc";
-        fullPath_micro = fullPath_micro + ".out";
+        jCaseString = fmt::format("{:06}", jCase);
+        std::string file = Input_Opt.SIMULATION_FORWARD_FILENAME + jCaseString + ".nc";
+        std::string file_ADJ = Input_Opt.SIMULATION_ADJOINT_FILENAME + jCaseString + ".nc";
+        std::string file_BOX = Input_Opt.SIMULATION_BOX_FILENAME + jCaseString + ".nc";
+        std::string file_micro = "Micro" + jCaseString + ".out";
+
+        // "/" termination is checked when reading input file
+        fullPath       = Input_Opt.SIMULATION_OUTPUT_FOLDER + file;
+        fullPath_ADJ   = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_ADJ;
+        fullPath_BOX   = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_BOX;
+        fullPath_micro = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_micro;
 
         bool fileExist = 0;
 
@@ -262,7 +262,6 @@ int main( int argc, char* argv[])
             #pragma omp critical 
             {
                 if ( case_status == SimStatus::Failed ) {
-                    std::cout.precision(3);
                     std::cout << "\n APCEMM Case: " << iCase << " failed";
                     #ifdef OMP
                         std::cout << " on thread " << omp_get_thread_num();
@@ -270,18 +269,23 @@ int main( int argc, char* argv[])
                     std::cout << "." << std::endl;
                     // This error reporting is not being used right now
                     // std::cout << " Error: " << iERR << "" << std::endl;
-                    std::cout << std::fixed;
-                    std::cout << std::setprecision(3);
-                    std::cout << " T   : " << std::setw(8) << inputCase.temperature_K();
-                    std::cout << " [K]" << std::endl;
-                    std::cout << " P   : " << std::setw(8) << inputCase.pressure_Pa()/((double) 100.0);
-                    std::cout << " [hPa]" << std::endl;
-                    std::cout << " RH_w: " << std::setw(8) << inputCase.relHumidity_w();
-                    std::cout << " [%]" << std::endl;
-                    std::cout << " LON : " << std::setw(8) << inputCase.longitude_deg();
-                    std::cout << " [deg]" << std::endl;
-                    std::cout << " LAT : " << std::setw(8) << inputCase.latitude_deg();
-                    std::cout << " [deg]" << std::endl;
+
+                    // Report contrail location
+                    // {:>8.2f} = right align with a width of 8 with 2 decimals
+                    fmt::print(" LON [deg]: {:>8.2f}\n", inputCase.latitude_deg());
+                    fmt::print(" LAT [deg]: {:>8.2f}\n", inputCase.longitude_deg());
+                    fmt::print(" P   [hPa]: {:>8.2f}\n", inputCase.pressure_Pa()/100.0);
+
+                    // Report relevant input met data when crashing
+                    if (Input_Opt.MET_LOADMET)
+                    {
+                        fmt::print(" Met file : {:>}\n",  Input_Opt.MET_FILENAME);
+                    }
+                    else
+                    {
+                        fmt::print(" T     [K]: {:>8.2f}\n", inputCase.temperature_K());
+                        fmt::print(" RH_w  [%]: {:>8.2f}\n", inputCase.relHumidity_w());
+                    }
                 }
                 else { std::cout << " APCEMM Case: " << iCase << " completed." << std::endl; }
                 
@@ -307,6 +311,7 @@ int main( int argc, char* argv[])
 
 } /* End of Main */
 
+// TODO rewrite all of this with std::filesystem
 void CreateREADME( const std::string folder, const std::string fileName, const std::string purpose )
 {
 
@@ -362,8 +367,8 @@ void CreateREADME( const std::string folder, const std::string fileName, const s
     README << "\n## Simulation start date " << buffer << "\n";
 
     /* Print source code directory */
-    char cwd[PATH_MAX];
-    getcwd(cwd, sizeof(cwd));
+    // Calling with args (NULL, 0) allocates a new buffer of the correct size
+    char *cwd = getcwd(NULL, 0);
     if ( cwd != NULL )
         README << "\n## Source files: " << cwd << "\n";
     else

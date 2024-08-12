@@ -46,13 +46,11 @@ namespace YamlInputReader{
     inline double strToDouble(const string str, bool sciNotation = true){
         string s = trim(str);
         bool foundDot = false;
-        bool hasSign = false;
         if (s.length() != 0 && (s[0] == '-' || s[0] == '+')){
             s = s.substr(1);
-            hasSign = true;
         }
         if (s.length() == 0) throw (std::invalid_argument("Input Reader tried to process number of length 0! Please double-check your input!"));
-        for (int i = 0; i < s.length(); i++){
+        for (std::size_t i = 0; i < s.length(); i++){
             char c = s[i];
             if(std::isdigit(c)) continue;
             //Don't allow something like 10e2. or 3e-2.5
@@ -86,7 +84,7 @@ namespace YamlInputReader{
         try{
             return strToDouble(paramString);
         }
-        catch (std::invalid_argument e){
+        catch (const std::invalid_argument &e){
             throw std::invalid_argument(string(e.what()) + " at parameter " + paramLocation);
         }
 

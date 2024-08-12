@@ -712,12 +712,11 @@ namespace physFunc
 
     Vector_2D RHi_Field(const Vector_2D& H2O, const Vector_2D& T, const Vector_1D& P) {
         Vector_2D RHi(H2O.size(), Vector_1D(H2O[0].size(), 0));
-        double pH2O, locP;
+        double pH2O;
         #pragma omp parallel for \
-        private(pH2O, locP)
-        for(int jNy = 0; jNy < H2O.size(); jNy++){
-            locP = P[jNy];
-            for (int iNx = 0; iNx < H2O[0].size(); iNx++){
+        private(pH2O)
+        for(std::size_t jNy = 0; jNy < H2O.size(); jNy++){
+            for (std::size_t iNx = 0; iNx < H2O[0].size(); iNx++){
                 pH2O = physConst::R * T[jNy][iNx] * H2O[jNy][iNx] /(physConst::Na*1e-6);
                 RHi[jNy][iNx] = pH2O / pSat_H2Os(T[jNy][iNx]);
             }

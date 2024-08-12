@@ -22,6 +22,7 @@ MPMSimVarsWrapper::MPMSimVarsWrapper(const Input& input, const OptInput& Input_O
 	LIQ_COAG(Input_Opt.AEROSOL_COAGULATION_LIQUID),
 	ICE_GROWTH(Input_Opt.AEROSOL_ICE_GROWTH),
 	TEMP_PERTURB(Input_Opt.MET_ENABLE_TEMP_PERTURB),
+	metDepth(Input_Opt.MET_DEPTH),
 	DIAG_FILENAME(Input_Opt.DIAG_FILENAME),
 	TS_FOLDER(Input_Opt.SIMULATION_OUTPUT_FOLDER),
 	TS_SPEC(Input_Opt.TS_SPEC),
@@ -36,8 +37,7 @@ MPMSimVarsWrapper::MPMSimVarsWrapper(const Input& input, const OptInput& Input_O
 	SAVE_O3PL(Input_Opt.PL_O3),
 	temperature_K(input.temperature_K()),
 	pressure_Pa(input.pressure_Pa()),
-	relHumidity_w(input.relHumidity_w()),
-	metDepth(Input_Opt.MET_DEPTH)
+	relHumidity_w(input.relHumidity_w())
 
 
 {

@@ -12,7 +12,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
-static int SUCCESS     =  1;
+// static int SUCCESS     =  1;
 
 /* STL includes */
 #include <iostream>
@@ -70,7 +70,7 @@ static int SUCCESS     =  1;
 /* (URGENT) FIXME: Whoever works on chemistry, REFACTOR THESE REMAINING GLOBAL VARIABLES by refactoring!
             Using non-const global variables is the biggest software engineering antipattern ever */
 int isSaved = 1;
-static int SAVE_FAIL   = -2;
+// static int SAVE_FAIL   = -2;
 
 double RCONST[NREACT];       /* Rate constants (global) */
 double NOON_JRATES[NPHOTOL]; /* Noon-time photolysis rates (global) */
@@ -151,8 +151,8 @@ SimStatus PlumeModel( OptInput &Input_Opt, const Input &input )
     }
 
     /* Grid indices */
-    UInt iNx = 0;
-    UInt jNy = 0;
+    int iNx;
+    int jNy;
 
     /* Species index */
     UInt N   = 0;
@@ -313,7 +313,7 @@ SimStatus PlumeModel( OptInput &Input_Opt, const Input &input )
 
     /* Allocate shear */
     double shear;
-    int LASTINDEX_SHEAR;
+    // int LASTINDEX_SHEAR;
 
     /* Initialize */
     d_x = 0;       /* [m2/s] */
@@ -326,10 +326,10 @@ SimStatus PlumeModel( OptInput &Input_Opt, const Input &input )
     D_X   = input.horizDiff(); /* [m^2/s] */
     D_Y   = input.vertiDiff(); /* [m^2/s] */
     shear = Met.shear();     /* [1/s] */
-    if ( shear >= 0.0E+00 )
-        LASTINDEX_SHEAR = Input_Opt.ADV_GRID_NX - 1;
-    else
-        LASTINDEX_SHEAR = 0;
+    // if ( shear >= 0.0E+00 )
+    //     LASTINDEX_SHEAR = Input_Opt.ADV_GRID_NX - 1;
+    // else
+    //     LASTINDEX_SHEAR = 0;
 
     /* ======================================================================= */
     /* ----------------------------------------------------------------------- */
@@ -383,6 +383,9 @@ SimStatus PlumeModel( OptInput &Input_Opt, const Input &input )
 
     /* Allocate doubles to store RH and IWC */
     double relHumidity, IWC;
+
+    // Initialize IWC to help compiler, value will be overwritten before it is used.
+    IWC = 0;
 
     /* Initialize tolerances */
     for( UInt i = 0; i < NVAR; i++ ) {
@@ -447,8 +450,8 @@ SimStatus PlumeModel( OptInput &Input_Opt, const Input &input )
         iceAer.scalePdf( iceNumFrac );
     }
 
-    const double semiYaxis = 0.5 * aircraft.deltaz1();
-    const double semiXaxis = areaPlume / ( physConst::PI * semiYaxis );
+    // const double semiYaxis = 0.5 * aircraft.deltaz1();
+    // const double semiXaxis = areaPlume / ( physConst::PI * semiYaxis );
 
     //Initializes/Calculates TRANSPORT_PA, TRANSPORT_LA
     simVars.initMicrophysicsVars(Data, liquidAer, Ice_den);
@@ -607,30 +610,32 @@ SimStatus PlumeModel( OptInput &Input_Opt, const Input &input )
          * NY x NX x NFAM in [molec/cm^3/s]
          * into netCDF files at a frequency specified by the input file */
 
-        int hh = (int) (timestepVars.curr_Time_s - timestepVars.timeArray[0])/3600;
-        int mm = (int) (timestepVars.curr_Time_s - timestepVars.timeArray[0])/60   - 60 * hh;
-        int ss = (int) (timestepVars.curr_Time_s - timestepVars.timeArray[0])      - 60 * ( mm + 60 * hh );
-//        Diag_PL( "PL_hhmmss.nc", hh, mm, ss, Data, m );
+        // int hh = (int) (timestepVars.curr_Time_s - timestepVars.timeArray[0])/3600;
+        // int mm = (int) (timestepVars.curr_Time_s - timestepVars.timeArray[0])/60   - 60 * hh;
+        // int ss = (int) (timestepVars.curr_Time_s - timestepVars.timeArray[0])      - 60 * ( mm + 60 * hh );
+        // Diag_PL( "PL_hhmmss.nc", hh, mm, ss, Data, m );
 
     } else {
         if ( simVars.SAVE_O3PL ) {
         }
     }
         /* Fill with? */
-    const double fillWith = 0.0E+00;
+    // const double fillWith = 0.0E+00;
 
     /* Allocate Solvers */
-    // SANDS::Solver Solver;
-    // #pragma omp critical
-    // {
-    //     std::cout << "\n Initializing solver..." << std::endl;
-    //     Solver.Initialize( /* Use threaded FFT?    */ simVars.THREADED_FFT, \
-    //                        /* Use FFTW wisdom?     */ simVars.USE_WISDOM,   \
-    //                        /* FFTW Directory       */ simVars.FFTW_DIR.c_str(),     \
-    //                        /* Fill negative values */ simVars.FILLNEG,      \
-    //                        /* Fill with this value */ fillWith );
-    //     std::cout << "\n Initialization complete..." << std::endl;
-    // }
+    /*
+    SANDS::Solver Solver;
+    #pragma omp critical
+    {
+        std::cout << "\n Initializing solver..." << std::endl;
+        Solver.Initialize(  simVars.THREADED_FFT,
+                            simVars.USE_WISDOM,   \
+                            simVars.FFTW_DIR.c_str(),     \
+                            simVars.FILLNEG,      \
+                            fillWith );
+        std::cout << "\n Initialization complete..." << std::endl;
+    }
+    */
     const FVM_ANDS::AdvDiffParams fvmSolverInitParams(0, 0, shear, D_X, D_Y, timestepVars.TRANSPORT_DT);
     const FVM_ANDS::BoundaryConditions H2O_BOUNDARY_COND = FVM_ANDS::bcFrom2DVector(Data.Species[ind_H2Oplume]);
     const FVM_ANDS::BoundaryConditions ZERO_BOUNDARY_COND = FVM_ANDS::bcFrom2DVector(Data.Species[ind_H2Oplume], true);
@@ -758,7 +763,7 @@ SimStatus PlumeModel( OptInput &Input_Opt, const Input &input )
                 /* Transport of solid aerosols */
 
                 #pragma omp parallel for if(!PARALLEL_CASES) default(shared)
-                for ( int iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
+                for ( UInt iBin_PA = 0; iBin_PA < Data.nBin_PA; iBin_PA++ ) {
                     /* Transport particle number and volume for each bin and
                      * recompute centers of each bin for each grid cell
                      * accordingly */
@@ -963,6 +968,9 @@ SimStatus PlumeModel( OptInput &Input_Opt, const Input &input )
                 relHumidity = VAR[ind_H2O] * \
                                 physConst::kB * simVars.temperature_K * 1.00E+06 / \
                                 physFunc::pSat_H2Ol( simVars.temperature_K );
+
+                // IWC value here is still set from IWC = Data.solidAerosol.Moment( 3, Input_Opt.ADV_GRID_NY - 1, Input_Opt.ADV_GRID_NX - 1 ) * physConst::RHO_ICE;
+                // This does not seem correct but this is dead code... Value is definitely initialized however and not equal to 0 from the initial declaration.
                 GC_SETHET( simVars.temperature_K, simVars.pressure_Pa, airDens, relHumidity, \
                             Data.STATE_PSC, VAR, AerosolArea, AerosolRadi, IWC, &(Data.KHETI_SLA[0]), Input_Opt.ADV_TROPOPAUSE_PRESSURE );
             }

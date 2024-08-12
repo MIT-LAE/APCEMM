@@ -14,21 +14,22 @@
 #include "Core/Mesh.hpp"
 
 Mesh::Mesh(const OptInput& optInput):
-   nx( optInput.ADV_GRID_NX ),
-   ny( optInput.ADV_GRID_NY ),
-   xlim_right( optInput.ADV_GRID_XLIM_RIGHT ),
-   xlim_left( optInput.ADV_GRID_XLIM_LEFT ),
-   ylim_up( optInput.ADV_GRID_YLIM_UP ),
-   ylim_down( optInput.ADV_GRID_YLIM_DOWN ){
+    xlim_right( optInput.ADV_GRID_XLIM_RIGHT ),
+    xlim_left( optInput.ADV_GRID_XLIM_LEFT ),
+    ylim_up( optInput.ADV_GRID_YLIM_UP ),
+    ylim_down( optInput.ADV_GRID_YLIM_DOWN ),
+    nx( optInput.ADV_GRID_NX ),
+    ny( optInput.ADV_GRID_NY )
+{
     initCoordVectors(MeshDomainLimitsSpec::CENTERED_LIMITS);
 }
 Mesh::Mesh(int nx, int ny, double xlim_left, double xlim_right, double ylim_up, double ylim_down, MeshDomainLimitsSpec limitsSpec):
-   nx( nx ),
-   ny( ny ),
-   xlim_right( xlim_right ),
-   xlim_left( xlim_left ),
-   ylim_up( ylim_up ),
-   ylim_down( ylim_down )
+    xlim_right( xlim_right ),
+    xlim_left( xlim_left ),
+    ylim_up( ylim_up ),
+    ylim_down( ylim_down ),
+    nx( nx ),
+    ny( ny )
 {
     initCoordVectors(limitsSpec);
 
@@ -333,7 +334,7 @@ void Mesh::MapWeights( )
 } /* End of Mesh::MapWeights */
 
 void Mesh::updateVertGrid( const Vector_1D& yE_new ) {
-    for(int i = 0; i < yE_new.size(); i++) {
+    for(std::size_t i = 0; i < yE_new.size(); i++) {
         y_[i] = (yE_new[i] + yE_new[i+1]) / 2;
         dy_[i] = yE_new[i+1] - yE_new[i];
     }
