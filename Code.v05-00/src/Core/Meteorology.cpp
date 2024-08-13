@@ -630,6 +630,12 @@ void Meteorology::vertAdvectAltPress(double dt) {
 
     double omega = dp_dz * w_local;
 
+    // SDE 2024-08-12: Disabled temporarily while pressure velocity issues are fixed
+    if (std::abs(omega) > 1.0e-10 ){
+        std::cout << " -- WARNING: PRESSURE VELOCITIES CURRENTLY DISABLED -- " << std::endl;
+    }
+    return;
+
     /* Update edges instead of centers (altitude_, pressure_) because altitude-pressure relationship
        is nonlinear. Therefore, the relative position of the center will move hwen advecting at some
        constant pressure velocity. If we then assume a constant dx without moving the center, we will
