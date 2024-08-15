@@ -69,6 +69,21 @@ class LAGRIDPlumeModel {
             return VectorUtils::Vec2DMask(iceTotalNum, xEdges_, yEdges_, iceNumMaskFunc);
         }
 
+        inline MaskType H2OMask() {
+            Vector_2D metH2O = met_.H2O_field();
+            Vector_2D diffH2O = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size()));
+            for (std::size_t j = 0; j < yCoords_.size(); j++) {
+                for (std::size_t i = 0; i < xCoords_.size(); i++) {
+                    diffH2O[j][i] = std::abs(H2O_[j][i] - metH2O[j][i]);
+                }
+            }
+            double maxDiff = 1.0e6;
+            auto maskFunc = [maxDiff](double val) {
+                return val > maxDiff;
+            };
+            return VectorUtils::Vec2DMask(diffH2O, xEdges_, yEdges_, maskFunc);
+        }
+
         void createOutputDirectories();
         void initializeGrid();
         void saveTSAerosol();

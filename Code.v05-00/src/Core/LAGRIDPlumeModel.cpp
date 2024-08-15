@@ -415,9 +415,12 @@ std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> LAGRIDPlumeModel::r
 void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     //Generate free box grid from met post-advection
     Vector_2D iceTotalNum = iceAerosol_.TotalNumber();
-    auto numberMask = iceNumberMask();
-    auto& mask = numberMask.first;
-    auto& maskInfo = numberMask.second;
+    //auto contrailMask = iceNumberMask();
+    // WARNING: H2O approach may not work well with temperature
+    // fluctuation field active
+    auto contrailMask = H2OMask();
+    auto& mask = contrailMask.first;
+    auto& maskInfo = contrailMask.second;
 
     Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
     Vector_3D volume = iceAerosol_.Volume();
