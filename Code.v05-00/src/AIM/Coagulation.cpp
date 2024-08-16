@@ -11,7 +11,12 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <iostream>
+#include <algorithm>
+#include "AIM/buildKernel.hpp"
+#include "Util/PhysFunction.hpp"
 #include "AIM/Coagulation.hpp"
+
 
 namespace AIM
 {

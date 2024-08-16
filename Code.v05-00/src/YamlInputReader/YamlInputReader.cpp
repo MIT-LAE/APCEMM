@@ -1,8 +1,8 @@
+#include <iostream>
 #include "APCEMM.h"
+#include "Util/MC_Rand.hpp"
 #include "YamlInputReader/YamlInputReader.hpp"
 
-using std::cout;
-using std::endl;
 namespace YamlInputReader{
     void readYamlInputFile(OptInput& input, string filename){
         INPUT_FILE_PATH = std::filesystem::path(filename);

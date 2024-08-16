@@ -14,9 +14,6 @@
 #ifndef ERROR_H_INCLUDED
 #define ERROR_H_INCLUDED
 
-#include <iostream>
-#include <limits>
-
 extern "C" bool SafeDiv( double num, double denom );
 
 #endif /* ERROR_H_INCLUDED */

@@ -11,6 +11,9 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <algorithm>
+#include <iomanip>
+#include "Util/ForwardDecl.hpp"
 #include "Core/ReadJRates.hpp"
 
 void ReadJRates( const char* ROOTDIR,                          \

@@ -14,10 +14,8 @@
 #ifndef AEROSOL_H_INCLUDED
 #define AEROSOL_H_INCLUDED
 
-#include <iostream>
 #include <cmath>
 #include <vector>
-#include <numeric>
 #include <cstring>
 #include <boost/math/special_functions/gamma.hpp>
 #include "APCEMM.h"
@@ -27,11 +25,7 @@
     #include "omp.h"
 #endif /* OMP */
 
-/* Include Parameters.hpp for multithreading option */
-#include "Core/Parameters.hpp"
-
 #include "Util/ForwardDecl.hpp"
-#include "Util/PhysConstant.hpp"
 #include "AIM/Coagulation.hpp"
 #include "Core/Mesh.hpp"
 

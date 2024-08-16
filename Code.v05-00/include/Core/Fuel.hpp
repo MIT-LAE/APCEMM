@@ -15,7 +15,6 @@
 #define FUEL_H_INCLUDED
 
 #include <string>
-#include <iostream>
 #include <cstring>
 
 class Fuel

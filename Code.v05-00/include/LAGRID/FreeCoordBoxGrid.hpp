@@ -1,8 +1,8 @@
 #ifndef LAGRID_FREECOORDBOXGRID_H
 #define LAGRID_FREECOORDBOXGRID_H
+
 #include "Util/ForwardDecl.hpp"
-#include <limits>
-#include <iostream>
+
 namespace LAGRID {
     using std::vector;
     struct MassBox {

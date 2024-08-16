@@ -11,6 +11,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <cmath>
+#include "Util/PhysConstant.hpp"
 #include "Core/SZA.hpp"
 
 SZA::SZA( const double lat_, const unsigned int day_ ):

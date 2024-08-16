@@ -12,7 +12,6 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "Util/PhysFunction.hpp"
-#include <iostream>
 
 namespace physFunc
 {

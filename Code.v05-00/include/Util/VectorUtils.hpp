@@ -1,9 +1,9 @@
 #ifndef VECTORUTILS_H
 #define VECTORUTILS_H
 
-#include "Util/ForwardDecl.hpp"
-#include <limits>
 #include <functional>
+#include "Util/ForwardDecl.hpp"
+
 namespace VectorUtils {
     using std::vector;
     Vector_2D cellAreas (const Vector_1D& xEdges, const Vector_1D& yEdges);

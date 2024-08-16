@@ -1,7 +1,7 @@
 #ifndef LAGRIDPLUMEMODEL_H
 #define LAGRIDPLUMEMODEL_H
+
 #include "AIM/Aerosol.hpp"
-#include "AIM/Settling.hpp"
 #include "LAGRID/RemappingFunctions.hpp"
 #include "FVM_ANDS/FVM_Solver.hpp"
 #include "EPM/Integrate.hpp"
@@ -9,10 +9,10 @@
 #include "Core/MPMSimVarsWrapper.hpp"
 #include "Core/TimestepVarsWrapper.hpp"
 #include "Core/Meteorology.hpp"
-#include "Util/VectorUtils.hpp"
-#include "Util/PlumeModelUtils.hpp"
-#include <filesystem>
+#include "Core/SZA.hpp"
 #include "Core/Status.hpp"
+#include "Util/VectorUtils.hpp"
+
 class LAGRIDPlumeModel {
     public:
         static constexpr bool COCIP_MIXING = 0; // Results in less accurate mixing representation, only meant for comparisions vs. the CoCiP model.

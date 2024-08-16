@@ -15,15 +15,11 @@
 #define SAVE_H_INCLUDED
 
 #include <vector>
-
-#include "Core/Parameters.hpp"
-#include "Core/Interface.hpp"
 #include "Core/Input_Mod.hpp"
 #include "Core/Input.hpp"
 #include "Core/Species.hpp"
 #include "Core/Ambient.hpp"
 #include "Core/Cluster.hpp"
-#include "Core/Util.hpp"
 
 namespace output
 {

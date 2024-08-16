@@ -14,8 +14,6 @@
 #ifndef CLUSTER_H_INCLUDED
 #define CLUSTER_H_INCLUDED
 
-#include <iostream>
-#include <iomanip>
 #include <vector>
 #include <cmath>
 #include "Core/Ring.hpp"

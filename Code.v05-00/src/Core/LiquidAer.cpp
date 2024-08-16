@@ -11,6 +11,12 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <iostream>
+#include <cmath>
+#include "Util/Error.hpp"
+#include "Util/PhysConstant.hpp"
+#include "Util/PhysFunction.hpp"
+#include "Core/Parameters.hpp"
 #include "Core/LiquidAer.hpp"
 
 double H2SO4_GASFRAC( const double temperature_K, const double SO4 )

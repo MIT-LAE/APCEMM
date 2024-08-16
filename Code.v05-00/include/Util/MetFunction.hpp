@@ -14,12 +14,8 @@
 #ifndef METFUNCTION_H_INCLUDED
 #define METFUNCTION_H_INCLUDED
 
-#include <iostream>
 #include <cmath>
 #include "ForwardDecl.hpp"
-#include "PhysConstant.hpp"
-#include "PhysFunction.hpp"
-#include "../Core/Parameters.hpp"
 
 #define ABS(x)   ( ((x) >=  0 ) ?(x):(-x) ) 
 

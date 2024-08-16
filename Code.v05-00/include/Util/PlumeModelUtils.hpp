@@ -1,7 +1,6 @@
 #ifndef PLUMEMODELUTILS_H
 #define PLUMEMODELUTILS_H
 
-#include <iostream>
 #include <vector>
 #include <cmath>
 #include <Core/Parameters.hpp>

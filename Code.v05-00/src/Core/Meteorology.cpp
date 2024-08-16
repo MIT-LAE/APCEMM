@@ -11,6 +11,10 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <algorithm>
+#include "Util/PhysFunction.hpp"
+#include "Util/PhysConstant.hpp"
+#include "Core/Parameters.hpp"
 #include "Core/Meteorology.hpp"
 #include "Util/MC_Rand.hpp"
 

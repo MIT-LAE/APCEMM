@@ -14,15 +14,9 @@
 #ifndef READJRATES_H_INCLUDED
 #define READJRATES_H_INCLUDED
 
-#include <iostream>
-#include <iomanip>
 #include <cstring>
-#include <algorithm>
-
-#include "Util/ForwardDecl.hpp"
-#include "KPP/KPP_Parameters.h"
-
 #include <netcdf>
+
 using namespace netCDF;
 using namespace netCDF::exceptions;
 

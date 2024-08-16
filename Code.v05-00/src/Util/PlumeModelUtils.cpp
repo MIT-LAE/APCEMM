@@ -1,4 +1,6 @@
+#include <iostream>
 #include "Util/PlumeModelUtils.hpp"
+
 namespace PlumeModelUtils {
     std::vector<double> BuildTime( const double tStart, const double tEnd, \
                                 const double sunRise, const double sunSet, \

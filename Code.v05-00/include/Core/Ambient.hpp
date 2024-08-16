@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "KPP/KPP_Parameters.h"
-#include "KPP/KPP_Global.h"
 #include "Util/ForwardDecl.hpp"
 #include "Core/Parameters.hpp"
 

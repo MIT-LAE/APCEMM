@@ -11,6 +11,7 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <limits>
 #include "Util/Error.hpp"
 
 bool SafeDiv( double num, double denom )

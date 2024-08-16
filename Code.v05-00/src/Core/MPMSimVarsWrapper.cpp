@@ -1,3 +1,4 @@
+#include "Util/PhysFunction.hpp"
 #include "Core/MPMSimVarsWrapper.hpp"
 
 MPMSimVarsWrapper::MPMSimVarsWrapper(const Input& input, const OptInput& Input_Opt):

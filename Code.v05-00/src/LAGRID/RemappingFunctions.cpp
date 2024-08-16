@@ -1,4 +1,7 @@
+#include <numeric>
+#include "Util/PhysConstant.hpp"
 #include "LAGRID/RemappingFunctions.hpp"
+
 namespace LAGRID {
 
     void twoDGridVariable::addBuffer(double bufLen_left, double bufLen_right, double bufLen_top, double bufLen_bot, double fillValue) {

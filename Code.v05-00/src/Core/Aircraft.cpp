@@ -11,6 +11,9 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <iomanip>
+#include <iostream>
+#include "Util/PhysConstant.hpp"
 #include "Core/Aircraft.hpp"
 
 Aircraft::Aircraft( )

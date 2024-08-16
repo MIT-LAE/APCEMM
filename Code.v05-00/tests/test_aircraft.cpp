@@ -1,10 +1,10 @@
-#include <Core/Aircraft.hpp>
-#include <Util/ForwardDecl.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
-#include <fstream>
-#include <iostream>
 #include <string>
+#include <Core/Aircraft.hpp>
+#include <Util/ForwardDecl.hpp>
+#include "Util/PhysConstant.hpp"
+
 
 std::string engineFileName = std::string(APCEMM_TESTS_DIR)+"/../../input_data/ENG_EI.txt";
 TEST_CASE("Vortex Losses Survival Fraction"){

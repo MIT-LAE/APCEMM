@@ -14,15 +14,12 @@
 #ifndef ENGINE_H_INCLUDED
 #define ENGINE_H_INCLUDED
 
-#include <iostream>
 #include <string>
 #include <fstream>
-#include <sstream>
 #include <cstring>
 #include <vector>
 #include <cmath>
 
-#include "Util/PhysConstant.hpp"
 
 class Engine
 {

@@ -1,7 +1,8 @@
 #include "LAGRID/RemappingFunctions.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
-#include <iostream>
+#include <numeric>
+
 TEST_CASE("FreeCoordBoxGrid and Remapping") {
     Vector_1D dy = {1, 2, 3, 4};
     Vector_1D dx = {1, 2, 3, 4};

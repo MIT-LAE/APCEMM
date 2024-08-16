@@ -14,11 +14,7 @@
 #ifndef SETTLING_H_INCLUDED
 #define SETTLING_H_INCLUDED
 
-#include <iostream>
-
 #include "Util/ForwardDecl.hpp"
-#include "Util/PhysConstant.hpp"
-#include "Util/PhysFunction.hpp"
 
 namespace AIM
 {

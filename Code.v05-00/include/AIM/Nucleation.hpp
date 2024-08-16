@@ -14,10 +14,7 @@
 #ifndef NUCLEATION_H_INCLUDED
 #define NUCLEATION_H_INCLUDED
 
-#include <iostream>
 #include <cmath>
-
-#include "Util/ForwardDecl.hpp"
 
 namespace AIM
 {

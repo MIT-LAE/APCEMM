@@ -17,10 +17,8 @@
 /* STL includes */
 #include <iostream>
 #include <vector>
-#include <numeric>
 #include <cmath>
 #include <algorithm>
-#include <complex>
 #include <ctime>
 #include <memory>
 #include <sys/stat.h>
@@ -35,7 +33,6 @@
 #include "Core/Parameters.hpp"
 #include "Core/Interface.hpp"
 #include "Core/Input.hpp"
-#include "Core/Monitor.hpp"
 #include "AIM/Aerosol.hpp"
 #include "AIM/Coagulation.hpp"
 #include "AIM/Settling.hpp"
@@ -48,19 +45,17 @@
 #include "Core/Meteorology.hpp"
 #include "Core/Structure.hpp"
 #include "Core/Fuel.hpp"
-#include "Core/Engine.hpp"
 #include "Core/Aircraft.hpp"
 #include "Core/Emission.hpp"
 #include "Core/ReadJRates.hpp"
 #include "Core/TimestepVarsWrapper.hpp"
 #include "Core/MPMSimVarsWrapper.hpp"
 #include "FVM_ANDS/FVM_Solver.hpp"
+#include "Util/PhysFunction.hpp"
 #include "Util/PlumeModelUtils.hpp"
-#include "Util/VectorUtils.hpp"
 
 /* For RINGS */
 #include "Core/Cluster.hpp"
-#include "Core/Species.hpp"
 
 /* For DIAGNOSTIC */
 #include "Core/Diag_Mod.hpp"

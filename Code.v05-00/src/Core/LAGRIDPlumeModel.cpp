@@ -1,5 +1,10 @@
-#include "Core/LAGRIDPlumeModel.hpp"
+#include <filesystem>
+#include "AIM/Settling.hpp"
+#include "Util/PlumeModelUtils.hpp"
 #include "Core/Status.hpp"
+#include "Core/SZA.hpp"
+#include "Core/LAGRIDPlumeModel.hpp"
+
 LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input ):
     optInput_(optInput),
     input_(input),

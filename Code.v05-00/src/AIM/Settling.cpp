@@ -11,6 +11,9 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <iostream>
+#include "Util/PhysFunction.hpp"
+
 #include "AIM/Settling.hpp"
 
 namespace AIM

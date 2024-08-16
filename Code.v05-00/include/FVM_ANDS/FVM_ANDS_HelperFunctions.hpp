@@ -1,12 +1,11 @@
+#ifndef FVM_ANDS_HELPERFUNCTIONS_H
+#define FVM_ANDS_HELPERFUNCTIONS_H
+
 #include <Eigen/Sparse>
 #include <Util/ForwardDecl.hpp>
 #include <Util/PhysConstant.hpp>
-#include <unordered_map>
-#include <iostream>
-#include <limits> 
 #include "FVM_ANDS/BoundaryCondition.hpp"
-#ifndef FVM_ANDS_HELPERFUNCTIONS_H
-#define FVM_ANDS_HELPERFUNCTIONS_H
+
 namespace FVM_ANDS{
     int twoDIdx_to_vecIdx(int idx_x, int idx_y, int nx, int ny, vecFormat format = vecFormat::COLMAJOR);
     Eigen::VectorXd std2dVec_to_eigenVec(const Vector_2D& phi, vecFormat format = vecFormat::COLMAJOR);

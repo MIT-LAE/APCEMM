@@ -1,9 +1,7 @@
 #ifndef LAGRID_REMAPPINGFUNCTIONS_H
 #define LAGRID_REMAPPINGFUNCTIONS_H
+
 #include "LAGRID/FreeCoordBoxGrid.hpp"
-#include "Util/PhysConstant.hpp"
-#include "Util/VectorUtils.hpp"
-#include <numeric>
 #include <algorithm>
 #include <type_traits>
 #include <functional>
