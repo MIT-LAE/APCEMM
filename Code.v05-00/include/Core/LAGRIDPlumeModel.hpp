@@ -53,6 +53,7 @@ class LAGRIDPlumeModel {
         Vector_1D xCoords_;
         Vector_1D xEdges_;
         Vector_2D H2O_;
+        Vector_2D Contrail_;
         Vector_1D vFall_;
         double initNumParts_;
         double simTime_h_;
@@ -84,13 +85,20 @@ class LAGRIDPlumeModel {
             return VectorUtils::Vec2DMask(diffH2O, xEdges_, yEdges_, maskFunc);
         }
 
+        inline MaskType ContrailMask(double minVal=1.0e-2) {
+            auto maskFunc = [minVal](double val) {
+                return val > minVal;
+            };
+            return VectorUtils::Vec2DMask(Contrail_, xEdges_, yEdges_, maskFunc);
+        }
+
         void createOutputDirectories();
         void initializeGrid();
         void saveTSAerosol();
         void initH2O();
         void updateDiffVecs();
         void runTransport(double timestep);
-        void remapAllVars(double remapTimestep);
+        void remapAllVars(double remapTimestep, const std::vector<std::vector<int>>& mask, const VectorUtils::MaskInfo& maskInfo);
         void trimH2OBoundary();
         std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask);
         double totalAirMass();

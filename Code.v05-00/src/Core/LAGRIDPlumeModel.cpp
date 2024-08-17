@@ -98,9 +98,33 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         yEdges_ = met_.yEdges();
         yCoords_ = met_.yCoords(); 
 
+        // Update the tracer of contrail influence to include all locations where we have ice
+        // Set it to 1 when there's at least 1 particle per m3 
+        auto number = iceAerosol_.TotalNumber();
+        for (int j=0; j<yCoords_.size(); j++){
+            for (int i=0; i<xCoords_.size(); i++){
+                Contrail_[j][i] = std::max(0.0,std::min(1.0,Contrail_[j][i] + number[j][i]*1.0e6));
+            }
+        }
+
+        // Create the mask of cells to retain, and terminate if none left
+        //auto dataMask = iceNumberMask();
+        // WARNING: H2O approach may not work well with temperature
+        // fluctuation field active
+        //auto dataMask = H2OMask();
+        auto dataMask = ContrailMask(1.0e-2);
+        auto& mask = dataMask.first;
+        auto& maskInfo = dataMask.second;
+        if (maskInfo.count == 0){
+            std::cout << "No remaining grid cells marked as contrail-containing." << std::endl;
+            EARLY_STOP = true;
+            status = SimStatus::Complete;
+            break;
+        }
+
         //Remap the grid to account for changes in shape due to vertical advection and the growth of the contrail
         std::cout << "Remapping... " << std::endl;
-        remapAllVars(timestepVars_.TRANSPORT_DT);
+        remapAllVars(timestepVars_.TRANSPORT_DT, mask, maskInfo);
 
         Vector_2D areas = VectorUtils::cellAreas(xEdges_, yEdges_);
         double numparts = iceAerosol_.TotalNumber_sum(areas);
@@ -111,10 +135,10 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
             EARLY_STOP = true;
         }
 
-        //Save
-        std::cout << "Saving Aerosol... " << std::endl;
+        // Advance time
         timestepVars_.curr_Time_s += timestepVars_.dt;
         timestepVars_.nTime++;
+        // Save data to file if it is time to do so
         saveTSAerosol();
 
         if(EARLY_STOP) {
@@ -277,6 +301,7 @@ void LAGRIDPlumeModel::initializeGrid() {
 }
 
 void LAGRIDPlumeModel::initH2O() {
+    Contrail_ = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size()));
     H2O_ = met_.H2O_field();
 
     //Add emitted plume H2O. This function is called after releasing the initial crystals into the grid,
@@ -295,12 +320,16 @@ void LAGRIDPlumeModel::initH2O() {
         if(mask[j][i] == 0) return 0;
         return E_H2O * 1.0E-06 / ( nonMaskCount * areas[j][i] );
     };
-    //We could technically pre-compute all the masked indices and arrange them in a vector, but whatever.
+    //Set the H2O field to the plume H2O, and mark locations with 1 or 0 to indicate
+    //the presence of contrail ice
     for(std::size_t j = 0; j < mask.size(); j++) {
         for(std::size_t i = 0; i < mask[0].size(); i++) {
             if(mask[j][i] == 1) {
                 double localPlumeH2O = localPlumeEmission(j, i);
                 H2O_[j][i] += localPlumeH2O;
+                Contrail_[j][i] = 1.0;
+            } else {
+                Contrail_[j][i] = 0.0;
             }
         }
     }
@@ -383,6 +412,17 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
             }
         }
     }
+
+    //Transport the contrail tracer
+    {   
+        //Identical settings to H2O
+        FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, FVM_ANDS::std2dVec_to_eigenVec(Contrail_));
+        solver.updateTimestep(timestep);
+        solver.updateDiffusion(input_.horizDiff(), input_.vertiDiff());
+        solver.updateAdvection(0, 0, shear_rep_);
+
+        solver.operatorSplitSolve2DVec(Contrail_, ZERO_BC);
+    }
 }
 
 std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> LAGRIDPlumeModel::remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask) {
@@ -412,15 +452,9 @@ std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> LAGRIDPlumeModel::r
     return std::make_pair(remappedGrid,unusedFraction);
 }
 
-void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
+void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std::vector<int>>& mask, const VectorUtils::MaskInfo& maskInfo) {
     //Generate free box grid from met post-advection
-    Vector_2D iceTotalNum = iceAerosol_.TotalNumber();
-    //auto contrailMask = iceNumberMask();
-    // WARNING: H2O approach may not work well with temperature
-    // fluctuation field active
-    auto contrailMask = H2OMask();
-    auto& mask = contrailMask.first;
-    auto& maskInfo = contrailMask.second;
+    //Vector_2D iceTotalNum = iceAerosol_.TotalNumber();
 
     Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
     Vector_3D volume = iceAerosol_.Volume();
@@ -451,7 +485,7 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     buffers.rightBuffer = (shearLengthScaleRight + horizDiffLengthScale) * RIGHT_BUFFER_SCALING;
     buffers.topBuffer = std::max(vertDiffLengthScale * TOP_BUFFER_SCALING, 100.0);
     buffers.botBuffer = std::min((vertDiffLengthScale + settlingLengthScale) * BOT_BUFFER_SCALING, 300.0);
-    std::cout << buffers.botBuffer << std::endl;
+    //std::cout << buffers.botBuffer << std::endl;
 
     /* TODO: Benchmark various ways of parallelizing this section, mainly the volume calculation that requires a reduction */
     #pragma omp parallel for default(shared)
@@ -468,6 +502,10 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep) {
     //Recalculate VCenters
     iceAerosol_.UpdateCenters(volume, pdfRef);
 
+    //Remap the tracer of contrail presence
+    auto contrailRemap = remapVariable(maskInfo, buffers, Contrail_, mask).first;
+    Contrail_ = std::move(contrailRemap.phi);
+    
     //Remap H2O - but also return the fraction of each cell not written to
     auto [H2ORemap,unusedFraction] = remapVariable(maskInfo, buffers, H2O_, mask);
     H2O_ = std::move(H2ORemap.phi);
@@ -600,6 +638,7 @@ void LAGRIDPlumeModel::saveTSAerosol() {
         (( simVars_.TS_AERO_FREQ == 0 ) || \
         ( std::fmod((timestepVars_.curr_Time_s - timestepVars_.timeArray[0])/60.0, simVars_.TS_AERO_FREQ) < MOD_EPS )) ) 
     {
+        std::cout << "Saving aerosol data.." << std::endl;    
         int hh = (int) (timestepVars_.curr_Time_s - timestepVars_.timeArray[0])/3600;
         int mm = (int) (timestepVars_.curr_Time_s - timestepVars_.timeArray[0])/60   - 60 * hh;
         int ss = (int) (timestepVars_.curr_Time_s - timestepVars_.timeArray[0])      - 60 * ( mm + 60 * hh );
