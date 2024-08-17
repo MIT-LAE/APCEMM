@@ -123,12 +123,25 @@ namespace LAGRID {
         Vector_2D phi_new(ny, Vector_1D(nx));
         Vector_1D dx_new(ny);
         Vector_1D x0_new(ny);
+        /*
         for(int j = 0; j < ny; j++) {
             dx_new[j] = dx_old * dy_new[j] / dy_old;
             x0_new[j] = x0_old + nx * (dx_old - dx_new[j]) / 2;
             double cellAreaRatio = dy_new[j] * dy_new[j] / (dy_old * dy_old);
             for(int i = 0; i < nx; i++) {
                 phi_new[j][i] = phi_old[j][i] / cellAreaRatio;
+            }
+        }
+        */
+        // SDE 2024-08-12: Kludge - above is causing significant and cumulative noise
+        // due to errors propagating from the met_.Update() calculation, even when
+        // pressure velocity is zero
+        for(int j = 0; j < ny; j++) {
+            dx_new[j] = dx_old;
+            x0_new[j] = x0_old;
+            double cellAreaRatio = dy_new[j] * dy_new[j] / (dy_old * dy_old);
+            for(int i = 0; i < nx; i++) {
+                phi_new[j][i] = phi_old[j][i];
             }
         }
         return FreeCoordBoxGrid(dx_new, dy_new, phi_new, x0_new, y0_new, mask);
