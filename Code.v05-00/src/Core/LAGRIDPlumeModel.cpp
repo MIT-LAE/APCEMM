@@ -496,7 +496,27 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     Vector_1D xEdgesNew, yEdgesNew, xCoordsNew, yCoordsNew;
     auto remapWeights = createRegriddingWeightsSparse(maskInfo, buffers, mask, xEdgesNew, yEdgesNew, xCoordsNew, yCoordsNew);
 
-    // Step 3: remap all variables
+    // Step 3: Apply them
+    int nx_old = xCoords_.size();
+    int ny_old = yCoords_.size();
+    int nx_new = xCoordsNew.size();
+    int ny_new = yCoordsNew.size();
+    Eigen::VectorXd oldConc1D(ny_old*nx_old);
+    for (int j=0; j<ny_old; j++){
+        for (int i=0; i<nx_old; i++){
+            oldConc1D(i + j*nx_old) = H2O_[j][i];
+        }
+    }
+    Eigen::VectorXd newConc1D = oldConc1D.transpose() * remapWeights;
+    //std::cout << "Sizes: " << nx_new << "/" << ny_new << "/" << nx_new*ny_new << "/" << newConc1D.size() << std::endl;
+    Vector_2D newConc2D = Vector_2D(ny_new,Vector_1D(nx_new));
+    for (int j=0; j<ny_new; j++){
+        for (int i=0; i<nx_new; i++){
+            newConc2D[j][i] = newConc1D(i + j*nx_new);
+        }
+    }
+
+    // The below is the old way
     Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
     Vector_3D volume = iceAerosol_.Volume();
 
@@ -659,19 +679,26 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
     double dy = remappedGrid.dy;
     double dx = remappedGrid.dx;
 
-    //Update Coordinates
+    //Update coordinates, accounting for buffers
     yCoordsNew = std::move(remappedGrid.yCoords);
     xCoordsNew = std::move(remappedGrid.xCoords);
+    ny_new = yCoordsNew.size();
+    nx_new = xCoordsNew.size();
     yEdgesNew = Vector_1D(ny_new + 1);
     xEdgesNew = Vector_1D(nx_new + 1);
     double y0New = yCoordsNew[0];
     double x0New = xCoordsNew[0];
     std::generate(yEdgesNew.begin(), yEdgesNew.end(), [dy, y0New, j = 0.0]() mutable { return y0New + dy*(j++ - 0.5); });
     std::generate(xEdgesNew.begin(), xEdgesNew.end(), [dx, x0New, i = 0.0]() mutable { return x0New + dx*(i++ - 0.5); });
+
     
     //Eigen::Matrix2d weights = LAGRID::generateWeights(boxGrid, remapping);
     int nx_old = phi[0].size();
     int ny_old = phi.size();
+
+    //std::cout << "Old domain: X " << xEdges_[0] << " to " << xEdges_[nx_old] << ", Y " << yEdges_[0] << " to " << yEdges_[ny_old] << std::endl;
+    //std::cout << "New domain: X " << xEdgesNew[0] << " to " << xEdgesNew[nx_new] << ", Y " << yEdgesNew[0] << " to " << yEdgesNew[ny_new] << std::endl;
+
     //Eigen::MatrixXd weights = Eigen::MatrixXd::Zero(nx_old*ny_old,nx_new*ny_new);
     std::vector<Eigen::Triplet<double>> sparseIJV;
 
@@ -687,10 +714,11 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
         }
     }
 
-    
+    int i0_max=0;
+    int i1_max=0;
     // Loop over the source grid
     for (int iy0=0; iy0<ny_old; iy0++){
-        for (int ix0=0; ix0<nx_new; ix0++){
+        for (int ix0=0; ix0<nx_old; ix0++){
             int i0 = ix0 + (iy0 * nx_old);
             double x_left   = xEdges_[ix0];
             double x_right  = xEdges_[ix0+1];
@@ -728,6 +756,8 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
                     double area_overlap = (y_top_overlap - y_bottom_overlap) * (x_right_overlap - x_left_overlap);
                     //weights(i0,i1) = area_overlap / areas1(iy1,ix1);
                     sparseIJV.push_back(Eigen::Triplet<double>(i0,i1,area_overlap/areas1(iy1,ix1)));
+                    i0_max = std::max(i0,i0_max);
+                    i1_max = std::max(i1,i1_max);
                 }
             }
         }
@@ -736,105 +766,6 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
     weights.setFromTriplets(sparseIJV.begin(),sparseIJV.end());
     return weights;
 }
-Eigen::MatrixXd LAGRIDPlumeModel::createRegriddingWeightsFull(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const std::vector<std::vector<int>>& mask, Vector_1D& xEdgesNew, Vector_1D& yEdgesNew, Vector_1D& xCoordsNew, Vector_1D& yCoordsNew) {
-    Vector_2D phi = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size()));
-    double dy_grid_old = yCoords_[1] - yCoords_[0];
-    double dx_grid_old = xCoords_[1] - xCoords_[0];
-
-    // We need an extra grid cell on each side to avoid dealing with nasty indexing edge cases
-    // if the boxes' and remapping's minX, maxX, minY, maxY are the same.
-    auto boxGrid = LAGRID::rectToBoxGrid(dy_grid_old, met_.dy_vec(), dx_grid_old, xEdges_[0], yEdges_[0], phi, mask);
-
-    //Enforce at least x many points in the contrail while limiting minimum/maximum dx and dy
-    double dx_grid_new =  std::max(20.0, std::min((maskInfo.maxX - maskInfo.minX) / 50.0, 50.0));
-    double dy_grid_new = std::max(5.0, std::min((maskInfo.maxY - maskInfo.minY) / 50.0, 7.0));
-    //Need 2 extra points account for the buffer
-    int nx_new = floor((maskInfo.maxX - maskInfo.minX) / dx_grid_new) + 2;
-    int ny_new = floor((maskInfo.maxY - maskInfo.minY) / dy_grid_new) + 2;
-    LAGRID::Remapping remapping(maskInfo.minX - dx_grid_new, maskInfo.minY - dy_grid_new, dx_grid_new, dy_grid_new, nx_new, ny_new);
-
-    auto remappedGrid = LAGRID::mapToStructuredGrid(boxGrid, remapping);
-    remappedGrid.addBuffer(buffers.leftBuffer, buffers.rightBuffer, buffers.topBuffer, buffers.botBuffer, 0.0);
-    // Contains: phi, xCoords, yCoords
-
-    // Extract the new x and y coordinates
-    double dy = remappedGrid.dy;
-    double dx = remappedGrid.dx;
-
-    //Update Coordinates
-    yCoordsNew = std::move(remappedGrid.yCoords);
-    xCoordsNew = std::move(remappedGrid.xCoords);
-    yEdgesNew = Vector_1D(ny_new + 1);
-    xEdgesNew = Vector_1D(nx_new + 1);
-    double y0New = yCoordsNew[0];
-    double x0New = xCoordsNew[0];
-    std::generate(yEdgesNew.begin(), yEdgesNew.end(), [dy, y0New, j = 0.0]() mutable { return y0New + dy*(j++ - 0.5); });
-    std::generate(xEdgesNew.begin(), xEdgesNew.end(), [dx, x0New, i = 0.0]() mutable { return x0New + dx*(i++ - 0.5); });
-    
-    //Eigen::Matrix2d weights = LAGRID::generateWeights(boxGrid, remapping);
-    int nx_old = phi[0].size();
-    int ny_old = phi.size();
-    Eigen::MatrixXd weights = Eigen::MatrixXd::Zero(nx_old*ny_old,nx_new*ny_new);
-
-    // Create a matrix of areas
-    Eigen::MatrixXd areas1 = Eigen::MatrixXd::Zero(ny_new,nx_new);
-    for (int iy1=1; iy1<ny_new; iy1++){
-        double y_bottom_to = yEdgesNew[iy1];
-        double y_top_to = yEdgesNew[iy1+1];
-        for (int ix1=1; ix1<nx_new; ix1++){
-            double x_left_to = xEdgesNew[ix1];
-            double x_right_to = xEdgesNew[ix1+1];
-            areas1(iy1,ix1) = (y_top_to - y_bottom_to) * (x_right_to - x_left_to);
-        }
-    }
-
-    // Loop over the source grid
-    for (int iy0=0; iy0<ny_old; iy0++){
-        for (int ix0=0; ix0<nx_new; ix0++){
-            int i0 = ix0 + (iy0 * nx_old);
-            double x_left   = xEdges_[ix0];
-            double x_right  = xEdges_[ix0+1];
-            double y_bottom = yEdges_[iy0];
-            double y_top    = yEdges_[iy0+1];
-            // Always start from the left-most output cell
-            int ix1_start = 0;
-            int iy1_start = 0; // Revise this later
-            for (int iy1=iy1_start; iy1<ny_new; iy1++){
-                double y_top_to    = yEdgesNew[iy1+1];
-                if (y_top_to <= y_bottom){
-                    continue;
-                }
-                double y_bottom_to = yEdgesNew[iy1];
-                if (y_bottom_to >= y_top){
-                    break;
-                }
-                for (int ix1=ix1_start; ix1<nx_new; ix1++){
-                    double x_right_to = xEdgesNew[ix1+1];
-                    if (x_right_to <= x_left){
-                        continue;
-                    }
-                    double x_left_to = xEdgesNew[ix1];
-                    if (x_left_to >= x_right){
-                        break;
-                    }
-                    // 1D index of output cell
-                    int i1 = ix1 + (iy1 * nx_new);
-                    // How much overlap is there between
-                    // the old cell and the new?
-                    double x_left_overlap = std::max(x_left,x_left_to);
-                    double x_right_overlap = std::min(x_right,x_right_to);
-                    double y_bottom_overlap = std::max(y_bottom,y_bottom_to);
-                    double y_top_overlap = std::min(y_top,y_top_to);
-                    double area_overlap = (y_top_overlap - y_bottom_overlap) * (x_right_overlap - x_left_overlap);
-                    weights(i0,i1) = area_overlap / areas1(iy1,ix1);
-                }
-            }
-        }
-    }
-
-    return weights;
-}
-
 
 void LAGRIDPlumeModel::createOutputDirectories() {
     if (!simVars_.TS_AERO ) return;
