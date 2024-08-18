@@ -104,6 +104,7 @@ class LAGRIDPlumeModel {
         double totalAirMass();
         void runCocipH2OMixing(const Vector_2D& h2o_old, const Vector_2D& h2o_amb_new, MaskType& mask_old, MaskType& mask_new);
 
+        Eigen::MatrixXd createRegriddingWeights(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const std::vector<std::vector<int>>& mask);
 
 };
 
