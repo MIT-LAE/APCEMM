@@ -142,7 +142,7 @@ namespace LAGRID {
         for(int j = 0; j < ny; j++) {
             dx_new[j] = dx_old;
             x0_new[j] = x0_old;
-            double cellAreaRatio = dy_new[j] * dy_new[j] / (dy_old * dy_old);
+            // double cellAreaRatio = dy_new[j] * dy_new[j] / (dy_old * dy_old);
             for(int i = 0; i < nx; i++) {
                 phi_new[j][i] = phi_old[j][i];
             }
