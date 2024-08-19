@@ -501,20 +501,10 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     int ny_old = yCoords_.size();
     int nx_new = xCoordsNew.size();
     int ny_new = yCoordsNew.size();
-    Eigen::VectorXd oldConc1D(ny_old*nx_old);
-    for (int j=0; j<ny_old; j++){
-        for (int i=0; i<nx_old; i++){
-            oldConc1D(i + j*nx_old) = H2O_[j][i];
-        }
-    }
-    Eigen::VectorXd newConc1D = oldConc1D.transpose() * remapWeights;
-    //std::cout << "Sizes: " << nx_new << "/" << ny_new << "/" << nx_new*ny_new << "/" << newConc1D.size() << std::endl;
-    Vector_2D newConc2D = Vector_2D(ny_new,Vector_1D(nx_new));
-    for (int j=0; j<ny_new; j++){
-        for (int i=0; i<nx_new; i++){
-            newConc2D[j][i] = newConc1D(i + j*nx_new);
-        }
-    }
+
+    // Set up working arrays
+    //Eigen::VectorXd oldConc1D(ny_old*nx_old);
+    //Eigen::VectorXd newConc1D(ny_new*nx_new);
 
     // The below is the old way
     Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
@@ -704,10 +694,10 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
 
     // Create a matrix of areas
     Eigen::MatrixXd areas1 = Eigen::MatrixXd::Zero(ny_new,nx_new);
-    for (int iy1=1; iy1<ny_new; iy1++){
+    for (int iy1=0; iy1<ny_new; iy1++){
         double y_bottom_to = yEdgesNew[iy1];
         double y_top_to = yEdgesNew[iy1+1];
-        for (int ix1=1; ix1<nx_new; ix1++){
+        for (int ix1=0; ix1<nx_new; ix1++){
             double x_left_to = xEdgesNew[ix1];
             double x_right_to = xEdgesNew[ix1+1];
             areas1(iy1,ix1) = (y_top_to - y_bottom_to) * (x_right_to - x_left_to);
@@ -765,6 +755,42 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
     Eigen::SparseMatrix<double> weights(nx_old*ny_old,nx_new*ny_new);
     weights.setFromTriplets(sparseIJV.begin(),sparseIJV.end());
     return weights;
+}
+
+Vector_2D LAGRIDPlumeModel::applyWeights(const Eigen::SparseMatrix<double>& weights, int nx_old, int ny_old, int nx_new, int ny_new, const Vector_2D& data2D) {
+    // Applies weights derived from createRegriddingWeightsSparse and remaps between
+    // grids, using a first-order area-conservative approach.
+    // Expect oldConc1D and newConc1D to have been previously set up (working arrays only):
+    Eigen::VectorXd oldConc1D(ny_old*nx_old);
+    Eigen::VectorXd newConc1D(ny_new*nx_new);
+    for (int j=0; j<ny_old; j++){
+        for (int i=0; i<nx_old; i++){
+            oldConc1D(i + j*nx_old) = data2D[j][i];
+        }
+    }
+    newConc1D = oldConc1D.transpose() * weights;
+    Vector_2D newConc2D = Vector_2D(ny_new,Vector_1D(nx_new));
+    for (int j=0; j<ny_new; j++){
+        for (int i=0; i<nx_new; i++){
+            newConc2D[j][i] = newConc1D(i + j*nx_new);
+        }
+    }
+    return newConc2D;
+}
+
+void LAGRIDPlumeModel::printVector2D(const std::string fieldName, const Vector_2D& dataIn){
+    std::cout << " -- BEGIN " << fieldName << " -- " << std::endl;
+    int ny = dataIn.size();
+    int nx = dataIn[0].size();
+    std::cout << ny << " " << nx << std::endl;
+    for (int j=0; j<ny; j++) {
+        for (int i=0; i<nx; i++) {
+            printf("%10.4e ",dataIn[j][i]);
+        }
+        std::cout << std::endl;
+    }
+    std::cout << " -- END " << fieldName << " -- " << std::endl;
+    return;
 }
 
 void LAGRIDPlumeModel::createOutputDirectories() {
