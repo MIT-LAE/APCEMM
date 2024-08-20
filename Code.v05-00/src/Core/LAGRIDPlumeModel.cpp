@@ -502,19 +502,14 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     int nx_new = xCoordsNew.size();
     int ny_new = yCoordsNew.size();
 
-    // Set up working arrays
-    //Eigen::VectorXd oldConc1D(ny_old*nx_old);
-    //Eigen::VectorXd newConc1D(ny_new*nx_new);
-
-    // The below is the old way
     Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
     Vector_3D volume = iceAerosol_.Volume();
 
     #pragma omp parallel for default(shared)
     for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
         //Update pdf and volume
-        pdfRef[n] = remapVariable(maskInfo, buffers, pdfRef[n], mask).first.phi;
-        volume[n] = remapVariable(maskInfo, buffers, volume[n], mask).first.phi;
+        pdfRef[n] = applyWeights(remapWeights, nx_old,  ny_old,  nx_new,  ny_new, pdfRef[n]);
+        volume[n] = applyWeights(remapWeights, nx_old,  ny_old,  nx_new,  ny_new, volume[n]);
     }
 
     //Only update nx and ny of iceAerosol after the loop, otherwise functions will get messed up if we later add other calls in the loop above
@@ -525,25 +520,18 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     iceAerosol_.UpdateCenters(volume, pdfRef);
 
     //Remap the tracer of contrail presence
-    auto contrailRemap = remapVariable(maskInfo, buffers, Contrail_, mask).first;
-    Contrail_ = std::move(contrailRemap.phi);
-    
+    Contrail_ = applyWeights(remapWeights, nx_old,  ny_old,  nx_new,  ny_new, Contrail_);
     //Remap H2O - but also return the fraction of each cell not written to
-    auto [H2ORemap,unusedFraction] = remapVariable(maskInfo, buffers, H2O_, mask);
-    H2O_ = std::move(H2ORemap.phi);
-    
-    //Need to update bottom-of-domain altitude before updating coordinates
-    double dy = H2ORemap.dy;
-    double dx = H2ORemap.dx;
-    std::cout << "dx: " << dx << ", dy: " << dy << std::endl;
+    H2O_ = applyWeights(remapWeights, nx_old,  ny_old,  nx_new,  ny_new, H2O_);
 
-    //Update Coordinates
-    yCoords_ = std::move(H2ORemap.yCoords);
-    xCoords_ = std::move(H2ORemap.xCoords);
-    yEdges_.resize(yCoords_.size() + 1);
-    xEdges_.resize(xCoords_.size() + 1);
-    std::generate(yEdges_.begin(), yEdges_.end(), [dy, this, j = 0.0]() mutable { return yCoords_[0] + dy*(j++ - 0.5); });
-    std::generate(xEdges_.begin(), xEdges_.end(), [dx, this, i = 0.0]() mutable { return xCoords_[0] + dx*(i++ - 0.5); });
+    //Need to update bottom-of-domain altitude before updating coordinates
+    xCoords_ = std::move(xCoordsNew);
+    yCoords_ = std::move(yCoordsNew);
+    xEdges_ = std::move(xEdgesNew);
+    yEdges_ = std::move(yEdgesNew);
+    double dx = xEdges_[1] - xEdges_[0];
+    double dy = yEdges_[1] - yEdges_[0];
+    std::cout << "dx: " << dx << ", dy: " << dy << std::endl;
 
     //Regenerate Met based on new grid 
     if(!optInput_.MET_LOADMET) {
@@ -569,11 +557,18 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
 
     // Set boundary locations to use meteorological H2O
     auto met_H2O = met_.H2O_field();
-    int ny = H2O_.size();
-    int nx = H2O_[0].size();
-    for(int j=0; j < ny; j++) {
-        for(int i=0; i < nx; i++) {
-            H2O_[j][i] += std::max(0.0,unusedFraction.phi[j][i]) * met_H2O[j][i];
+    Vector_2D uniform = Vector_2D(ny_old,Vector_1D(nx_old));
+    for (int j=0; j<ny_old; j++){
+        for (int i=0; i<nx_old; i++){
+            uniform[j][i] = 1.0;
+        }
+    }
+    Vector_2D usedArea = applyWeights(remapWeights, nx_old,  ny_old,  nx_new,  ny_new, uniform);
+    for (int j=0; j<ny_new; j++){
+        for (int i=0; i<nx_new; i++){
+            if (usedArea[j][i] < 1.0){
+                H2O_[j][i] = H2O_[j][i] + std::max(std::min(1.0,(1.0 - usedArea[j][i])),0.0) * met_H2O[j][i];
+            }
         }
     }
 }
@@ -710,6 +705,9 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
     for (int iy0=0; iy0<ny_old; iy0++){
         for (int ix0=0; ix0<nx_old; ix0++){
             int i0 = ix0 + (iy0 * nx_old);
+            if (mask[iy0][ix0] == 0.0){
+                continue;
+            }
             double x_left   = xEdges_[ix0];
             double x_right  = xEdges_[ix0+1];
             double y_bottom = yEdges_[iy0];
