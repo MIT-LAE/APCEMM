@@ -3,7 +3,21 @@
 #include "Util/PlumeModelUtils.hpp"
 #include "Core/Status.hpp"
 #include "Core/SZA.hpp"
+#include "KPP/KPP_Parameters.h"
 #include "Core/LAGRIDPlumeModel.hpp"
+
+/*
+These global variables are required because of the KPP auto-generated code.
+In the LAGRID Plume Model (no plume chemistry), the KPP is used only when
+spinning up the background ambient conditions during the initialization 
+step of the EPM. For now declare these variables at the top level.
+*/
+double RCONST[NREACT];       /* Rate constants (global) */
+double NOON_JRATES[NPHOTOL]; /* Noon-time photolysis rates (global) */
+double PHOTOL[NPHOTOL];      /* Photolysis rates (global) */
+double HET[NSPEC][3];        /* Heterogeneous chemistry rates (global) */
+double TIME;                 /* Current integration time (global) */
+double SZA_CST[3];           /* Require this for adjoint integration */
 
 LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input ):
     optInput_(optInput),
