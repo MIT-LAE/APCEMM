@@ -3,7 +3,6 @@
 
 namespace PlumeModelUtils {
     std::vector<double> BuildTime( const double tStart, const double tEnd, \
-                                const double sunRise, const double sunSet, \
                                 const double DYN_DT )
     {
 
@@ -22,8 +21,7 @@ namespace PlumeModelUtils {
             // std::cout << time/3600 << ", " << timeStep << "  ";
 
             timeArray.push_back( time );
-            timeStep = UpdateTime( time, tStart, sunRise, sunSet, \
-                                DYN_DT, nextTimeStep );
+            timeStep = UpdateTime( time, tStart, DYN_DT, nextTimeStep );
             time += std::min( timeStep, std::abs( ( tEnd - time ) ) );
             nT++;
         }
@@ -34,14 +32,11 @@ namespace PlumeModelUtils {
     } /* End of BuildTime */
 
     double UpdateTime( double time, const double tStart, \
-                   const double sunRise, const double sunSet, \
                    const double DYN_DT, double &nextTimeStep )
     {
 
         const double default_TimeStep = DYN_DT;
         double timeStep;
-        double currTimeStep;
-        bool sunCorrection = 0;
         const int LVL_TIMESTEP_REFINEMENT = 0;
 
         if ( nextTimeStep > 0.0E+00 ) {
@@ -67,22 +62,6 @@ namespace PlumeModelUtils {
             }
         } else
             timeStep = default_TimeStep;
-
-        /* Add a small bit to ensure that we get passed the sunrise/set */
-        currTimeStep = timeStep;
-        if ( (std::fmod((time),(24.0*3600.0)) < (sunSet)) \
-        && (std::fmod((time + timeStep),(24.0*3600.0)) > sunSet) ) {
-    //        timeStep = sunSet - std::fmod((time),(24.0*3600.0)) + 1.00E-00;
-    //        sunCorrection = 1;
-        }
-        if ( (std::fmod((time),(24.0*3600.0)) < (sunRise)) \
-        && (std::fmod((time + timeStep),(24.0*3600.0)) > sunRise) ) {
-    //        timeStep = sunRise - std::fmod((time),(24.0*3600.0)) + 1.00E-00;
-    //        sunCorrection = 1;
-        }
-
-        if ( sunCorrection == 1 )
-            nextTimeStep = currTimeStep - timeStep;
 
         return timeStep;
 

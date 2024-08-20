@@ -2,7 +2,6 @@
 #include "AIM/Settling.hpp"
 #include "Util/PlumeModelUtils.hpp"
 #include "Core/Status.hpp"
-#include "Core/SZA.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "Core/LAGRIDPlumeModel.hpp"
 
@@ -23,7 +22,6 @@ LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input
     optInput_(optInput),
     input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
-    sun_(SZA(input.latitude_deg(), input.emissionDOY())),
     aircraft_(Aircraft(input, optInput.SIMULATION_INPUT_ENG_EI)),
     jetA_(Fuel("C12H24")),
     simVars_(MPMSimVarsWrapper(input, optInput)),
@@ -34,7 +32,7 @@ LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input
 
     EI_ = Emission( aircraft_.engine(), jetA_ );
 
-    timestepVars_.setTimeArray(PlumeModelUtils::BuildTime ( timestepVars_.tInitial_s, timestepVars_.tFinal_s, 3600.0*sun_.sunRise, 3600.0*sun_.sunSet, timestepVars_.dt ));
+    timestepVars_.setTimeArray(PlumeModelUtils::BuildTime ( timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt ));
 
     createOutputDirectories();
 }

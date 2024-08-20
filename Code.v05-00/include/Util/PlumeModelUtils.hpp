@@ -7,11 +7,9 @@
 
 namespace PlumeModelUtils {
     double UpdateTime( double time, const double tStart, \
-                    const double sunRise, const double sunSet, \
                     const double DYN_DT, double& nextTimeStep );
 
     std::vector<double> BuildTime( const double tStart, const double tEnd, \
-                                const double sunRise, const double sunSet, \
                                 const double DYN_DT );
 
 
