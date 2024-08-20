@@ -12,6 +12,8 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "AIM/buildKernel.hpp"
+#include "Util/PhysConstant.hpp"
+#include "Util/PhysFunction.hpp"
 
 namespace AIM
 {

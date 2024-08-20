@@ -1,11 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
 #include <YamlInputReader/YamlInputReader.hpp>
 #include <Core/Input.hpp>
-#include <iostream>
 #include "APCEMM.h"
+
 using namespace YamlInputReader;
-using std::cout;
-using std::endl;
 
 //APCEMM_TEST_DIR is a preprocessor macro
 TEST_CASE("YamlInputReader Helper Functions"){

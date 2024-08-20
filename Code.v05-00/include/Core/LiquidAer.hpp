@@ -14,12 +14,7 @@
 #ifndef LIQUIDAER_H_INCLUDED
 #define LIQUIDAER_H_INCLUDED
 
-#include <iostream>
-
-#include "Util/PhysConstant.hpp"
-#include "Util/PhysFunction.hpp"
-#include "Util/Error.hpp"
-#include "Core/Parameters.hpp"
+#include <vector>
 
 double H2SO4_GASFRAC( const double temperature_K, const double SO4 );
 unsigned int STRAT_AER( const double temperature_K     , const double pressure_Pa       , const double airDens ,               \

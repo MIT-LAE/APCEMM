@@ -14,7 +14,6 @@
 #ifndef MC_RAND_H_INCLUDED
 #define MC_RAND_H_INCLUDED
 
-#include <iostream>
 #include <cstdlib>
 
 /* Set seed for pseudo-random generator */

@@ -11,6 +11,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <iostream>
+#include "Util/PhysConstant.hpp"
 #include "Core/Engine.hpp"
 
 Engine::Engine( )

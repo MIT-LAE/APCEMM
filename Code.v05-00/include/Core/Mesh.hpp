@@ -14,16 +14,8 @@
 #ifndef MESH_H_INCLUDED
 #define MESH_H_INCLUDED
 
-#include <iostream>
-#include <iomanip>
-#include <vector>
-
 #include "Util/ForwardDecl.hpp"
-#include "Core/Parameters.hpp"
-#include "Core/Interface.hpp"
 #include "Core/Cluster.hpp"
-#include "Core/Ring.hpp"
-#include "Util/PhysConstant.hpp"
 #include "Core/Input_Mod.hpp"
 
 enum class MeshDomainLimitsSpec : unsigned char{

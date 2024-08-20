@@ -14,7 +14,6 @@
 #ifndef INPUT_H_INCLUDED
 #define INPUT_H_INCLUDED
 
-#include <iostream>
 #include <vector>
 #include <unordered_map>
 #include "Util/ForwardDecl.hpp"

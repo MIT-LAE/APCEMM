@@ -11,8 +11,11 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <iostream>
+#include <numeric>
+#include "Util/PhysFunction.hpp"
+#include "Core/Parameters.hpp"
 #include "AIM/Aerosol.hpp"
-#include "Core/Structure.hpp"
 
 namespace AIM
 {

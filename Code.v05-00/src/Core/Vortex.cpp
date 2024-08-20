@@ -11,6 +11,9 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <cmath>
+#include <iostream>
+#include "Util/PhysConstant.hpp"
 #include "Core/Vortex.hpp"
 
 Vortex::Vortex( double temperature_K, double pressure_Pa,  \

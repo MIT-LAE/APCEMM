@@ -1,11 +1,9 @@
 #include "AIM/buildKernel.hpp"
 #include "Util/ForwardDecl.hpp"
-#include "Util/PhysFunction.hpp"
 #include "Util/PhysConstant.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
-#include <iostream>
 
 using namespace AIM;
 

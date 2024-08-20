@@ -14,11 +14,7 @@
 #ifndef VORTEX_H_INCLUDED
 #define VORTEX_H_INCLUDED
 
-#include <iostream>
-#include <cmath>
-
-#include "Util/PhysConstant.hpp"
-#include "Util/ForwardDecl.hpp"
+// #include "Util/ForwardDecl.hpp"
 
 class Vortex
 {

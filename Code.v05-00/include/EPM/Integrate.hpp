@@ -14,26 +14,16 @@
 #ifndef INTEGRATE_H_INCLUDED
 #define INTEGRATE_H_INCLUDED
 
-#include <iostream>
 #include <cmath>
-#include <vector>
 #include <boost/array.hpp>
 #include <boost/numeric/odeint.hpp>
 #include "omp.h"
-
 #include "Util/ForwardDecl.hpp"
-#include "Util/PhysConstant.hpp"
-#include "Util/PhysFunction.hpp"
-#include "Core/Interface.hpp"
-#include "Core/Parameters.hpp"
-#include "Core/Monitor.hpp"
 #include "Core/Aircraft.hpp"
 #include "Core/Emission.hpp"
 #include "Core/Status.hpp"
 #include "AIM/Coagulation.hpp"
-#include "AIM/Nucleation.hpp"
 #include "AIM/Aerosol.hpp"
-#include "odeSolver.hpp"
 
 namespace EPM
 {

@@ -14,11 +14,7 @@
 #ifndef EMISSION_H_INCLUDED
 #define EMISSION_H_INCLUDED
 
-#include <iostream>
-#include <iomanip>
 #include <string>
-#include <fstream>
-#include <sstream>
 #include "Core/Engine.hpp"
 #include "Core/Fuel.hpp"
 

@@ -3,8 +3,6 @@
 #include "Util/PhysConstant.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
-#include <fstream>
-#include <iostream>
 
 using namespace AIM;
 

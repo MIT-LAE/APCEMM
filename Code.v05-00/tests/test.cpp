@@ -2,7 +2,6 @@
 #include <catch2/catch_approx.hpp>
 #include <Util/PhysFunction.hpp>
 #include <Util/PhysConstant.hpp>
-#include <iostream>
 
 using namespace physFunc;
 

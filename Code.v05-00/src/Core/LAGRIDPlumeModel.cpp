@@ -1,5 +1,10 @@
-#include "Core/LAGRIDPlumeModel.hpp"
+#include <filesystem>
+#include "AIM/Settling.hpp"
+#include "Util/PlumeModelUtils.hpp"
 #include "Core/Status.hpp"
+#include "Core/SZA.hpp"
+#include "Core/LAGRIDPlumeModel.hpp"
+
 LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input ):
     optInput_(optInput),
     input_(input),
@@ -101,8 +106,8 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         // Update the tracer of contrail influence to include all locations where we have ice
         // Set it to 1 when there's at least 1 particle per m3 
         auto number = iceAerosol_.TotalNumber();
-        for (int j=0; j<yCoords_.size(); j++){
-            for (int i=0; i<xCoords_.size(); i++){
+        for (std::size_t j=0; j<yCoords_.size(); j++){
+            for (std::size_t i=0; i<xCoords_.size(); i++){
                 Contrail_[j][i] = std::max(0.0,std::min(1.0,Contrail_[j][i] + number[j][i]*1.0e6));
             }
         }
@@ -399,15 +404,15 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         Vector_2D H2O_Delta;
         H2O_Delta = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size()));
         auto H2O_Background = met_.H2O_field();
-        for (int j=0; j<yCoords_.size(); j++){
-            for (int i=0; i<xCoords_.size(); i++){
+        for (std::size_t j=0; j<yCoords_.size(); j++){
+            for (std::size_t i=0; i<xCoords_.size(); i++){
                 H2O_Delta[j][i] = H2O_[j][i] - H2O_Background[j][i];
             }
         }
         // BC is zero, since we're calculating the difference relative to background.
         solver.operatorSplitSolve2DVec(H2O_Delta, ZERO_BC);
-        for (int j=0; j<yCoords_.size(); j++){
-            for (int i=0; i<xCoords_.size(); i++){
+        for (std::size_t j=0; j<yCoords_.size(); j++){
+            for (std::size_t i=0; i<xCoords_.size(); i++){
                 H2O_[j][i] = H2O_Delta[j][i] + H2O_Background[j][i];
             }
         }

@@ -19,6 +19,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "omp.h"
+#include "KPP/KPP_Parameters.h"
 
 #ifndef KPP_GLOBAL_H_INCLUDED
 #define KPP_GLOBAL_H_INCLUDED

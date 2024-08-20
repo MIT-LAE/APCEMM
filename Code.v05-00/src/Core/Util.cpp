@@ -11,6 +11,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <algorithm>
+#include <iostream>
 #include "Core/Util.hpp"
 
 namespace util

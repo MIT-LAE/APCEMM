@@ -3,11 +3,9 @@
 #include <Util/PhysFunction.hpp>
 #include <Util/PhysConstant.hpp>
 #include <Util/MetFunction.hpp>
-#include <iostream>
 
 using namespace met;
-using std::cout;
-using std::endl;
+
 TEST_CASE( "MetFunction", "[single-file]" ) {
 	SECTION("Compute Lapse Rate"){
 		//no idea where this equation comes from.

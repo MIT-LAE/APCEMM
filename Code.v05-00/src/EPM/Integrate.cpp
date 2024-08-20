@@ -11,9 +11,16 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "EPM/Integrate.hpp"
+#include "AIM/Nucleation.hpp"
+#include "KPP/KPP_Parameters.h"
+#include "Util/MolarWeights.hpp"
+#include "Util/PhysConstant.hpp"
+#include "Util/PhysFunction.hpp"
+#include "Core/Monitor.hpp"
+#include "Core/Parameters.hpp"
 #include "Core/Status.hpp"
-
+#include "EPM/odeSolver.hpp"
+#include "EPM/Integrate.hpp"
 
 namespace EPM
 {

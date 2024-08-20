@@ -11,6 +11,11 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <fstream>
+#include <iostream>
+#include "Core/Parameters.hpp"
+#include "Util/PhysConstant.hpp"
+#include "Util/PhysFunction.hpp"
 #include "EPM/odeSolver.hpp"
 
 namespace EPM

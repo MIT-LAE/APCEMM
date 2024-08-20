@@ -14,8 +14,6 @@
 #ifndef RING_H_INCLUDED
 #define RING_H_INCLUDED
 
-#include <iostream>
-
 class Ring
 {
 

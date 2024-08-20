@@ -1,8 +1,7 @@
 #include <FVM_ANDS/AdvDiffSystem.hpp>
-#include <iostream>
+#include <chrono>
 #include <math.h>
-using std::cout;
-using std::endl;
+
 namespace FVM_ANDS{
     AdvDiffSystem::AdvDiffSystem(const AdvDiffParams& params, const Vector_1D xCoords, const Vector_1D yCoords, const BoundaryConditions& bc, const Eigen::VectorXd& phi_init, vecFormat format) :
         format_(format),

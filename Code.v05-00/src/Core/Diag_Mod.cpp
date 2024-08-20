@@ -14,7 +14,11 @@
 #define FMT_HEADER_ONLY
 #endif
 
+#include <filesystem>
 #include <fmt/core.h>
+#include "KPP/KPP_Parameters.h"
+#include "Util/PhysFunction.hpp"
+#include "Core/Util.hpp"
 #include "Core/Diag_Mod.hpp"
 
 namespace Diag {

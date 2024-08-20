@@ -16,10 +16,7 @@
 
 #ifdef __cplusplus
 
-#include <iostream>
-#include <cmath>
-
-#include "Util/PhysConstant.hpp"
+#include <vector>
 
 class SZA
 {

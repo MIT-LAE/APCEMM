@@ -11,6 +11,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <iostream>
+#include "Util/PhysConstant.hpp"
 #include "Core/Mesh.hpp"
 
 Mesh::Mesh(const OptInput& optInput):

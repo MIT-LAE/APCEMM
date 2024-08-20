@@ -11,6 +11,7 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <iostream>
 #include "Core/Input.hpp"
 
 Input::Input( unsigned int iCase,               \

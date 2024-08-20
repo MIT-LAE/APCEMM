@@ -11,8 +11,9 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include "Util/PhysConstant.hpp"
+#include "Util/PhysFunction.hpp"
 #include "Util/MetFunction.hpp"
- 
 
 namespace met
 {

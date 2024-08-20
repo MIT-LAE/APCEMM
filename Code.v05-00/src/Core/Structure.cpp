@@ -11,7 +11,13 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include "KPP/KPP.hpp"
+#include "KPP/KPP_Parameters.h"
+#include "Core/LiquidAer.hpp"
+#include "Core/Parameters.hpp"
+#include "Core/SZA.hpp"
 #include "Core/Structure.hpp"
+#include "Util/PhysConstant.hpp"
 
 Solution::Solution(const OptInput& optInput) : \
         liquidAerosol( ), 

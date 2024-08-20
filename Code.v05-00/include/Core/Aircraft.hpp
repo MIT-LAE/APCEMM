@@ -15,14 +15,11 @@
 #define AIRCRAFT_H_INCLUDED
 
 #include <string>
-#include <iostream>
-#include <iomanip>
 #include <cstring>
 
 #include "Core/Input.hpp"
 #include "Core/Engine.hpp"
 #include "Core/Vortex.hpp"
-#include "Util/PhysConstant.hpp"
 
 class Aircraft 
 {

@@ -14,15 +14,9 @@
 #ifndef COAGULATION_H_INCLUDED
 #define COAGULATION_H_INCLUDED
 
-#include <iostream>
-#include <algorithm>
 #include <vector>
 #include <cstring>
-
 #include "Util/ForwardDecl.hpp"
-#include "Util/PhysConstant.hpp"
-#include "Util/PhysFunction.hpp"
-#include "AIM/buildKernel.hpp"
 
 namespace AIM
 {

@@ -14,11 +14,6 @@
 #ifndef SPECIES_H_INCLUDED
 #define SPECIES_H_INCLUDED
 
-#include <iostream> 
-#include <vector>
-
-#include "KPP/KPP_Parameters.h"
-#include "Core/Interface.hpp"
 #include "Core/Structure.hpp"
 #include "Util/ForwardDecl.hpp"
 
