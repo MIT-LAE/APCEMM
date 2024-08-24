@@ -139,14 +139,14 @@ def met_from_ISA(met, RHi_background = 0., shear = 0.002, T_offset_K = 0):
     met["pressure"] = p
 
     # Set the RHi of the met data to the RHi default value
-    RHi = met["relative_humidity_ice"]
-    RHi = RHi.where(False, RHi_background)
-    met["relative_humidity_ice"] = RHi
+    RHi_met = met["relative_humidity_ice"]
+    RHi_met = RHi_met.where(False, RHi_background)
+    met["relative_humidity_ice"] = RHi_met
 
-    # Set the shear of the met data to the RHi default value
-    shear = met["shear"]
-    shear = shear.where(False, shear)
-    met["shear"] = shear
+    # Set the shear of the met data to the default value
+    shear_met = met["shear"]
+    shear_met = shear_met.where(False, shear)
+    met["shear"] = shear_met
 
     return met
 
