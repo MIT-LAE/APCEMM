@@ -19,7 +19,8 @@ RUN apt-get update \
   zsh \
   autoconf \
   automake \
-  libtool 
+  libtool \
+  curl zip unzip tar
 
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
