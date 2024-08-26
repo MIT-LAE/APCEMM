@@ -1,7 +1,7 @@
 This folder contains python scripts to produce idealised met files containing trapezoidal moist layers (in an altitude
 vs RHi plot).
 
-TO RUN THE "main.py" SCRIPT, PLEASE OPEN THE FOLDER "simple_met_input" AS YOUR IN YOUR EDITOR/SET IT AS YOUR PYTHON RUNDIR.
+TO RUN THE "main.py" SCRIPT, PLEASE OPEN THE FOLDER "simple_met_input" IN YOUR EDITOR/SET IT AS YOUR PYTHON RUNDIR.
 
 The trapezoid is symmetrical about its centre, and is parametrised as follows:
 	- centre_altitude_m: The centre altitude in meters.
