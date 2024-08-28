@@ -1,4 +1,4 @@
-from src.met import *
+from src.met import make_idealised_met
 import matplotlib.pyplot as plt
 
 ######################### MAIN FUNCTION (EXAMPLE) #########################
@@ -12,13 +12,13 @@ if __name__ == "__main__":
         grad_RHi_PC_per_m = None, # % RHi / m; None indicates a rectangular moist region
         alt_resolution_m = 100, # m
         upper_alt_m = 11001, # m
-        shear = 2e-3, # 1/s
+        shear_over_s = 2e-3, # 1/s
         T_offset_K = 0, # K
         filename_prefix = "example"
     )
 
     RHi_PC = met.relative_humidity_ice.to_numpy()
-    alt_m = met.altitude.to_numpy() * 1e3
+    alt_m = met.altitude.to_numpy() * 1e3 # km to m
 
     plt.plot(RHi_PC, alt_m, color = 'b', lw = 1.5)
     plt.ylabel("Altitude, m")
