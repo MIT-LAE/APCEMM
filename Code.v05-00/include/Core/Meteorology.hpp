@@ -151,6 +151,8 @@ class Meteorology
         void initH2O( const NcFile& dataFile, const OptInput& OptInput );
         void initShear( const NcFile& dataFile );
         void initVertVeloc ( const NcFile& dataFile );
+        void estimateMetDataAltitudes();
+        void readMetDataFromFile( const NcFile& dataFile );
 
         Vector_1D interpMetTimeseriesData(double simTime_h, const Vector_2D& ts_data, bool timeseries) const;
 
@@ -238,5 +240,6 @@ class Meteorology
 
 };
 
+double hydrostaticDeltaAltitude(double lapseRate, double refTemperature, double refPressure, double targPressure);
 
 #endif /* METEOROLOGY_H_INCLUDED */

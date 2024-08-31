@@ -63,40 +63,43 @@ Meteorology::Meteorology( const OptInput &optInput,
     NcFile dataFile;
     dataFile.open( optInput.MET_FILENAME.c_str(), NcFile::read );
 
-    try {
-        initAltitudeAndPress( dataFile );
-    }
-    catch (NcException& e) {
-        throw std::runtime_error("Could not parse altitude and pressure data from specified met input file");
-    }
+    // Read in the meteorological data
+    readMetDataFromFile( dataFile );
 
-    try {
-        initTemperature( dataFile );
-    }
-    catch (NcException& e) {
-        throw std::runtime_error("Could not parse temperature data from specified met input file");
-    }
+    //try {
+    //    initAltitudeAndPress( dataFile );
+    //}
+    //catch (NcException& e) {
+    //    throw std::runtime_error("Could not parse altitude and pressure data from specified met input file");
+    //}
 
-    try {
-        initH2O( dataFile, optInput );
-    }
-    catch (NcException& e) {
-        throw std::runtime_error("Could not parse relative humidity data from specified met input file");
-    }
+    //try {
+    //    initTemperature( dataFile );
+    //}
+    //catch (NcException& e) {
+    //    throw std::runtime_error("Could not parse temperature data from specified met input file");
+    //}
 
-    try {
-        initShear( dataFile );
-    }
-    catch (NcException& e) {
-        throw std::runtime_error("Could not parse shear data from specified met input file");
-    }
+    //try {
+    //    initH2O( dataFile, optInput );
+    //}
+    //catch (NcException& e) {
+    //    throw std::runtime_error("Could not parse relative humidity data from specified met input file");
+    //}
 
-    try {
-        initVertVeloc( dataFile );
-    }
-    catch (NcException& e) {
-        throw std::runtime_error("Could not parse vertical velocity data from specified met input file");
-    }
+    //try {
+    //    initShear( dataFile );
+    //}
+    //catch (NcException& e) {
+    //    throw std::runtime_error("Could not parse shear data from specified met input file");
+    //}
+
+    //try {
+    //    initVertVeloc( dataFile );
+    //}
+    //catch (NcException& e) {
+    //    throw std::runtime_error("Could not parse vertical velocity data from specified met input file");
+    //}
 
 
     double invkB = 1.00E-06 / physConst::kB;
@@ -194,6 +197,157 @@ void Meteorology::Update( const double dt, const double solarTime_h, \
     updateAirMolecDens();
 } /* End of Meteorology::UpdateMet */
 
+void Meteorology::readMetDataFromFile( const NcFile& dataFile ){
+    /*
+        Met data format:
+        2 dimensions: altitude and time
+        RHw, Temp, Shear given as time series.
+    */
+
+    /* Identify the length of variables in input file */
+    // The dimension is called altitude but could as easily
+    // be called level, layer, or z
+    altitudeDim_ = dataFile.getDim("altitude").getSize();
+    timeDim_ = dataFile.getDim("time").getSize();
+
+    /* Extract pressure and altitude from input file. */
+    altitudeInit_.resize(altitudeDim_);
+    pressureInit_.resize(altitudeDim_);
+    altitudeEdges_.resize(altitudeDim_+1);
+    pressureEdges_.resize(altitudeDim_+1);
+
+    //The netcdf API is garbage and makes you pass in a C style array despite being branded as a "C++" library
+    NcVar pressure_ncVar = dataFile.getVar("pressure");
+    pressure_ncVar.getVar(pressureInit_.data());
+
+    //Cache initial pressure and altitude values for generating later met vars.
+    for (int i = 0; i < altitudeDim_; i++ ) {
+        pressureInit_[i] *= 100.0; //convert from hPa to Pa
+    }
+
+    // Generate pressure edges at the mid-points between pressures,
+    // and extrapolate for the first and last
+    for (int i = 1; i < altitudeDim_; i++ ) {
+        pressureEdges_[i] = (pressureInit_[i] + pressureInit_[i+1]) * 0.5;
+    }
+    pressureEdges_[0] = pressureInit_[0] - (pressureInit_[1] - pressureEdges_[1]);
+    pressureEdges_[altitudeDim_] = pressureInit_[altitudeDim_-1] + (pressureInit_[altitudeDim_-1] - pressureEdges_[altitudeDim_ - 2]);
+
+    // Now read in all basic variables
+    // Temperature
+    readMetVar(dataFile, "temperature", tempTimeseriesData_, tempLoadType_ == MetVarLoadType::TimeSeries); 
+    tempInit_.resize(altitudeDim_);
+    for (int i = 0; i < altitudeDim_; i++) {
+        tempInit_[i] = tempTimeseriesData_[i][0];
+    }
+
+    // H2O field (generate from relative_humidity_ice)
+    readMetVar(dataFile, "relative_humidity_ice", rhiTimeseriesData_, rhLoadType_ == MetVarLoadType::TimeSeries); 
+    rhiInit_.resize(altitudeDim_);
+    for (int i = 0; i < altitudeDim_; i++) {
+        rhiInit_[i] = rhiTimeseriesData_[i][0];
+    }
+
+    // Shear
+    readMetVar(dataFile, "shear", shearTimeseriesData_, shearLoadType_ == MetVarLoadType::TimeSeries); 
+    shearInit_.resize(altitudeDim_);
+    for (int i = 0; i < altitudeDim_; i++) {
+        shearInit_[i] = shearTimeseriesData_[i][0];
+    }
+
+    // Vertical velocity
+    readMetVar(dataFile, "w", vertVelocTimeseriesData_, vertVelocLoadType_ == MetVarLoadType::TimeSeries);
+    vertVelocInit_.resize(altitudeDim_);
+    for (int i = 0; i < altitudeDim_; i++) {
+        vertVelocInit_[i] = vertVelocTimeseriesData_[i][0];
+    }
+
+    // Now estimate altitude edges and mid-points
+    // y should be relative to altitudeRef_, and pressure should be relative to pressureRef_
+    // altitudeRef_ in m, pressureRef_ in Pa
+    estimateMetDataAltitudes();
+
+    // If you need to debug the mid point pressures and altitudes:
+    //for (int i=0; i<altitudeDim_; i++){
+    //    std::cout << "i/zMid/pMid: " << i << "," << altitudeInit_[i] << "," << pressureInit_[i] << std::endl;
+    //}
+}
+
+void Meteorology::estimateMetDataAltitudes() {
+    // Calculates the vertical spacing of pressure levels in the met data.
+    // This assumes that temperature varies linearly between levels,
+    // and that the pressure varies hydrostatically. We also assume
+    // that the air is dry.
+    const double constFactor = physConst::R_Air / physConst::g;
+    // Calculate lapse rate (K/m) between each point
+    double lapseRates[altitudeDim_];
+    for (int i = 0; i < altitudeDim_ - 1; i++) {
+        double t0 = tempInit_[i];
+        double t1 = tempInit_[i+1];
+        double dT = t1 - t0;
+        double tempFactor;
+        if (std::abs(dT) > 1.0e-10){
+            tempFactor = dT/log(t1/t0);
+        } else {
+            tempFactor = t0;
+        }
+        double dz = log(pressureInit_[i]/pressureInit_[i+1]) * constFactor * tempFactor;
+        lapseRates[i] = dT / dz;
+    }
+    // Calculate the edge spacing, as well as the altitude delta between the lowermost
+    // point in the met data and the reference pressure
+    altitudeEdges_[0] = 0.0;
+    double zOffset;
+    for (int i = 0; i < altitudeDim_; i++) {
+        double lowerLapse = lapseRates[std::max(i-1,0)];
+        double upperLapse = lapseRates[std::min(i,altitudeDim_-2)];
+        double pMid = pressureInit_[i];
+        double tMid = tempInit_[i];
+        // Two calculations: one for the lower half of the cell, one for the upper half
+        // Lapse rate changes these are not equal
+        double dzLower = hydrostaticDeltaAltitude(lowerLapse,tMid,pMid,pressureEdges_[i]);
+        double dzUpper = -1.0*hydrostaticDeltaAltitude(upperLapse,tMid,pMid,pressureEdges_[i+1]);
+        altitudeInit_[i] = altitudeEdges_[i] + dzLower;
+        altitudeEdges_[i+1] = altitudeEdges_[i] + dzLower + dzUpper;
+        // Does this "cell" contain the reference pressure? If so, figure out how far 
+        // into it that pressure occurs - we will use this later so that the pressure
+        // used in the meteorolo
+        if ((pressureEdges_[i] >= pressureRef_) && (pressureEdges_[i+1] < pressureRef_)){
+            if (pressureRef_ > pMid){
+                // Lower half of the cell
+                zOffset = altitudeEdges_[i] + hydrostaticDeltaAltitude(lowerLapse,tMid,pMid,pressureRef_);
+            } else {
+                // Upper half of the cell
+                zOffset = altitudeEdges_[i] + dzLower - hydrostaticDeltaAltitude(upperLapse,tMid,pMid,pressureRef_);
+            } 
+        }
+    }
+    // Now update all the altitude edges and centers so that they place the reference pressure and 
+    // altitude in the same location on the grid
+    altitudeEdges_[0] = altitudeRef_ - zOffset;
+    for (int i = 0; i < altitudeDim_; i++) {
+        altitudeEdges_[i+1] += (altitudeRef_ - zOffset);
+        altitudeInit_[i] += (altitudeRef_ - zOffset);
+    } 
+}
+
+// Not a class method
+double hydrostaticDeltaAltitude(double lapseRate, double refTemperature, double refPressure, double targPressure) {
+    // Given a lapse rate, calculates the distance from the reference point to the given pressure
+    // Lapse rate is in K/m. If the target pressure is greater than the reference pressure the
+    // result will be positive. NB: The "reference" pressure here means the pressure given at the
+    // mid-point of the cell, and is NOT the simulation reference pressure.
+    const double constFactor = physConst::R_Air / physConst::g;
+    double dz;
+    // Singularity at lapse = 0; use the limiting form for very small/zero lapse rates
+    if (std::abs(lapseRate) < 1.0e-10){
+        dz = -1.0 * refTemperature * constFactor * log(refPressure/targPressure);
+    } else {
+        dz = (refTemperature/lapseRate) * (1.0 - pow(refPressure/targPressure,lapseRate*constFactor));
+    }
+    return dz;
+}
+
 void Meteorology::initAltitudeAndPress( const NcFile& dataFile ) {
     /*
         Met data format:
@@ -212,16 +366,19 @@ void Meteorology::initAltitudeAndPress( const NcFile& dataFile ) {
     pressureInit_.resize(altitudeDim_);
 
     //The netcdf API is garbage and makes you pass in a C style array despite being branded as a "C++" library
-    NcVar altitude_ncVar = dataFile.getVar("altitude");
     NcVar pressure_ncVar = dataFile.getVar("pressure");
-    altitude_ncVar.getVar(altitudeInit_.data());
     pressure_ncVar.getVar(pressureInit_.data());
 
     //Cache initial pressure and altitude values for generating later met vars.
     for (int i = 0; i < altitudeDim_; i++ ) {
         pressureInit_[i] *= 100.0; //convert from hPa to Pa
-        altitudeInit_[i] *= 1000.0; //convert from km to m
     }
+
+    // Do not set altitudeInit_ yet! This is a bit delicate - we need
+    // to know temperatures
+
+    // Now set the grid used for calculation. We already have yCoords_ and yEdges_
+    // Both are (currently) relative to the bottom of the grid
 
     for ( int j = 0; j < ny_; j++ ) {
         altitude_[j] = altitudeRef_ + yCoords_[j];
