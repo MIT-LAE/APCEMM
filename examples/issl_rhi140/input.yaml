@@ -51,7 +51,7 @@ PARAMETER MENU:
     # Can be overwritten if met file is passed
     R.Hum. wrt water [%] (double): 63.94
     # Pressure altitude at which the contrail is initialized
-    Pressure [hPa] (double): 300
+    Pressure [hPa] (double): 265
     Horiz. diff. coeff. [m^2/s] (double): 15.0
     # Can be overwritten if met file is passed
     Verti. diff. [m^2/s] (double): 0.15
@@ -98,7 +98,7 @@ TRANSPORT MENU:
   Turn on Transport (T/F): T
   # Outdated, not used (was used by spectral solver)
   Fill Negative Values (T/F): T
-  Transport Timestep [min] (double): 10
+  Transport Timestep [min] (double): 1
   # Keep off: not sure of the effect yet + met updraft is included (if met file input)
   PLUME UPDRAFT SUBMENU:
     Turn on plume updraft (T/F): F
@@ -122,7 +122,7 @@ AEROSOL MENU:
   Coag. timestep [min] (double): 60
   # Keep on
   Turn on ice growth (T/F): T
-  Ice growth timestep [min] (double): 10
+  Ice growth timestep [min] (double): 1
 
 # At least one of "Use met. input", "Impose moist layer depth", or "Impose lapse rate" must be true
 # Imposing moist layer depth will automatically calculate the lapse rate and override the imposed lapse rate
@@ -141,15 +141,15 @@ METEOROLOGY MENU:
     Init temp. from met. (T/F): T
     Temp. time series input (T/F): T
     # Always interpolates in time, this controls spatial interpolation
-    Interpolate temp. met. data (T/F): F
+    Interpolate temp. met. data (T/F): T
     # Same options as the ones for Temperature:
     Init RH from met. (T/F): T
-    RH time series input (T/F): F
-    Interpolate RH met. data (T/F): F
+    RH time series input (T/F): T
+    Interpolate RH met. data (T/F): T
     Init wind shear from met. (T/F): T
     Wind shear time series input (T/F): T
     Interpolate shear met. data (T/F): F
-    Init vert. veloc. from met. data (T/F): F
+    Init vert. veloc. from met. data (T/F): T
     Vert. veloc. time series input (T/F): F
     Interpolate vert. veloc. met. data (T/F): F
     # Option to modify NWP RH data 
@@ -176,7 +176,7 @@ METEOROLOGY MENU:
     Impose lapse rate (T/F): F
     Lapse rate [K/m] (T/F): -6.0E-03
   # ---END MET INPUT OPTIONS --- 
-  Add diurnal variations (T/F): T
+  Add diurnal variations (T/F): F
 
   # Perturbations to the temperature field can be added to the contrail simulation to account for some effects of 
   # atmospheric turbulence and gravity waves.
