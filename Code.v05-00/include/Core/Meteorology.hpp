@@ -137,30 +137,10 @@ class Meteorology
             pressureEdges_ = Vector_1D(ny_ + 1, 0);
         }
         inline void initMetLoadTypes(const OptInput& optInput) {
-
-            //Can't say "using (scoped) enum xyz" without c++20 so rip
-            tempLoadType_ = MetVarLoadType::NoMetInput;
-            shearLoadType_ = MetVarLoadType::NoMetInput;
-            rhLoadType_ = MetVarLoadType::NoMetInput;
-            vertVelocLoadType_ = MetVarLoadType::NoMetInput;
-
-            if( !optInput.MET_LOADMET ) return;
-
-            if( optInput.MET_LOADTEMP ) {
-                tempLoadType_ = optInput.MET_TEMPTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
-            }
-
-            if( optInput.MET_LOADRH ) {
-                rhLoadType_ = optInput.MET_RHTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
-            }
-
-            if( optInput.MET_LOADSHEAR ) {
-                shearLoadType_ = optInput.MET_SHEARTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
-            }
-
-            if ( optInput.MET_LOADVERTVELOC ) {
-                vertVelocLoadType_ = optInput.MET_VERTVELOCTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
-            }
+            tempLoadType_ = optInput.MET_TEMPTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
+            rhLoadType_ = optInput.MET_RHTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
+            shearLoadType_ = optInput.MET_SHEARTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
+            vertVelocLoadType_ = optInput.MET_VERTVELOCTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
         }
 
         void initAltitudeAndPress( const NcFile& dataFile );
