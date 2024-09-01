@@ -66,48 +66,19 @@ Meteorology::Meteorology( const OptInput &optInput,
     // Read in the meteorological data
     readMetDataFromFile( dataFile );
 
-    //try {
-    //    initAltitudeAndPress( dataFile );
-    //}
-    //catch (NcException& e) {
-    //    throw std::runtime_error("Could not parse altitude and pressure data from specified met input file");
-    //}
+    // Set temperature, shear etc. to be the first entry in the file
+    updateMetData(0.0);
 
-    //try {
-    //    initTemperature( dataFile );
-    //}
-    //catch (NcException& e) {
-    //    throw std::runtime_error("Could not parse temperature data from specified met input file");
-    //}
+    // Estimate altitude edges and mid-points
+    // y should be relative to altitudeRef_, and pressure should be relative to pressureRef_
+    // altitudeRef_ in m, pressureRef_ in Pa
+    estimateMetDataAltitudes();
 
-    //try {
-    //    initH2O( dataFile, optInput );
-    //}
-    //catch (NcException& e) {
-    //    throw std::runtime_error("Could not parse relative humidity data from specified met input file");
-    //}
+    // With the met data altitudes known, estimate the cell mean values for the simulation grid    
+    interpolateMetToSimulationGrid();
 
-    //try {
-    //    initShear( dataFile );
-    //}
-    //catch (NcException& e) {
-    //    throw std::runtime_error("Could not parse shear data from specified met input file");
-    //}
-
-    //try {
-    //    initVertVeloc( dataFile );
-    //}
-    //catch (NcException& e) {
-    //    throw std::runtime_error("Could not parse vertical velocity data from specified met input file");
-    //}
-
-
-    double invkB = 1.00E-06 / physConst::kB;
-
-    #pragma omp parallel for if ( !PARALLEL_CASES ) 
-    for (int jNy = 0; jNy < ny_; jNy++ ) {
-        airMolecDens_[jNy].assign(nx_, pressure_[jNy] / tempBase_[jNy] * invkB);
-    }
+    // Update any derived quantities for the simulation grid
+    updateAirMolecDens();
 
 } /* End of Meteorology::Meteorology */
 
@@ -233,44 +204,50 @@ void Meteorology::readMetDataFromFile( const NcFile& dataFile ){
     pressureEdges_[0] = pressureInit_[0] - (pressureInit_[1] - pressureEdges_[1]);
     pressureEdges_[altitudeDim_] = pressureInit_[altitudeDim_-1] + (pressureInit_[altitudeDim_-1] - pressureEdges_[altitudeDim_ - 2]);
 
-    // Now read in all basic variables
-    // Temperature
-    readMetVar(dataFile, "temperature", tempTimeseriesData_, tempLoadType_ == MetVarLoadType::TimeSeries); 
+    // Resize all variables to match the vertical extent of the met data
     tempInit_.resize(altitudeDim_);
-    for (int i = 0; i < altitudeDim_; i++) {
-        tempInit_[i] = tempTimeseriesData_[i][0];
-    }
-
-    // H2O field (generate from relative_humidity_ice)
-    readMetVar(dataFile, "relative_humidity_ice", rhiTimeseriesData_, rhLoadType_ == MetVarLoadType::TimeSeries); 
     rhiInit_.resize(altitudeDim_);
-    for (int i = 0; i < altitudeDim_; i++) {
-        rhiInit_[i] = rhiTimeseriesData_[i][0];
-    }
-
-    // Shear
-    readMetVar(dataFile, "shear", shearTimeseriesData_, shearLoadType_ == MetVarLoadType::TimeSeries); 
     shearInit_.resize(altitudeDim_);
-    for (int i = 0; i < altitudeDim_; i++) {
-        shearInit_[i] = shearTimeseriesData_[i][0];
-    }
-
-    // Vertical velocity
-    readMetVar(dataFile, "w", vertVelocTimeseriesData_, vertVelocLoadType_ == MetVarLoadType::TimeSeries);
     vertVelocInit_.resize(altitudeDim_);
-    for (int i = 0; i < altitudeDim_; i++) {
-        vertVelocInit_[i] = vertVelocTimeseriesData_[i][0];
+
+    // Populate time series data from file
+    // Temperature (K), RHi (% - H2O calculated), shear (1/s), and vertical velocity (Pa/s)
+    readMetVar(dataFile, "temperature", tempTimeseriesData_, tempLoadType_ == MetVarLoadType::TimeSeries); 
+    readMetVar(dataFile, "relative_humidity_ice", rhiTimeseriesData_, rhLoadType_ == MetVarLoadType::TimeSeries); 
+    readMetVar(dataFile, "shear", shearTimeseriesData_, shearLoadType_ == MetVarLoadType::TimeSeries); 
+    readMetVar(dataFile, "w", vertVelocTimeseriesData_, vertVelocLoadType_ == MetVarLoadType::TimeSeries);
+}
+
+void Meteorology::updateMetData(double simTime_h) {
+    // We now either interpolate everything or nothing
+    bool timeseries = (tempLoadType_ == MetVarLoadType::TimeSeries);
+    tempInit_      = interpMetTimeseriesData(simTime_h, tempTimeseriesData_, timeseries);
+    shearInit_     = interpMetTimeseriesData(simTime_h, shearTimeseriesData_, timeseries);
+    vertVelocInit_ = interpMetTimeseriesData(simTime_h, vertVelocTimeseriesData_, timeseries);
+    rhiInit_       = interpMetTimeseriesData(simTime_h, rhiTimeseriesData_, timeseries);
+}
+
+void Meteorology::interpolateMetToSimulationGrid() {
+    // Interpolate met data (spatially) from the native vertical grid to the simulation grid
+    // This ONLY populates the fields of the met data object - it does not overwrite anything
+    // for the main simulation object (i.e. H2O_ here is the meteorological H2O, not the
+    // H2O for the main simulation)
+    #pragma omp parallel for if (!PARALLEL_CASES)
+    for ( int j = 0; j < ny_; j++ ) {
+        // Closest grid cell (if using nearest neighbor rather than interpolating)
+        int i_Z = met::nearestNeighbor( altitudeInit_, altitude_[j] );
+        tempBase_[j] = interpTemp_ ? met::linInterpMetData(altitudeInit_, tempInit_, altitude_[j]) : tempInit_[i_Z];
+        shear_[j] = interpShear_ ? met::linInterpMetData(altitudeInit_, shearInit_, altitude_[j]) : shearInit_[i_Z];
+        vertVeloc_[j] = interpVertVeloc_ ? met::linInterpMetData(altitudeInit_, vertVelocInit_, altitude_[j]) : vertVelocInit_[i_Z];
+        // Water is a bit different - calculate molec/cm3 based on met-data temperature, interpolated (!)
+        double rhi_local = interpRH_ ? met::linInterpMetData(altitudeInit_, rhiInit_, altitude_[j]) : rhiInit_[i_Z];
+        double h2o_local = physFunc::RHiToH2O(rhi_local, tempBase_[j]);
+        H2O_[j].assign(nx_, h2o_local);
+        // Add turbulent fluctuations to temperature if selected
+        for ( int i = 0; i < nx_; i++ ) {
+            tempTotal_[j][i] =  tempBase_[j] + tempPerturbation_[j][i];
+        }
     }
-
-    // Now estimate altitude edges and mid-points
-    // y should be relative to altitudeRef_, and pressure should be relative to pressureRef_
-    // altitudeRef_ in m, pressureRef_ in Pa
-    estimateMetDataAltitudes();
-
-    // If you need to debug the mid point pressures and altitudes:
-    //for (int i=0; i<altitudeDim_; i++){
-    //    std::cout << "i/zMid/pMid: " << i << "," << altitudeInit_[i] << "," << pressureInit_[i] << std::endl;
-    //}
 }
 
 void Meteorology::estimateMetDataAltitudes() {
@@ -638,7 +615,11 @@ void Meteorology::updateTempPerturb() {
 }
 
 void Meteorology::updateAirMolecDens() {
-    double invkB = 1.00E-06 / physConst::kB;
+    // Use ideal gas law to estimate molec/cm3 of air
+    // We are here including the temperature perturbation,
+    // which may or may not be correct depending on the
+    // situation - caveat emptor
+    const double invkB = 1.00E-06 / physConst::kB;
     #pragma omp parallel for        \
     if      ( !PARALLEL_CASES ) \
     default ( shared          )

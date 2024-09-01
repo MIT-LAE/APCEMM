@@ -151,8 +151,12 @@ class Meteorology
         void initH2O( const NcFile& dataFile, const OptInput& OptInput );
         void initShear( const NcFile& dataFile );
         void initVertVeloc ( const NcFile& dataFile );
+
+        // APCEMM v1.2
         void estimateMetDataAltitudes();
         void readMetDataFromFile( const NcFile& dataFile );
+        void interpolateMetToSimulationGrid();
+        void updateMetData(double simTime_h);
 
         Vector_1D interpMetTimeseriesData(double simTime_h, const Vector_2D& ts_data, bool timeseries) const;
 
