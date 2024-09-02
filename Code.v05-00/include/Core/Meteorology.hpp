@@ -157,6 +157,8 @@ class Meteorology
         void readMetDataFromFile( const NcFile& dataFile );
         void interpolateMetToSimulationGrid();
         void updateMetData(double simTime_h);
+        void estimateSimulationGridPressures();
+        void updateSimulationGridProperties();
 
         Vector_1D interpMetTimeseriesData(double simTime_h, const Vector_2D& ts_data, bool timeseries) const;
 
@@ -193,6 +195,9 @@ class Meteorology
         Vector_1D shearInit_;
         Vector_1D rhiInit_;
         Vector_1D vertVelocInit_;
+        Vector_1D lapseInit_; 
+        Vector_1D pressureEdgesInit_; 
+        Vector_1D altitudeEdgesInit_; 
 
 	    Vector_2D tempTimeseriesData_;
         Vector_2D shearTimeseriesData_;

@@ -69,18 +69,89 @@ Meteorology::Meteorology( const OptInput &optInput,
     // Set temperature, shear etc. to be the first entry in the file
     updateMetData(0.0);
 
-    // Estimate altitude edges and mid-points
+    // Estimate met data altitude edges and mid-points
     // y should be relative to altitudeRef_, and pressure should be relative to pressureRef_
     // altitudeRef_ in m, pressureRef_ in Pa
     estimateMetDataAltitudes();
 
-    // With the met data altitudes known, estimate the cell mean values for the simulation grid    
+    updateSimulationGridProperties();
+} /* End of Meteorology::Meteorology */
+
+void Meteorology::updateSimulationGridProperties(){
+    // Develop the simulation grid
+    for ( int j = 0; j < ny_; j++ ) {
+        altitude_[j] = altitudeRef_ + yCoords_[j];
+        altitudeEdges_[j] = altitudeRef_ + yEdges_[j];
+    }
+    altitudeEdges_[ny_] = altitudeRef_ + yEdges_[ny_];
+
+    // Estimate the pressure at each of these altitudes
+    estimateSimulationGridPressures();
+
+    // With the met data altitudes known, estimate the cell mean values for the simulation grid
     interpolateMetToSimulationGrid();
 
     // Update any derived quantities for the simulation grid
     updateAirMolecDens();
+}
 
-} /* End of Meteorology::Meteorology */
+void Meteorology::estimateSimulationGridPressures(){
+    // Iterate through the meteorolgical grid, calculating the
+    // pressure appropriate to the given altitude
+    double pressureBase, pressureCeil, pressureTop, zBase, zCeil;
+    // This will be copied to pressureBase immediately - so we need it to be the bottom pressure
+    pressureCeil = pressureEdgesInit_[0];
+    pressureTop = pressureEdgesInit_[altitudeDim_];
+    zCeil = altitudeEdgesInit_[0];
+
+    // Index of the simulation grid (NOT the met data grid)
+    int iCell = 0;
+    bool complete = false;
+    bool isEdge = true;
+    double zNext = altitudeEdges_[iCell];
+    if (zNext <= altitudeInit_[0]) {
+        throw std::runtime_error("Lowest altitude is outside of the range of the met data");
+    }
+
+    // We are iterating over the spaces between met data points. This is because, between
+    // points, we are assuming a constant lapse rate (K/m)
+    const double constFactor = physConst::R_Air / physConst::g;
+    for (int i = 0; i < altitudeDim_; i++) {
+        zBase = zCeil;
+        zCeil = altitudeInit_[i];
+        if (zNext > zCeil){
+            continue;
+        }
+        pressureBase = pressureCeil;
+        pressureCeil = (i == (altitudeDim_)) ? pressureTop : pressureInit_[i];
+        double lapseRate = lapseInit_[i];
+        // If i < 1 this will cause problems, but that should not be possible
+        // as that condition is caught by the check of zNext before the loop
+        double tBase = tempInit_[i-1];
+        double constFactorLocalInv = 1.0 / (constFactor * lapseRate);
+        while (zNext <= zCeil){
+            double pressureTarg = pressureBase * pow(tBase/(tBase + lapseRate * (zNext-zBase)),constFactorLocalInv);
+            // We always do the lower edge, then the mid point. Therefore
+            // only increment the counter when completing the mid point.
+            // Once the final edge is complete, don't move on to the next
+            // mid point as there isn't one!
+            if (isEdge) {
+                pressureEdges_[iCell] = pressureTarg;
+                if (iCell == ny_) {
+                    complete = true;
+                    break;
+                }
+                zNext = altitude_[iCell];
+            } else {
+                pressure_[iCell] = pressureTarg;
+                iCell += 1;
+                zNext = altitudeEdges_[iCell];
+            }
+            isEdge = (!isEdge);
+        }
+        if (complete) { break; }
+    }
+}
 
 void Meteorology::regenerate( const Vector_1D& yCoord_new, const Vector_1D& yEdges_new, int nx_new ) {
     double dy_new = yEdges_new[1] - yEdges_new[0];
@@ -169,6 +240,14 @@ void Meteorology::Update( const double dt, const double solarTime_h, \
 } /* End of Meteorology::UpdateMet */
 
 void Meteorology::readMetDataFromFile( const NcFile& dataFile ){
+    // Reads in the met data and stores it in memory. This should
+    // only ever be called once; the relevant data is stored in
+    // the xTimeseriesData_ variables on the original (native)
+    // grid, which has a vertical extent of altitudeDim_.
+    // This routine does NOT populate the xInit_ variables,
+    // which are interpolated in time but not space; and
+    // it does NOT populate the x_ variables, which are
+    // interpolated in both.
     /*
         Met data format:
         2 dimensions: altitude and time
@@ -184,10 +263,9 @@ void Meteorology::readMetDataFromFile( const NcFile& dataFile ){
     /* Extract pressure and altitude from input file. */
     altitudeInit_.resize(altitudeDim_);
     pressureInit_.resize(altitudeDim_);
-    altitudeEdges_.resize(altitudeDim_+1);
-    pressureEdges_.resize(altitudeDim_+1);
 
-    //The netcdf API is garbage and makes you pass in a C style array despite being branded as a "C++" library
+    // Read in the pressure variable. This is what we derive our vertical grid from
+    // If the altitude variable is present, it is not used
     NcVar pressure_ncVar = dataFile.getVar("pressure");
     pressure_ncVar.getVar(pressureInit_.data());
 
@@ -195,14 +273,6 @@ void Meteorology::readMetDataFromFile( const NcFile& dataFile ){
     for (int i = 0; i < altitudeDim_; i++ ) {
         pressureInit_[i] *= 100.0; //convert from hPa to Pa
     }
-
-    // Generate pressure edges at the mid-points between pressures,
-    // and extrapolate for the first and last
-    for (int i = 1; i < altitudeDim_; i++ ) {
-        pressureEdges_[i] = (pressureInit_[i] + pressureInit_[i+1]) * 0.5;
-    }
-    pressureEdges_[0] = pressureInit_[0] - (pressureInit_[1] - pressureEdges_[1]);
-    pressureEdges_[altitudeDim_] = pressureInit_[altitudeDim_-1] + (pressureInit_[altitudeDim_-1] - pressureEdges_[altitudeDim_ - 2]);
 
     // Resize all variables to match the vertical extent of the met data
     tempInit_.resize(altitudeDim_);
@@ -257,7 +327,10 @@ void Meteorology::estimateMetDataAltitudes() {
     // that the air is dry.
     const double constFactor = physConst::R_Air / physConst::g;
     // Calculate lapse rate (K/m) between each point
-    double lapseRates[altitudeDim_];
+    // Indexing is a bit tricky: 0 is below the first point, last is above the last point
+    lapseInit_.resize(altitudeDim_+1);
+    altitudeEdgesInit_.resize(altitudeDim_+1);
+    pressureEdgesInit_.resize(altitudeDim_+1);
     for (int i = 0; i < altitudeDim_ - 1; i++) {
         double t0 = tempInit_[i];
         double t1 = tempInit_[i+1];
@@ -269,42 +342,62 @@ void Meteorology::estimateMetDataAltitudes() {
             tempFactor = t0;
         }
         double dz = log(pressureInit_[i]/pressureInit_[i+1]) * constFactor * tempFactor;
-        lapseRates[i] = dT / dz;
+        lapseInit_[i+1] = dT / dz;
     }
+    // Extrapolate below and above the grid
+    lapseInit_[0] = lapseInit_[1];
+    lapseInit_[altitudeDim_+1] = lapseInit_[altitudeDim_];
     // Calculate the edge spacing, as well as the altitude delta between the lowermost
     // point in the met data and the reference pressure
-    altitudeEdges_[0] = 0.0;
-    double zOffset;
+    double lowerEdge = 0.0;
+    double zOffset = 0.0;
+    bool zFound = false;
+    double pressureBase, pressureCeil, pressureTop;
+    // This will be copied to pressureBase immediately - so we need it to be the bottom pressure
+    // Do NOT limit to 101325 as the local surface pressure may be greater than that
+    pressureCeil = pressureInit_[0] - 0.5 * (pressureInit_[1] - pressureInit_[0]);
+    // Pressure at the top of the met data grid, extrapolated
+    pressureTop = std::max(0.0,pressureInit_[altitudeDim_-1] + 0.5 * (pressureInit_[altitudeDim_-1] - pressureInit_[altitudeDim_-2]));
+    pressureEdgesInit_[0] = pressureCeil;
+    altitudeEdgesInit_[0] = lowerEdge;
+
     for (int i = 0; i < altitudeDim_; i++) {
-        double lowerLapse = lapseRates[std::max(i-1,0)];
-        double upperLapse = lapseRates[std::min(i,altitudeDim_-2)];
+        pressureBase = pressureCeil;
+        pressureCeil = (i == (altitudeDim_-1)) ? pressureTop : 0.5*(pressureInit_[i+1] + pressureInit_[i]);
+        pressureEdgesInit_[i+1] = pressureCeil;
+        double lowerLapse = lapseInit_[i];
+        double upperLapse = lapseInit_[i+1];
         double pMid = pressureInit_[i];
         double tMid = tempInit_[i];
         // Two calculations: one for the lower half of the cell, one for the upper half
         // Lapse rate changes these are not equal
-        double dzLower = hydrostaticDeltaAltitude(lowerLapse,tMid,pMid,pressureEdges_[i]);
-        double dzUpper = -1.0*hydrostaticDeltaAltitude(upperLapse,tMid,pMid,pressureEdges_[i+1]);
-        altitudeInit_[i] = altitudeEdges_[i] + dzLower;
-        altitudeEdges_[i+1] = altitudeEdges_[i] + dzLower + dzUpper;
+        double dzLower = hydrostaticDeltaAltitude(lowerLapse,tMid,pMid,pressureBase);
+        double dzUpper = -1.0*hydrostaticDeltaAltitude(upperLapse,tMid,pMid,pressureCeil);
+        altitudeInit_[i] = lowerEdge + dzLower;
         // Does this "cell" contain the reference pressure? If so, figure out how far 
-        // into it that pressure occurs - we will use this later so that the pressure
-        // used in the meteorolo
-        if ((pressureEdges_[i] >= pressureRef_) && (pressureEdges_[i+1] < pressureRef_)){
+        // into it that pressure occurs
+        if ((!zFound) && (pressureBase >= pressureRef_) && (pressureCeil < pressureRef_)){
             if (pressureRef_ > pMid){
                 // Lower half of the cell
-                zOffset = altitudeEdges_[i] + hydrostaticDeltaAltitude(lowerLapse,tMid,pMid,pressureRef_);
+                zOffset = lowerEdge + hydrostaticDeltaAltitude(lowerLapse,tMid,pMid,pressureRef_);
             } else {
                 // Upper half of the cell
-                zOffset = altitudeEdges_[i] + dzLower - hydrostaticDeltaAltitude(upperLapse,tMid,pMid,pressureRef_);
-            } 
+                zOffset = lowerEdge + dzLower - hydrostaticDeltaAltitude(upperLapse,tMid,pMid,pressureRef_);
+            }
+            zFound = true;
         }
+        // Update to the top of this cell (and bottom of the next)
+        lowerEdge += dzLower + dzUpper;
+        altitudeEdgesInit_[i+1] = lowerEdge;
     }
-    // Now update all the altitude edges and centers so that they place the reference pressure and 
+    if (!zFound) {
+        throw std::runtime_error("Reference pressure outside meteorological data bounds.");
+    }
+    // Now update all the altitude centers so that they place the reference pressure and 
     // altitude in the same location on the grid
-    altitudeEdges_[0] = altitudeRef_ - zOffset;
     for (int i = 0; i < altitudeDim_; i++) {
-        altitudeEdges_[i+1] += (altitudeRef_ - zOffset);
         altitudeInit_[i] += (altitudeRef_ - zOffset);
+        altitudeEdgesInit_[i] += (altitudeRef_ - zOffset);
     } 
 }
 
