@@ -54,6 +54,8 @@ class Meteorology
                      const Vector_1D& yEdges);
 
 
+        void applyUpdraft(double dt);
+        void recalculateSimulationGrid();
         void regenerate(const Vector_1D& yCoord_new, const Vector_1D& yEdges_new, int nx_new );
         void Update( const double dt, const double solarTime_h, \
                      const double simTime_h, const double dTrav_x = 0, const double dTrav_y = 0);
@@ -90,6 +92,7 @@ class Meteorology
             return met::linInterpMetData(altitude_, shear_, alt);
         }
         inline double shearRef() const { return shearAtAlt(altitudeRef_); }
+        inline double lastOmega() const { return oldPressureVelocity_; }
         inline double satdepthUser() const { return satdepth_user_; }
         inline double referenceAlt() const { return altitudeRef_; } //Altitude at y = 0
         inline double referencePress() const { return pressureRef_; } //Pressure at y = 0
@@ -106,6 +109,7 @@ class Meteorology
         inline const Vector_1D& Press() const { return pressure_; }
         inline const Vector_1D& Shear() const { return shear_; }
         inline const Vector_2D& H2O_field() const { return H2O_; }
+        inline const Vector_2D& AirND_field() const { return airMolecDens_; }
         inline const Vector_1D& VertVeloc() const { return vertVeloc_; }
         inline const Vector_1D& AltEdges() const { return altitudeEdges_; }
         inline const Vector_1D& PressEdges() const { return pressureEdges_; }
@@ -246,6 +250,9 @@ class Meteorology
         bool interpRH_;
         bool interpShear_;
         bool interpVertVeloc_;
+
+        // For handling vertical advection due to updrafts
+        double oldPressureVelocity_;
 
 };
 

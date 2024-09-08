@@ -37,16 +37,13 @@ Meteorology::Meteorology( const OptInput &optInput,
     interpShear_(optInput.MET_INTERPSHEARDATA),
     interpVertVeloc_(optInput.MET_INTERPVERTVELOC)
 {
-
+    oldPressureVelocity_ = 0.0;
     zeroVectors();
-
     initMetLoadTypes(optInput);
 
-    //Set reference altitude from reference pressure
+    //Set reference altitude from reference pressure using ISA
     met::ISA_pAlt(altitudeRef_, pressureRef_);
-    //Steps:
-    // 1) Calculate lapse rate based on params
-    // 2) Initalize the initial and time-dependent temperature, h2o, and shear
+    std::cout << "Starting pressure of " << pressureRef_ << " Pa. Pressure altitude is " << (altitudeRef_/1000.0) << " km" << std::endl;
 
     // These should eventually be deleted
     lapseRate_ = -6.5;
@@ -153,7 +150,23 @@ void Meteorology::estimateSimulationGridPressures(){
     }
 }
 
+void Meteorology::applyUpdraft(double dt){
+    // Vertical velocity is read from "w" in the netCDF; now assume this to be pressure velocity in Pa s-1
+    // For now, we are still using the "reference altitude" rather than a measure of the contrail
+    // centroid
+    double omega = met::linInterpMetData(altitudeInit_, vertVelocInit_, altitudeRef_);
+
+    // Represent the effect of a pressure velocity by moving all grid edges the same amount (!)
+    for(double& pE: pressureEdges_) {
+        pE += omega * dt;
+    }
+    for(double& pC: pressure_) {
+        pC += omega * dt;
+    }
+}
+
 void Meteorology::regenerate( const Vector_1D& yCoord_new, const Vector_1D& yEdges_new, int nx_new ) {
+    // Set up new y coordinate, starting from the (generally) increased depth
     double dy_new = yEdges_new[1] - yEdges_new[0];
     int ny_new = yCoord_new.size();
     double alt_y0 = altitudeEdges_[0] + (yEdges_new[0] - yEdges_[0]);
@@ -165,9 +178,7 @@ void Meteorology::regenerate( const Vector_1D& yCoord_new, const Vector_1D& yEdg
     std::generate(altEdges_new.begin(), altEdges_new.end(), [&, j = 0] () mutable { return alt_y0 + dy_new * j++; });
     std::generate(alt_new.begin(), alt_new.end(), [&, j = 0] () mutable { return alt_y0 + dy_new * (0.5 + j++); });
 
-    met::ISA(alt_new, press_new);
-    met::ISA(altEdges_new, pressEdges_new);
-
+    // Grid size has changed - resize all the relevant vectors    
     tempBase_.resize(ny_new);
     tempTotal_ = Vector_2D(ny_new, Vector_1D(nx_new));
     tempPerturbation_ = Vector_2D(ny_new, Vector_1D(nx_new));
@@ -184,36 +195,8 @@ void Meteorology::regenerate( const Vector_1D& yCoord_new, const Vector_1D& yEdg
     pressureEdges_ = pressEdges_new;
     vertVeloc_.resize(ny_new);
 
-    //Regenerate temp field
-    for(int j = 0; j < ny_new; j++) {
-        int i_Z = met::nearestNeighbor( altitudeInit_, alt_new[j]);
-        double tempInterp = met::linInterpMetData(altitudeInit_, tempInit_, alt_new[j]);
-        tempBase_[j] = interpTemp_ ? tempInterp : tempInit_[i_Z];
-        tempTotal_[j].assign(nx_new, tempBase_[j]);
-    }
-    
-    //Regenerate H2O
-    for(int j = 0; j < ny_new; j++) {
-        int i_Z = met::nearestNeighbor( altitudeInit_, alt_new[j]);
-        double rhiInterp = met::linInterpMetData(altitudeInit_, rhiInit_, alt_new[j]);
-        double rhiToUse = interpRH_ ? rhiInterp : rhiInit_[i_Z];
-        H2O_[j].assign(nx_new, physFunc::RHiToH2O(rhiToUse, tempBase_[j]));
-    }
-
-    // Regenerate shear
-    for ( int j = 0;  j < ny_new; j++ ) {
-        int i_Z = met::nearestNeighbor( altitudeInit_, alt_new[j]);
-        double shear_local = met::linInterpMetData(altitudeInit_, shearInit_, alt_new[j]);
-        shear_[j] = interpShear_ ? shear_local : shearInit_[i_Z];
-    }
-
-    // Regenerate vert veloc
-    for ( int j = 0;  j < ny_new; j++ ) {
-        int i_Z = met::nearestNeighbor( altitudeInit_, alt_new[j]);
-        double w_local = met::linInterpMetData(altitudeInit_, vertVelocInit_, alt_new[j]);
-        vertVeloc_[j] = interpVertVeloc_ ? w_local : vertVelocInit_[i_Z];
-    }
-    updateAirMolecDens();
+    // Reinterpolate met data to the new simulation grid
+    updateSimulationGridProperties();
 }
 
 void Meteorology::Update( const double dt, const double solarTime_h, \
@@ -222,21 +205,16 @@ void Meteorology::Update( const double dt, const double solarTime_h, \
     //Update altitude if dTrav_y is nonzero 
     //dTrav_x, dTrav_y are for velocities not accounted for in the meteorological vertical velocity.
     if( dTrav_y != 0 ) { 
-        for (int jNy = 0; jNy < ny_; jNy++ )
-            altitude_[jNy] +=  dTrav_y;
-        met::ISA( altitude_, pressure_ );
+        throw std::runtime_error("Non-zero dTrav_y not permitted.");
+        //for (int jNy = 0; jNy < ny_; jNy++ )
+        //    altitude_[jNy] +=  dTrav_y;
+        //met::ISA( altitude_, pressure_ );
     }
 
-    //First, we take the vertical velocity at the simtime specifed outside, typically halfway into the timestep.
-    //Then advect to the new altitude based on the pressure velocity at the reference altitude at time simTime.
-    updateVertVeloc(simTime_h);
-    vertAdvectAltPress(dt); 
-
-    /* User defined fields can be set here ! */
-    updateTemperature(solarTime_h, simTime_h);
-    updateShear(simTime_h);
-    updateH2O(simTime_h);
-    updateAirMolecDens();
+    // Update the values held in xInit_
+    updateMetData(simTime_h);
+    // Calculate lapse rates and map altitudes to pressures
+    estimateMetDataAltitudes();
 } /* End of Meteorology::UpdateMet */
 
 void Meteorology::readMetDataFromFile( const NcFile& dataFile ){
@@ -289,7 +267,11 @@ void Meteorology::readMetDataFromFile( const NcFile& dataFile ){
 }
 
 void Meteorology::updateMetData(double simTime_h) {
-    // We now either interpolate everything or nothing
+    // Store the old pressure velocity
+    if (simTime_h > 0.0) {
+        oldPressureVelocity_ = met::linInterpMetData(altitudeInit_, vertVelocInit_, altitudeRef_); // dp/dt
+    }
+    // We now either interpolate everything or nothing (in time)
     bool timeseries = (tempLoadType_ == MetVarLoadType::TimeSeries);
     tempInit_      = interpMetTimeseriesData(simTime_h, tempTimeseriesData_, timeseries);
     shearInit_     = interpMetTimeseriesData(simTime_h, shearTimeseriesData_, timeseries);
@@ -416,6 +398,48 @@ double hydrostaticDeltaAltitude(double lapseRate, double refTemperature, double 
         dz = (refTemperature/lapseRate) * (1.0 - pow(refPressure/targPressure,lapseRate*constFactor));
     }
     return dz;
+}
+
+void Meteorology::recalculateSimulationGrid(){
+    // Given a set of pressure edges, calculate their altitudes.
+    const double constFactor = physConst::R_Air / physConst::g;
+    double pressureBase, pressureCeil, pressureTop;
+    // Start from the bottom of the met data grid
+    double lowerEdge = altitudeEdgesInit_[0];
+    pressureCeil = pressureEdgesInit_[0];
+
+    // Pressures for which we are trying to calculate the altitude
+    int iSim = 0;
+    int ny = pressure_.size();
+    int pressureTarg = pressureEdges_[0];
+    altitudeEdges_.resize(ny+1);
+    yEdges_.resize(ny+1);
+
+    // First entry is for the space between the lowermost
+    // met data pressure edge and the first met data pressure.
+    // After that, we loop over the spaces between the met data
+    // points, as the lapse rate is constant over this space
+    for (int i = 0; i < altitudeDim_; i++) {
+        pressureBase = pressureCeil;
+        pressureCeil = pressureInit_[i];
+        double lapseRate = lapseInit_[i];
+        double tMid = tempInit_[i];
+        // Loop over all entries which are between this pressure and the prior one
+        // The same lapse rate (remembering lapse rates are indexed like pressure edges,
+        // not like pressure mid-points) will apply throughout
+        while ((pressureTarg >= pressureCeil) && (pressureTarg < pressureBase)){
+            double dz = hydrostaticDeltaAltitude(lapseRate,tMid,pressureTarg,pressureBase);
+            altitudeEdges_[iSim] = dz + lowerEdge;
+            yEdges_[iSim] = dz + lowerEdge - altitudeRef_;
+            iSim++;
+            if (iSim > ny) { break; }
+            pressureTarg = pressureEdges_[iSim];
+        }
+        if (iSim > ny) { break; }
+        lowerEdge = altitudeInit_[i];
+    }
+    // Don't bother with updating altitude_ - it will not be used again
+    // before the remapping is performed
 }
 
 void Meteorology::initAltitudeAndPress( const NcFile& dataFile ) {
@@ -713,12 +737,18 @@ void Meteorology::updateAirMolecDens() {
     // which may or may not be correct depending on the
     // situation - caveat emptor
     const double invkB = 1.00E-06 / physConst::kB;
+    const double constFactor = physConst::Na / (physConst::g * MW_Air);
     #pragma omp parallel for        \
     if      ( !PARALLEL_CASES ) \
     default ( shared          )
     for ( int jNy = 0; jNy < ny_; jNy++ ) {
-        for ( int iNx = 0; iNx < nx_; iNx++ )
+        for ( int iNx = 0; iNx < nx_; iNx++ ) {
             airMolecDens_[jNy][iNx] = pressure_[jNy] / tempTotal_[jNy][iNx] * invkB;
+            if ((jNy == 0) && (iNx == 0)) {
+                double integralND = constFactor * (pressureEdges_[jNy] - pressureEdges_[jNy+1]) / (altitudeEdges_[jNy+1] - altitudeEdges_[jNy]);
+                std::cout << "ND comparison: " << airMolecDens_[jNy][iNx] << " vs " << integralND << std::endl;
+            }
+        }
     }
 }
 
