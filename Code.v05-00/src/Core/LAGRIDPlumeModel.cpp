@@ -51,14 +51,6 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         std::cout << "\n";
         std::cout << "\n - Time step: " << timestepVars_.nTime + 1 << " out of " << timestepVars_.timeArray.size();
         std::cout << "\n -> Solar time: " << std::fmod( timestepVars_.curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
-        
-        //Declaring variables needed in case of running CoCiP-style mixing
-        Vector_2D H2O_before_cocip, H2O_amb_after_cocip;
-        MaskType numberMask_before_cocip, numberMask_after_cocip;
-        if(COCIP_MIXING) {
-            H2O_before_cocip = H2O_;
-            numberMask_before_cocip = iceNumberMask();
-        }
 
         // Run Transport
         std::cout << "Running Transport" << std::endl;
@@ -77,13 +69,6 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 
         solarTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.TRANSPORT_DT / 2 ) / 3600.0;
         simTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.TRANSPORT_DT / 2 - timestepVars_.timeArray[0] ) / 3600;
-        if(COCIP_MIXING) {
-            Meteorology met_temp = met_;
-            met_temp.Update( timestepVars_.TRANSPORT_DT, solarTime_h_, simTime_h_);
-            H2O_amb_after_cocip = met_temp.H2O_field();
-            numberMask_after_cocip = iceNumberMask();
-            runCocipH2OMixing(H2O_before_cocip, H2O_amb_after_cocip, numberMask_before_cocip, numberMask_after_cocip);
-        }
 
         // Run Ice Growth
         if (simVars_.ICE_GROWTH && timestepVars_.checkTimeForIceGrowth()) {
