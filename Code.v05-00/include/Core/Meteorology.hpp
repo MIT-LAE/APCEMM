@@ -134,6 +134,7 @@ class Meteorology
 
             tempBase_ = Vector_1D(ny_, 0);
             shear_ = Vector_1D(ny_, 0);
+            rhi_ = Vector_1D(ny_, 0);
             vertVeloc_ = Vector_1D(ny_, 0);
             altitude_ = Vector_1D(ny_, 0);
             pressure_ = Vector_1D(ny_, 0);
@@ -163,6 +164,7 @@ class Meteorology
         void updateMetData(double simTime_h);
         void estimateSimulationGridPressures();
         void updateSimulationGridProperties();
+        double estimateSatDepth();
 
         Vector_1D interpMetTimeseriesData(double simTime_h, const Vector_2D& ts_data, bool timeseries) const;
 
@@ -232,6 +234,7 @@ class Meteorology
         Vector_2D airMolecDens_;
         Vector_2D H2O_;
         Vector_1D shear_;
+        Vector_1D rhi_;
         Vector_1D vertVeloc_; // [m/s]
 
         Vector_1D altitude_;

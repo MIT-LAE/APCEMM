@@ -72,6 +72,9 @@ Meteorology::Meteorology( const OptInput &optInput,
     estimateMetDataAltitudes();
 
     updateSimulationGridProperties();
+
+    // Get the saturation depth
+    satdepth_user_ = estimateSatDepth();
 } /* End of Meteorology::Meteorology */
 
 void Meteorology::updateSimulationGridProperties(){
@@ -116,7 +119,7 @@ void Meteorology::estimateSimulationGridPressures(){
     for (int i = 0; i < altitudeDim_; i++) {
         zBase = zCeil;
         zCeil = altitudeInit_[i];
-        if (zNext > zCeil){
+        while (zNext > zCeil){
             continue;
         }
         pressureBase = pressureCeil;
@@ -185,6 +188,7 @@ void Meteorology::regenerate( const Vector_1D& yCoord_new, const Vector_1D& yEdg
     H2O_ = Vector_2D(ny_new, Vector_1D(nx_new));
     airMolecDens_ = Vector_2D(ny_new, Vector_1D(nx_new));
     shear_.resize(ny_new);
+    rhi_.resize(ny_new);
     yCoords_ = yCoord_new;
     yEdges_ = yEdges_new;
     ny_ = ny_new;
@@ -211,7 +215,7 @@ void Meteorology::Update( const double dt, const double solarTime_h, \
         //met::ISA( altitude_, pressure_ );
     }
 
-    // Update the values held in xInit_
+    // Update the values held in xInit_ - interpolate in time only
     updateMetData(simTime_h);
     // Calculate lapse rates and map altitudes to pressures
     estimateMetDataAltitudes();
@@ -267,10 +271,12 @@ void Meteorology::readMetDataFromFile( const NcFile& dataFile ){
 }
 
 void Meteorology::updateMetData(double simTime_h) {
+    // Update the vertical profiles of meteorological variables vs pressure
     // Store the old pressure velocity
     if (simTime_h > 0.0) {
         oldPressureVelocity_ = met::linInterpMetData(altitudeInit_, vertVelocInit_, altitudeRef_); // dp/dt
     }
+    // The below interpolates in time only
     // We now either interpolate everything or nothing (in time)
     bool timeseries = (tempLoadType_ == MetVarLoadType::TimeSeries);
     tempInit_      = interpMetTimeseriesData(simTime_h, tempTimeseriesData_, timeseries);
@@ -293,6 +299,7 @@ void Meteorology::interpolateMetToSimulationGrid() {
         vertVeloc_[j] = interpVertVeloc_ ? met::linInterpMetData(altitudeInit_, vertVelocInit_, altitude_[j]) : vertVelocInit_[i_Z];
         // Water is a bit different - calculate molec/cm3 based on met-data temperature, interpolated (!)
         double rhi_local = interpRH_ ? met::linInterpMetData(altitudeInit_, rhiInit_, altitude_[j]) : rhiInit_[i_Z];
+        rhi_[j] = rhi_local;
         double h2o_local = physFunc::RHiToH2O(rhi_local, tempBase_[j]);
         H2O_[j].assign(nx_, h2o_local);
         // Add turbulent fluctuations to temperature if selected
@@ -411,7 +418,7 @@ void Meteorology::recalculateSimulationGrid(){
     // Pressures for which we are trying to calculate the altitude
     int iSim = 0;
     int ny = pressure_.size();
-    int pressureTarg = pressureEdges_[0];
+    double pressureTarg = pressureEdges_[0];
     altitudeEdges_.resize(ny+1);
     yEdges_.resize(ny+1);
 
@@ -578,23 +585,37 @@ void Meteorology::initH2O( const NcFile& dataFile, const OptInput& optInput ) {
 
     }
 
+    satdepth_user_ = estimateSatDepth();
+    //int i_Z = met::nearestNeighbor( pressure_, ambParams_.press_Pa);
+    //double dy = yCoords_[1] - yCoords_[0];
+
+    ////Throws exception if domain not big enough.
+    ////TODO: Decide on what to do about variable saturation depths (i.e. advecting contrail through space).
+    //Vector_1D localRHw(ny_);
+    //for (int j = 0; j < ny_; j++) {
+    //    localRHw[j] = physFunc::RHiToRHw(localRHi[j], tempBase_[j]);
+    //}
+    ////Yes, satdepth_calc converts this RHw right back into RHi to calculate it. Whatever it doesn't affect performance. -MX
+    //try {
+    //    satdepth_user_ = met::satdepth_calc(localRHw, tempBase_, altitude_, i_Z, std::abs(yCoords_[0]) + dy/2);
+    //}
+    //catch (std::out_of_range &e){
+    //    if(optInput.MET_HUMIDSCAL_MODIFICATION_SCHEME != "constant")
+    //        std::cout << "WARNING: end of initial domain does not cover saturation depth." << std::endl;
+    //    satdepth_user_ = 1000.0;
+    //}
+}
+
+double Meteorology::estimateSatDepth() {
+    // Calculates the saturation depth
     int i_Z = met::nearestNeighbor( pressure_, ambParams_.press_Pa);
     double dy = yCoords_[1] - yCoords_[0];
-
-    //Throws exception if domain not big enough.
-    //TODO: Decide on what to do about variable saturation depths (i.e. advecting contrail through space).
-    Vector_1D localRHw(ny_);
-    for (int j = 0; j < ny_; j++) {
-        localRHw[j] = physFunc::RHiToRHw(localRHi[j], tempBase_[j]);
-    }
-    //Yes, satdepth_calc converts this RHw right back into RHi to calculate it. Whatever it doesn't affect performance. -MX
     try {
-        satdepth_user_ = met::satdepth_calc(localRHw, tempBase_, altitude_, i_Z, std::abs(yCoords_[0]) + dy/2);
+        return met::satdepth_calc(rhi_, altitude_, i_Z, std::abs(yCoords_[0]) + dy/2);
     }
     catch (std::out_of_range &e){
-        if(optInput.MET_HUMIDSCAL_MODIFICATION_SCHEME != "constant")
-            std::cout << "WARNING: end of initial domain does not cover saturation depth." << std::endl;
-        satdepth_user_ = 1000.0;
+        std::cout << "WARNING: end of initial domain does not cover saturation depth." << std::endl;
+        return 1000.0;
     }
 }
 
@@ -685,6 +706,7 @@ void Meteorology::updateH2O(double simTime_h) {
     #pragma omp parallel for if (!PARALLEL_CASES)
     for ( int j = 0; j < ny_; j++ ) {
         double rh_local = met::linInterpMetData(altitudeInit_, rhiInit_, altitude_[j]);
+        rhi_[j] = rh_local;
         double h2o_local = physFunc::RHiToH2O(rh_local, tempBase_[j]);
         H2O_[j].assign(nx_, h2o_local);
     }
@@ -738,16 +760,12 @@ void Meteorology::updateAirMolecDens() {
     // situation - caveat emptor
     const double invkB = 1.00E-06 / physConst::kB;
     const double constFactor = physConst::Na / (physConst::g * MW_Air);
-    #pragma omp parallel for        \
-    if      ( !PARALLEL_CASES ) \
-    default ( shared          )
+    #pragma omp parallel for
     for ( int jNy = 0; jNy < ny_; jNy++ ) {
+        double integralND = constFactor * (pressureEdges_[jNy] - pressureEdges_[jNy+1]) / (altitudeEdges_[jNy+1] - altitudeEdges_[jNy]);
         for ( int iNx = 0; iNx < nx_; iNx++ ) {
-            airMolecDens_[jNy][iNx] = pressure_[jNy] / tempTotal_[jNy][iNx] * invkB;
-            if ((jNy == 0) && (iNx == 0)) {
-                double integralND = constFactor * (pressureEdges_[jNy] - pressureEdges_[jNy+1]) / (altitudeEdges_[jNy+1] - altitudeEdges_[jNy]);
-                std::cout << "ND comparison: " << airMolecDens_[jNy][iNx] << " vs " << integralND << std::endl;
-            }
+            //airMolecDens_[jNy][iNx] = pressure_[jNy] / tempTotal_[jNy][iNx] * invkB;
+            airMolecDens_[jNy][iNx] = integralND;
         }
     }
 }

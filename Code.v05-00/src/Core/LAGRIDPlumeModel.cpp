@@ -114,22 +114,23 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         for (std::size_t j=0; j<yCoords_.size(); j++){
             localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);
             for (std::size_t i=0; i<xCoords_.size(); i++){
-                //localND = oldAirDen[j][i] * 1.0e-12; // Convert to molec/um3
-                Contrail_[j][i] = Contrail_[j][i] / localND; // parts per trillion
-                H2O_[j][i] = H2O_[j][i] / localND; // parts per trillion
-                for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
-                    pdfRef[n][j][i] = pdfRef[n][j][i] / localND;
-                }
+                //Contrail_[j][i] = Contrail_[j][i] / localND; // parts per trillion
+                //H2O_[j][i] = H2O_[j][i] / localND; // parts per trillion
+                //for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
+                //    pdfRef[n][j][i] = pdfRef[n][j][i] / localND;
+                //}
             }
         }
 
         // Run vertical advection to get the new pressure edges
         if (std::abs(met_.lastOmega()) > 1.0e-10){
+            std::cout << "DEBUG: Applying updraft of " << met_.lastOmega() << " Pa s-1" << std::endl;
             met_.applyUpdraft(timestepVars_.TRANSPORT_DT);
         }
 
-        // Read in the meteorology for the next time step, and update temperatures etc
-        // This only affects the xInit_ values in the meteorology object
+        // Read in the meteorology for the next time step, interpolating in time 
+        // This only affects the xInit_ values in the meteorology object, but does
+        // update altitudeInit_ and altitudeEdgesInit_ (pressureInit_ unchanged)
         std::cout << "Updating Met..." << std::endl;
         met_.Update( timestepVars_.TRANSPORT_DT, solarTime_h_, simTime_h_);
         
@@ -139,7 +140,7 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         
         // Resynchronize the y coordinates
         yEdges_ = met_.yEdges();
-        yCoords_ = met_.yCoords(); 
+        //yCoords_ = met_.yCoords(); // We didn't update met_.yCoords
 
         //Remap the grid to account for changes in shape due to vertical advection and the growth of the contrail
         std::cout << "Remapping... " << std::endl;
@@ -569,12 +570,11 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     for (std::size_t j=0; j<yCoords_.size(); j++){
         localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);
         for (std::size_t i=0; i<xCoords_.size(); i++){
-            //localND = newAirDen[j][i] * 1.0e-12; // Convert to molec/um3
-            Contrail_[j][i] = Contrail_[j][i] * localND; // parts per trillion
-            H2O_[j][i] = H2O_[j][i] * localND; // parts per trillion
-            for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
-                pdfRef[n][j][i] = pdfRef[n][j][i] * localND;
-            }
+            //Contrail_[j][i] = Contrail_[j][i] * localND; // parts per trillion
+            //H2O_[j][i] = H2O_[j][i] * localND; // parts per trillion
+            //for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
+            //    pdfRef[n][j][i] = pdfRef[n][j][i] * localND;
+            //}
         }
     }
 
