@@ -2,14 +2,26 @@
 #include "AIM/Settling.hpp"
 #include "Util/PlumeModelUtils.hpp"
 #include "Core/Status.hpp"
-#include "Core/SZA.hpp"
+#include "KPP/KPP_Parameters.h"
 #include "Core/LAGRIDPlumeModel.hpp"
+
+/*
+These global variables are required because of the KPP auto-generated code.
+In the LAGRID Plume Model (no plume chemistry), the KPP is used only when
+spinning up the background ambient conditions during the initialization 
+step of the EPM. For now declare these variables at the top level.
+*/
+double RCONST[NREACT];       /* Rate constants (global) */
+double NOON_JRATES[NPHOTOL]; /* Noon-time photolysis rates (global) */
+double PHOTOL[NPHOTOL];      /* Photolysis rates (global) */
+double HET[NSPEC][3];        /* Heterogeneous chemistry rates (global) */
+double TIME;                 /* Current integration time (global) */
+double SZA_CST[3];           /* Require this for adjoint integration */
 
 LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input ):
     optInput_(optInput),
     input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
-    sun_(SZA(input.latitude_deg(), input.emissionDOY())),
     aircraft_(Aircraft(input, optInput.SIMULATION_INPUT_ENG_EI)),
     jetA_(Fuel("C12H24")),
     simVars_(MPMSimVarsWrapper(input, optInput)),
@@ -20,7 +32,7 @@ LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input
 
     EI_ = Emission( aircraft_.engine(), jetA_ );
 
-    timestepVars_.setTimeArray(PlumeModelUtils::BuildTime ( timestepVars_.tInitial_s, timestepVars_.tFinal_s, 3600.0*sun_.sunRise, 3600.0*sun_.sunSet, timestepVars_.dt ));
+    timestepVars_.setTimeArray(PlumeModelUtils::BuildTime ( timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt ));
 
     createOutputDirectories();
 }

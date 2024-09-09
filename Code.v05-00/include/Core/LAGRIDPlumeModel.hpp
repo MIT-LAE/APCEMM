@@ -9,7 +9,6 @@
 #include "Core/MPMSimVarsWrapper.hpp"
 #include "Core/TimestepVarsWrapper.hpp"
 #include "Core/Meteorology.hpp"
-#include "Core/SZA.hpp"
 #include "Core/Status.hpp"
 #include "Util/VectorUtils.hpp"
 
@@ -36,7 +35,6 @@ class LAGRIDPlumeModel {
         const OptInput& optInput_;
         const Input& input_;
         int numThreads_;
-        SZA sun_;
         Aircraft aircraft_;
         Fuel jetA_;
         Emission EI_;

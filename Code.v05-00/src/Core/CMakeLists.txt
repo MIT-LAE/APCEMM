@@ -13,8 +13,6 @@ set(SRCS
     Meteorology.cpp
     Mesh.cpp
     MPMSimVarsWrapper.cpp
-    PlumeModel.cpp
-    ReadJRates.cpp
     Ring.cpp
     Species.cpp
     Structure.cpp
