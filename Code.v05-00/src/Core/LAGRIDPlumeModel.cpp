@@ -114,11 +114,11 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         for (std::size_t j=0; j<yCoords_.size(); j++){
             localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);
             for (std::size_t i=0; i<xCoords_.size(); i++){
-                //Contrail_[j][i] = Contrail_[j][i] / localND; // parts per trillion
-                //H2O_[j][i] = H2O_[j][i] / localND; // parts per trillion
-                //for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
-                //    pdfRef[n][j][i] = pdfRef[n][j][i] / localND;
-                //}
+                Contrail_[j][i] = Contrail_[j][i] / localND; // parts per trillion
+                H2O_[j][i] = H2O_[j][i] / localND; // parts per trillion
+                for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
+                    pdfRef[n][j][i] = pdfRef[n][j][i] / localND;
+                }
             }
         }
 
@@ -570,11 +570,11 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     for (std::size_t j=0; j<yCoords_.size(); j++){
         localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);
         for (std::size_t i=0; i<xCoords_.size(); i++){
-            //Contrail_[j][i] = Contrail_[j][i] * localND; // parts per trillion
-            //H2O_[j][i] = H2O_[j][i] * localND; // parts per trillion
-            //for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
-            //    pdfRef[n][j][i] = pdfRef[n][j][i] * localND;
-            //}
+            Contrail_[j][i] = Contrail_[j][i] * localND; // parts per trillion
+            H2O_[j][i] = H2O_[j][i] * localND; // parts per trillion
+            for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
+                pdfRef[n][j][i] = pdfRef[n][j][i] * localND;
+            }
         }
     }
 
