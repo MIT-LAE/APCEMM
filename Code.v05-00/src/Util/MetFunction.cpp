@@ -15,6 +15,9 @@
 #include "Util/PhysFunction.hpp"
 #include "Util/MetFunction.hpp"
 
+// DEBUG ONLY 2024-09-01
+#include <iostream>
+
 namespace met
 {
 
@@ -386,13 +389,12 @@ namespace met
         return metVar_local;
     }
     
-    double satdepth_calc( const Vector_1D& RHw, const Vector_1D& T, const Vector_1D& alt, int iFlight, double YLIM_DOWN ) {
+    double satdepth_calc( const Vector_1D& RHi, const Vector_1D& alt, int iFlight, double YLIM_DOWN ) {
 
-        /* DESCRIPTION: Finds the saturation depth RHw and T profiles */
+        /* DESCRIPTION: Finds the saturation depth */
 
         /* INPUTS:
-         * RHw: Relative humidity wrt water [%] profile
-         * T: Temperature [K] profile
+         * RHi: Relative humidity wrt ice [%] profile
          * alt: Altitude [m] associated with profile
          * iFlight: index at flight altitude
          * YLIM_DOWN: bottom limit of domain */
@@ -405,8 +407,8 @@ namespace met
         /* Loop over altitudes till sat depth found or end of profile reached */
         while ( satdepth==0.00E+00 && iCur >= 0 ) {
 
-            /* Calculate RHi at current altitude */
-            RHi_cur = RHw[iCur] * physFunc::pSat_H2Ol( T[iCur] ) / physFunc::pSat_H2Os( T[iCur] );
+            /* Retrieve RHi at current altitude */
+            RHi_cur = RHi[iCur];
             /* Check if current altitude is subsaturated */
             if ( iCur != iFlight && RHi_cur < 100 ) {
 
@@ -416,7 +418,7 @@ namespace met
 
                 //satdepth = alt[iFlight] - alt[iCur];
 
-                RHi_prev = RHw[iCur + 1] * physFunc::pSat_H2Ol( T[iCur + 1] ) / physFunc::pSat_H2Os( T[iCur + 1] );
+                RHi_prev = RHi[iCur + 1];
                 satdepth = alt[iFlight] - (alt[iCur] + (100 - RHi_cur)/(RHi_prev - RHi_cur) * (alt[iCur + 1] - alt[iCur]));
                 break;
             }

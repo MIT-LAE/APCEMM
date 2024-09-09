@@ -52,7 +52,7 @@ namespace met
 
     double linInterpMetData(const Vector_1D& altitude_init, const Vector_1D& metVar_init, double altitude_query);
 
-    double satdepth_calc( const Vector_1D& RHw, const Vector_1D& T, const Vector_1D& alt, int iFlight, double YLIM_DOWN);
+    double satdepth_calc( const Vector_1D& RHi, const Vector_1D& alt, int iFlight, double YLIM_DOWN);
     
 
     inline double rhiCorrection( double rhi, double a = 0.9779, double b = 1.635 ) {

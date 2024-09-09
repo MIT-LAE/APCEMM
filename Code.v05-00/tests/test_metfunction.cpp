@@ -88,19 +88,23 @@ TEST_CASE( "MetFunction", "[single-file]" ) {
 		Vector_1D T = {240, 235, 230, 225, 220, 215, 210};
 		Vector_1D alt = {500, 600, 700, 800, 900, 1000, 1100};
 		Vector_1D RHi(7);
+		Vector_1D RHi2(7);
+		Vector_1D RHi3(7);
 		for (int i = 0; i < 7; i++){
 			RHi[i] = RHw[i]*physFunc::pSat_H2Ol(T[i])/physFunc::pSat_H2Os(T[i]);
+			RHi2[i] = RHw2[i]*physFunc::pSat_H2Ol(T[i])/physFunc::pSat_H2Os(T[i]);
+			RHi3[i] = RHw3[i]*physFunc::pSat_H2Ol(T[i])/physFunc::pSat_H2Os(T[i]);
 		}
 		//RHi = 69.2755 87.347 107.062 128.525 151.839 177.105 204.417
-		REQUIRE(satdepth_calc(RHw, T, alt, 6, 1500) == Catch::Approx(435.82044));
+		REQUIRE(satdepth_calc(RHi, alt, 6, 1500) == Catch::Approx(435.82044));
 
 		//Confirm return value of 1 when current altitude is not Ice Supersaturated
-		REQUIRE(satdepth_calc(RHw2, T, alt, 6, 1500) == Catch::Approx(1.0));
+		REQUIRE(satdepth_calc(RHi2, alt, 6, 1500) == Catch::Approx(1.0));
 
 
 		//Warnings for sat depth exceeding domain
 		try{
-			satdepth_calc(RHw3, T, alt, 6, 1500);
+			satdepth_calc(RHi3, alt, 6, 1500);
 		}
 		catch(std::out_of_range &e){
 			std::string error = e.what();

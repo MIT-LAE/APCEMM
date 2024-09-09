@@ -100,7 +100,7 @@ cmake ../Code.v05-00 -DCMAKE_BUILD_TYPE="Debug"
             "request": "launch",
             "program": "${workspaceFolder}/rundirs/debug/APCEMM",
             "cwd": "${workspaceFolder}/rundirs/debug/test_rundir/",
-            "args": ["${workspaceFolder}/examples/Example1_EPM/input.yaml"],
+            "args": ["${workspaceFolder}/examples/issl_rhi140/input.yaml"],
             "environment": [
                 {
                     "name": "LD_LIBRARY_PATH",
@@ -121,4 +121,4 @@ cmake ../Code.v05-00 -DCMAKE_BUILD_TYPE="Debug"
 }
 ```
 
-This configuration runs the APCEMM binary located in ```"${workspaceFolder}/rundirs/debug/``` using the input file located in ```${workspaceFolder}/examples/Example1_EPM/input.yaml``` and the working directory ``` ${workspaceFolder}/rundirs/debug/test_rundir/```. Paths can be changed to suit the case to debug.
+This configuration runs the APCEMM binary located in ```"${workspaceFolder}/rundirs/debug/``` using the input file located in ```${workspaceFolder}/examples/issl_rhi140/input.yaml``` and the working directory ``` ${workspaceFolder}/rundirs/debug/test_rundir/```. Paths can be changed to suit the case to debug.

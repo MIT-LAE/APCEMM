@@ -118,36 +118,17 @@ namespace LAGRID {
     }
 
 
-    FreeCoordBoxGrid rectToBoxGrid(double dy_old, const Vector_1D& dy_new, double dx_old, double x0_old, double y0_new, const Vector_2D& phi_old, const vector<vector<int>>& mask) {
-        int ny = phi_old.size();
-        int nx = phi_old[0].size();
-
-        //Preserving the phi_old for now, can optimize this to directly overwrite phi_old later if performance is an issue here
-        Vector_2D phi_new(ny, Vector_1D(nx));
-        Vector_1D dx_new(ny);
-        Vector_1D x0_new(ny);
-        /*
+    FreeCoordBoxGrid rectToBoxGrid(const Vector_1D& dy_vec, double dx, double x0, double y0, const Vector_2D& phi, const vector<vector<int>>& mask) {
+        // Allow for x0 to vary vertically in the future
+        int ny = phi.size();
+        int nx = phi[0].size();
+        Vector_1D dx_vec(ny);
+        Vector_1D x0_vec(ny);
         for(int j = 0; j < ny; j++) {
-            dx_new[j] = dx_old * dy_new[j] / dy_old;
-            x0_new[j] = x0_old + nx * (dx_old - dx_new[j]) / 2;
-            double cellAreaRatio = dy_new[j] * dy_new[j] / (dy_old * dy_old);
-            for(int i = 0; i < nx; i++) {
-                phi_new[j][i] = phi_old[j][i] / cellAreaRatio;
-            }
+            dx_vec[j] = dx;
+            x0_vec[j] = x0;
         }
-        */
-        // SDE 2024-08-12: Kludge - above is causing significant and cumulative noise
-        // due to errors propagating from the met_.Update() calculation, even when
-        // pressure velocity is zero
-        for(int j = 0; j < ny; j++) {
-            dx_new[j] = dx_old;
-            x0_new[j] = x0_old;
-            // double cellAreaRatio = dy_new[j] * dy_new[j] / (dy_old * dy_old);
-            for(int i = 0; i < nx; i++) {
-                phi_new[j][i] = phi_old[j][i];
-            }
-        }
-        return FreeCoordBoxGrid(dx_new, dy_new, phi_new, x0_new, y0_new, mask);
+        return FreeCoordBoxGrid(dx_vec, dy_vec, phi, x0_vec, y0, mask);
     }
 
     twoDGridVariable mapToStructuredGrid(const FreeCoordBoxGrid& boxGrid, const Remapping& remapping) {

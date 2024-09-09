@@ -14,7 +14,6 @@
 
 class LAGRIDPlumeModel {
     public:
-        static constexpr bool COCIP_MIXING = 0; // Results in less accurate mixing representation, only meant for comparisions vs. the CoCiP model.
         static constexpr double NUM_FILTER_RATIO = 1e-5;
         static constexpr double TOP_BUFFER_SCALING = 1.5;
         static constexpr double BOT_BUFFER_SCALING = 1.1;

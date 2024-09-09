@@ -54,6 +54,8 @@ class Meteorology
                      const Vector_1D& yEdges);
 
 
+        void applyUpdraft(double dt);
+        void recalculateSimulationGrid();
         void regenerate(const Vector_1D& yCoord_new, const Vector_1D& yEdges_new, int nx_new );
         void Update( const double dt, const double solarTime_h, \
                      const double simTime_h, const double dTrav_x = 0, const double dTrav_y = 0);
@@ -90,6 +92,7 @@ class Meteorology
             return met::linInterpMetData(altitude_, shear_, alt);
         }
         inline double shearRef() const { return shearAtAlt(altitudeRef_); }
+        inline double lastOmega() const { return oldPressureVelocity_; }
         inline double satdepthUser() const { return satdepth_user_; }
         inline double referenceAlt() const { return altitudeRef_; } //Altitude at y = 0
         inline double referencePress() const { return pressureRef_; } //Pressure at y = 0
@@ -106,6 +109,7 @@ class Meteorology
         inline const Vector_1D& Press() const { return pressure_; }
         inline const Vector_1D& Shear() const { return shear_; }
         inline const Vector_2D& H2O_field() const { return H2O_; }
+        inline const Vector_2D& AirND_field() const { return airMolecDens_; }
         inline const Vector_1D& VertVeloc() const { return vertVeloc_; }
         inline const Vector_1D& AltEdges() const { return altitudeEdges_; }
         inline const Vector_1D& PressEdges() const { return pressureEdges_; }
@@ -130,6 +134,7 @@ class Meteorology
 
             tempBase_ = Vector_1D(ny_, 0);
             shear_ = Vector_1D(ny_, 0);
+            rhi_ = Vector_1D(ny_, 0);
             vertVeloc_ = Vector_1D(ny_, 0);
             altitude_ = Vector_1D(ny_, 0);
             pressure_ = Vector_1D(ny_, 0);
@@ -137,30 +142,10 @@ class Meteorology
             pressureEdges_ = Vector_1D(ny_ + 1, 0);
         }
         inline void initMetLoadTypes(const OptInput& optInput) {
-
-            //Can't say "using (scoped) enum xyz" without c++20 so rip
-            tempLoadType_ = MetVarLoadType::NoMetInput;
-            shearLoadType_ = MetVarLoadType::NoMetInput;
-            rhLoadType_ = MetVarLoadType::NoMetInput;
-            vertVelocLoadType_ = MetVarLoadType::NoMetInput;
-
-            if( !optInput.MET_LOADMET ) return;
-
-            if( optInput.MET_LOADTEMP ) {
-                tempLoadType_ = optInput.MET_TEMPTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
-            }
-
-            if( optInput.MET_LOADRH ) {
-                rhLoadType_ = optInput.MET_RHTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
-            }
-
-            if( optInput.MET_LOADSHEAR ) {
-                shearLoadType_ = optInput.MET_SHEARTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
-            }
-
-            if ( optInput.MET_LOADVERTVELOC ) {
-                vertVelocLoadType_ = optInput.MET_VERTVELOCTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
-            }
+            tempLoadType_ = optInput.MET_TEMPTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
+            rhLoadType_ = optInput.MET_RHTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
+            shearLoadType_ = optInput.MET_SHEARTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
+            vertVelocLoadType_ = optInput.MET_VERTVELOCTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
         }
 
         void initAltitudeAndPress( const NcFile& dataFile );
@@ -171,6 +156,15 @@ class Meteorology
         void initH2O( const NcFile& dataFile, const OptInput& OptInput );
         void initShear( const NcFile& dataFile );
         void initVertVeloc ( const NcFile& dataFile );
+
+        // APCEMM v1.2
+        void estimateMetDataAltitudes();
+        void readMetDataFromFile( const NcFile& dataFile );
+        void interpolateMetToSimulationGrid();
+        void updateMetData(double simTime_h);
+        void estimateSimulationGridPressures();
+        void updateSimulationGridProperties();
+        double estimateSatDepth();
 
         Vector_1D interpMetTimeseriesData(double simTime_h, const Vector_2D& ts_data, bool timeseries) const;
 
@@ -207,6 +201,9 @@ class Meteorology
         Vector_1D shearInit_;
         Vector_1D rhiInit_;
         Vector_1D vertVelocInit_;
+        Vector_1D lapseInit_; 
+        Vector_1D pressureEdgesInit_; 
+        Vector_1D altitudeEdgesInit_; 
 
 	    Vector_2D tempTimeseriesData_;
         Vector_2D shearTimeseriesData_;
@@ -237,6 +234,7 @@ class Meteorology
         Vector_2D airMolecDens_;
         Vector_2D H2O_;
         Vector_1D shear_;
+        Vector_1D rhi_;
         Vector_1D vertVeloc_; // [m/s]
 
         Vector_1D altitude_;
@@ -256,7 +254,11 @@ class Meteorology
         bool interpShear_;
         bool interpVertVeloc_;
 
+        // For handling vertical advection due to updrafts
+        double oldPressureVelocity_;
+
 };
 
+double hydrostaticDeltaAltitude(double lapseRate, double refTemperature, double refPressure, double targPressure);
 
 #endif /* METEOROLOGY_H_INCLUDED */
