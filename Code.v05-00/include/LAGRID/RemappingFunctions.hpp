@@ -70,7 +70,7 @@ namespace LAGRID {
         return (boxCover_botRightX - boxCover_topLeftX) * (boxCover_topLeftY - boxCover_botRightY);
     }
 
-    FreeCoordBoxGrid rectToBoxGrid(double dy_old, const Vector_1D& dy_new, double dx_old, double x0_old, double y0_new, const Vector_2D& phi_old, const vector<vector<int>>& mask); 
+    FreeCoordBoxGrid rectToBoxGrid(const Vector_1D& dy_vec, double dx, double x0, double y0, const Vector_2D& phi, const vector<vector<int>>& mask); 
 
     double diffusionLossFunctionExact(const FreeCoordBoxGrid& boxGrid, const Remapping& remapping);
     double diffusionLossFunctionBoundaryEstimate(const FreeCoordBoxGrid& boxGrid, const Remapping& remapping);

@@ -446,13 +446,8 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
 }
 
 std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> LAGRIDPlumeModel::remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask) {
-    double dy_grid_old = yCoords_[1] - yCoords_[0];
     double dx_grid_old = xCoords_[1] - xCoords_[0];
-
-    // TODO: Add adaptive mesh size. This current implementation causes memory corruptions.
-    // We need an extra grid cell on each side to avoid dealing with nasty indexing edge cases
-    // if the boxes' and remapping's minX, maxX, minY, maxY are the same.
-    auto boxGrid = LAGRID::rectToBoxGrid(dy_grid_old, met_.dy_vec(), dx_grid_old, xEdges_[0], yEdges_[0], phi, mask);
+    auto boxGrid = LAGRID::rectToBoxGrid(met_.dy_vec(), dx_grid_old, xEdges_[0], yEdges_[0], phi, mask);
 
     //Enforce at least x many points in the contrail while limiting minimum/maximum dx and dy
     double dx_grid_new =  std::max(20.0, std::min((maskInfo.maxX - maskInfo.minX) / 50.0, 50.0));
@@ -563,15 +558,14 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     // for temperature variation (because the calculation of yEdge
     // included it). This uses the hydrostatic assumption:
     //    dp/dz = -rho*g = -(n/V)Mg
-    //Vector_2D newAirDen = met.AirND_field();
     auto pressureEdges = met_.PressEdges(); 
     double localND;
     #pragma omp parallel for
     for (std::size_t j=0; j<yCoords_.size(); j++){
         localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);
         for (std::size_t i=0; i<xCoords_.size(); i++){
-            Contrail_[j][i] = Contrail_[j][i] * localND; // parts per trillion
-            H2O_[j][i] = H2O_[j][i] * localND; // parts per trillion
+            Contrail_[j][i] = Contrail_[j][i] * localND;
+            H2O_[j][i] = H2O_[j][i] * localND;
             for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
                 pdfRef[n][j][i] = pdfRef[n][j][i] * localND;
             }
@@ -664,12 +658,8 @@ void LAGRIDPlumeModel::runCocipH2OMixing(const Vector_2D& h2o_old, const Vector_
 // Create an array which maps between 2D grids
 Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const std::vector<std::vector<int>>& mask, Vector_1D& xEdgesNew, Vector_1D& yEdgesNew, Vector_1D& xCoordsNew, Vector_1D& yCoordsNew) {
     Vector_2D phi = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size()));
-    double dy_grid_old = yCoords_[1] - yCoords_[0];
     double dx_grid_old = xCoords_[1] - xCoords_[0];
-
-    // We need an extra grid cell on each side to avoid dealing with nasty indexing edge cases
-    // if the boxes' and remapping's minX, maxX, minY, maxY are the same.
-    auto boxGrid = LAGRID::rectToBoxGrid(dy_grid_old, met_.dy_vec(), dx_grid_old, xEdges_[0], yEdges_[0], phi, mask);
+    auto boxGrid = LAGRID::rectToBoxGrid(met_.dy_vec(), dx_grid_old, xEdges_[0], yEdges_[0], phi, mask);
 
     //Enforce at least x many points in the contrail while limiting minimum/maximum dx and dy
     double dx_grid_new =  std::max(20.0, std::min((maskInfo.maxX - maskInfo.minX) / 50.0, 50.0));
