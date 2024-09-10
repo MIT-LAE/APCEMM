@@ -148,14 +148,7 @@ class Meteorology
             vertVelocLoadType_ = optInput.MET_VERTVELOCTIMESERIES ? MetVarLoadType::TimeSeries : MetVarLoadType::MetInputDefault;
         }
 
-        void initAltitudeAndPress( const NcFile& dataFile );
         void readMetVar( const NcFile& dataFile, std::string varName, Vector_2D& vec_ts, bool timeseries);
-        void initTempNoMet(const Vector_1D& yCoords);
-        void initTemperature( const NcFile& dataFile );
-        void initH2ONoMet( const Vector_1D& yCoords);
-        void initH2O( const NcFile& dataFile, const OptInput& OptInput );
-        void initShear( const NcFile& dataFile );
-        void initVertVeloc ( const NcFile& dataFile );
 
         // APCEMM v1.2
         void estimateMetDataAltitudes();
@@ -168,13 +161,7 @@ class Meteorology
 
         Vector_1D interpMetTimeseriesData(double simTime_h, const Vector_2D& ts_data, bool timeseries) const;
 
-        void updateTemperature(double solarTime_h, double simTime_h);
-        void updateH2O(double simTime_h);
-        void updateShear(double simTime_h);
         void updateAirMolecDens();
-        void updateVertVeloc(double simTime_h);
-        void vertAdvectAltPress(double dt);
-
         //For passing params to EPM (initial params at specified altitude)
         int i_Zp_ = -1; //Index for initial variables in altitude vector/coordinates if using met input
         double temp_user_;

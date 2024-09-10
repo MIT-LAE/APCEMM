@@ -109,19 +109,14 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
             break;
         }
 
-        // Store the pressure edges on which the data are currently stored
-        int nx_old = xCoords_.size();
-        int ny_old = yCoords_.size();
-        //Vector_2D oldAirDen = met.AirND_field();
-        Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
-        auto pressureEdges = met_.PressEdges();
-        double localND;
-
         // Convert all quantities from #/cm3 to #/#
         // delta-P/delta-Z is proportional to number density, and accounts
         // for temperature variation (because the calculation of yEdge
         // included it). This uses the hydrostatic assumption:
         //    dp/dz = -rho*g = -(n/V)Mg
+        Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
+        auto pressureEdges = met_.PressEdges();
+        double localND;
         #pragma omp parallel for
         for (std::size_t j=0; j<yCoords_.size(); j++){
             localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);
@@ -602,26 +597,6 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     }
 }
 
-void LAGRIDPlumeModel::trimH2OBoundary() {
-    std::vector<std::pair<int, int>> boundaryIndices;
-    int ny = H2O_.size();
-    int nx = H2O_[0].size();
-    auto isBoundary = [this, nx, ny](int j, int i){
-        if(i == 0 || i == nx - 1 || j == 0 || j == ny - 1) return true;
-        return (H2O_[j+1][i] == 0 || H2O_[j-1][i] == 0 || H2O_[j][i-1] == 0 || H2O_[j][i+1] == 0);
-    };
-    for(int j = 0; j < ny; j++) {
-        for(int i = 0; i < nx; i++) {
-            if(isBoundary(j, i)) {
-                boundaryIndices.emplace_back(j, i);
-            }
-        }
-    }
-    for(auto& p: boundaryIndices) {
-        H2O_[p.first][p.second] = 0;
-    }
-}
-
 double LAGRIDPlumeModel::totalAirMass() {
     auto numberMask = iceNumberMask();
     auto& mask = numberMask.first;
@@ -635,37 +610,6 @@ double LAGRIDPlumeModel::totalAirMass() {
     }
     return totalAirMass; // kg/m 
 }
-
-void LAGRIDPlumeModel::runCocipH2OMixing(const Vector_2D& h2o_old, const Vector_2D& h2o_amb_new, MaskType& mask_old, MaskType& mask_new) {
-    //h2o_old is the actual H2O field of the "before" timestep
-    double molec_h2o_old = 0;
-    for (std::size_t j = 0; j < h2o_old.size(); j++) {
-        for (std::size_t i = 0; i < h2o_old[0].size(); i++) {
-            molec_h2o_old += mask_old.first[j][i] * h2o_old[j][i];
-        }
-    }
-    //h2o_amb_new is the *ambient met* H2O field of the next timestep
-    double molec_h2o_amb_added = 0;
-    for (std::size_t j = 0; j < h2o_amb_new.size(); j++) {
-        for (std::size_t i = 0; i < h2o_amb_new[0].size(); i++) {
-            molec_h2o_amb_added += (mask_new.first[j][i] == 1 && mask_old.first[j][i] == 0) * h2o_amb_new[j][i];
-        }
-    }
-
-    double molec_h2o_final = molec_h2o_old + molec_h2o_amb_added; // molec/cm3
-    double average_amb_humidity_final = molec_h2o_final / mask_new.second.count;
-
-    for (std::size_t j = 0; j < H2O_.size(); j++)  {
-        for (std::size_t i = 0; i < H2O_[0].size(); i++) {
-            if(mask_new.first[j][i] == 1) {
-                H2O_[j][i] = average_amb_humidity_final;
-            }
-        }
-    }
-
-
-}
-
 
 // Create an array which maps between 2D grids
 Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const std::vector<std::vector<int>>& mask, Vector_1D& xEdgesNew, Vector_1D& yEdgesNew, Vector_1D& xCoordsNew, Vector_1D& yCoordsNew) {

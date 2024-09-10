@@ -121,7 +121,6 @@ namespace LAGRID {
     FreeCoordBoxGrid rectToBoxGrid(const Vector_1D& dy_vec, double dx, double x0, double y0, const Vector_2D& phi, const vector<vector<int>>& mask) {
         // Allow for x0 to vary vertically in the future
         int ny = phi.size();
-        int nx = phi[0].size();
         Vector_1D dx_vec(ny);
         Vector_1D x0_vec(ny);
         for(int j = 0; j < ny; j++) {
