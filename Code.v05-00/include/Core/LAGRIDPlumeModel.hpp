@@ -96,10 +96,8 @@ class LAGRIDPlumeModel {
         void updateDiffVecs();
         void runTransport(double timestep);
         void remapAllVars(double remapTimestep, const std::vector<std::vector<int>>& mask, const VectorUtils::MaskInfo& maskInfo);
-        void trimH2OBoundary();
         std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask);
         double totalAirMass();
-        void runCocipH2OMixing(const Vector_2D& h2o_old, const Vector_2D& h2o_amb_new, MaskType& mask_old, MaskType& mask_new);
 
         Eigen::SparseMatrix<double> createRegriddingWeightsSparse(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const std::vector<std::vector<int>>& mask, Vector_1D& xEdgesNew, Vector_1D& yEdgesNew, Vector_1D& xCoordsNew, Vector_1D& yCoordsNew);
         Vector_2D applyWeights(const Eigen::SparseMatrix<double>& weights, int nx_old, int ny_old, int nx_new, int ny_new, const Vector_2D& dataIn); 
