@@ -109,19 +109,14 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
             break;
         }
 
-        // Store the pressure edges on which the data are currently stored
-        int nx_old = xCoords_.size();
-        int ny_old = yCoords_.size();
-        //Vector_2D oldAirDen = met.AirND_field();
-        Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
-        auto pressureEdges = met_.PressEdges();
-        double localND;
-
         // Convert all quantities from #/cm3 to #/#
         // delta-P/delta-Z is proportional to number density, and accounts
         // for temperature variation (because the calculation of yEdge
         // included it). This uses the hydrostatic assumption:
         //    dp/dz = -rho*g = -(n/V)Mg
+        Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
+        auto pressureEdges = met_.PressEdges();
+        double localND;
         #pragma omp parallel for
         for (std::size_t j=0; j<yCoords_.size(); j++){
             localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);

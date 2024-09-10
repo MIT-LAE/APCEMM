@@ -449,50 +449,6 @@ void Meteorology::recalculateSimulationGrid(){
     // before the remapping is performed
 }
 
-void Meteorology::initAltitudeAndPress( const NcFile& dataFile ) {
-    /*
-        Met data format:
-        2 dimensions: altitude and time
-        RHw, Temp, Shear given as time series.
-    */
-
-    /* Identify the length of variables in input file */
-    // The dimension is called altitude but could as easily
-    // be called level, layer, or z
-    altitudeDim_ = dataFile.getDim("altitude").getSize();
-    timeDim_ = dataFile.getDim("time").getSize();
-
-    /* Extract pressure and altitude from input file. */
-    altitudeInit_.resize(altitudeDim_);
-    pressureInit_.resize(altitudeDim_);
-
-    //The netcdf API is garbage and makes you pass in a C style array despite being branded as a "C++" library
-    NcVar pressure_ncVar = dataFile.getVar("pressure");
-    pressure_ncVar.getVar(pressureInit_.data());
-
-    //Cache initial pressure and altitude values for generating later met vars.
-    for (int i = 0; i < altitudeDim_; i++ ) {
-        pressureInit_[i] *= 100.0; //convert from hPa to Pa
-    }
-
-    // Do not set altitudeInit_ yet! This is a bit delicate - we need
-    // to know temperatures
-
-    // Now set the grid used for calculation. We already have yCoords_ and yEdges_
-    // Both are (currently) relative to the bottom of the grid
-
-    for ( int j = 0; j < ny_; j++ ) {
-        altitude_[j] = altitudeRef_ + yCoords_[j];
-    }
-
-    for ( int j = 0; j < ny_ + 1; j++ ) {
-        altitudeEdges_[j] = altitudeRef_ + yEdges_[j];
-    }
-    met::ISA(altitude_, pressure_);
-    met::ISA(altitudeEdges_, pressureEdges_);
-    //i_Zp_ = met::nearestNeighbor( pressure_, pressureRef_); 
-}
-
 void Meteorology::readMetVar( const NcFile& dataFile, std::string varName, Vector_2D& vec_ts, bool timeseries) {
     NcVar ncvar = dataFile.getVar(varName.c_str());
     bool supportsTimeseries = ncvar.getDimCount() == 2;
@@ -518,94 +474,6 @@ void Meteorology::readMetVar( const NcFile& dataFile, std::string varName, Vecto
     }
 }
 
-void Meteorology::initTempNoMet (const Vector_1D& yCoords) {
-    throw std::runtime_error("ROUTINE initTempNoMet SHOULD NOT BE CALLED");
-}
-void Meteorology::initTemperature( const NcFile& dataFile ) {
-
-    readMetVar(dataFile, "temperature", tempTimeseriesData_, tempLoadType_ == MetVarLoadType::TimeSeries); 
-    
-    tempInit_.resize(altitudeDim_);
-    for (int i = 0; i < altitudeDim_; i++) {
-        tempInit_[i] = tempTimeseriesData_[i][0];
-    }
-
-    /* Identify closest temperature to given pressure */
-    /* Loop round each vertical layer to estimate temperature */
-
-    #pragma omp parallel for if(!PARALLEL_CASES)
-    for ( int j = 0; j < ny_; j++ ) {
-
-        /* Find the closest values above and below the central pressure */
-        int i_Z = met::nearestNeighbor( altitudeInit_, altitude_[j]);
-        double tempInterp = met::linInterpMetData(altitudeInit_, tempInit_, altitude_[j]);
-        tempBase_[j] = interpTemp_ ? tempInterp : tempInit_[i_Z];
-        tempTotal_[j].assign(nx_, tempBase_[j]);
-    }
-}
-
-void Meteorology::initH2ONoMet (const Vector_1D& yCoords) {
-    throw std::runtime_error("ROUTINE initH2ONoMet SHOULD NOT BE CALLED");
-}
-
-void Meteorology::initH2O( const NcFile& dataFile, const OptInput& optInput ) { 
-    //Cannot call this before initTemperature!
-
-    readMetVar(dataFile, "relative_humidity_ice", rhiTimeseriesData_, rhLoadType_ == MetVarLoadType::TimeSeries); 
-    
-    rhiInit_.resize(altitudeDim_);
-    
-    for (int i = 0; i < altitudeDim_; i++) {
-        //Scale RHi if specified
-        if (optInput.MET_HUMIDSCAL_MODIFICATION_SCHEME == "scaling") {
-            rhiInit_[i] = met::rhiCorrection(rhiTimeseriesData_[i][0], optInput.MET_HUMIDSCAL_SCALING_A, optInput.MET_HUMIDSCAL_SCALING_B);
-        }
-        else if (optInput.MET_HUMIDSCAL_MODIFICATION_SCHEME == "constant") {
-            rhiInit_[i] = optInput.MET_HUMIDSCAL_CONST_RHI;
-        }
-        else {
-            rhiInit_[i] = rhiTimeseriesData_[i][0];
-        }
-    }
-    Vector_1D localRHi(ny_);
-    /* Identify closest RH to given pressure at level i_Z */
-    /* Loop round each vertical layer to estimate RH */
-    #pragma omp parallel for\
-    if      ( !PARALLEL_CASES ) \
-    default ( shared          )
-    for ( int jNy = 0; jNy < ny_; jNy++ ) {
-
-        /* Find the closest values above and below the central pressure */
-        int i_Z = met::nearestNeighbor( altitudeInit_, altitude_[jNy]);
-
-        double rhiInterp = met::linInterpMetData(altitudeInit_, rhiInit_, altitude_[jNy]);
-        double rhiToUse = interpRH_ ? rhiInterp : rhiInit_[i_Z];
-        localRHi[jNy] = rhiToUse;
-        H2O_[jNy].assign(nx_, physFunc::RHiToH2O(rhiToUse, tempBase_[jNy]));
-
-    }
-
-    satdepth_user_ = estimateSatDepth();
-    //int i_Z = met::nearestNeighbor( pressure_, ambParams_.press_Pa);
-    //double dy = yCoords_[1] - yCoords_[0];
-
-    ////Throws exception if domain not big enough.
-    ////TODO: Decide on what to do about variable saturation depths (i.e. advecting contrail through space).
-    //Vector_1D localRHw(ny_);
-    //for (int j = 0; j < ny_; j++) {
-    //    localRHw[j] = physFunc::RHiToRHw(localRHi[j], tempBase_[j]);
-    //}
-    ////Yes, satdepth_calc converts this RHw right back into RHi to calculate it. Whatever it doesn't affect performance. -MX
-    //try {
-    //    satdepth_user_ = met::satdepth_calc(localRHw, tempBase_, altitude_, i_Z, std::abs(yCoords_[0]) + dy/2);
-    //}
-    //catch (std::out_of_range &e){
-    //    if(optInput.MET_HUMIDSCAL_MODIFICATION_SCHEME != "constant")
-    //        std::cout << "WARNING: end of initial domain does not cover saturation depth." << std::endl;
-    //    satdepth_user_ = 1000.0;
-    //}
-}
-
 double Meteorology::estimateSatDepth() {
     // Calculates the saturation depth
     int i_Z = met::nearestNeighbor( pressure_, ambParams_.press_Pa);
@@ -619,41 +487,7 @@ double Meteorology::estimateSatDepth() {
     }
 }
 
-void Meteorology::initShear ( const NcFile& dataFile ) {
-    readMetVar(dataFile, "shear", shearTimeseriesData_, shearLoadType_ == MetVarLoadType::TimeSeries); 
-    shearInit_.resize(altitudeDim_);
-    for (int i = 0; i < altitudeDim_; i++) {
-        shearInit_[i] = shearTimeseriesData_[i][0];
-    }
-
-    for ( int jNy = 0;  jNy < ny_; jNy++ ) {
-
-        int i_Z = met::nearestNeighbor( altitudeInit_, altitude_[jNy]);
-        double shear_local = met::linInterpMetData(altitudeInit_, shearInit_, altitude_[jNy]);
-        shear_[jNy] = interpShear_ ? shear_local : shearInit_[i_Z];
-
-    }
-}
-
-void Meteorology::initVertVeloc ( const NcFile& dataFile ) {
-    //Vert veloc is assumed default as timeseries input.
-    readMetVar(dataFile, "w", vertVelocTimeseriesData_, vertVelocLoadType_ == MetVarLoadType::TimeSeries);
-    
-    vertVelocInit_.resize(altitudeDim_);
-    for (int i = 0; i < altitudeDim_; i++) {
-        vertVelocInit_[i] = vertVelocTimeseriesData_[i][0];
-    }
-
-    for ( int jNy = 0;  jNy < ny_; jNy++ ) {
-
-        int i_Z = met::nearestNeighbor( altitudeInit_, altitude_[jNy]);
-        double w_local = met::linInterpMetData(altitudeInit_, vertVelocInit_, altitude_[jNy]);
-        vertVeloc_[jNy] = interpVertVeloc_ ? w_local : vertVelocInit_[i_Z];
-    }
-}
-
 Vector_1D Meteorology::interpMetTimeseriesData(double simTime_h, const Vector_2D& ts_data, bool timeseries) const {
-
     int itime = timeseries 
               ? std::min(static_cast<int>(simTime_h / met_dt_h_), timeDim_ - 1)
               : 0;
@@ -675,68 +509,6 @@ Vector_1D Meteorology::interpMetTimeseriesData(double simTime_h, const Vector_2D
         interp[i] = before + ( after - before ) * ( simTime_h - itime * met_dt_h_ );
     }
     return interp;
-}
-
-void Meteorology::updateTemperature(double solarTime_h, double simTime_h) {
-
-    bool timeseries = (tempLoadType_ == MetVarLoadType::TimeSeries);
-    tempInit_ = interpMetTimeseriesData(simTime_h, tempTimeseriesData_, timeseries);
-
-    #pragma omp parallel for if (!PARALLEL_CASES)
-    for ( int j = 0; j < ny_; j++ ) {
-        int i_Z = met::nearestNeighbor( altitudeInit_, altitude_[j] );
-        double temp_local = met::linInterpMetData(altitudeInit_, tempInit_, altitude_[j]);
-        tempBase_[j] = interpTemp_ ? temp_local : tempInit_[i_Z];
-        for ( int i = 0; i < nx_; i++ ) {
-            tempTotal_[j][i] =  tempBase_[j] + tempPerturbation_[j][i];
-        }
-
-    }
-
-}
-
-void Meteorology::updateH2O(double simTime_h) { 
-    /*
-        Updating the RH from the data at all inherently breaks the idea of performing ice growth
-        on a given H2O field and then reusing the H2O field on the next timestep. Therefore,
-        if RH timeseries is not specified, the RH field will not be changed by the update function.
-     */
-    rhiInit_ = interpMetTimeseriesData(simTime_h, rhiTimeseriesData_, true);
-
-    #pragma omp parallel for if (!PARALLEL_CASES)
-    for ( int j = 0; j < ny_; j++ ) {
-        double rh_local = met::linInterpMetData(altitudeInit_, rhiInit_, altitude_[j]);
-        rhi_[j] = rh_local;
-        double h2o_local = physFunc::RHiToH2O(rh_local, tempBase_[j]);
-        H2O_[j].assign(nx_, h2o_local);
-    }
-}
-
-
-void Meteorology::updateShear(double simTime_h) {
-
-    bool timeseries = (shearLoadType_ == MetVarLoadType::TimeSeries);
-    shearInit_ = interpMetTimeseriesData(simTime_h, shearTimeseriesData_, timeseries);
-
-    for ( int jNy = 0; jNy < ny_; jNy++ ) {
-        int i_Z = met::nearestNeighbor( altitudeInit_, altitude_[jNy] );
-        double shear_local = met::linInterpMetData(altitudeInit_, shearInit_, altitude_[jNy]);
-        shear_[jNy] = interpShear_ ? shear_local : shearInit_[i_Z];
-
-    }
-}
-
-void Meteorology::updateVertVeloc(double simTime_h) {
-
-    bool timeseries = (vertVelocLoadType_ == MetVarLoadType::TimeSeries);
-    vertVelocInit_ = interpMetTimeseriesData(simTime_h, vertVelocTimeseriesData_, timeseries);
-
-    for ( int jNy = 0; jNy < ny_; jNy++ ) {
-        int i_Z = met::nearestNeighbor( altitudeInit_, altitude_[jNy] );
-        double w_local = met::linInterpMetData(altitudeInit_, vertVelocInit_, altitude_[jNy]);
-        vertVeloc_[jNy] = interpVertVeloc_ ? w_local : vertVelocInit_[i_Z];
-
-    }
 }
 
 void Meteorology::updateTempPerturb() {
@@ -764,71 +536,8 @@ void Meteorology::updateAirMolecDens() {
     for ( int jNy = 0; jNy < ny_; jNy++ ) {
         double integralND = constFactor * (pressureEdges_[jNy] - pressureEdges_[jNy+1]) / (altitudeEdges_[jNy+1] - altitudeEdges_[jNy]);
         for ( int iNx = 0; iNx < nx_; iNx++ ) {
-            //airMolecDens_[jNy][iNx] = pressure_[jNy] / tempTotal_[jNy][iNx] * invkB;
             airMolecDens_[jNy][iNx] = integralND;
         }
-    }
-}
-
-void Meteorology::vertAdvectAltPress(double dt) {
-    /* For now, it only makes sense to vertically advect by a constant velocity in pressure.
-       Otherwise, we would just violate conservation of mass, but because
-       the continuity equation in pressure coordinates is not a function of density, this is fine.
-       -MX */
-    
-    //Save old altitude edges and centers to update y coordinates
-    Vector_1D altEdges_old = altitudeEdges_;
-    Vector_1D altCenters_old = altitude_;
-
-    //Convert w at current alt to pressure velocity (omega)
-    //Use 4th order central finite difference to estimate derivative
-    double p_jm2, p_jm1, p_jp1, p_jp2;
-    double dp = 0.1;
-    met::ISA(altitudeRef_ - 2*dp, p_jm2);
-    met::ISA(altitudeRef_ - dp, p_jm1);
-    met::ISA(altitudeRef_ + 2*dp, p_jp2);
-    met::ISA(altitudeRef_ + dp, p_jp1);
-    double dp_dz = (p_jm2 - 8*p_jm1 + 8*p_jp1 - p_jp2) / (12 * dp);
-
-    double w_local = met::linInterpMetData(altitudeInit_, vertVelocInit_, altitudeRef_);    //dp/dt = dp/dz * dz/dt [Pa/s]
-
-    double omega = dp_dz * w_local;
-
-    // SDE 2024-08-12: Disabled temporarily while pressure velocity issues are fixed
-    if (std::abs(omega) > 1.0e-10 ){
-        std::cout << " -- WARNING: PRESSURE VELOCITIES CURRENTLY DISABLED -- " << std::endl;
-    }
-    return;
-
-    /* Update edges instead of centers (altitude_, pressure_) because altitude-pressure relationship
-       is nonlinear. Therefore, the relative position of the center will move hwen advecting at some
-       constant pressure velocity. If we then assume a constant dx without moving the center, we will
-       fail to conserve mass at the edges, and this effect will snowball in time. -MX */
-    for(double& pE: pressureEdges_) {
-        pE += omega * dt;
-    }
-    
-    // double ytop_old = altitudeEdges_[altitudeEdges_.size() - 1];
-    //Update altitude edges to go with updated pressure edges
-    met::ISA_pAlt(altitudeEdges_, pressureEdges_);
-    //Re-calculate geometric altitude centers
-    for(int i = 0; i < ny_; i++) { 
-        altitude_[i] = (altitudeEdges_[i] + altitudeEdges_[i+1]) / 2;
-    }
-
-    //Update pressure centers (based on altitude centers)
-    met::ISA(altitude_, pressure_);
-
-    //Update reference pressures/altitudes for next timestep
-    pressureRef_ += omega * dt;
-    met::ISA_pAlt(altitudeRef_, pressureRef_);
-
-    //Update y coordinates based on these changes
-    for (int i = 0; i < ny_; i++) {
-        yCoords_[i] += (altitude_[i] - altCenters_old[i]);
-    }
-    for (int i = 0; i < ny_ + 1; i++) {
-        yEdges_[i] += (altitudeEdges_[i] - altEdges_old[i]);
     }
 }
 

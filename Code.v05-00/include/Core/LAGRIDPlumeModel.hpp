@@ -61,8 +61,8 @@ class LAGRIDPlumeModel {
         inline MaskType iceNumberMask(double cutoff_ratio = NUM_FILTER_RATIO) {
             Vector_2D iceTotalNum = iceAerosol_.TotalNumber();
             double maxNum = VectorUtils::VecMax2D(iceTotalNum);
-            auto iceNumMaskFunc = [maxNum](double val) {
-                return val > maxNum * NUM_FILTER_RATIO;
+            auto iceNumMaskFunc = [maxNum,cutoff_ratio](double val) {
+                return val > maxNum * cutoff_ratio;
             };
             return VectorUtils::Vec2DMask(iceTotalNum, xEdges_, yEdges_, iceNumMaskFunc);
         }
