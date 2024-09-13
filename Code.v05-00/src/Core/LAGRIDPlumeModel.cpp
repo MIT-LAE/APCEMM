@@ -99,7 +99,7 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         }
 
         // Create the mask of cells to retain, and terminate if none left
-        auto dataMask = ContrailMask(1.0e-2);
+        auto dataMask = ContrailMask(0.90);
         auto& mask = dataMask.first;
         auto& maskInfo = dataMask.second;
         if (maskInfo.count == 0){
