@@ -37,8 +37,6 @@ These are all managed using the `vcpkg` tool (see below) so do not need to be in
 - yaml-cpp
 - Eigen3
 
-See the [Dockerfile](.devcontainer/Dockerfile.apcemm) in the .devcontainer directory for specifics.
-
 ## APCEMM: Installation instructions
 
 APCEMM can be built using CMake and requires GCC >= 11.2. Previously, the dependency structure and compile instructions were specified using manually generated Makefiles. CMake generates these Makefiles automatically, and should lead to a more pleasant software build experience. Dependencies on external libraries are managed using the [vcpkg](https://vcpkg.io/en/) tool, which is installed as a Git submodule. (This means that you just need to run the `git submodule update` command below to set it up.)
