@@ -1,10 +1,9 @@
-FROM --platform=linux/amd64 gcc:9.3-buster as builder
+FROM --platform=linux/amd64 gcc:11.2 as builder
 
 RUN apt-get update \
   && apt-get install -y \
   build-essential \
   ca-certificates \ 
-  cmake \
   curl \
   libssl-dev \
   zlib1g-dev \
@@ -20,71 +19,24 @@ RUN apt-get update \
   autoconf \
   automake \
   libtool \
-  zip unzip tar
+  zip \
+  unzip \
+  tar
 
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && apt-get update \
   && apt-get install gettext -y
-RUN apt-get remove -y git 
-
-RUN mkdir -p /tmp/git-src && \
-  cd /tmp/git-src && \
-  curl -sSL https://github.com/git/git/archive/v2.34.1.tar.gz | tar xz --strip-components=1 && \
-  make configure && \
-  ./configure --prefix=/usr/local --with-openssl --without-tcltk && \
-  make -j $(nproc) && \
-  make install && \
-  cd / && \
-  rm -rf /tmp/git-src
 
 RUN locale-gen en_US.UTF-8
 
-RUN wget http://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.gz \
-  && tar xfz boost_1_60_0.tar.gz \
-  && rm boost_1_60_0.tar.gz \
-  && cd boost_1_60_0 \
-  && ./bootstrap.sh --prefix=/usr/local --with-libraries=program_options \
-  && ./b2 install \
-  && cd /home \
-  && rm -rf boost_1_60_0
-
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1-Linux-x86_64.sh \
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.30.3/cmake-3.30.3-Linux-x86_64.sh \
   -q -O /tmp/cmake-install.sh \
   && chmod u+x /tmp/cmake-install.sh \
-  && mkdir /opt/cmake-3.24.1 \
-  && /tmp/cmake-install.sh --skip-license --prefix=/opt/cmake-3.24.1 \
+  && mkdir /opt/cmake-3.30.3 \
+  && /tmp/cmake-install.sh --skip-license --prefix=/opt/cmake-3.30.3 \
   && rm /tmp/cmake-install.sh \
-  && ln -s /opt/cmake-3.24.1/bin/* /usr/local/bin
-
-ENV ZDIR=/usr/local
-RUN wget https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.gz && \
-  tar -xf zlib-1.2.13.tar.gz && \
-  cd zlib-1.2.13 && \
-  ./configure --prefix=${ZDIR} && \
-  make -j $(nproc) && \
-  make install
-
-ENV H5DIR=/usr/local
-RUN wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.0/src/hdf5-1.14.0.tar.gz && \
-  tar -xf hdf5-1.14.0.tar.gz && \
-  cd hdf5-1.14.0 && \
-  ./configure --with-zlib=${ZDIR} --prefix=${H5DIR} --enable-hl && \
-  make -j $(nproc) && \
-  make install
-
-RUN git clone https://github.com/jbeder/yaml-cpp.git --depth 1 --branch 0.8.0 && \
-  cd yaml-cpp && \
-  mkdir build && \
-  cd build && \
-  cmake .. && \
-  make -j $(nproc) && \
-  make install
-
-RUN git clone https://github.com/catchorg/Catch2.git --depth 1 --branch v3.2.1 && \
-  cd Catch2 && \
-  cmake -Bbuild -H. -DBUILD_TESTING=OFF && \
-  cmake --build build/ --target install --parallel 4
+  && ln -s /opt/cmake-3.30.3/bin/* /usr/local/bin
 
 RUN zsh -c 'git clone --depth 1 --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"' && \
   cd ${ZDOTDIR:-$HOME}/.zprezto && \ 
