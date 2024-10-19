@@ -119,7 +119,10 @@ void Meteorology::estimateSimulationGridPressures(){
     for (int i = 0; i < altitudeDim_; i++) {
         zBase = zCeil;
         zCeil = altitudeInit_[i];
-        while (zNext > zCeil){
+        // Skip the rest of the loop if we haven't yet hit overlap between the
+        // meteorological data (defined on altitude[Edges]Init_) and the sim
+        // grid (defined on altitude[Edges]_)
+        if (zNext > zCeil){
             continue;
         }
         pressureBase = pressureCeil;
@@ -317,7 +320,7 @@ void Meteorology::estimateMetDataAltitudes() {
     const double constFactor = physConst::R_Air / physConst::g;
     // Calculate lapse rate (K/m) between each point
     // Indexing is a bit tricky: 0 is below the first point, last is above the last point
-    lapseInit_.resize(altitudeDim_+1);
+    lapseInit_.resize(altitudeDim_+2);
     altitudeEdgesInit_.resize(altitudeDim_+1);
     pressureEdgesInit_.resize(altitudeDim_+1);
     for (int i = 0; i < altitudeDim_ - 1; i++) {
