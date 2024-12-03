@@ -89,7 +89,7 @@ namespace YamlInputReader{
         #endif
 
         YAML::Node paramSweepSubmenu = simNode["PARAM SWEEP SUBMENU"];
-        input.SIMULATION_PARAMETER_SWEEP = parseBoolString(paramSweepSubmenu["Parameter sweep (T/F)"].as<string>(), "Parameter sweep (T/F");
+        input.SIMULATION_PARAMETER_SWEEP = parseBoolString(paramSweepSubmenu["Parameter sweep (T/F)"].as<string>(), "Parameter sweep (T/F)");
         input.SIMULATION_MONTECARLO = parseBoolString(paramSweepSubmenu["Run Monte Carlo (T/F)"].as<string>(), "Run Monte Carlo (T/F)");
         input.SIMULATION_MCRUNS =  parseIntString(paramSweepSubmenu["Num Monte Carlo runs (int)"].as<string>(), "Num Monte Carlo runs (int)");
 
@@ -118,6 +118,13 @@ namespace YamlInputReader{
         YAML::Node boxModelSubmenu = simNode["BOX MODEL SUBMENU"];
         input.SIMULATION_BOXMODEL = parseBoolString(boxModelSubmenu["Run box model (T/F)"].as<string>(), "Run box model (T/F)");
         input.SIMULATION_BOX_FILENAME = boxModelSubmenu["netCDF filename format (string)"].as<string>();
+
+        YAML::Node seedSubmenu = simNode["RANDOM NUMBER GENERATION SUBMENU"];
+        input.SIMULATION_FORCE_SEED = parseBoolString(seedSubmenu["Force seed value (T/F)"].as<string>(), "Force seed value (T/F)");
+        input.SIMULATION_SEED_VALUE = parseIntString(seedSubmenu["Seed value (positive int)"].as<string>(), "Seed value (positive int)");
+        if(input.SIMULATION_SEED_VALUE < 0){
+            throw std::invalid_argument("Seed value (under SIMULATION MENU) cannot be less than 0!");
+        }
 
         if(input.SIMULATION_PARAMETER_SWEEP == input.SIMULATION_MONTECARLO){
             throw std::invalid_argument("In Simulation Menu: Parameter sweep and Monte Carlo cannot have the same value!");

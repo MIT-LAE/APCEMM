@@ -31,6 +31,9 @@ SIMULATION MENU:
   BOX MODEL SUBMENU:
     Run box model (T/F): F
     netCDF filename format (string): APCEMM_BOX_CASE_*
+  RANDOM NUMBER GENERATION SUBMENU:
+    Force seed value (T/F): F
+    Seed value (positive int): 0
 
 # Format of parameter items:
 # Param name [unit] (Variable type)
