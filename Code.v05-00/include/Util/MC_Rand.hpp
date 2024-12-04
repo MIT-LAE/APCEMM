@@ -15,9 +15,10 @@
 #define MC_RAND_H_INCLUDED
 
 #include <cstdlib>
+#include "Core/Input_Mod.hpp"
 
 /* Set seed for pseudo-random generator */
-void setSeed();
+void setSeed(const OptInput& input);
 
 /* Generates a random number of type T between fMin and fMax */
 template <typename T>

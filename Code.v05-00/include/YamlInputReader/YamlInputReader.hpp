@@ -14,7 +14,7 @@ using std::vector;
 namespace YamlInputReader{
     static std::filesystem::path INPUT_FILE_PATH;
     void readYamlInputFile(OptInput& input, string filename);
-    void readSimMenu(OptInput& input, const YAML::Node& inputNode);
+    void readSimMenu(OptInput& input, const YAML::Node& simNode);
     void readParamMenu(OptInput& input, const YAML::Node& paramNode);
     void readTransportMenu(OptInput& input, const YAML::Node& transportNode);
     void readChemMenu(OptInput& input, const YAML::Node& chemNode);

@@ -13,8 +13,9 @@
 #include <iostream>
 #include "APCEMM.h"
 #include "Util/MC_Rand.hpp"
+#include "Core/Input_Mod.hpp"
 
-void setSeed() {
+void setSeed(const OptInput& input) {
 
     // Sets seed for pseudo-random generator.
     #ifdef DEBUG
@@ -22,8 +23,15 @@ void setSeed() {
         std::cout << "Compiled in DEBUG mode: random seed is set to 0 for all simulations" << std::endl;
         srand(0);
     #else
-        // Otherwise use the current unix timestamp as our random seed. 
-        srand(time(NULL));
+        if(input.SIMULATION_FORCE_SEED){
+            srand(input.SIMULATION_SEED_VALUE);
+            std::cout << "Random seed is set to " << input.SIMULATION_SEED_VALUE << " for all simulations" << std::endl;
+        }
+        else{
+            // If the seed is not being forced to a value use the current unix timestamp instead. 
+            srand(time(NULL));
+        }
+
     #endif
 
 } /* End of setSeed */
