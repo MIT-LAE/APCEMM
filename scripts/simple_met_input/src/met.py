@@ -7,7 +7,8 @@ from src.ISA import compute_T_ISA, compute_p_ISA
 from src.moist import trapezium_moist_layer
 from src.thermo import convert_RHi_to_RH
 
-def met_clean_slate(desired_altitudes_m, desired_RHis_PC = None, RHi_background_PC = 0., shear_over_s = 0.002, T_offset_K = 0):
+def met_clean_slate(desired_altitudes_m, desired_RHis_PC = None, RHi_background_PC = 0., shear_over_s = 0.002, T_offset_K = 0,
+                    w_m_per_s = 0):
     # Creates a clean slate xr.Dataset object with the weather parameters required by APCEMM at
     # each altitude. The vertical resolution is determined by the "desired_altitudes_m" input.
     #
@@ -30,26 +31,20 @@ def met_clean_slate(desired_altitudes_m, desired_RHis_PC = None, RHi_background_
     # Time vector, just in case it is needed
     time_ip = np.concatenate((np.linspace(15, 23, 9), np.linspace(0, 14, 15))) # hours
 
-    # Initialise the met variables
-    len_alt = len(desired_altitudes_km)
-    pressure_ip = np.zeros(len_alt) # hPa
-    temperature_ip = np.zeros(len_alt) # Degrees Kelvin
-    relative_humidity_ip = np.zeros(len_alt) # %
-    relative_humidity_ice_ip = np.zeros(len_alt) # %
-    shear_ip = np.zeros(len_alt) # s^-1
-
     # Initialise the dataset with bad weather data
     met_data_temp = xr.Dataset(
         data_vars=dict(
-            pressure=(["altitude"], pressure_ip, {'units':'hPa'}),
-            temperature=(["altitude"], temperature_ip, {'units':'K'}),
-            relative_humidity=(["altitude"], relative_humidity_ip, {'units':'Pct'}),
-            relative_humidity_ice=(["altitude"], relative_humidity_ice_ip, {'units':'Pct'}),
-            shear=(["altitude"], shear_ip, {'units':'s^-1'}),
+            shear=(["altitude"], np.zeros_like(desired_altitudes_m), {'units':'m/s/m'}),
+            stretch=(["time"], np.ones_like(time_ip), {'units':'-'}),
+            pressure=(["altitude"], np.zeros_like(desired_altitudes_m), {'units':'hPa'}),
+            temperature=(["altitude"], np.zeros_like(desired_altitudes_m), {'units':'K'}),
+            w=(["altitude"], np.zeros_like(desired_altitudes_m), {'units':'m s-1'}),
+            relative_humidity_ice=(["altitude"], np.zeros_like(desired_altitudes_m), {'units':'pct'}),
         ),
         coords=dict(
             altitude=(["altitude"], desired_altitudes_km, {'units':'km'}),
-            time=(["time"], time_ip, {'units':'h'}),         
+            time=(["time"], time_ip, {'units':'h'}),
+            reference_time=(np.datetime64('2019-01-01T00:00'))         
         ),
     )
 
@@ -58,7 +53,8 @@ def met_clean_slate(desired_altitudes_m, desired_RHis_PC = None, RHi_background_
             met = met_data_temp,
             RHi_background_PC = RHi_background_PC,
             T_offset_K = T_offset_K,
-            shear_over_s = shear_over_s
+            shear_over_s = shear_over_s,
+            w_m_per_s = w_m_per_s
             )
     else:
         RHi_background_PC = np.min(desired_RHis_PC)
@@ -66,23 +62,20 @@ def met_clean_slate(desired_altitudes_m, desired_RHis_PC = None, RHi_background_
             met = met_data_temp,
             RHi_background_PC = RHi_background_PC,
             T_offset_K = T_offset_K,
-            shear_over_s = shear_over_s
+            shear_over_s = shear_over_s,
+            w_m_per_s = w_m_per_s
             )
-        RHi = met_data_ISA.relative_humidity_ice
-        RH = met_data_ISA.relative_humidity
-        Ts_K = met_data_ISA.temperature.to_numpy()
-        desired_RHs = convert_RHi_to_RH(Ts_K, desired_RHis_PC)
         
         # Enforce the desired RHis to each altitude
+        RHi = met_data_ISA.relative_humidity_ice
+
         for i in range(len(desired_altitudes_km)):
             current_alt = desired_altitudes_km[i]
-
             mask = RHi.altitude != current_alt
             RHi = RHi.where(mask, desired_RHis_PC[i]) 
-            RH = RH.where(mask, desired_RHs[i])
 
         met_data_ISA["relative_humidity_ice"] = RHi
-        met_data_ISA["relative_humidity"] = RH
+        
 
     return met_data_ISA
 
@@ -100,7 +93,7 @@ def truncate_met(met, truncation_alt_km = 20.):
 
     return met.isel(altitude = slice(0, truncation_idx))
 
-def met_from_ISA(met, RHi_background_PC = 0., shear_over_s = 0.002, T_offset_K = 0):
+def met_from_ISA(met, RHi_background_PC = 0., shear_over_s = 0.002, T_offset_K = 0, w_m_per_s = 0):
     # Clears the existing temperature values of an input xr.Dataset ("met"), and
     # enforces ISA conditions at each point.
     #
@@ -120,7 +113,6 @@ def met_from_ISA(met, RHi_background_PC = 0., shear_over_s = 0.002, T_offset_K =
     altitudes = met.altitude
 
     T = met["temperature"]
-    RH = met["relative_humidity"]
     p = met["pressure"]
 
     # Enforce the ISA conditions at each altitude
@@ -131,11 +123,9 @@ def met_from_ISA(met, RHi_background_PC = 0., shear_over_s = 0.002, T_offset_K =
 
         mask = met.altitude != altitudes[i]
         T = T.where(mask, T_current)
-        RH = RH.where(mask, convert_RHi_to_RH(T_current, RHi_background_PC))
         p = p.where(mask, p_current)
 
     met["temperature"] = T
-    met["relative_humidity"] = RH
     met["pressure"] = p
 
     # Set the RHi of the met data to the RHi default value
@@ -148,14 +138,20 @@ def met_from_ISA(met, RHi_background_PC = 0., shear_over_s = 0.002, T_offset_K =
     shear_met = shear_met.where(False, shear_over_s)
     met["shear"] = shear_met
 
+    # Set the vertical velocity of the met data to the RHi default value
+    w_met = met["w"]
+    w_met = w_met.where(False, w_m_per_s)
+    met["w"] = w_met
+
     return met
 
-def create_and_save_met(alts_m, RHis_PC, T_offset_K = 0, shear_over_s = 0.002, prefix = "00"):
+def create_and_save_met(alts_m, RHis_PC, T_offset_K = 0, shear_over_s = 0.002, w_m_per_s = 0, prefix = "00"):
     met = met_clean_slate(
         desired_altitudes_m = alts_m,
         desired_RHis_PC = RHis_PC,
         T_offset_K = T_offset_K,
-        shear_over_s = shear_over_s
+        shear_over_s = shear_over_s,
+        w_m_per_s = w_m_per_s
         )
     
     Path("outputs/").mkdir(parents=True, exist_ok=True)
@@ -164,7 +160,7 @@ def create_and_save_met(alts_m, RHis_PC, T_offset_K = 0, shear_over_s = 0.002, p
 
 def make_idealised_met(centre_altitude_m, moist_depth_m, RHi_background_PC = 0., RHi_peak_PC = 150, 
                 grad_RHi_PC_per_m = None, alt_resolution_m = 100, upper_alt_m = 11001, shear_over_s = 2e-3,
-                T_offset_K = 0, filename_prefix = "default"):
+                T_offset_K = 0, w_m_per_s = 0, filename_prefix = "default"):
     # Creates an idealised met file with a trapezium moist layer.
     #
     # The altitude is sampled at intervals with spacing of alt_resolution_m, up until 
@@ -178,10 +174,19 @@ def make_idealised_met(centre_altitude_m, moist_depth_m, RHi_background_PC = 0.,
     #
     # The met created by this function is time-invariant and is only defined for 24 hours.
     
-    altitudes, RHis = trapezium_moist_layer(centre_altitude_m, moist_depth_m, RHi_background_PC, 
-                                            RHi_peak_PC, grad_RHi_PC_per_m, alt_resolution_m, 
-                                            upper_alt_m)
+    altitudes, RHis = trapezium_moist_layer(centre_altitude_m = centre_altitude_m,
+                                            moist_depth_m = moist_depth_m,
+                                            RHi_background_PC = RHi_background_PC, 
+                                            RHi_peak_PC = RHi_peak_PC,
+                                            grad_RHi_PC_per_m = grad_RHi_PC_per_m,
+                                            alt_resolution_m = alt_resolution_m, 
+                                            upper_alt_m = upper_alt_m)
     
-    met = create_and_save_met(alts_m=altitudes,RHis_PC=RHis,T_offset_K=T_offset_K,shear_over_s=shear_over_s,prefix=filename_prefix)
+    met = create_and_save_met(alts_m = altitudes,
+                              RHis_PC = RHis,
+                              T_offset_K = T_offset_K,
+                              shear_over_s = shear_over_s,
+                              w_m_per_s = w_m_per_s,
+                              prefix = filename_prefix)
 
     return met
