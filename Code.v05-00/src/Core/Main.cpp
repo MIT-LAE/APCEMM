@@ -62,9 +62,6 @@ int main( int argc, char* argv[])
         std::cout << "-------- DEBUG is enabled --------" << std::endl;
     #endif
 
-    // Set the seed once at the top-level
-    setSeed();
-
     /* Declaring the Input Option object for use in APCEMM */
     OptInput Input_Opt; // Input Option object
 
@@ -98,9 +95,15 @@ int main( int argc, char* argv[])
         std::string FILENAME = argv[1];
         std::filesystem::path INPUT_FILE_PATH(FILENAME);
         INPUT_FILE_PATH = std::filesystem::canonical(INPUT_FILE_PATH);
-
+        
         YamlInputReader::readYamlInputFile( Input_Opt, INPUT_FILE_PATH.generic_string() );
+    }  /* master CPU */
 
+    // Set the seed once at the top-level
+    setSeed( Input_Opt );
+
+    #pragma omp master
+    {
         /* Collect parameters and create cases */
         parameters = YamlInputReader::generateCases( Input_Opt );
 

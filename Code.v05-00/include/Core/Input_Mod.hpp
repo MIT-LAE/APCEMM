@@ -43,6 +43,8 @@ struct OptInput
     std::string SIMULATION_ADJOINT_FILENAME;
     bool        SIMULATION_BOXMODEL;
     std::string SIMULATION_BOX_FILENAME;
+    bool        SIMULATION_FORCE_SEED;
+    int         SIMULATION_SEED_VALUE;
 
     /* ========================================== */
     /* ---- PARAMETER MENU ---------------------- */
