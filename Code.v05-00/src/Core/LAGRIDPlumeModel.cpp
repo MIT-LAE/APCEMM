@@ -131,7 +131,6 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 
         // Run vertical advection to get the new pressure edges
         if (std::abs(met_.lastOmega()) > 1.0e-10){
-            std::cout << "DEBUG: Applying updraft of " << met_.lastOmega() << " Pa s-1" << std::endl;
             met_.applyUpdraft(timestepVars_.TRANSPORT_DT);
         }
 
