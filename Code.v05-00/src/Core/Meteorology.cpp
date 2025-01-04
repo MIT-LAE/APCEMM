@@ -125,7 +125,7 @@ void Meteorology::estimateSimulationGridPressures(){
         if (zNext > zCeil){
             continue;
         }
-        pressureBase = pressureCeil;
+        pressureBase = (i == 0) ? pressureEdgesInit_[0] : pressureInit_[i-1];
         pressureCeil = (i == (altitudeDim_)) ? pressureTop : pressureInit_[i];
         double lapseRate = lapseInit_[i];
         // If i < 1 this will cause problems, but that should not be possible
