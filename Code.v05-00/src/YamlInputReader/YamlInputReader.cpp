@@ -119,11 +119,16 @@ namespace YamlInputReader{
         input.SIMULATION_BOXMODEL = parseBoolString(boxModelSubmenu["Run box model (T/F)"].as<string>(), "Run box model (T/F)");
         input.SIMULATION_BOX_FILENAME = boxModelSubmenu["netCDF filename format (string)"].as<string>();
 
-        YAML::Node seedSubmenu = simNode["RANDOM NUMBER GENERATION SUBMENU"];
-        input.SIMULATION_FORCE_SEED = parseBoolString(seedSubmenu["Force seed value (T/F)"].as<string>(), "Force seed value (T/F)");
-        input.SIMULATION_SEED_VALUE = parseIntString(seedSubmenu["Seed value (positive int)"].as<string>(), "Seed value (positive int)");
-        if(input.SIMULATION_SEED_VALUE < 0){
-            throw std::invalid_argument("Seed value (under SIMULATION MENU) cannot be less than 0!");
+        if (simNode["RANDOM NUMBER GENERATION SUBMENU"]){
+            YAML::Node seedSubmenu = simNode["RANDOM NUMBER GENERATION SUBMENU"];
+            input.SIMULATION_FORCE_SEED = parseBoolString(seedSubmenu["Force seed value (T/F)"].as<string>(), "Force seed value (T/F)");
+            input.SIMULATION_SEED_VALUE = parseIntString(seedSubmenu["Seed value (positive int)"].as<string>(), "Seed value (positive int)");
+            if(input.SIMULATION_SEED_VALUE < 0){
+                throw std::invalid_argument("Seed value (under SIMULATION MENU) cannot be less than 0!");
+            }
+        } else {
+            input.SIMULATION_FORCE_SEED = false;
+            input.SIMULATION_SEED_VALUE = 0;
         }
 
         if(input.SIMULATION_PARAMETER_SWEEP == input.SIMULATION_MONTECARLO){
