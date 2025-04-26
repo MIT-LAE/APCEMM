@@ -405,10 +405,13 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
 
     const FVM_ANDS::AdvDiffParams fvmSolverInitParams(0, 0, shear_rep_, input_.horizDiff(), input_.vertiDiff(), timestepVars_.TRANSPORT_DT);
     const FVM_ANDS::BoundaryConditions ZERO_BC_INIT = FVM_ANDS::bcFrom2DVector(iceAerosol_.getPDF()[0], true);
-    updateDiffVecs();
 
     //Check if we need to skip diffusion
     bool skipDiffusion = checkDiffusionSkip();
+
+    if (!skipDiffusion) {
+        updateDiffVecs();
+    }
 
     //Transport the Ice Aerosol PDF
     #pragma omp parallel for default(shared)
