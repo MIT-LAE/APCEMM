@@ -102,6 +102,9 @@ TRANSPORT MENU:
   # Outdated, not used (was used by spectral solver)
   Fill Negative Values (T/F): T
   Transport Timestep [min] (double): 1
+  DIFFUSION SUBMENU:
+    Disable diffusion after specified time (T/F): T
+    Time at which diffusion is disabled [hr] (double): 1.0
   # Keep off: not sure of the effect yet + met updraft is included (if met file input)
   PLUME UPDRAFT SUBMENU:
     Turn on plume updraft (T/F): F

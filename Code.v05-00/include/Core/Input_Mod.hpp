@@ -62,6 +62,8 @@ struct OptInput
     bool        TRANSPORT_UPDRAFT;
     double      TRANSPORT_UPDRAFT_TIMESCALE;
     double      TRANSPORT_UPDRAFT_VELOCITY;
+    bool        TRANSPORT_DISABLE_DIFFUSION_AFTER_TIME;
+    double      TRANSPORT_DISABLE_DIFFUSION_TIME;
 
     /* ========================================== */
     /* ---- CHEMISTRY MENU ---------------------- */

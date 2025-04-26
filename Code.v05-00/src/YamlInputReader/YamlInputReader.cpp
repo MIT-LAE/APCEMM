@@ -197,6 +197,18 @@ namespace YamlInputReader{
         input.TRANSPORT_UPDRAFT = parseBoolString(updraftSubmenu["Turn on plume updraft (T/F)"].as<string>(), "Turn on plume updraft (T/F)");
         input.TRANSPORT_UPDRAFT_TIMESCALE = parseDoubleString(updraftSubmenu["Updraft timescale [s] (double)"].as<string>(), "Updraft timescale [s] (double)");
         input.TRANSPORT_UPDRAFT_VELOCITY = parseDoubleString(updraftSubmenu["Updraft veloc. [cm/s] (double)"].as<string>(), "Updraft veloc. [cm/s] (double)");
+        
+        if (transportNode["DIFFUSION SUBMENU"]){
+            YAML::Node diffusionSubmenu = transportNode["DIFFUSION SUBMENU"];
+            input.TRANSPORT_DISABLE_DIFFUSION_AFTER_TIME = parseBoolString(diffusionSubmenu["Disable diffusion after specified time (T/F)"].as<string>(), "Disable diffusion after specified time (T/F)");
+            input.TRANSPORT_DISABLE_DIFFUSION_TIME = parseDoubleString(diffusionSubmenu["Time at which diffusion is disabled [hr] (double)"].as<string>(), "Time at which diffusion is disabled [hr] (double)");
+            if (input.TRANSPORT_DISABLE_DIFFUSION_TIME < 0){
+                throw std::invalid_argument("Time at which diffusion is disabled (under TRANSPORT MENU) cannot be less than 0!");
+            }
+        } else {
+            input.TRANSPORT_DISABLE_DIFFUSION_AFTER_TIME = false;
+            input.TRANSPORT_DISABLE_DIFFUSION_TIME = 100.0;
+        }
     }
     void readChemMenu(OptInput& input, const YAML::Node& chemNode){
         input.CHEMISTRY_CHEMISTRY = parseBoolString(chemNode["Turn on Chemistry (T/F)"].as<string>(), "Turn on Chemistry (T/F)");
