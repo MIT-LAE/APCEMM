@@ -94,6 +94,7 @@ class LAGRIDPlumeModel {
         void saveTSAerosol();
         void initH2O();
         void updateDiffVecs();
+        bool checkDiffusionSkip();
         void runTransport(double timestep);
         void remapAllVars(double remapTimestep, const std::vector<std::vector<int>>& mask, const VectorUtils::MaskInfo& maskInfo);
         std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask);

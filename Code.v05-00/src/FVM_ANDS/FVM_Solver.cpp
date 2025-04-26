@@ -55,7 +55,7 @@ namespace FVM_ANDS{
         return advDiffSys_.phi();
     }
 
-    const Eigen::VectorXd& FVM_Solver::operatorSplitSolve(bool parallelAdvection, double courant_max) {
+    const Eigen::VectorXd& FVM_Solver::operatorSplitSolve(const bool skipDiffusion, bool parallelAdvection, double courant_max) {
         //Strang Splitting
         //Step 1: Calculate explicit advection timestep based on CFL condition set
 
@@ -83,22 +83,25 @@ namespace FVM_ANDS{
         // start = std::chrono::high_resolution_clock::now();
 
         //Step 3: Implicitly solve diffusion (first to help smoothen out potential steep gradients)
-        advDiffSys_.updateTimestep(dt_max);
-        //Build matrix takes ~40ms atm
-        advDiffSys_.buildCoeffMatrix(operatorSplit);
-        advDiffSys_.calcRHS();
 
-        // auto mat = advDiffSys_.getCoefMatrix();
-        // auto b = advDiffSys_.getRHS();
-        // solver_.compute(mat);
-        // Eigen::VectorXd solution = solver_.solveWithGuess(b, advDiffSys_.phi());
-        // advDiffSys_.updatePhi(std::move(solution));
-        
-        advDiffSys_.sor_solve();
-
-        // stop = std::chrono::high_resolution_clock::now();
-        // duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
-        // std::cout << "Diffusion Solve Time: " << duration.count() << std::endl;
+        if (!skipDiffusion){
+            advDiffSys_.updateTimestep(dt_max);
+            //Build matrix takes ~40ms atm
+            advDiffSys_.buildCoeffMatrix(operatorSplit);
+            advDiffSys_.calcRHS();
+    
+            // auto mat = advDiffSys_.getCoefMatrix();
+            // auto b = advDiffSys_.getRHS();
+            // solver_.compute(mat);
+            // Eigen::VectorXd solution = solver_.solveWithGuess(b, advDiffSys_.phi());
+            // advDiffSys_.updatePhi(std::move(solution));
+            
+            advDiffSys_.sor_solve();
+    
+            // stop = std::chrono::high_resolution_clock::now();
+            // duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
+            // std::cout << "Diffusion Solve Time: " << duration.count() << std::endl;
+        }
 
         //Step 4: Explicitly solve advection to full timestep
 
@@ -118,7 +121,7 @@ namespace FVM_ANDS{
         return advDiffSys_.phi();
     }
 
-    void FVM_Solver::operatorSplitSolve2DVec(Vector_2D& vec, const BoundaryConditions& bc, bool parallelAdvection, double courant_max ) { 
+    void FVM_Solver::operatorSplitSolve2DVec(Vector_2D& vec, const BoundaryConditions& bc, const bool skipDiffusion, bool parallelAdvection, double courant_max) { 
         Eigen::VectorXd vec_Eigen = std2dVec_to_eigenVec(vec);
         const double VECTORNORM_MIN = 1e-100;
         //Eigen seems to lose way too much precision in calculations with very small numbers.
@@ -129,7 +132,7 @@ namespace FVM_ANDS{
         }
         advDiffSys_.updatePhi(vec_Eigen);
         advDiffSys_.updateBoundaryCondition(bc);
-        vec = eigenVec_to_std2dVec(operatorSplitSolve(parallelAdvection, courant_max), vec[0].size(), vec.size());
+        vec = eigenVec_to_std2dVec(operatorSplitSolve(skipDiffusion, parallelAdvection, courant_max), vec[0].size(), vec.size());
     }
 
     void FVM_Solver::advectionHalfTimestepSolve(Vector_2D& vec, const BoundaryConditions& bc, double courant_max){
