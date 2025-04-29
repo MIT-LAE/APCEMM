@@ -84,7 +84,7 @@ namespace FVM_ANDS{
 
         //Step 3: Implicitly solve diffusion (first to help smoothen out potential steep gradients)
 
-        if (!skipDiffusion){
+        // if (!skipDiffusion){
             advDiffSys_.updateTimestep(dt_max);
             //Build matrix takes ~40ms atm
             advDiffSys_.buildCoeffMatrix(operatorSplit);
@@ -101,7 +101,7 @@ namespace FVM_ANDS{
             // stop = std::chrono::high_resolution_clock::now();
             // duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
             // std::cout << "Diffusion Solve Time: " << duration.count() << std::endl;
-        }
+        // }
 
         //Step 4: Explicitly solve advection to full timestep
 

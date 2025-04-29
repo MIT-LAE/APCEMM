@@ -361,7 +361,7 @@ void LAGRIDPlumeModel::initH2O() {
     }
 }
 
-void LAGRIDPlumeModel::updateDiffVecs() {
+void LAGRIDPlumeModel::updateDiffVecs(const bool skipDiffusion) {
     double dh_enhanced, dv_enhanced;
     // Update Diffusion
     PlumeModelUtils::DiffParam( timestepVars_.curr_Time_s - timestepVars_.tInitial_s + timestepVars_.TRANSPORT_DT / 2.0,
@@ -375,6 +375,11 @@ void LAGRIDPlumeModel::updateDiffVecs() {
     #pragma omp parallel for
     for(std::size_t j = 0; j < yCoords_.size(); j++) {
         for(std::size_t i = 0; i < xCoords_.size(); i++) {
+            if (skipDiffusion) {
+                diffCoeffX_[j][i] = 0;
+                diffCoeffY_[j][i] = 0;
+                continue;
+            }
             diffCoeffX_[j][i] = number[j][i] > num_max * 1e-4 ? dh_enhanced : input_.horizDiff();
             diffCoeffY_[j][i] = number[j][i] > num_max * 1e-4 ? dv_enhanced : input_.vertiDiff();
         }
@@ -409,9 +414,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     //Check if we need to skip diffusion
     bool skipDiffusion = checkDiffusionSkip();
 
-    if (!skipDiffusion) {
-        updateDiffVecs();
-    }
+    updateDiffVecs(skipDiffusion);
 
     //Transport the Ice Aerosol PDF
     #pragma omp parallel for default(shared)

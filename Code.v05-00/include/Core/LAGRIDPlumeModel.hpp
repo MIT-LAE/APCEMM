@@ -93,7 +93,7 @@ class LAGRIDPlumeModel {
         void initializeGrid();
         void saveTSAerosol();
         void initH2O();
-        void updateDiffVecs();
+        void updateDiffVecs(const bool skipDiffusion);
         bool checkDiffusionSkip();
         void runTransport(double timestep);
         void remapAllVars(double remapTimestep, const std::vector<std::vector<int>>& mask, const VectorUtils::MaskInfo& maskInfo);
