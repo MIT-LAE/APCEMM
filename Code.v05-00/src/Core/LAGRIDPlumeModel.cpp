@@ -437,7 +437,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         //Dont use enhanced diffusion on the H2O (and zero settling velocity)
         FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, FVM_ANDS::std2dVec_to_eigenVec(H2O_));
         solver.updateTimestep(timestep);
-        if skipDiffusion {
+        if (skipDiffusion) {
             solver.updateDiffusion(0, 0);
         } else {
             solver.updateDiffusion(input_.horizDiff(), input_.vertiDiff());
@@ -470,7 +470,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         //Identical settings to H2O
         FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, FVM_ANDS::std2dVec_to_eigenVec(Contrail_));
         solver.updateTimestep(timestep);
-        if skipDiffusion {
+        if (skipDiffusion) {
             solver.updateDiffusion(0, 0);
         } else {
             solver.updateDiffusion(input_.horizDiff(), input_.vertiDiff());
