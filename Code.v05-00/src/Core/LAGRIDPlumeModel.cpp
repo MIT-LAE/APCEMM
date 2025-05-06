@@ -361,7 +361,7 @@ void LAGRIDPlumeModel::initH2O() {
     }
 }
 
-void LAGRIDPlumeModel::updateDiffVecs() {
+void LAGRIDPlumeModel::updateDiffVecs(const bool skipDiffusion) {
     double dh_enhanced, dv_enhanced;
     // Update Diffusion
     PlumeModelUtils::DiffParam( timestepVars_.curr_Time_s - timestepVars_.tInitial_s + timestepVars_.TRANSPORT_DT / 2.0,
@@ -375,10 +375,26 @@ void LAGRIDPlumeModel::updateDiffVecs() {
     #pragma omp parallel for
     for(std::size_t j = 0; j < yCoords_.size(); j++) {
         for(std::size_t i = 0; i < xCoords_.size(); i++) {
+            if (skipDiffusion) {
+                diffCoeffX_[j][i] = 0;
+                diffCoeffY_[j][i] = 0;
+                continue;
+            }
             diffCoeffX_[j][i] = number[j][i] > num_max * 1e-4 ? dh_enhanced : input_.horizDiff();
             diffCoeffY_[j][i] = number[j][i] > num_max * 1e-4 ? dv_enhanced : input_.vertiDiff();
         }
     }
+}
+bool LAGRIDPlumeModel::checkDiffusionSkip() {
+    bool skipDiffusion = false;
+    if (optInput_.TRANSPORT_DISABLE_DIFFUSION_AFTER_TIME){
+        double time_mid_timestep_s = timestepVars_.curr_Time_s - timestepVars_.tInitial_s + timestepVars_.TRANSPORT_DT / 2.0; 
+
+        if (time_mid_timestep_s >= optInput_.TRANSPORT_DISABLE_DIFFUSION_TIME * 60.0 * 60.0) {
+            skipDiffusion = true;
+        }
+    }
+    return skipDiffusion;
 }
 void LAGRIDPlumeModel::runTransport(double timestep) {
     //Update the zero bc to reflect grid size changes
@@ -394,7 +410,12 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
 
     const FVM_ANDS::AdvDiffParams fvmSolverInitParams(0, 0, shear_rep_, input_.horizDiff(), input_.vertiDiff(), timestepVars_.TRANSPORT_DT);
     const FVM_ANDS::BoundaryConditions ZERO_BC_INIT = FVM_ANDS::bcFrom2DVector(iceAerosol_.getPDF()[0], true);
-    updateDiffVecs();
+
+    //Check if we need to skip diffusion
+    bool skipDiffusion = checkDiffusionSkip();
+
+    updateDiffVecs(skipDiffusion);
+
     //Transport the Ice Aerosol PDF
     #pragma omp parallel for default(shared)
     for ( UInt n = 0; n < iceAerosol_.getNBin(); n++ ) {
@@ -408,7 +429,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         solver.updateAdvection(0, -vFall_[n], shear_rep_);
 
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
-        solver.operatorSplitSolve2DVec(iceAerosol_.getPDF_nonConstRef()[n], ZERO_BC, false);
+        solver.operatorSplitSolve2DVec(iceAerosol_.getPDF_nonConstRef()[n], ZERO_BC, skipDiffusion, false);
     }
 
     //Transport H2O
@@ -416,6 +437,11 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         //Dont use enhanced diffusion on the H2O (and zero settling velocity)
         FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, FVM_ANDS::std2dVec_to_eigenVec(H2O_));
         solver.updateTimestep(timestep);
+        if (skipDiffusion) {
+            solver.updateDiffusion(0, 0);
+        } else {
+            solver.updateDiffusion(input_.horizDiff(), input_.vertiDiff());
+        }
         solver.updateDiffusion(input_.horizDiff(), input_.vertiDiff());
         solver.updateAdvection(0, 0, shear_rep_);
 
@@ -431,7 +457,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
             }
         }
         // BC is zero, since we're calculating the difference relative to background.
-        solver.operatorSplitSolve2DVec(H2O_Delta, ZERO_BC);
+        solver.operatorSplitSolve2DVec(H2O_Delta, ZERO_BC, skipDiffusion);
         for (std::size_t j=0; j<yCoords_.size(); j++){
             for (std::size_t i=0; i<xCoords_.size(); i++){
                 H2O_[j][i] = H2O_Delta[j][i] + H2O_Background[j][i];
@@ -444,10 +470,14 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         //Identical settings to H2O
         FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, FVM_ANDS::std2dVec_to_eigenVec(Contrail_));
         solver.updateTimestep(timestep);
-        solver.updateDiffusion(input_.horizDiff(), input_.vertiDiff());
+        if (skipDiffusion) {
+            solver.updateDiffusion(0, 0);
+        } else {
+            solver.updateDiffusion(input_.horizDiff(), input_.vertiDiff());
+        }
         solver.updateAdvection(0, 0, shear_rep_);
 
-        solver.operatorSplitSolve2DVec(Contrail_, ZERO_BC);
+        solver.operatorSplitSolve2DVec(Contrail_, ZERO_BC, skipDiffusion);
     }
 }
 

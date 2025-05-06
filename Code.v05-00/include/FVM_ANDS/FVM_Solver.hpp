@@ -12,8 +12,8 @@ namespace FVM_ANDS{
             const Eigen::VectorXd& explicitSolve();
             const Eigen::VectorXd& explicitSolve(const Eigen::VectorXd& source);
 
-            const Eigen::VectorXd& operatorSplitSolve(bool parallelAdvection = false, double courant_max = 0.5);
-            void operatorSplitSolve2DVec(Vector_2D& vec, const BoundaryConditions& bc, bool parallelAdvection = false, double courant_max = 0.5);
+            const Eigen::VectorXd& operatorSplitSolve(const bool skipDiffusion, bool parallelAdvection = false, double courant_max = 0.5);
+            void operatorSplitSolve2DVec(Vector_2D& vec, const BoundaryConditions& bc, const bool skipDiffusion, bool parallelAdvection = false, double courant_max = 0.5);
 
             void advectionHalfTimestepSolve(Vector_2D& vec, const BoundaryConditions& bc, double courant_max = 0.5);
 
