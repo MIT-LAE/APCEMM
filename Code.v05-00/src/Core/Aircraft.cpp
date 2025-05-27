@@ -85,7 +85,11 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
 
 double Aircraft::VortexLosses( const double EI_Soot,    \
                                    const double EI_SootRad, \
-                                   const double wetDepth )
+                                   const double WV_exhaust, \
+                                   const double plume_area, \
+                                   const double T_CA, \
+                                   const double RHi, \
+                                   const double m_c)
 {
 
     /* This function computes the fraction of contrail ice particles lost in
@@ -112,20 +116,18 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     double z_Desc  = 0.0E+00;
     double z_Delta = 0.0E+00;
 
-    /* Exponents */
-    const double gamma_Atm  = 0.18;
-    const double gamma_Emit = 0.18;
-
     /* Fitting coefficients */
-    const double beta_0  = +0.45;
-    const double beta_1  = +1.19;
-    const double alpha_0 = -1.35;
-    /* After reaching out to S. Unterstrasser, the beta_0 coefficient should
-     * be 0.45 instead of 0.40. The paper contains a typo and equation (10a)
-     * should be:
-     * \beta_0 = 0.45
-     */
+    const double beta_0  = +0.42;
+    const double beta_1  = +1.31;
+    const double alpha_0 = -1.00;
+    const double alpha_Atm = +1.27;
+    const double alpha_Emit = +0.42;
+    const double alpha_Desc = +0.49;
+    const double gamma_exp = +0.16;
 
+    /* Temperature - 205 K*/
+    const double T_205 = T_CA - 205.0; /* [K] */
+    
     /* Scaling for particle number */
     const double EIice_ref = 2.8E+14; /* [#/kg_fuel] */
 
@@ -133,7 +135,8 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     const double EIice     = EI_Soot / massParticle; /* [#/kg_fuel] */
     
     /* z_Atm = Depth of the supersaturated layer */
-    z_Atm  = wetDepth;
+    const double s = RHi / 100 - 1; // RHi in % -> excess supersaturation ratio
+    z_Atm  = 607.46 * pow(s, 0.897) * pow(T_CA / 205.0, 2.225);
 
     /* z_Desc = Vertical displacement of the wake vortex */
     if ( vortex_.N_BV() < 1.0E-05 )
@@ -142,20 +145,20 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
         z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 ); //Equation 4
 
     /* z_Emit = ... */
-    z_Emit = 90;
-
-    /* ==================================== */
-    /* ... Parameterization starts here ... */
-    /* ==================================== */
-
-    const double alpha_Atm  = +1.70 * pow( EIice_ref / EIice, gamma_Atm  );
-    const double alpha_Emit = +1.15 * pow( EIice_ref / EIice, gamma_Emit );
-    const double alpha_Desc = -0.60;
+    const double rho_emit = WV_exhaust / plume_area;
+    const double rho_divisor = 10E-6; // 10 mg per m3
+    z_Emit = 1106.6 * pow(rho_emit / rho_divisor, 0.678 + 0.0116 * T_205) * exp((-(0.0807+0.000428*T_205)*T_205));
 
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
-    z_Delta = + alpha_Atm  * z_Atm  \
-              + alpha_Emit * z_Emit \
-              + alpha_Desc * z_Desc;
+    const double N0_ref = 3.38E12; /* [#/m], hardcoded but valid for an A350 */
+    const double n0_ref = N0_ref / plume_area; /* [#/m^3] */
+    const double n0 = m_c * EIice / plume_area;
+    const double n0_star = n0 / n0_ref; /* [-] */ 
+    const double Psi = 1 / n0_star;
+    z_Delta = pow(Psi, gamma_exp) * \
+             (+ alpha_Atm  * z_Atm  \
+              + alpha_Emit * z_Emit) \
+              - alpha_Desc * z_Desc;
 
     iceNumFrac = beta_0 + beta_1 / physConst::PI * atan( alpha_0 + z_Delta / 1.0E+02 );
 

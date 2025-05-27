@@ -249,7 +249,9 @@ SimStatus LAGRIDPlumeModel::runEPM() {
     /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not just
         * user-specified input */
     const double iceNumFrac = aircraft_.VortexLosses( EI_.getSoot(), EI_.getSootRad(), \
-                                                            met_.satdepthUser() );
+                                                        WV_exhaust_, epmOutput.area, \
+                                                        met_.tempRef(), met_.rhiRef(), \
+                                                        fuelPerDist_ );
 
     std::cout << "Parameterized vortex sinking survival fraction: " << iceNumFrac << std::endl;
     if ( iceNumFrac <= 0.00E+00) {
@@ -340,8 +342,9 @@ void LAGRIDPlumeModel::initH2O() {
     auto areas = VectorUtils::cellAreas(xEdges_, yEdges_);
     const double icemass = iceAerosol_.TotalIceMass_sum(areas);
 
-    double fuelPerDist = aircraft_.FuelFlow() / aircraft_.VFlight();
-    double mass_WV = EI_.getH2O() * fuelPerDist - icemass;
+    fuelPerDist_ = aircraft_.FuelFlow() / aircraft_.VFlight();
+    WV_exhaust_ = EI_.getH2O() * fuelPerDist_;
+    double mass_WV = WV_exhaust_ - icemass;
     double E_H2O = mass_WV / (MW_H2O * 1e3) * physConst::Na;
 
     // Spread the emitted water evenly over the cells that contain ice crystals
