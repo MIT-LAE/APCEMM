@@ -95,13 +95,17 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     /* This function computes the fraction of contrail ice particles lost in
      * the vortex sinking phase because of turbulent sublimation.
      * This fraction is computed according to a parameterization derived from
-     * large-eddy simulations and described in: 
-     * Unterstrasser, Simon. "Properties of young contrails–a parametrisation based on large-eddy simulations."
-     * Atmospheric Chemistry and Physics 16.4 (2016): 2059-2082.
-     * */
-
-    /* Debug flag? */
-    // const bool ACDEBUG = 0;
+     * large-eddy simulations and described in:
+     *
+     * LU2025: Lottermoser, A. and Unterstraßer, S.: High-resolution modelling of early contrail evolution from 
+     * hydrogen-powered aircraft, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2024-3859, 2025.
+     * 
+     * and
+     *
+     * U2016: Unterstrasser, S.: Properties of young contrails – a parametrisation based on large-eddy simulations, 
+     * Atmos. Chem. Phys., 16, 2059–2082, https://doi.org/10.5194/acp-16-2059-2016, 2016. 
+     * 
+     */
 
     /* Compute volume and mass of soot particles emitted */
     const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 ); //EI_SootRad in m -> volume in m3
@@ -116,7 +120,7 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     double z_Desc  = 0.0E+00;
     double z_Delta = 0.0E+00;
 
-    /* Fitting coefficients */
+    /* Fitting coefficients, Eqs. 13a to 13g in LU2025 */
     const double beta_0  = +0.42;
     const double beta_1  = +1.31;
     const double alpha_0 = -1.00;
@@ -126,67 +130,41 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     const double gamma_exp = +0.16;
 
     /* Temperature - 205 K*/
-    const double T_205 = T_CA - 205.0; /* [K] */
-    
-    /* Scaling for particle number */
-    const double EIice_ref = 2.8E+14; /* [#/kg_fuel] */
+    const double T_205 = T_CA - 205.0; /* [K], from Eq. A3 in LU2025*/
 
     /* Number of particles emitted */
-    const double EIice     = EI_Soot / massParticle; /* [#/kg_fuel] */
+    const double EIice = EI_Soot / massParticle; /* [#/kg_fuel] */
     
     /* z_Atm = Depth of the supersaturated layer */
-    const double s = RHi / 100 - 1; // RHi in % -> excess supersaturation ratio
-    z_Atm  = 607.46 * pow(s, 0.897) * pow(T_CA / 205.0, 2.225);
+    const double s = RHi / 100 - 1; // RHi in % -> excess supersaturation ratio, See S2 in U2016
+    z_Atm  = 607.46 * pow(s, 0.897) * pow(T_CA / 205.0, 2.225); // Eq. A2 in LU2025
 
     /* z_Desc = Vertical displacement of the wake vortex */
     if ( vortex_.N_BV() < 1.0E-05 )
-        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * 1.3E-02        ), 0.5 );
+        // Prevent division by zero
+        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * 1.3E-02        ), 0.5 ); 
     else
-        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 ); //Equation 4
+        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 ); // Eq. 4 in U2016
 
-    /* z_Emit = ... */
-    const double rho_emit = WV_exhaust / plume_area;
+    /* z_Emit = ... (from Eq. A3 in LU2025)*/
+    const double rho_emit = WV_exhaust / plume_area; // Eq. 6 in U2016
     const double rho_divisor = 10E-6; // 10 mg per m3
     z_Emit = 1106.6 * pow(rho_emit / rho_divisor, 0.678 + 0.0116 * T_205) * exp((-(0.0807+0.000428*T_205)*T_205));
 
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
     const double N0_ref = 3.38E12; /* [#/m], hardcoded but valid for an A350 */
-    const double n0_ref = N0_ref / plume_area; /* [#/m^3] */
-    const double n0 = m_c * EIice / plume_area;
-    const double n0_star = n0 / n0_ref; /* [-] */ 
-    const double Psi = 1 / n0_star;
+    const double n0_ref = N0_ref / plume_area; /* [#/m^3], from Eq. A1 in LU2025 */
+    const double n0 = m_c * EIice / plume_area; /* [#/m^3], from Eqs. 1 and A1 in LU2025 */
+    const double n0_star = n0 / n0_ref; /* [-], See Appendix A1 in LU 2025 */ 
+    const double Psi = 1 / n0_star; // Eq. 10 in LU2025
     z_Delta = pow(Psi, gamma_exp) * \
              (+ alpha_Atm  * z_Atm  \
               + alpha_Emit * z_Emit) \
-              - alpha_Desc * z_Desc;
+              - alpha_Desc * z_Desc; // Eq. 9 in LU2025
 
+    /* Compute the remaining fraction of ice crystals, from Eq. 12 in LU2025 */
     iceNumFrac = beta_0 + beta_1 / physConst::PI * atan( alpha_0 + z_Delta / 1.0E+02 );
-
-//     if ( ( ACDEBUG ) || ( iceNumFrac < 0.1E+00 ) || ( iceNumFrac > 1.0E+00 ) ) {
-//         /* If DEBUG is on or if we lose more than 90% of the initial number of 
-//          * ice crystals, then print diagnostic */
-// #pragma omp critical
-//         {
-//         if ( ACDEBUG )
-//             std::cout << "----------------- DEBUG -----------------" << std::endl;
-//         std::cout << "In Aircraft::VortexLosses: " << std::endl;
-//         std::cout << "alpha_Atm  = " << alpha_Atm  << std::endl;
-//         std::cout << "alpha_Emit = " << alpha_Emit << std::endl;
-//         std::cout << "EIice      = " << EIice      << " [#/kg_fuel]" << std::endl;
-//         std::cout << "EIice*     = " << EIice / EIice_ref << " [#/kg_fuel]" << std::endl;
-//         std::cout << "alpha_Desc = " << alpha_Desc << std::endl;
-//         std::cout << "z_Atm      = " << z_Atm  / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << "z_Emit     = " << z_Emit / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << "z_Desc     = " << z_Desc / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << " -> Gamma  = " << vortex_.gamma() << " [m^2/s]" << std::endl;
-//         std::cout << " -> N_BV   = " << vortex_.N_BV() << " [Hz]" << std::endl;
-//         std::cout << "z_Delta    = " << z_Delta / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << "rem. frac. = " << iceNumFrac << " [-]" << std::endl;
-//         }
-//     }
-
     iceNumFrac = std::min( std::max( iceNumFrac, 0.0E+00 ), 1.0E+00 );
-
 
     if ( iceNumFrac == 0.0E+00 )
         std::cout << "Contrail has fully melted because of vortex-sinking losses" << std::endl;
