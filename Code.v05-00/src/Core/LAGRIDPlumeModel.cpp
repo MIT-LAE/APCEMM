@@ -337,11 +337,14 @@ void LAGRIDPlumeModel::initH2O() {
     auto& mask = maskInfo.first;
     int nonMaskCount = maskInfo. second;
 
-    double fuelPerDist = aircraft_.FuelFlow() / aircraft_.VFlight();
-    double E_H2O = EI_.getH2O() / (MW_H2O * 1e3) * fuelPerDist * physConst::Na;
-
     auto areas = VectorUtils::cellAreas(xEdges_, yEdges_);
+    const double icemass = iceAerosol_.TotalIceMass_sum(areas);
 
+    double fuelPerDist = aircraft_.FuelFlow() / aircraft_.VFlight();
+    double mass_WV = EI_.getH2O() * fuelPerDist - icemass;
+    double E_H2O = mass_WV / (MW_H2O * 1e3) * physConst::Na;
+
+    // Spread the emitted water evenly over the cells that contain ice crystals
     auto localPlumeEmission = [&](std::size_t j, std::size_t i) -> double {
         if(mask[j][i] == 0) return 0;
         return E_H2O * 1.0E-06 / ( nonMaskCount * areas[j][i] );
