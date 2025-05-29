@@ -136,7 +136,7 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
 
     /* Plume Area */
     const double r_p = 1.5 + 0.314 * wingspan_; /* [m], from Eq. A6 in U2016 */
-    const double plume_area = 2* physConst::PI * r_p * r_p; /* [m2], see Appendix 2 in LU2025 */
+    const double plume_area = 2 * physConst::PI * r_p * r_p; /* [m2], see Appendix 2 in LU2025 */
     
     /* z_Atm = Depth of the supersaturated layer */
     const double s = RHi / 100 - 1; // RHi in % -> excess supersaturation ratio, See S2 in U2016
@@ -145,13 +145,13 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     /* z_Desc = Vertical displacement of the wake vortex */
     if ( vortex_.N_BV() < 1.0E-05 )
         // Prevent division by zero
-        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * 1.3E-02        ), 0.5 ); 
+        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * 1E-02        ), 0.5 ); 
     else
         z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 ); // Eq. 4 in U2016
 
     /* z_Emit = ... (from Eq. A3 in LU2025)*/
     const double rho_emit = WV_exhaust / plume_area; // Eq. 6 in U2016
-    const double rho_divisor = 10; // 10 mg per m3
+    const double rho_divisor = 10.; // 10 mg per m3
     z_Emit = 1106.6 * pow(rho_emit * 1000. / rho_divisor, 0.678 + 0.0116 * T_205) * exp((-(0.0807+0.000428*T_205)*T_205));
 
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
@@ -175,7 +175,7 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     std::cout << "rho_emit = " << rho_emit << " [g/m3]" << std::endl;
     std::cout << "rho_divisor = " << rho_divisor << " [mg/m3]" << std::endl;
     std::cout << "plume_area = " << plume_area << " [m2]" << std::endl;
-    std::cout << "T_CA = " << T_CA << " [K]" << std::endl;
+    std::cout << "T_CA " << T_CA << " [K]" << std::endl;
     std::cout << "RHi = " << RHi << " [%]" << std::endl;
     std::cout << "N0 = " << N0 << " [#/m]" << std::endl;
     std::cout << "z_Atm = " << z_Atm << " [m]" << std::endl;
