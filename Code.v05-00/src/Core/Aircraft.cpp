@@ -166,6 +166,22 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     iceNumFrac = beta_0 + beta_1 / physConst::PI * atan( alpha_0 + z_Delta / 1.0E+02 );
     iceNumFrac = std::min( std::max( iceNumFrac, 0.0E+00 ), 1.0E+00 );
 
+    std::cout << std::endl;
+    std::cout << "Vortex parametrisation beginning..." << std::endl;
+    std::cout << "WV_exhaust = " << WV_exhaust << std::endl;
+    std::cout << "rho_emit = " << rho_emit  << std::endl;
+    std::cout << "rho_divisor = " << rho_divisor << " [#/m3]" << std::endl;
+    std::cout << "plume_area = " << plume_area << " [m2]" << std::endl;
+    std::cout << "T_CA = " << T_CA << " [K]" << std::endl;
+    std::cout << "RHi = " << RHi << " [%]" << std::endl;
+    std::cout << "N0 = " << N0 << " [#/m]" << std::endl;
+    std::cout << "z_Atm = " << z_Atm << " [m]" << std::endl;
+    std::cout << "z_Emit = " << z_Emit << " [m]" << std::endl;
+    std::cout << "z_Desc = " << z_Desc << " [m]" << std::endl;
+    std::cout << "z_Delta = " << z_Delta << " [m]" << std::endl;
+    std::cout << "f_surv: " << iceNumFrac << std::endl;
+    std::cout << std::endl;
+
     if ( iceNumFrac == 0.0E+00 )
         std::cout << "Contrail has fully melted because of vortex-sinking losses" << std::endl;
 
