@@ -86,7 +86,6 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
 double Aircraft::VortexLosses( const double EI_Soot,    \
                                    const double EI_SootRad, \
                                    const double WV_exhaust, \
-                                   const double plume_area, \
                                    const double T_CA, \
                                    const double RHi, \
                                    const double m_c)
@@ -134,6 +133,10 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
 
     /* Number of particles emitted */
     const double EIice = EI_Soot / massParticle; /* [#/kg_fuel] */
+
+    /* Plume Area */
+    const double r_p = 1.5 + 0.314 * wingspan_; /* [m], from Eq. A6 in U2016 */
+    const double plume_area = 2* physConst::PI * r_p * r_p; /* [m2], see Appendix 2 in LU2025 */
     
     /* z_Atm = Depth of the supersaturated layer */
     const double s = RHi / 100 - 1; // RHi in % -> excess supersaturation ratio, See S2 in U2016
@@ -148,8 +151,8 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
 
     /* z_Emit = ... (from Eq. A3 in LU2025)*/
     const double rho_emit = WV_exhaust / plume_area; // Eq. 6 in U2016
-    const double rho_divisor = 10E-3; // 10 mg per m3
-    z_Emit = 1106.6 * pow(rho_emit / rho_divisor, 0.678 + 0.0116 * T_205) * exp((-(0.0807+0.000428*T_205)*T_205));
+    const double rho_divisor = 10; // 10 mg per m3
+    z_Emit = 1106.6 * pow(rho_emit * 1000. / rho_divisor, 0.678 + 0.0116 * T_205) * exp((-(0.0807+0.000428*T_205)*T_205));
 
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
     const double N0_ref = 3.38E12; /* [#/m], hardcoded but valid for an A350 */
@@ -168,8 +171,8 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
 
     std::cout << std::endl;
     std::cout << "Vortex parametrisation beginning..." << std::endl;
-    std::cout << "WV_exhaust = " << WV_exhaust << std::endl;
-    std::cout << "rho_emit = " << rho_emit  << std::endl;
+    std::cout << "WV_exhaust = " << WV_exhaust << " [#/m3]" << std::endl;
+    std::cout << "rho_emit = " << rho_emit << " [#/m3]" << std::endl;
     std::cout << "rho_divisor = " << rho_divisor << " [#/m3]" << std::endl;
     std::cout << "plume_area = " << plume_area << " [m2]" << std::endl;
     std::cout << "T_CA = " << T_CA << " [K]" << std::endl;

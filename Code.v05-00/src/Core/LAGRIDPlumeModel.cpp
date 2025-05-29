@@ -254,9 +254,8 @@ SimStatus LAGRIDPlumeModel::runEPM() {
     std::cout << "WV_exhaust: " << WV_exhaust_ << " [#/m3]" << std::endl;
 
     const double iceNumFrac = aircraft_.VortexLosses( EI_.getSoot(), EI_.getSootRad(), \
-                                                        WV_exhaust_, epmOutput.area, \
-                                                        met_.tempRef(), met_.rhiRef(), \
-                                                        fuelPerDist_ );
+                                                        WV_exhaust_, met_.tempRef(), \
+                                                        met_.rhiRef(), fuelPerDist_ );
 
     std::cout << "Parameterized vortex sinking survival fraction: " << iceNumFrac << std::endl;
     if ( iceNumFrac <= 0.00E+00) {
