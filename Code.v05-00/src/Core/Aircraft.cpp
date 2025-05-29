@@ -171,9 +171,9 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
 
     std::cout << std::endl;
     std::cout << "Vortex parametrisation beginning..." << std::endl;
-    std::cout << "WV_exhaust = " << WV_exhaust << " [#/m3]" << std::endl;
-    std::cout << "rho_emit = " << rho_emit << " [#/m3]" << std::endl;
-    std::cout << "rho_divisor = " << rho_divisor << " [#/m3]" << std::endl;
+    std::cout << "WV_exhaust = " << WV_exhaust << " [g/m]" << std::endl;
+    std::cout << "rho_emit = " << rho_emit << " [g/m3]" << std::endl;
+    std::cout << "rho_divisor = " << rho_divisor << " [mg/m3]" << std::endl;
     std::cout << "plume_area = " << plume_area << " [m2]" << std::endl;
     std::cout << "T_CA = " << T_CA << " [K]" << std::endl;
     std::cout << "RHi = " << RHi << " [%]" << std::endl;

@@ -250,9 +250,6 @@ SimStatus LAGRIDPlumeModel::runEPM() {
         * user-specified input */
     fuelPerDist_ = aircraft_.FuelFlow() / aircraft_.VFlight();
     WV_exhaust_ = EI_.getH2O() * fuelPerDist_;
-    std::cout << "Fuel per distance: " << fuelPerDist_ << " [kg/m]" << std::endl;
-    std::cout << "WV_exhaust: " << WV_exhaust_ << " [#/m3]" << std::endl;
-
     const double iceNumFrac = aircraft_.VortexLosses( EI_.getSoot(), EI_.getSootRad(), \
                                                         WV_exhaust_, met_.tempRef(), \
                                                         met_.rhiRef(), fuelPerDist_ );
