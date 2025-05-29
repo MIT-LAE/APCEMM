@@ -148,7 +148,7 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
 
     /* z_Emit = ... (from Eq. A3 in LU2025)*/
     const double rho_emit = WV_exhaust / plume_area; // Eq. 6 in U2016
-    const double rho_divisor = 10E-6; // 10 mg per m3
+    const double rho_divisor = 10E-3; // 10 mg per m3
     z_Emit = 1106.6 * pow(rho_emit / rho_divisor, 0.678 + 0.0116 * T_205) * exp((-(0.0807+0.000428*T_205)*T_205));
 
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
