@@ -6,6 +6,7 @@ set(SRCS
     MetFunction.cpp
     PlumeModelUtils.cpp
     VectorUtils.cpp
+    YamlUtils.cpp
 )
 
 # This command ensures the static library gets build

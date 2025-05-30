@@ -79,24 +79,22 @@ int main( int argc, char* argv[])
      *              Plume Model
      */
     if(argc < 2){
-        std::cout << "No Input File Detected!" << std::endl;
-        std::cout << "Exiting ... " << std::endl;
-        return 1;
-    }
-    else if(argc > 2){
-        std::cout << "Unexpected Input: " << argv[2] << std::endl;
+        std::cout << "No Input Files Detected!" << std::endl;
         std::cout << "Exiting ... " << std::endl;
         return 1;
     }
 
     #pragma omp master
     {
-        std::string FILESEP = "/";
-        std::string FILENAME = argv[1];
-        std::filesystem::path INPUT_FILE_PATH(FILENAME);
-        INPUT_FILE_PATH = std::filesystem::canonical(INPUT_FILE_PATH);
+        std::vector<std::string> INPUT_FILE_PATHS;
+        for (unsigned int i = 1; i < argc; ++i) {
+          std::string FILENAME = argv[i];
+          std::filesystem::path INPUT_FILE_PATH(FILENAME);
+          INPUT_FILE_PATH = std::filesystem::canonical(INPUT_FILE_PATH);
+          INPUT_FILE_PATHS.push_back(INPUT_FILE_PATH);
+        }
         
-        YamlInputReader::readYamlInputFile( Input_Opt, INPUT_FILE_PATH.generic_string() );
+        YamlInputReader::readYamlInputFiles( Input_Opt, INPUT_FILE_PATHS );
     }  /* master CPU */
 
     // Set the seed once at the top-level

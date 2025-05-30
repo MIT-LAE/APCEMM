@@ -403,7 +403,7 @@ TEST_CASE("Generate All Cases"){
 TEST_CASE("Generate Input Objects"){
     string filename = string(APCEMM_TESTS_DIR)+"/test1.yaml";
     OptInput input;
-    YamlInputReader::readYamlInputFile(input, filename);
+    YamlInputReader::readYamlInputFiles(input, {filename});
     vector<std::unordered_map<string,double>> cases = generateCases(input);
     REQUIRE(cases.size() == 18);
     Input caseInput = Input(0, cases, "", "", "", "", "");
@@ -434,6 +434,47 @@ TEST_CASE("Generate Input Objects"){
     REQUIRE(caseInput.sootRad() == 20.0e-9);
     REQUIRE(caseInput.fuelFlow() == 2.8);
     REQUIRE(caseInput.aircraftMass() == 2.00e5);
+    REQUIRE(caseInput.flightSpeed() == 250.0);
+    REQUIRE(caseInput.numEngines() == 4);
+    REQUIRE(caseInput.wingspan() == 69.8);
+    REQUIRE(caseInput.coreExitTemp() == 547.3);
+    REQUIRE(caseInput.bypassArea() == 1.804);
+}
+TEST_CASE("Merge Input Files"){
+    string filename1 = string(APCEMM_TESTS_DIR)+"/test1.yaml";
+    string filename2 = string(APCEMM_TESTS_DIR)+"/test2.yaml";
+    OptInput input;
+    YamlInputReader::readYamlInputFiles(input, {filename1, filename2});
+    vector<std::unordered_map<string,double>> cases = generateCases(input);
+    REQUIRE(cases.size() == 18);
+    Input caseInput = Input(0, cases, "", "", "", "", "");
+    REQUIRE(caseInput.simulationTime() == 24);
+    REQUIRE(caseInput.temperature_K() == 215);
+    REQUIRE(caseInput.relHumidity_w() == 43.9432);
+    REQUIRE(caseInput.pressure_Pa() == 22000);
+    REQUIRE(caseInput.horizDiff() == 17.0);
+    REQUIRE(caseInput.vertiDiff() == 0.15);
+    REQUIRE(caseInput.shear() == 0.002);
+    REQUIRE(caseInput.nBV() == 0.017);
+    REQUIRE(caseInput.longitude_deg() == -45);
+    REQUIRE(caseInput.latitude_deg() == 65);
+    REQUIRE(caseInput.emissionDOY() == 143);
+    REQUIRE(caseInput.emissionTime() == 12);
+    REQUIRE(caseInput.backgNOx() == 5100);
+    REQUIRE(caseInput.backgHNO3() == 81.5);
+    REQUIRE(caseInput.backgO3() == 100);
+    REQUIRE(caseInput.backgCO() == 40);
+    REQUIRE(caseInput.backgCH4() == 1.76);
+    REQUIRE(caseInput.backgSO2() == 7.25);
+    REQUIRE(caseInput.EI_NOx() == 10);
+    REQUIRE(caseInput.EI_CO() == 1);
+    REQUIRE(caseInput.EI_HC() == 0.6);
+    REQUIRE(caseInput.EI_SO2() == 0.1);
+    REQUIRE(caseInput.EI_SO2TOSO4() == 0.05);
+    REQUIRE(caseInput.EI_Soot() == 0.06);
+    REQUIRE(caseInput.sootRad() == 20.0e-9);
+    REQUIRE(caseInput.fuelFlow() == 2.9);
+    REQUIRE(caseInput.aircraftMass() == 2.30e5);
     REQUIRE(caseInput.flightSpeed() == 250.0);
     REQUIRE(caseInput.numEngines() == 4);
     REQUIRE(caseInput.wingspan() == 69.8);
