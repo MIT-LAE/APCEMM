@@ -40,7 +40,7 @@ class Aircraft
 
         double VortexLosses( const double EI_Soot, const double EI_SootRad, \
                              const double WV_exhaust, const double T_CA, \
-                             const double RHi, const double m_c);
+                             const double RHi, const double fuel_per_dist);
 
         /* Getters: */
 
