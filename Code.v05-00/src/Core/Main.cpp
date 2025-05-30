@@ -93,7 +93,7 @@ int main( int argc, char* argv[])
           INPUT_FILE_PATHS.push_back(INPUT_FILE_PATH);
         }
         
-        YamlInputReader::readYamlInputFiles( Input_Opt, INPUT_FILE_PATHS );
+        YamlInputReader::readYamlInputFiles( Input_Opt, default_input, INPUT_FILE_PATHS );
     }  /* master CPU */
 
     // Set the seed once at the top-level
