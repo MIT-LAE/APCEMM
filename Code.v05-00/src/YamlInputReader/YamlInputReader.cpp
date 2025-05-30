@@ -5,17 +5,11 @@
 #include "YamlInputReader/YamlInputReader.hpp"
 
 namespace YamlInputReader{
-    void readYamlInputFiles(OptInput& input, const vector<string> &filenames){
-        YAML::Node data;
-        bool first = true;
+    void readYamlInputFiles(OptInput& input, string default_input, const vector<string> &filenames){
+        YAML::Node data = YAML::Load(default_input);
         for (auto filename: filenames) {
             INPUT_FILE_PATH = std::filesystem::path(filename);
-            YAML::Node file_data = YAML::LoadFile(filename);
-            if (first)
-                data = file_data;
-            else
-                data = mergeYamlNodes(data, file_data);
-            first = false;
+            data = mergeYamlNodes(data, YAML::LoadFile(filename));
         }
 
         try {

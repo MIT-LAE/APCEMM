@@ -33,6 +33,10 @@
 #include "Core/Status.hpp"
 #include "Util/MC_Rand.hpp"
 
+// Read default configuration from CMake-generated include file.
+const std::string default_input =
+#include "Core/DefaultInput.hpp"
+;
 
 void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
@@ -94,7 +98,7 @@ int main( int argc, char* argv[])
           INPUT_FILE_PATHS.push_back(INPUT_FILE_PATH);
         }
         
-        YamlInputReader::readYamlInputFiles( Input_Opt, INPUT_FILE_PATHS );
+        YamlInputReader::readYamlInputFiles( Input_Opt, default_input, INPUT_FILE_PATHS );
     }  /* master CPU */
 
     // Set the seed once at the top-level
