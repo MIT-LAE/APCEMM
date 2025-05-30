@@ -1,12 +1,16 @@
 #include <iostream>
 #include "APCEMM.h"
 #include "Util/MC_Rand.hpp"
+#include "Util/YamlUtils.hpp"
 #include "YamlInputReader/YamlInputReader.hpp"
 
 namespace YamlInputReader{
-    void readYamlInputFile(OptInput& input, string filename){
-        INPUT_FILE_PATH = std::filesystem::path(filename);
-        YAML::Node data = YAML::LoadFile(filename);
+    void readYamlInputFiles(OptInput& input, string default_input, const vector<string> &filenames){
+        YAML::Node data = YAML::Load(default_input);
+        for (auto filename: filenames) {
+            INPUT_FILE_PATH = std::filesystem::path(filename);
+            data = mergeYamlNodes(data, YAML::LoadFile(filename));
+        }
 
         try {
             readSimMenu(input, data["SIMULATION MENU"]);
