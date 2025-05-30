@@ -45,6 +45,20 @@ set(APCEMM_VERSION_BUILD_NUMBER "${APCEMM_VERSION_BUILD_NUMBER}" CACHE STRING "G
 set(CMAKE_CXX_STANDARD 20)
 configure_file(${CMAKE_SOURCE_DIR}/include/APCEMM.h.in ${CMAKE_SOURCE_DIR}/include/APCEMM.h @ONLY)
 
+# Generate an include file containing a single raw C++ string from a text file.
+function(make_includable input_file output_file)
+    file(READ ${input_file} content)
+    set(delim "for_c++_include")
+    set(content "R\"${delim}(\n${content})${delim}\"")
+    file(WRITE ${output_file} "${content}")
+endfunction(make_includable)
+
+# Make default configuration include file from default YAML file.
+make_includable(
+    ${CMAKE_SOURCE_DIR}/data/default-input.yaml
+    ${CMAKE_SOURCE_DIR}/include/Core/DefaultInput.hpp
+)
+
 # Defines the 'main' file we want to create a binary of
 add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/Core/Main.cpp)
 
