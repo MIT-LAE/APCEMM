@@ -34,6 +34,7 @@ elseif (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     #-Michael
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -fno-trapping-math -funsafe-math-optimizations")
 endif()
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 execute_process(COMMAND git rev-parse --short HEAD 
                     OUTPUT_VARIABLE APCEMM_VERSION_BUILD_NUMBER 
