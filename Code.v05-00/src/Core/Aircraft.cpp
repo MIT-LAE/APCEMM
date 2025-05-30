@@ -167,7 +167,8 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
     const double N0_ref = 3.38E12; /* [#/m], hardcoded but valid for an A350 */
     const double n0_ref = N0_ref / plume_area; /* [#/m^3], from Eq. A1 in LU2025 */
-    const double n0 = fuelPerDist * EIice / plume_area; /* [#/m^3], from Eqs. 1 and A1 in LU2025 */
+    const double N0 = fuelPerDist * EIice; /* [#/m], from Eq. 1 in LU2025*/
+    const double n0 = N0 / plume_area; /* [#/m^3] from Eq. A1 in LU2025 */
     const double n0_star = n0 / n0_ref; /* [-], See Appendix A1 in LU 2025 */ 
     const double Psi = 1 / n0_star; // Eq. 10 in LU2025
     z_Delta = pow(Psi, gamma_exp) * \
