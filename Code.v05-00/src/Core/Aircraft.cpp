@@ -88,7 +88,7 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
                                    const double WV_exhaust, \
                                    const double T_CA, \
                                    const double RHi, \
-                                   const double m_c)
+                                   const double fuelPerDist)
 {
 
     /* This function computes the fraction of contrail ice particles lost in
@@ -104,6 +104,16 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
      * U2016: Unterstrasser, S.: Properties of young contrails – a parametrisation based on large-eddy simulations, 
      * Atmos. Chem. Phys., 16, 2059–2082, https://doi.org/10.5194/acp-16-2059-2016, 2016. 
      * 
+     * Input parameters:
+     * EI_Soot     - Emission index for soot particles [g/kg_fuel]
+     * EI_SootRad  - Radius of emitted soot particles [m]
+     * WV_exhaust  - Water vapor mass in aircraft exhaust [kg/m]
+     * T_CA        - Ambient temperature at release altitude [K]
+     * RHi         - Relative humidity with respect to ice at release altitude [%]
+     * fuelPerDist - Aircraft fuel consumption per unit distance [kg/m]
+     * 
+     * Returns:
+     * iceNumFrac - Fraction of ice crystals remaining after vortex phase [0-1]
      */
 
     /* Compute volume and mass of soot particles emitted */
@@ -157,7 +167,7 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
     const double N0_ref = 3.38E12; /* [#/m], hardcoded but valid for an A350 */
     const double n0_ref = N0_ref / plume_area; /* [#/m^3], from Eq. A1 in LU2025 */
-    const double n0 = m_c * EIice / plume_area; /* [#/m^3], from Eqs. 1 and A1 in LU2025 */
+    const double n0 = fuelPerDist * EIice / plume_area; /* [#/m^3], from Eqs. 1 and A1 in LU2025 */
     const double n0_star = n0 / n0_ref; /* [-], See Appendix A1 in LU 2025 */ 
     const double Psi = 1 / n0_star; // Eq. 10 in LU2025
     z_Delta = pow(Psi, gamma_exp) * \
@@ -171,17 +181,12 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
 
     std::cout << std::endl;
     std::cout << "Vortex parametrisation beginning..." << std::endl;
-    std::cout << "WV_exhaust = " << WV_exhaust << " [g/m]" << std::endl;
-    std::cout << "rho_emit = " << rho_emit << " [g/m3]" << std::endl;
-    std::cout << "rho_divisor = " << rho_divisor << " [mg/m3]" << std::endl;
-    std::cout << "plume_area = " << plume_area << " [m2]" << std::endl;
-    std::cout << "T_CA " << T_CA << " [K]" << std::endl;
+    std::cout << "T_CA = " << T_CA << " [K]" << std::endl;
     std::cout << "RHi = " << RHi << " [%]" << std::endl;
     std::cout << "N0 = " << N0 << " [#/m]" << std::endl;
     std::cout << "z_Atm = " << z_Atm << " [m]" << std::endl;
     std::cout << "z_Emit = " << z_Emit << " [m]" << std::endl;
     std::cout << "z_Desc = " << z_Desc << " [m]" << std::endl;
-    std::cout << "z_Delta = " << z_Delta << " [m]" << std::endl;
     std::cout << "f_surv: " << iceNumFrac << std::endl;
     std::cout << std::endl;
 
