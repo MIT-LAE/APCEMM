@@ -3,7 +3,6 @@ PARAMETER MENU:
   METEOROLOGICAL PARAMETERS SUBMENU:
     Horiz. diff. coeff. [m^2/s] (double): 17.0
     Brunt-Vaisala Frequency [s^-1] (double): 0.017
-    Pressure [hPa] (double): 320 330 340
   LOCATION AND TIME SUBMENU:
     LON [deg] (double): -45
     LAT [deg] (double): 65
