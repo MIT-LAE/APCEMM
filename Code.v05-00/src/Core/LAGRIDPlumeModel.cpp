@@ -252,7 +252,7 @@ SimStatus LAGRIDPlumeModel::runEPM() {
     WV_exhaust_ = EI_.getH2O() * fuelPerDist_; // g H2O /m
     double T_CA = met_.tempRef(); // K
     double RHi_CA = met_.rhiRef(); // %
-    double N0 = epmIceAer.Moment(0) * epmOut.area * 1e6; // # / m
+    double N0 = epmOutput.IceAer.Moment(0) * epmOutput.area * 1e6; // # / m
     double gamma = aircraft_.vortex().gamma(); // m^2/s
 
     std::cout << std::endl;
