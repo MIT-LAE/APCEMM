@@ -255,6 +255,13 @@ SimStatus LAGRIDPlumeModel::runEPM() {
     double N0 = epmIceAer.Moment(0) * epmOut.area * 1e6; // # / m
     double gamma = aircraft_.vortex().gamma(); // m^2/s
 
+    std::cout << std::endl;
+    std::cout << "Aircraft fuel flow: " << aircraft_.FuelFlow()<< " [kg/s]" << std::endl;
+    std::cout << "Aircraft flight speed: " << aircraft_.VFlight()<< " [m/s]" << std::endl;
+    std::cout << "Fuel EI_H2O: " << EI_.getH2O() << " [g H2O/ kg]" << std::endl;
+    std::cout << "Exhaust WV: " << WV_exhaust_ << " [g H2O/ m]" << std::endl;
+    std::cout << std::endl;
+
     const double iceNumFrac = aircraft_.VortexLosses( EI_.getSoot(), EI_.getSootRad(), \
                                                         WV_exhaust_, T_CA, RHi_CA, N0, gamma);
 
@@ -299,9 +306,9 @@ void LAGRIDPlumeModel::initializeGrid() {
         double ts = 1; 
         return 7000 * pow(t0/ts, 0.8);
     };
-    double m_F = aircraft_.FuelFlow() / aircraft_.VFlight(); //fuel consumption per flight distance [kg / m]
+    
     double rho_air = simVars_.pressure_Pa / (physConst::R_Air * epmOut.finalTemp);
-    double B1 = optInput_.ADV_CSIZE_WIDTH_BASE + optInput_.ADV_CSIZE_WIDTH_SCALING_FACTOR * N_dil(aircraft_.vortex().t()) * m_F / ( physConst::PI/4 * rho_air * D1); // initial contrail width [m]
+    double B1 = optInput_.ADV_CSIZE_WIDTH_BASE + optInput_.ADV_CSIZE_WIDTH_SCALING_FACTOR * N_dil(aircraft_.vortex().t()) * fuelPerDist_ / ( physConst::PI/4 * rho_air * D1); // initial contrail width [m]
 
     Vector_3D pdf_init;
     
