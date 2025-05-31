@@ -84,12 +84,12 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
 }
 
 double Aircraft::VortexLosses( const double EI_Soot,    \
-                                   const double EI_SootRad, \
+                                   const double SootRad, \
                                    const double WV_exhaust, \
                                    const double T_CA, \
-                                   const double RHi, \
-                                   const double fuelPerDist,
-                                   const double N0)
+                                   const double RHi_CA, \
+                                   const double N0, \
+                                   const double gamma)
 {
 
     /* This function computes the fraction of contrail ice particles lost in
@@ -107,19 +107,19 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
      * 
      * Input parameters:
      * EI_Soot     - Emission index for soot particles [g/kg_fuel]
-     * EI_SootRad  - Radius of emitted soot particles [m]
-     * WV_exhaust  - Water vapor mass in aircraft exhaust [kg/m]
+     * SootRad     - Radius of emitted soot particles [m]
+     * WV_exhaust  - Water vapor mass in aircraft exhaust [g/m]
      * T_CA        - Ambient temperature at release altitude [K]
-     * RHi         - Relative humidity with respect to ice at release altitude [%]
-     * fuelPerDist - Aircraft fuel consumption per unit distance [kg/m]
+     * RHi_CA      - Relative humidity with respect to ice at release altitude [%]
      * N0          - Initial total ice‐crystal number [#/m]
+     * gamma       - Vortex circulation [m^2/s]
      *
      * Returns:
      * iceNumFrac - Fraction of ice crystals remaining after vortex phase [0-1]
      */
 
     /* Compute volume and mass of soot particles emitted */
-    const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 ); //EI_SootRad in m -> volume in m3
+    const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( SootRad, 3.0 ); //SootRad in m -> volume in m3
     const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
 
     /* Declare and initialize remaining fraction of ice crystals */
@@ -151,15 +151,15 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     const double plume_area = 2 * physConst::PI * r_p * r_p; /* [m2], see Appendix 2 in LU2025 */
     
     /* z_Atm = Depth of the supersaturated layer */
-    const double s = RHi / 100 - 1; // RHi in % -> excess supersaturation ratio, See S2 in U2016
+    const double s = RHi_CA / 100 - 1; // RHi in % -> excess supersaturation ratio, See S2 in U2016
     z_Atm  = 607.46 * pow(s, 0.897) * pow(T_CA / 205.0, 2.225); // Eq. A2 in LU2025
 
     /* z_Desc = Vertical displacement of the wake vortex */
     if ( vortex_.N_BV() < 1.0E-05 )
         // Prevent division by zero
-        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * 1E-02        ), 0.5 ); 
+        z_Desc = pow( 8.0 * gamma / ( physConst::PI * 1E-02        ), 0.5 ); 
     else
-        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 ); // Eq. 4 in U2016
+        z_Desc = pow( 8.0 * gamma / ( physConst::PI * vortex_.N_BV() ), 0.5 ); // Eq. 4 in U2016
 
     /* z_Emit = ... (from Eq. A3 in LU2025)*/
     const double rho_emit = WV_exhaust / plume_area; // Eq. 6 in U2016
@@ -168,9 +168,7 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
 
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
     const double N0_ref = 3.38E12; /* [#/m], hardcoded but valid for an A350 */
-    const double n0_ref = N0_ref / plume_area; /* [#/m^3], from Eq. A1 in LU2025 */
-    const double n0 = N0 / plume_area; /* [#/m^3] from Eq. A1 in LU2025 */
-    const double n0_star = n0 / n0_ref; /* [-], See Appendix A1 in LU 2025 */ 
+    const double n0_star = N0 / N0_ref; /* [-], See Appendix A1 in LU 2025, plume area cancelled out */ 
     const double Psi = 1 / n0_star; // Eq. 10 in LU2025
     z_Delta = pow(Psi, gamma_exp) * \
              (+ alpha_Atm  * z_Atm  \
@@ -186,7 +184,8 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     std::cout << std::endl;
     std::cout << "AMBIENT PARAMS" << std::endl;
     std::cout << "T_CA = " << T_CA << " [K]" << std::endl;
-    std::cout << "RHi = " << RHi << " [%]" << std::endl;
+    std::cout << "RHi_CA = " << RHi_CA << " [%]" << std::endl;
+    std::cout << "N_BV = " << vortex_.N_BV() << " [1/s]" << std::endl;
     std::cout << std::endl;
     std::cout << "VORTEX PARAMS" << std::endl;
     std::cout << "N0 = " << N0 << " [#/m]" << std::endl;

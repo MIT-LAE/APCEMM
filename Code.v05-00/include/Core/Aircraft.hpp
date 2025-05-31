@@ -38,9 +38,10 @@ class Aircraft
 
         /* Compute vortex losses */
 
-        double VortexLosses( const double EI_Soot, const double EI_SootRad, \
+        double VortexLosses( const double EI_Soot, const double SootRad, \
                              const double WV_exhaust, const double T_CA, \
-                             const double RHi, const double fuel_per_dist);
+                             const double RHi_CA, const double N0, \
+                             const double gamma);
 
         /* Getters: */
 
