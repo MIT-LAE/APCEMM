@@ -248,8 +248,22 @@ SimStatus LAGRIDPlumeModel::runEPM() {
     //Run vortex sink parameterization
     /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not just
         * user-specified input */
+    fuelPerDist_ = aircraft_.FuelFlow() / aircraft_.VFlight(); // kg / m
+    WV_exhaust_ = EI_.getH2O() * fuelPerDist_; // g H2O /m
+    double T_CA = met_.tempRef(); // K
+    double RHi_CA = met_.rhiRef(); // %
+    double N0 = epmOutput.IceAer.Moment(0) * epmOutput.area * 1e6; // # / m
+    double gamma = aircraft_.vortex().gamma(); // m^2/s
+
+    std::cout << std::endl;
+    std::cout << "Aircraft fuel flow: " << aircraft_.FuelFlow()<< " [kg/s]" << std::endl;
+    std::cout << "Aircraft flight speed: " << aircraft_.VFlight()<< " [m/s]" << std::endl;
+    std::cout << "Fuel EI_H2O: " << EI_.getH2O() << " [g H2O/ kg]" << std::endl;
+    std::cout << "Exhaust WV: " << WV_exhaust_ << " [g H2O/ m]" << std::endl;
+    std::cout << std::endl;
+
     const double iceNumFrac = aircraft_.VortexLosses( EI_.getSoot(), EI_.getSootRad(), \
-                                                            met_.satdepthUser() );
+                                                        WV_exhaust_, T_CA, RHi_CA, N0, gamma);
 
     std::cout << "Parameterized vortex sinking survival fraction: " << iceNumFrac << std::endl;
     if ( iceNumFrac <= 0.00E+00) {
@@ -292,9 +306,9 @@ void LAGRIDPlumeModel::initializeGrid() {
         double ts = 1; 
         return 7000 * pow(t0/ts, 0.8);
     };
-    double m_F = aircraft_.FuelFlow() / aircraft_.VFlight(); //fuel consumption per flight distance [kg / m]
+    
     double rho_air = simVars_.pressure_Pa / (physConst::R_Air * epmOut.finalTemp);
-    double B1 = optInput_.ADV_CSIZE_WIDTH_BASE + optInput_.ADV_CSIZE_WIDTH_SCALING_FACTOR * N_dil(aircraft_.vortex().t()) * m_F / ( physConst::PI/4 * rho_air * D1); // initial contrail width [m]
+    double B1 = optInput_.ADV_CSIZE_WIDTH_BASE + optInput_.ADV_CSIZE_WIDTH_SCALING_FACTOR * N_dil(aircraft_.vortex().t()) * fuelPerDist_ / ( physConst::PI/4 * rho_air * D1); // initial contrail width [m]
 
     Vector_3D pdf_init;
     
@@ -340,8 +354,7 @@ void LAGRIDPlumeModel::initH2O() {
     auto areas = VectorUtils::cellAreas(xEdges_, yEdges_);
     const double icemass = iceAerosol_.TotalIceMass_sum(areas);
 
-    double fuelPerDist = aircraft_.FuelFlow() / aircraft_.VFlight();
-    double mass_WV = EI_.getH2O() * fuelPerDist - icemass;
+    double mass_WV = WV_exhaust_ - icemass;
     double E_H2O = mass_WV / (MW_H2O * 1e3) * physConst::Na;
 
     // Spread the emitted water evenly over the cells that contain ice crystals
