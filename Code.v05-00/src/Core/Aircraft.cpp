@@ -195,7 +195,7 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     std::cout << std::endl;
     std::cout << "AIRCRAFT PARAMS" << std::endl;
     std::cout << "wingspan = " << wingspan_ << " [m]" << std::endl;
-    std::cout << "Flight speed (m/s) " << vFlight_ms_ << " [m]" << std::endl;
+    std::cout << "flight speed = " << vFlight_ms_ << " [m/s]" << std::endl;
     std::cout << std::endl;
     std::cout << "PARAMETRISATION RESULTS" << std::endl;
     std::cout << "z_Atm = " << z_Atm << " [m]" << std::endl;
