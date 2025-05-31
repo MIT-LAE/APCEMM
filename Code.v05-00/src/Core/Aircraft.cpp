@@ -88,7 +88,8 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
                                    const double WV_exhaust, \
                                    const double T_CA, \
                                    const double RHi, \
-                                   const double fuelPerDist)
+                                   const double fuelPerDist,
+                                   const double N0)
 {
 
     /* This function computes the fraction of contrail ice particles lost in
@@ -111,7 +112,8 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
      * T_CA        - Ambient temperature at release altitude [K]
      * RHi         - Relative humidity with respect to ice at release altitude [%]
      * fuelPerDist - Aircraft fuel consumption per unit distance [kg/m]
-     * 
+     * N0          - Initial total ice‐crystal number [#/m]
+     *
      * Returns:
      * iceNumFrac - Fraction of ice crystals remaining after vortex phase [0-1]
      */
@@ -167,7 +169,6 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
     const double N0_ref = 3.38E12; /* [#/m], hardcoded but valid for an A350 */
     const double n0_ref = N0_ref / plume_area; /* [#/m^3], from Eq. A1 in LU2025 */
-    const double N0 = fuelPerDist * EIice; /* [#/m], from Eq. 1 in LU2025*/
     const double n0 = N0 / plume_area; /* [#/m^3] from Eq. A1 in LU2025 */
     const double n0_star = n0 / n0_ref; /* [-], See Appendix A1 in LU 2025 */ 
     const double Psi = 1 / n0_star; // Eq. 10 in LU2025
