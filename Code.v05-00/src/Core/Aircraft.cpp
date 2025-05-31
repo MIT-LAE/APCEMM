@@ -181,21 +181,29 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     iceNumFrac = std::min( std::max( iceNumFrac, 0.0E+00 ), 1.0E+00 );
 
     std::cout << std::endl << std::endl;
-    std::cout << "Vortex parametrisation beginning..." << std::endl;
+    std::cout << "***** Vortex parametrisation START *****" << std::endl;
+    std::cout << std::endl;
+    std::cout << "AMBIENT PARAMS" << std::endl;
     std::cout << "T_CA = " << T_CA << " [K]" << std::endl;
     std::cout << "RHi = " << RHi << " [%]" << std::endl;
     std::cout << std::endl;
+    std::cout << "VORTEX PARAMS" << std::endl;
     std::cout << "N0 = " << N0 << " [#/m]" << std::endl;
     std::cout << "I0 = " << WV_exhaust << " [g/m]" << std::endl;
-    std::cout << "gamma = " << vortex_.gamma() << " [m^2/s]" << std::endl;
-    std::cout << "N_BV = " << vortex_.N_BV() << " [1/s]" << std::endl;
-    std::cout << "wingspan = " << wingspan_ << " [m]" << std::endl;
+    std::cout << "gamma = " << gamma << " [m^2/s]" << std::endl;
+    std::cout << "N_BV = " << N_BV << " [1/s]" << std::endl;
     std::cout << std::endl;
+    std::cout << "AIRCRAFT PARAMS" << std::endl;
+    std::cout << "wingspan = " << wingspan_ << " [m]" << std::endl;
+    std::cout << "Flight speed (m/s) " << vFlight_ms_ << " [m]" << std::endl;
+    std::cout << std::endl;
+    std::cout << "PARAMETRISATION RESULTS" << std::endl;
     std::cout << "z_Atm = " << z_Atm << " [m]" << std::endl;
     std::cout << "z_Emit = " << z_Emit << " [m]" << std::endl;
     std::cout << "z_Desc = " << z_Desc << " [m]" << std::endl;
     std::cout << "f_surv: " << iceNumFrac << std::endl;
-    std::cout << "Vortex parametrisation end" << std::endl;
+    std::cout << std::endl;
+    std::cout << "***** Vortex parametrisation END *****" << std::endl;
     std::cout << std::endl << std::endl;
 
     if ( iceNumFrac == 0.0E+00 )
