@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include "Util/ForwardDecl.hpp"
 
+enum class epm_type { EPM_ORIGINAL, EPM_EXTERNAL, EPM_NEW };
+
 struct OptInput
 {
 
@@ -45,6 +47,7 @@ struct OptInput
     std::string SIMULATION_BOX_FILENAME;
     bool        SIMULATION_FORCE_SEED;
     int         SIMULATION_SEED_VALUE;
+    epm_type    SIMULATION_EPM_TYPE;
 
     /* ========================================== */
     /* ---- PARAMETER MENU ---------------------- */

@@ -1,13 +1,28 @@
-#include <iostream>
+#include "YamlInputReader/YamlInputReader.hpp"
 #include "APCEMM.h"
 #include "Util/MC_Rand.hpp"
 #include "Util/YamlUtils.hpp"
-#include "YamlInputReader/YamlInputReader.hpp"
+#include <algorithm> // std::equal
+#include <cctype>    // std::tolower
+#include <iostream>
+#include <string_view> // std::string_view
+
 
 // Read default configuration from CMake-generated include file.
 const std::string default_input =
 #include "Defaults/Input.hpp"
 ;
+
+
+bool ichar_equals(char a, char b) {
+  return std::tolower(static_cast<unsigned char>(a)) ==
+         std::tolower(static_cast<unsigned char>(b));
+}
+
+bool iequals(std::string_view lhs, std::string_view rhs) {
+  return std::ranges::equal(lhs, rhs, ichar_equals);
+}
+
 
 namespace YamlInputReader{
     void readYamlInputFiles(OptInput& input, const vector<string> &filenames){
@@ -142,6 +157,18 @@ namespace YamlInputReader{
 
         if(input.SIMULATION_PARAMETER_SWEEP == input.SIMULATION_MONTECARLO){
             throw std::invalid_argument("In Simulation Menu: Parameter sweep and Monte Carlo cannot have the same value!");
+        }
+
+        string epm = 
+            simNode["EPM type (original/external/new)"].as<string>();
+        if (iequals(epm, "original")) {
+            input.SIMULATION_EPM_TYPE = epm_type::EPM_ORIGINAL;
+          } else if (iequals(epm, "external")) {
+            input.SIMULATION_EPM_TYPE = epm_type::EPM_EXTERNAL;
+          } else if (iequals(epm, "new")) {
+            input.SIMULATION_EPM_TYPE = epm_type::EPM_NEW;
+        } else {
+            throw std::invalid_argument("Invalid EPM type specified in SIMULATION MENU: " + epm);
         }
     }
     void readParamMenu(OptInput& input, const YAML::Node& paramNode){
