@@ -66,6 +66,7 @@ Meteorology::Meteorology( const OptInput &optInput,
     }
     NcFile dataFile;
     dataFile.open( optInput.MET_FILENAME.c_str(), NcFile::read );
+    // TEST
 
     // Read in the meteorological data
     readMetDataFromFile( dataFile );
