@@ -27,122 +27,68 @@
 
 class Solution
 {
-    public:
+public:
 
-        Solution(const OptInput& optInput);
+    Solution(const OptInput& optInput);
 
-        ~Solution();
+    ~Solution();
 
-        void Clear( Vector_2D& vector_2D );
+    // NOTE: THIS IS ONLY CALLED FOR THE EPM
+    void Initialize(std::string fileName, const Input &input,
+                    const double airDens, const Meteorology &met,
+                    const OptInput &Input_Opt, double *varSpeciesArray,
+                    double *fixSpeciesArray, const bool DBG);
 
-        void SetShape( Vector_2D& vector_2D, \
-                       const UInt n_x,       \
-                       const UInt n_y,       \
-                       const double value = 0.0 );
+    void getData(double *varSpeciesArray, double *fixSpeciesArray,
+                 const UInt i = 0, const UInt j = 0, const bool CHEMISTRY = 0);
 
-        void SetToValue( Vector_2D& vector_2D, \
-                         const double value = 0.0 );
+    void SpinUp(Vector_1D &amb_Value, const Input &input,
+                const double airDens, const double startTime,
+                double *varSpeciesArray, double *fixSpeciesArray,
+                const bool DGB = 0);
 
-        void Print( const Vector_2D& vector_2D, \
-                    const UInt i_max = 1,       \
-                    const UInt j_max = 1 ) const;
+    Vector_2D getAerosol( ) const;
 
-        void Initialize( std::string fileName,
-                         const Input &input,
-                         const double airDens,
-                         const Meteorology &met,
-                         const OptInput &Input_Opt,
-                         double* varSpeciesArray, double* fixSpeciesArray,
-                         const bool DBG );
-        void readInputBackgroundConditions(const Input& input, Vector_1D& amb_Value, Vector_2D& aer_Value, std::string filename);
-        void processInputBackgroundLine(std::istream &s, Vector_1D &amb_Value, Vector_2D &aer_Value);
-        void setAmbientConcentrations(const Input& input, Vector_1D& amb_Value);
-        void initializeSpeciesH2O(const Input& input, const OptInput& input_Opt, Vector_1D& amb_Value, const double airDens, const Meteorology& met);
-        void setSpeciesValues( Vector_1D& AERFRAC,  Vector_1D& SOLIDFRAC, const Vector_1D& stratData);
+    UInt Nx() const { return size_x; };
+    UInt Ny() const { return size_y; };
 
+    /* Species */
+    Vector_3D Species;
 
-        void getData( double* varSpeciesArray, double* fixSpeciesArray, const UInt i = 0, \
-                      const UInt j = 0, \
-		      const bool CHEMISTRY = 0 );
+    /* Aerosols */
+    Vector_2D sootDens, sootRadi, sootArea;
 
-        void SpinUp( Vector_1D &amb_Value,       \
-                    const Input &input,         \
-                    const double airDens,   \
-                    const double startTime, \
-                    double* varSpeciesArray, double* fixSpeciesArray, const bool DGB = 0 );
+    AIM::Grid_Aerosol liquidAerosol, solidAerosol;
 
-        void applyData( const double* varSpeciesArray, const UInt i = 0, \
-                        const UInt j = 0 );
+    UInt nBin_PA;
+    UInt nBin_LA;
 
-        void applyRing( const double* varSpeciesArray, double tempArray[],        \
-                        const Vector_2Dui &mapIndices, \
-                        const UInt iRing );
+    double LA_nDens, LA_rEff, LA_SAD;
+    double PA_nDens, PA_rEff, PA_SAD;
 
-        void applyAmbient( const double* varSpeciesArray, const Vector_2Dui &mapIndices, \
-                           const UInt iRing );
-        
-        void addEmission( const Emission &EI, const Aircraft &AC,            \
-                          const Mesh &m,                                     \
-                          bool halfRing,                                     \
-                          const double temperature, bool set2Saturation, \
-                          AIM::Aerosol liqAer, AIM::Aerosol iceAer,          \
-                          const double Soot_Den,                         \
-                          const Meteorology &met, const double areaPlume );
+    Vector_1D KHETI_SLA;
+    Vector_1D AERFRAC, SOLIDFRAC;
+    UInt STATE_PSC;
 
-        Vector_1D getAmbient( ) const;
-        Vector_1D getLiqSpecies() const;
-        Vector_2D getAerosol( ) const;
-        Vector_1D getAerosolDens( ) const;
-        Vector_1D getAerosolRadi( ) const;
-        Vector_1D getAerosolArea( ) const;
+private:
+    void readInputBackgroundConditions(const Input &input, Vector_1D &amb_Value,
+                                       Vector_2D &aer_Value,
+                                       std::string filename);
+    void processInputBackgroundLine(std::istream &s, Vector_1D &amb_Value,
+                                    Vector_2D &aer_Value);
+    void setAmbientConcentrations(const Input &input, Vector_1D &amb_Value);
+    void initializeSpeciesH2O(const Input &input, const OptInput &input_Opt,
+                              Vector_1D &amb_Value, const double airDens,
+                              const Meteorology &met);
+    void setSpeciesValues(Vector_1D &AERFRAC, Vector_1D &SOLIDFRAC,
+                          const Vector_1D &stratData);
 
-        void getAerosolProp( double ( &radi )[4], \
-                             double ( &area )[4], \
-                             double &IWC,         \
-                             const Vector_2D &weights ) const;
+  const UInt nVariables;
+  const UInt nAer;
+  const UInt size_x;
+  const UInt size_y;
 
-
-        UInt Nx() const { return size_x; };
-        UInt Ny() const { return size_y; };
-        void Debug( const double airDens );
-
-        /* Species */
-        Vector_3D Species;
-
-        /* Aerosols */
-        Vector_2D sootDens, sootRadi, sootArea;
-
-        AIM::Grid_Aerosol liquidAerosol, solidAerosol;
-
-        UInt nBin_PA;
-        UInt nBin_LA;
-
-//        Vector_1D LA_rE;
-//        Vector_1D LA_rJ;
-//        Vector_1D LA_vJ;
-//
-//        Vector_1D PA_rE;
-//        Vector_1D PA_rJ;
-//        Vector_1D PA_vJ;
-
-        double LA_nDens, LA_rEff, LA_SAD;
-        double PA_nDens, PA_rEff, PA_SAD;
-
-        AIM::Coagulation LA_Kernel, PA_Kernel;
-
-        Vector_1D KHETI_SLA;
-        Vector_1D AERFRAC, SOLIDFRAC;
-        UInt STATE_PSC; 
-
-    private:
-
-        const UInt nVariables;
-        const UInt nAer;
-        const UInt size_x;
-        const UInt size_y;
-
-        bool reducedSize;
-
+  bool reducedSize;
 };
 
 #endif /* STRUCTURE_H_INCLUDED */
