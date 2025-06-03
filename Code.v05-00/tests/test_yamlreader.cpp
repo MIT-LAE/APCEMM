@@ -403,7 +403,7 @@ TEST_CASE("Generate All Cases"){
 TEST_CASE("Generate Input Objects"){
     string filename = string(APCEMM_TESTS_DIR)+"/test1.yaml";
     OptInput input;
-    YamlInputReader::readYamlInputFiles(input, "", {filename});
+    YamlInputReader::readYamlInputFiles(input, {filename});
     vector<std::unordered_map<string,double>> cases = generateCases(input);
     REQUIRE(cases.size() == 18);
     Input caseInput = Input(0, cases, "", "", "", "", "");
@@ -444,7 +444,7 @@ TEST_CASE("Merge Input Files"){
     string filename1 = string(APCEMM_TESTS_DIR)+"/test1.yaml";
     string filename2 = string(APCEMM_TESTS_DIR)+"/test2.yaml";
     OptInput input;
-    YamlInputReader::readYamlInputFiles(input, "", {filename1, filename2});
+    YamlInputReader::readYamlInputFiles(input, {filename1, filename2});
     vector<std::unordered_map<string,double>> cases = generateCases(input);
     REQUIRE(cases.size() == 18);
     Input caseInput = Input(0, cases, "", "", "", "", "");
