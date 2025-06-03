@@ -1,5 +1,5 @@
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /*                                                                  */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /*     Aircraft Plume Chemistry, Emission and Microphysics Model    */
 /*                             (APCEMM)                             */
 /*                                                                  */
@@ -98,10 +98,8 @@ void Meteorology::updateSimulationGridProperties(){
 void Meteorology::estimateSimulationGridPressures(){
     // Iterate through the meteorolgical grid, calculating the
     // pressure appropriate to the given altitude
-    double pressureBase, pressureCeil, pressureTop, zBase, zCeil;
+    double pressureBase, zBase, zCeil;
     // This will be copied to pressureBase immediately - so we need it to be the bottom pressure
-    pressureCeil = pressureEdgesInit_[0];
-    pressureTop = pressureEdgesInit_[altitudeDim_];
     zCeil = altitudeEdgesInit_[0];
 
     // Index of the simulation grid (NOT the met data grid)
@@ -126,7 +124,6 @@ void Meteorology::estimateSimulationGridPressures(){
             continue;
         }
         pressureBase = (i == 0) ? pressureEdgesInit_[0] : pressureInit_[i-1];
-        pressureCeil = (i == (altitudeDim_)) ? pressureTop : pressureInit_[i];
         double lapseRate = lapseInit_[i];
         // If i < 1 this will cause problems, but that should not be possible
         // as that condition is caught by the check of zNext before the loop
@@ -412,8 +409,7 @@ double hydrostaticDeltaAltitude(double lapseRate, double refTemperature, double 
 
 void Meteorology::recalculateSimulationGrid(){
     // Given a set of pressure edges, calculate their altitudes.
-    const double constFactor = physConst::R_Air / physConst::g;
-    double pressureBase, pressureCeil, pressureTop;
+    double pressureBase, pressureCeil;
     // Start from the bottom of the met data grid
     double lowerEdge = altitudeEdgesInit_[0];
     pressureCeil = pressureEdgesInit_[0];
@@ -533,7 +529,6 @@ void Meteorology::updateAirMolecDens() {
     // We are here including the temperature perturbation,
     // which may or may not be correct depending on the
     // situation - caveat emptor
-    const double invkB = 1.00E-06 / physConst::kB;
     const double constFactor = physConst::Na / (physConst::g * MW_Air);
     #pragma omp parallel for
     for ( int jNy = 0; jNy < ny_; jNy++ ) {
