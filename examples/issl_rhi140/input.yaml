@@ -34,6 +34,7 @@ SIMULATION MENU:
   RANDOM NUMBER GENERATION SUBMENU:
     Force seed value (T/F): F
     Seed value (positive int): 0
+  EPM type (original/external/new): original
 
 # Format of parameter items:
 # Param name [unit] (Variable type)
