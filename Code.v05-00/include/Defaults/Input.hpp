@@ -1,4 +1,4 @@
-R"for_c++_include(
+R"====(
 SIMULATION MENU:
   # Only one of parameter sweep or MC simulation can be on.
   # Parameter sweep lets you specify an arbitrary number of custom values for each parameter; Monte Carlo simulation is self-explanatory.
@@ -236,4 +236,4 @@ ADVANCED OPTIONS MENU:
     Contrail Width Scaling Factor [-] (double): 1.0
   Ambient Lapse Rate [K/km] (double): -3.0
   Tropopause Pressure [Pa] (double): 2.0e+4
-)for_c++_include"
+)===="

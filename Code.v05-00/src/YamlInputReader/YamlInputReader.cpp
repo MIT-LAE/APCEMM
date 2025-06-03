@@ -4,8 +4,23 @@
 #include "Util/YamlUtils.hpp"
 #include "YamlInputReader/YamlInputReader.hpp"
 
+// Read default configuration from CMake-generated include file.
+const std::string default_input =
+#include "Defaults/Input.hpp"
+;
+
+// Read default engine parameters from CMake-generated include file.
+const std::string default_eng_ei =
+#include "Defaults/Engine_EI.hpp"
+;
+
+// Read default ambient conditions from CMake-generated include file.
+const std::string default_ambient =
+#include "Defaults/Ambient.hpp"
+;
+
 namespace YamlInputReader{
-    void readYamlInputFiles(OptInput& input, string default_input, const vector<string> &filenames){
+    void readYamlInputFiles(OptInput& input, const vector<string> &filenames){
         YAML::Node data = YAML::Load(default_input);
         for (auto filename: filenames) {
             INPUT_FILE_PATH = std::filesystem::path(filename);

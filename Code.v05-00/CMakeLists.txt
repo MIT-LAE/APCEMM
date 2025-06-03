@@ -48,15 +48,23 @@ configure_file(${CMAKE_SOURCE_DIR}/include/APCEMM.h.in ${CMAKE_SOURCE_DIR}/inclu
 # Generate an include file containing a single raw C++ string from a text file.
 function(make_includable input_file output_file)
     file(READ ${input_file} content)
-    set(delim "for_c++_include")
+    set(delim "====")
     set(content "R\"${delim}(\n${content})${delim}\"")
     file(WRITE ${output_file} "${content}")
 endfunction(make_includable)
 
 # Make default configuration include file from default YAML file.
 make_includable(
-    ${CMAKE_SOURCE_DIR}/data/default-input.yaml
-    ${CMAKE_SOURCE_DIR}/include/Core/DefaultInput.hpp
+  ${CMAKE_SOURCE_DIR}/defaults/input.yaml
+  ${CMAKE_SOURCE_DIR}/include/Defaults/Input.hpp
+)
+make_includable(
+  ${CMAKE_SOURCE_DIR}/defaults/Ambient.txt
+  ${CMAKE_SOURCE_DIR}/include/Defaults/Ambient.hpp
+)
+make_includable(
+    ${CMAKE_SOURCE_DIR}/defaults/ENG_EI.txt
+    ${CMAKE_SOURCE_DIR}/include/Defaults/Engine_EI.hpp
 )
 
 # Defines the 'main' file we want to create a binary of
