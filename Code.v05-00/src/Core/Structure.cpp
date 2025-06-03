@@ -554,7 +554,7 @@ void Solution::addEmission( const Emission &EI, const Aircraft &AC,        \
     if ( !set2Saturation ) {
         E_H2O  = EI.getH2O()  / ( MW_H2O  * 1.0E+03 ) * fuelPerDist * physConst::Na;
     }
-    E_SO2  = ( 1.0 - SO2TOSO4 ) * \
+    E_SO2  = ( 1.0 - EI.getSO2toSO4() ) * \
              EI.getSO2()  / ( MW_SO2  * 1.0E+03 ) * fuelPerDist * physConst::Na;
 
     // E_Soot = EI.getSoot() / ( 4.0 / 3.0 * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * rad * rad * rad ) * fuelPerDist;

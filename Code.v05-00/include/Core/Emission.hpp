@@ -23,7 +23,7 @@ class Emission
     public:
 
         Emission( );
-        Emission( const Engine &engine, const Fuel &fuel );
+        Emission( const Engine &engine, const Fuel &fuel, const double SO2ToSO4Ratio);
         Emission( const Emission &e );
         ~Emission( );
         void Populate_withEngine( const Engine &engine );
@@ -47,6 +47,7 @@ class Emission
         double getALD2( ) const;
         double getGLYX( ) const;
         double getMGLY( ) const;
+        double getSO2toSO4( ) const;
         double getSoot( ) const;
         double getSootRad( ) const;
         std::string getEngineName( ) const;
@@ -77,6 +78,9 @@ class Emission
         /* BC */
         double Soot; /* [g/kg fuel] */
         double SootRad;  /* [m] */
+
+        /* Conversion ratio */
+        double SO2toSO4; /* unitless in [0-1] */
 
         std::string engineName;
         std::string fuelChem;
