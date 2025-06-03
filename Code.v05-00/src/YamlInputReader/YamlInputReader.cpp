@@ -9,16 +9,6 @@ const std::string default_input =
 #include "Defaults/Input.hpp"
 ;
 
-// Read default engine parameters from CMake-generated include file.
-const std::string default_eng_ei =
-#include "Defaults/Engine_EI.hpp"
-;
-
-// Read default ambient conditions from CMake-generated include file.
-const std::string default_ambient =
-#include "Defaults/Ambient.hpp"
-;
-
 namespace YamlInputReader{
     void readYamlInputFiles(OptInput& input, const vector<string> &filenames){
         YAML::Node data = YAML::Load(default_input);

@@ -18,9 +18,9 @@ SIMULATION MENU:
     Use FFTW WISDOM (T/F): T
     Dir w/ write permission (string): ./
   # This mostly contains information on background aerosol concentration; Not too relevant for contrail behavior
-  Input background condition (string): ../../input_data/init.txt
+  Input background condition (string): =DEFAULT=
   # All parameters here are overwritten in EMISSION INDICES SUBMENU
-  Input engine emissions (string): ../../input_data/ENG_EI.txt
+  Input engine emissions (string): =DEFAULT=
   # Ignore/Don't change these, these are deprecated features. 
   SAVE FORWARD RESULTS SUBMENU:
     Save forward results (T/F): F

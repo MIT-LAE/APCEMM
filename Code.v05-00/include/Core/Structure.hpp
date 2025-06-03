@@ -14,7 +14,7 @@
 #ifndef STRUCTURE_H_INCLUDED
 #define STRUCTURE_H_INCLUDED
 
-#include <cmath> 
+#include <cmath>
 #include "AIM/Aerosol.hpp"
 #include "KPP/KPP_Global.h"
 #include "Util/ForwardDecl.hpp"
@@ -47,19 +47,20 @@ class Solution
                     const UInt i_max = 1,       \
                     const UInt j_max = 1 ) const;
 
-        void Initialize( char const *fileName,      \
-                         const Input &input,        \
-                         const double airDens,  \
-                         const Meteorology &met,    \
-                         const OptInput &Input_Opt, \
+        void Initialize( std::string fileName,
+                         const Input &input,
+                         const double airDens,
+                         const Meteorology &met,
+                         const OptInput &Input_Opt,
                          double* varSpeciesArray, double* fixSpeciesArray,
                          const bool DBG );
-        void readInputBackgroundConditions(const Input& input, Vector_1D& amb_Value, Vector_2D& aer_Value, const char* filename);
+        void readInputBackgroundConditions(const Input& input, Vector_1D& amb_Value, Vector_2D& aer_Value, std::string filename);
+        void processInputBackgroundLine(std::istream &s, Vector_1D &amb_Value, Vector_2D &aer_Value);
         void setAmbientConcentrations(const Input& input, Vector_1D& amb_Value);
         void initializeSpeciesH2O(const Input& input, const OptInput& input_Opt, Vector_1D& amb_Value, const double airDens, const Meteorology& met);
         void setSpeciesValues( Vector_1D& AERFRAC,  Vector_1D& SOLIDFRAC, const Vector_1D& stratData);
 
-        
+
         void getData( double* varSpeciesArray, double* fixSpeciesArray, const UInt i = 0, \
                       const UInt j = 0, \
 		      const bool CHEMISTRY = 0 );

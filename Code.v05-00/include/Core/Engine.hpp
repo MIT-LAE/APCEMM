@@ -15,10 +15,7 @@
 #define ENGINE_H_INCLUDED
 
 #include <string>
-#include <fstream>
-#include <cstring>
 #include <vector>
-#include <cmath>
 
 
 class Engine
@@ -30,15 +27,13 @@ class Engine
     friend class Aircraft;
 
     public:
-        
+
         Engine( );
-        Engine( const char *engineName, std::string engineFileName, double tempe_K, double pres_Pa, double relHum_w, double machNumber );
+        Engine( std::string engineName, std::string engineFileName, double tempe_K, double pres_Pa, double relHum_w, double machNumber );
         Engine( const Engine &e );
         Engine& operator=( const Engine &e );
         ~Engine( );
-        void OpenFile( const char *fileName, std::ifstream &file );
-        void CloseFile( std::ifstream &file );
-        bool GetEDB( std::ifstream &file, const char *engineName, std::string &idle, std::string &approach, std::string &climbout, std::string &takeoff );
+    bool GetEDB( std::istream &file, std::string engineName, std::string &idle, std::string &approach, std::string &climbout, std::string &takeoff );
         std::string getName() const;
         double getEI_NOx() const;
         double getEI_NO() const;
@@ -87,8 +82,6 @@ class Engine
         double delta; /* [-] */
 
     private:
-
-        static const char * const engineFileName;
 
         std::vector<double> ratedThrust = std::vector<double>(4);
         std::vector<double> LTO_fuelflow = std::vector<double>(4);
