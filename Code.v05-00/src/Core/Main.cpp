@@ -91,7 +91,7 @@ int main( int argc, char* argv[])
     #pragma omp master
     {
         std::vector<std::string> INPUT_FILE_PATHS;
-        for (unsigned int i = 1; i < argc; ++i) {
+        for (int i = 1; i < argc; ++i) {
           std::string FILENAME = argv[i];
           std::filesystem::path INPUT_FILE_PATH(FILENAME);
           INPUT_FILE_PATH = std::filesystem::canonical(INPUT_FILE_PATH);
