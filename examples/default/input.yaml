@@ -137,7 +137,6 @@ METEOROLOGY MENU:
   # --- MET INPUT OPTIONS ---+
   METEOROLOGICAL INPUT SUBMENU:
     Use met. input (T/F): T
-    Met input file path (string): =MISSING=
     # Frequency of met data availability
     Time series data timestep [hr] (double): 1.0
     # If off, uses the parameter specified in METEOROLOGICAL PARAMETERS SUBMENU

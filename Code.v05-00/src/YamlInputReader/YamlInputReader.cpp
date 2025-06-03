@@ -443,6 +443,7 @@ namespace YamlInputReader{
     }
 
     std::string parseFileSystemPath(std::string str){
+        if (str == "=MISSING=" || str == "=DEFAULT=") return str;
         std::filesystem::path p(str);
         return p.is_absolute() ? str : std::filesystem::weakly_canonical(INPUT_FILE_PATH.parent_path() / str).generic_string();
     }

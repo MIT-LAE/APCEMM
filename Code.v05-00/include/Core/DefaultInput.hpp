@@ -46,16 +46,16 @@ PARAMETER MENU:
   #                        : Example: 200:240 will generate values for the parameter in between 200 and 240
 
   # Maximum simulation time if contrail isn't gone by then:
-  Plume Process [hr] (double): 10
+  Plume Process [hr] (double): 12
 
   # Temperature, RH, and wind shear can be overwritten if using meteorological input files
   METEOROLOGICAL PARAMETERS SUBMENU:
     # Can be overwritten if met file is passed
     Temperature [K] (double): 217
     # Can be overwritten if met file is passed
-    R.Hum. wrt water [%] (double): 40
+    R.Hum. wrt water [%] (double): 63.94
     # Pressure altitude at which the contrail is initialized
-    Pressure [hPa] (double): 250
+    Pressure [hPa] (double): 265
     Horiz. diff. coeff. [m^2/s] (double): 15.0
     # Can be overwritten if met file is passed
     Verti. diff. [m^2/s] (double): 0.15
@@ -102,7 +102,7 @@ TRANSPORT MENU:
   Turn on Transport (T/F): T
   # Outdated, not used (was used by spectral solver)
   Fill Negative Values (T/F): T
-  Transport Timestep [min] (double): 10
+  Transport Timestep [min] (double): 1
   # Keep off: not sure of the effect yet + met updraft is included (if met file input)
   PLUME UPDRAFT SUBMENU:
     Turn on plume updraft (T/F): F
@@ -126,7 +126,7 @@ AEROSOL MENU:
   Coag. timestep [min] (double): 60
   # Keep on
   Turn on ice growth (T/F): T
-  Ice growth timestep [min] (double): 10
+  Ice growth timestep [min] (double): 1
 
 # At least one of "Use met. input", "Impose moist layer depth", or "Impose lapse rate" must be true
 # Imposing moist layer depth will automatically calculate the lapse rate and override the imposed lapse rate
@@ -137,8 +137,8 @@ AEROSOL MENU:
 METEOROLOGY MENU:
   # --- MET INPUT OPTIONS ---+
   METEOROLOGICAL INPUT SUBMENU:
-    Use met. input (T/F): F
-    Met input file path (string): /path/to/input/
+    Use met. input (T/F): T
+    Met input file path (string): =MISSING=
     # Frequency of met data availability
     Time series data timestep [hr] (double): 1.0
     # If off, uses the parameter specified in METEOROLOGICAL PARAMETERS SUBMENU
@@ -152,10 +152,10 @@ METEOROLOGY MENU:
     Interpolate RH met. data (T/F): T
     Init wind shear from met. (T/F): T
     Wind shear time series input (T/F): T
-    Interpolate shear met. data (T/F): T
+    Interpolate shear met. data (T/F): F
     Init vert. veloc. from met. data (T/F): T
-    Vert. veloc. time series input (T/F): T
-    Interpolate vert. veloc. met. data (T/F): T
+    Vert. veloc. time series input (T/F): F
+    Interpolate vert. veloc. met. data (T/F): F
     # Option to modify NWP RH data 
     HUMIDITY SCALING OPTIONS:
     # For reference on humidity scaling option, see 
@@ -171,7 +171,7 @@ METEOROLOGY MENU:
   #- OR -------------------+
   IMPOSE MOIST LAYER DEPTH SUBMENU:
   # Sets constant RHi for the entire layer defined by Moist layer depth
-    Impose moist layer depth (T/F): T
+    Impose moist layer depth (T/F): F
     Moist layer depth [m] (double): 1000
     Subsaturated air RHi [%] (double): 80
   #- OR -----------------+
@@ -180,7 +180,7 @@ METEOROLOGY MENU:
     Impose lapse rate (T/F): F
     Lapse rate [K/m] (T/F): -6.0E-03
   # ---END MET INPUT OPTIONS --- 
-  Add diurnal variations (T/F): T
+  Add diurnal variations (T/F): F
 
   # Perturbations to the temperature field can be added to the contrail simulation to account for some effects of 
   # atmospheric turbulence and gravity waves.
@@ -190,7 +190,7 @@ METEOROLOGY MENU:
   # The relative importance of grav. waves vs. turb. is increased by increasing the timescale
   # See Lewellen, Persistent Contrails and Contrail Cirrus (2014) for full details.
   TEMPERATURE PERTURBATION SUBMENU:
-    Enable Temp. Pert. (T/F): T
+    Enable Temp. Pert. (T/F): F
     Temp. Perturb. Amplitude (double): 1.0
     Temp. Perturb. Timescale (min): 10
 
@@ -235,4 +235,5 @@ ADVANCED OPTIONS MENU:
     Base Contrail Width [m] (double): 0.0
     Contrail Width Scaling Factor [-] (double): 1.0
   Ambient Lapse Rate [K/km] (double): -3.0
-  Tropopause Pressure [Pa] (double): 2.0e+4)for_c++_include"
+  Tropopause Pressure [Pa] (double): 2.0e+4
+)for_c++_include"
