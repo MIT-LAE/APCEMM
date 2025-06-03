@@ -177,10 +177,8 @@ namespace EPM
 
         varArray[ind_H2O] = varArray[ind_H2O] / n_air_eng ;
 
-        /* Fixed SO2 */
-        // varArray[ind_SO4] += SO2TOSO4 * 0.8 / ( MW_H2SO4  * 1.0E+03 ) * AC.FuelFlow() / double(AC.EngNumber()) / AC.VFlight() * physConst::Na / Ab0 * 1.00E-06;
         /* Variable SO2 */
-        varArray[ind_SO4] += SO2TOSO4 * EI.getSO2() / ( MW_H2SO4  * 1.0E+03 ) * AC.FuelFlow() / double(AC.EngNumber()) / AC.VFlight() * physConst::Na / Ab0 * 1.00E-06;
+        varArray[ind_SO4] += EI.getSO2toSO4() * EI.getSO2() / ( MW_H2SO4  * 1.0E+03 ) * AC.FuelFlow() / double(AC.EngNumber()) / AC.VFlight() * physConst::Na / Ab0 * 1.00E-06;
         varArray[ind_SO4] = varArray[ind_SO4] / n_air_eng;
 
         double varSoot = Soot_amb + EI.getSoot() / ( 4.0 / double(3.0) * physConst::PI * physConst::RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) * AC.FuelFlow() / double(AC.EngNumber()) / AC.VFlight() / Ab0 * 1.00E-06 ; /* [ #/cm^3 ] */

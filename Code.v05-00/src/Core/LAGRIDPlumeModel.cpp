@@ -30,7 +30,7 @@ LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input
     /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */ 
     jetA_.setFSC( input.EI_SO2() * 500.0 );
 
-    EI_ = Emission( aircraft_.engine(), jetA_ );
+    EI_ = Emission( aircraft_.engine(), jetA_, input.EI_SO2TOSO4());
 
     timestepVars_.setTimeArray(PlumeModelUtils::BuildTime ( timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt ));
 

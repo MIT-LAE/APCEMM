@@ -28,6 +28,8 @@ Emission::Emission( )
     SO2 = 0.0;
     CO  = 0.0;
     HC  = 0.0;
+
+    SO2toSO4 = 0.0;
     
     /* HC splitting */
     CH4  = 0.268248 * HC;
@@ -41,7 +43,7 @@ Emission::Emission( )
 
 } /* End of Emission::Emission */
 
-Emission::Emission( const Engine &engine, const Fuel &fuel )
+Emission::Emission( const Engine &engine, const Fuel &fuel, const double SO2ToSO4Ratio )
 {
 
     /* Constructor */
@@ -100,6 +102,8 @@ Emission::Emission( const Engine &engine, const Fuel &fuel )
         SootRad = 1.0E-09;
     }
 
+    SO2toSO4 = SO2ToSO4Ratio;
+
     engineName = engine.getName();
     fuelChem   = fuel.getChemFormula();
 
@@ -132,6 +136,8 @@ Emission::Emission( const Emission &e )
 
     Soot = e.Soot;
     SootRad = e.SootRad;
+
+    SO2toSO4 = e.SO2toSO4;
 
     engineName = e.engineName;
     fuelChem = e.fuelChem;
@@ -354,6 +360,13 @@ double Emission::getMGLY( ) const
     return MGLY;
 
 } /* End of Emission::getMGLY */
+
+double Emission::getSO2toSO4( ) const
+{
+
+    return SO2toSO4;
+    
+} /* End of Emission::getSO2toSO4 */
 
 double Emission::getSoot( ) const
 {
