@@ -333,7 +333,7 @@ void LAGRIDPlumeModel::initH2O() {
     //Add emitted plume H2O. This function is called after releasing the initial crystals into the grid,
     //so we can use that as a "mask" for where to emit the H2O.
 
-    auto maskInfo = VectorUtils::Vec2DMask(iceAerosol_.TotalNumber(), [](double val) { return val > 1e-4; } );
+    auto maskInfo = VectorUtils::mask(iceAerosol_.TotalNumber(), [](double val) { return val > 1e-4; } );
     auto& mask = maskInfo.first;
     int nonMaskCount = maskInfo. second;
 
@@ -370,7 +370,7 @@ void LAGRIDPlumeModel::updateDiffVecs() {
     PlumeModelUtils::DiffParam( timestepVars_.curr_Time_s - timestepVars_.tInitial_s + timestepVars_.TRANSPORT_DT / 2.0,
                                 dh_enhanced, dv_enhanced, input_.horizDiff(), input_.vertiDiff() );
     auto number = iceAerosol_.TotalNumber();
-    auto num_max = VectorUtils::VecMax2D(number);
+    auto num_max = VectorUtils::max(number);
     
     diffCoeffX_ = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size()));
     diffCoeffY_ = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size()));
@@ -488,8 +488,8 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     // The below lines look forward and predict, based on the maximum possible
     // fall speed, how far a crystal could fall in one outer time step. Horizontal
     // limits are determined based on maximum shear
-    double vertDiffLengthScale = sqrt(VectorUtils::VecMax2D(diffCoeffY_) * remapTimestep);
-    double horizDiffLengthScale = sqrt(VectorUtils::VecMax2D(diffCoeffX_) * remapTimestep);
+    double vertDiffLengthScale = sqrt(VectorUtils::max(diffCoeffY_) * remapTimestep);
+    double horizDiffLengthScale = sqrt(VectorUtils::max(diffCoeffX_) * remapTimestep);
 
     double settlingLengthScale = vFall_[vFall_.size() - 1] * remapTimestep;
 

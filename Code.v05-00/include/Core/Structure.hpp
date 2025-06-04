@@ -33,8 +33,6 @@ public:
 
     ~Solution();
 
-    void Clear( Vector_2D& vector_2D );
-
     void SetShape( Vector_2D& vector_2D,
                    const UInt n_x,
                    const UInt n_y,
@@ -43,26 +41,11 @@ public:
     void SetToValue( Vector_2D& vector_2D,
                      const double value = 0.0 );
 
-    void Print( const Vector_2D& vector_2D,
-                const UInt i_max = 1,
-                const UInt j_max = 1 ) const;
-
     // NOTE: THIS IS ONLY CALLED FOR THE EPM
     void Initialize(std::string fileName, const Input &input,
                     const double airDens, const Meteorology &met,
                     const OptInput &Input_Opt, double *varSpeciesArray,
                     double *fixSpeciesArray, const bool DBG);
-    void readInputBackgroundConditions(const Input &input, Vector_1D &amb_Value,
-                                       Vector_2D &aer_Value,
-                                       std::string filename);
-    void processInputBackgroundLine(std::istream &s, Vector_1D &amb_Value,
-                                    Vector_2D &aer_Value);
-    void setAmbientConcentrations(const Input &input, Vector_1D &amb_Value);
-    void initializeSpeciesH2O(const Input &input, const OptInput &input_Opt,
-                              Vector_1D &amb_Value, const double airDens,
-                              const Meteorology &met);
-    void setSpeciesValues(Vector_1D &AERFRAC, Vector_1D &SOLIDFRAC,
-                          const Vector_1D &stratData);
 
     // NOTE: ONLY CALLED FOR THE EPM
     void getData(double *varSpeciesArray, double *fixSpeciesArray,
@@ -101,15 +84,17 @@ public:
     UInt STATE_PSC;
 
 private:
-  void readInputBackgroundConditions(const Input &input, Vector_1D &amb_Value,
-                                     Vector_2D &aer_Value,
-                                     const char *filename);
-  void setAmbientConcentrations(const Input &input, Vector_1D &amb_Value);
-  void initializeSpeciesH2O(const Input &input, const OptInput &input_Opt,
-                            Vector_1D &amb_Value, const double airDens,
-                            const Meteorology &met);
-  void setSpeciesValues(Vector_1D &AERFRAC, Vector_1D &SOLIDFRAC,
-                        const Vector_1D &stratData);
+    void readInputBackgroundConditions(const Input &input, Vector_1D &amb_Value,
+                                       Vector_2D &aer_Value,
+                                       std::string filename);
+    void processInputBackgroundLine(std::istream &s, Vector_1D &amb_Value,
+                                    Vector_2D &aer_Value);
+    void setAmbientConcentrations(const Input &input, Vector_1D &amb_Value);
+    void initializeSpeciesH2O(const Input &input, const OptInput &input_Opt,
+                              Vector_1D &amb_Value, const double airDens,
+                              const Meteorology &met);
+    void setSpeciesValues(Vector_1D &AERFRAC, Vector_1D &SOLIDFRAC,
+                          const Vector_1D &stratData);
 
   const UInt nVariables;
   const UInt nAer;

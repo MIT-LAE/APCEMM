@@ -60,11 +60,11 @@ class LAGRIDPlumeModel {
         typedef std::pair<std::vector<std::vector<int>>, VectorUtils::MaskInfo> MaskType;
         inline MaskType iceNumberMask(double cutoff_ratio = NUM_FILTER_RATIO) {
             Vector_2D iceTotalNum = iceAerosol_.TotalNumber();
-            double maxNum = VectorUtils::VecMax2D(iceTotalNum);
+            double maxNum = VectorUtils::max(iceTotalNum);
             auto iceNumMaskFunc = [maxNum,cutoff_ratio](double val) {
                 return val > maxNum * cutoff_ratio;
             };
-            return VectorUtils::Vec2DMask(iceTotalNum, xEdges_, yEdges_, iceNumMaskFunc);
+            return VectorUtils::mask(iceTotalNum, xEdges_, yEdges_, iceNumMaskFunc);
         }
 
         inline MaskType H2OMask() {
@@ -79,14 +79,14 @@ class LAGRIDPlumeModel {
             auto maskFunc = [maxDiff](double val) {
                 return val > maxDiff;
             };
-            return VectorUtils::Vec2DMask(diffH2O, xEdges_, yEdges_, maskFunc);
+            return VectorUtils::mask(diffH2O, xEdges_, yEdges_, maskFunc);
         }
 
         inline MaskType ContrailMask(double minVal=1.0e-2) {
             auto maskFunc = [minVal](double val) {
                 return val > minVal;
             };
-            return VectorUtils::Vec2DMask(Contrail_, xEdges_, yEdges_, maskFunc);
+            return VectorUtils::mask(Contrail_, xEdges_, yEdges_, maskFunc);
         }
 
         void createOutputDirectories();

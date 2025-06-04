@@ -24,6 +24,7 @@ SIMULATION MENU:
   BOX MODEL SUBMENU:
     Run box model (T/F): F
     netCDF filename format (string): APCEMM_BOX_CASE_*
+  EPM type (original/external/new): original
 
 # Format of parameter items:
 # Param name [unit] (Variable type)

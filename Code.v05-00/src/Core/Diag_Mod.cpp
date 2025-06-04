@@ -90,7 +90,6 @@ namespace Diag {
         /* Start saving species ... */
 
         /* Define conversion factor */
-        double scalingFactor;
         std::string charSpc;
         std::string charName;
         std::string charUnit;
@@ -114,14 +113,13 @@ namespace Diag {
                     charName = SPC_NAMES[N];
                     charName += " molecular concentration";
                     charUnit = "molec/cm^3";
-                    scalingFactor = 1.0E+00;
             
     #if ( SAVE_TO_DOUBLE )
-                    array = util::vect2double( Data.Species[N], m.Ny(), m.Nx(), scalingFactor );
+                    array = util::vect2double( Data.Species[N], m.Ny(), m.Nx() );
     #else
                     //This call causes a segfault if Chemistry is not turned on but "save species" is because
                     //the number of species is set to 1, not NSPECALL, if Chemistry is not turned on.
-                    array = util::vect2float ( Data.Species[N], m.Ny(), m.Nx(), scalingFactor );
+                    array = util::vect2float ( Data.Species[N], m.Ny(), m.Nx() );
     #endif /* SAVE_TO_DOUBLE */
 
                     #pragma omp critical
@@ -214,8 +212,7 @@ namespace Diag {
         if(toSave.size() != dim.getSize()) {
             throw std::runtime_error("Save failed! NcDim dimension size and array sizes don't match! Variable name: " + name );
         }
-        const double scalingFactor = 1;
-        float* array = util::vect2float ( toSave, toSave.size(), scalingFactor );
+        float* array = util::vect2float ( toSave, toSave.size() );
         NcVar var = currFile.addVar( name, varDataType, dim );
         var.putAtt("units", units );
         var.putAtt("long_name", desc );
@@ -227,8 +224,7 @@ namespace Diag {
         if((toSave.size() != dims[0].getSize()) || (toSave[0].size() != dims[1].getSize())) {
             throw std::runtime_error("Save failed! NcDim dimension size and array sizes don't match! Variable name: " + name );
         }
-        const double scalingFactor = 1;
-        float* array = util::vect2float (toSave, toSave.size(), toSave[0].size(), scalingFactor );
+        float* array = util::vect2float (toSave, toSave.size(), toSave[0].size() );
         NcVar var = currFile.addVar( name, varDataType, dims );
         var.putAtt("units", units );
         var.putAtt("long_name", desc );

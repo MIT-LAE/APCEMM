@@ -44,17 +44,6 @@ Solution::~Solution()
 
 } /* End of Solution::~Solution */
 
-/* FIXME: This function is not unique to this specific class. Move it to some utility functions namespace or sth idk */
-void Solution::Clear( Vector_2D& vector_2D )
-{
-
-    for ( UInt i = 0; i < vector_2D.size(); i++ ) {
-        vector_2D[i].clear();
-    }
-    vector_2D.clear();
-
-} /* End of Solution::Clear */
-
 /* FIXME: see above comment on clear() */
 void Solution::SetShape( Vector_2D& vector_2D, \
                          const UInt n_x,       \
@@ -62,7 +51,10 @@ void Solution::SetShape( Vector_2D& vector_2D, \
                          const double value )
 {
 
-    Clear( vector_2D );
+    for ( UInt i = 0; i < vector_2D.size(); i++ ) {
+        vector_2D[i].clear();
+    }
+    vector_2D.clear();
 
     /* Dimensions are transposed! */
     for ( UInt i = 0; i < n_y; i++ ) {
@@ -83,21 +75,6 @@ void Solution::SetToValue( Vector_2D& vector_2D, \
     }
 
 } /* End of Solution::SetToValue */
-
-/* FIXME: see above comment on clear() */
-void Solution::Print( const Vector_2D& vector_2D, \
-                      const UInt i_max,           \
-                      const UInt j_max ) const
-{
-
-    for ( UInt i = 0; i < i_max; i++ ) {
-        for ( UInt j = 0; j < j_max; j++ ) {
-            std::cout << vector_2D[i][j] << ", ";
-        }
-        std::cout << std::endl;
-    }
-
-} /* End of Solution::Print */
 
 void Solution::Initialize( std::string fileName,
                            const Input &input,
