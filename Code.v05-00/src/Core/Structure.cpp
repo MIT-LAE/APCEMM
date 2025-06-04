@@ -24,8 +24,6 @@
 Solution::Solution(const OptInput& optInput) : \
         liquidAerosol( ),
         solidAerosol( ),
-        LA_Kernel( ),
-        PA_Kernel( ),
         nVariables( NSPEC ),
         nAer( N_AER ),
         size_x( optInput.ADV_GRID_NX ),
@@ -152,8 +150,6 @@ void Solution::Initialize( std::string fileName,
     const AIM::Coagulation kernel1( "liquid", LA_rJ, LA_vJ, physConst::RHO_SULF, \
                                     input.temperature_K(), input.pressure_Pa() );
 
-    // LA_Kernel = kernel1;
-
     nBin_PA = std::floor( 1 + log( pow( (PA_R_HIG/PA_R_LOW), 3.0 ) ) / log( PA_VRAT ) );
 
     Vector_1D PA_rE( nBin_PA + 1, 0.0 ); /* Bin edges in m */
@@ -187,8 +183,6 @@ void Solution::Initialize( std::string fileName,
 
     const AIM::Coagulation kernel2( "ice", PA_rJ, PA_vJ, physConst::RHO_ICE, \
                                     input.temperature_K(), input.pressure_Pa() );
-
-    // PA_Kernel = kernel2;
 
 } /* End of Solution::Initialize */
 

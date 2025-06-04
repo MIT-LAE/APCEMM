@@ -66,8 +66,6 @@ public:
     double LA_nDens, LA_rEff, LA_SAD;
     double PA_nDens, PA_rEff, PA_SAD;
 
-    AIM::Coagulation LA_Kernel, PA_Kernel;
-
     Vector_1D KHETI_SLA;
     Vector_1D AERFRAC, SOLIDFRAC;
     UInt STATE_PSC;
