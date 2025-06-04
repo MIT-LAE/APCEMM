@@ -34,7 +34,6 @@ PARAMETER MENU:
     Temperature [K] (double): 215:5:225
     R.Hum. wrt water [%] (double): 43.9432
     Pressure [hPa] (double): 220 230 240
-    Horiz. diff. coeff. [m^2/s] (double): 15.0
     Verti. diff. [m^2/s] (double): 0.15
     Wind shear [1/s] (double): 0.002
     Brunt-Vaisala Frequency [s^-1] (double): 0.013

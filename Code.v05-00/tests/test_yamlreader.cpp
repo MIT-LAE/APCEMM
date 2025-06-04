@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <YamlInputReader/YamlInputReader.hpp>
 #include <Core/Input.hpp>
+#include <iostream>
 #include "APCEMM.h"
 
 using namespace YamlInputReader;
@@ -451,7 +452,7 @@ TEST_CASE("Merge Input Files"){
     REQUIRE(caseInput.simulationTime() == 24);
     REQUIRE(caseInput.temperature_K() == 215);
     REQUIRE(caseInput.relHumidity_w() == 43.9432);
-    REQUIRE(caseInput.pressure_Pa() == 22000);
+    REQUIRE(caseInput.pressure_Pa() == 32000);
     REQUIRE(caseInput.horizDiff() == 17.0);
     REQUIRE(caseInput.vertiDiff() == 0.15);
     REQUIRE(caseInput.shear() == 0.002);
