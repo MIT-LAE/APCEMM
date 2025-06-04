@@ -1,7 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <YamlInputReader/YamlInputReader.hpp>
 #include <Core/Input.hpp>
-#include <iostream>
 #include "APCEMM.h"
 
 using namespace YamlInputReader;
