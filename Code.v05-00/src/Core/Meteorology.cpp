@@ -12,6 +12,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include <algorithm>
+#include <filesystem>
 #include "Util/PhysFunction.hpp"
 #include "Util/PhysConstant.hpp"
 #include "Core/Parameters.hpp"
@@ -57,6 +58,12 @@ Meteorology::Meteorology( const OptInput &optInput,
 
     //Declare met input file here, keeps ownership of file to constructor only.
     //Dont want to deal with using a ptr and worry about what functions deference it.
+    if (optInput.MET_FILENAME == "=MISSING=") {
+        throw std::runtime_error("Meteorology file not specified in input file");
+    }
+    if (!std::filesystem::exists(optInput.MET_FILENAME)) {
+        throw std::runtime_error("Meteorology file does not exist: " + optInput.MET_FILENAME);
+    }
     NcFile dataFile;
     dataFile.open( optInput.MET_FILENAME.c_str(), NcFile::read );
 

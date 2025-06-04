@@ -1,12 +1,21 @@
 #include <iostream>
 #include "APCEMM.h"
 #include "Util/MC_Rand.hpp"
+#include "Util/YamlUtils.hpp"
 #include "YamlInputReader/YamlInputReader.hpp"
 
+// Read default configuration from CMake-generated include file.
+const std::string default_input =
+#include "Defaults/Input.hpp"
+;
+
 namespace YamlInputReader{
-    void readYamlInputFile(OptInput& input, string filename){
-        INPUT_FILE_PATH = std::filesystem::path(filename);
-        YAML::Node data = YAML::LoadFile(filename);
+    void readYamlInputFiles(OptInput& input, const vector<string> &filenames){
+        YAML::Node data = YAML::Load(default_input);
+        for (auto filename: filenames) {
+            INPUT_FILE_PATH = std::filesystem::path(filename);
+            data = mergeYamlNodes(data, YAML::LoadFile(filename));
+        }
 
         try {
             readSimMenu(input, data["SIMULATION MENU"]);
@@ -439,6 +448,7 @@ namespace YamlInputReader{
     }
 
     std::string parseFileSystemPath(std::string str){
+        if (str == "=MISSING=" || str == "=DEFAULT=") return str;
         std::filesystem::path p(str);
         return p.is_absolute() ? str : std::filesystem::weakly_canonical(INPUT_FILE_PATH.parent_path() / str).generic_string();
     }

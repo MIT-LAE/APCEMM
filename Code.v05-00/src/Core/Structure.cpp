@@ -11,6 +11,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <fstream>
+
 #include "KPP/KPP.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "Core/LiquidAer.hpp"
@@ -97,12 +99,12 @@ void Solution::Print( const Vector_2D& vector_2D, \
 
 } /* End of Solution::Print */
 
-void Solution::Initialize( char const *fileName,      \
-                           const Input &input,        \
-                           const double airDens,  \
-                           const Meteorology &met,    \
-                           const OptInput &Input_Opt, \
-                           double* varSpeciesArray, double* fixSpeciesArray, 
+void Solution::Initialize( std::string fileName,
+                           const Input &input,
+                           const double airDens,
+                           const Meteorology &met,
+                           const OptInput &Input_Opt,
+                           double* varSpeciesArray, double* fixSpeciesArray,
                            const bool DBG )
 {
 
@@ -247,34 +249,45 @@ void Solution::Initialize( char const *fileName,      \
 
 } /* End of Solution::Initialize */
 
-void Solution::readInputBackgroundConditions(const Input& input, Vector_1D& amb_Value, Vector_2D& aer_Value, const char* fileName){
-    std::ifstream file;
-    file.open( fileName );
-    if ( file.is_open() ) {
-        std::string line;
-        UInt i = 0;
+void Solution::processInputBackgroundLine(std::istream &s, Vector_1D &amb_Value, Vector_2D &aer_Value) {
+  std::string line;
+  UInt i = 0;
 
-        while ( ( std::getline( file, line ) ) && ( i < nVariables + nAer ) ) {
-            if ( ( line.length() > 0 ) && ( line != "\r" ) && ( line != "\n" ) && ( line[0] != '#' ) ) {
-                std::istringstream iss(line);
-                if ( i < nVariables ) {
-                    iss >> amb_Value[i];
-                }
-                else if ( ( i >= nVariables ) && ( i < nVariables + nAer ) ) {
-                    iss >> aer_Value[i - nVariables][0];
-                    std::getline( file, line );
-                    std::istringstream iss(line);
-                    iss >> aer_Value[i - nVariables][1];
-                }
-                i++;
-            }
-        }
-        file.close();
+  while (std::getline(s, line) && i < nVariables + nAer) {
+    if (line.length() > 0 && line != "\r" && line != "\n" && line[0] != '#') {
+      std::istringstream iss_line(line);
+      if (i < nVariables) {
+        iss_line >> amb_Value[i];
+      } else if (i >= nVariables && i < nVariables + nAer) {
+        iss_line >> aer_Value[i - nVariables][0];
+        std::getline(s, line);
+        std::istringstream iss_line2(line);
+        iss_line2 >> aer_Value[i - nVariables][1];
+      }
+      i++;
     }
-    else {
-        std::string const currFunc("Structure::Initialize");
-        std::cout << "ERROR: In " << currFunc << ": Can't read (" << fileName << ")" << std::endl;
-        exit(-1);
+  }
+}
+
+// Read default ambient conditions from CMake-generated include file.
+const std::string default_ambient =
+#include "Defaults/Ambient.hpp"
+;
+
+void Solution::readInputBackgroundConditions(const Input& input, Vector_1D& amb_Value, Vector_2D& aer_Value, std::string fileName){
+    if (fileName == "=DEFAULT=") {
+        // Use default ambient conditions.
+        std::istringstream iss(default_ambient);
+        processInputBackgroundLine(iss, amb_Value, aer_Value);
+    } else {
+        std::ifstream file(fileName);
+        if (!file) {
+            std::cout << "ERROR: In Structure::Initialize: Can't read (" << fileName
+                      << ")" << std::endl;
+            exit(-1);
+        }
+
+        processInputBackgroundLine(file, amb_Value, aer_Value);
     }
 }
 

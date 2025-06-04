@@ -34,6 +34,7 @@ elseif (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     #-Michael
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -fno-trapping-math -funsafe-math-optimizations")
 endif()
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 execute_process(COMMAND git rev-parse --short HEAD 
                     OUTPUT_VARIABLE APCEMM_VERSION_BUILD_NUMBER 
@@ -43,6 +44,28 @@ execute_process(COMMAND git rev-parse --short HEAD
 set(APCEMM_VERSION_BUILD_NUMBER "${APCEMM_VERSION_BUILD_NUMBER}" CACHE STRING "Git Version/Commit Hash")
 set(CMAKE_CXX_STANDARD 20)
 configure_file(${CMAKE_SOURCE_DIR}/include/APCEMM.h.in ${CMAKE_SOURCE_DIR}/include/APCEMM.h @ONLY)
+
+# Generate an include file containing a single raw C++ string from a text file.
+function(make_includable input_file output_file)
+    file(READ ${input_file} content)
+    set(delim "====")
+    set(content "R\"${delim}(\n${content})${delim}\"")
+    file(WRITE ${output_file} "${content}")
+endfunction(make_includable)
+
+# Make default configuration include file from default YAML file.
+make_includable(
+  ${CMAKE_SOURCE_DIR}/defaults/input.yaml
+  ${CMAKE_SOURCE_DIR}/include/Defaults/Input.hpp
+)
+make_includable(
+  ${CMAKE_SOURCE_DIR}/defaults/Ambient.txt
+  ${CMAKE_SOURCE_DIR}/include/Defaults/Ambient.hpp
+)
+make_includable(
+    ${CMAKE_SOURCE_DIR}/defaults/ENG_EI.txt
+    ${CMAKE_SOURCE_DIR}/include/Defaults/Engine_EI.hpp
+)
 
 # Defines the 'main' file we want to create a binary of
 add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/Core/Main.cpp)

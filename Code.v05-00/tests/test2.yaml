@@ -1,0 +1,13 @@
+PARAMETER MENU:
+  Plume Process [hr] (double): 24
+  METEOROLOGICAL PARAMETERS SUBMENU:
+    Horiz. diff. coeff. [m^2/s] (double): 17.0
+    Brunt-Vaisala Frequency [s^-1] (double): 0.017
+    Pressure [hPa] (double): 320 330 340
+  LOCATION AND TIME SUBMENU:
+    LON [deg] (double): -45
+    LAT [deg] (double): 65
+    Emission day [1-365] (int): 143
+    Emission time [hr] (double) : 12
+  Total fuel flow [kg/s] (double) : 2.9
+  Aircraft mass [kg] (double): 2.30E+05

@@ -34,7 +34,7 @@ unittest
 
 # Logs #
 ########
-*log*
+*.log
 *.sql
 *.out
 
@@ -54,6 +54,7 @@ rundirs/*/APCEMM
 
 # Folders #
 ###########
+/build
 Code*/build
 Code*/trash
 Code*/lib*
@@ -76,6 +77,9 @@ valgrind*
 # For UNIX #
 ############
 *~
+.envrc
+.cache
+compile_commands.json
 
 # Cmake files #
 CMakeFiles
