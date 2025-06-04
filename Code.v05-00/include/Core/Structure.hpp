@@ -14,14 +14,11 @@
 #ifndef STRUCTURE_H_INCLUDED
 #define STRUCTURE_H_INCLUDED
 
-#include <cmath>
 #include "AIM/Aerosol.hpp"
 #include "KPP/KPP_Global.h"
 #include "Util/ForwardDecl.hpp"
 #include "Core/Input.hpp"
 #include "Core/Input_Mod.hpp"
-#include "Core/Emission.hpp"
-#include "Core/Aircraft.hpp"
 #include "Core/Input_Mod.hpp"
 #include "Core/Meteorology.hpp"
 

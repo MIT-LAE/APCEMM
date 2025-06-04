@@ -5,6 +5,26 @@
 #include "Util/VectorUtils.hpp"
 
 namespace VectorUtils {
+    void set_shape(Vector_2D& vec, const UInt n_x, const UInt n_y, const double value) {
+        for (UInt i = 0; i < vec.size(); i++) {
+            vec[i].clear();
+        }
+        vec.clear();
+
+        /* Dimensions are transposed! */
+        for (UInt i = 0; i < n_y; i++) {
+            vec.push_back(Vector_1D(n_x, value));
+        }
+    }
+
+    void set_value(Vector_2D &vec, const double value) {
+        for (UInt i = 0; i < vec.size(); i++) {
+            for (UInt j = 0; j < vec[0].size(); j++) {
+                vec[i][j] = value;
+            }
+        }
+    }
+
     Vector_2D cellAreas (const Vector_1D& xEdges, const Vector_1D& yEdges) {
         int nx = xEdges.size() - 1;
         int ny = yEdges.size() - 1;

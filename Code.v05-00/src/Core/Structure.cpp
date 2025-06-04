@@ -22,7 +22,7 @@
 #include "Util/PhysConstant.hpp"
 
 Solution::Solution(const OptInput& optInput) : \
-        liquidAerosol( ), 
+        liquidAerosol( ),
         solidAerosol( ),
         nVariables( NSPEC ),
         nAer( N_AER ),
@@ -30,10 +30,10 @@ Solution::Solution(const OptInput& optInput) : \
         size_y( optInput.ADV_GRID_NY ),
         reducedSize( 0 )
 {
-
-    /* Constructor */
-
-} /* End of Solution::Solution */
+    VectorUtils::set_shape(sootDens, size_x, size_y);
+    VectorUtils::set_shape(sootRadi, size_x, size_y);
+    VectorUtils::set_shape(sootArea, size_x, size_y);
+}
 
 Solution::~Solution()
 {
@@ -41,38 +41,6 @@ Solution::~Solution()
     /* Destructor */
 
 } /* End of Solution::~Solution */
-
-/* FIXME: see above comment on clear() */
-void Solution::SetShape( Vector_2D& vector_2D, \
-                         const UInt n_x,       \
-                         const UInt n_y,       \
-                         const double value )
-{
-
-    for ( UInt i = 0; i < vector_2D.size(); i++ ) {
-        vector_2D[i].clear();
-    }
-    vector_2D.clear();
-
-    /* Dimensions are transposed! */
-    for ( UInt i = 0; i < n_y; i++ ) {
-        vector_2D.push_back( Vector_1D( n_x, value ) );
-    }
-
-} /* End of Solution::SetShape */
-
-/* FIXME: see above comment on clear() */
-void Solution::SetToValue( Vector_2D& vector_2D, \
-                           const double value )
-{
-
-    for ( UInt i = 0; i < vector_2D.size(); i++ ) {
-        for ( UInt j = 0; j < vector_2D[0].size(); j++ ) {
-            vector_2D[i][j] = value;
-        }
-    }
-
-} /* End of Solution::SetToValue */
 
 void Solution::Initialize( std::string fileName,
                            const Input &input,
@@ -129,16 +97,14 @@ void Solution::Initialize( std::string fileName,
                            input.latitude_deg(), stratData,                      \
                            boxArea, KHETI_SLA, SOLIDFRAC,                        \
                            AERFRAC, RAD, RHO, KG, NDENS, SAD, Input_Opt.ADV_TROPOPAUSE_PRESSURE, DBG );
-                    
 
     setSpeciesValues(AERFRAC, SOLIDFRAC, stratData);
 
     /* Aerosols */
     /* Assume that soot particles are monodisperse */
-    SetShape( sootDens , size_x, size_y, (double) aer_Value[  0][0] );
-    SetShape( sootRadi , size_x, size_y, (double) aer_Value[  0][1] );
-    SetShape( sootArea , size_x, size_y, (double) 4.0 / double(3.0) * physConst::PI * aer_Value[  0][0] * aer_Value[  0][1] * aer_Value[  0][1] * aer_Value[  0][1] );
-
+    VectorUtils::set_value(sootDens, aer_Value[0][0]);
+    VectorUtils::set_value(sootRadi, aer_Value[0][1]);
+    VectorUtils::set_value(sootArea, 4.0 / double(3.0) * physConst::PI * aer_Value[0][0] * aer_Value[0][1] * aer_Value[0][1] * aer_Value[0][1]);
 
     nBin_LA = std::floor( 1 + log( pow( (LA_R_HIG/LA_R_LOW), 3.0 ) ) / log( LA_VRAT ) );
 
@@ -316,10 +282,10 @@ void Solution::initializeSpeciesH2O(const Input& input, const OptInput& Input_Op
              ( N == ind_H2Oplume ) || \
              ( N == ind_H2OL     ) || \
              ( N == ind_H2OS     ) ) {
-            SetShape( tmpArray, size_x, size_y, amb_Value[N] * airDens );
+            VectorUtils::set_shape( tmpArray, size_x, size_y, amb_Value[N] * airDens );
             Species.push_back( tmpArray );
         } else {
-            SetShape( tmpArray_Reduced, actualX, actualY, amb_Value[N] * airDens );
+            VectorUtils::set_shape( tmpArray_Reduced, actualX, actualY, amb_Value[N] * airDens );
             Species.push_back( tmpArray_Reduced );
         }
     }
@@ -354,34 +320,34 @@ void Solution::initializeSpeciesH2O(const Input& input, const OptInput& Input_Op
 
 void Solution::setSpeciesValues(Vector_1D& AERFRAC,  Vector_1D& SOLIDFRAC, const Vector_1D& stratData){
     /* Liquid/solid species */
-    SetToValue( Species[ind_SO4L], (double) AERFRAC[0]                          * stratData[0] );
-    SetToValue( Species[ind_SO4] , (double) ( 1.0 - AERFRAC[0] )                * stratData[0] );
+    VectorUtils::set_value( Species[ind_SO4L], (double) AERFRAC[0]                          * stratData[0] );
+    VectorUtils::set_value( Species[ind_SO4] , (double) ( 1.0 - AERFRAC[0] )                * stratData[0] );
 
     AERFRAC[6] = 0.0E+00;
     SOLIDFRAC[6] = 0.0E+00;
-    SetToValue( Species[ind_H2OL] , (double) AERFRAC[6]                          * stratData[6] );
-    SetToValue( Species[ind_H2OS] , (double) SOLIDFRAC[6]                        * stratData[6] );
+    VectorUtils::set_value( Species[ind_H2OL] , (double) AERFRAC[6]                          * stratData[6] );
+    VectorUtils::set_value( Species[ind_H2OS] , (double) SOLIDFRAC[6]                        * stratData[6] );
     /* Do not overwrite H2O!! */
-    //SetToValue( Species[ind_H2O]  , (double) ( 1.0 - AERFRAC[6] - SOLIDFRAC[6] ) * stratData[6] );
+    //VectorUtils::set_value( Species[ind_H2O]  , (double) ( 1.0 - AERFRAC[6] - SOLIDFRAC[6] ) * stratData[6] );
 
-    SetToValue( Species[ind_HNO3L], (double) AERFRAC[1]                          * stratData[1] );
-    SetToValue( Species[ind_HNO3S], (double) SOLIDFRAC[1]                        * stratData[1] );
-    SetToValue( Species[ind_HNO3] , (double) ( 1.0 - AERFRAC[1] - SOLIDFRAC[1] ) * stratData[1] );
+    VectorUtils::set_value( Species[ind_HNO3L], (double) AERFRAC[1]                          * stratData[1] );
+    VectorUtils::set_value( Species[ind_HNO3S], (double) SOLIDFRAC[1]                        * stratData[1] );
+    VectorUtils::set_value( Species[ind_HNO3] , (double) ( 1.0 - AERFRAC[1] - SOLIDFRAC[1] ) * stratData[1] );
 
-    SetToValue( Species[ind_HClL] , (double) AERFRAC[2]                          * stratData[2] );
-    SetToValue( Species[ind_HCl]  , (double) ( 1.0 - AERFRAC[2] )                * stratData[2] );
+    VectorUtils::set_value( Species[ind_HClL] , (double) AERFRAC[2]                          * stratData[2] );
+    VectorUtils::set_value( Species[ind_HCl]  , (double) ( 1.0 - AERFRAC[2] )                * stratData[2] );
 
-    SetToValue( Species[ind_HOClL], (double) AERFRAC[3]                          * stratData[3] );
-    SetToValue( Species[ind_HOCl] , (double) ( 1.0 - AERFRAC[3] )                * stratData[3] );
+    VectorUtils::set_value( Species[ind_HOClL], (double) AERFRAC[3]                          * stratData[3] );
+    VectorUtils::set_value( Species[ind_HOCl] , (double) ( 1.0 - AERFRAC[3] )                * stratData[3] );
 
-    SetToValue( Species[ind_HBrL] , (double) AERFRAC[4]                          * stratData[4] );
-    SetToValue( Species[ind_HBr]  , (double) ( 1.0 - AERFRAC[4] )                * stratData[4] );
+    VectorUtils::set_value( Species[ind_HBrL] , (double) AERFRAC[4]                          * stratData[4] );
+    VectorUtils::set_value( Species[ind_HBr]  , (double) ( 1.0 - AERFRAC[4] )                * stratData[4] );
 
-    SetToValue( Species[ind_HOBrL], (double) AERFRAC[5]                          * stratData[5] );
-    SetToValue( Species[ind_HOBr] , (double) ( 1.0 - AERFRAC[5] )                * stratData[5] );
+    VectorUtils::set_value( Species[ind_HOBrL], (double) AERFRAC[5]                          * stratData[5] );
+    VectorUtils::set_value( Species[ind_HOBr] , (double) ( 1.0 - AERFRAC[5] )                * stratData[5] );
 
-    SetToValue( Species[ind_NIT]  , (double) stratData[ 9] );
-    SetToValue( Species[ind_NAT]  , (double) stratData[10] );
+    VectorUtils::set_value( Species[ind_NIT]  , (double) stratData[ 9] );
+    VectorUtils::set_value( Species[ind_NAT]  , (double) stratData[10] );
 }
 
 
