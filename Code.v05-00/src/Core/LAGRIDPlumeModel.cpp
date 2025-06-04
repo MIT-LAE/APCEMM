@@ -223,7 +223,12 @@ SimStatus LAGRIDPlumeModel::runEPM() {
     epmSolution.getData(VAR, FIX, i_0, j_0);
 
     //RUN EPM
-    EPM_result_ = EPM::Integrate(met_.tempRef(), simVars_.pressure_Pa, met_.rhwRef(), input_.bypassArea(), input_.coreExitTemp(), VAR, aerArray, aircraft_, EI_, simVars_.CHEMISTRY, optInput_.ADV_AMBIENT_LAPSERATE, input_.fileName_micro() );
+    EPM_result_ = EPM::Integrate(
+        met_.tempRef(), simVars_.pressure_Pa, met_.rhwRef(),
+        input_.bypassArea(), input_.coreExitTemp(),
+        VAR, aerArray, aircraft_, EI_,
+        simVars_.CHEMISTRY, optInput_.ADV_AMBIENT_LAPSERATE,
+        input_.fileName_micro());
     EPM::EPMOutput& epmOutput = EPM_result_.first;
     SimStatus EPM_RC = EPM_result_.second;
 
