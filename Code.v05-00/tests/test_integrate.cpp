@@ -1,4 +1,4 @@
-#include "EPM/Integrate.hpp"
+#include "EPM/RHS.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
