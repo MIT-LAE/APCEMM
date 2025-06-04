@@ -2,6 +2,7 @@
 set(SRCS
     odeSolver.cpp
     Integrate.cpp
+    RHS.cpp
     )
 
 # This command ensures the static library gets build
