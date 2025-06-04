@@ -14,14 +14,11 @@
 #ifndef STRUCTURE_H_INCLUDED
 #define STRUCTURE_H_INCLUDED
 
-#include <cmath>
 #include "AIM/Aerosol.hpp"
 #include "KPP/KPP_Global.h"
 #include "Util/ForwardDecl.hpp"
 #include "Core/Input.hpp"
 #include "Core/Input_Mod.hpp"
-#include "Core/Emission.hpp"
-#include "Core/Aircraft.hpp"
 #include "Core/Input_Mod.hpp"
 #include "Core/Meteorology.hpp"
 
@@ -32,14 +29,6 @@ public:
     Solution(const OptInput& optInput);
 
     ~Solution();
-
-    void SetShape( Vector_2D& vector_2D,
-                   const UInt n_x,
-                   const UInt n_y,
-                   const double value = 0.0 );
-
-    void SetToValue( Vector_2D& vector_2D,
-                     const double value = 0.0 );
 
     // NOTE: THIS IS ONLY CALLED FOR THE EPM
     void Initialize(std::string fileName, const Input &input,

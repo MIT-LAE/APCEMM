@@ -7,12 +7,15 @@
 namespace VectorUtils {
     using std::vector;
 
-    Vector_2D cellAreas(const Vector_1D& xEdges, const Vector_1D& yEdges);
+    void set_shape(Vector_2D &vec, const UInt n_x, const UInt n_y, const double value = 0.0);
+    void set_value(Vector_2D &vec, const double value = 0.0);
 
-    double min(const Vector_2D& vec);
+    Vector_2D cellAreas(const Vector_1D &xEdges, const Vector_1D &yEdges);
 
-    double max(const Vector_2D& vec);
-    Vector_1D max(const Vector_2D& vec, int axis);
+    double min(const Vector_2D &vec);
+
+    double max(const Vector_2D &vec);
+    Vector_1D max(const Vector_2D &vec, int axis);
 
     struct MaskInfo {
         int count;
