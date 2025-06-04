@@ -30,23 +30,19 @@ public:
 
     ~Solution();
 
-    // NOTE: THIS IS ONLY CALLED FOR THE EPM
     void Initialize(std::string fileName, const Input &input,
                     const double airDens, const Meteorology &met,
                     const OptInput &Input_Opt, double *varSpeciesArray,
                     double *fixSpeciesArray, const bool DBG);
 
-    // NOTE: ONLY CALLED FOR THE EPM
     void getData(double *varSpeciesArray, double *fixSpeciesArray,
                  const UInt i = 0, const UInt j = 0, const bool CHEMISTRY = 0);
 
-    // NOTE: ONLY CALLED FOR THE EPM
     void SpinUp(Vector_1D &amb_Value, const Input &input,
                 const double airDens, const double startTime,
                 double *varSpeciesArray, double *fixSpeciesArray,
                 const bool DGB = 0);
 
-    // NOTE: ONLY CALLED FOR THE EPM
     Vector_2D getAerosol( ) const;
 
     UInt Nx() const { return size_x; };
