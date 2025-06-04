@@ -147,8 +147,6 @@ void Solution::Initialize( std::string fileName,
         nBin_LA = 2;
         //dumb hardcoded Grid_Aerosol default constructor
     }
-    const AIM::Coagulation kernel1( "liquid", LA_rJ, LA_vJ, physConst::RHO_SULF, \
-                                    input.temperature_K(), input.pressure_Pa() );
 
     nBin_PA = std::floor( 1 + log( pow( (PA_R_HIG/PA_R_LOW), 3.0 ) ) / log( PA_VRAT ) );
 
@@ -180,10 +178,6 @@ void Solution::Initialize( std::string fileName,
 
         solidAerosol = PAAerosol;
     }
-
-    const AIM::Coagulation kernel2( "ice", PA_rJ, PA_vJ, physConst::RHO_ICE, \
-                                    input.temperature_K(), input.pressure_Pa() );
-
 } /* End of Solution::Initialize */
 
 void Solution::processInputBackgroundLine(std::istream &s, Vector_1D &amb_Value, Vector_2D &aer_Value) {
