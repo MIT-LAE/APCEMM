@@ -2,10 +2,10 @@
 set(SRCS
     EPM.cpp
     Solution.cpp
+    Models/Original/Model.cpp
     Models/Original/odeSolver.cpp
     Models/Original/Integrate.cpp
     Models/Original/RHS.cpp
-    Models/External.cpp
     )
 
 # This command ensures the static library gets build

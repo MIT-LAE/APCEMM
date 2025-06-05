@@ -16,7 +16,7 @@
 #include "AIM/Aerosol.hpp"
 
 
-namespace EPM::Models::Original {
+namespace EPM::Models::OriginalImpl {
 
 struct gas_aerosol_rhs {
     const double m_temperature_K;

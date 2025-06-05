@@ -31,7 +31,7 @@ using physConst::Na, physConst::R, physConst::kB, physConst::PI,
 using physFunc::pSat_H2Ol, physFunc::pSat_H2Os;
 
 
-namespace EPM::Models::Original
+namespace EPM::Models::OriginalImpl
 {
     std::variant<Output, SimStatus> Integrate(
         double tempInit_K, double pressure_Pa, double rhw, double bypassArea,
@@ -235,7 +235,7 @@ namespace EPM::Models::Original
         Vector_2D obs_Var;
         Vector_1D obs_Time;
 
-        EPM::Models::Original::streamingObserver observer(obs_Var, obs_Time, EPM_ind, micro_data_out, 2);
+        streamingObserver observer(obs_Var, obs_Time, EPM_ind, micro_data_out, 2);
 
         /* Creating ode's right hand side */
         gas_aerosol_rhs rhs(

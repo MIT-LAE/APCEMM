@@ -5,6 +5,7 @@
 #include "KPP/KPP_Parameters.h"
 #include "Core/LAGRIDPlumeModel.hpp"
 #include "EPM/Solution.hpp"
+#include "EPM/Models/Original.hpp"
 #include "EPM/Models/Original/Integrate.hpp"
 
 using physConst::Na, physConst::kB, physConst::PI, physConst::R_Air;
@@ -12,7 +13,7 @@ using physConst::Na, physConst::kB, physConst::PI, physConst::R_Air;
 /*
 These global variables are required because of the KPP auto-generated code.
 In the LAGRID Plume Model (no plume chemistry), the KPP is used only when
-spinning up the background ambient conditions during the initialization 
+spinning up the background ambient conditions during the initialization
 step of the EPM. For now declare these variables at the top level.
 */
 double RCONST[NREACT];       /* Rate constants (global) */
@@ -31,7 +32,7 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input)
     yCoords_(optInput_.ADV_GRID_NY),
     yEdges_(optInput_.ADV_GRID_NY + 1)
 {
-    /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */ 
+    /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */
     jetA_.setFSC( input.EI_SO2() * 500.0 );
 
     EI_ = Emission( aircraft_.engine(), jetA_, input.EI_SO2TOSO4());
@@ -40,7 +41,8 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input)
 
     createOutputDirectories();
 
-    // Set up initial grid coordinates.
+    // Set up initial grid coordinates: required for meteorology setup, which
+    // is needed for the EPM.
     double dy = (optInput_.ADV_GRID_YLIM_UP + optInput_.ADV_GRID_YLIM_DOWN) /
                 optInput_.ADV_GRID_NY;
     double y0 = -optInput_.ADV_GRID_YLIM_DOWN;
@@ -49,7 +51,7 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input)
     std::generate(yCoords_.begin(), yCoords_.end(),
                   [dy, y0, j = 0]() mutable { return y0 + dy * (0.5 + j++); });
 
-    // Set up initial meteorology data.
+    // Set up initial meteorology data needed for the EPM.
     AmbientMetParams ambMetParams{
         .solarTime_h = timestepVars_.curr_Time_s / 3600.0,
         .temp_K = simVars_.temperature_K,
@@ -68,6 +70,7 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input)
 SimStatus LAGRIDPlumeModel::runFullModel() {
     auto start = std::chrono::high_resolution_clock::now();
     omp_set_num_threads(numThreads_);
+
     std::variant<EPM::Output, SimStatus> epm_result = runEPM();
     if (std::holds_alternative<SimStatus>(epm_result)) {
         return std::get<SimStatus>(epm_result);
@@ -209,84 +212,47 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 }
 
 std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
-  double C[NSPEC];        /* Concentration of all species */
-  double *VAR = &C[0];    /* Concentration of variable species */
-  double *FIX = &C[NVAR]; /* Concentration of fixed species */
+    EPM::Models::Original epm(optInput_, input_, aircraft_, EI_, met_, simVars_);
+    std::variant<EPM::Output, SimStatus> epmResult = epm.run();
+    if (std::holds_alternative<SimStatus>(epmResult)) {
+        return std::get<SimStatus>(epmResult);
+    }
+    EPM::Output &epmOutput = std::get<EPM::Output>(epmResult);
 
-  // Still need the solution data structure...
-  // TODO: WHAT DOES THAT MEAN? WHY "STILL NEED"?
-  EPM::Solution epmSolution(optInput_);
+    /* Compute initial plume area and scale initial ice aerosol properties based
+    * on number engines. Note that EPM results are for ONLY ONE ENGINE. If 2
+    * engines, we assume that after 3 mins, the two plumes haven't fully mixed
+    * yet and result in a total area of 2 * the area computed for one engine If 3
+    * or more engines, we assume that the plumes originating from the same wing
+    * have mixed. */
 
-  /* Compute airDens from pressure and temperature */
-  double airDens = simVars_.pressure_Pa / (kB    * met_.tempRef()) * 1.00E-06;
-  // [molec/cm3] = [Pa = J/m3]          / ([J/K] * [K])            * [m3/cm3]
+    epmOutput.area *= 2.0;
+    if (aircraft_.EngNumber() != 2) {
+        epmOutput.iceDensity *= aircraft_.EngNumber() /
+                                2.0; // Scale densities by this factor to account
+                                    // for the plume size already doubling.
+        epmOutput.sootDensity *= aircraft_.EngNumber() / 2.0;
+        epmOutput.SO4Aer.scalePdf(
+            aircraft_.EngNumber()); // EPM only runs for one engine, so scale
+                                    // aerosol pdfs by engine number.
+        epmOutput.IceAer.scalePdf(aircraft_.EngNumber());
+    }
 
-  /* This sets the species array values in the Solution data structure to the
-     ambient data file, EXCEPT FOR H2O which is user defined via met input or
-     rhw input */
-  epmSolution.Initialize(
-      simVars_.BACKG_FILENAME.c_str(), input_, airDens, met_,
-      optInput_, VAR, FIX, false);
+    // Run vortex sink parameterization
+    /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not
+    * just user-specified input */
+    const double iceNumFrac = aircraft_.VortexLosses(
+        EI_.getSoot(), EI_.getSootRad(), met_.satdepthUser());
 
-  Vector_2D aerArray = epmSolution.getAerosol();
+    std::cout << "Parameterized vortex sinking survival fraction: " << iceNumFrac
+                << std::endl;
+    if (iceNumFrac <= 0.00E+00) {
+        std::cout << "EndSim: vortex sinking" << std::endl;
+        return SimStatus::NoSurvivalVortex;
+    }
+    epmOutput.IceAer.scalePdf(iceNumFrac);
 
-  double dy = (optInput_.ADV_GRID_YLIM_UP + optInput_.ADV_GRID_YLIM_DOWN) /
-      optInput_.ADV_GRID_NY;
-  int i_0 = std::floor(optInput_.ADV_GRID_XLIM_LEFT /
-                       optInput_.ADV_GRID_NX); // index i where x = 0
-  int j_0 = std::floor(-yEdges_[0] / dy);      // index j where y = 0
-
-  // This sets the values in VAR and FIX to the values in the solution data
-  // structure at indices i, j
-  epmSolution.getData(VAR, FIX, i_0, j_0);
-
-  // RUN EPM
-  // TODO: THIS SHOULD CALL THE VIRTUAL run METHOD OF THE EPM MODEL INSTANCE.
-  std::variant<EPM::Output, SimStatus> EPM_result_ =
-      EPM::Models::Original::Integrate(
-          met_.tempRef(), simVars_.pressure_Pa, met_.rhwRef(),
-          input_.bypassArea(), input_.coreExitTemp(), VAR, aerArray, aircraft_,
-          EI_, simVars_.CHEMISTRY, optInput_.ADV_AMBIENT_LAPSERATE,
-          input_.fileName_micro());
-  if (std::holds_alternative<SimStatus>(EPM_result_)) {
-    return std::get<SimStatus>(EPM_result_);
-  }
-  EPM::Output &epmOutput = std::get<EPM::Output>(EPM_result_);
-
-  /* Compute initial plume area and scale initial ice aerosol properties based
-   * on number engines. Note that EPM results are for ONLY ONE ENGINE. If 2
-   * engines, we assume that after 3 mins, the two plumes haven't fully mixed
-   * yet and result in a total area of 2 * the area computed for one engine If 3
-   * or more engines, we assume that the plumes originating from the same wing
-   * have mixed. */
-
-  epmOutput.area *= 2.0;
-  if (aircraft_.EngNumber() != 2) {
-    epmOutput.iceDensity *= aircraft_.EngNumber() /
-                            2.0; // Scale densities by this factor to account
-                                 // for the plume size already doubling.
-    epmOutput.sootDensity *= aircraft_.EngNumber() / 2.0;
-    epmOutput.SO4Aer.scalePdf(
-        aircraft_.EngNumber()); // EPM only runs for one engine, so scale
-                                // aerosol pdfs by engine number.
-    epmOutput.IceAer.scalePdf(aircraft_.EngNumber());
-  }
-
-  // Run vortex sink parameterization
-  /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not
-   * just user-specified input */
-  const double iceNumFrac = aircraft_.VortexLosses(
-      EI_.getSoot(), EI_.getSootRad(), met_.satdepthUser());
-
-  std::cout << "Parameterized vortex sinking survival fraction: " << iceNumFrac
-            << std::endl;
-  if (iceNumFrac <= 0.00E+00) {
-    std::cout << "EndSim: vortex sinking" << std::endl;
-    return SimStatus::NoSurvivalVortex;
-  }
-  epmOutput.IceAer.scalePdf(iceNumFrac);
-
-  return epmOutput;
+    return epmOutput;
 }
 
 void LAGRIDPlumeModel::initializeGrid(const EPM::Output &epmOut) {
