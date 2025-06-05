@@ -68,7 +68,7 @@ make_includable(
 )
 
 # Defines the 'main' file we want to create a binary of
-add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/Core/Main.cpp)
+add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/Main.cpp)
 
 
 # Dependencies managed by vcpkg:

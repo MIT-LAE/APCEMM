@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include "Util/ForwardDecl.hpp"
 
-enum class epm_type { EPM_ORIGINAL, EPM_EXTERNAL, EPM_NEW };
+enum class epm_type { EPM_ORIGINAL, EPM_EXTERNAL, EPM_NEW_PHYSICS };
 
 struct OptInput
 {

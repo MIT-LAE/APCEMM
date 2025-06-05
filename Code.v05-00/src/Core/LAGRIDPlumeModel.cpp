@@ -4,6 +4,7 @@
 #include "Core/Status.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "Core/LAGRIDPlumeModel.hpp"
+#include "EPM/Solution.hpp"
 #include "EPM/Models/Original/Integrate.hpp"
 
 using physConst::Na, physConst::kB, physConst::PI, physConst::R_Air;
@@ -21,14 +22,14 @@ double HET[NSPEC][3];        /* Heterogeneous chemistry rates (global) */
 double TIME;                 /* Current integration time (global) */
 double SZA_CST[3];           /* Require this for adjoint integration */
 
-LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input ):
-    optInput_(optInput),
-    input_(input),
+LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input) :
+    optInput_(optInput), input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
     aircraft_(Aircraft(input, optInput.SIMULATION_INPUT_ENG_EI)),
-    jetA_(Fuel("C12H24")),
-    simVars_(MPMSimVarsWrapper(input, optInput)),
-    timestepVars_(TimestepVarsWrapper(input, optInput))
+    jetA_(Fuel("C12H24")), simVars_(input, optInput),
+    timestepVars_(input, optInput),
+    yCoords_(optInput_.ADV_GRID_NY),
+    yEdges_(optInput_.ADV_GRID_NY + 1)
 {
     /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */ 
     jetA_.setFSC( input.EI_SO2() * 500.0 );
@@ -38,6 +39,30 @@ LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input
     timestepVars_.setTimeArray(PlumeModelUtils::BuildTime ( timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt ));
 
     createOutputDirectories();
+
+    // Set up initial grid coordinates.
+    double dy = (optInput_.ADV_GRID_YLIM_UP + optInput_.ADV_GRID_YLIM_DOWN) /
+                optInput_.ADV_GRID_NY;
+    double y0 = -optInput_.ADV_GRID_YLIM_DOWN;
+    std::generate(yEdges_.begin(), yEdges_.end(),
+                  [dy, y0, j = 0]() mutable { return y0 + dy * j++; });
+    std::generate(yCoords_.begin(), yCoords_.end(),
+                  [dy, y0, j = 0]() mutable { return y0 + dy * (0.5 + j++); });
+
+    // Set up initial meteorology data.
+    AmbientMetParams ambMetParams{
+        .solarTime_h = timestepVars_.curr_Time_s / 3600.0,
+        .temp_K = simVars_.temperature_K,
+        .press_Pa = simVars_.pressure_Pa,
+        .rhi = simVars_.relHumidity_i,
+        .shear = input_.shear()
+    };
+    met_ = Meteorology(optInput_, ambMetParams, yCoords_, yEdges_);
+
+    std::cout << "Temperature      = " << met_.tempRef() << " K" << std::endl;
+    std::cout << "RHw              = " << met_.rhwRef() << " %" << std::endl;
+    std::cout << "RHi              = " << met_.rhiRef() << " %" << std::endl;
+    std::cout << "Saturation depth = " << met_.satdepthUser() << " m" << std::endl;
 }
 
 SimStatus LAGRIDPlumeModel::runFullModel() {
@@ -188,49 +213,25 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
   double *VAR = &C[0];    /* Concentration of variable species */
   double *FIX = &C[NVAR]; /* Concentration of fixed species */
 
-  // TODO: THIS CAN BE DONE IN THE CONSTRUCTOR
-  // Need a met object to create a solution object, even in EPM...
-  double dy = (optInput_.ADV_GRID_YLIM_UP + optInput_.ADV_GRID_YLIM_DOWN) /
-              optInput_.ADV_GRID_NY;
-  double y0 = -optInput_.ADV_GRID_YLIM_DOWN;
-  yCoords_ = Vector_1D(optInput_.ADV_GRID_NY);
-  yEdges_ = Vector_1D(optInput_.ADV_GRID_NY + 1);
-  std::generate(yEdges_.begin(), yEdges_.end(),
-                [dy, y0, j = 0]() mutable { return y0 + dy * j++; });
-  std::generate(yCoords_.begin(), yCoords_.end(),
-                [dy, y0, j = 0]() mutable { return y0 + dy * (0.5 + j++); });
-  AmbientMetParams ambMetParams{
-      .solarTime_h=timestepVars_.curr_Time_s / 3600.0,
-      .temp_K=simVars_.temperature_K,
-      .press_Pa=simVars_.pressure_Pa,
-      .rhi=simVars_.relHumidity_i,
-      .shear=input_.shear()
-  };
-
-  met_ = Meteorology(optInput_, ambMetParams, yCoords_, yEdges_);
-
-  std::cout << "Temperature      = " << met_.tempRef() << " K" << std::endl;
-  std::cout << "RHw              = " << met_.rhwRef() << " %" << std::endl;
-  std::cout << "RHi              = " << met_.rhiRef() << " %" << std::endl;
-  std::cout << "Saturation depth = " << met_.satdepthUser() << " m"
-            << std::endl;
   // Still need the solution data structure...
-  Solution epmSolution(optInput_);
+  // TODO: WHAT DOES THAT MEAN? WHY "STILL NEED"?
+  EPM::Solution epmSolution(optInput_);
 
   /* Compute airDens from pressure and temperature */
-  double airDens =
-      simVars_.pressure_Pa / (kB * met_.tempRef()) * 1.00E-06;
-  /*     [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K]           ) *
-   * [m3/cm3] */
+  double airDens = simVars_.pressure_Pa / (kB    * met_.tempRef()) * 1.00E-06;
+  // [molec/cm3] = [Pa = J/m3]          / ([J/K] * [K])            * [m3/cm3]
 
   /* This sets the species array values in the Solution data structure to the
      ambient data file, EXCEPT FOR H2O which is user defined via met input or
      rhw input */
-  epmSolution.Initialize(simVars_.BACKG_FILENAME.c_str(), input_, airDens, met_,
-                         optInput_, VAR, FIX, false);
+  epmSolution.Initialize(
+      simVars_.BACKG_FILENAME.c_str(), input_, airDens, met_,
+      optInput_, VAR, FIX, false);
 
   Vector_2D aerArray = epmSolution.getAerosol();
 
+  double dy = (optInput_.ADV_GRID_YLIM_UP + optInput_.ADV_GRID_YLIM_DOWN) /
+      optInput_.ADV_GRID_NY;
   int i_0 = std::floor(optInput_.ADV_GRID_XLIM_LEFT /
                        optInput_.ADV_GRID_NX); // index i where x = 0
   int j_0 = std::floor(-yEdges_[0] / dy);      // index j where y = 0

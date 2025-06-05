@@ -14,7 +14,6 @@
 #include "KPP/KPP_Global.h"
 #include "KPP/KPP_Sparse.h"
 #include "KPP/KPP.hpp"
-#include "Core/Parameters.hpp"
 #include "Util/Error.hpp"
 
 #define MAX(a,b) ( ((a) >= (b)) ? (a):(b)  )

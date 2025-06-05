@@ -166,7 +166,7 @@ namespace YamlInputReader{
           } else if (iequals(epm, "external")) {
             input.SIMULATION_EPM_TYPE = epm_type::EPM_EXTERNAL;
           } else if (iequals(epm, "new")) {
-            input.SIMULATION_EPM_TYPE = epm_type::EPM_NEW;
+            input.SIMULATION_EPM_TYPE = epm_type::EPM_NEW_PHYSICS;
         } else {
             throw std::invalid_argument("Invalid EPM type specified in SIMULATION MENU: " + epm);
         }

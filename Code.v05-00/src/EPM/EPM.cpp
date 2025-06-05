@@ -12,7 +12,9 @@ std::unique_ptr<EPM::Models::Base> EPM::make_epm(const OptInput &optInput) {
     return std::make_unique<EPM::Models::Original>(optInput);
   case epm_type::EPM_EXTERNAL:
     return std::make_unique<EPM::Models::External>(optInput);
-  case epm_type::EPM_NEW:
+  case epm_type::EPM_NEW_PHYSICS:
     return std::make_unique<EPM::Models::NewPhysics>(optInput);
+  default:
+      throw std::invalid_argument("Unknown EPM type specified in SIMULATION MENU.");
   }
 }

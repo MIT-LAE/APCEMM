@@ -15,7 +15,6 @@ set(SRCS
     MPMSimVarsWrapper.cpp
     Ring.cpp
     Species.cpp
-    Structure.cpp
     SZA.cpp
     Util.cpp
     TimestepVarsWrapper.cpp

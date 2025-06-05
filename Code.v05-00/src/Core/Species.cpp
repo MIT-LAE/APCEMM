@@ -11,6 +11,9 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <iostream>
+
+#include "KPP/KPP_Parameters.h"
 #include "Core/Species.hpp"
 
 static const double ZERO = 1.00E-50;
@@ -173,70 +176,6 @@ SpeciesArray::~SpeciesArray( )
     /* Destructor */
 
 } /* End of SpeciesArray::~SpeciesArray */
-
-void SpeciesArray::FillIn( Solution &Data,             \
-                           const Vector_3D &weights,   \
-                           UInt nCounter )
-{
-
-    Vector_1D properties_LA( 4, 0.0E+00 );
-    Vector_1D properties_PA( 4, 0.0E+00 );
-
-    UInt jNy, iNx, iRing, N;
-    double w = 0.0E+00;
-    double totW = 0.0E+00;
-
-    for ( iRing = 0; iRing < nRing; iRing++ ) {
-
-        /* Precompute total weights */
-        totW = 0.0E+00;
-        for ( jNy = 0; jNy < Data.Species[0].size(); jNy++ ) {
-            for ( iNx = 0; iNx < Data.Species[0][0].size(); iNx++ )
-                totW += weights[iRing][jNy][iNx];
-        }
-        for ( jNy = 0; jNy < Data.Species[0].size(); jNy++ ) {
-            for ( iNx = 0; iNx < Data.Species[0][0].size(); iNx++ ) {
-
-                w = weights[iRing][jNy][iNx] / totW;
-
-                for ( N = 0; N < NSPECREACT; N++ )
-                    Species[N][nCounter][iRing] += Data.Species[N][jNy][iNx] * w;
-
-                sootDens[nCounter][iRing] += Data.sootDens[jNy][iNx] * w;
-                sootRadi[nCounter][iRing] += Data.sootRadi[jNy][iNx] * w;
-                sootArea[nCounter][iRing] += Data.sootArea[jNy][iNx] * w;
-
-            }
-        }
-
-        properties_LA = Data.liquidAerosol.Average( weights[iRing], \
-                                                    totW );
-        sulfDens[nCounter][iRing] = properties_LA[0];
-        sulfRadi[nCounter][iRing] = properties_LA[1];
-        sulfArea[nCounter][iRing] = properties_LA[2];
-
-        properties_PA = Data.solidAerosol.Average( weights[iRing], \
-                                                   totW );
-        iceDens[nCounter][iRing] = properties_PA[0];
-        iceRadi[nCounter][iRing] = properties_PA[1];
-        iceArea[nCounter][iRing] = properties_PA[2];
-
-    } 
-
-} /* End of SpeciesArray::FillIn */
-
-void SpeciesArray::FillIn( UInt iTime, UInt iRing, double* varSpeciesArray )
-{
-
-    /* Ensure positiveness */
-    for ( UInt N = 0; N < NVAR; N++ ) {
-        if ( varSpeciesArray[N] <= 0.0 ) {
-            varSpeciesArray[N] = ZERO;
-        }
-        Species[N][iTime][iRing] = varSpeciesArray[N];
-    }
-
-} /* End of SpeciesArray::FillIn */
 
 void SpeciesArray::getData( UInt iTime, UInt iRing, double* varSpeciesArray, double* fixSpeciesArray )
 {

@@ -11,8 +11,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef STRUCTURE_H_INCLUDED
-#define STRUCTURE_H_INCLUDED
+#ifndef EPM_SOLUTION_H_INCLUDED
+#define EPM_SOLUTION_H_INCLUDED
 
 #include "AIM/Aerosol.hpp"
 #include "KPP/KPP_Global.h"
@@ -21,6 +21,8 @@
 #include "Core/Input_Mod.hpp"
 #include "Core/Input_Mod.hpp"
 #include "Core/Meteorology.hpp"
+
+namespace EPM {
 
 class Solution
 {
@@ -88,4 +90,6 @@ private:
   bool reducedSize;
 };
 
-#endif /* STRUCTURE_H_INCLUDED */
+} // namespace EPM
+
+#endif
