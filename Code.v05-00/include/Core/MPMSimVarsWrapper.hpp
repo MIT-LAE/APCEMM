@@ -1,6 +1,5 @@
 #include "Core/Input_Mod.hpp"
 #include "Core/Input.hpp"
-#include "Core/Structure.hpp"
 
 #ifndef SIMVARSWRAPPER_H_INCLUDED
 #define SIMVARSWRAPPER_H_INCLUDED
@@ -98,7 +97,6 @@ struct MPMSimVarsWrapper{
 
     MPMSimVarsWrapper() = default;
     MPMSimVarsWrapper(const Input& input, const OptInput& Input_mod);
-    void initMicrophysicsVars(const Solution& data, const AIM::Aerosol& epm_LA, double iceDen);
     inline int LA_MICROPHYSICS() const { return LA_MICROPHYSICS_; }
     inline int PA_MICROPHYSICS() const { return PA_MICROPHYSICS_; }
     inline bool TRANSPORT_LA() const { return TRANSPORT_LA_; }

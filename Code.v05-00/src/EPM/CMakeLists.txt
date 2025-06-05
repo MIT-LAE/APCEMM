@@ -1,6 +1,7 @@
 # Source files that need to be compiled
 set(SRCS
     EPM.cpp
+    Solution.cpp
     Models/Original/odeSolver.cpp
     Models/Original/Integrate.cpp
     Models/Original/RHS.cpp

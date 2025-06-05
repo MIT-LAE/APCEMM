@@ -18,9 +18,13 @@
 #include "Core/LiquidAer.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/SZA.hpp"
-#include "Core/Structure.hpp"
+#include "EPM/Solution.hpp"
 #include "Util/PhysConstant.hpp"
 
+using physConst::PI, physConst::kB;
+
+namespace EPM {
+    
 Solution::Solution(const OptInput& optInput) : \
         liquidAerosol( ),
         solidAerosol( ),
@@ -104,7 +108,7 @@ void Solution::Initialize( std::string fileName,
     /* Assume that soot particles are monodisperse */
     VectorUtils::set_value(sootDens, aer_Value[0][0]);
     VectorUtils::set_value(sootRadi, aer_Value[0][1]);
-    VectorUtils::set_value(sootArea, 4.0 / double(3.0) * physConst::PI * aer_Value[0][0] * aer_Value[0][1] * aer_Value[0][1] * aer_Value[0][1]);
+    VectorUtils::set_value(sootArea, 4.0 / double(3.0) * PI * aer_Value[0][0] * aer_Value[0][1] * aer_Value[0][1] * aer_Value[0][1]);
 
     nBin_LA = std::floor( 1 + log( pow( (LA_R_HIG/LA_R_LOW), 3.0 ) ) / log( LA_VRAT ) );
 
@@ -119,7 +123,7 @@ void Solution::Initialize( std::string fileName,
 
     for ( UInt iBin_LA = 0; iBin_LA < nBin_LA; iBin_LA++ ) {
         LA_rJ[iBin_LA] = 0.5 * ( LA_rE[iBin_LA] + LA_rE[iBin_LA+1] );                       /* [m] */
-        LA_vJ[iBin_LA] = 4.0 / double(3.0) * physConst::PI * \
+        LA_vJ[iBin_LA] = 4.0 / double(3.0) * PI * \
                          ( LA_rE[iBin_LA] * LA_rE[iBin_LA] * LA_rE[iBin_LA] \
                          + LA_rE[iBin_LA+1] * LA_rE[iBin_LA+1] * LA_rE[iBin_LA+1] ) * 0.5;  /* [m^3] */
     }
@@ -137,7 +141,7 @@ void Solution::Initialize( std::string fileName,
          * ln(S) = sqrt(-1/3*ln(A/(4\pi r_eff^2 * N0)));
          * r_m = r_eff * exp( -5/2 * ln(S)^2 ); */
 
-        const double sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * physConst::PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
+        const double sLA = sqrt( - 1.0 / (3.0) * log(SAD[1]/(4.0 * PI * RAD[1] * RAD[1] * NDENS[1] ) ) );
         const double rLA = std::max( RAD[1] * exp( - 2.5 * sLA * sLA ), 1.5 * LA_R_LOW );
         const AIM::Grid_Aerosol LAAerosol( size_x, size_y, LA_rJ, LA_rE, LA_nDens, rLA, exp(sLA), "lognormal" );
 
@@ -161,7 +165,7 @@ void Solution::Initialize( std::string fileName,
 
     for ( UInt iBin_PA = 0; iBin_PA < nBin_PA; iBin_PA++ ) {
         PA_rJ[iBin_PA] = 0.5 * ( PA_rE[iBin_PA] + PA_rE[iBin_PA+1] );                       /* [m]   */
-        PA_vJ[iBin_PA] = 4.0 / double(3.0) * physConst::PI * \
+        PA_vJ[iBin_PA] = 4.0 / double(3.0) * PI * \
                          ( PA_rE[iBin_PA] * PA_rE[iBin_PA] * PA_rE[iBin_PA] \
                          + PA_rE[iBin_PA+1] * PA_rE[iBin_PA+1] * PA_rE[iBin_PA+1] ) * 0.5;  /* [m^3] */
     }
@@ -305,7 +309,7 @@ void Solution::initializeSpeciesH2O(const Input& input, const OptInput& Input_Op
     } else {
         /* Else use user-defined H2O profile */
         double H2Oval = (input.relHumidity_w()/((double) 100.0) * \
-                          physFunc::pSat_H2Ol( input.temperature_K() ) / ( physConst::kB * input.temperature_K() )) / 1.00E+06;
+                          physFunc::pSat_H2Ol( input.temperature_K() ) / ( kB * input.temperature_K() )) / 1.00E+06;
         for ( UInt i = 0; i < size_x; i++ ) {
             for ( UInt j = 0; j < size_y; j++ ) {
                 //H2O[j][i] = H2Oval;
@@ -536,4 +540,4 @@ void Solution::SpinUp( Vector_1D &amb_Value,       \
 
 } /* End of Solution::SpinUp */
 
-/* End of Structure.cpp */
+}
