@@ -11,8 +11,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef ODESOLVER_H_INCLUDED
-#define ODESOLVER_H_INCLUDED
+#ifndef EPM_MODELS_ORIGINAL_ODESOLVER_H_INCLUDED
+#define EPM_MODELS_ORIGINAL_ODESOLVER_H_INCLUDED
 
 #include <boost/range/algorithm.hpp>
 #include <boost/numeric/odeint.hpp>
@@ -24,7 +24,7 @@
 typedef boost::numeric::odeint::runge_kutta_fehlberg78<Vector_1D> error_stepper_type;
 typedef boost::numeric::odeint::controlled_runge_kutta<error_stepper_type> controlled_stepper_type;
 
-namespace EPM
+namespace EPM::Models::Original
 {
     class streamingObserver
     {
@@ -50,4 +50,4 @@ namespace EPM
     };
 }
 
-#endif /* ODESOLVER_H_INCLUDED */
+#endif

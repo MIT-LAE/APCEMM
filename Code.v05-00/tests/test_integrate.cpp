@@ -1,8 +1,8 @@
-#include "EPM/RHS.hpp"
+#include "EPM/Models/Original/RHS.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
-using namespace EPM; 
+using namespace EPM::Models::Original; 
 
 TEST_CASE("EPM integrate", "[single-file]") {
 

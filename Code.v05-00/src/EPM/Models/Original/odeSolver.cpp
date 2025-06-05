@@ -16,9 +16,9 @@
 #include "Core/Parameters.hpp"
 #include "Util/PhysConstant.hpp"
 #include "Util/PhysFunction.hpp"
-#include "EPM/odeSolver.hpp"
+#include "EPM/Models/Original/odeSolver.hpp"
 
-namespace EPM
+namespace EPM::Models::Original
 {
     streamingObserver::streamingObserver( Vector_2D &states, Vector_1D &times, std::vector<UInt> indices, std::string filename, UInt write_every ):
         m_write_every( write_every ),

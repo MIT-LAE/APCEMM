@@ -1,8 +1,10 @@
 # Source files that need to be compiled
 set(SRCS
-    odeSolver.cpp
-    Integrate.cpp
-    RHS.cpp
+    EPM.cpp
+    Models/Original/odeSolver.cpp
+    Models/Original/Integrate.cpp
+    Models/Original/RHS.cpp
+    Models/External.cpp
     )
 
 # This command ensures the static library gets build

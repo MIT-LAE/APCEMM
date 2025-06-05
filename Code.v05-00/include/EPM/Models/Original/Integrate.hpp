@@ -11,9 +11,10 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef INTEGRATE_H_INCLUDED
-#define INTEGRATE_H_INCLUDED
+#ifndef EPM_MODELS_ORIGINAL_INTEGRATE_H_INCLUDED
+#define EPM_MODELS_ORIGINAL_INTEGRATE_H_INCLUDED
 
+#include <variant>
 #include <boost/array.hpp>
 #include <boost/numeric/odeint.hpp>
 #include "Util/ForwardDecl.hpp"
@@ -22,25 +23,11 @@
 #include "Core/Status.hpp"
 #include "AIM/Coagulation.hpp"
 #include "AIM/Aerosol.hpp"
+#include "EPM/EPM.hpp"
 
-namespace EPM
+namespace EPM::Models::Original
 {
-    struct EPMOutput {
-        double finalTemp;
-        double iceRadius;
-        double iceDensity;
-        double sootDensity;
-        double H2O_mol;
-        double SO4g_mol;
-        double SO4l_mol;
-        AIM::Aerosol SO4Aer;
-        AIM::Aerosol IceAer;
-        double area;
-        double bypassArea;
-        double coreExitTemp;
-    };
-
-    std::pair<EPMOutput, SimStatus> Integrate(
+    std::variant<EPM::Output, SimStatus> Integrate(
         double tempInit_K, double pressure_Pa, double rhw,
         double bypassArea, double coreExitTemp,
         double varArray[], const Vector_2D& aerArray,
@@ -55,8 +42,7 @@ namespace EPM
         double &SO4g_mol, double &SO4l_mol, AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer,
         double &Area, double &Ab0, double &Tc0, const bool CHEMISTRY,
         double ambientLapseRate, std::string micro_data_out);
-
 }
 
+#endif
 
-#endif /* INTEGRATE_H_INCLUDED */
