@@ -13,8 +13,8 @@
 #include "Util/PhysConstant.hpp"
 #include "Util/PhysFunction.hpp"
 
-#include "EPM/RHS.hpp"
-#include "EPM/Indexes.hpp"
+#include "EPM/Models/Original/RHS.hpp"
+#include "EPM/Models/Original/Indexes.hpp"
 
 using physConst::Na, physConst::R, physConst::kB, physConst::PI, physConst::RHO_ICE;
 
@@ -22,7 +22,7 @@ using physFunc::pSat_H2SO4, physFunc::pSat_H2Ol, physFunc::pSat_H2Os,
     physFunc::pSat_HNO3, physFunc::thermalSpeed, physFunc::CorrDiffCoef_H2O,
     physFunc::Kelvin, physFunc::LHeatSubl_H2O, physFunc::ThermalCond;
 
-namespace EPM {
+namespace EPM::Models::Original {
 
     /* Vortex sinking timescales, taken from Unterstrasser et al., 2008 */
     const double t_Vortex_0 = 8.00E+00;

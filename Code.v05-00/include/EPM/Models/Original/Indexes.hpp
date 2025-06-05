@@ -9,13 +9,13 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef INDEXES_H_INCLUDED
-#define INDEXES_H_INCLUDED
+#ifndef EPM_MODELS_ORIGINAL_INDEXES_H_INCLUDED
+#define EPM_MODELS_ORIGINAL_INDEXES_H_INCLUDED
 
 #include "Util/ForwardDecl.hpp"
 
 
-namespace EPM {
+namespace EPM::Models::Original {
 
 constexpr UInt EPM_ind_Trac = 0;
 constexpr UInt EPM_ind_T = 1;

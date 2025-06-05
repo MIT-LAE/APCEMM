@@ -9,14 +9,14 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef RHS_H_INCLUDED
-#define RHS_H_INCLUDED
+#ifndef EPM_MODELS_ORIGINAL_RHS_H_INCLUDED
+#define EPM_MODELS_ORIGINAL_RHS_H_INCLUDED
 
 #include "Util/ForwardDecl.hpp"
 #include "AIM/Aerosol.hpp"
 
 
-namespace EPM {
+namespace EPM::Models::Original {
 
 struct gas_aerosol_rhs {
     const double m_temperature_K;
@@ -69,6 +69,6 @@ bool isFreezable(const double r, const double T, const double H2O,
 double condensationRate(const double r, const double T, const double P,
                         const double H2O, const double theta);
 
-} // namespace EPM
+} // namespace EPM::Models::Original
 
 #endif

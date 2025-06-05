@@ -1,10 +1,14 @@
 #ifndef LAGRIDPLUMEMODEL_H
 #define LAGRIDPLUMEMODEL_H
 
+#include <variant>
 #include "AIM/Aerosol.hpp"
 #include "LAGRID/RemappingFunctions.hpp"
 #include "FVM_ANDS/FVM_Solver.hpp"
-#include "EPM/Integrate.hpp"
+#include "EPM/EPM.hpp"
+#include "Core/Aircraft.hpp"
+#include "Core/Emission.hpp"
+#include "Core/Fuel.hpp"
 #include "Core/Diag_Mod.hpp"
 #include "Core/MPMSimVarsWrapper.hpp"
 #include "Core/TimestepVarsWrapper.hpp"
@@ -23,7 +27,7 @@ class LAGRIDPlumeModel {
         LAGRIDPlumeModel() = delete;
         LAGRIDPlumeModel(const OptInput &Input_Opt, const Input &input);
         SimStatus runFullModel();
-        SimStatus runEPM();
+        std::variant<EPM::Output, SimStatus> runEPM();
         struct BufferInfo {
             double leftBuffer;
             double rightBuffer;
@@ -40,7 +44,6 @@ class LAGRIDPlumeModel {
         MPMSimVarsWrapper simVars_;
         TimestepVarsWrapper timestepVars_;
         AIM::Grid_Aerosol iceAerosol_;
-        std::pair<EPM::EPMOutput, SimStatus> EPM_result_;
         Meteorology met_;
         Vector_2D diffCoeffX_;
         Vector_2D diffCoeffY_;
@@ -90,7 +93,7 @@ class LAGRIDPlumeModel {
         }
 
         void createOutputDirectories();
-        void initializeGrid();
+        void initializeGrid(const EPM::Output &epmOut);
         void saveTSAerosol();
         void initH2O();
         void updateDiffVecs();
