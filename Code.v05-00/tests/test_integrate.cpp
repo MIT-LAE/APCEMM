@@ -2,7 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
-using namespace EPM::Models::Original; 
+using namespace EPM::Models::OriginalImpl;
 
 TEST_CASE("EPM integrate", "[single-file]") {
 

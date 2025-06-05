@@ -15,7 +15,7 @@
 #include "Util/ForwardDecl.hpp"
 
 
-namespace EPM::Models::Original {
+namespace EPM::Models::OriginalImpl {
 
 constexpr UInt EPM_ind_Trac = 0;
 constexpr UInt EPM_ind_T = 1;

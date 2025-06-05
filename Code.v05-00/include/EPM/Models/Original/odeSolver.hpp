@@ -24,7 +24,7 @@
 typedef boost::numeric::odeint::runge_kutta_fehlberg78<Vector_1D> error_stepper_type;
 typedef boost::numeric::odeint::controlled_runge_kutta<error_stepper_type> controlled_stepper_type;
 
-namespace EPM::Models::Original
+namespace EPM::Models::OriginalImpl
 {
     class streamingObserver
     {

@@ -25,7 +25,7 @@
 #include "AIM/Aerosol.hpp"
 #include "EPM/EPM.hpp"
 
-namespace EPM::Models::Original
+namespace EPM::Models::OriginalImpl
 {
     std::variant<EPM::Output, SimStatus> Integrate(
         double tempInit_K, double pressure_Pa, double rhw,
