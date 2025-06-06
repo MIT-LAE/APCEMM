@@ -34,15 +34,15 @@ public:
 
     void Initialize(std::string fileName, const Input &input,
                     const double airDens, const Meteorology &met,
-                    const OptInput &Input_Opt, double *varSpeciesArray,
-                    double *fixSpeciesArray, const bool DBG);
+                    const OptInput &Input_Opt, Vector_1D &varSpeciesArray,
+                    Vector_1D &fixSpeciesArray, const bool DBG);
 
-    void getData(double *varSpeciesArray, double *fixSpeciesArray,
-                 const UInt i = 0, const UInt j = 0, const bool CHEMISTRY = 0);
+    void getData(Vector_1D &varSpeciesArray, Vector_1D &fixSpeciesArray,
+                 const UInt i = 0, const UInt j = 0);
 
     void SpinUp(Vector_1D &amb_Value, const Input &input,
                 const double airDens, const double startTime,
-                double *varSpeciesArray, double *fixSpeciesArray,
+                Vector_1D &varSpeciesArray, Vector_1D &fixSpeciesArray,
                 const bool DGB = 0);
 
     Vector_2D getAerosol( ) const;

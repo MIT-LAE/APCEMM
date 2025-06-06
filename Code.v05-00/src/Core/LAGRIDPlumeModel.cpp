@@ -4,11 +4,9 @@
 #include "Core/Status.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "Core/LAGRIDPlumeModel.hpp"
-#include "EPM/Solution.hpp"
 #include "EPM/Models/Original.hpp"
-#include "EPM/Models/Original/Integrate.hpp"
 
-using physConst::Na, physConst::kB, physConst::PI, physConst::R_Air;
+using physConst::Na, physConst::PI, physConst::R_Air;
 
 /*
 These global variables are required because of the KPP auto-generated code.
@@ -33,11 +31,13 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input)
     yEdges_(optInput_.ADV_GRID_NY + 1)
 {
     /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */
-    jetA_.setFSC( input.EI_SO2() * 500.0 );
+    jetA_.setFSC(input.EI_SO2() * 500.0);
 
-    EI_ = Emission( aircraft_.engine(), jetA_, input.EI_SO2TOSO4());
+    EI_ = Emission(aircraft_.engine(), jetA_, input.EI_SO2TOSO4());
 
-    timestepVars_.setTimeArray(PlumeModelUtils::BuildTime ( timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt ));
+    timestepVars_.setTimeArray(
+        PlumeModelUtils::BuildTime (
+            timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt));
 
     createOutputDirectories();
 

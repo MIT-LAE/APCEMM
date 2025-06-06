@@ -29,7 +29,7 @@ struct OptInput
     /* ---- SIMULATION MENU --------------------- */
     /* ========================================== */
 
-    unsigned int SIMULATION_OMP_NUM_THREADS;
+    int          SIMULATION_OMP_NUM_THREADS;
     bool         SIMULATION_PARAMETER_SWEEP;
     bool         SIMULATION_MONTECARLO;
     unsigned int SIMULATION_MCRUNS;

@@ -51,7 +51,7 @@ void Solution::Initialize( std::string fileName,
                            const double airDens,
                            const Meteorology &met,
                            const OptInput &Input_Opt,
-                           double* varSpeciesArray, double* fixSpeciesArray,
+                           Vector_1D &varSpeciesArray, Vector_1D &fixSpeciesArray,
                            const bool DBG )
 {
 
@@ -62,7 +62,7 @@ void Solution::Initialize( std::string fileName,
     readInputBackgroundConditions(input, amb_Value, aer_Value, fileName);
 
     const double AMBIENT_VALID_TIME = 8.0; //hours
-    SpinUp( amb_Value, input, airDens, AMBIENT_VALID_TIME, varSpeciesArray, fixSpeciesArray );
+    SpinUp(amb_Value, input, airDens, AMBIENT_VALID_TIME, varSpeciesArray, fixSpeciesArray);
 
     /* Enforce pre-defined values? *
      * Read input defined values for background concentrations */
@@ -355,48 +355,33 @@ void Solution::setSpeciesValues(Vector_1D& AERFRAC,  Vector_1D& SOLIDFRAC, const
 }
 
 
-void Solution::getData(  double* varSpeciesArray, double* fixSpeciesArray, const UInt i, \
-                        const UInt j, \
-	                const bool CHEMISTRY )
-{
-
+void Solution::getData(Vector_1D &varSpeciesArray, Vector_1D &fixSpeciesArray,
+                       const UInt i, const UInt j) {
     for ( UInt N = 0; N < NVAR; N++ ) {
-	if ( CHEMISTRY )
+        if ( ( N == ind_H2O      ) || \
+                ( N == ind_H2Omet   ) || \
+                ( N == ind_H2Oplume ) || \
+                ( N == ind_H2OL     ) || \
+                ( N == ind_H2OS     ) ) {
             varSpeciesArray[N] = Species[N][j][i];
-	else {
-            if ( ( N == ind_H2O      ) || \
-                 ( N == ind_H2Omet   ) || \
-                 ( N == ind_H2Oplume ) || \
-                 ( N == ind_H2OL     ) || \
-                 ( N == ind_H2OS     ) ) {
-                varSpeciesArray[N] = Species[N][j][i];
-            }
-	    else {
-                varSpeciesArray[N] = Species[N][0][0];
-	    }
-	
-	}
+        }
+        else {
+            varSpeciesArray[N] = Species[N][0][0];
+        }
     }
 
     for ( UInt N = 0; N < NFIX; N++ ) {
-	if ( CHEMISTRY )
+        if ( ( N == ind_H2O      ) || \
+                ( N == ind_H2Omet   ) || \
+                ( N == ind_H2Oplume ) || \
+                ( N == ind_H2OL     ) ||       \
+                ( N == ind_H2OS     ) ) {
             fixSpeciesArray[N] = Species[N+NVAR][j][i];
-	else {
-            if ( ( N == ind_H2O      ) || \
-                 ( N == ind_H2Omet   ) || \
-                 ( N == ind_H2Oplume ) || \
-                 ( N == ind_H2OL     ) || \
-                 ( N == ind_H2OS     ) ) {
-                fixSpeciesArray[N] = Species[N+NVAR][j][i];
-            }
-	    else {
-                fixSpeciesArray[N] = Species[N+NVAR][0][0];
-	    }
-	
-	}
-
+        }
+        else {
+            fixSpeciesArray[N] = Species[N+NVAR][0][0];
+        }
     }
-
 } /* End of Solution::getData */
 
 Vector_2D Solution::getAerosol( ) const
@@ -421,13 +406,10 @@ Vector_2D Solution::getAerosol( ) const
 /* 
 No functions check the return code of this function, temp fix is to return void
 */
-void Solution::SpinUp( Vector_1D &amb_Value,       \
-                      const Input &input,         \
-                      const double airDens,   \
-                      const double startTime, \
-                      double* varSpeciesArray, double* fixSpeciesArray, const bool DBG )
-{
-
+void Solution::SpinUp(Vector_1D &amb_Value, const Input &input, const double airDens,
+                      const double startTime,
+                      Vector_1D &varSpeciesArray, Vector_1D &fixSpeciesArray,
+                      const bool DBG) {
     /* Chemistry timestep
      * DT_CHEM               = 10 mins */
     const double DT_CHEM = 10.0 * 60.0;
@@ -503,8 +485,8 @@ void Solution::SpinUp( Vector_1D &amb_Value,       \
         /* ~~~~~ Integration ~~~~~~ */
         /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-        IERR = INTEGRATE( varSpeciesArray, fixSpeciesArray, curr_Time_s, curr_Time_s + DT_CHEM, \
-                          ATOL, RTOL, STEPMIN );
+        IERR = INTEGRATE(varSpeciesArray.data(), fixSpeciesArray.data(),
+                         curr_Time_s, curr_Time_s + DT_CHEM, ATOL, RTOL, STEPMIN);
 
         if ( IERR < 0 ) {
             /* Integration failed */

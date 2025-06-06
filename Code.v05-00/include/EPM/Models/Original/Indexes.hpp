@@ -1,36 +1,25 @@
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/*                                                                  */
-/*                      Early Plume Microphysics                    */
-/*                              (EPM)                               */
-/*                                                                  */
-/* Variable indexes Header File                                     */
-/*                                                                  */
-/* File                 : Indexes.hpp                               */
-/*                                                                  */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-#ifndef EPM_MODELS_ORIGINAL_INDEXES_H_INCLUDED
-#define EPM_MODELS_ORIGINAL_INDEXES_H_INCLUDED
-
-#include "Util/ForwardDecl.hpp"
-
+#ifndef EPM_MODELS_ORIGINALIMPL_INDEXES_H_INCLUDED
+#define EPM_MODELS_ORIGINALIMPL_INDEXES_H_INCLUDED
 
 namespace EPM::Models::OriginalImpl {
 
-constexpr UInt EPM_ind_Trac = 0;
-constexpr UInt EPM_ind_T = 1;
-constexpr UInt EPM_ind_P = 2;
-constexpr UInt EPM_ind_H2O = 3;
-constexpr UInt EPM_ind_SO4 = 4;
-constexpr UInt EPM_ind_SO4l = 5;
-constexpr UInt EPM_ind_SO4g = 6;
-constexpr UInt EPM_ind_SO4s = 7;
-constexpr UInt EPM_ind_HNO3 = 8;
-constexpr UInt EPM_ind_Part = 9;
-constexpr UInt EPM_ind_ParR = 10;
-constexpr UInt EPM_ind_the1 = 11;
-constexpr UInt EPM_ind_the2 = 12;
+    // Indices for the gas-aerosol system
+    enum EPM_ind {
+        EPM_ind_Trac = 0, // Tracer
+        EPM_ind_T,       // Temperature
+        EPM_ind_P,       // Pressure
+        EPM_ind_H2O,     // Water vapor mixing ratio
+        EPM_ind_SO4,     // Sulfate gas mixing ratio
+        EPM_ind_SO4l,    // Sulfate liquid mixing ratio
+        EPM_ind_SO4g,    // Sulfate gas mixing ratio
+        EPM_ind_SO4s,    // Sulfate solid mixing ratio
+        EPM_ind_HNO3,    // Nitric acid mixing ratio
+        EPM_ind_Part,    // Particle mixing ratio
+        EPM_ind_ParR,    // Particle radius
+        EPM_ind_the1,    // Surface coverage 1
+        EPM_ind_the2     // Surface coverage 2
+    };
 
-}
+} // namespace EPM::Models::OriginalImpl
 
 #endif

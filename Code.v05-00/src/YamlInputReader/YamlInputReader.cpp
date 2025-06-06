@@ -101,7 +101,7 @@ namespace YamlInputReader{
         }
     }
     void readSimMenu(OptInput& input, const YAML::Node& simNode){
-        input.SIMULATION_OMP_NUM_THREADS = parseUIntString(simNode["OpenMP Num Threads (positive int)"].as<string>(), "OpenMP Num Threads (positive int)");
+        input.SIMULATION_OMP_NUM_THREADS = parseIntString(simNode["OpenMP Num Threads (positive int)"].as<string>(), "OpenMP Num Threads (positive int)");
         if(input.SIMULATION_OMP_NUM_THREADS < 1){
             throw std::invalid_argument("OpenMP Num Threads (under SIMULATION MENU) cannot be less than 1!");
         }
