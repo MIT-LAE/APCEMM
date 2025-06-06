@@ -24,7 +24,7 @@
 using physConst::PI, physConst::kB;
 
 namespace EPM {
-    
+
 Solution::Solution(const OptInput& optInput) : \
         liquidAerosol( ),
         solidAerosol( ),

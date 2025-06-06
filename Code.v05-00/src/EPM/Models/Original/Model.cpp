@@ -12,12 +12,12 @@ using physConst::kB;
 
 namespace EPM::Models {
 
-    Original::Original(const OptInput &optInput, const Input &input, const Aircraft &aircraft,
-                       const Emission &EI, const Meteorology &met,
-                       const MPMSimVarsWrapper &simVars) :
-        Base(optInput, input, aircraft, EI, met, simVars) { }
+Original::Original(const OptInput &optInput, const Input &input, const Aircraft &aircraft,
+                    const Emission &EI, const Meteorology &met,
+                    const MPMSimVarsWrapper &simVars) :
+    Base(optInput, input, aircraft, EI, met, simVars) { }
 
-  std::variant<EPM::Output, SimStatus> Original::run() {
+std::variant<EPM::Output, SimStatus> Original::run() {
     double C[NSPEC];        /* Concentration of all species */
     double *VAR = &C[0];    /* Concentration of variable species */
     double *FIX = &C[NVAR]; /* Concentration of fixed species */
@@ -43,9 +43,13 @@ namespace EPM::Models {
     double dy =
         (optInput_.ADV_GRID_YLIM_UP + optInput_.ADV_GRID_YLIM_DOWN) /
         optInput_.ADV_GRID_NY;
-    int i_0 = std::floor(optInput_.ADV_GRID_XLIM_LEFT /
-                        optInput_.ADV_GRID_NX); // index i where x = 0
-    int j_0 = std::floor(-yEdges[0] / dy);      // index j where y = 0
+    double y0 = -optInput_.ADV_GRID_YLIM_DOWN;
+    std::generate(yEdges.begin(), yEdges.end(),
+                  [dy, y0, j = 0]() mutable { return y0 + dy * j++; });
+    unsigned int i_0 = static_cast<unsigned int>(
+        std::floor(optInput_.ADV_GRID_XLIM_LEFT /
+                   optInput_.ADV_GRID_NX)); // index i where x = 0
+    unsigned int j_0 = static_cast<unsigned int>(std::floor(-yEdges[0] / dy)); // index j where y = 0
 
     // This sets the values in VAR and FIX to the values in the solution data
     // structure at indices i, j
