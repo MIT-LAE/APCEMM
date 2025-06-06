@@ -25,134 +25,6 @@ namespace Diag {
 
     static const NcType& varDataType = ncFloat;
 
-    bool Diag_TS_Chem( const char* rootName,                     \
-                    const std::vector<int> speciesIndices,    \
-                    const int hh, const int mm, const int ss, \
-                    const Solution& Data, const Mesh& m )
-    {
-
-        std::filesystem::path rootPath( rootName );
-        std::string fileName = rootPath.filename().generic_string();
-
-        replace_hhmmss(fileName, hh, mm, ss);
-        
-        fileName = std::filesystem::path(rootPath.parent_path() / fileName).generic_string();
-        const char* outFile = fileName.c_str();
-
-        // Open the file for writing - replacing anything already there
-        NcFile currFile(outFile,NcFile::replace);
-
-        time_t rawtime;
-        char buffer[80];
-        time( &rawtime );
-        strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
-
-        // Create time as seconds since start
-        // const float cur_time = hh+mm/60.0+ss/3600.0;
-
-        // Create dimensions - make time unlimited (record dimension)
-        const NcDim xDim       = currFile.addDim( "x", long(m.Nx()) );
-        const NcDim yDim       = currFile.addDim( "y", long(m.Ny()) );
-        //const NcDim tDim       = currFile.addDim( "Time" );
-
-        // Add the variables corresponding to the dimensions
-        NcVar xVar       = currFile.addVar( "x", ncFloat, xDim );
-        NcVar yVar       = currFile.addVar( "y", ncFloat, yDim );
-        //NcVar tVar       = currFile.addVar( "Time", ncFloat, tDim );
-
-        // Put the data values and attributes into the dimension variables
-        xVar.putAtt("units", "m");
-        xVar.putAtt("long_name", "Grid cell horizontal centers");
-        xVar.putVar(&(m.x())); // Had [0] in the original (i.e. &(m.x())[0])?
-        yVar.putAtt("units", "m");
-        yVar.putAtt("long_name", "Grid cell vertical centers");
-        yVar.putVar(&(m.y()));
-        //tVar.putAtt("units", "seconds since simulation start");
-        //tVar.putAtt("long_name", "time");
-        //tVar.putVar(&(cur_time));
-
-        std::string author = "Thibaud M. Fritz (fritzt@mit.edu)";
-        currFile.putAtt( "FileName", outFile );
-        currFile.putAtt( "Author", author );
-        currFile.putAtt( "Contact", author );
-        currFile.putAtt( "Generation Date", buffer );
-        currFile.putAtt( "Format", "NetCDF-4" );
-
-
-    #if ( SAVE_TO_DOUBLE )
-        double* array;
-        const char* outputType = "double";
-    #else
-        float* array;
-        // const char* outputType = "float";
-    #endif /* SAVE_TO_DOUBLE */
-
-        /* Start saving species ... */
-
-        /* Define conversion factor */
-        double scalingFactor;
-        std::string charSpc;
-        std::string charName;
-        std::string charUnit;
-
-        // Define vector of dimensions
-        std::vector<NcDim> xyDims{ yDim, xDim };
-        // Start point and counts for the data being added
-        std::vector<size_t> startp2( 2, 0 );
-        std::vector<size_t> countp2{ m.Ny(), m.Nx() };
-
-        // Provide type information for the variable defined by the KPP macro
-        // By default is casted as a UInt but we want int here for consistency
-        int NSpecAll = NSPECALL;
-
-        for ( int N = 0; N < NSpecAll; N++ ) {
-            for ( UInt i = 0; i < speciesIndices.size(); i++ ) {
-            
-                if ( speciesIndices[i] - 1 == N ) {
-
-                    charSpc = SPC_NAMES[N];
-                    charName = SPC_NAMES[N];
-                    charName += " molecular concentration";
-                    charUnit = "molec/cm^3";
-                    scalingFactor = 1.0E+00;
-            
-    #if ( SAVE_TO_DOUBLE )
-                    array = util::vect2double( Data.Species[N], m.Ny(), m.Nx(), scalingFactor );
-    #else
-                    //This call causes a segfault if Chemistry is not turned on but "save species" is because
-                    //the number of species is set to 1, not NSPECALL, if Chemistry is not turned on.
-                    array = util::vect2float ( Data.Species[N], m.Ny(), m.Nx(), scalingFactor );
-    #endif /* SAVE_TO_DOUBLE */
-
-                    #pragma omp critical
-                    {
-                    /*
-                    NcVar var = currFile.addVar( &(array)[0],  \
-                                                (const char*)charSpc, yDim, xDim,  \
-                                                outputType, (const char*)charUnit, \
-                                                (const char*)charName );
-                    */
-                    NcVar var = currFile.addVar( charSpc, varDataType, xyDims );
-                    var.putAtt("units", charUnit );
-                    var.putAtt("long_name", charName );
-                    var.putVar( startp2, countp2, &(array)[0] );
-                    }
-                    delete[] array;
-
-                } else {
-                    std::cout << " In Diag_Mod for timeseries: Unexpected index: " << speciesIndices[i] << std::endl;
-                    std::cout << " Ignoring that index..." << std::endl;
-                }
-            }
-
-        }
-        
-        currFile.close();
-
-        return SAVE_SUCCESS;
-
-    } /* End of Diag_TS_Chem */
-
     void replace_hhmmss(string& fileName, int hh, int mm, int ss) {
         size_t start_pos;
         bool found;
@@ -214,8 +86,7 @@ namespace Diag {
         if(toSave.size() != dim.getSize()) {
             throw std::runtime_error("Save failed! NcDim dimension size and array sizes don't match! Variable name: " + name );
         }
-        const double scalingFactor = 1;
-        float* array = util::vect2float ( toSave, toSave.size(), scalingFactor );
+        float* array = util::vect2float ( toSave, toSave.size() );
         NcVar var = currFile.addVar( name, varDataType, dim );
         var.putAtt("units", units );
         var.putAtt("long_name", desc );
@@ -227,8 +98,7 @@ namespace Diag {
         if((toSave.size() != dims[0].getSize()) || (toSave[0].size() != dims[1].getSize())) {
             throw std::runtime_error("Save failed! NcDim dimension size and array sizes don't match! Variable name: " + name );
         }
-        const double scalingFactor = 1;
-        float* array = util::vect2float (toSave, toSave.size(), toSave[0].size(), scalingFactor );
+        float* array = util::vect2float (toSave, toSave.size(), toSave[0].size() );
         NcVar var = currFile.addVar( name, varDataType, dims );
         var.putAtt("units", units );
         var.putAtt("long_name", desc );

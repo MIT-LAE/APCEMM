@@ -1,13 +1,28 @@
-#include <iostream>
+#include "YamlInputReader/YamlInputReader.hpp"
 #include "APCEMM.h"
 #include "Util/MC_Rand.hpp"
 #include "Util/YamlUtils.hpp"
-#include "YamlInputReader/YamlInputReader.hpp"
+#include <algorithm> // std::equal
+#include <cctype>    // std::tolower
+#include <iostream>
+#include <string_view> // std::string_view
+
 
 // Read default configuration from CMake-generated include file.
 const std::string default_input =
 #include "Defaults/Input.hpp"
 ;
+
+
+bool ichar_equals(char a, char b) {
+  return std::tolower(static_cast<unsigned char>(a)) ==
+         std::tolower(static_cast<unsigned char>(b));
+}
+
+bool iequals(std::string_view lhs, std::string_view rhs) {
+  return std::ranges::equal(lhs, rhs, ichar_equals);
+}
+
 
 namespace YamlInputReader{
     void readYamlInputFiles(OptInput& input, const vector<string> &filenames){
@@ -100,7 +115,7 @@ namespace YamlInputReader{
         YAML::Node paramSweepSubmenu = simNode["PARAM SWEEP SUBMENU"];
         input.SIMULATION_PARAMETER_SWEEP = parseBoolString(paramSweepSubmenu["Parameter sweep (T/F)"].as<string>(), "Parameter sweep (T/F)");
         input.SIMULATION_MONTECARLO = parseBoolString(paramSweepSubmenu["Run Monte Carlo (T/F)"].as<string>(), "Run Monte Carlo (T/F)");
-        input.SIMULATION_MCRUNS =  parseIntString(paramSweepSubmenu["Num Monte Carlo runs (int)"].as<string>(), "Num Monte Carlo runs (int)");
+        input.SIMULATION_MCRUNS =  parseUIntString(paramSweepSubmenu["Num Monte Carlo runs (int)"].as<string>(), "Num Monte Carlo runs (int)");
 
         YAML::Node outputSubmenu = simNode["OUTPUT SUBMENU"];
         std::string outputFolder =  parseFileSystemPath(outputSubmenu["Output folder (string)"].as<string>());
@@ -142,6 +157,18 @@ namespace YamlInputReader{
 
         if(input.SIMULATION_PARAMETER_SWEEP == input.SIMULATION_MONTECARLO){
             throw std::invalid_argument("In Simulation Menu: Parameter sweep and Monte Carlo cannot have the same value!");
+        }
+
+        string epm = 
+            simNode["EPM type (original/external/new)"].as<string>();
+        if (iequals(epm, "original")) {
+            input.SIMULATION_EPM_TYPE = epm_type::EPM_ORIGINAL;
+          } else if (iequals(epm, "external")) {
+            input.SIMULATION_EPM_TYPE = epm_type::EPM_EXTERNAL;
+          } else if (iequals(epm, "new")) {
+            input.SIMULATION_EPM_TYPE = epm_type::EPM_NEW_PHYSICS;
+        } else {
+            throw std::invalid_argument("Invalid EPM type specified in SIMULATION MENU: " + epm);
         }
     }
     void readParamMenu(OptInput& input, const YAML::Node& paramNode){
@@ -311,8 +338,8 @@ namespace YamlInputReader{
 
     void readAdvancedMenu(OptInput& input, const YAML::Node& advancedNode) {
         YAML::Node gridSubmenu = advancedNode["GRID SUBMENU"];
-        input.ADV_GRID_NX = parseIntString(gridSubmenu["NX (positive int)"].as<string>(), "NX (positive int)");
-        input.ADV_GRID_NY = parseIntString(gridSubmenu["NY (positive int)"].as<string>(), "NY (positive int)");
+        input.ADV_GRID_NX = parseUIntString(gridSubmenu["NX (positive int)"].as<string>(), "NX (positive int)");
+        input.ADV_GRID_NY = parseUIntString(gridSubmenu["NY (positive int)"].as<string>(), "NY (positive int)");
         input.ADV_GRID_XLIM_RIGHT = parseDoubleString(gridSubmenu["XLIM_RIGHT (positive double)"].as<string>(), "XLIM_RIGHT (positive double)");
         input.ADV_GRID_XLIM_LEFT = parseDoubleString(gridSubmenu["XLIM_LEFT (positive double)"].as<string>(), "XLIM_LEFT (positive double)");
         input.ADV_GRID_YLIM_UP = parseDoubleString(gridSubmenu["YLIM_UP (positive double)"].as<string>(), "YLIM_UP (positive double)");
@@ -327,13 +354,10 @@ namespace YamlInputReader{
         input.ADV_AMBIENT_LAPSERATE = parseDoubleString(advancedNode["Ambient Lapse Rate [K/km] (double)"].as<string>(), "Ambient Lapse Rate [K/km] (double)");
         input.ADV_TROPOPAUSE_PRESSURE = parseDoubleString(advancedNode["Tropopause Pressure [Pa] (double)"].as<string>(), "Tropopause Pressure [Pa] (double)");
 
-        if(input.ADV_GRID_NX < 0 ||
-           input.ADV_GRID_NY < 0 ||
-           input.ADV_GRID_XLIM_LEFT < 0 || 
-           input.ADV_GRID_XLIM_RIGHT < 0 ||
-           input.ADV_GRID_YLIM_UP < 0 ||
-           input.ADV_GRID_YLIM_DOWN < 0) {
-            
+        if (input.ADV_GRID_XLIM_LEFT < 0 ||
+            input.ADV_GRID_XLIM_RIGHT < 0 ||
+            input.ADV_GRID_YLIM_UP < 0 ||
+            input.ADV_GRID_YLIM_DOWN < 0) {
             throw std::invalid_argument("No values in GRID SUBMENU can be less than zero!");
         }
     }

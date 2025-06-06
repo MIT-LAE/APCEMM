@@ -1,10 +1,14 @@
 #ifndef LAGRIDPLUMEMODEL_H
 #define LAGRIDPLUMEMODEL_H
 
+#include <variant>
 #include "AIM/Aerosol.hpp"
 #include "LAGRID/RemappingFunctions.hpp"
 #include "FVM_ANDS/FVM_Solver.hpp"
-#include "EPM/Integrate.hpp"
+#include "EPM/EPM.hpp"
+#include "Core/Aircraft.hpp"
+#include "Core/Emission.hpp"
+#include "Core/Fuel.hpp"
 #include "Core/Diag_Mod.hpp"
 #include "Core/MPMSimVarsWrapper.hpp"
 #include "Core/TimestepVarsWrapper.hpp"
@@ -23,7 +27,7 @@ class LAGRIDPlumeModel {
         LAGRIDPlumeModel() = delete;
         LAGRIDPlumeModel(const OptInput &Input_Opt, const Input &input);
         SimStatus runFullModel();
-        SimStatus runEPM();
+        std::variant<EPM::Output, SimStatus> runEPM();
         struct BufferInfo {
             double leftBuffer;
             double rightBuffer;
@@ -40,7 +44,6 @@ class LAGRIDPlumeModel {
         MPMSimVarsWrapper simVars_;
         TimestepVarsWrapper timestepVars_;
         AIM::Grid_Aerosol iceAerosol_;
-        std::pair<EPM::EPMOutput, SimStatus> EPM_result_;
         Meteorology met_;
         Vector_2D diffCoeffX_;
         Vector_2D diffCoeffY_;
@@ -60,11 +63,11 @@ class LAGRIDPlumeModel {
         typedef std::pair<std::vector<std::vector<int>>, VectorUtils::MaskInfo> MaskType;
         inline MaskType iceNumberMask(double cutoff_ratio = NUM_FILTER_RATIO) {
             Vector_2D iceTotalNum = iceAerosol_.TotalNumber();
-            double maxNum = VectorUtils::VecMax2D(iceTotalNum);
+            double maxNum = VectorUtils::max(iceTotalNum);
             auto iceNumMaskFunc = [maxNum,cutoff_ratio](double val) {
                 return val > maxNum * cutoff_ratio;
             };
-            return VectorUtils::Vec2DMask(iceTotalNum, xEdges_, yEdges_, iceNumMaskFunc);
+            return VectorUtils::mask(iceTotalNum, xEdges_, yEdges_, iceNumMaskFunc);
         }
 
         inline MaskType H2OMask() {
@@ -79,18 +82,18 @@ class LAGRIDPlumeModel {
             auto maskFunc = [maxDiff](double val) {
                 return val > maxDiff;
             };
-            return VectorUtils::Vec2DMask(diffH2O, xEdges_, yEdges_, maskFunc);
+            return VectorUtils::mask(diffH2O, xEdges_, yEdges_, maskFunc);
         }
 
         inline MaskType ContrailMask(double minVal=1.0e-2) {
             auto maskFunc = [minVal](double val) {
                 return val > minVal;
             };
-            return VectorUtils::Vec2DMask(Contrail_, xEdges_, yEdges_, maskFunc);
+            return VectorUtils::mask(Contrail_, xEdges_, yEdges_, maskFunc);
         }
 
         void createOutputDirectories();
-        void initializeGrid();
+        void initializeGrid(const EPM::Output &epmOut);
         void saveTSAerosol();
         void initH2O();
         void updateDiffVecs();

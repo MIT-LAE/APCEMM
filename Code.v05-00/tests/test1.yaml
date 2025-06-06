@@ -25,6 +25,7 @@ SIMULATION MENU:
   BOX MODEL SUBMENU:
     Run box model (T/F): T
     netCDF filename format (string): APCEMM_BOX_CASE_*
+  EPM type (original/external/new): original
 
 PARAMETER MENU:
   #Parameter sweep format  : Format is either 200 220 240 or 200:20:240 (except

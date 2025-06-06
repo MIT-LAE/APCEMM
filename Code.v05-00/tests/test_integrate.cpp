@@ -1,8 +1,8 @@
-#include "EPM/Integrate.hpp"
+#include "EPM/Utils/Physics.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
-using namespace EPM; 
+using namespace EPM::Utils::Physics;
 
 TEST_CASE("EPM integrate", "[single-file]") {
 

@@ -34,9 +34,6 @@ namespace physConst
     /* Double-precision value of \pi */
     static constexpr double PI = 3.141592653589793238460;
 
-    /* Double-precision 1j ( 1j * 1j = -1 ) */
-    static const ComplexDouble _1j ( 0.0E+00, 1.0E+00 );
-
     /* Avogadro number   , Unit : [ molecules / mol ] */
     static constexpr double Na = 6.022140857E+23;  
 

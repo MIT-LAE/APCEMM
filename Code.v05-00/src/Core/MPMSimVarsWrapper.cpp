@@ -48,36 +48,3 @@ MPMSimVarsWrapper::MPMSimVarsWrapper(const Input& input, const OptInput& Input_O
 
 }
 
-void MPMSimVarsWrapper::initMicrophysicsVars(const Solution& data, const AIM::Aerosol& epm_LA, double iceDen) {
-    /* Do we have emitted sulfate aerosols? */
-    if ( epm_LA.Moment() != 0 )
-        /* If yes, then microphysics in all grid cells */
-        LA_MICROPHYSICS_ = 2;
-    else {
-        /* If no, then do we have background liquid aerosols? */
-        if ( data.LA_nDens != 0 )
-            /* If yes, then all grid cells' microphysics will be the same */
-            LA_MICROPHYSICS_ = 1;
-        else
-            /* If no, then we have no liquid particles */
-            LA_MICROPHYSICS_ = 0;
-    }
-	
-	TRANSPORT_LA_ = (LA_MICROPHYSICS_ == 2);
-
-    /* Do we have a contrail? */
-    if ( iceDen != 0 )
-        /* If yes, then microphysics in all grid cells */
-        PA_MICROPHYSICS_ = 2;
-    else {
-        /* If no, then do we have background solid aerosols? */
-        if ( data.PA_nDens != 0 )
-            /* If yes, then all grid cells' microphysics will be the same */
-            PA_MICROPHYSICS_ = 1;
-        else
-            /* If no, then we have no solid particles */
-            PA_MICROPHYSICS_ = 0;
-    }
-	
-	TRANSPORT_PA_ = (PA_MICROPHYSICS_ == 2);
-}

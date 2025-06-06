@@ -17,8 +17,7 @@
 #include <string>
 #include <vector>
 #include <netcdf>
-#include "Core/Structure.hpp"
-#include "Core/Mesh.hpp"
+#include "AIM/Aerosol.hpp"
 #include "Core/Meteorology.hpp"
 #include "KPP/KPP_Global.h"
 
@@ -39,11 +38,6 @@ namespace Diag {
     /* Timeseries diagnostic files must be of the form:
     *      *hhmmss.nc or *hhmm.nc */
 
-    bool Diag_TS_Chem( const char* ROOTNAME,                     \
-                    const std::vector<int> speciesIndices,    \
-                    const int hh, const int mm, const int ss, \
-                    const Solution& Data, const Mesh& m );
-
     void Diag_TS_Phys( const char* rootName,
                     const int hh, const int mm, const int ss,
                     const AIM::Grid_Aerosol& iceAer, const Vector_2D& H2O,
@@ -56,22 +50,6 @@ namespace Diag {
     void add2DVar(NcFile& currFile, const Vector_2D& toSave, const vector<NcDim> dims, const string& name, const string& desc, const string& units);
     void replace_hhmmss(string& fileName, int hh, int mm, int ss);
 
-    /* ================================================================== */
-    /* ---- Prod & Loss Rates Diagnostics ------------------------------- */
-    /* ================================================================== */
+} // namespace Diag
 
-    /* If chemistry is performed at the grid cell level, then the rates
-    * are stored as:
-    * NY x NX x NFAM 
-    * into netCDF files at a frequency specified by the input file */
-
-    /*
-    bool Diag_PL( const char* ROOTNAME,                     \
-                 const int hh, const int mm, const int ss, \
-                 const Solution& Data,                     \
-                 const Mesh& m );
-    */
-
-    #endif /* DIAG_MOD_H_INCLUDED */
-
-}
+#endif /* DIAG_MOD_H_INCLUDED */

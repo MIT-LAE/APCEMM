@@ -11,8 +11,10 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <cmath>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include "Util/PhysConstant.hpp"
 #include "Core/Engine.hpp"
 

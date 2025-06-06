@@ -4,11 +4,14 @@
 #include "Core/Status.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "Core/LAGRIDPlumeModel.hpp"
+#include "EPM/Models/Original.hpp"
+
+using physConst::Na, physConst::PI, physConst::R_Air;
 
 /*
 These global variables are required because of the KPP auto-generated code.
 In the LAGRID Plume Model (no plume chemistry), the KPP is used only when
-spinning up the background ambient conditions during the initialization 
+spinning up the background ambient conditions during the initialization
 step of the EPM. For now declare these variables at the top level.
 */
 double RCONST[NREACT];       /* Rate constants (global) */
@@ -18,34 +21,64 @@ double HET[NSPEC][3];        /* Heterogeneous chemistry rates (global) */
 double TIME;                 /* Current integration time (global) */
 double SZA_CST[3];           /* Require this for adjoint integration */
 
-LAGRIDPlumeModel::LAGRIDPlumeModel( const OptInput &optInput, const Input &input ):
-    optInput_(optInput),
-    input_(input),
+LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input) :
+    optInput_(optInput), input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
     aircraft_(Aircraft(input, optInput.SIMULATION_INPUT_ENG_EI)),
-    jetA_(Fuel("C12H24")),
-    simVars_(MPMSimVarsWrapper(input, optInput)),
-    timestepVars_(TimestepVarsWrapper(input, optInput))
+    jetA_(Fuel("C12H24")), simVars_(input, optInput),
+    timestepVars_(input, optInput),
+    yCoords_(optInput_.ADV_GRID_NY),
+    yEdges_(optInput_.ADV_GRID_NY + 1)
 {
-    /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */ 
-    jetA_.setFSC( input.EI_SO2() * 500.0 );
+    /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */
+    jetA_.setFSC(input.EI_SO2() * 500.0);
 
-    EI_ = Emission( aircraft_.engine(), jetA_, input.EI_SO2TOSO4());
+    EI_ = Emission(aircraft_.engine(), jetA_, input.EI_SO2TOSO4());
 
-    timestepVars_.setTimeArray(PlumeModelUtils::BuildTime ( timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt ));
+    timestepVars_.setTimeArray(
+        PlumeModelUtils::BuildTime (
+            timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt));
 
     createOutputDirectories();
+
+    // Set up initial grid coordinates: required for meteorology setup, which
+    // is needed for the EPM.
+    double dy = (optInput_.ADV_GRID_YLIM_UP + optInput_.ADV_GRID_YLIM_DOWN) /
+                optInput_.ADV_GRID_NY;
+    double y0 = -optInput_.ADV_GRID_YLIM_DOWN;
+    std::generate(yEdges_.begin(), yEdges_.end(),
+                  [dy, y0, j = 0]() mutable { return y0 + dy * j++; });
+    std::generate(yCoords_.begin(), yCoords_.end(),
+                  [dy, y0, j = 0]() mutable { return y0 + dy * (0.5 + j++); });
+
+    // Set up initial meteorology data needed for the EPM.
+    AmbientMetParams ambMetParams{
+        .solarTime_h = timestepVars_.curr_Time_s / 3600.0,
+        .temp_K = simVars_.temperature_K,
+        .press_Pa = simVars_.pressure_Pa,
+        .rhi = simVars_.relHumidity_i,
+        .shear = input_.shear()
+    };
+    met_ = Meteorology(optInput_, ambMetParams, yCoords_, yEdges_);
+
+    std::cout << "Temperature      = " << met_.tempRef() << " K" << std::endl;
+    std::cout << "RHw              = " << met_.rhwRef() << " %" << std::endl;
+    std::cout << "RHi              = " << met_.rhiRef() << " %" << std::endl;
+    std::cout << "Saturation depth = " << met_.satdepthUser() << " m" << std::endl;
 }
+
 SimStatus LAGRIDPlumeModel::runFullModel() {
     auto start = std::chrono::high_resolution_clock::now();
     omp_set_num_threads(numThreads_);
-    SimStatus EPM_RC = runEPM();
-    if(EPM_RC != SimStatus::EPMSuccess) {
-        return EPM_RC;
+
+    std::variant<EPM::Output, SimStatus> epm_result = runEPM();
+    if (std::holds_alternative<SimStatus>(epm_result)) {
+        return std::get<SimStatus>(epm_result);
     }
+    EPM::Output epmOut = std::get<EPM::Output>(epm_result);
 
     //Initialize aerosol into grid and init H2O
-    initializeGrid();
+    initializeGrid(epmOut);
     initH2O();
     saveTSAerosol();
 
@@ -178,92 +211,52 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
     return status;
 }
 
-SimStatus LAGRIDPlumeModel::runEPM() {
-    double C[NSPEC];             /* Concentration of all species */
-    double * VAR = &C[0];        /* Concentration of variable species */
-    double * FIX = &C[NVAR];     /* Concentration of fixed species */
-
-    //Need a met object to create a solution object, even in EPM...
-    double dy = (optInput_.ADV_GRID_YLIM_UP + optInput_.ADV_GRID_YLIM_DOWN) / optInput_.ADV_GRID_NY;
-    double y0 = -optInput_.ADV_GRID_YLIM_DOWN;
-    yCoords_ = Vector_1D(optInput_.ADV_GRID_NY);
-    yEdges_ =  Vector_1D(optInput_.ADV_GRID_NY + 1);
-    std::generate(yEdges_.begin(), yEdges_.end(), [dy, y0, j = 0] () mutable { return y0 + dy * j++; } );
-    std::generate(yCoords_.begin(), yCoords_.end(), [dy, y0, j = 0] () mutable { return y0 + dy * (0.5 + j++); } );
-    AmbientMetParams ambMetParams;
-    ambMetParams.solarTime_h = timestepVars_.curr_Time_s / 3600.0;
-    ambMetParams.rhi = simVars_.relHumidity_i;
-    ambMetParams.temp_K = simVars_.temperature_K; 
-    ambMetParams.press_Pa = simVars_.pressure_Pa;
-    ambMetParams.shear = input_.shear();
-
-    met_ = Meteorology(optInput_, ambMetParams, yCoords_, yEdges_);
-
-    std::cout << "Temperature      = " << met_.tempRef() << " K" << std::endl;
-    std::cout << "RHw              = " << met_.rhwRef() << " %" << std::endl;
-    std::cout << "RHi              = " << met_.rhiRef() << " %" << std::endl;
-    std::cout << "Saturation depth = " << met_.satdepthUser() << " m" << std::endl;
-    //Still need the solution data structure...
-    Solution epmSolution(optInput_);
-
-    /* Compute airDens from pressure and temperature */
-    double airDens = simVars_.pressure_Pa / ( physConst::kB   * met_.tempRef() ) * 1.00E-06;
-    /*     [molec/cm3] = [Pa = J/m3] / ([J/K]            * [K]           ) * [m3/cm3] */
-
-    /* This sets the species array values in the Solution data structure to the ambient data file, 
-       EXCEPT FOR H2O which is user defined via met input or rhw input */
-    epmSolution.Initialize( simVars_.BACKG_FILENAME.c_str(), input_, airDens, met_, optInput_, VAR, FIX, false );
-
-    Vector_2D aerArray = epmSolution.getAerosol();
-
-    int i_0 = std::floor( optInput_.ADV_GRID_XLIM_LEFT / optInput_.ADV_GRID_NX ); //index i where x = 0
-    int j_0 = std::floor( -yEdges_[0] / dy ); //index j where y = 0
-
-    //This sets the values in VAR and FIX to the values in the solution data structure at indices i, j
-    epmSolution.getData(VAR, FIX, i_0, j_0);
-
-    //RUN EPM
-    EPM_result_ = EPM::Integrate(met_.tempRef(), simVars_.pressure_Pa, met_.rhwRef(), input_.bypassArea(), input_.coreExitTemp(), VAR, aerArray, aircraft_, EI_, simVars_.CHEMISTRY, optInput_.ADV_AMBIENT_LAPSERATE, input_.fileName_micro() );
-    EPM::EPMOutput& epmOutput = EPM_result_.first;
-    SimStatus EPM_RC = EPM_result_.second;
-
-    if(EPM_RC != SimStatus::EPMSuccess) {
-        return EPM_RC;
+std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
+    EPM::Models::Original epm(optInput_, input_, aircraft_, EI_, met_, simVars_);
+    std::variant<EPM::Output, SimStatus> epmResult = epm.run();
+    if (std::holds_alternative<SimStatus>(epmResult)) {
+        return std::get<SimStatus>(epmResult);
     }
+    EPM::Output &epmOutput = std::get<EPM::Output>(epmResult);
 
-    /* Compute initial plume area and scale initial ice aerosol properties based on number engines.
-     * Note that EPM results are for ONLY ONE ENGINE.
-     * If 2 engines, we assume that after 3 mins, the two plumes haven't fully mixed yet and result in a total
-     * area of 2 * the area computed for one engine
-     * If 3 or more engines, we assume that the plumes originating from the same wing have mixed. */
+    /* Compute initial plume area and scale initial ice aerosol properties based
+    * on number engines. Note that EPM results are for ONLY ONE ENGINE. If 2
+    * engines, we assume that after 3 mins, the two plumes haven't fully mixed
+    * yet and result in a total area of 2 * the area computed for one engine If 3
+    * or more engines, we assume that the plumes originating from the same wing
+    * have mixed. */
 
     epmOutput.area *= 2.0;
-    if ( aircraft_.EngNumber() != 2 ) {
-        epmOutput.iceDensity  *= aircraft_.EngNumber() / 2.0; //Scale densities by this factor to account for the plume size already doubling.
+    if (aircraft_.EngNumber() != 2) {
+        epmOutput.iceDensity *= aircraft_.EngNumber() /
+                                2.0; // Scale densities by this factor to account
+                                    // for the plume size already doubling.
         epmOutput.sootDensity *= aircraft_.EngNumber() / 2.0;
-        epmOutput.SO4Aer.scalePdf( aircraft_.EngNumber()); //EPM only runs for one engine, so scale aerosol pdfs by engine number.
-        epmOutput.IceAer.scalePdf( aircraft_.EngNumber());
+        epmOutput.SO4Aer.scalePdf(
+            aircraft_.EngNumber()); // EPM only runs for one engine, so scale
+                                    // aerosol pdfs by engine number.
+        epmOutput.IceAer.scalePdf(aircraft_.EngNumber());
     }
 
-    //Run vortex sink parameterization
-    /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not just
-        * user-specified input */
-    const double iceNumFrac = aircraft_.VortexLosses( EI_.getSoot(), EI_.getSootRad(), \
-                                                            met_.satdepthUser() );
+    // Run vortex sink parameterization
+    /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not
+    * just user-specified input */
+    const double iceNumFrac = aircraft_.VortexLosses(
+        EI_.getSoot(), EI_.getSootRad(), met_.satdepthUser());
 
-    std::cout << "Parameterized vortex sinking survival fraction: " << iceNumFrac << std::endl;
-    if ( iceNumFrac <= 0.00E+00) {
+    std::cout << "Parameterized vortex sinking survival fraction: " << iceNumFrac
+                << std::endl;
+    if (iceNumFrac <= 0.00E+00) {
         std::cout << "EndSim: vortex sinking" << std::endl;
         return SimStatus::NoSurvivalVortex;
     }
-    epmOutput.IceAer.scalePdf( iceNumFrac );
+    epmOutput.IceAer.scalePdf(iceNumFrac);
 
-    return SimStatus::EPMSuccess;
+    return epmOutput;
 }
 
-void LAGRIDPlumeModel::initializeGrid() {
-    auto& epmOut = EPM_result_.first;
-    auto& epmIceAer = EPM_result_.first.IceAer;
+void LAGRIDPlumeModel::initializeGrid(const EPM::Output &epmOut) {
+    auto& epmIceAer = epmOut.IceAer;
 
     /* TODO: Fix the initial boundaries */
     int nx_init = optInput_.ADV_GRID_NX;
@@ -273,14 +266,14 @@ void LAGRIDPlumeModel::initializeGrid() {
     int ny_init = optInput_.ADV_GRID_NY;
     double dy = (optInput_.ADV_GRID_YLIM_DOWN + optInput_.ADV_GRID_YLIM_UP)/ny_init;
     double y0 = -optInput_.ADV_GRID_YLIM_DOWN;
+
     yCoords_ = Vector_1D(ny_init);
     yEdges_ =  Vector_1D(ny_init + 1);
-
     std::generate(yEdges_.begin(), yEdges_.end(), [dy, y0, j = 0] () mutable { return y0 + dy * j++; } );
     std::generate(yCoords_.begin(), yCoords_.end(), [dy, y0, j = 0] () mutable { return y0 + dy * (0.5 + j++); } );
 
-    xEdges_ = Vector_1D(nx_init + 1);
     xCoords_ = Vector_1D(nx_init);
+    xEdges_ = Vector_1D(nx_init + 1);
     std::generate(xEdges_.begin(), xEdges_.end(), [dx_init, x0, i = 0] () mutable { return x0 + dx_init * i++; } );
     std::generate(xCoords_.begin(), xCoords_.end(), [dx_init, x0, i = 0] () mutable { return x0 + dx_init * (0.5 + i++); } );
 
@@ -293,16 +286,16 @@ void LAGRIDPlumeModel::initializeGrid() {
         return 7000 * pow(t0/ts, 0.8);
     };
     double m_F = aircraft_.FuelFlow() / aircraft_.VFlight(); //fuel consumption per flight distance [kg / m]
-    double rho_air = simVars_.pressure_Pa / (physConst::R_Air * epmOut.finalTemp);
-    double B1 = optInput_.ADV_CSIZE_WIDTH_BASE + optInput_.ADV_CSIZE_WIDTH_SCALING_FACTOR * N_dil(aircraft_.vortex().t()) * m_F / ( physConst::PI/4 * rho_air * D1); // initial contrail width [m]
+    double rho_air = simVars_.pressure_Pa / (R_Air * epmOut.finalTemp);
+    double B1 = optInput_.ADV_CSIZE_WIDTH_BASE + optInput_.ADV_CSIZE_WIDTH_SCALING_FACTOR * N_dil(aircraft_.vortex().t()) * m_F / ( PI/4 * rho_air * D1); // initial contrail width [m]
 
     Vector_3D pdf_init;
     
     //Initialize area assuming ellipse-like shape
-    double initPlumeArea = EPM_result_.first.area;
+    double initPlumeArea = epmOut.area;
     double aspectRatio = D1/B1;
     //Currently ignoring EPM area results.
-    double initWidth = 2 * std::sqrt(initPlumeArea / (physConst::PI * aspectRatio));
+    double initWidth = 2 * std::sqrt(initPlumeArea / (PI * aspectRatio));
     double initDepth = aspectRatio * initWidth;
 
     double sigma_x = initWidth/8;
@@ -333,7 +326,7 @@ void LAGRIDPlumeModel::initH2O() {
     //Add emitted plume H2O. This function is called after releasing the initial crystals into the grid,
     //so we can use that as a "mask" for where to emit the H2O.
 
-    auto maskInfo = VectorUtils::Vec2DMask(iceAerosol_.TotalNumber(), [](double val) { return val > 1e-4; } );
+    auto maskInfo = VectorUtils::mask(iceAerosol_.TotalNumber(), [](double val) { return val > 1e-4; } );
     auto& mask = maskInfo.first;
     int nonMaskCount = maskInfo. second;
 
@@ -342,7 +335,7 @@ void LAGRIDPlumeModel::initH2O() {
 
     double fuelPerDist = aircraft_.FuelFlow() / aircraft_.VFlight();
     double mass_WV = EI_.getH2O() * fuelPerDist - icemass;
-    double E_H2O = mass_WV / (MW_H2O * 1e3) * physConst::Na;
+    double E_H2O = mass_WV / (MW_H2O * 1e3) * Na;
 
     // Spread the emitted water evenly over the cells that contain ice crystals
     auto localPlumeEmission = [&](std::size_t j, std::size_t i) -> double {
@@ -370,7 +363,7 @@ void LAGRIDPlumeModel::updateDiffVecs() {
     PlumeModelUtils::DiffParam( timestepVars_.curr_Time_s - timestepVars_.tInitial_s + timestepVars_.TRANSPORT_DT / 2.0,
                                 dh_enhanced, dv_enhanced, input_.horizDiff(), input_.vertiDiff() );
     auto number = iceAerosol_.TotalNumber();
-    auto num_max = VectorUtils::VecMax2D(number);
+    auto num_max = VectorUtils::max(number);
     
     diffCoeffX_ = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size()));
     diffCoeffY_ = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size()));
@@ -488,8 +481,8 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     // The below lines look forward and predict, based on the maximum possible
     // fall speed, how far a crystal could fall in one outer time step. Horizontal
     // limits are determined based on maximum shear
-    double vertDiffLengthScale = sqrt(VectorUtils::VecMax2D(diffCoeffY_) * remapTimestep);
-    double horizDiffLengthScale = sqrt(VectorUtils::VecMax2D(diffCoeffX_) * remapTimestep);
+    double vertDiffLengthScale = sqrt(VectorUtils::max(diffCoeffY_) * remapTimestep);
+    double horizDiffLengthScale = sqrt(VectorUtils::max(diffCoeffX_) * remapTimestep);
 
     double settlingLengthScale = vFall_[vFall_.size() - 1] * remapTimestep;
 
@@ -604,7 +597,7 @@ double LAGRIDPlumeModel::totalAirMass() {
     auto& mask = numberMask.first;
     double totalAirMass = 0;
     double cellArea = (xEdges_[1] - xEdges_[0]) * (yEdges_[1] - yEdges_[0]);
-    double conversion_factor = 1.0e6 * MW_Air / physConst::Na; // molec/cm3 * cm3/m3 * kg/mol * mol/molec = kg/m3
+    double conversion_factor = 1.0e6 * MW_Air / Na; // molec/cm3 * cm3/m3 * kg/mol * mol/molec = kg/m3
     for(std::size_t j = 0; j < yCoords_.size(); j++) {
         for(std::size_t i = 0; i < xCoords_.size(); i++) {
             totalAirMass += mask[j][i] * met_.airMolecDens(j, i) * cellArea * conversion_factor;

@@ -1,5 +1,30 @@
+#include <cmath>
+#include <limits>
+#include <stdexcept>
+
 #include "Util/VectorUtils.hpp"
+
 namespace VectorUtils {
+    void set_shape(Vector_2D& vec, const UInt n_x, const UInt n_y, const double value) {
+        for (UInt i = 0; i < vec.size(); i++) {
+            vec[i].clear();
+        }
+        vec.clear();
+
+        /* Dimensions are transposed! */
+        for (UInt i = 0; i < n_y; i++) {
+            vec.push_back(Vector_1D(n_x, value));
+        }
+    }
+
+    void set_value(Vector_2D &vec, const double value) {
+        for (UInt i = 0; i < vec.size(); i++) {
+            for (UInt j = 0; j < vec[0].size(); j++) {
+                vec[i][j] = value;
+            }
+        }
+    }
+
     Vector_2D cellAreas (const Vector_1D& xEdges, const Vector_1D& yEdges) {
         int nx = xEdges.size() - 1;
         int ny = yEdges.size() - 1;
@@ -14,7 +39,7 @@ namespace VectorUtils {
         return areas;
     }
 
-    double VecMin2D (const Vector_2D& vec) {
+    double min(const Vector_2D& vec) {
         double min = std::numeric_limits<double>::max();
         for (std::size_t j = 0; j < vec.size(); j++) {
             for (std::size_t i = 0; i < vec[0].size(); i++) {
@@ -25,7 +50,7 @@ namespace VectorUtils {
         return min;
     }
 
-    double VecMax2D (const Vector_2D& vec) {
+    double max(const Vector_2D& vec) {
         double max = std::numeric_limits<double>::min();
         for (std::size_t j = 0; j < vec.size(); j++) {
             for (std::size_t i = 0; i < vec[0].size(); i++) {
@@ -36,7 +61,7 @@ namespace VectorUtils {
         return max;
     }
 
-    Vector_1D VecMax2D (const Vector_2D& vec, int axis) {
+    Vector_1D max(const Vector_2D& vec, int axis) {
         Vector_1D axis_max;
 
         if(axis == 0) {
@@ -65,7 +90,7 @@ namespace VectorUtils {
 
     }
 
-    double Vec2DSum (const Vector_2D& vec) {
+    double sum(const Vector_2D& vec) {
         double sum = 0;
         for (std::size_t j = 0; j < vec.size(); j++) {
             for (std::size_t i = 0; i < vec[0].size(); i++) {
@@ -75,7 +100,7 @@ namespace VectorUtils {
         return sum;
     }
 
-    std::pair<vector<vector<int>>, int> Vec2DMask (const Vector_2D& vec, std::function<bool (double)> maskFunc) {
+    std::pair<vector<vector<int>>, int> mask(const Vector_2D& vec, std::function<bool (double)> maskFunc) {
         vector<vector<int>> mask(vec.size(), vector<int>(vec[0].size()));
         int nonMaskedElems = 0;
         for (std::size_t j = 0; j < vec.size(); j++) {
@@ -90,7 +115,7 @@ namespace VectorUtils {
         return std::make_pair(std::move(mask), nonMaskedElems);
     }
 
-    std::pair<vector<vector<int>>, MaskInfo> Vec2DMask (const Vector_2D& vec, const Vector_1D& xEdges, const Vector_1D& yEdges, std::function<bool (double)> maskFunc) {
+    std::pair<vector<vector<int>>, MaskInfo> mask(const Vector_2D& vec, const Vector_1D& xEdges, const Vector_1D& yEdges, std::function<bool (double)> maskFunc) {
         vector<vector<int>> mask(vec.size(), vector<int>(vec[0].size()));
         MaskInfo info;
         int nonMaskedElems = 0;
@@ -123,18 +148,4 @@ namespace VectorUtils {
         info.minY = minY;
         return std::make_pair(std::move(mask), std::move(info));
     }
-
-    Vector_2D vec2DOperation(const Vector_2D& vec1, const Vector_2D& vec2, std::function<double (double, double)> transformFunc) {
-        Vector_2D result(vec1.size(), Vector_1D(vec1[0].size()));
-
-        #pragma omp parallel for
-        for(std::size_t j = 0; j < vec1.size(); j++) {
-            for(std::size_t i = 0; i < vec1[0].size(); i++) {
-                result[j][i] = transformFunc(vec1[j][i], vec2[j][i]);
-            }
-        }
-        return result;
-    }
-
-
 }

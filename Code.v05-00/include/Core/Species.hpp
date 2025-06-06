@@ -14,7 +14,6 @@
 #ifndef SPECIES_H_INCLUDED
 #define SPECIES_H_INCLUDED
 
-#include "Core/Structure.hpp"
 #include "Util/ForwardDecl.hpp"
 
 class SpeciesArray
@@ -36,12 +35,7 @@ class SpeciesArray
 
         ~SpeciesArray( );
 
-        void FillIn( Solution &Data,             \
-                     const Vector_3D &weights,   \
-                     UInt nCounter );
-
         /* FIXME: See comment in Ambient.hpp about classes modifying global state variables */
-        void FillIn( UInt iTime, UInt iRing, double* varSpeciesArray);
         void getData( UInt iTime, UInt iRing, double* varSpeciesArray, double* fixSpeciesArray );
 
         Vector_1D RingAverage( const Vector_1D ringArea, \
