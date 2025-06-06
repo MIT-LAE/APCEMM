@@ -30,26 +30,19 @@ public:
 
     Solution(const OptInput& optInput);
 
-    ~Solution();
-
     // NOTE: THIS IS ONLY CALLED FOR THE EPM
     void Initialize(std::string fileName, const Input &input,
                     const double airDens, const Meteorology &met,
-                    const OptInput &Input_Opt, double *varSpeciesArray,
-                    double *fixSpeciesArray, const bool DBG);
+                    const OptInput &Input_Opt, Vector_1D &varSpeciesArray,
+                    const bool DBG);
 
-    void getData(double *varSpeciesArray, double *fixSpeciesArray,
-                 const UInt i = 0, const UInt j = 0, const bool CHEMISTRY = 0);
+    void getData(Vector_1D &varSpeciesArray, const UInt i = 0, const UInt j = 0);
 
     void SpinUp(Vector_1D &amb_Value, const Input &input,
                 const double airDens, const double startTime,
-                double *varSpeciesArray, double *fixSpeciesArray,
-                const bool DGB = 0);
+                Vector_1D &varSpeciesArray, const bool DGB = 0);
 
-    Vector_2D getAerosol( ) const;
-
-    UInt Nx() const { return size_x; };
-    UInt Ny() const { return size_y; };
+    double getSootDensity() const { return sootDens[0][0]; }
 
     /* Species */
     Vector_3D Species;

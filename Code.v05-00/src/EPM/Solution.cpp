@@ -24,37 +24,28 @@
 using physConst::PI, physConst::kB;
 
 namespace EPM {
-    
-Solution::Solution(const OptInput& optInput) : \
-        liquidAerosol( ),
-        solidAerosol( ),
-        nVariables( NSPEC ),
-        nAer( N_AER ),
-        size_x( optInput.ADV_GRID_NX ),
-        size_y( optInput.ADV_GRID_NY ),
-        reducedSize( 0 )
+
+Solution::Solution(const OptInput& optInput) :
+        liquidAerosol(),
+        solidAerosol(),
+        nVariables(NSPEC),
+        nAer(N_AER),
+        size_x(optInput.ADV_GRID_NX),
+        size_y(optInput.ADV_GRID_NY),
+        reducedSize(0)
 {
     VectorUtils::set_shape(sootDens, size_x, size_y);
     VectorUtils::set_shape(sootRadi, size_x, size_y);
     VectorUtils::set_shape(sootArea, size_x, size_y);
 }
 
-Solution::~Solution()
-{
-
-    /* Destructor */
-
-} /* End of Solution::~Solution */
-
-void Solution::Initialize( std::string fileName,
-                           const Input &input,
-                           const double airDens,
-                           const Meteorology &met,
-                           const OptInput &Input_Opt,
-                           double* varSpeciesArray, double* fixSpeciesArray,
-                           const bool DBG )
-{
-
+void Solution::Initialize(std::string fileName,
+                          const Input &input,
+                          const double airDens,
+                          const Meteorology &met,
+                          const OptInput &Input_Opt,
+                          Vector_1D &varSpeciesArray,
+                          const bool DBG) {
     Vector_1D amb_Value(NSPECALL, 0.0);
     Vector_2D aer_Value(nAer, Vector_1D(2, 0.0));
 
@@ -62,7 +53,7 @@ void Solution::Initialize( std::string fileName,
     readInputBackgroundConditions(input, amb_Value, aer_Value, fileName);
 
     const double AMBIENT_VALID_TIME = 8.0; //hours
-    SpinUp( amb_Value, input, airDens, AMBIENT_VALID_TIME, varSpeciesArray, fixSpeciesArray );
+    SpinUp(amb_Value, input, airDens, AMBIENT_VALID_TIME, varSpeciesArray);
 
     /* Enforce pre-defined values? *
      * Read input defined values for background concentrations */
@@ -110,7 +101,7 @@ void Solution::Initialize( std::string fileName,
     VectorUtils::set_value(sootRadi, aer_Value[0][1]);
     VectorUtils::set_value(sootArea, 4.0 / double(3.0) * PI * aer_Value[0][0] * aer_Value[0][1] * aer_Value[0][1] * aer_Value[0][1]);
 
-    nBin_LA = std::floor( 1 + log( pow( (LA_R_HIG/LA_R_LOW), 3.0 ) ) / log( LA_VRAT ) );
+    nBin_LA = std::floor(1 + log(pow((LA_R_HIG/LA_R_LOW), 3.0)) / log(LA_VRAT));
 
     Vector_1D LA_rE( nBin_LA + 1, 0.0 ); /* Bin edges in m */
     Vector_1D LA_rJ( nBin_LA    , 0.0 ); /* Bin center radius in m */
@@ -118,7 +109,7 @@ void Solution::Initialize( std::string fileName,
 
     const double LA_RRAT = pow( LA_VRAT, 1.0 / double(3.0) );
     LA_rE[0] = LA_R_LOW;
-    for ( UInt iBin_LA = 1; iBin_LA < nBin_LA + 1; iBin_LA++ )                             
+    for ( UInt iBin_LA = 1; iBin_LA < nBin_LA + 1; iBin_LA++ )
         LA_rE[iBin_LA] = LA_rE[iBin_LA-1] * LA_RRAT; /* [m] */
 
     for ( UInt iBin_LA = 0; iBin_LA < nBin_LA; iBin_LA++ ) {
@@ -355,79 +346,26 @@ void Solution::setSpeciesValues(Vector_1D& AERFRAC,  Vector_1D& SOLIDFRAC, const
 }
 
 
-void Solution::getData(  double* varSpeciesArray, double* fixSpeciesArray, const UInt i, \
-                        const UInt j, \
-	                const bool CHEMISTRY )
-{
-
+void Solution::getData(Vector_1D &varSpeciesArray, const UInt i, const UInt j) {
     for ( UInt N = 0; N < NVAR; N++ ) {
-	if ( CHEMISTRY )
+        if ( ( N == ind_H2O      ) || \
+                ( N == ind_H2Omet   ) || \
+                ( N == ind_H2Oplume ) || \
+                ( N == ind_H2OL     ) || \
+                ( N == ind_H2OS     ) ) {
             varSpeciesArray[N] = Species[N][j][i];
-	else {
-            if ( ( N == ind_H2O      ) || \
-                 ( N == ind_H2Omet   ) || \
-                 ( N == ind_H2Oplume ) || \
-                 ( N == ind_H2OL     ) || \
-                 ( N == ind_H2OS     ) ) {
-                varSpeciesArray[N] = Species[N][j][i];
-            }
-	    else {
-                varSpeciesArray[N] = Species[N][0][0];
-	    }
-	
-	}
+        }
+        else {
+            varSpeciesArray[N] = Species[N][0][0];
+        }
     }
-
-    for ( UInt N = 0; N < NFIX; N++ ) {
-	if ( CHEMISTRY )
-            fixSpeciesArray[N] = Species[N+NVAR][j][i];
-	else {
-            if ( ( N == ind_H2O      ) || \
-                 ( N == ind_H2Omet   ) || \
-                 ( N == ind_H2Oplume ) || \
-                 ( N == ind_H2OL     ) || \
-                 ( N == ind_H2OS     ) ) {
-                fixSpeciesArray[N] = Species[N+NVAR][j][i];
-            }
-	    else {
-                fixSpeciesArray[N] = Species[N+NVAR][0][0];
-	    }
-	
-	}
-
-    }
-
 } /* End of Solution::getData */
-
-Vector_2D Solution::getAerosol( ) const
-{
-
-    Vector_2D aerVector( nAer, Vector_1D( 3, 0.0 ) );
-
-    aerVector[  0][0] = sootDens[0][0];
-    aerVector[  0][1] = sootRadi[0][0];
-    aerVector[  0][2] = sootArea[0][0];
-    aerVector[  1][0] = PA_nDens;
-    aerVector[  1][1] = PA_rEff;
-    aerVector[  1][2] = PA_SAD;
-    aerVector[  2][0] = LA_nDens;
-    aerVector[  2][1] = LA_rEff;
-    aerVector[  2][2] = LA_SAD;
-
-    return aerVector;
-
-} /* End of Solution::getAerosol */
 
 /* 
 No functions check the return code of this function, temp fix is to return void
 */
-void Solution::SpinUp( Vector_1D &amb_Value,       \
-                      const Input &input,         \
-                      const double airDens,   \
-                      const double startTime, \
-                      double* varSpeciesArray, double* fixSpeciesArray, const bool DBG )
-{
-
+void Solution::SpinUp(Vector_1D &amb_Value, const Input &input, const double airDens,
+                      const double startTime, Vector_1D &varSpeciesArray, const bool DBG) {
     /* Chemistry timestep
      * DT_CHEM               = 10 mins */
     const double DT_CHEM = 10.0 * 60.0;
@@ -466,6 +404,7 @@ void Solution::SpinUp( Vector_1D &amb_Value,       \
     for ( UInt iVar = 0; iVar < NVAR; iVar++ )
         varSpeciesArray[iVar] = amb_Value[iVar] * airDens;
 
+    Vector_1D fixSpeciesArray(NFIX);
     for ( UInt iFix = 0; iFix < NFIX; iFix++ )
         fixSpeciesArray[iFix] = amb_Value[NVAR+iFix] * airDens;
 
@@ -503,8 +442,8 @@ void Solution::SpinUp( Vector_1D &amb_Value,       \
         /* ~~~~~ Integration ~~~~~~ */
         /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-        IERR = INTEGRATE( varSpeciesArray, fixSpeciesArray, curr_Time_s, curr_Time_s + DT_CHEM, \
-                          ATOL, RTOL, STEPMIN );
+        IERR = INTEGRATE(varSpeciesArray.data(), fixSpeciesArray.data(),
+                         curr_Time_s, curr_Time_s + DT_CHEM, ATOL, RTOL, STEPMIN);
 
         if ( IERR < 0 ) {
             /* Integration failed */

@@ -11,6 +11,12 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <boost/range/algorithm.hpp>
+#include <boost/numeric/odeint.hpp>
+#include <boost/numeric/odeint/stepper/runge_kutta_cash_karp54.hpp>
+#include <boost/numeric/odeint/stepper/controlled_runge_kutta.hpp>
+#include <boost/numeric/odeint/iterator/adaptive_iterator.hpp>
+
 #include "AIM/Nucleation.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "Util/MolarWeights.hpp"
@@ -20,83 +26,91 @@
 #include "Core/Parameters.hpp"
 #include "Core/Status.hpp"
 #include "EPM/EPM.hpp"
-#include "EPM/Models/Original/odeSolver.hpp"
-#include "EPM/Models/Original/Integrate.hpp"
+#include "EPM/Models/Original.hpp"
 #include "EPM/Models/Original/Indexes.hpp"
 #include "EPM/Models/Original/RHS.hpp"
+#include "EPM/Models/Original/StateObserver.hpp"
 
-using physConst::Na, physConst::R, physConst::kB, physConst::PI,
-    physConst::GAMMA_AD, physConst::RHO_SOOT, physConst::RHO_SULF;
+
+using physConst::Na, physConst::R, physConst::PI,
+    physConst::RHO_SOOT, physConst::RHO_SULF;
 
 using physFunc::pSat_H2Ol, physFunc::pSat_H2Os;
 
+using namespace EPM::Models::OriginalImpl;
 
-namespace EPM::Models::OriginalImpl
+typedef boost::numeric::odeint::runge_kutta_fehlberg78<Vector_1D> error_stepper_type;
+typedef boost::numeric::odeint::controlled_runge_kutta<error_stepper_type> controlled_stepper_type;
+
+
+namespace EPM::Models
 {
-    std::variant<Output, SimStatus> Integrate(
-        double tempInit_K, double pressure_Pa, double rhw, double bypassArea,
-        double coreExitTemp, double varArray[], const Vector_2D& aerArray,
-        const Aircraft& AC,const Emission& EI, bool CHEMISTRY, double ambientLapseRate,
-        std::string micro_data_out) {
+    std::variant<Output, SimStatus> Original::Integrate(double sootDensity) {
         Output out;
-        out.finalTemp = tempInit_K;
-        out.bypassArea = bypassArea;
-        out.coreExitTemp = coreExitTemp;
+        out.finalTemp = met_.tempRef();
+        out.bypassArea = input_.bypassArea();
+        out.coreExitTemp = input_.coreExitTemp();
 
         /* Get mean vortex displacement in [m] */
-        double delta_z = VORTEX_SINKING ? AC.deltaz1() : 0.0;
+        double delta_z = VORTEX_SINKING ? aircraft_.deltaz1() : 0.0;
 
         /* Compute adiabatic and real temperature changes */
-        double delta_T_ad = -GAMMA_AD * delta_z * 1.0E-03;
-        double delta_T    = -ambientLapseRate * delta_z * 1.0E-03;
+        double delta_T    = -optInput_.ADV_AMBIENT_LAPSERATE * delta_z * 1.0E-03;
         /*          [ K ] =          [ K/km ] *  [ m ]  * [ km/m ]
          * The minus sign is because delta_z is the distance pointing down */
 
-        SimStatus returnCode = RunMicrophysics(
-            out.finalTemp, pressure_Pa, rhw, varArray, aerArray,
-            AC, EI, delta_T_ad, delta_T, out.iceRadius, out.iceDensity, out.sootDensity,
-            out.H2O_mol, out.SO4g_mol, out.SO4l_mol, out.SO4Aer, out.IceAer,
-            out.area, out.bypassArea, out.coreExitTemp,
-            CHEMISTRY, ambientLapseRate, micro_data_out);
+        SimStatus returnCode = RunMicrophysics(out, sootDensity, delta_T);
 
         if (returnCode != SimStatus::EPMSuccess)
             return returnCode;
         return out;
     }
 
-    SimStatus RunMicrophysics( double &temperature_K, double pressure_Pa, double relHumidity_w, double varArray[], \
-                        const Vector_2D& aerArray, const Aircraft &AC, const Emission &EI, \
-                         double delta_T_ad, double delta_T, double &Ice_rad, double &Ice_den, \
-                         double &Soot_den, double &H2O_mol, double &SO4g_mol, double &SO4l_mol, \
-                         AIM::Aerosol &SO4Aer, AIM::Aerosol &IceAer, double &Area, double &Ab0, double &Tc0, 
-                         const bool CHEMISTRY, double ambientLapseRate, std::string micro_data_out )
-    {
+    SimStatus Original::RunMicrophysics(
+        Output &state, double sootDensity, double delta_T) {
+        double &temperature_K = state.finalTemp;
+        double &Ice_rad = state.iceRadius;
+        double &Ice_den = state.iceDensity;
+        double &Soot_den = state.sootDensity;
+        double &H2O_mol = state.H2O_mol;
+        double &SO4g_mol = state.SO4g_mol;
+        double &SO4l_mol = state.SO4l_mol;
+        AIM::Aerosol &SO4Aer = state.SO4Aer;
+        AIM::Aerosol &IceAer = state.IceAer;
+        double &Area = state.area;
+        double Ab0 = state.bypassArea;
+        double Tc0 = state.coreExitTemp;
+
         double relHumidity_i_Final;
 
-        /* relHumidity_w is in % */
-        relHumidity_i_Final      = relHumidity_w * pSat_H2Ol( temperature_K + delta_T ) \
-                                                 / pSat_H2Os( temperature_K + delta_T ) / 100.0;
+      /* RH is in % */
+      relHumidity_i_Final = met_.rhwRef() * pSat_H2Ol(temperature_K + delta_T) /
+                            pSat_H2Os(temperature_K + delta_T) / 100.0;
 
-        double final_Temp = temperature_K + delta_T;
+      double final_Temp = temperature_K + delta_T;
 
-        /* Homogeneous NAT, using supercooling requirement *
-         * Heterogeneous NAT, no supercooling requirement */
+      /* Homogeneous NAT, using supercooling requirement *
+       * Heterogeneous NAT, no supercooling requirement */
 
-        /* Number of SO4 size distribution bins based on specified min and max radii *
-        * and volume ratio between two adjacent bins */
-        const UInt SO4_NBIN = std::floor( 1 + log( pow( (LA_R_HIG/LA_R_LOW), 3.0 ) ) / log( LA_VRAT ) );
+      /* Number of SO4 size distribution bins based on specified min and max
+       * radii * and volume ratio between two adjacent bins */
+      const UInt SO4_NBIN =
+          static_cast<UInt>(
+              std::floor(1 + log(pow(LA_R_HIG / LA_R_LOW, 3.0)) / log(LA_VRAT)));
 
-        if ( LA_VRAT <= 1.0 ) {
-            std::cout << "\nVolume ratio of consecutive bins for SO4 has to be greater than 1.0 ( LA_VRAT = " << LA_VRAT << " )";
-        }
+      if (LA_VRAT <= 1.0) {
+        std::cout << "\nVolume ratio of consecutive bins for SO4 has to be "
+                     "greater than 1.0 ( LA_VRAT = "
+                  << LA_VRAT << " )";
+      }
 
-        /* SO4 bin radius and volume centers */
-        Vector_1D SO4_rJ( SO4_NBIN    , 0.0 ); // bin centers, radius
-        Vector_1D SO4_rE( SO4_NBIN + 1, 0.0 ); // bin edges, radius
-        Vector_1D SO4_vJ( SO4_NBIN    , 0.0 ); // bin centers, volume
+      /* SO4 bin radius and volume centers */
+      Vector_1D SO4_rJ( SO4_NBIN    , 0.0 ); // bin centers, radius
+      Vector_1D SO4_rE( SO4_NBIN + 1, 0.0 ); // bin edges, radius
+      Vector_1D SO4_vJ( SO4_NBIN    , 0.0 ); // bin centers, volume
 
-        /* Adjacent bin radius ratio */
-        const double LA_RRAT = pow( LA_VRAT, 1.0 / double(3.0) );
+      /* Adjacent bin radius ratio */
+      const double LA_RRAT = pow( LA_VRAT, 1.0 / double(3.0) );
 
         /* Initialize bin center and edge radii, as well as volume */
         SO4_rE[0] = LA_R_LOW;
@@ -110,7 +124,8 @@ namespace EPM::Models::OriginalImpl
 
         /* Number of ice size distribution bins based on specified min and max radii *
         * and volume ratio between two adjacent bins */
-        const UInt Ice_NBIN = std::floor( 1 + log( pow( (PA_R_HIG/PA_R_LOW), 3.0 ) ) / log( PA_VRAT ) );
+        const UInt Ice_NBIN = static_cast<UInt>(
+            std::floor(1 + log(pow(PA_R_HIG / PA_R_LOW, 3.0)) / log(PA_VRAT)));
 
         /* Adjacent bin radius ratio */
         const double PA_RRAT = pow( PA_VRAT, 1.0 / double(3.0) );
@@ -127,8 +142,8 @@ namespace EPM::Models::OriginalImpl
 
 
         /* Create coagulation kernels */
-        const AIM::Coagulation Kernel( "liquid", SO4_rJ, SO4_vJ, RHO_SULF, temperature_K, pressure_Pa );
-        const AIM::Coagulation Kernel_SO4_Soot( "liquid", SO4_rJ, RHO_SULF, EI.getSootRad(), RHO_SOOT, temperature_K, pressure_Pa );
+        const AIM::Coagulation Kernel( "liquid", SO4_rJ, SO4_vJ, RHO_SULF, temperature_K, simVars_.pressure_Pa );
+        const AIM::Coagulation Kernel_SO4_Soot( "liquid", SO4_rJ, RHO_SULF, EI_.getSootRad(), RHO_SOOT, temperature_K, simVars_.pressure_Pa );
 
         const Vector_1D KernelSO4Soot = Kernel_SO4_Soot.getKernel_1D();
 
@@ -145,29 +160,29 @@ namespace EPM::Models::OriginalImpl
 
         AIM::Aerosol nPDF_SO4( SO4_rJ, SO4_rE, nSO4, rSO4, sSO4, "lognormal" );
 
-        double n_air_amb = Na * pressure_Pa / (R * temperature_K * 1.0e6) ;
-        double n_air_eng = Na * pressure_Pa / (R * Tc0 * 1.0e6) ;
+        double n_air_amb = Na * simVars_.pressure_Pa / (R * temperature_K * 1.0e6) ;
+        double n_air_eng = Na * simVars_.pressure_Pa / (R * Tc0 * 1.0e6) ;
 
 
         /* Store ambient concentrations */
-        double H2O_amb  = varArray[ind_H2O]/n_air_amb;     /* [molec/cm^3] */
-        double SO4_amb  = varArray[ind_SO4]/n_air_amb;     /* [molec/cm^3] */
+        double H2O_amb  = VAR_[ind_H2O]/n_air_amb;     /* [molec/cm^3] */
+        double SO4_amb  = VAR_[ind_SO4]/n_air_amb;     /* [molec/cm^3] */
         double SO4l_amb, SO4g_amb;               /* [molec/cm^3] */
-        double HNO3_amb = varArray[ind_HNO3]/n_air_amb;    /* [molec/cm^3] */
-        double Soot_amb = aerArray[ind_SOOT][0]/n_air_amb; ///n_air_amb; /* [#/cm^3] */
+        double HNO3_amb = VAR_[ind_HNO3]/n_air_amb;    /* [molec/cm^3] */
+        double Soot_amb = sootDensity/n_air_amb; ///n_air_amb; /* [#/cm^3] */
 
         /* Add emissions of one engine to concentration arrays */
-        varArray[ind_H2O] += EI.getH2O() / ( MW_H2O  * 1.0E+03 ) * AC.FuelFlow() / double(AC.EngNumber()) / AC.VFlight() * Na / Ab0     * 1.00E-06 ;
+        VAR_[ind_H2O] += EI_.getH2O() / ( MW_H2O  * 1.0E+03 ) * aircraft_.FuelFlow() / double(aircraft_.EngNumber()) / aircraft_.VFlight() * Na / Ab0     * 1.00E-06 ;
         /* [ molec/cm^3 ] += [ g/kgf ]   / [ kg/mol ] * [ g/kg ] * [ kgf/s ]                                  / [ m/s ]      * [ molec/mol ] / [ m^2 ] * [ m^3/cm^3 ]
          *                += [ molec/cm^3 ] */
 
-        varArray[ind_H2O] = varArray[ind_H2O] / n_air_eng ;
+        VAR_[ind_H2O] = VAR_[ind_H2O] / n_air_eng ;
 
         /* Variable SO2 */
-        varArray[ind_SO4] += EI.getSO2toSO4() * EI.getSO2() / ( MW_H2SO4  * 1.0E+03 ) * AC.FuelFlow() / double(AC.EngNumber()) / AC.VFlight() * Na / Ab0 * 1.00E-06;
-        varArray[ind_SO4] = varArray[ind_SO4] / n_air_eng;
+        VAR_[ind_SO4] += EI_.getSO2toSO4() * EI_.getSO2() / ( MW_H2SO4  * 1.0E+03 ) * aircraft_.FuelFlow() / double(aircraft_.EngNumber()) / aircraft_.VFlight() * Na / Ab0 * 1.00E-06;
+        VAR_[ind_SO4] = VAR_[ind_SO4] / n_air_eng;
 
-        double varSoot = Soot_amb + EI.getSoot() / ( 4.0 / double(3.0) * PI * RHO_SOOT * 1.00E+03 * EI.getSootRad() * EI.getSootRad() * EI.getSootRad() ) * AC.FuelFlow() / double(AC.EngNumber()) / AC.VFlight() / Ab0 * 1.00E-06 ; /* [ #/cm^3 ] */
+        double varSoot = Soot_amb + EI_.getSoot() / ( 4.0 / double(3.0) * PI * RHO_SOOT * 1.00E+03 * EI_.getSootRad() * EI_.getSootRad() * EI_.getSootRad() ) * aircraft_.FuelFlow() / double(aircraft_.EngNumber()) / aircraft_.VFlight() / Ab0 * 1.00E-06 ; /* [ #/cm^3 ] */
         varSoot = varSoot / n_air_eng;
 
         /* Unit check:
@@ -211,37 +226,40 @@ namespace EPM::Models::OriginalImpl
          * vars[7] : Ice particle radius,           Unit m
          */
 
-        const std::vector<UInt> EPM_ind = {EPM_ind_Trac, EPM_ind_T, EPM_ind_P, EPM_ind_H2O, EPM_ind_SO4, EPM_ind_SO4l, EPM_ind_SO4g, EPM_ind_SO4s, EPM_ind_HNO3, EPM_ind_Part, EPM_ind_ParR, EPM_ind_the1, EPM_ind_the2};
+        const std::vector<UInt> EPM_ind = {
+            EPM_ind_Trac, EPM_ind_T, EPM_ind_P, EPM_ind_H2O, EPM_ind_SO4,
+            EPM_ind_SO4l, EPM_ind_SO4g, EPM_ind_SO4s, EPM_ind_HNO3,
+            EPM_ind_Part, EPM_ind_ParR, EPM_ind_the1, EPM_ind_the2};
 
         Vector_1D x(13, 0.0);
 
         /* Initial conditions */
         x[EPM_ind_Trac] = 1.0;
         x[EPM_ind_T]    = Tc0;
-        x[EPM_ind_P]    = pressure_Pa;
-        x[EPM_ind_H2O]  = varArray[ind_H2O];
-        x[EPM_ind_SO4]  = varArray[ind_SO4];
+        x[EPM_ind_P]    = simVars_.pressure_Pa;
+        x[EPM_ind_H2O]  = VAR_[ind_H2O];
+        x[EPM_ind_SO4]  = VAR_[ind_SO4];
 
         /* Assume that emitted SO4 is purely gaseous as temperature is high */
         x[EPM_ind_SO4l] = 0.0;
-        x[EPM_ind_SO4g] = varArray[ind_SO4];
+        x[EPM_ind_SO4g] = VAR_[ind_SO4];
         x[EPM_ind_SO4s] = 0.0;
-        x[EPM_ind_HNO3] = varArray[ind_HNO3] / n_air_eng;
+        x[EPM_ind_HNO3] = VAR_[ind_HNO3] / n_air_eng;
         x[EPM_ind_Part] = varSoot;
-        x[EPM_ind_ParR] = EI.getSootRad();
+        x[EPM_ind_ParR] = EI_.getSootRad();
         x[11] = 0.0;
         x[12] = 0.0;
 
         Vector_2D obs_Var;
         Vector_1D obs_Time;
 
-        streamingObserver observer(obs_Var, obs_Time, EPM_ind, micro_data_out, 2);
+        StateObserver observer(obs_Var, obs_Time, EPM_ind, input_.fileName_micro(), 2);
 
         /* Creating ode's right hand side */
         gas_aerosol_rhs rhs(
-            temperature_K, pressure_Pa, delta_T,
+            temperature_K, simVars_.pressure_Pa, delta_T,
             H2O_amb, SO4_amb, SO4l_amb, SO4g_amb, HNO3_amb, Soot_amb,
-            EI.getSootRad(), KernelSO4Soot, nPDF_SO4);
+            EI_.getSootRad(), KernelSO4Soot, nPDF_SO4);
 
         /* Total number of steps */
         UInt totSteps = 0;
@@ -279,7 +297,7 @@ namespace EPM::Models::OriginalImpl
                 // dilFactor_b = 1.0;
                 SO4l_b = 0.0;
                 T_b = Tc0; // Set initial temperature in plume to core exit temp
-                P_b = pressure_Pa; // Set initial pressure in plume to ambient pressure
+                P_b = simVars_.pressure_Pa; // Set initial pressure in plume to ambient pressure
             }
             else {
                 // dilFactor_b = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
@@ -348,7 +366,7 @@ namespace EPM::Models::OriginalImpl
         }
         /* Output variables */
         /* Check if contrail is water supersaturated at some point during formation */
-        if ( !CHEMISTRY && !observer.checkwatersat() ) {
+        if ( !simVars_.CHEMISTRY && !observer.checkwatersat() ) {
             std::cout << "EndSim: Never reaches water saturation... ending simulation" << std::endl;
             //exit(0);
             return SimStatus::NoWaterSaturation;
@@ -365,14 +383,12 @@ namespace EPM::Models::OriginalImpl
         }
         /* No persistent contrail */
         else {
-
-             Ice_rad  = EI.getSootRad();
+             Ice_rad  = EI_.getSootRad();
              Ice_den  = 0.0;
              Soot_den = PartDens_3mins;
              H2O_mol  = H2OMol_3mins;
-	         std::cout << "No persistent contrail..." << std::endl;
-             if ( !CHEMISTRY ) return SimStatus::NoPersistence;
-
+             std::cout << "No persistent contrail..." << std::endl;
+             if (!simVars_.CHEMISTRY) return SimStatus::NoPersistence;
         }
 	    std::cout << "Ice_den=" << Ice_den << std::endl;
 
@@ -385,8 +401,8 @@ namespace EPM::Models::OriginalImpl
         IceAer = solidAer;
 
         /* Compute plume area */
-        Area = Ab0 / Tracer_3mins; 
-    
+        Area = Ab0 / Tracer_3mins;
+
 //        std::cout << " Soot end: " << ( varSoot - Soot_amb  ) * 1E6 * Ab0 << " [#/m]\n";
 //        std::cout << " Soot end: " << ( Soot_den - Soot_amb ) * 1E6 * Ab0 / Tracer_3mins << "[#/m]\n";
 
@@ -394,9 +410,6 @@ namespace EPM::Models::OriginalImpl
         temperature_K = final_Temp;
 
         return SimStatus::EPMSuccess;
-
     } /* End of RunMicrophysics */
 
 }
-
-/* End of Integrate.cpp */

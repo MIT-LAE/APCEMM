@@ -2,8 +2,9 @@
 set(SRCS
     EPM.cpp
     Solution.cpp
+    Utils/Physics.cpp
     Models/Original/Model.cpp
-    Models/Original/odeSolver.cpp
+    Models/Original/StateObserver.cpp
     Models/Original/Integrate.cpp
     Models/Original/RHS.cpp
     )

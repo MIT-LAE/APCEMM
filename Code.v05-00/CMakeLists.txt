@@ -120,7 +120,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 
 # Defines the libraries necessary for compiling the executable
 target_link_libraries(${PROJECT_NAME} PRIVATE
-                      FVM_ANDS Util AIM KPP EPM Core YamlInputReader LAGRID)
+  FVM_ANDS Util AIM KPP EPM Core YamlInputReader LAGRID)
 
 # Tests
 #if (BUILD_TEST)

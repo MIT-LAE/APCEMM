@@ -9,8 +9,8 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef EPM_MODELS_ORIGINAL_RHS_H_INCLUDED
-#define EPM_MODELS_ORIGINAL_RHS_H_INCLUDED
+#ifndef EPM_MODELS_ORIGINALIMPL_RHS_H_INCLUDED
+#define EPM_MODELS_ORIGINALIMPL_RHS_H_INCLUDED
 
 #include "Util/ForwardDecl.hpp"
 #include "AIM/Aerosol.hpp"
@@ -59,15 +59,6 @@ struct gas_aerosol_rhs {
 
     void operator()(const Vector_1D &x, Vector_1D &dxdt, const double t = 0) const;
 };
-
-double entrainmentRate(const double time);
-double depositionRate(const double r, const double T, const double P, const double H2O,
-                      const double r_0,  const double theta );
-double dT_Vortex(const double time, const double delta_T, bool deriv = 0);
-bool isFreezable(const double r, const double T, const double H2O,
-                 const double r0);
-double condensationRate(const double r, const double T, const double P,
-                        const double H2O, const double theta);
 
 } // namespace EPM::Models::Original
 

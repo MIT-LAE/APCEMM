@@ -89,8 +89,18 @@ namespace YamlInputReader{
         }
 
     }
-    inline int parseIntString(const string paramString, const string paramLocation = ""){
-        return (int)(parseDoubleString(paramString, paramLocation));
+    inline int parseIntString(const string paramString,
+                              const string paramLocation = "") {
+      return static_cast<int>(parseDoubleString(paramString, paramLocation));
+    }
+
+    inline unsigned int parseUIntString(const string paramString,
+                              const string paramLocation = "") {
+      int val = (int)(parseDoubleString(paramString, paramLocation));
+      if (val < 0) {
+        throw std::invalid_argument("Negative value for unsigned int at parameter " + paramLocation);
+      }
+      return static_cast<unsigned int>(val);
     }
 
     vector<int> parseVectorIntString(const string paramString, const string paramLocation = "");

@@ -1,7 +1,6 @@
 #include <variant>
 
 #include "EPM/Models/Original.hpp"
-#include "EPM/Models/Original/Integrate.hpp"
 #include "EPM/EPM.hpp"
 #include "EPM/Solution.hpp"
 #include "KPP/KPP_Parameters.h"
@@ -12,22 +11,19 @@ using physConst::kB;
 
 namespace EPM::Models {
 
-    Original::Original(const OptInput &optInput, const Input &input, const Aircraft &aircraft,
-                       const Emission &EI, const Meteorology &met,
-                       const MPMSimVarsWrapper &simVars) :
-        Base(optInput, input, aircraft, EI, met, simVars) { }
+Original::Original(const OptInput &optInput, const Input &input, const Aircraft &aircraft,
+                    const Emission &EI, const Meteorology &met,
+                    const MPMSimVarsWrapper &simVars) :
+    Base(optInput, input, aircraft, EI, met, simVars), VAR_(NVAR)
+{ }
 
-  std::variant<EPM::Output, SimStatus> Original::run() {
-    double C[NSPEC];        /* Concentration of all species */
-    double *VAR = &C[0];    /* Concentration of variable species */
-    double *FIX = &C[NVAR]; /* Concentration of fixed species */
-
-    // Still need the solution data structure...
-    // TODO: WHAT DOES THAT MEAN? WHY "STILL NEED"?
+std::variant<EPM::Output, SimStatus> Original::run() {
+    // This is used for initializing the EPM solution. The only thing that
+    // gets taken from it in the end is the soot density.
     EPM::Solution epmSolution(optInput_);
 
     /* Compute airDens from pressure and temperature */
-    double airDens = simVars_.pressure_Pa / (kB * met_.tempRef()) * 1.00E-06;
+    double airDens = simVars_.pressure_Pa / (kB    * met_.tempRef()) * 1.00E-06;
     // [molec/cm3] = [Pa = J/m3]          / ([J/K] * [K])            * [m3/cm3]
 
     /* This sets the species array values in the Solution data structure to the
@@ -35,28 +31,23 @@ namespace EPM::Models {
     rhw input */
     epmSolution.Initialize(
         simVars_.BACKG_FILENAME.c_str(), input_, airDens, met_,
-        optInput_, VAR, FIX, false);
+        optInput_, VAR_, false);
 
-    Vector_2D aerArray = epmSolution.getAerosol();
-
-    Vector_1D yEdges(optInput_.ADV_GRID_NY + 1);
     double dy =
         (optInput_.ADV_GRID_YLIM_UP + optInput_.ADV_GRID_YLIM_DOWN) /
         optInput_.ADV_GRID_NY;
-    int i_0 = std::floor(optInput_.ADV_GRID_XLIM_LEFT /
-                        optInput_.ADV_GRID_NX); // index i where x = 0
-    int j_0 = std::floor(-yEdges[0] / dy);      // index j where y = 0
+    double y0 = -optInput_.ADV_GRID_YLIM_DOWN;
+    unsigned int i_0 = static_cast<unsigned int>(
+        std::floor(optInput_.ADV_GRID_XLIM_LEFT /
+                   optInput_.ADV_GRID_NX)); // index i where x = 0
+    unsigned int j_0 = static_cast<unsigned int>(std::floor(-y0 / dy)); // index j where y = 0
 
-    // This sets the values in VAR and FIX to the values in the solution data
+    // This sets the values in VAR_ to the values in the solution data
     // structure at indices i, j
-    epmSolution.getData(VAR, FIX, i_0, j_0);
+    epmSolution.getData(VAR_, i_0, j_0);
 
     // Run EPM.
-    return OriginalImpl::Integrate(
-            met_.tempRef(), simVars_.pressure_Pa, met_.rhwRef(),
-            input_.bypassArea(), input_.coreExitTemp(), VAR, aerArray, aircraft_,
-            EI_, simVars_.CHEMISTRY, optInput_.ADV_AMBIENT_LAPSERATE,
-            input_.fileName_micro());
+    return Integrate(epmSolution.getSootDensity());
 }
 
 } // namespace EPM::Models
