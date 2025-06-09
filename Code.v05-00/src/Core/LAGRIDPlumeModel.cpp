@@ -218,6 +218,7 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
         return std::get<SimStatus>(epmResult);
     }
     EPM::Output &epmOutput = std::get<EPM::Output>(epmResult);
+    epmOutput.write(optInput_.SIMULATION_OUTPUT_FOLDER + "/epm-output.nc");
 
     /* Compute initial plume area and scale initial ice aerosol properties based
     * on number engines. Note that EPM results are for ONLY ONE ENGINE. If 2
