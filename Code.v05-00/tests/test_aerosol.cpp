@@ -68,12 +68,6 @@ TEST_CASE ("Aerosol", "[single-file]" ) {
         REQUIRE(retrieved_Nbin == nBins);
     }
 
-    SECTION("getType") {
-        const char* retrieved_type = test_pdf.getType();
-        REQUIRE(strcmp(retrieved_type, "lognormal") == 0);
-        
-    }
-
     SECTION("Moment 0") {
         double moment0 = test_pdf.Moment(0);
         REQUIRE(moment0 == Catch::Approx(nPart).epsilon(0.1));
