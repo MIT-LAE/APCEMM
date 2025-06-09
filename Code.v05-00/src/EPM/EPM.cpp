@@ -110,8 +110,7 @@ std::unique_ptr<Models::Base> make_epm(
     case epm_type::EPM_ORIGINAL:
         return std::make_unique<Models::Original>(optInput, input, aircraft, EI, met, simVars);
     case epm_type::EPM_EXTERNAL:
-      throw std::invalid_argument("EXTERNAL EPM NOT YET IMPLEMENTED!");
-      // return std::make_unique<Models::External>(optInput, input, aircraft, EI, met, simVars);
+        return std::make_unique<Models::External>(optInput, input, aircraft, EI, met, simVars);
     case epm_type::EPM_NEW_PHYSICS:
       throw std::invalid_argument("NEW PHYSICS EPM NOT YET IMPLEMENTED!");
       // return std::make_unique<Models::NewPhysics>(optInput, input, aircraft, EI, met, simVars);

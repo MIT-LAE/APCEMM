@@ -35,6 +35,7 @@ SIMULATION MENU:
     Force seed value (T/F): F
     Seed value (positive int): 0
   EPM type (original/external/new): original
+  External EPM NetCDF file: =MISSING=
 
 # Format of parameter items:
 # Param name [unit] (Variable type)
