@@ -14,18 +14,21 @@
 
 namespace EPM {
     struct Output {
-    double finalTemp;
-    double iceRadius;
-    double iceDensity;
-    double sootDensity;
-    double H2O_mol;
-    double SO4g_mol;
-    double SO4l_mol;
-    AIM::Aerosol SO4Aer;
-    AIM::Aerosol IceAer;
-    double area;
-    double bypassArea;
-    double coreExitTemp;
+        double finalTemp;
+        double iceRadius;
+        double iceDensity;
+        double sootDensity;
+        double H2O_mol;
+        double SO4g_mol;
+        double SO4l_mol;
+        AIM::Aerosol SO4Aer;
+        AIM::Aerosol IceAer;
+        double area;
+        double bypassArea;
+        double coreExitTemp;
+
+        void write(std::string filename) const;
+        void read(std::string filename);
     };
 
     namespace Models {
