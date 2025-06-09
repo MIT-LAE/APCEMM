@@ -49,6 +49,7 @@ struct OptInput
     bool         SIMULATION_FORCE_SEED;
     int          SIMULATION_SEED_VALUE;
     epm_type     SIMULATION_EPM_TYPE;
+    std::string  SIMULATION_EXTERNAL_EPM_NETCDF_FILENAME;
 
     /* ========================================== */
     /* ---- PARAMETER MENU ---------------------- */

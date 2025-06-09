@@ -10,10 +10,7 @@ class External : public Base {
 public:
     External(const OptInput &optInput, const Input &input,
              const Aircraft &aircraft, const Emission &EI,
-             const Meteorology &met, const MPMSimVarsWrapper &simVars):
-    Base(optInput, input, aircraft, EI, met, simVars) {
-      throw std::runtime_error("External EPM model is not implemented yet.");
-    }
+             const Meteorology &met, const MPMSimVarsWrapper &simVars);
 
     std::variant<EPM::Output, SimStatus> run() override;
 };

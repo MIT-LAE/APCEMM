@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <memory>
 #include "AIM/Settling.hpp"
 #include "Util/PlumeModelUtils.hpp"
 #include "Core/Status.hpp"
@@ -212,8 +213,9 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 }
 
 std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
-    EPM::Models::Original epm(optInput_, input_, aircraft_, EI_, met_, simVars_);
-    std::variant<EPM::Output, SimStatus> epmResult = epm.run();
+    std::unique_ptr<EPM::Models::Base> epm = EPM::make_epm(
+        optInput_, input_, aircraft_, EI_, met_, simVars_);
+    std::variant<EPM::Output, SimStatus> epmResult = epm->run();
     if (std::holds_alternative<SimStatus>(epmResult)) {
         return std::get<SimStatus>(epmResult);
     }

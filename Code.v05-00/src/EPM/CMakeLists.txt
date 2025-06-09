@@ -7,6 +7,7 @@ set(SRCS
     Models/Original/StateObserver.cpp
     Models/Original/Integrate.cpp
     Models/Original/RHS.cpp
+    Models/External.cpp
     )
 
 # This command ensures the static library gets build
