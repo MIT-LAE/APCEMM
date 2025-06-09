@@ -68,7 +68,38 @@ void Output::write(std::string filename) const {
 }
 
 void Output::read(std::string filename) {
-    // Implementation for reading output from a file
+    NcFile nc(filename, NcFile::read);
+
+    // Scalar variables.
+
+    for (auto &var : scalar_vars) {
+        const NcVar nc_var = nc.getVar(var.name);
+        nc_var.getVar(&(this->*var.value));
+    }
+
+    // PDF variables: keep the SO4 and ice bin dimensions separate for
+    // generality.
+
+    for (auto &var : pdf_vars) {
+        const NcDim r_dim = nc.getDim(var.name + "_r");
+        const NcDim r_e_dim = nc.getDim(var.name + "_r_e");
+
+        Vector_1D binCenters(r_dim.getSize());
+        Vector_1D binEdges(r_e_dim.getSize());
+        Vector_1D pdf(r_dim.getSize());
+
+        const NcVar r_var = nc.getVar(var.name + "_r");
+        r_var.getVar(binCenters.data());
+
+        const NcVar r_e_var = nc.getVar(var.name + "_r_e");
+        r_e_var.getVar(binEdges.data());
+
+        const NcVar pdf_var = nc.getVar(var.name + "_pdf");
+        pdf_var.getVar(pdf.data());
+
+        AIM::Aerosol aerosol(binCenters, binEdges, pdf);
+        this->*var.value = aerosol;
+    }
 }
 
 std::unique_ptr<Models::Base> make_epm(

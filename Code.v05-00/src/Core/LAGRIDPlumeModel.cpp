@@ -147,7 +147,7 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         // for temperature variation (because the calculation of yEdge
         // included it). This uses the hydrostatic assumption:
         //    dp/dz = -rho*g = -(n/V)Mg
-        Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
+        Vector_3D& pdfRef = iceAerosol_.getPDF();
         auto pressureEdges = met_.PressEdges();
         double localND;
         #pragma omp parallel for
@@ -229,13 +229,14 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
 
     epmOutput.area *= 2.0;
     if (aircraft_.EngNumber() != 2) {
-        epmOutput.iceDensity *= aircraft_.EngNumber() /
-                                2.0; // Scale densities by this factor to account
-                                    // for the plume size already doubling.
+        // Scale densities by this factor to account for the plume size
+        // already doubling.
+        epmOutput.iceDensity *= aircraft_.EngNumber() / 2.0;
         epmOutput.sootDensity *= aircraft_.EngNumber() / 2.0;
-        epmOutput.SO4Aer.scalePdf(
-            aircraft_.EngNumber()); // EPM only runs for one engine, so scale
-                                    // aerosol pdfs by engine number.
+
+        // EPM only runs for one engine, so scale aerosol pdfs by engine
+        // number.
+        epmOutput.SO4Aer.scalePdf(aircraft_.EngNumber());
         epmOutput.IceAer.scalePdf(aircraft_.EngNumber());
     }
 
@@ -405,7 +406,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         solver.updateAdvection(0, -vFall_[n], shear_rep_);
 
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
-        solver.operatorSplitSolve2DVec(iceAerosol_.getPDF_nonConstRef()[n], ZERO_BC, false);
+        solver.operatorSplitSolve2DVec(iceAerosol_.getPDF()[n], ZERO_BC, false);
     }
 
     //Transport H2O
@@ -520,7 +521,7 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     int nx_new = xCoordsNew.size();
     int ny_new = yCoordsNew.size();
 
-    Vector_3D& pdfRef = iceAerosol_.getPDF_nonConstRef();
+    Vector_3D& pdfRef = iceAerosol_.getPDF();
     Vector_3D volume = iceAerosol_.Volume();
 
     #pragma omp parallel for default(shared)

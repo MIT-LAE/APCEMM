@@ -39,14 +39,18 @@ namespace AIM
 
 class AIM::Aerosol
 {
-
     public:
-        
+
         /* Default constructor (Needed because EPM is terribly engineered. Ideally should be deleted.) */
         Aerosol( ) = default;
 
         /* Constructor */
-        Aerosol( const Vector_1D& bin_Centers, const Vector_1D& bin_Edges, double nPart, double mu, double sigma, const char* distType = "lognormal", double alpha_ = -1.0, double gamma_ = -1.0, double b_ = 0.0 );
+        Aerosol(const Vector_1D& bin_Centers, const Vector_1D& bin_Edges,
+                double nPart, double mu, double sigma,
+                const char* distType = "lognormal",
+                double alpha = -1.0, double gamma = -1.0, double b = 0.0);
+        Aerosol(const Vector_1D& bin_Centers, const Vector_1D& bin_Edges,
+                const Vector_1D &pdf);
 
         /* Operators */
         void addAerosolToPDF( const Aerosol &rhs );
@@ -54,7 +58,7 @@ class AIM::Aerosol
         /* Coagulation */
         void Coagulate( const double dt, const Coagulation &kernel );
         void Coagulate( const double dt, const Vector_2D &beta, const Vector_3D &f );
-        
+
         /* Moments */
         //NOTE: This gives the moment in [- / cm3]. You need to multiply by factors to get it in [ / m] or something.
         inline double binMoment(int iBin, int n = 0) const {
@@ -76,8 +80,6 @@ class AIM::Aerosol
         inline const Vector_1D& getBinEdges() const { return bin_Edges; };
         inline const Vector_1D& getBinSizes() const { return bin_Sizes; };
         inline UInt getNBin() const { return nBin; };
-        inline const char* getType() const { return type; };
-        inline double getAlpha() const { return alpha; };
         inline const Vector_1D& getPDF() const { return pdf; };
 
     protected:
@@ -87,38 +89,32 @@ class AIM::Aerosol
         Vector_1D bin_Edges;
         Vector_1D bin_Sizes;
         UInt nBin;
-        const char* type;
-        double mu;
-        double sigma;
-        double alpha;
         Vector_1D pdf; // represents dN [-/cm3] / d(ln r)
-
-    private:
-
 };
 
 class AIM::Grid_Aerosol
 {
-
     public:
-
         /* Default constructor (Needed because EPM is terribly engineered. Ideally should be deleted.)*/
         Grid_Aerosol( ) = default;
 
-        /* Constructor */
-        Grid_Aerosol( UInt Nx_, UInt Ny_, const Vector_1D& bin_Centers, const Vector_1D& bin_Edges, double nPart, double mu, double sigma, const char* distType = "lognormal", double alpha_ = -1.0, double gamma_ = -1.0, double b_ = 0.0 );
+        Grid_Aerosol(
+            UInt Nx, UInt Ny,
+            const Vector_1D& bin_Centers, const Vector_1D& bin_Edges,
+            double nPart, double mu, double sigma,
+            const char* distType = "lognormal",
+            double alpha = -1.0, double gamma = -1.0, double b = 0.0);
 
-        /* Coagulation */
         void Coagulate( const double dt, Coagulation &kernel, const UInt N = 2, const UInt SYM = 0 );
 
         /* Ice crystal growth */
         void Grow( const double dt, Vector_2D &H2O, const Vector_2D &T, const Vector_1D &P, const UInt N = 2, const UInt SYM = 0 );
         double EffDiffCoef( const double r, const double T, const double P, const double H2O) const;
         void APC_Scheme(const UInt jNy, const UInt iNx, const double T, const double P,
-                            const double dt, Vector_2D& H2O, Vector_2D& totH2O, Vector_3D& icePart, Vector_3D& iceVol);
+                        const double dt, Vector_2D& H2O, Vector_2D& totH2O, Vector_3D& icePart, Vector_3D& iceVol);
         std::vector<int> ComputeBinParticleFlux(const int x_index, const int y_index, const Vector_3D& iceVol, const Vector_3D& icePart) const;
         void ApplyBinParticleFlux(const int x_index, const int y_index, const std::vector<int> &toBin, const Vector_3D &iceVol, const Vector_3D &icePart);
-        
+
         /* Helper Functions for Coagulation and Ice Growth */
         bool CheckCoagAndGrowInputs(const UInt N, const UInt SYM, UInt& Nx_max, UInt& Ny_max, const std::string funcName) const;
         void CoagAndGrowApplySymmetry(const UInt N, const UInt SYM, const UInt Nx_max, const UInt Ny_max, const char* funcName, Vector_2D& H2O);
@@ -179,35 +175,23 @@ class AIM::Grid_Aerosol
         /* gets */
         inline const Vector_1D& getBinCenters() const { return bin_Centers; };
         inline const Vector_3D& getBinVCenters() const { return bin_VCenters; };
-        inline Vector_3D& getBinVCenters_nonConstRef() { return bin_VCenters; };
         inline const Vector_1D& getBinEdges() const { return bin_Edges; };
         inline const Vector_1D& getBinSizes() const { return bin_Sizes; };
         inline UInt getNBin() const { return nBin; };
-        inline const char* getType() const { return type; };
-        inline double getAlpha() const { return alpha; };
         inline const Vector_3D& getPDF() const { return pdf; };
-        inline Vector_3D& getPDF_nonConstRef() { return pdf; };
-        inline int getNx() const { return Nx; }
-        inline int getNy() const { return Ny; }
+        inline Vector_3D& getPDF() { return pdf; };
 
 
     protected:
 
-        unsigned int Nx, Ny;
-        Vector_3D pdf; //Everything with the pdf is implicitly in [ / cm3]
-        Vector_3D bin_VCenters;
         Vector_1D bin_Centers;
+        Vector_3D bin_VCenters;
         Vector_1D bin_Edges;
         Vector_1D bin_VEdges;
         Vector_1D bin_Sizes;
         UInt nBin;
-        const char* type;
-        double mu;
-        double sigma;
-        double alpha;
-
-    private:
-
+        unsigned int Nx, Ny;
+        Vector_3D pdf; //Everything with the pdf is implicitly in [ / cm3]
 };
 
 #endif /* AEROSOL_H_INCLUDED */

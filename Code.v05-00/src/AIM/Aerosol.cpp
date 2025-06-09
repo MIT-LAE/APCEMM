@@ -17,112 +17,112 @@
 #include "Core/Parameters.hpp"
 #include "AIM/Aerosol.hpp"
 
+using physConst::PI, physConst::RHO_ICE, physConst::Na,
+    physConst::kB, physConst::R;
+
+
 namespace AIM
 {
+    Aerosol::Aerosol(
+        const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, double nPart_,
+        double mu, double sigma, const char *type,
+        double alpha, double gamma, double b) :
+        bin_Centers(bin_Centers_),
+        bin_VCenters(bin_Centers_.size()),
+        bin_Edges(bin_Edges_),
+        bin_Sizes(bin_Centers_.size()),
+        nBin(bin_Centers_.size()),
+        pdf(bin_Centers_.size()) {
+    /* In the following cases, the aerosol pdf represents the following quantity: dn/d(ln(r))
+     * The following identity can be used:
+     * dn/dr = 1/r * dn/d(ln(r)) */
 
-Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, double nPart_, double mu_, double sigma_, const char *distType, double alpha_, double gamma_, double b_) : bin_VCenters(bin_Centers_.size()),
-                                                                                                                                                                                                      bin_Sizes(bin_Centers_.size()),
-                                                                                                                                                                                                      type(distType),
-                                                                                                                                                                                                      pdf(bin_Centers_.size())
-    {
+    if (nBin <= 0) {
+        std::cout << "\nIn Aerosol::Aerosol: distribution has " << nBin << " bins!\n";
+    }
+    if (nBin + 1 != bin_Edges.size()) {
+        std::cout << "\nIn Aerosol::Aerosol: bin centers and/or edges are misshaped: " <<
+            nBin + 1 << " != " << bin_Edges.size() << "\n";
+    }
 
-        /* Constructor */
+    /* Compute size of each bin */
+    for (UInt iBin = 0; iBin < nBin; iBin++) {
+        bin_Sizes[iBin] = bin_Edges[iBin + 1] - bin_Edges[iBin];
+        bin_VCenters[iBin] = 4.0 / 3.0 * PI * (pow(bin_Edges_[iBin], 3) + pow(bin_Edges_[iBin + 1], 3)) * 0.5;
+    }
 
-        /* In the following cases, the aerosol pdf represents the following quantity: dn/d(ln(r))
-         * The following identity can be used:
-         * dn/dr = 1/r * dn/d(ln(r)) */
+    /* Check mean and standard deviation */
+    if (mu <= 0) {
+        std::cout << "\nIn Aerosol::Aerosol: mean/mode is negative: mu = "
+                  << mu << "\n";
+    }
+    if (sigma <= 0) {
+        std::cout << "\nIn Aerosol::Aerosol: standard deviation is negative: stddev = "
+                  << sigma << "\n";
+    }
 
-        /* Allocate bins centers, edges and number of bins */
-        bin_Centers = bin_Centers_;
-        bin_Edges = bin_Edges_;
-        nBin = bin_Centers.size();
+    /* Initialize distribution */
+    if ((strcmp(type, "log") == 0) || (strcmp(type, "lognormal") == 0)) {
+        /* Log-normal distribution:
+         * dn/d(ln(r)) = N / ( sqrt(2*\pi) * ln(sigma) ) * exp( - ( ln(r) - ln(r_m) ) ^ 2 / ( 2 ln(sigma) ^2 )) */
 
-        if (nBin <= 0) { std::cout << "\nIn Aerosol::Aerosol: distribution has " << nBin << " bins!\n"; }
+        if (sigma <= 1.0) { std::cout << "\nIn Aerosol::Aerosol: log-normal distribution requires that stddev > 1.0 ( stddev = " << sigma << " )\n"; }
 
-        if (nBin + 1 != bin_Edges.size()) { std::cout << "\nIn Aerosol::Aerosol: bin centers and/or edges are misshaped: " << 
-                                            nBin + 1 << " != " << bin_Edges.size() << "\n"; }
-
-        /* Compute size of each bin */
-        for (UInt iBin = 0; iBin < nBin; iBin++)
-        {
-            bin_Sizes[iBin] = bin_Edges[iBin + 1] - bin_Edges[iBin];
-            bin_VCenters[iBin] = 4.0 / 3.0 * physConst::PI * (pow(bin_Edges_[iBin], 3) + pow(bin_Edges_[iBin + 1], 3)) * 0.5;
+        for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++) {
+            pdf[iBin] = nPart_ * exp(-0.5 * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma)) * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma))) / (sqrt(2.0 * PI) * log(sigma));
         }
+    } else if ((strcmp(type, "norm") == 0) || (strcmp(type, "normal") == 0)) {
+        /* Normal distribution:
+         * dn/d(ln(r)) = N / ( sqrt(2*\pi) * sigma ) * exp( - ( r - r_m ) ^ 2 / ( 2 * sigma ^2 )) */
 
-        /* Allocate mean and standard deviation */
-        if (mu_ <= 0) { std::cout << "\nIn Aerosol::Aerosol: mean/mode is negative: mu = " << mu_ << "\n"; }
-        mu = mu_;
+        for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++) {
+            pdf[iBin] = nPart_ * exp(-0.5 * ((bin_Centers[iBin] - mu) / sigma) * ((bin_Centers[iBin] - mu) / sigma)) / (sqrt(2.0 * PI) * sigma);
+        }
+    } else if ((strcmp(type, "pow") == 0) || (strcmp(type, "power") == 0) || (strcmp(type, "junge") == 0)) {
+        /* Power distribution:
+         * dn/d(ln(r)) = N * alpha * ( r / r_min ) ^ (-alpha) */
 
-        if (sigma_ <= 0) { std::cout << "\nIn Aerosol::Aerosol: standard deviation is negative: stddev = " << sigma_ << "\n"; }
-        sigma = sigma_;
+        if (alpha <= 0.0) { std::cout << "\nIn Aerosol::Aerosol: power law requires that alpha > 0 ( alpha = " << alpha << " )\n"; }
 
-        /* Allocate alpha (only used in power law and generalized gamma distributions) */
-        alpha = alpha_;
+        for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++) {
+            pdf[iBin] = nPart_ * alpha * pow(bin_Centers[iBin] / bin_Centers[0], -alpha);
+        }
+    } else if ((strcmp(type, "gam") == 0) || (strcmp(type, "gamma") == 0) || (strcmp(type, "generalized gamma") == 0)) {
+        /* Gamma distribution:
+         * dn/d(ln(r)) = gamma * b ^ ((alpha + 1)/gamma) / Gamma((alpha+1)/gamma) * r ^ (alpha + 1) * exp( - b * r ^ (gamma) )
+         * alpha and gamma are of the order of unity (1 - 10)
+         * b must be of the order of r ^ (-gamma) >> 1 */
 
-        /* Initialize distribution */
+        if ((alpha <= 0) || (std::fmod(alpha, 1.0) != 0)) { std::cout << "\nIn Aerosol::Aerosol: (generalized) gamma distribution requires that alpha is a positive integer ( alpha = " << alpha << " )\n"; }
+        if (gamma <= 0) { std::cout << "\nIn Aerosol::Aerosol: (generalized) gamma distribution requires that gamma is positive ( gamma = " << gamma << " )\n"; }
+        if (b <= 0) { std::cout << "\nIn Aerosol::Aerosol: (generalized) gamma distribution requires that b is positive ( b = " << b << " )\n"; }
 
-        if ((strcmp(type, "log") == 0) || (strcmp(type, "lognormal") == 0))
-        {
-            /* Log-normal distribution:
-             * dn/d(ln(r)) = N / ( sqrt(2*\pi) * ln(sigma) ) * exp( - ( ln(r) - ln(r_m) ) ^ 2 / ( 2 ln(sigma) ^2 )) */
+        for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++) {
+            pdf[iBin] = nPart_ * gamma * pow(b, (alpha + 1) / gamma) / boost::math::tgamma((alpha + 1) / gamma) * pow(bin_Centers[iBin], alpha + 1) * exp(-b * pow(bin_Centers[iBin], gamma));
+        }
+    } else {
+        std::cout << "\nIn Aerosol::Aerosol: distribution type must be either lognormal, normal, power or (generalized) gamma\n";
+        std::cout << "\nCurrent type is " << type << "\n";
+    }
+} /* End of Aerosol::Aerosol */
 
-            if (sigma <= 1.0) { std::cout << "\nIn Aerosol::Aerosol: log-normal distribution requires that stddev > 1.0 ( stddev = " << sigma << " )\n"; }
-
-            for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
-            {
-                pdf[iBin] = nPart_ * exp(-0.5 * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma)) * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma))) / (sqrt(2.0 * physConst::PI) * log(sigma));
+        Aerosol::Aerosol(
+            const Vector_1D& bin_Centers, const Vector_1D& bin_Edges,
+            const Vector_1D &pdf) :
+        bin_Centers(bin_Centers),
+        bin_VCenters(bin_Centers.size()),
+        bin_Edges(bin_Edges),
+        bin_Sizes(bin_Centers.size()),
+        nBin(bin_Centers.size()),
+        pdf(pdf) {
+            for (UInt iBin = 0; iBin < nBin; iBin++) {
+                bin_Sizes[iBin] = bin_Edges[iBin + 1] - bin_Edges[iBin];
+                bin_VCenters[iBin] = 4.0 / 3.0 * PI * (pow(bin_Edges[iBin], 3) + pow(bin_Edges[iBin + 1], 3)) * 0.5;
             }
         }
-        else if ((strcmp(type, "norm") == 0) || (strcmp(type, "normal") == 0))
-        {
-            /* Normal distribution:
-             * dn/d(ln(r)) = N / ( sqrt(2*\pi) * sigma ) * exp( - ( r - r_m ) ^ 2 / ( 2 * sigma ^2 )) */
-
-            for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
-            {
-                pdf[iBin] = nPart_ * exp(-0.5 * ((bin_Centers[iBin] - mu) / sigma) * ((bin_Centers[iBin] - mu) / sigma)) / (sqrt(2.0 * physConst::PI) * sigma);
-            }
-        }
-        else if ((strcmp(type, "pow") == 0) || (strcmp(type, "power") == 0) || (strcmp(type, "junge") == 0))
-        {
-            /* Power distribution:
-             * dn/d(ln(r)) = N * alpha * ( r / r_min ) ^ (-alpha) */
-
-            if (alpha <= 0.0) { std::cout << "\nIn Aerosol::Aerosol: power law requires that alpha > 0 ( alpha = " << alpha_ << " )\n"; }
-
-            for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
-            {
-                pdf[iBin] = nPart_ * alpha * pow(bin_Centers[iBin] / bin_Centers[0], -alpha);
-            }
-        }
-        else if ((strcmp(type, "gam") == 0) || (strcmp(type, "gamma") == 0) || (strcmp(type, "generalized gamma") == 0))
-        {
-            /* Gamma distribution:
-             * dn/d(ln(r)) = gamma * b ^ ((alpha + 1)/gamma) / Gamma((alpha+1)/gamma) * r ^ (alpha + 1) * exp( - b * r ^ (gamma) )
-             * alpha and gamma are of the order of unity (1 - 10)
-             * b must be of the order of r ^ (-gamma) >> 1 */
-
-            if ((alpha <= 0) || (std::fmod(alpha, 1.0) != 0)) { std::cout << "\nIn Aerosol::Aerosol: (generalized) gamma distribution requires that alpha is a positive integer ( alpha = " << alpha << " )\n"; }
-            if (gamma_ <= 0) { std::cout << "\nIn Aerosol::Aerosol: (generalized) gamma distribution requires that gamma is positive ( gamma = " << gamma_ << " )\n"; }
-            if (b_ <= 0) { std::cout << "\nIn Aerosol::Aerosol: (generalized) gamma distribution requires that b is positive ( b = " << b_ << " )\n"; }
-
-            for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
-            {
-                pdf[iBin] = nPart_ * gamma_ * pow(b_, (alpha + 1) / gamma_) / boost::math::tgamma((alpha + 1) / gamma_) * pow(bin_Centers[iBin], alpha + 1) * exp(-b_ * pow(bin_Centers[iBin], gamma_));
-            }
-        }
-        else
-        {
-            std::cout << "\nIn Aerosol::Aerosol: distribution type must be either lognormal, normal, power or (generalized) gamma\n";
-            std::cout << "\nCurrent type is " << type << "\n";
-        }
-
-    } /* End of Aerosol::Aerosol */
 
 
-    void Aerosol::addAerosolToPDF( const Aerosol &rhs )
-    {
-
+void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         if (nBin != rhs.getNBin())
         {
             throw std::runtime_error("In Aerosol::addAerosolToPDF: aerosol distributions do not have the same number of bins: " + std::to_string(nBin) + " != " + std::to_string(rhs.getNBin()));
@@ -394,24 +394,20 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
 
     } /* End of Aerosol::updatePdf */
 
-     Grid_Aerosol::Grid_Aerosol(UInt Nx_, UInt Ny_, const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, double nPart_, double mu_, double sigma_, const char *distType, double alpha_, double gamma_, double b_) 
-     :  Nx(Nx_), 
-        Ny(Ny_), 
+    Grid_Aerosol::Grid_Aerosol(
+        UInt Nx_, UInt Ny_, const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_,
+        double nPart_, double mu, double sigma, const char *type, double alpha, double gamma, double b) :
+        bin_Centers(bin_Centers_),
+        bin_Edges(bin_Edges_),
         bin_VEdges(bin_Centers_.size() + 1),
         bin_Sizes(bin_Centers_.size()),
-        type(distType)
-{
-
-        /* Constructor */
-
+        nBin(bin_Centers.size()),
+        Nx(Nx_), Ny(Ny_) {
         /* In the following cases, the aerosol pdf represents the following quantity: dn/d(ln(r))
          * The following identity can be used:
          * dn/dr = 1/r * dn/d(ln(r)) */
 
         /* Allocate bins centers, edges and number of bins */
-        bin_Centers = bin_Centers_;
-        bin_Edges = bin_Edges_;
-        nBin = bin_Centers.size();
 
         if (nBin <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: distribution has " << nBin << " bins!\n"; }
 
@@ -421,10 +417,10 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         /* Compute size of each bin */
         for (UInt iBin = 0; iBin < nBin; iBin++)
         {
-            bin_VEdges[iBin] = 4.0 / 3.0 * physConst::PI * pow(bin_Edges[iBin], 3);
+            bin_VEdges[iBin] = 4.0 / 3.0 * PI * pow(bin_Edges[iBin], 3);
             bin_Sizes[iBin] = bin_Edges[iBin + 1] - bin_Edges[iBin];
         }
-        bin_VEdges[nBin] = 4.0 / 3.0 * physConst::PI * pow(bin_Edges[nBin], 3);
+        bin_VEdges[nBin] = 4.0 / 3.0 * PI * pow(bin_Edges[nBin], 3);
 
         bin_VCenters.resize(nBin, Vector_2D(Ny, Vector_1D(Nx, 0.0E+00)));
 
@@ -440,14 +436,9 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         pdf.resize(nBin, Vector_2D(Ny, Vector_1D(Nx, 0.0E+00)));
 
         /* Allocate mean and standard deviation */
-        if (mu_ <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: mean/mode is negative: mu = " << mu_ << "\n"; }
-        mu = mu_;
+        if (mu <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: mean/mode is negative: mu = " << mu << "\n"; }
 
-        if (sigma_ <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: standard deviation is negative: stddev = " << sigma_ << "\n"; }
-        sigma = sigma_;
-
-        /* Allocate alpha (only used in power law and generalized gamma distributions) */
-        alpha = alpha_;
+        if (sigma <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: standard deviation is negative: stddev = " << sigma << "\n"; }
 
         /* Initialize distribution */
         if ((strcmp(type, "log") == 0) || (strcmp(type, "lognormal") == 0))
@@ -460,7 +451,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin][0][0] = nPart_ * exp(-0.5 * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma)) * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma))) / (sqrt(2.0 * physConst::PI) * log(sigma));
+                pdf[iBin][0][0] = nPart_ * exp(-0.5 * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma)) * ((log(bin_Centers[iBin]) - log(mu)) / log(sigma))) / (sqrt(2.0 * PI) * log(sigma));
                 for (UInt jNy = 0; jNy < Ny; jNy++)
                 {
                     for (UInt iNx = 0; iNx < Nx; iNx++)
@@ -477,7 +468,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin][0][0] = nPart_ * exp(-0.5 * ((bin_Centers[iBin] - mu) / sigma) * ((bin_Centers[iBin] - mu) / sigma)) / (sqrt(2.0 * physConst::PI) * sigma);
+                pdf[iBin][0][0] = nPart_ * exp(-0.5 * ((bin_Centers[iBin] - mu) / sigma) * ((bin_Centers[iBin] - mu) / sigma)) / (sqrt(2.0 * PI) * sigma);
                 for (UInt jNy = 0; jNy < Ny; jNy++)
                 {
                     for (UInt iNx = 0; iNx < Nx; iNx++)
@@ -493,7 +484,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
              * dn/d(ln(r)) = N * alpha * ( r / r_min ) ^ (-alpha) */
 
             if (alpha <= 0.0) {
-                std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: power law requires that alpha > 0 ( alpha = " << alpha_ << " )\n"; }
+                std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: power law requires that alpha > 0 ( alpha = " << alpha << " )\n"; }
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
@@ -515,12 +506,12 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
              * b must be of the order of r ^ (-gamma) >> 1 */
 
             if ((alpha <= 0) || (std::fmod(alpha, 1.0) != 0)) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: (generalized) gamma distribution requires that alpha is a positive integer ( alpha = " << alpha << " )\n"; }
-            if (gamma_ <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: (generalized) gamma distribution requires that gamma is positive ( gamma = " << gamma_ << " )\n"; }
-            if (b_ <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: (generalized) gamma distribution requires that b is positive ( b = " << b_ << " )\n"; }
+            if (gamma <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: (generalized) gamma distribution requires that gamma is positive ( gamma = " << gamma << " )\n"; }
+            if (b <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: (generalized) gamma distribution requires that b is positive ( b = " << b << " )\n"; }
 
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin][0][0] = nPart_ * gamma_ * pow(b_, (alpha + 1) / gamma_) / boost::math::tgamma((alpha + 1) / gamma_) * pow(bin_Centers[iBin], alpha + 1) * exp(-b_ * pow(bin_Centers[iBin], gamma_));
+                pdf[iBin][0][0] = nPart_ * gamma * pow(b, (alpha + 1) / gamma) / boost::math::tgamma((alpha + 1) / gamma) * pow(bin_Centers[iBin], alpha + 1) * exp(-b * pow(bin_Centers[iBin], gamma));
                 for (UInt jNy = 0; jNy < Ny; jNy++)
                 {
                     for (UInt iNx = 0; iNx < Nx; iNx++)
@@ -716,10 +707,10 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         UInt iNx  = 0, jNy  = 0, iBin = 0;
 
         /* Conversion factor from ice volume [m^3] to [molecules] */ 
-        const double UNITCONVERSION = physConst::RHO_ICE / MW_H2O * physConst::Na;
+        const double UNITCONVERSION = RHO_ICE / MW_H2O * Na;
 
         /* Scaled Boltzmann constant */
-        const double kB_ = physConst::kB * 1.00E+06;
+        const double kB_ = kB * 1.00E+06;
 
         /* Declare and initialize particle totals and water vapor array */
         Vector_3D icePart = Number( );
@@ -798,9 +789,9 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         double pSat = physFunc::pSat_H2Os( T );
         Vector_1D  kGrowth(nBin, 0);
         double MAXVOL = bin_VEdges[nBin]; 
-        double kB_ = physConst::kB * 1.00E+06; //SCALED boltzmann constant [J cm^3/K]
+        double kB_ = kB * 1.00E+06; //SCALED boltzmann constant [J cm^3/K]
         double c_qit, C_qt, C_qsi; //Quantities used in APC scheme.
-        double UNITCONVERSION = physConst::RHO_ICE / MW_H2O * physConst::Na; // Conversion factor from ice volume [m^3] to [molecules]
+        double UNITCONVERSION = RHO_ICE / MW_H2O * Na; // Conversion factor from ice volume [m^3] to [molecules]
         /* -------------------------------------------------
         * Analytical predictor of condensation (APC) scheme
         * -------------------------------------------------
@@ -825,7 +816,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
         
             //Factor of 1e6 for cm3 - m3 conversion. 
-            kGrowth[iBin] = 1.0e6 * icePart[iBin][jNy][iNx] * 4.0 * physConst::PI * bin_Centers[iBin]\
+            kGrowth[iBin] = 1.0e6 * icePart[iBin][jNy][iNx] * 4.0 * PI * bin_Centers[iBin]\
                 * EffDiffCoef( bin_Centers[iBin], T, P, H2O[jNy][iNx]);  
 
             totalkGrowth += kGrowth[iBin];
@@ -834,12 +825,12 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         
         /* Compute the molar saturation concentration 
         * C_{q,s,i} in [mol/cm^3] */
-        C_qsi = pSat / ( kB_ * T  * physConst::Na);
+        C_qsi = pSat / ( kB_ * T  * Na);
     
 
         /* Update gaseous molar concentration. S' is always 1 so not included.*/
-        C_qt = ((H2O[jNy][iNx]/physConst::Na) + dt * totalkGrowth_kelvin * C_qsi) / (1.0 + dt*totalkGrowth);
-        H2O[jNy][iNx] = C_qt * physConst::Na;
+        C_qt = ((H2O[jNy][iNx]/Na) + dt * totalkGrowth_kelvin * C_qsi) / (1.0 + dt*totalkGrowth);
+        H2O[jNy][iNx] = C_qt * Na;
 
         
         /* Make sure that molecular water does not go over 
@@ -848,8 +839,8 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         
         for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
             //Update molar concentration of ice [mol/cm3] and convert to volumetric concentration [m3/cm3]
-            c_qit = (iceVol[iBin][jNy][iNx] * physConst::RHO_ICE / MW_H2O) + dt*kGrowth[iBin]*(C_qt - physFunc::Kelvin(bin_Centers[iBin])*C_qsi);
-            iceVol[iBin][jNy][iNx] = c_qit * MW_H2O / physConst::RHO_ICE;
+            c_qit = (iceVol[iBin][jNy][iNx] * RHO_ICE / MW_H2O) + dt*kGrowth[iBin]*(C_qt - physFunc::Kelvin(bin_Centers[iBin])*C_qsi);
+            iceVol[iBin][jNy][iNx] = c_qit * MW_H2O / RHO_ICE;
         
             iceVol[iBin][jNy][iNx] = \
                     std::min( std::max( iceVol[iBin][jNy][iNx], 0.0E+00 ), icePart[iBin][jNy][iNx] * MAXVOL );
@@ -890,7 +881,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         //numerator. Plugging one of those expressions into APC results in double-multiplication of (S' - 1), leading to a 1000%
         //for 110% ice supersaturation.
         //TODO Currently does not take into account Knudsen number effects for dCoef & ThermalCond or radiation effects.
-         double Deff = dCoef/(1 + (dCoef * latS*latS*MW_H2O*MW_H2O * (H2O*1.0e6/physConst::Na)) / (physFunc::ThermalCond(r,T,P)*  physConst::R*T*T) );
+         double Deff = dCoef/(1 + (dCoef * latS*latS*MW_H2O*MW_H2O * (H2O*1.0e6/Na)) / (physFunc::ThermalCond(r,T,P)*  R*T*T) );
 
          return Deff;
     } // End of Grid_Aerosol::EffDiffCoef 
@@ -1135,7 +1126,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         UInt iBin = 0;
 
         Vector_2D moment(Ny, Vector_1D(Nx, 0.0E+00));
-        const double FACTOR = 3.0 / double(4.0 * physConst::PI);
+        const double FACTOR = 3.0 / double(4.0 * PI);
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
             schedule(dynamic, 1) if (!PARALLEL_CASES)
@@ -1277,7 +1268,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         UInt iNx = 0;
 
         Vector_2D m2 = Moment(2);
-        const double FACTOR = 4.0 * physConst::PI;
+        const double FACTOR = 4.0 * PI;
         /* A = 4.0*pi*m2 */
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
@@ -1299,7 +1290,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         UInt iNx = 0;
 
         Vector_2D m3 = Moment(3);
-        const double FACTOR = 4.0 / double(3.0) * physConst::PI;
+        const double FACTOR = 4.0 / double(3.0) * PI;
         /* V = 4.0/3.0*pi*m3 */
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
@@ -1342,7 +1333,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         UInt iNx = 0;
 
         Vector_2D TVol = TotalVolume();
-        const double FACTOR = physConst::RHO_ICE * 1.0E+06;
+        const double FACTOR = RHO_ICE * 1.0E+06;
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
             schedule(dynamic, 1) if (!PARALLEL_CASES)
@@ -1647,7 +1638,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         UInt iBin = 0;
 
         double moment = 0.0E+00;
-        const double FACTOR = 3.0 / double(4.0 * physConst::PI);
+        const double FACTOR = 3.0 / double(4.0 * PI);
 
         #pragma omp parallel for default(shared) private(iBin) \
             reduction(+                                        \
@@ -1737,8 +1728,8 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
         out[0] = Moment(0, PDF);
         if (out[0] > 0.0)
         {
-            out[2] = 4.0 * physConst::PI * Moment(2, PDF);
-            out[3] = 4.0 / 3.0 * physConst::PI * Moment(3, PDF);
+            out[2] = 4.0 * PI * Moment(2, PDF);
+            out[3] = 4.0 / 3.0 * PI * Moment(3, PDF);
             out[1] = 3.0 * out[3] / out[2];
         }
         else
