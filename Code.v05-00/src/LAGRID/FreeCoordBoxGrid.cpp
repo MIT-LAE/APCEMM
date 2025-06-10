@@ -1,4 +1,7 @@
+#include <limits>
+
 #include "LAGRID/FreeCoordBoxGrid.hpp"
+
 namespace LAGRID {
     FreeCoordBoxGrid::FreeCoordBoxGrid(const Vector_1D& dx, const Vector_1D& dy, const Vector_2D& phi, const Vector_1D& x0, double y0, double cutoff) {
         auto isInteriorCell = [&](std::size_t i, std::size_t j) -> bool {

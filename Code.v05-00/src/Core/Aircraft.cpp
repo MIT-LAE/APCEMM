@@ -11,6 +11,7 @@
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 #include "Util/PhysConstant.hpp"

@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "AIM/buildKernel.hpp"
 #include "Util/ForwardDecl.hpp"
 #include "Util/PhysConstant.hpp"

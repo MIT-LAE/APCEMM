@@ -1392,7 +1392,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
 
     std::tuple<double, int, int> Grid_Aerosol::extinctionWidthIndices(const Vector_1D& xCoord, double thres) const {
         Vector_2D chi = Extinction();
-        Vector_1D chiMax_x = VectorUtils::VecMax2D(Extinction(), 1);
+        Vector_1D chiMax_x = VectorUtils::max(Extinction(), 1);
         double chiMax = *std::max_element(chiMax_x.begin(), chiMax_x.end());
         int i_left = -1;
         int i_right = -1;
@@ -1413,7 +1413,7 @@ Aerosol::Aerosol(const Vector_1D& bin_Centers_, const Vector_1D& bin_Edges_, dou
 
     std::tuple<double, int, int> Grid_Aerosol::extinctionDepthIndices(const Vector_1D& yCoord, double thres) const {
         Vector_2D chi = Extinction();
-        Vector_1D chiMax_y = VectorUtils::VecMax2D(Extinction(), 0);
+        Vector_1D chiMax_y = VectorUtils::max(Extinction(), 0);
         double chiMax = *std::max_element(chiMax_y.begin(), chiMax_y.end());
         int j_bot = -1;
         int j_top = -1;

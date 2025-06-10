@@ -14,9 +14,12 @@
 #ifndef INPUT_MOD_H_INCLUDED
 #define INPUT_MOD_H_INCLUDED
 
+#include <string>
 #include <vector>
 #include <unordered_map>
 #include "Util/ForwardDecl.hpp"
+
+enum class epm_type { EPM_ORIGINAL, EPM_EXTERNAL, EPM_NEW_PHYSICS };
 
 struct OptInput
 {
@@ -26,32 +29,33 @@ struct OptInput
     /* ---- SIMULATION MENU --------------------- */
     /* ========================================== */
 
-    int         SIMULATION_OMP_NUM_THREADS;
-    bool        SIMULATION_PARAMETER_SWEEP;
-    bool        SIMULATION_MONTECARLO;
-    int         SIMULATION_MCRUNS;
-    std::string SIMULATION_OUTPUT_FOLDER;
-    bool        SIMULATION_OVERWRITE;
-    bool        SIMULATION_THREADED_FFT;
-    bool        SIMULATION_USE_FFTW_WISDOM;
-    std::string SIMULATION_DIRECTORY_W_WRITE_PERMISSION;
-    std::string SIMULATION_INPUT_BACKG_COND;
-    std::string SIMULATION_INPUT_ENG_EI;
-    bool        SIMULATION_SAVE_FORWARD;
-    std::string SIMULATION_FORWARD_FILENAME;
-    bool        SIMULATION_ADJOINT;
-    std::string SIMULATION_ADJOINT_FILENAME;
-    bool        SIMULATION_BOXMODEL;
-    std::string SIMULATION_BOX_FILENAME;
-    bool        SIMULATION_FORCE_SEED;
-    int         SIMULATION_SEED_VALUE;
+    int          SIMULATION_OMP_NUM_THREADS;
+    bool         SIMULATION_PARAMETER_SWEEP;
+    bool         SIMULATION_MONTECARLO;
+    unsigned int SIMULATION_MCRUNS;
+    std::string  SIMULATION_OUTPUT_FOLDER;
+    bool         SIMULATION_OVERWRITE;
+    bool         SIMULATION_THREADED_FFT;
+    bool         SIMULATION_USE_FFTW_WISDOM;
+    std::string  SIMULATION_DIRECTORY_W_WRITE_PERMISSION;
+    std::string  SIMULATION_INPUT_BACKG_COND;
+    std::string  SIMULATION_INPUT_ENG_EI;
+    bool         SIMULATION_SAVE_FORWARD;
+    std::string  SIMULATION_FORWARD_FILENAME;
+    bool         SIMULATION_ADJOINT;
+    std::string  SIMULATION_ADJOINT_FILENAME;
+    bool         SIMULATION_BOXMODEL;
+    std::string  SIMULATION_BOX_FILENAME;
+    bool         SIMULATION_FORCE_SEED;
+    int          SIMULATION_SEED_VALUE;
+    epm_type     SIMULATION_EPM_TYPE;
 
     /* ========================================== */
     /* ---- PARAMETER MENU ---------------------- */
     /* ========================================== */
 
-    std::unordered_map<std::string, Vector_1D> PARAMETER_PARAM_MAP;    
-        
+    std::unordered_map<std::string, Vector_1D> PARAMETER_PARAM_MAP;
+
     /* ========================================== */
     /* ---- TRANSPORT MENU ---------------------- */
     /* ========================================== */
@@ -82,7 +86,7 @@ struct OptInput
     double      AEROSOL_COAGULATION_TIMESTEP;
     bool        AEROSOL_ICE_GROWTH;
     double      AEROSOL_ICE_GROWTH_TIMESTEP;
-    
+
     /* ========================================== */
     /* ---- METEOROLOGY MENU -------------------- */
     /* ========================================== */
@@ -115,7 +119,7 @@ struct OptInput
     double      MET_HUMIDSCAL_CONST_RHI;
     double      MET_HUMIDSCAL_SCALING_A;
     double      MET_HUMIDSCAL_SCALING_B;
-    
+
     /* ========================================== */
     /* ---- DIAGNOSTIC MENU --------------------- */
     /* ========================================== */
@@ -146,8 +150,8 @@ struct OptInput
     /* ---- ADVANCED OPTIONS MENU -------------------- */
     /* =============================================== */
 
-    int ADV_GRID_NX;
-    int ADV_GRID_NY;
+    unsigned int ADV_GRID_NX;
+    unsigned int ADV_GRID_NY;
     double ADV_GRID_XLIM_RIGHT;
     double ADV_GRID_XLIM_LEFT;
     double ADV_GRID_YLIM_UP;
@@ -158,10 +162,8 @@ struct OptInput
     double ADV_CSIZE_WIDTH_SCALING_FACTOR;
     double ADV_AMBIENT_LAPSERATE;
     double ADV_TROPOPAUSE_PRESSURE;
-        
 
 };
-
 
 #endif /* INPUT_MOD_H_INCLUDED */
 

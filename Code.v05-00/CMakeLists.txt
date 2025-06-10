@@ -68,7 +68,7 @@ make_includable(
 )
 
 # Defines the 'main' file we want to create a binary of
-add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/Core/Main.cpp)
+add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/Main.cpp)
 
 
 # Dependencies managed by vcpkg:
@@ -120,7 +120,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 
 # Defines the libraries necessary for compiling the executable
 target_link_libraries(${PROJECT_NAME} PRIVATE
-                      FVM_ANDS Util AIM KPP EPM Core YamlInputReader LAGRID)
+  FVM_ANDS Util AIM KPP EPM Core YamlInputReader LAGRID)
 
 # Tests
 #if (BUILD_TEST)

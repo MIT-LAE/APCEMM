@@ -22,5 +22,5 @@ set(SRCS
 add_library(KPP STATIC ${SRCS})
 
 # This command defines the dependencies of libKPP.a
-target_link_libraries(KPP Core ${NETCDF_LIBRARIES}
+target_link_libraries(KPP ${NETCDF_LIBRARIES}
                         ${netCDFCxx_LIBRARIES} OpenMP::OpenMP_CXX)
