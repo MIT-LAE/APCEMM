@@ -28,4 +28,4 @@ target_link_libraries(Core PRIVATE netCDF::netcdf netCDF::netcdf-cxx4)
 target_link_libraries(Core PRIVATE yaml-cpp::yaml-cpp)
 
 # This command defines the dependencies of libCore.a
-target_link_libraries(Core PRIVATE FVM_ANDS AIM Util EPM KPP YamlInputReader)
+target_link_libraries(Core PRIVATE LAGRID FVM_ANDS AIM Util EPM KPP YamlInputReader)
