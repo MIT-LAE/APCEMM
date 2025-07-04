@@ -95,13 +95,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE netCDF::netcdf netCDF::netcdf-cxx4
 find_package(yaml-cpp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp::yaml-cpp)
 
+find_package(OpenSSL REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+
 # Other dependencies:
 
 find_package(OpenMP REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
-
-find_package(OpenSSL REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::Crypto OpenSSL::SSL crypto ssl)
 
 # This ensures the header files of the necessary libraries are included
 # SYSTEM flag silences the compiler warnings from external dependencies 

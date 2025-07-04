@@ -9,6 +9,7 @@
     "fmt",
     "fftw3",
     "netcdf-cxx4",
+    "openssl",
     "yaml-cpp"
   ]
 }

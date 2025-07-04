@@ -20,7 +20,7 @@ target_link_libraries(unittest  Catch2::Catch2WithMain Util AIM EPM YamlInputRea
 catch_discover_tests(unittest)
 
 add_executable(test_solver test_adv_diff_solver.cpp)
-target_link_libraries(test_solver  Catch2::Catch2WithMain FVM_ANDS Core LAGRID crypto ssl)
+target_link_libraries(test_solver  Catch2::Catch2WithMain FVM_ANDS Core LAGRID OpenSSL::SSL OpenSSL::Crypto)
 catch_discover_tests(test_solver)
 
 add_executable(test_LAGRID test_LAGRID.cpp)
