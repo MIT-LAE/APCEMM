@@ -33,6 +33,7 @@ These are all managed using the `vcpkg` tool (see below) so do not need to be in
 - Catch2
 - FFTW3
 - OpenMP
+- OpenSSL
 - Boost libraries
 - yaml-cpp
 - Eigen3
