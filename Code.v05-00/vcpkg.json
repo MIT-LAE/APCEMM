@@ -9,7 +9,8 @@
     "fmt",
     "fftw3",
     "netcdf-cxx4",
-    "openssl",
+    {"name": "openssl", "version>=": "3.4.0"},
+    "curl",
     "yaml-cpp"
   ]
 }
