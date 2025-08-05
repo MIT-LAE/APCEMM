@@ -25,7 +25,6 @@ double SZA_CST[3];           /* Require this for adjoint integration */
 LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input) :
     optInput_(optInput), input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
-    aircraft_(Aircraft(input, optInput.SIMULATION_INPUT_ENG_EI)),
     jetA_(Fuel("C12H24")), simVars_(input, optInput),
     timestepVars_(input, optInput),
     yCoords_(optInput_.ADV_GRID_NY),
@@ -61,11 +60,12 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input)
         .shear = input_.shear()
     };
     met_ = Meteorology(optInput_, ambMetParams, yCoords_, yEdges_);
-
     std::cout << "Temperature      = " << met_.tempRef() << " K" << std::endl;
     std::cout << "RHw              = " << met_.rhwRef() << " %" << std::endl;
     std::cout << "RHi              = " << met_.rhiRef() << " %" << std::endl;
     std::cout << "Saturation depth = " << met_.satdepthUser() << " m" << std::endl;
+
+    aircraft_ = Aircraft(met_, input, optInput.SIMULATION_INPUT_ENG_EI);
 }
 
 SimStatus LAGRIDPlumeModel::runFullModel() {

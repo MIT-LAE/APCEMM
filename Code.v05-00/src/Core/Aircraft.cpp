@@ -16,6 +16,7 @@
 #include <iostream>
 #include "Util/PhysConstant.hpp"
 #include "Core/Aircraft.hpp"
+#include "Core/Meteorology.hpp"
 
 Aircraft::Aircraft( )
 {
@@ -24,50 +25,19 @@ Aircraft::Aircraft( )
 
 } /* End of Aircraft::Aircraft */
 
-Aircraft::Aircraft( const char *aircraftName, std::string engineFilePath, double aircraftMass, \
-                    double temperature_K, double pressure_Pa,  \
-                    double relHumidity_w, double nBV )
-{
-    /* Constructor */
-
-    Name_ = aircraftName;
-
-    if ( Name_.compare( "B747" ) >= 0 ) {
-        /* Flight characteristics */
-        vFlight_ms_ = 250.0;
-        machNumber_ = vFlight_ms_ \
-                    / sqrt( physConst::GAMMA_Air * physConst::R_Air * temperature_K );
-
-        /* Engine characteristics */
-        const char *engineName = "GEnx-2B67B";
-        engine_ = Engine( engineName, engineFilePath, temperature_K, pressure_Pa, \
-                          relHumidity_w, machNumber_ );
-        engNumber_ = 4;
-
-        /* Dimensions */
-        wingspan_ = 68.4; /* [m] */
-
-        /* Weight */
-        if ( aircraftMass > 0.0E+00 ) {
-            currMass_ = aircraftMass;
-        } else {
-            throw std::range_error("Cannot have negative aircraft mass!");
-        }
-
-    }
-    vortex_ = Vortex( temperature_K, pressure_Pa, nBV, wingspan_, \
-                      currMass_, vFlight_ms_ );
-
-} /* End of Aircraft::Aircraft */
-
-Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string engineName){
+Aircraft::Aircraft( const Meteorology& met, const Input& input, std::string engineFilePath, std::string engineName){
     /* Flight characteristics */
     //Sets both flight speed and mach number
+
+    double T_CA_K = met.tempRef(); // From the meteorology, at the reference altitude
+    double RHW_CA = met.rhwRef(); // From the meteorology, at the reference altitude
+    double p_CA_Pa = input.pressure_Pa(); // From the input
+
     setVFlight(input.flightSpeed(), input.temperature_K());
 
     /* Engine characteristics */
-    engine_ = Engine( engineName.c_str(), engineFilePath, input.temperature_K(), input.pressure_Pa(), \
-                        input.relHumidity_w(), machNumber_ );
+    engine_ = Engine( engineName.c_str(), engineFilePath, T_CA_K, p_CA_Pa, \
+                        RHW_CA, machNumber_ );
 
     engNumber_ = input.numEngines();
     setFuelFlow( input.fuelFlow() );
@@ -79,7 +49,7 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
     /* Dimensions */
     wingspan_ = input.wingspan();
     currMass_ = input.aircraftMass();
-    vortex_ = Vortex( input.temperature_K(), input.pressure_Pa(), input.nBV(), wingspan_, \
+    vortex_ = Vortex( T_CA_K, p_CA_Pa, RHW_CA, wingspan_, \
                     currMass_, vFlight_ms_ );
 
 }
