@@ -20,6 +20,7 @@
 #include "Core/Input.hpp"
 #include "Core/Engine.hpp"
 #include "Core/Vortex.hpp"
+#include "Core/Meteorology.hpp"
 
 class Aircraft 
 {
@@ -28,10 +29,7 @@ class Aircraft
         /* Constructors */
 
         Aircraft( );
-        Aircraft( const char *aircraftName, std::string engineFilePath, double aircraftMass, \
-                  double temperature_K, double pressure_Pa,  \
-                  double relHumidity_w, double nBV );
-        Aircraft( const Input& input, std::string engineFilePath, std::string engineName = "GEnx-2B67B");
+        Aircraft( const Meteorology& met, const Input& input, std::string engineFilePath, std::string engineName = "GEnx-2B67B");
 
         /* Debug */
         void Debug( ) const;
