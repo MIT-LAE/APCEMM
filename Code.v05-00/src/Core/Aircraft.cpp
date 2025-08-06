@@ -32,6 +32,10 @@ Aircraft::Aircraft( const Meteorology& met, const Input& input, std::string engi
     double RHW_CA = met.rhwRef(); // From the meteorology, at the reference altitude
     double p_CA_Pa = input.pressure_Pa(); // From the input
 
+    std::cout << "Temperature at reference altitude: " << T_CA_K << " K" << std::endl;
+    std::cout << "Relative humidity at reference altitude: " << RHW_CA << " %" << std::endl;
+    std::cout << "Pressure at reference altitude: " << p_CA_Pa << " Pa" << std::endl;
+
     setVFlight(input.flightSpeed(), input.temperature_K());
 
     /* Engine characteristics */
