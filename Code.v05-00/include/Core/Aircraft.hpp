@@ -20,6 +20,7 @@
 #include "Core/Input.hpp"
 #include "Core/Engine.hpp"
 #include "Core/Vortex.hpp"
+#include "Core/Meteorology.hpp"
 
 class Aircraft 
 {

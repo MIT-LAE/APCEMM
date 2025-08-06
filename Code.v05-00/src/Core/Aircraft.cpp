@@ -16,7 +16,6 @@
 #include <iostream>
 #include "Util/PhysConstant.hpp"
 #include "Core/Aircraft.hpp"
-#include "Core/Meteorology.hpp"
 
 Aircraft::Aircraft( )
 {
