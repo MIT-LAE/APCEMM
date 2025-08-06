@@ -32,10 +32,6 @@ Aircraft::Aircraft( const Meteorology& met, const Input& input, std::string engi
     double RHW_CA = met.rhwRef(); // From the meteorology, at the reference altitude
     double p_CA_Pa = input.pressure_Pa(); // From the input
 
-    std::cout << "Temperature at reference altitude: " << T_CA_K << " K" << std::endl;
-    std::cout << "Relative humidity at reference altitude: " << RHW_CA << " %" << std::endl;
-    std::cout << "Pressure at reference altitude: " << p_CA_Pa << " Pa" << std::endl;
-
     setVFlight(input.flightSpeed(), input.temperature_K());
 
     /* Engine characteristics */
@@ -52,7 +48,7 @@ Aircraft::Aircraft( const Meteorology& met, const Input& input, std::string engi
     /* Dimensions */
     wingspan_ = input.wingspan();
     currMass_ = input.aircraftMass();
-    vortex_ = Vortex( T_CA_K, p_CA_Pa, RHW_CA, wingspan_, \
+    vortex_ = Vortex( T_CA_K, p_CA_Pa, input.nBV(), wingspan_, \
                     currMass_, vFlight_ms_ );
 
 }
