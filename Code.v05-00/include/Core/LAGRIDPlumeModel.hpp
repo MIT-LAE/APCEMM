@@ -25,7 +25,7 @@ class LAGRIDPlumeModel {
         static constexpr double RIGHT_BUFFER_SCALING = 1.5;
 
         LAGRIDPlumeModel() = delete;
-        LAGRIDPlumeModel(const OptInput &Input_Opt, const Input &input);
+        LAGRIDPlumeModel(const OptInput &Input_Opt, Input &input);
         SimStatus runFullModel();
         std::variant<EPM::Output, SimStatus> runEPM();
         struct BufferInfo {
