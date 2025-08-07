@@ -9,42 +9,42 @@ struct MPMSimVarsWrapper{
     /* --- Input options from the SIMULATION MENU ---------------------------- */
     /* ======================================================================= */
 
-    const bool RUN_BOXMODEL;
-    const bool BUILD_LUT;
-    const bool SAVE_FORWARD;
-    const bool ADJOINT;
-    const std::string BACKG_FILENAME;
-    const bool THREADED_FFT;
-    const bool USE_WISDOM;
-    const std::string FFTW_DIR;
+    bool RUN_BOXMODEL;
+    bool BUILD_LUT;
+    bool SAVE_FORWARD;
+    bool ADJOINT;
+    std::string BACKG_FILENAME;
+    bool THREADED_FFT;
+    bool USE_WISDOM;
+    std::string FFTW_DIR;
 
     /* ======================================================================= */
     /* ---- Input options from the TRANSPORT MENU ---------------------------- */
     /* ======================================================================= */
 
-    const bool TRANSPORT;
-    const bool FILLNEG;
+    bool TRANSPORT;
+    bool FILLNEG;
 
-    const bool UPDRAFT;
-    const double UPDRAFT_TIME;
-    const double UPDRAFT_VEL;
+    bool UPDRAFT;
+    double UPDRAFT_TIME;
+    double UPDRAFT_VEL;
 
     /* ======================================================================= */
     /* ---- Input options from the CHEMISTRY MENU ---------------------------- */
     /* ======================================================================= */
 
-    const bool CHEMISTRY;
-    const bool HETCHEM;
-    const std::string JRATE_FOLDER;
+    bool CHEMISTRY;
+    bool HETCHEM;
+    std::string JRATE_FOLDER;
 
     /* ======================================================================= */
     /* ---- Input options from the AEROSOL MENU ------------------------------ */
     /* ======================================================================= */
 
-    const bool GRAVSETTLING;
-    const bool ICE_COAG;
-    const bool LIQ_COAG;
-    const bool ICE_GROWTH;
+    bool GRAVSETTLING;
+    bool ICE_COAG;
+    bool LIQ_COAG;
+    bool ICE_GROWTH;
 
     /* ======================================================================= */
     /* ---- Input options from the METEOROLOGY MENU -------------------------- */
@@ -53,37 +53,37 @@ struct MPMSimVarsWrapper{
     /* Input options from the METEOROLOGY MENU are read in the Meteorology
      * subroutine */
 
-    const bool TEMP_PERTURB;
+    bool TEMP_PERTURB;
     double metDepth;
 
     /* ======================================================================= */
     /* ---- Input options from the DIAGNOSTIC MENU --------------------------- */
     /* ======================================================================= */
     
-    const std::string DIAG_FILENAME;
+    std::string DIAG_FILENAME;
     
     /* ======================================================================= */
     /* ---- Input options from the TIMESERIES MENU --------------------------- */
     /* ======================================================================= */
 
-    const std::string TS_FOLDER;
-    const bool TS_SPEC;
-    const std::string TS_SPEC_FILEPATH;
-    const std::vector<int> TS_SPEC_LIST;
-    const double TS_FREQ;
+    std::string TS_FOLDER;
+    bool TS_SPEC;
+    std::string TS_SPEC_FILEPATH;
+    std::vector<int> TS_SPEC_LIST;
+    double TS_FREQ;
 
-    const bool TS_AERO;
-    const std::string TS_AERO_FILEPATH;
-    const std::vector<int> TS_AERO_LIST;
-    const double TS_AERO_FREQ;
+    bool TS_AERO;
+    std::string TS_AERO_FILEPATH;
+    std::vector<int> TS_AERO_LIST;
+    double TS_AERO_FREQ;
 
     /* ======================================================================= */
     /* ---- Input options from the PROD & LOSS MENU -------------------------- */
     /* ======================================================================= */
 
     /* TODO: Implement PL rates */
-    const bool SAVE_PL;
-    const bool SAVE_O3PL;
+    bool SAVE_PL;
+    bool SAVE_O3PL;
 
     /* If DIAG_OUTPUT is turned on, make sure that output timestep is a
      * multiple of the dynamic timestep */

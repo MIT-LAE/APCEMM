@@ -18,11 +18,11 @@ struct TimestepVarsWrapper
      */
 
     /* Define emission and simulation time */
-    const double tEmission_h;
-    const double tInitial_h;
-    const double tFinal_h;
-    const double tInitial_s;
-    const double tFinal_s;
+    double tEmission_h;
+    double tInitial_h;
+    double tFinal_h;
+    double tInitial_s;
+    double tFinal_s;
 
     /* Current time in [s] */
     double curr_Time_s; /* [s] */
@@ -45,11 +45,11 @@ struct TimestepVarsWrapper
     bool ITS_TIME_FOR_ICE_GROWTH;
     bool ITS_TIME_FOR_TEMPPERTURB;
 
-    const double TRANSPORT_DT;    // [s]
-    const double CHEMISTRY_DT;    // [s]
-    const double COAG_DT;         //[s]
-    const double TEMP_PERTURB_DT; //[s]
-    const double ICE_GROWTH_DT;   // [s]
+    double TRANSPORT_DT;    // [s]
+    double CHEMISTRY_DT;    // [s]
+    double COAG_DT;         //[s]
+    double TEMP_PERTURB_DT; //[s]
+    double ICE_GROWTH_DT;   // [s]
 
     double lastTimeTransport;
     double lastTimeChem;
@@ -70,7 +70,7 @@ struct TimestepVarsWrapper
     double totalIceMass_after;
     double totPart_lost;
     double totIce_lost;
-    const double ABORT_THRESHOLD;
+    double ABORT_THRESHOLD;
 
     TimestepVarsWrapper() = default;
     TimestepVarsWrapper(const Input &input, const OptInput &Input_Opt);
