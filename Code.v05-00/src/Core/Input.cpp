@@ -15,59 +15,6 @@
 #include "Core/Input.hpp"
 
 Input::Input( unsigned int iCase,               \
-              const Vector_2D &parameters,      \
-              const std::string fileName,       \
-              const std::string fileName_ADJ,   \
-              const std::string fileName_BOX,   \
-              const std::string fileName_micro, \
-              const std::string author          ):
-    Case_          ( iCase                 ),
-    simulationTime_( parameters[ 0][iCase] ),
-    temperature_K_ ( parameters[ 1][iCase] ),
-    relHumidity_w_ ( parameters[ 2][iCase] ),
-    horizDiff_     ( parameters[ 3][iCase] ),
-    vertiDiff_     ( parameters[ 4][iCase] ),
-    shear_         ( parameters[ 5][iCase] ),
-    longitude_deg_ ( parameters[ 6][iCase] ),
-    latitude_deg_  ( parameters[ 7][iCase] ),
-    pressure_Pa_   ( parameters[ 8][iCase] ),
-    emissionDOY_   ( parameters[ 9][iCase] ),
-    emissionTime_  ( parameters[10][iCase] ),
-    EI_NOx_        ( parameters[11][iCase] ),
-    EI_CO_         ( parameters[12][iCase] ),
-    EI_HC_         ( parameters[13][iCase] ),
-    EI_SO2_        ( parameters[14][iCase] ),
-    EI_SO2TOSO4_   ( parameters[15][iCase] ),
-    EI_Soot_       ( parameters[16][iCase] ),
-    sootRad_       ( parameters[17][iCase] ),
-    fuelFlow_      ( parameters[18][iCase] ),
-    aircraftMass_  ( parameters[19][iCase] ),
-    backgNOx_      ( parameters[20][iCase] ),
-    backgHNO3_     ( parameters[21][iCase] ),
-    backgO3_       ( parameters[22][iCase] ),
-    backgCO_       ( parameters[23][iCase] ),
-    backgCH4_      ( parameters[24][iCase] ),
-    backgSO2_      ( parameters[25][iCase] ),
-    flightSpeed_   ( parameters[26][iCase] ),
-    numEngines_    ( parameters[27][iCase] ),
-    wingspan_      ( parameters[28][iCase] ),
-    coreExitTemp_  ( parameters[29][iCase] ),
-    bypassArea_    ( parameters[30][iCase] ),
-    fileName_      ( fileName ),
-    fileName_ADJ_  ( fileName_ADJ ),
-    fileName_BOX_  ( fileName_BOX ),
-    fileName_micro_ ( fileName_micro ),
-    author_        ( author )
-{
-
-    /* Constructor */
-    adjustLatLong();
-    checkInputValidity();
-    calculate_emissionMonth();
-
-} /* End of Input::Input */
-
-Input::Input( unsigned int iCase,               \
         const std::vector<std::unordered_map<std::string, double>> &parameters,      \
         const std::string fileName,       \
         const std::string fileName_ADJ,   \
@@ -76,11 +23,8 @@ Input::Input( unsigned int iCase,               \
         const std::string author          ):
     Case_          ( iCase                 ),
     simulationTime_( parameters[iCase].at("PLUMEPROCESS")),
-    temperature_K_ ( parameters[iCase].at("TEMPERATURE")),
-    relHumidity_w_ ( parameters[iCase].at("RHW")),
     horizDiff_     ( parameters[iCase].at("DH")),
     vertiDiff_     ( parameters[iCase].at("DV")),
-    shear_         ( parameters[iCase].at("SHEAR")),
 
     longitude_deg_ ( parameters[iCase].at("LONGITUDE")),
     latitude_deg_  ( parameters[iCase].at("LATITUDE")),
@@ -139,25 +83,11 @@ void Input::checkInputValidity(){
         std::cout << simulationTime_ << " [hrs]" << std::endl;
         exit(-1);
     }
-
-    if ( temperature_K_ >= 300.0 || temperature_K_ <= 160.0 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " temperature_K takes an odd value: temperature_K = ";
-        std::cout << temperature_K_ << " [K]" << std::endl;
-        exit(-1);
-    }
     
     if ( pressure_Pa_ >= 1.00E+05 || pressure_Pa_ <= 1.00E+03 ) {
         std::cout << " In Input::Input:";
         std::cout << " pressure_Pa takes an odd value: pressure_Pa_ = ";
         std::cout << pressure_Pa_ << " [Pa]" << std::endl;
-        exit(-1);
-    }
-
-    if ( relHumidity_w_ >= 9.50E+01 || relHumidity_w_ <= 0.00E+00 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " relHumidity_w takes an unrealisable value: relHumidity_w = ";
-        std::cout << relHumidity_w_ << " [%]" << std::endl;
         exit(-1);
     }
     
@@ -175,13 +105,6 @@ void Input::checkInputValidity(){
         std::cout << vertiDiff_ << " [m^2/s]" << std::endl;
         if ( vertiDiff_ < 0.00E+00 )
             exit(-1);
-    }
-
-    if ( shear_ >= 5.0E-02 || shear_ <= -5.0E-02 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " shear takes an unrealisable value: shear = ";
-        std::cout << shear_ << " [1/s]" << std::endl;
-        exit(-1);
     }
 
     if ( emissionDOY_ < 1  || emissionDOY_ > 365) {
