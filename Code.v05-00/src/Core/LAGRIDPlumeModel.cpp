@@ -239,8 +239,6 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     }
 
     // Run vortex sink parameterization
-    /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not
-    * just user-specified input */
     const double iceNumFrac = aircraft_.VortexLosses(
         EI_.getSoot(), EI_.getSootRad(), met_.satdepthUser());
 
