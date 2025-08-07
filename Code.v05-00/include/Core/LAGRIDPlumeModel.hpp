@@ -25,7 +25,7 @@ class LAGRIDPlumeModel {
         static constexpr double RIGHT_BUFFER_SCALING = 1.5;
 
         LAGRIDPlumeModel() = delete;
-        LAGRIDPlumeModel(const OptInput &Input_Opt, const Input &input);
+        LAGRIDPlumeModel(const OptInput &Input_Opt, Input &input);
         SimStatus runFullModel();
         std::variant<EPM::Output, SimStatus> runEPM();
         struct BufferInfo {
@@ -36,7 +36,7 @@ class LAGRIDPlumeModel {
         };
     private:
         const OptInput& optInput_;
-        const Input& input_;
+        Input& input_;
         int numThreads_;
         Aircraft aircraft_;
         Fuel jetA_;

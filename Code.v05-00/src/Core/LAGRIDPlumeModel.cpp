@@ -22,22 +22,15 @@ double HET[NSPEC][3];        /* Heterogeneous chemistry rates (global) */
 double TIME;                 /* Current integration time (global) */
 double SZA_CST[3];           /* Require this for adjoint integration */
 
-LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input) :
+LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, Input &input) :
     optInput_(optInput), input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
-    jetA_(Fuel("C12H24")), simVars_(input, optInput),
-    timestepVars_(input, optInput),
+    jetA_(Fuel("C12H24")),
     yCoords_(optInput_.ADV_GRID_NY),
     yEdges_(optInput_.ADV_GRID_NY + 1)
 {
     /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */
     jetA_.setFSC(input.EI_SO2() * 500.0);
-
-    timestepVars_.setTimeArray(
-        PlumeModelUtils::BuildTime (
-            timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt));
-
-    createOutputDirectories();
 
     // Set up initial grid coordinates: required for meteorology setup, which
     // is needed for the EPM.
@@ -49,22 +42,25 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input)
     std::generate(yCoords_.begin(), yCoords_.end(),
                   [dy, y0, j = 0]() mutable { return y0 + dy * (0.5 + j++); });
 
-    // Set up initial meteorology data needed for the EPM.
-    AmbientMetParams ambMetParams{
-        .solarTime_h = timestepVars_.curr_Time_s / 3600.0,
-        .temp_K = simVars_.temperature_K,
-        .press_Pa = simVars_.pressure_Pa,
-        .rhi = simVars_.relHumidity_i,
-        .shear = input_.shear()
-    };
-    met_ = Meteorology(optInput_, ambMetParams, yCoords_, yEdges_);
+    met_ = Meteorology(optInput_, input.pressure_Pa(), yCoords_, yEdges_);
     std::cout << "Temperature      = " << met_.tempRef() << " K" << std::endl;
     std::cout << "RHw              = " << met_.rhwRef() << " %" << std::endl;
     std::cout << "RHi              = " << met_.rhiRef() << " %" << std::endl;
-    std::cout << "Saturation depth = " << met_.satdepthUser() << " m" << std::endl;
+    std::cout << "Saturation depth = " << met_.satdepthEstimate() << " m" << std::endl;
+    
+    // Set the met variables in the input object
+    input.set_temperature_K(met_.tempRef());
+    input.set_relHumidity_w(met_.rhwRef());
+    input_ = input;
 
-    aircraft_ = Aircraft(met_, input, optInput.SIMULATION_INPUT_ENG_EI);
-    EI_ = Emission(aircraft_.engine(), jetA_, input.EI_SO2TOSO4());
+    simVars_ = MPMSimVarsWrapper(input_, optInput_, met_.satdepthEstimate());
+    timestepVars_ = TimestepVarsWrapper(input_, optInput_);
+    aircraft_ = Aircraft(input_, optInput_.SIMULATION_INPUT_ENG_EI);
+    EI_ = Emission(aircraft_.engine(), jetA_, input_.EI_SO2TOSO4());
+
+    timestepVars_.setTimeArray(PlumeModelUtils::BuildTime (
+            timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt));
+    createOutputDirectories();
 }
 
 SimStatus LAGRIDPlumeModel::runFullModel() {
@@ -242,10 +238,8 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     }
 
     // Run vortex sink parameterization
-    /* TODO: Change Input_Opt.MET_DEPTH to actual depth from meteorology and not
-    * just user-specified input */
     const double iceNumFrac = aircraft_.VortexLosses(
-        EI_.getSoot(), EI_.getSootRad(), met_.satdepthUser());
+        EI_.getSoot(), EI_.getSootRad(), met_.satdepthEstimate());
 
     std::cout << "Parameterized vortex sinking survival fraction: " << iceNumFrac
                 << std::endl;

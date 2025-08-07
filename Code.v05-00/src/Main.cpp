@@ -202,7 +202,7 @@ int main( int argc, char* argv[])
 
         if ( !fileExist || Input_Opt.SIMULATION_OVERWRITE ) {
 
-            const Input inputCase( iCase, parameters, \
+            Input inputCase( iCase, parameters, \
                                    fullPath,          \
                                    fullPath_ADJ,      \
                                    fullPath_BOX,      \
@@ -279,11 +279,6 @@ int main( int argc, char* argv[])
                     if (Input_Opt.MET_LOADMET)
                     {
                         fmt::print(" Met file : {:>}\n",  Input_Opt.MET_FILENAME);
-                    }
-                    else
-                    {
-                        fmt::print(" T     [K]: {:>8.2f}\n", inputCase.temperature_K());
-                        fmt::print(" RH_w  [%]: {:>8.2f}\n", inputCase.relHumidity_w());
                     }
                 }
                 else { std::cout << " APCEMM Case: " << iCase << " completed." << std::endl; }

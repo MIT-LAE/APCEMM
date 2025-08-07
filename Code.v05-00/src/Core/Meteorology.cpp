@@ -20,17 +20,15 @@
 #include "Util/MC_Rand.hpp"
 
 Meteorology::Meteorology( const OptInput &optInput,
-                          const AmbientMetParams& ambParams,
+                          const double pressure_Pa,
                           const Vector_1D& yCoords,
                           const Vector_1D& yEdges):
-    rhi_far_(optInput.MET_SUBSAT_RHI),
     nx_(optInput.ADV_GRID_NX),
     ny_(optInput.ADV_GRID_NY),
     yCoords_(yCoords),
     yEdges_(yEdges),
     met_dt_h_(optInput.MET_DT),
-    ambParams_(ambParams),
-    pressureRef_(ambParams.press_Pa),
+    pressureRef_(pressure_Pa),
     turbTempPertAmplitude_(optInput.MET_TEMP_PERTURB_AMPLITUDE),
     useMetFileInput_(optInput.MET_LOADMET),
     interpTemp_(optInput.MET_INTERPTEMPDATA),
@@ -45,16 +43,6 @@ Meteorology::Meteorology( const OptInput &optInput,
     //Set reference altitude from reference pressure using ISA
     met::ISA_pAlt(altitudeRef_, pressureRef_);
     std::cout << "Starting pressure of " << pressureRef_ << " Pa. Pressure altitude is " << (altitudeRef_/1000.0) << " km" << std::endl;
-
-    // These should eventually be deleted
-    lapseRate_ = -6.5;
-    met_depth_ =  200.0;
-    if ( optInput.MET_DIURNAL ) {
-        throw std::runtime_error("Diurnal temperature variations now disabled");
-    }
-    diurnalAmplitude_ = 0.0;
-    diurnalPert_ = 0.0;
-    diurnalPhase_ = 0.0;
 
     //Declare met input file here, keeps ownership of file to constructor only.
     //Dont want to deal with using a ptr and worry about what functions deference it.
@@ -81,7 +69,7 @@ Meteorology::Meteorology( const OptInput &optInput,
     updateSimulationGridProperties();
 
     // Get the saturation depth
-    satdepth_user_ = estimateSatDepth();
+    satdepth_estimate_ = estimateSatDepth();
 } /* End of Meteorology::Meteorology */
 
 void Meteorology::updateSimulationGridProperties(){
@@ -482,7 +470,7 @@ void Meteorology::readMetVar( const NcFile& dataFile, std::string varName, Vecto
 
 double Meteorology::estimateSatDepth() {
     // Calculates the saturation depth
-    int i_Z = met::nearestNeighbor( pressure_, ambParams_.press_Pa);
+    int i_Z = met::nearestNeighbor( pressure_, pressureRef_ );
     double dy = yCoords_[1] - yCoords_[0];
     try {
         return met::satdepth_calc(rhi_, altitude_, i_Z, std::abs(yCoords_[0]) + dy/2);

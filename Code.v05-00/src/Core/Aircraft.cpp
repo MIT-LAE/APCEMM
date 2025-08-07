@@ -24,15 +24,15 @@ Aircraft::Aircraft( )
 
 } /* End of Aircraft::Aircraft */
 
-Aircraft::Aircraft( const Meteorology& met, const Input& input, std::string engineFilePath, std::string engineName){
+Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string engineName){
     /* Flight characteristics */
     //Sets both flight speed and mach number
 
-    double T_CA_K = met.tempRef(); // From the meteorology, at the reference altitude
-    double RHW_CA = met.rhwRef(); // From the meteorology, at the reference altitude
-    double p_CA_Pa = input.pressure_Pa(); // From the input
+    double T_CA_K = input.temperature_K(); // From the meteorology, at the reference altitude
+    double RHW_CA = input.relHumidity_w(); // From the meteorology, at the reference altitude
+    double p_CA_Pa = input.pressure_Pa(); // From the yaml input
 
-    setVFlight(input.flightSpeed(), input.temperature_K());
+    setVFlight(input.flightSpeed(), T_CA_K);
 
     /* Engine characteristics */
     engine_ = Engine( engineName.c_str(), engineFilePath, T_CA_K, p_CA_Pa, \

@@ -34,22 +34,13 @@ enum class MetVarLoadType : unsigned char {
     TimeSeries
 };
 
-//Most of the original code was defined in terms of RHi, so using that instead of RHw as input.
-struct AmbientMetParams {
-    double solarTime_h;
-    double temp_K;
-    double press_Pa;
-    double rhi; // [%]
-    double shear; // [s^-1]
-};
-
 class Meteorology
 {
 
     public:
         Meteorology( ) = default;
         Meteorology( const OptInput &optInput,      \
-                     const AmbientMetParams& ambParams,   \
+                     const double pressure_Pa,   \
                      const Vector_1D& yCoords,
                      const Vector_1D& yEdges);
 
@@ -93,7 +84,7 @@ class Meteorology
         }
         inline double shearRef() const { return shearAtAlt(altitudeRef_); }
         inline double lastOmega() const { return oldPressureVelocity_; }
-        inline double satdepthUser() const { return satdepth_user_; }
+        inline double satdepthEstimate() const { return satdepth_estimate_; }
         inline double referenceAlt() const { return altitudeRef_; } //Altitude at y = 0
         inline double referencePress() const { return pressureRef_; } //Pressure at y = 0
 
@@ -167,9 +158,7 @@ class Meteorology
         double temp_user_;
         double shear_user_;
         double rhw_user_;
-        double met_depth_; //Only for cases where we're not reading rh from met
-        double satdepth_user_;
-        double rhi_far_; // Only for fix metdepth cases
+        double satdepth_estimate_;
 
         //Grid data
         int nx_;
@@ -198,12 +187,8 @@ class Meteorology
         Vector_2D vertVelocTimeseriesData_;
 
         /* Ambient input parameters */
-        AmbientMetParams ambParams_;
         double altitudeRef_;
         double pressureRef_;
-
-        /* Temperature lapse rate */
-        double lapseRate_; // [K/m]
 
         /* Temperature variations */
         double diurnalAmplitude_; // [K]
