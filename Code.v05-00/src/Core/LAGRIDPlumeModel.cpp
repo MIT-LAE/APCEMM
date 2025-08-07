@@ -23,7 +23,7 @@ double TIME;                 /* Current integration time (global) */
 double SZA_CST[3];           /* Require this for adjoint integration */
 
 LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, Input &input) :
-    optInput_(optInput),
+    optInput_(optInput), input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
     jetA_(Fuel("C12H24")), simVars_(input, optInput),
     timestepVars_(input, optInput),
