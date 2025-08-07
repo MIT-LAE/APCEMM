@@ -1,7 +1,7 @@
 #include "Util/PhysFunction.hpp"
 #include "Core/MPMSimVarsWrapper.hpp"
 
-MPMSimVarsWrapper::MPMSimVarsWrapper(const Input& input, const OptInput& Input_Opt):
+MPMSimVarsWrapper::MPMSimVarsWrapper(const Input& input, const OptInput& Input_Opt, const double depth_estimate):
 	RUN_BOXMODEL(Input_Opt.SIMULATION_BOXMODEL),
 	BUILD_LUT(Input_Opt.SIMULATION_PARAMETER_SWEEP),
 	SAVE_FORWARD(Input_Opt.SIMULATION_SAVE_FORWARD),
@@ -23,7 +23,7 @@ MPMSimVarsWrapper::MPMSimVarsWrapper(const Input& input, const OptInput& Input_O
 	LIQ_COAG(Input_Opt.AEROSOL_COAGULATION_LIQUID),
 	ICE_GROWTH(Input_Opt.AEROSOL_ICE_GROWTH),
 	TEMP_PERTURB(Input_Opt.MET_ENABLE_TEMP_PERTURB),
-	metDepth(Input_Opt.MET_DEPTH),
+	metDepth(depth_estimate),
 	DIAG_FILENAME(Input_Opt.DIAG_FILENAME),
 	TS_FOLDER(Input_Opt.SIMULATION_OUTPUT_FOLDER),
 	TS_SPEC(Input_Opt.TS_SPEC),

@@ -96,7 +96,7 @@ struct MPMSimVarsWrapper{
     double relHumidity_i;
 
     MPMSimVarsWrapper() = default;
-    MPMSimVarsWrapper(const Input& input, const OptInput& Input_mod);
+    MPMSimVarsWrapper(const Input& input, const OptInput& Input_Opt, const double depth_estimate);
     inline int LA_MICROPHYSICS() const { return LA_MICROPHYSICS_; }
     inline int PA_MICROPHYSICS() const { return PA_MICROPHYSICS_; }
     inline bool TRANSPORT_LA() const { return TRANSPORT_LA_; }

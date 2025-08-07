@@ -84,7 +84,7 @@ class Meteorology
         }
         inline double shearRef() const { return shearAtAlt(altitudeRef_); }
         inline double lastOmega() const { return oldPressureVelocity_; }
-        inline double satdepthUser() const { return satdepth_estimate_; }
+        inline double satdepthEstimate() const { return satdepth_estimate_; }
         inline double referenceAlt() const { return altitudeRef_; } //Altitude at y = 0
         inline double referencePress() const { return pressureRef_; } //Pressure at y = 0
 
