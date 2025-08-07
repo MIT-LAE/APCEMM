@@ -202,7 +202,7 @@ int main( int argc, char* argv[])
 
         if ( !fileExist || Input_Opt.SIMULATION_OVERWRITE ) {
 
-            const Input inputCase( iCase, parameters, \
+            Input inputCase( iCase, parameters, \
                                    fullPath,          \
                                    fullPath_ADJ,      \
                                    fullPath_BOX,      \
