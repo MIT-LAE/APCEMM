@@ -470,7 +470,7 @@ void Meteorology::readMetVar( const NcFile& dataFile, std::string varName, Vecto
 
 double Meteorology::estimateSatDepth() {
     // Calculates the saturation depth
-    int i_Z = met::nearestNeighbor( pressure_, ambParams_.press_Pa);
+    int i_Z = met::nearestNeighbor( pressure_, pressureRef_ );
     double dy = yCoords_[1] - yCoords_[0];
     try {
         return met::satdepth_calc(rhi_, altitude_, i_Z, std::abs(yCoords_[0]) + dy/2);
