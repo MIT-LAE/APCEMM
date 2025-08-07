@@ -22,7 +22,7 @@
 Meteorology::Meteorology( const OptInput &optInput,
                           const double pressure_Pa,
                           const Vector_1D& yCoords,
-                          const Vector_1D& yEdges):,
+                          const Vector_1D& yEdges):
     nx_(optInput.ADV_GRID_NX),
     ny_(optInput.ADV_GRID_NY),
     yCoords_(yCoords),
