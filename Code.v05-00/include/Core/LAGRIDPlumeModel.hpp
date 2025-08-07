@@ -36,7 +36,7 @@ class LAGRIDPlumeModel {
         };
     private:
         const OptInput& optInput_;
-        const Input& input_;
+        Input& input_;
         int numThreads_;
         Aircraft aircraft_;
         Fuel jetA_;
