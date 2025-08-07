@@ -22,8 +22,8 @@ double HET[NSPEC][3];        /* Heterogeneous chemistry rates (global) */
 double TIME;                 /* Current integration time (global) */
 double SZA_CST[3];           /* Require this for adjoint integration */
 
-LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input) :
-    optInput_(optInput), input_(input),
+LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, Input &input) :
+    optInput_(optInput),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
     jetA_(Fuel("C12H24")), simVars_(input, optInput),
     timestepVars_(input, optInput),
@@ -54,9 +54,14 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input)
     std::cout << "RHw              = " << met_.rhwRef() << " %" << std::endl;
     std::cout << "RHi              = " << met_.rhiRef() << " %" << std::endl;
     std::cout << "Saturation depth = " << met_.satdepthUser() << " m" << std::endl;
+    
+    // Set the met variables in the input object
+    input.set_temperature_K(met_.tempRef());
+    input.set_relHumidity_w(met_.rhwRef());
+    input_ = input;
 
-    aircraft_ = Aircraft(met_, input, optInput.SIMULATION_INPUT_ENG_EI);
-    EI_ = Emission(aircraft_.engine(), jetA_, input.EI_SO2TOSO4());
+    aircraft_ = Aircraft(met_, input_, optInput_.SIMULATION_INPUT_ENG_EI);
+    EI_ = Emission(aircraft_.engine(), jetA_, input_.EI_SO2TOSO4());
 }
 
 SimStatus LAGRIDPlumeModel::runFullModel() {

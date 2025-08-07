@@ -29,7 +29,7 @@ class Aircraft
         /* Constructors */
 
         Aircraft( );
-        Aircraft( const Meteorology& met, const Input& input, std::string engineFilePath, std::string engineName = "GEnx-2B67B");
+        Aircraft( const Input& input, std::string engineFilePath, std::string engineName = "GEnx-2B67B");
 
         /* Debug */
         void Debug( ) const;
