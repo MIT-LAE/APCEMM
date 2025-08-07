@@ -49,15 +49,7 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input)
     std::generate(yCoords_.begin(), yCoords_.end(),
                   [dy, y0, j = 0]() mutable { return y0 + dy * (0.5 + j++); });
 
-    // Set up initial meteorology data needed for the EPM.
-    AmbientMetParams ambMetParams{
-        .solarTime_h = timestepVars_.curr_Time_s / 3600.0,
-        .temp_K = simVars_.temperature_K,
-        .press_Pa = simVars_.pressure_Pa,
-        .rhi = simVars_.relHumidity_i,
-        .shear = input_.shear()
-    };
-    met_ = Meteorology(optInput_, ambMetParams, yCoords_, yEdges_);
+    met_ = Meteorology(optInput_, simVars_.pressure_Pa, yCoords_, yEdges_);
     std::cout << "Temperature      = " << met_.tempRef() << " K" << std::endl;
     std::cout << "RHw              = " << met_.rhwRef() << " %" << std::endl;
     std::cout << "RHi              = " << met_.rhiRef() << " %" << std::endl;
