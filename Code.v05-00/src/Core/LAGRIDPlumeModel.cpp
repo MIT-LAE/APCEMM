@@ -60,7 +60,7 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, Input &input) :
     input.set_relHumidity_w(met_.rhwRef());
     input_ = input;
 
-    aircraft_ = Aircraft(met_, input_, optInput_.SIMULATION_INPUT_ENG_EI);
+    aircraft_ = Aircraft(input_, optInput_.SIMULATION_INPUT_ENG_EI);
     EI_ = Emission(aircraft_.engine(), jetA_, input_.EI_SO2TOSO4());
 }
 
