@@ -107,19 +107,9 @@ struct OptInput
     bool        MET_LOADVERTVELOC;
     bool        MET_VERTVELOCTIMESERIES;
     bool        MET_INTERPVERTVELOC;
-    bool        MET_FIXDEPTH;
-    double      MET_DEPTH;
-    double      MET_SUBSAT_RHI;
-    bool        MET_FIXLAPSERATE;
-    double      MET_LAPSERATE;
-    bool        MET_DIURNAL;
     bool        MET_ENABLE_TEMP_PERTURB;
     double      MET_TEMP_PERTURB_AMPLITUDE;
     double      MET_TEMP_PERTURB_TIMESCALE;
-    std::string MET_HUMIDSCAL_MODIFICATION_SCHEME;
-    double      MET_HUMIDSCAL_CONST_RHI;
-    double      MET_HUMIDSCAL_SCALING_A;
-    double      MET_HUMIDSCAL_SCALING_B;
 
     /* ========================================== */
     /* ---- DIAGNOSTIC MENU --------------------- */

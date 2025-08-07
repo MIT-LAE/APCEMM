@@ -178,12 +178,9 @@ namespace YamlInputReader{
         input.PARAMETER_PARAM_MAP["PLUMEPROCESS"] = parseParamSweepInput(paramNode["Plume Process [hr] (double)"].as<string>(), "Plume Process [hr] (double)");
 
         YAML::Node metParamSubmenu = paramNode["METEOROLOGICAL PARAMETERS SUBMENU"];
-        input.PARAMETER_PARAM_MAP["TEMPERATURE"] = parseParamSweepInput(metParamSubmenu["Temperature [K] (double)"].as<string>(), "Temperature [K] (double)");
-        input.PARAMETER_PARAM_MAP["RHW"] = parseParamSweepInput(metParamSubmenu["R.Hum. wrt water [%] (double)"].as<string>(), "R.Hum. wrt water [%] (double)");
         input.PARAMETER_PARAM_MAP["PRESSURE"] = parseParamSweepInput(metParamSubmenu["Pressure [hPa] (double)"].as<string>(), "Pressure [hPa] (double)");
         input.PARAMETER_PARAM_MAP["DH"] = parseParamSweepInput(metParamSubmenu["Horiz. diff. coeff. [m^2/s] (double)"].as<string>(), "Horiz. diff. coeff. [m^2/s] (double)");
         input.PARAMETER_PARAM_MAP["DV"] = parseParamSweepInput(metParamSubmenu["Verti. diff. [m^2/s] (double)"].as<string>(), "Verti. diff. [m^2/s] (double)");
-        input.PARAMETER_PARAM_MAP["SHEAR"] = parseParamSweepInput(metParamSubmenu["Wind shear [1/s] (double)"].as<string>(), "Wind shear [1/s] (double)");
         input.PARAMETER_PARAM_MAP["NBV"] = parseParamSweepInput(metParamSubmenu["Brunt-Vaisala Frequency [s^-1] (double)"].as<string>(), "Brunt-Vaisala Frequency [s^-1] (double)");
 
         YAML::Node locTimeSubmenu = paramNode["LOCATION AND TIME SUBMENU"];
@@ -267,56 +264,11 @@ namespace YamlInputReader{
         input.MET_LOADVERTVELOC = parseBoolString(metInputSubmenu["Init vert. veloc. from met. data (T/F)"].as<string>(), "Init vert. veloc. from met. data (T/F)");
         input.MET_VERTVELOCTIMESERIES = parseBoolString(metInputSubmenu["Vert. veloc. time series input (T/F)"].as<string>(), "Vert. veloc. time series input (T/F)");
         input.MET_INTERPVERTVELOC = parseBoolString(metInputSubmenu["Interpolate vert. veloc. met. data (T/F)"].as<string>(), "Interpolate vert. veloc. met. data (T/F)");
-        YAML::Node humidScalingOpts = metInputSubmenu["HUMIDITY SCALING OPTIONS"];
-        input.MET_HUMIDSCAL_MODIFICATION_SCHEME = humidScalingOpts["Humidity modification scheme (none / constant / scaling)"].as<string>();
-        input.MET_HUMIDSCAL_CONST_RHI = parseDoubleString(humidScalingOpts["Constant RHi [%] (double)"].as<string>(), "Constant RHi [%] (double)");
-        input.MET_HUMIDSCAL_SCALING_A = parseDoubleString(humidScalingOpts["Humidity scaling constant a (double)"].as<string>(), "Humidity scaling constant a (double)");
-        input.MET_HUMIDSCAL_SCALING_B = parseDoubleString(humidScalingOpts["Humidity scaling constant b (double)"].as<string>(), "Humidity scaling constant b (double)");
-
-
-        YAML::Node moistLayerSubmenu = metNode["IMPOSE MOIST LAYER DEPTH SUBMENU"];
-        input.MET_FIXDEPTH = parseBoolString(moistLayerSubmenu["Impose moist layer depth (T/F)"].as<string>(), "Impose moist layer depth (T/F)");
-        input.MET_DEPTH = parseDoubleString(moistLayerSubmenu["Moist layer depth [m] (double)"].as<string>(), "Moist layer depth [m] (double)");
-        input.MET_SUBSAT_RHI = parseDoubleString(moistLayerSubmenu["Subsaturated air RHi [%] (double)"].as<string>(), "Subsaturated air RHi [%] (double)");
-
-        YAML::Node lapseRateSubmenu = metNode["IMPOSE LAPSE RATE SUBMENU"];
-        input.MET_FIXLAPSERATE = parseBoolString(lapseRateSubmenu["Impose lapse rate (T/F)"].as<string>(), "Impose lapse rate (T/F)");
-        input.MET_LAPSERATE = parseDoubleString(lapseRateSubmenu["Lapse rate [K/m] (T/F)"].as<string>(), "Lapse rate [K/m] (T/F)");
-
-        input.MET_DIURNAL = parseBoolString(metNode["Add diurnal variations (T/F)"].as<string>(), "Add diurnal variations (T/F)");
         
         YAML::Node tempPerturbMenu = metNode["TEMPERATURE PERTURBATION SUBMENU"];
         input.MET_ENABLE_TEMP_PERTURB = parseBoolString( tempPerturbMenu["Enable Temp. Pert. (T/F)"].as<string>(), "Enable Temp. Pert. (T/F)" );
         input.MET_TEMP_PERTURB_AMPLITUDE = parseDoubleString( tempPerturbMenu["Temp. Perturb. Amplitude (double)"].as<string>(), "Temp. Perturb. Amplitude (double)" );
         input.MET_TEMP_PERTURB_TIMESCALE = parseDoubleString( tempPerturbMenu["Temp. Perturb. Timescale (min)"].as<string>(), "Temp. Perturb. Timescale (min)" );
-        
-        //Humidity mod scheme must be none, constant, or scaling
-        string modSchemeCaps = input.MET_HUMIDSCAL_MODIFICATION_SCHEME;
-        for (auto & c: modSchemeCaps) c = toupper(c);
-
-        if(modSchemeCaps != "NONE" && modSchemeCaps != "CONSTANT" && modSchemeCaps != "SCALING") {
-            throw std::invalid_argument("Humidity modification scheme must be one of none, constant, or scaling.");
-        }
-        else {
-            for (auto & c: input.MET_HUMIDSCAL_MODIFICATION_SCHEME) c = tolower(c);
-        }
-
-        //At least one of load met, impose depth, and fix lapse rate must be on.
-        if(input.MET_LOADMET + input.MET_FIXDEPTH + input.MET_FIXLAPSERATE == 0){
-            throw std::invalid_argument("At least one of \"Use met. input\", \"Impose moist layer depth\", or \"Impose lapse rate\" must be on!");
-        }
-        if(input.MET_FIXDEPTH + input.MET_FIXLAPSERATE > 1) {
-            throw std::invalid_argument("Cannot fix both moist layer depth and lapse rate");
-        }
-        if(input.MET_LOADMET){
-            if(input.MET_LOADTEMP + input.MET_FIXLAPSERATE + input.MET_FIXDEPTH != 1){
-                throw std::invalid_argument("When using met. input, only one of \"Init temp. from met.\", \"Impose moist layer depth\", or \"Impose lapse rate\" must be selected.");
-            }
-            else if (input.MET_LOADRH + input.MET_FIXLAPSERATE + input.MET_FIXDEPTH != 1){
-                throw std::invalid_argument("When using met. input, only one of \"Init RH from met.\" or \"Impose moist layer depth\", or \"Impose lapse rate\" must be selected.");
-            }
-
-        }
     }
     void readDiagMenu(OptInput& input, const YAML::Node& diagNode){
         input.DIAG_FILENAME = diagNode["netCDF filename format (string)"].as<string>();

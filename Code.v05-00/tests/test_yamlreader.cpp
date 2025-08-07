@@ -225,16 +225,11 @@ TEST_CASE("Read Yaml File"){
         readParamMenu(input, data["PARAMETER MENU"]);
 
         REQUIRE(input.PARAMETER_PARAM_MAP["PLUMEPROCESS"][0] == 24);
-        REQUIRE(input.PARAMETER_PARAM_MAP["TEMPERATURE"].size() == 3);
-        REQUIRE(input.PARAMETER_PARAM_MAP["TEMPERATURE"][0] == 215);
-        REQUIRE(input.PARAMETER_PARAM_MAP["TEMPERATURE"][2] == 225);
-        REQUIRE(input.PARAMETER_PARAM_MAP["RHW"][0] == 43.9432);
         REQUIRE(input.PARAMETER_PARAM_MAP["PRESSURE"].size() == 3);
         REQUIRE(input.PARAMETER_PARAM_MAP["PRESSURE"][0] == 22000);
         REQUIRE(input.PARAMETER_PARAM_MAP["PRESSURE"][1] == 23000);
         REQUIRE(input.PARAMETER_PARAM_MAP["DH"][0] == 15.0);
         REQUIRE(input.PARAMETER_PARAM_MAP["DV"][0] == 0.15);
-        REQUIRE(input.PARAMETER_PARAM_MAP["SHEAR"][0] == 0.002);
         REQUIRE(input.PARAMETER_PARAM_MAP["NBV"][0] == 0.013);
 
         REQUIRE(input.PARAMETER_PARAM_MAP["LONGITUDE"][0] == -15);
@@ -318,16 +313,6 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.MET_LOADVERTVELOC == true);
         REQUIRE(input.MET_VERTVELOCTIMESERIES == true);
         REQUIRE(input.MET_INTERPVERTVELOC == true);
-        REQUIRE(input.MET_HUMIDSCAL_MODIFICATION_SCHEME == "none");
-        REQUIRE(input.MET_HUMIDSCAL_CONST_RHI == 110.0);
-        REQUIRE(input.MET_HUMIDSCAL_SCALING_A == 0.9779);
-        REQUIRE(input.MET_HUMIDSCAL_SCALING_B == 1.635);
-        REQUIRE(input.MET_FIXDEPTH == true);
-        REQUIRE(input.MET_DEPTH == 200);
-        REQUIRE(input.MET_SUBSAT_RHI == 80);
-        REQUIRE(input.MET_FIXLAPSERATE == true);
-        REQUIRE(input.MET_LAPSERATE == -6.0e-3);
-        REQUIRE(input.MET_DIURNAL == true);
         REQUIRE(input.MET_ENABLE_TEMP_PERTURB == true);
         REQUIRE(input.MET_TEMP_PERTURB_AMPLITUDE == 2.0);
         REQUIRE(input.MET_TEMP_PERTURB_TIMESCALE == 10);
@@ -408,12 +393,9 @@ TEST_CASE("Generate Input Objects"){
     REQUIRE(cases.size() == 18);
     Input caseInput = Input(0, cases, "", "", "", "", "");
     REQUIRE(caseInput.simulationTime() == 24);
-    REQUIRE(caseInput.temperature_K() == 215);
-    REQUIRE(caseInput.relHumidity_w() == 43.9432);
     REQUIRE(caseInput.pressure_Pa() == 22000);
     REQUIRE(caseInput.horizDiff() == 15.0);
     REQUIRE(caseInput.vertiDiff() == 0.15);
-    REQUIRE(caseInput.shear() == 0.002);
     REQUIRE(caseInput.nBV() == 0.013);
     REQUIRE(caseInput.longitude_deg() == -15);
     REQUIRE(caseInput.latitude_deg() == 60);
@@ -449,12 +431,9 @@ TEST_CASE("Merge Input Files"){
     REQUIRE(cases.size() == 18);
     Input caseInput = Input(0, cases, "", "", "", "", "");
     REQUIRE(caseInput.simulationTime() == 24);
-    REQUIRE(caseInput.temperature_K() == 215);
-    REQUIRE(caseInput.relHumidity_w() == 43.9432);
     REQUIRE(caseInput.pressure_Pa() == 32000);
     REQUIRE(caseInput.horizDiff() == 17.0);
     REQUIRE(caseInput.vertiDiff() == 0.15);
-    REQUIRE(caseInput.shear() == 0.002);
     REQUIRE(caseInput.nBV() == 0.017);
     REQUIRE(caseInput.longitude_deg() == -45);
     REQUIRE(caseInput.latitude_deg() == 65);

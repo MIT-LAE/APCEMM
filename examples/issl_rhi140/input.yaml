@@ -50,16 +50,11 @@ PARAMETER MENU:
 
   # Temperature, RH, and wind shear can be overwritten if using meteorological input files
   METEOROLOGICAL PARAMETERS SUBMENU:
-    # Can be overwritten if met file is passed
-    Temperature [K] (double): 217
-    # Can be overwritten if met file is passed
-    R.Hum. wrt water [%] (double): 63.94
     # Pressure altitude at which the contrail is initialized
     Pressure [hPa] (double): 265
     Horiz. diff. coeff. [m^2/s] (double): 15.0
     # Can be overwritten if met file is passed
     Verti. diff. [m^2/s] (double): 0.15
-    Wind shear [1/s] (double): 0.002
     Brunt-Vaisala Frequency [s^-1] (double): 0.013
   LOCATION AND TIME SUBMENU:
   # Affects for solar zenith angle and photolysis which affect EPM/diurnal variations of temperature
@@ -157,30 +152,6 @@ METEOROLOGY MENU:
     Vert. veloc. time series input (T/F): F
     Interpolate vert. veloc. met. data (T/F): F
     # Option to modify NWP RH data 
-    HUMIDITY SCALING OPTIONS:
-    # For reference on humidity scaling option, see 
-    # Teoh et al, "Aviation contrail climate effects in the North Atlantic from 2016 to 2021" (2022)
-    # Constant is a fixed value at initialization
-      Humidity modification scheme (none / constant / scaling): none
-      # "Overwrite initial RHi":
-      Constant RHi [%] (double): 110.0
-      Humidity scaling constant a (double): 0.9779
-      Humidity scaling constant b (double): 1.635
-
-
-  #- OR -------------------+
-  IMPOSE MOIST LAYER DEPTH SUBMENU:
-  # Sets constant RHi for the entire layer defined by Moist layer depth
-    Impose moist layer depth (T/F): F
-    Moist layer depth [m] (double): 1000
-    Subsaturated air RHi [%] (double): 80
-  #- OR -----------------+
-  IMPOSE LAPSE RATE SUBMENU:
-  # Sets constant lapse rate
-    Impose lapse rate (T/F): F
-    Lapse rate [K/m] (T/F): -6.0E-03
-  # ---END MET INPUT OPTIONS --- 
-  Add diurnal variations (T/F): F
 
   # Perturbations to the temperature field can be added to the contrail simulation to account for some effects of 
   # atmospheric turbulence and gravity waves.
