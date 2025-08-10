@@ -217,25 +217,11 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     EPM::Output &epmOutput = std::get<EPM::Output>(epmResult);
     epmOutput.write(optInput_.SIMULATION_OUTPUT_FOLDER + "/epm-output.nc");
 
-    /* Compute initial plume area and scale initial ice aerosol properties based
-    * on number engines. Note that EPM results are for ONLY ONE ENGINE. If 2
-    * engines, we assume that after 3 mins, the two plumes haven't fully mixed
-    * yet and result in a total area of 2 * the area computed for one engine If 3
-    * or more engines, we assume that the plumes originating from the same wing
-    * have mixed. */
-
-    epmOutput.area *= 2.0;
-    if (aircraft_.EngNumber() != 2) {
-        // Scale densities by this factor to account for the plume size
-        // already doubling.
-        epmOutput.iceDensity *= aircraft_.EngNumber() / 2.0;
-        epmOutput.sootDensity *= aircraft_.EngNumber() / 2.0;
-
-        // EPM only runs for one engine, so scale aerosol pdfs by engine
-        // number.
-        epmOutput.SO4Aer.scalePdf(aircraft_.EngNumber());
-        epmOutput.IceAer.scalePdf(aircraft_.EngNumber());
-    }
+    /* The output area from the EPM is principally used just to scale from
+    number densities (eg #/cm3) to totals (eg #/m). Increasing the area
+    is the easiest way to represent the fact that multiple engines are in
+    use - recalling that the EPM is only actually run for one engine. */
+    epmOutput.area *= aircraft_.EngNumber();
 
     // Run vortex sink parameterization
     const double iceNumFrac = aircraft_.VortexLosses(
