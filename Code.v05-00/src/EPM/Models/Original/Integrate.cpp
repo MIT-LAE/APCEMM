@@ -281,6 +281,7 @@ namespace EPM::Models
         double SO4l_3mins = 0;
         double SO4g_3mins = 0;
         double Tracer_3mins = 0;
+        double n_air_3mins = 0;
         AIM::Aerosol pSO4pdf_3mins( nPDF_SO4 );
 
         iTime = 0;
@@ -348,6 +349,7 @@ namespace EPM::Models
             if ( iTime == iTime_3mins ) {
                 PartRad_3mins  = observer.m_states[observer.m_states.size()-1][EPM_ind_ParR];
                 PartDens_3mins = observer.m_states[observer.m_states.size()-1][EPM_ind_Part] * n_air;
+                n_air_3mins = n_air;
                 H2OMol_3mins   = observer.m_states[observer.m_states.size()-1][EPM_ind_H2O]; //* observer.m_states[observer.m_states.size()-1][EPM_ind_P] / (kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T]) * 1.0E-06;
                 Tracer_3mins   = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
 //                SO4pdf_3mins   = nPDF_SO4;
@@ -401,7 +403,7 @@ namespace EPM::Models
         IceAer = solidAer;
 
         /* Compute plume area */
-        Area = Ab0 / Tracer_3mins;
+        Area = Ab0 * n_air_eng / (n_air_3mins * Tracer_3mins);
 
 //        std::cout << " Soot end: " << ( varSoot - Soot_amb  ) * 1E6 * Ab0 << " [#/m]\n";
 //        std::cout << " Soot end: " << ( Soot_den - Soot_amb ) * 1E6 * Ab0 / Tracer_3mins << "[#/m]\n";
