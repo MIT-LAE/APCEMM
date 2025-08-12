@@ -74,13 +74,13 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
 
     /* Declare and initialize remaining fraction of ice crystals */
-    double iceNumFrac = 0.0E+00;
+    double icenum_survfrac = 0.0E+00;
 
     /* Declare and initialize each length scales */
     double z_Atm   = 0.0E+00;
     double z_Emit  = 0.0E+00;
     double z_Desc  = 0.0E+00;
-    double z_Delta = 0.0E+00;
+    double z_delta_fns = 0.0E+00;
 
     /* Exponents */
     const double gamma_Atm  = 0.18;
@@ -123,13 +123,13 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     const double alpha_Desc = -0.60;
 
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
-    z_Delta = + alpha_Atm  * z_Atm  \
+    z_delta_fns = + alpha_Atm  * z_Atm  \
               + alpha_Emit * z_Emit \
               + alpha_Desc * z_Desc;
 
-    iceNumFrac = beta_0 + beta_1 / physConst::PI * atan( alpha_0 + z_Delta / 1.0E+02 );
+    icenum_survfrac = beta_0 + beta_1 / physConst::PI * atan( alpha_0 + z_delta_fns / 1.0E+02 );
 
-//     if ( ( ACDEBUG ) || ( iceNumFrac < 0.1E+00 ) || ( iceNumFrac > 1.0E+00 ) ) {
+//     if ( ( ACDEBUG ) || ( icenum_survfrac < 0.1E+00 ) || ( icenum_survfrac > 1.0E+00 ) ) {
 //         /* If DEBUG is on or if we lose more than 90% of the initial number of 
 //          * ice crystals, then print diagnostic */
 // #pragma omp critical
@@ -147,18 +147,18 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
 //         std::cout << "z_Desc     = " << z_Desc / 1.0E+02 << " [100m]" << std::endl;
 //         std::cout << " -> Gamma  = " << vortex_.gamma() << " [m^2/s]" << std::endl;
 //         std::cout << " -> N_BV   = " << vortex_.N_BV() << " [Hz]" << std::endl;
-//         std::cout << "z_Delta    = " << z_Delta / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << "rem. frac. = " << iceNumFrac << " [-]" << std::endl;
+//         std::cout << "z_delta_fns    = " << z_delta_fns / 1.0E+02 << " [100m]" << std::endl;
+//         std::cout << "rem. frac. = " << icenum_survfrac << " [-]" << std::endl;
 //         }
 //     }
 
-    iceNumFrac = std::min( std::max( iceNumFrac, 0.0E+00 ), 1.0E+00 );
+    icenum_survfrac = std::min( std::max( icenum_survfrac, 0.0E+00 ), 1.0E+00 );
 
 
-    if ( iceNumFrac == 0.0E+00 )
+    if ( icenum_survfrac == 0.0E+00 )
         std::cout << "Contrail has fully melted because of vortex-sinking losses" << std::endl;
 
-    return iceNumFrac;
+    return icenum_survfrac;
 
 } /* End of Aircraft::VortexLosses */
 

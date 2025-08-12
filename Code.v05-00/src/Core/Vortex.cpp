@@ -90,19 +90,19 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
     rho_emit_ = WV_exhaust / plume_area_0_; // Eq. 6 in U2016
     const double rho_divisor = 10.; // 10 mg per m3
     z_emit_ = 1106.6 * pow(rho_emit * 1000. / rho_divisor, 0.678 + 0.0116 * T_205) * exp((-(0.0807+0.000428*T_205)*T_205));
-    
-    // /* Combine each length scale into a single variable, zDelta, expressed in m. */
-    // const double N0_ref = 3.38E12; /* [#/m], hardcoded but valid for an A350 */
+
+    /* Combine each length scale into a single variable, zDelta, expressed in m. */
+    const double N0_ref = 3.38E12; /* [#/m], hardcoded but valid for an A350 */
     n0_star_ = N0_ / N0_ref; /* [-], See Appendix A1 in LU 2025, plume area cancelled out */ 
     const double Psi = 1 / n0_star_; // Eq. 10 in LU2025
-    z_delta_ = pow(Psi, gamma_exp_) * \
+    z_delta_fns_ = pow(Psi, gamma_exp_) * \
              (+ alpha_atm_  * z_atm_  \
               + alpha_emit_ * z_emit_) \
               - alpha_desc_ * z_desc_; // Eq. 9 in LU2025
 
     /* Compute the remaining fraction of ice crystals, from Eq. 12 in LU2025 */
-    iceNumFrac_ = beta_0_ + beta_1_ / physConst::PI * atan( alpha_0_ + z_delta_ / 1.0E+02 );
-    iceNumFrac_ = std::min( std::max( iceNumFrac_, 0.0E+00 ), 1.0E+00 );
+    icenum_survfrac_ = beta_0_ + beta_1_ / physConst::PI * atan( alpha_0_ + z_delta_fns_ / 1.0E+02 );
+    icenum_survfrac_ = std::min( std::max( icenum_survfrac_, 0.0E+00 ), 1.0E+00 );
     z_center_ = Cz1 * z_desc_;
 
     D_1_ = CD_0 * z_desc_;

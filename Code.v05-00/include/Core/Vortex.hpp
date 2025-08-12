@@ -85,18 +85,24 @@ class Vortex
         /* Height an air parcel has to descend 
          * until it is no longer supersaturated
          * (due to adiabatic heating only) */
-        double z_atm() const { return z_atm_}
+        double z_atm() const { return z_atm_; }
 
         /* "Vertical displacement that corresponds 
          * to an adiabatic heating such that an initially 
          * saturated parcel remains at saturation when 
          * the emitted water vapor is added to the parcel"
          * (Lottermoser and Unterstrasser, 2025)*/
-        double z_emit() const { return z_emit_}
+        double z_emit() const { return z_emit_; }
 
         /* Linear combination of the length scales
+         * (for the survival fraction)
          * in the EPM */
-        double z_delta() const { return z_delta_}
+        double z_delta_fns() const { return z_delta_fns_; }
+
+        /* Linear combination of the length scales
+         * (for the parametrised contrail height)
+         * in the EPM */
+        double z_delta_h() const { return z_delta_h_; }
 
         /* Ice number survival fraction */
         double icenum_survfrac() const { return icenum_survfrac_; }
@@ -189,11 +195,16 @@ class Vortex
          * (Lottermoser and Unterstrasser, 2025)
          * Unit: - */
         double z_emit_;
+            
+        /* Linear combination of the length scales
+         * (for the survival fraction)
+         * Unit: m */
+        double z_delta_fns_;
 
         /* Linear combination of the length scales
-         * in the EPM
-         * Unit: - */
-        double z_delta_;
+         * (for the parametrised contrail height)
+         * Unit: m */
+        double z_delta_h_;
 
         /* Ice number survival fraction
          * Unit: - */

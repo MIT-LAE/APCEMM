@@ -224,16 +224,16 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     epmOutput.area *= aircraft_.EngNumber();
 
     // Run vortex sink parameterization
-    const double iceNumFrac = aircraft_.VortexLosses(
+    const double icenum_survfrac = aircraft_.VortexLosses(
         EI_.getSoot(), EI_.getSootRad(), met_.satdepthEstimate());
 
-    std::cout << "Parameterized vortex sinking survival fraction: " << iceNumFrac
+    std::cout << "Parameterized vortex sinking survival fraction: " << icenum_survfrac
                 << std::endl;
-    if (iceNumFrac <= 0.00E+00) {
+    if (icenum_survfrac <= 0.00E+00) {
         std::cout << "EndSim: vortex sinking" << std::endl;
         return SimStatus::NoSurvivalVortex;
     }
-    epmOutput.IceAer.scalePdf(iceNumFrac);
+    epmOutput.IceAer.scalePdf(icenum_survfrac);
 
     return epmOutput;
 }
