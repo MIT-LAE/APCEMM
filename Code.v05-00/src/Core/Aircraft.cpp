@@ -314,9 +314,9 @@ void Aircraft::Debug( ) const
     std::cout << "      +Normalized dissip. rate : ";
     std::cout << std::setw(10) << vortex_.eps_star() << " [ - ]" << "\n";
     std::cout << "      +Max. downwash displace. : ";
-    std::cout << std::setw(10) << vortex_.delta_zw() << " [ m ]" << "\n";
+    std::cout << std::setw(10) << vortex_.z_desc() << " [ m ]" << "\n";
     std::cout << "      +Mean downwash displace. : ";
-    std::cout << std::setw(10) << vortex_.delta_z1() << " [ m ]" << "\n";
+    std::cout << std::setw(10) << vortex_.z_center() << " [ m ]" << "\n";
     std::cout << "      +Initial contrail depth  : ";
     std::cout << std::setw(10) << vortex_.D1() << " [ m ]" << "\n";
     std::cout << "\n";

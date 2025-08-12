@@ -56,9 +56,9 @@ class Aircraft
         /* Engine number */
         inline UInt EngNumber() const { return engNumber_; }
         /* Mean vertical displacement */
-        inline double deltaz1() const { return vortex_.delta_z1(); }
+        inline double deltaz1() const { return vortex_.z_center(); }
         /* Maximum vertical displacement */
-        inline double deltazw() const { return vortex_.delta_zw(); }
+        inline double deltazw() const { return vortex_.z_desc(); }
         /* Engine */
         inline const Engine& engine() const { return engine_; }
         /* Vortex */
