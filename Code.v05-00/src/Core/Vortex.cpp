@@ -37,11 +37,7 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
      * - vFlight      : aircraft velocity in m/s
      *
      * The function computes:
-     * - b_       : wake vortex separation in m
      * - gamma_   : initial circulation in m^2/s
-     * - t_       : effective time scale in s
-     * - w_       : initial velocity scale in m/s
-     * - eps_star_: normalized dissipation rate
      * - z_desc_  : maximum sinking in m of the contrail bottom
      * - z_center_: initial sinking in m of the contrail center
      * - D1       : initial contrail depth in m
@@ -51,17 +47,8 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
 
     double rho = pressure_Pa / ( temperature_K * physConst::R_Air );
 
-    /* Wake vortex separation, [ m ] */
-    b_ = physConst::PI * wingspan / 4;
-
     /* Initial circulation, [ m ^ 2 / s ] */
     gamma_ = 4 * ac_mass * physConst::g / ( physConst::PI * wingspan * rho * vFlight );
-    
-    /* Effective time scale, [ s ] */
-    t_ = 2 * physConst::PI * b_ * b_ / gamma_;
-    
-    /* Initial velocity scale, [ m / s ] */
-    w_ = gamma_ / ( 2 * physConst::PI * b_ );
     
     /* Normalized dissipation rate, [ - ] */
     if ( N_BV <= 1.0E-05 ) {
@@ -113,13 +100,20 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
     icenum_survfrac_h_ = beta_0_ + beta_1_ / physConst::PI * atan( alpha_0_ + z_delta_h_ / 1.0E+02 );
     icenum_survfrac_h_ = std::min( std::max( icenum_survfrac_h_, 0.0E+00 ), 1.0E+00 );
 
-    
+    // Eq. 13 in U2016
+    if ( icenum_survfrac_h_ <= x_s_ ) {
+        bhat_ = eta_1_ * icenum_survfrac_h_;
+    }
+    else {
+        bhat_ = eta_2_ * icenum_survfrac_h_ + (eta_1_ - eta_2_) * x_s;
+    }
+    height_mature_ = bhat_ * z_desc_; // Eq. 12 in U2016
 
-    
-    
-    z_center_ = Cz1 * z_desc_;
+    // Rectangle-equivalent width of the initial mature plume
+    width_rect_mature_ = 0.63 * wingspan;
 
-    D_1_ = CD_0 * z_desc_;
+    // The height of the center is the maximum displacement minus half the contrail height
+    z_center_ = z_desc_ - height_mature_ / 2.0;
 
 } /* End of Vortex::Vortex */
 

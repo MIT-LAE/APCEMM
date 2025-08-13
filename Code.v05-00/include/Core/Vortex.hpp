@@ -46,20 +46,17 @@ class Vortex
         double alpha_desc() const {return alpha_desc_};
         double gamma_exp() const {return gamma_exp_};
 
+        /* Fitting coefficients, 
+         * Eqs. 13 in Unterstrasser (2016) */
+        double eta_1() const { return eta_1_; }
+        double eta_2() const { return eta_2_; }
+        double x_s() const { return x_s_; }
+
         /* Brunt-Väisala frequency */
         double N_BV() const { return N_BV_; }
 
-        /* Wake vortex separation */
-        double b() const { return b_; }
-
         /* Initial circulation */
         double gamma() const { return gamma_; }
-
-        /* Effective time scale */
-        double t() const { return t_; }
-
-        /* Initial velocity scale */
-        double w() const { return w_; }
 
         /* Temperature at cruise minus 205 K */
         double T_205() const { return T_205_; }
@@ -111,13 +108,16 @@ class Vortex
          * for computation of the contrail height */
         double icenum_survfrac_h() const { return icenum_survfrac_h_; }
 
+        /* Non-dimensional height parameter */
+        double bhat() const { return bhat_; }
+
         /* Initial (parametrised) contrail height
          * of the mature plume */
         double height_mature() const { return height_mature_; }
 
         /* Initial (parametrised) contrail width
          * of the mature plume */
-        double width_mature() const { return width_mature_; }
+        double width_rect_mature() const { return width_rect_mature_; }
 
         /* Initial contrail area of the mature plume */
         double area_mature() const { return area_mature_; }
@@ -125,14 +125,11 @@ class Vortex
         /* Downwash displacement of the early plume center */
         double z_center() const { return z_center_; }
 
-        /* Initial contrail depth */
-        double D1() const { return D_1_; }
-
     protected:
 
         /* Fitting coefficients, 
          * Eqs. 13a to 13g in 
-         * Lottermoser and Unterstrasser (2025)*/
+         * Lottermoser and Unterstrasser (2025) */
         const double beta_0_  = +0.42;
         const double beta_1_  = +1.31;
         const double alpha_0_ = -1.00;
@@ -141,25 +138,19 @@ class Vortex
         const double alpha_desc_ = +0.49;
         const double gamma_exp_ = +0.16;
 
+        /* Fitting coefficients, 
+         * Eqs. 13 in Unterstrasser (2016) */
+        const double eta_1_  = +6.00;
+        const double eta_2_  = +0.15;
+        const double x_s_ = +0.20;
+
         /* Brunt-Väisala frequency
          * Unit: s^-1 */
         double N_BV_;
-
-        /* Wake vortex separation 
-         * Unit: m */
-        double b_;
         
         /* Initial circulation
          * Unit: m^2/s */
         double gamma_;
-        
-        /* Effective time scale
-         * Unit: s */
-        double t_;
-        
-        /* Initial velocity scale
-         * Unit: s */
-        double w_;
 
         /* Temperature at cruise altitude
          * minus 205 K (see Eq. A3 in
@@ -230,6 +221,10 @@ class Vortex
          * Unit: - */
         double icenum_survfrac_h_;
 
+        /* Non-dimensional height parameter
+         * Unit: - */
+        double bhat_;
+
         /* Initial (parametrised) contrail height
          * of the mature plume
          * Unit: m */
@@ -238,7 +233,7 @@ class Vortex
         /* Initial (parametrised) contrail width
          * of the mature plume
          * Unit: m */
-        double width_mature_;
+        double width_rect_mature_;
 
         /* Initial contrail area of the mature plume
          * Unit: m^2 */
@@ -247,12 +242,6 @@ class Vortex
         /* Displacement of the early plume center
          * Unit: m */
         double z_center_;
-        
-        /* Initial contrail depth
-         * Unit: m */
-        double D_1_;
-
-
 };
 
 
