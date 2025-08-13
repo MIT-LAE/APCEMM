@@ -25,6 +25,9 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
      *
      * The formulae are based on Unterstrasser (2016), referred to as U2016; and Lottermoser & Unterstrasser (2025), referred to as LU2025.
      *
+     * U2016 is available at https://doi.org/10.5194/acp-16-2059-2016
+     * LU2025 is available at https://doi.org/10.5194/acp-25-7903-2025
+     * 
      * INPUT:
      * - RHi_PC         : Relative humidity with respect to ice [%]
      * - temperature_K  : Ambient temperature [K]
