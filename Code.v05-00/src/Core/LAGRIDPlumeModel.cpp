@@ -58,6 +58,7 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, Input &input) :
     timestepVars_ = TimestepVarsWrapper(input_, optInput_);
     aircraft_ = Aircraft(input_, optInput_.SIMULATION_INPUT_ENG_EI);
     EI_ = Emission(aircraft_.engine(), jetA_, input_.EI_SO2TOSO4());
+    EI_.getH2O() * fuelPerDist
 
     timestepVars_.setTimeArray(PlumeModelUtils::BuildTime (
             timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt));
@@ -317,8 +318,7 @@ void LAGRIDPlumeModel::initH2O() {
     auto areas = VectorUtils::cellAreas(xEdges_, yEdges_);
     const double icemass = iceAerosol_.TotalIceMass_sum(areas);
 
-    double fuelPerDist = aircraft_.FuelFlow() / aircraft_.VFlight();
-    double mass_WV = EI_.getH2O() * fuelPerDist - icemass;
+    double mass_WV = EI_.getH2O() * aircraft_.fuel_per_dist() - icemass;
     double E_H2O = mass_WV / (MW_H2O * 1e3) * Na;
 
     // Spread the emitted water evenly over the cells that contain ice crystals

@@ -53,6 +53,8 @@ class Aircraft
         inline double VFlight() const { return vFlight_ms_; }
         /* Mach number */
         inline double Mach() const { return machNumber_; }
+        /* Fuel consumption per distance */
+        inline double fuel_per_dist() const { return fuel_per_dist_; }
         /* Wingspan */
         inline double Wingspan() const { return wingspan_; }
         /* Current mass */
@@ -96,6 +98,9 @@ class Aircraft
         /* Flight speed & mach Number */
         double vFlight_ms_;
         double machNumber_;
+
+        /* Fuel consumption */
+        double fuel_per_dist_; /* [kg/m] */
 
         /* Dimensions */
         double wingspan_; /* [m] */

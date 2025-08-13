@@ -47,6 +47,8 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
     setEI_HC( input.EI_HC() );
     setEI_Soot( input.EI_Soot() );
     setSootRad( input.sootRad() );
+    fuel_per_dist_ = input.fuelFlow() / vFlight_ms_;
+
     /* Dimensions */
     wingspan_ = input.wingspan();
     currMass_ = input.aircraftMass();
@@ -64,7 +66,8 @@ double Aircraft::VortexLosses( const double EI_Soot,    \
     const double EIice_ref = 2.8E+14; /* [#/kg_fuel] */
 
     /* Number of particles emitted */
-    const double EIice     = EI_Soot / massParticle; /* [#/kg_fuel] */
+    const double EI_icenum = EI_Soot / massParticle; /* [#/kg_fuel] */
+    const double N0 = EI_icenum * FuelFlow() / vFlight_ms_;
 
     vortex_ = Vortex( RHi_CA_PC_, T_CA_K, p_CA_Pa, nBV_Hz, wingspan_, \
                     currMass_, vFlight_ms_, WV_exhaust, N0 );
