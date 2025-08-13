@@ -103,6 +103,20 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
     /* Compute the remaining fraction of ice crystals, from Eq. 12 in LU2025 */
     icenum_survfrac_ = beta_0_ + beta_1_ / physConst::PI * atan( alpha_0_ + z_delta_fns_ / 1.0E+02 );
     icenum_survfrac_ = std::min( std::max( icenum_survfrac_, 0.0E+00 ), 1.0E+00 );
+
+    /* Compute the parametrized contrail height by repeating the calculations for the survival fraction
+     * with gamma set to 0 as in U2016 */
+    z_delta_h_ =+ alpha_atm_  * z_atm_  \
+                + alpha_emit_ * z_emit_ \
+                - alpha_desc_ * z_desc_; // Eq. 9 in LU2025 with gamma set to 0 as in U2016
+    
+    icenum_survfrac_h_ = beta_0_ + beta_1_ / physConst::PI * atan( alpha_0_ + z_delta_h_ / 1.0E+02 );
+    icenum_survfrac_h_ = std::min( std::max( icenum_survfrac_h_, 0.0E+00 ), 1.0E+00 );
+
+    
+
+    
+    
     z_center_ = Cz1 * z_desc_;
 
     D_1_ = CD_0 * z_desc_;

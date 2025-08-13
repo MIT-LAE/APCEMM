@@ -107,6 +107,21 @@ class Vortex
         /* Ice number survival fraction */
         double icenum_survfrac() const { return icenum_survfrac_; }
 
+        /* Ice number survival fraction equivalent
+         * for computation of the contrail height */
+        double icenum_survfrac_h() const { return icenum_survfrac_h_; }
+
+        /* Initial (parametrised) contrail height
+         * of the mature plume */
+        double height_mature() const { return height_mature_; }
+
+        /* Initial (parametrised) contrail width
+         * of the mature plume */
+        double width_mature() const { return width_mature_; }
+
+        /* Initial contrail area of the mature plume */
+        double area_mature() const { return area_mature_; }
+
         /* Downwash displacement of the early plume center */
         double z_center() const { return z_center_; }
 
@@ -209,7 +224,26 @@ class Vortex
         /* Ice number survival fraction
          * Unit: - */
         double icenum_survfrac_;
-        
+
+        /* Ice number survival fraction equivalent
+         * for computation of the contrail height
+         * Unit: - */
+        double icenum_survfrac_h_;
+
+        /* Initial (parametrised) contrail height
+         * of the mature plume
+         * Unit: m */
+        double height_mature_;
+
+        /* Initial (parametrised) contrail width
+         * of the mature plume
+         * Unit: m */
+        double width_mature_;
+
+        /* Initial contrail area of the mature plume
+         * Unit: m^2 */
+        double area_mature_;
+
         /* Displacement of the early plume center
          * Unit: m */
         double z_center_;
