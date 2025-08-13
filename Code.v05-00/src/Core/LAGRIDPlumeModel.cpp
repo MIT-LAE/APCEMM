@@ -51,6 +51,7 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, Input &input) :
     // Set the met variables in the input object
     input.set_temperature_K(met_.tempRef());
     input.set_relHumidity_w(met_.rhwRef());
+    input.set_relHumidity_i(met_.rhiRef());
     input_ = input;
 
     simVars_ = MPMSimVarsWrapper(input_, optInput_, met_.satdepthEstimate());

@@ -30,6 +30,7 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
 
     double T_CA_K = input.temperature_K(); // From the meteorology, at the reference altitude
     double RHW_CA = input.relHumidity_w(); // From the meteorology, at the reference altitude
+    double RHi_PC = input.relHumidity_i(); // From the meteorology, at the reference altitude
     double p_CA_Pa = input.pressure_Pa(); // From the yaml input
 
     setVFlight(input.flightSpeed(), T_CA_K);
