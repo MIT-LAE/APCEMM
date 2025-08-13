@@ -18,7 +18,7 @@
 
 Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
                 double N_BV, double wingspan, double ac_mass, \
-                double vFlight, double WV_exhaust, double N0, double N0_ref);
+                double vFlight, double WV_exhaust, double N_postjet, double N0_ref)
 {
     /* This constructor implements a parametric model for the vortex phase of contrail evolution,
      * estimating the initial depth, width, and the maximum and mean downward displacements (z_desc_ and z_center_).
@@ -34,7 +34,7 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
      * - ac_mass        : Aircraft mass [kg]
      * - vFlight        : Aircraft velocity [m/s]
      * - WV_exhaust     : Water vapor exhaust [kg]
-     * - N0             : Initial ice crystal number [#]
+     * - N_postjet      : Ice crystal number after the jet regime [#]
      * - N0_ref         : Reference ice crystal number [#]
      *
      * OUTPUT (computed member variables):
@@ -52,7 +52,7 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
      * - z_delta_h_          : Combined length scale for contrail height [m]
      * - icenum_survfrac_h_  : Fraction of surviving ice crystals for height [-]
      * - bhat_               : Height scaling factor [-]
-     * - height_mature_      : Parametrized contrail height [m]
+     * - depth_mature_      : Parametrized contrail height [m]
      * - width_rect_mature_  : Rectangle-equivalent width of initial mature plume [m]
      */
 
@@ -76,7 +76,7 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
     z_atm_  = 607.46 * pow(s_, 0.897) * pow(temperature_K / 205.0, 2.225); // Eq. A2 in LU2025
 
     /* Plume Radius */
-    r_p_ = 1.5 + 0.314 * wingspan_; /* [m], from Eq. A6 in U2016 */
+    r_p_ = 1.5 + 0.314 * wingspan; /* [m], from Eq. A6 in U2016 */
     
     /* Plume area before vortex breakup*/
     plume_area_0_ = 2 * physConst::PI * pow(r_p_, 2); /* [m2], see Appendix 2 in LU2025 */
@@ -87,11 +87,10 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
     /* Height an air parcel has to descend until it just saturated when the emitted water vapor is added */
     rho_emit_ = WV_exhaust / plume_area_0_; // Eq. 6 in U2016
     const double rho_divisor = 10.; // 10 mg per m3
-    z_emit_ = 1106.6 * pow(rho_emit * 1000. / rho_divisor, 0.678 + 0.0116 * T_205) * exp((-(0.0807+0.000428*T_205)*T_205));
+    z_emit_ = 1106.6 * pow(rho_emit_ * 1000. / rho_divisor, 0.678 + 0.0116 * T_205_) * exp((-(0.0807+0.000428*T_205_)*T_205_));
 
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
-    const double N0_ref = 3.38E12; /* [#/m], hardcoded but valid for an A350 */
-    n0_star_ = N0_ / N0_ref; /* [-], See Appendix A1 in LU 2025, plume area cancelled out */ 
+    n0_star_ = N_postjet / N0_ref; /* [-], See Appendix A1 in LU 2025, plume area cancelled out */ 
     const double Psi = 1 / n0_star_; // Eq. 10 in LU2025
     z_delta_fns_ = pow(Psi, gamma_exp_) * \
              (+ alpha_atm_  * z_atm_  \
@@ -119,15 +118,15 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
         bhat_ = eta_1_ * icenum_survfrac_h_;
     }
     else {
-        bhat_ = eta_2_ * icenum_survfrac_h_ + (eta_1_ - eta_2_) * x_s;
+        bhat_ = eta_2_ * icenum_survfrac_h_ + (eta_1_ - eta_2_) * x_s_;
     }
-    height_mature_ = bhat_ * z_desc_; // Eq. 12 in U2016
+    depth_mature_ = bhat_ * z_desc_; // Eq. 12 in U2016
 
     // Rectangle-equivalent width of the initial mature plume
     width_rect_mature_ = 0.63 * wingspan;
 
     // The height of the center is the maximum displacement minus half the contrail height
-    z_center_ = z_desc_ - height_mature_ / 2.0;
+    z_center_ = z_desc_ - depth_mature_ / 2.0;
 
 } /* End of Vortex::Vortex */
 

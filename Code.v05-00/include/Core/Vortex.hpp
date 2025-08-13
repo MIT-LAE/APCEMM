@@ -20,31 +20,25 @@ class Vortex
 {
         
     public:
-        constexpr static double Cz1  = 0.25;
-        constexpr static double CD_0 = 0.5;
-        constexpr static double N_BVt_threshold = 0.8;  /* Unit : - */
-        constexpr static double eps_threshold = 0.36;   /* Unit : - */
-        constexpr static double z_desc_default = 200; /* Unit : m */
-
         /* Constructors */
         Vortex( ) = default;
         Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
                 double N_BV, double wingspan, double ac_mass, \
-                double vFlight, double WV_exhaust, double N0, \
-                double N0_ref = 3.38E12);
+                double vFlight, double WV_exhaust, double N_postjet, \
+                double N0_ref = 3.38E12 );
 
         /* Getters: */
 
         /* Fitting coefficients, 
          * Eqs. 13a to 13g in 
          * Lottermoser and Unterstrasser (2025)*/
-        double beta_0() const {return beta_0_};
-        double beta_1()  const {return beta_1_};
-        double alpha_0() const {return alpha_0_};
-        double alpha_atm() const {return alpha_atm_};
-        double alpha_emit() const {return alpha_emit_};
-        double alpha_desc() const {return alpha_desc_};
-        double gamma_exp() const {return gamma_exp_};
+        double beta_0() const {return beta_0_;}
+        double beta_1()  const {return beta_1_;}
+        double alpha_0() const {return alpha_0_;}
+        double alpha_atm() const {return alpha_atm_;}
+        double alpha_emit() const {return alpha_emit_;}
+        double alpha_desc() const {return alpha_desc_;}
+        double gamma_exp() const {return gamma_exp_;}
 
         /* Fitting coefficients, 
          * Eqs. 13 in Unterstrasser (2016) */
@@ -111,9 +105,9 @@ class Vortex
         /* Non-dimensional height parameter */
         double bhat() const { return bhat_; }
 
-        /* Initial (parametrised) contrail height
+        /* Initial (parametrised) contrail depth
          * of the mature plume */
-        double height_mature() const { return height_mature_; }
+        double depth_mature() const { return depth_mature_; }
 
         /* Initial (parametrised) contrail width
          * of the mature plume */
@@ -130,19 +124,19 @@ class Vortex
         /* Fitting coefficients, 
          * Eqs. 13a to 13g in 
          * Lottermoser and Unterstrasser (2025) */
-        const double beta_0_  = +0.42;
-        const double beta_1_  = +1.31;
-        const double alpha_0_ = -1.00;
-        const double alpha_atm_ = +1.27;
-        const double alpha_emit_ = +0.42;
-        const double alpha_desc_ = +0.49;
-        const double gamma_exp_ = +0.16;
+        double beta_0_  = +0.42;
+        double beta_1_  = +1.31;
+        double alpha_0_ = -1.00;
+        double alpha_atm_ = +1.27;
+        double alpha_emit_ = +0.42;
+        double alpha_desc_ = +0.49;
+        double gamma_exp_ = +0.16;
 
         /* Fitting coefficients, 
          * Eqs. 13 in Unterstrasser (2016) */
-        const double eta_1_  = +6.00;
-        const double eta_2_  = +0.15;
-        const double x_s_ = +0.20;
+        double eta_1_  = +6.00;
+        double eta_2_  = +0.15;
+        double x_s_ = +0.20;
 
         /* Brunt-Väisala frequency
          * Unit: s^-1 */
@@ -225,10 +219,10 @@ class Vortex
          * Unit: - */
         double bhat_;
 
-        /* Initial (parametrised) contrail height
+        /* Initial (parametrised) contrail depth
          * of the mature plume
          * Unit: m */
-        double height_mature_;
+        double depth_mature_;
 
         /* Initial (parametrised) contrail width
          * of the mature plume

@@ -54,21 +54,12 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
     currMass_ = input.aircraftMass();
 }
 
-double Aircraft::VortexLosses( const double EI_Soot,    \
-                                const double EI_SootRad, \
-                                const double WV_exhaust )
+double Aircraft::VortexLosses( const double N_postjet, const double WV_exhaust )
 {
-    /* Compute volume and mass of soot particles emitted */
-    const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 ); //EI_SootRad in m -> volume in m3
-    const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
-
-    /* Number of ice particles emitted */
-    const double EI_icenum = EI_Soot / massParticle; /* [#/kg_fuel] */
-    const double N0 = EI_icenum * fuel_per_dist_;
 
     /* Perform the vortex parametrisation (in the Vortex constructor) */
-    vortex_ = Vortex( RHi_CA_PC_, T_CA_K, p_CA_Pa, nBV_Hz, wingspan_, \
-                    currMass_, vFlight_ms_, WV_exhaust, N0 );
+    vortex_ = Vortex( RHi_CA_PC_, T_CA_K_, p_CA_Pa_, nBV_Hz_, wingspan_, \
+                    currMass_, vFlight_ms_, WV_exhaust, N_postjet );
 
     return vortex_.icenum_survfrac();
 
@@ -215,22 +206,14 @@ void Aircraft::Debug( ) const
 
     std::cout << "      +Brunt-Vaisala frequency : ";
     std::cout << std::setw(10) << vortex_.N_BV() << " [ Hz ]" << "\n";
-    std::cout << "      +Wake vortex separation  : ";
-    std::cout << std::setw(10) << vortex_.b() << " [ m ]" << "\n";
     std::cout << "      +Initial circulation     : ";
     std::cout << std::setw(10) << vortex_.gamma() << " [ m^2/s ]" << "\n";
-    std::cout << "      +Wake eff. time scale    : ";
-    std::cout << std::setw(10) << vortex_.t() << " [ s ]" << "\n";
-    std::cout << "      +Initial velocity scale  : ";
-    std::cout << std::setw(10) << vortex_.w() << " [ m/s ]" << "\n";
-    std::cout << "      +Normalized dissip. rate : ";
-    std::cout << std::setw(10) << vortex_.eps_star() << " [ - ]" << "\n";
     std::cout << "      +Max. downwash displace. : ";
     std::cout << std::setw(10) << vortex_.z_desc() << " [ m ]" << "\n";
     std::cout << "      +Mean downwash displace. : ";
     std::cout << std::setw(10) << vortex_.z_center() << " [ m ]" << "\n";
     std::cout << "      +Initial contrail depth  : ";
-    std::cout << std::setw(10) << vortex_.D1() << " [ m ]" << "\n";
+    std::cout << std::setw(10) << vortex_.depth_mature() << " [ m ]" << "\n";
     std::cout << "\n";
     std::cout << "\n";
 

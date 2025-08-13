@@ -52,7 +52,7 @@ namespace EPM::Models
         out.coreExitTemp = input_.coreExitTemp();
 
         /* Get mean vortex displacement in [m] */
-        double delta_z = VORTEX_SINKING ? aircraft_.deltaz1() : 0.0;
+        double delta_z = VORTEX_SINKING ? aircraft_.vortex().z_center() : 0.0;
 
         /* Compute adiabatic and real temperature changes */
         double delta_T    = -optInput_.ADV_AMBIENT_LAPSERATE * delta_z * 1.0E-03;
