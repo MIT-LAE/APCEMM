@@ -55,24 +55,22 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
 }
 
 double Aircraft::VortexLosses( const double EI_Soot,    \
-                                   const double EI_SootRad, \
-                                   const double wetDepth )
+                                const double EI_SootRad, \
+                                const double WV_exhaust )
 {
     /* Compute volume and mass of soot particles emitted */
     const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 ); //EI_SootRad in m -> volume in m3
     const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
 
-    /* Scaling for particle number */
-    const double EIice_ref = 2.8E+14; /* [#/kg_fuel] */
-
-    /* Number of particles emitted */
+    /* Number of ice particles emitted */
     const double EI_icenum = EI_Soot / massParticle; /* [#/kg_fuel] */
-    const double N0 = EI_icenum * FuelFlow() / vFlight_ms_;
+    const double N0 = EI_icenum * fuel_per_dist_;
 
+    /* Perform the vortex parametrisation (in the Vortex constructor) */
     vortex_ = Vortex( RHi_CA_PC_, T_CA_K, p_CA_Pa, nBV_Hz, wingspan_, \
                     currMass_, vFlight_ms_, WV_exhaust, N0 );
 
-    return icenum_survfrac;
+    return vortex_.icenum_survfrac();
 
 } /* End of Aircraft::VortexLosses */
 

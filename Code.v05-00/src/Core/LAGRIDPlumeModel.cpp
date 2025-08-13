@@ -228,7 +228,7 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
 
     // Run vortex sink parameterization
     const double icenum_survfrac = aircraft_.VortexLosses(
-        EI_.getSoot(), EI_.getSootRad(), met_.satdepthEstimate());
+        EI_.getSoot(), EI_.getSootRad(), WV_exhaust_);
 
     std::cout << "Parameterized vortex sinking survival fraction: " << icenum_survfrac
                 << std::endl;

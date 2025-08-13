@@ -37,7 +37,7 @@ class Aircraft
         /* Compute vortex losses */
 
         double VortexLosses( const double EI_Soot, const double EI_SootRad, \
-                             const double wetDepth );
+                             const double WV_exhaust );
 
         /* Getters: */
 
