@@ -20,30 +20,41 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
                 double N_BV, double wingspan, double ac_mass, \
                 double vFlight, double WV_exhaust, double N0, double N0_ref);
 {
-
-    /* This function uses a parametric model to estimate the initial depth, 
-     * width and maximum and mean downward displacements, z_desc_ and
-     * z_center_.
+    /* This constructor implements a parametric model for the vortex phase of contrail evolution,
+     * estimating the initial depth, width, and the maximum and mean downward displacements (z_desc_ and z_center_).
      *
-     * The parametrization is taken from:
-     * Schumann, U. "A contrail cirrus prediction model." Geoscientific Model Development 5.3 (2012): 543-580.
+     * The formulae are based on Unterstrasser (2016), referred to as U2016; and Lottermoser & Unterstrasser (2025), referred to as LU2025.
      *
-     * INPUT: 
-     * - temperature_K: ambient temperature expressed in K
-     * - pressure_Pa  : ambient pressure expressed in Pa
-     * - N_BV         : Brunt-Väisala frequency expressed in s^-1
-     * - wingspan         : aircraft wingspan in m
-     * - ac_mass         : aircraft mass in kg
-     * - vFlight      : aircraft velocity in m/s
+     * INPUT:
+     * - RHi_PC         : Relative humidity with respect to ice [%]
+     * - temperature_K  : Ambient temperature [K]
+     * - pressure_Pa    : Ambient pressure [Pa]
+     * - N_BV           : Brunt-Väisälä frequency [s^-1]
+     * - wingspan       : Aircraft wingspan [m]
+     * - ac_mass        : Aircraft mass [kg]
+     * - vFlight        : Aircraft velocity [m/s]
+     * - WV_exhaust     : Water vapor exhaust [kg]
+     * - N0             : Initial ice crystal number [#]
+     * - N0_ref         : Reference ice crystal number [#]
      *
-     * The function computes:
-     * - gamma_   : initial circulation in m^2/s
-     * - z_desc_  : maximum sinking in m of the contrail bottom
-     * - z_center_: initial sinking in m of the contrail center
-     * - D1       : initial contrail depth in m
-     * */
-
-    /* Constructor */
+     * OUTPUT (computed member variables):
+     * - gamma_              : Initial circulation [m^2/s]
+     * - z_desc_             : Maximum sinking of contrail bottom [m]
+     * - z_center_           : Initial sinking of contrail center [m]
+     * - r_p_                : Plume radius [m]
+     * - plume_area_0_       : Plume area before vortex breakup [m^2]
+     * - T_205_              : Temperature offset from 205 K [K]
+     * - z_atm_              : Height for air parcel to descend to lose supersaturation [m]
+     * - z_emit_             : Height for air parcel to descend to just saturate with emitted WV [m]
+     * - n0_star_            : Normalized initial ice crystal number [-]
+     * - z_delta_fns_        : Combined length scale for survival fraction [m]
+     * - icenum_survfrac_    : Fraction of surviving ice crystals [-]
+     * - z_delta_h_          : Combined length scale for contrail height [m]
+     * - icenum_survfrac_h_  : Fraction of surviving ice crystals for height [-]
+     * - bhat_               : Height scaling factor [-]
+     * - height_mature_      : Parametrized contrail height [m]
+     * - width_rect_mature_  : Rectangle-equivalent width of initial mature plume [m]
+     */
 
     double rho = pressure_Pa / ( temperature_K * physConst::R_Air );
 
