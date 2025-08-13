@@ -28,16 +28,17 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
     /* Flight characteristics */
     //Sets both flight speed and mach number
 
-    double T_CA_K = input.temperature_K(); // From the meteorology, at the reference altitude
-    double RHW_CA = input.relHumidity_w(); // From the meteorology, at the reference altitude
-    double RHi_PC = input.relHumidity_i(); // From the meteorology, at the reference altitude
-    double p_CA_Pa = input.pressure_Pa(); // From the yaml input
+    T_CA_K_ = input.temperature_K(); // From the meteorology, at the reference altitude
+    RHW_CA_PC_ = input.relHumidity_w(); // From the meteorology, at the reference altitude
+    RHi_CA_PC_ = input.relHumidity_i(); // From the meteorology, at the reference altitude
+    nBV_Hz_ = input.nBV(); // From the yaml input
+    p_CA_Pa_ = input.pressure_Pa(); // From the yaml input
 
-    setVFlight(input.flightSpeed(), T_CA_K);
+    setVFlight(input.flightSpeed(), T_CA_K_);
 
     /* Engine characteristics */
-    engine_ = Engine( engineName.c_str(), engineFilePath, T_CA_K, p_CA_Pa, \
-                        RHW_CA, machNumber_ );
+    engine_ = Engine( engineName.c_str(), engineFilePath, T_CA_K_, p_CA_Pa_, \
+                        RHW_CA_PC_, machNumber_ );
 
     engNumber_ = input.numEngines();
     setFuelFlow( input.fuelFlow() );
@@ -49,115 +50,24 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
     /* Dimensions */
     wingspan_ = input.wingspan();
     currMass_ = input.aircraftMass();
-    vortex_ = Vortex( T_CA_K, p_CA_Pa, input.nBV(), wingspan_, \
-                    currMass_, vFlight_ms_ );
-
 }
 
 double Aircraft::VortexLosses( const double EI_Soot,    \
                                    const double EI_SootRad, \
                                    const double wetDepth )
 {
-
-    /* This function computes the fraction of contrail ice particles lost in
-     * the vortex sinking phase because of turbulent sublimation.
-     * This fraction is computed according to a parameterization derived from
-     * large-eddy simulations and described in: 
-     * Unterstrasser, Simon. "Properties of young contrails–a parametrisation based on large-eddy simulations."
-     * Atmospheric Chemistry and Physics 16.4 (2016): 2059-2082.
-     * */
-
-    /* Debug flag? */
-    // const bool ACDEBUG = 0;
-
     /* Compute volume and mass of soot particles emitted */
     const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 ); //EI_SootRad in m -> volume in m3
     const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
-
-    /* Declare and initialize remaining fraction of ice crystals */
-    double icenum_survfrac = 0.0E+00;
-
-    /* Declare and initialize each length scales */
-    double z_Atm   = 0.0E+00;
-    double z_Emit  = 0.0E+00;
-    double z_Desc  = 0.0E+00;
-    double z_delta_fns = 0.0E+00;
-
-    /* Exponents */
-    const double gamma_Atm  = 0.18;
-    const double gamma_Emit = 0.18;
-
-    /* Fitting coefficients */
-    const double beta_0  = +0.45;
-    const double beta_1  = +1.19;
-    const double alpha_0 = -1.35;
-    /* After reaching out to S. Unterstrasser, the beta_0 coefficient should
-     * be 0.45 instead of 0.40. The paper contains a typo and equation (10a)
-     * should be:
-     * \beta_0 = 0.45
-     */
 
     /* Scaling for particle number */
     const double EIice_ref = 2.8E+14; /* [#/kg_fuel] */
 
     /* Number of particles emitted */
     const double EIice     = EI_Soot / massParticle; /* [#/kg_fuel] */
-    
-    /* z_Atm = Depth of the supersaturated layer */
-    z_Atm  = wetDepth;
 
-    /* z_Desc = Vertical displacement of the wake vortex */
-    if ( vortex_.N_BV() < 1.0E-05 )
-        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * 1.3E-02        ), 0.5 );
-    else
-        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 ); //Equation 4
-
-    /* z_Emit = ... */
-    z_Emit = 90;
-
-    /* ==================================== */
-    /* ... Parameterization starts here ... */
-    /* ==================================== */
-
-    const double alpha_Atm  = +1.70 * pow( EIice_ref / EIice, gamma_Atm  );
-    const double alpha_Emit = +1.15 * pow( EIice_ref / EIice, gamma_Emit );
-    const double alpha_Desc = -0.60;
-
-    /* Combine each length scale into a single variable, zDelta, expressed in m. */
-    z_delta_fns = + alpha_Atm  * z_Atm  \
-              + alpha_Emit * z_Emit \
-              + alpha_Desc * z_Desc;
-
-    icenum_survfrac = beta_0 + beta_1 / physConst::PI * atan( alpha_0 + z_delta_fns / 1.0E+02 );
-
-//     if ( ( ACDEBUG ) || ( icenum_survfrac < 0.1E+00 ) || ( icenum_survfrac > 1.0E+00 ) ) {
-//         /* If DEBUG is on or if we lose more than 90% of the initial number of 
-//          * ice crystals, then print diagnostic */
-// #pragma omp critical
-//         {
-//         if ( ACDEBUG )
-//             std::cout << "----------------- DEBUG -----------------" << std::endl;
-//         std::cout << "In Aircraft::VortexLosses: " << std::endl;
-//         std::cout << "alpha_Atm  = " << alpha_Atm  << std::endl;
-//         std::cout << "alpha_Emit = " << alpha_Emit << std::endl;
-//         std::cout << "EIice      = " << EIice      << " [#/kg_fuel]" << std::endl;
-//         std::cout << "EIice*     = " << EIice / EIice_ref << " [#/kg_fuel]" << std::endl;
-//         std::cout << "alpha_Desc = " << alpha_Desc << std::endl;
-//         std::cout << "z_Atm      = " << z_Atm  / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << "z_Emit     = " << z_Emit / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << "z_Desc     = " << z_Desc / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << " -> Gamma  = " << vortex_.gamma() << " [m^2/s]" << std::endl;
-//         std::cout << " -> N_BV   = " << vortex_.N_BV() << " [Hz]" << std::endl;
-//         std::cout << "z_delta_fns    = " << z_delta_fns / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << "rem. frac. = " << icenum_survfrac << " [-]" << std::endl;
-//         }
-//     }
-
-    icenum_survfrac = std::min( std::max( icenum_survfrac, 0.0E+00 ), 1.0E+00 );
-
-
-    if ( icenum_survfrac == 0.0E+00 )
-        std::cout << "Contrail has fully melted because of vortex-sinking losses" << std::endl;
+    vortex_ = Vortex( RHi_CA_PC_, T_CA_K, p_CA_Pa, nBV_Hz, wingspan_, \
+                    currMass_, vFlight_ms_, WV_exhaust, N0 );
 
     return icenum_survfrac;
 

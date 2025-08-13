@@ -41,6 +41,12 @@ class Aircraft
 
         /* Getters: */
 
+        /* Flight conditions */
+        inline double T_CA_K() const { return T_CA_K_; }
+        inline double RHW_CA_PC() const { return RHW_CA_PC_; }
+        inline double RHi_CA_PC() const { return RHi_CA_PC_; }
+        inline double nBV_Hz() const { return nBV_Hz_; }
+        inline double p_CA_Pa() const { return p_CA_Pa_; }
         /* Aircraft name */
         inline std::string Name() const { return Name_; }
         /* Flight velocity */
@@ -55,10 +61,6 @@ class Aircraft
         inline double FuelFlow() const { return engine_.getFuelFlow() * engNumber_; }
         /* Engine number */
         inline UInt EngNumber() const { return engNumber_; }
-        /* Mean vertical displacement */
-        inline double deltaz1() const { return vortex_.z_center(); }
-        /* Maximum vertical displacement */
-        inline double deltazw() const { return vortex_.z_desc(); }
         /* Engine */
         inline const Engine& engine() const { return engine_; }
         /* Vortex */
@@ -80,6 +82,13 @@ class Aircraft
         Engine engine_;
 
     protected:
+
+        /* Flight conditions */
+        double T_CA_K_;
+        double RHW_CA_PC_;
+        double RHi_CA_PC_;
+        double nBV_Hz_;
+        double p_CA_Pa_;
 
         /* Aircraft name */
         std::string Name_;
