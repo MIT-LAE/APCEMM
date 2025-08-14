@@ -67,6 +67,9 @@ class Vortex
         /* Plume radius */
         double r_p() const { return r_p_; }
 
+        /* Reference plume radius */
+        double r_p_ref() const { return r_p_ref_; }
+
         /* Plume area before vortex breakup */
         double plume_area_0() const { return plume_area_0_; }
 
@@ -176,6 +179,10 @@ class Vortex
         /* Plume radius
          * Unit: m */
         double r_p_;
+
+        /* Reference plume radius
+         * Unit: m */
+        double r_p_ref_;
 
         /* Plume area before vortex breakup
          * Unit: m^2 */

@@ -82,10 +82,11 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
 
     /* Plume Radius */
     r_p_ = 1.5 + 0.314 * wingspan; /* [m], from Eq. A6 in U2016 */
-    
+    r_p_ref_ = 1.5 + 0.314 * wingspan_ref; /* [m], from Eq. A6 in U2016 */
+
     /* Plume area before vortex breakup*/
     plume_area_0_ = 2 * physConst::PI * pow(r_p_, 2); /* [m2], see Appendix 2 in LU2025 */
-    plume_area_0_ref_ = 2 * physConst::PI * pow(0.63 * wingspan_ref, 2); /* [m2], see Appendix 2 in LU2025 */
+    plume_area_0_ref_ = 2 * physConst::PI * pow(r_p_ref_, 2); /* [m2], see Appendix 2 in LU2025 */
 
     /* Temperature - 205 K*/
     T_205_ = temperature_K - 205.0; /* [K], from Eq. A3 in LU2025*/
