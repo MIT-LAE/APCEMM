@@ -128,6 +128,9 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
     // Rectangle-equivalent width of the initial mature plume
     width_rect_mature_ = 0.63 * wingspan;
 
+    // Contrail area
+    area_mature_ = width_rect_mature_ * depth_mature_; // [m^2]
+
     // The height of the center is the maximum displacement minus half the contrail height
     z_center_ = z_desc_ - depth_mature_ / 2.0;
 
