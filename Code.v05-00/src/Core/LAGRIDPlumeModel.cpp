@@ -235,9 +235,15 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
 
 
     // Calculate the number of ice particles past the jet regime
-    const double N_postjet = epmOutput.IceAer.Moment(0) * epmOutput.area * 1e6;
+    double N_postjet = epmOutput.IceAer.Moment(0) * epmOutput.area * 1e6;
+
+    if (optInput_.ADV_EP_N_POSTJET_OVERRIDE) {
+        N_postjet = optInput_.ADV_EP_N_POSTJET;
+        std::cout << "Overriding post-jet ice crystal count to: " << N_postjet << " [#/m]" << std::endl;
+    } else {
+        std::cout << "Post-jet ice crystal count: " << N_postjet << " [#/m]" << std::endl;
+    }
     std::cout << "EI_icenum postjet: " << N_postjet / aircraft_.fuel_per_dist() << " [#/kg]" << std::endl;
-    std::cout << "Post-jet ice particle count: " << N_postjet << " [#/m]" << std::endl;
 
     // Run vortex phase parameterization
     const double N0_ref = optInput_.ADV_EP_N_REF;
