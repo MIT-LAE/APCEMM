@@ -241,7 +241,8 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
 
     // Run vortex phase parameterization
     const double N0_ref = optInput_.ADV_EP_N_REF;
-    const double icenum_survfrac = aircraft_.VortexLosses(N_postjet, WV_exhaust_, N0_ref);
+    const double wingspan_ref = optInput_.ADV_EP_WINGSPAN_REF;
+    const double icenum_survfrac = aircraft_.VortexLosses(N_postjet, WV_exhaust_, N0_ref, wingspan_ref);
     std::cout << "Parameterized vortex sinking survival fraction: " << icenum_survfrac
                 << std::endl;
     if (icenum_survfrac <= 0.00E+00) {

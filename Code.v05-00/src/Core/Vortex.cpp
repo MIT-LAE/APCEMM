@@ -18,7 +18,8 @@
 
 Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
                 double N_BV, double wingspan, double ac_mass, \
-                double vFlight, double WV_exhaust, double N_postjet, double N0_ref)
+                double vFlight, double WV_exhaust, double N_postjet, \
+                double N0_ref, double wingspan_ref)
 {
     /* This constructor implements a parametric model for the vortex phase of contrail evolution,
      * estimating the initial depth, width, and the maximum and mean downward displacements (z_desc_ and z_center_).
@@ -39,6 +40,7 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
      * - WV_exhaust     : Water vapor exhaust [kg]
      * - N_postjet      : Ice crystal number after the jet regime [#]
      * - N0_ref         : Reference ice crystal number [#]
+     * - wingspan_ref   : Reference wingspan [m]
      *
      * OUTPUT (computed member variables):
      * - gamma_              : Initial circulation [m^2/s]
@@ -83,6 +85,7 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
     
     /* Plume area before vortex breakup*/
     plume_area_0_ = 2 * physConst::PI * pow(r_p_, 2); /* [m2], see Appendix 2 in LU2025 */
+    plume_area_0_ref_ = 2 * physConst::PI * pow(0.63 * wingspan_ref, 2); /* [m2], see Appendix 2 in LU2025 */
 
     /* Temperature - 205 K*/
     T_205_ = temperature_K - 205.0; /* [K], from Eq. A3 in LU2025*/
@@ -93,7 +96,9 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
     z_emit_ = 1106.6 * pow(rho_emit_ * 1000. / rho_divisor, 0.678 + 0.0116 * T_205_) * exp((-(0.0807+0.000428*T_205_)*T_205_));
 
     /* Combine each length scale into a single variable, zDelta, expressed in m. */
-    n0_star_ = N_postjet / N0_ref; /* [-], See Appendix A1 in LU 2025, plume area cancelled out */ 
+    n0_ = N_postjet / plume_area_0_;
+    n0_ref_ = N0_ref / plume_area_0_ref_;
+    n0_star_ = n0_ / n0_ref_; /* [-], See Appendix A1 in LU 2025 */
     const double Psi = 1 / n0_star_; // Eq. 10 in LU2025
     z_delta_fns_ = pow(Psi, gamma_exp_) * \
              (+ alpha_atm_  * z_atm_  \

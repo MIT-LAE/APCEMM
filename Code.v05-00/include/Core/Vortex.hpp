@@ -25,7 +25,7 @@ class Vortex
         Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
                 double N_BV, double wingspan, double ac_mass, \
                 double vFlight, double WV_exhaust, double N_postjet, \
-                double N0_ref );
+                double N0_ref, double wingspan_ref );
 
         /* Getters: */
 
@@ -55,7 +55,13 @@ class Vortex
         /* Temperature at cruise minus 205 K */
         double T_205() const { return T_205_; }
 
-        /* Normalised ice number */
+        /* Ice number concentration */
+        double n0() const {return n0_;};
+
+        /* Reference ice number concentration */
+        double n0_ref() const {return n0_ref_;};
+
+        /* Normalised ice number concentration */
         double n0_star() const { return n0_star_; }
 
         /* Plume radius */
@@ -63,6 +69,9 @@ class Vortex
 
         /* Plume area before vortex breakup */
         double plume_area_0() const { return plume_area_0_; }
+
+        /* Reference plume area before vortex breakup */
+        double plume_area_0_ref() const { return plume_area_0_ref_; }
 
         /* Degree of supersaturation*/
         double s() const { return s_; }
@@ -152,7 +161,15 @@ class Vortex
          * Unit: K */
         double T_205_;
 
-        /* Normalised ice number
+        /* Ice number concentration
+         * Unit: #/m^3 */
+        double n0_;
+
+        /* Reference ice number concentration
+         * Unit: #/m^3 */
+        double n0_ref_;
+
+        /* Normalised ice number concentration
          * Unit: - */
         double n0_star_;
 
@@ -163,6 +180,10 @@ class Vortex
         /* Plume area before vortex breakup
          * Unit: m^2 */
         double plume_area_0_;
+
+        /* Reference plume area before vortex breakup
+         * Unit: m^2 */
+        double plume_area_0_ref_;
 
         /* Degree of supersaturation
          * see S2 in Unterstrasser (2016)

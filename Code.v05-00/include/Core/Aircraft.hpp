@@ -36,7 +36,8 @@ class Aircraft
 
         /* Compute vortex losses */
 
-        double VortexLosses( const double N_postjet, const double WV_exhaust, const double N0_ref );
+        double VortexLosses( const double N_postjet, const double WV_exhaust, const double N0_ref,\
+                        const double wingspan_ref );
 
         /* Getters: */
 

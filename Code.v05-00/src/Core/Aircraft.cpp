@@ -54,12 +54,14 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
     currMass_ = input.aircraftMass();
 }
 
-double Aircraft::VortexLosses( const double N_postjet, const double WV_exhaust, const double N0_ref )
+double Aircraft::VortexLosses( const double N_postjet, const double WV_exhaust, \
+    const double N0_ref, const double wingspan_ref )
 {
 
     /* Perform the vortex parametrisation (in the Vortex constructor) */
     vortex_ = Vortex( RHi_CA_PC_, T_CA_K_, p_CA_Pa_, nBV_Hz_, wingspan_, \
-                    currMass_, vFlight_ms_, WV_exhaust, N_postjet, N0_ref );
+                    currMass_, vFlight_ms_, WV_exhaust, N_postjet, N0_ref,\
+                    wingspan_ref );
 
 
     std::cout << std::endl << std::endl;
