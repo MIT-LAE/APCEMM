@@ -210,6 +210,14 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 }
 
 std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
+    // Calculate the number of emitted soot particles
+    const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_.getSootRad(), 3.0 ); //EI_SootRad in m -> volume in m3
+    const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
+    const double EI_icenum = EI_.getSoot() / massParticle; /* [#/kg_fuel] */
+    const double N0 = EI_icenum * aircraft_.fuel_per_dist();
+    std::cout << "EI_icenum prejet: " << EI_icenum << " [#/kg]" << std::endl;
+    std::cout << "Emitted soot: " << N0 << " [#/m]" << std::endl;
+
     std::unique_ptr<EPM::Models::Base> epm = EPM::make_epm(
         optInput_, input_, aircraft_, EI_, met_, simVars_);
     std::variant<EPM::Output, SimStatus> epmResult = epm->run();
@@ -225,13 +233,7 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     use - recalling that the EPM is only actually run for one engine. */
     epmOutput.area *= aircraft_.EngNumber();
 
-    // Calculate the number of emitted soot particles
-    const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_.getSootRad(), 3.0 ); //EI_SootRad in m -> volume in m3
-    const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
-    const double EI_icenum = EI_.getSoot() / massParticle; /* [#/kg_fuel] */
-    const double N0 = EI_icenum * aircraft_.fuel_per_dist();
-    std::cout << "EI_icenum prejet: " << EI_icenum << " [#/kg]" << std::endl;
-    std::cout << "Emitted soot: " << N0 << " [#/m]" << std::endl;
+
 
     // Calculate the number of ice particles past the jet regime
     const double N_postjet = epmOutput.IceAer.Moment(0) * epmOutput.area * 1e6;
