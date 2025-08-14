@@ -328,14 +328,6 @@ namespace YamlInputReader{
                 input.ADV_EP_WVAPOR = 0;
             }
 
-            if (earlyPlumeSubmenu["Override pre-jet ice crystal count (T/F)"]) {
-                input.ADV_EP_N_PREJET_OVERRIDE = parseBoolString(earlyPlumeSubmenu["Override pre-jet ice crystal count (T/F)"].as<string>(), "Override pre-jet ice crystal count (T/F)");
-                input.ADV_EP_N_PREJET = parseDoubleString(earlyPlumeSubmenu["Pre-jet ice crystal count [#/m] (double)"].as<string>(), "Pre-jet ice crystal count [#/m] (double)");
-            } else {
-                input.ADV_EP_N_PREJET_OVERRIDE = false;
-                input.ADV_EP_N_PREJET = 0;
-            }
-
             if (earlyPlumeSubmenu["Override post-jet ice crystal count (T/F)"]) {
                 input.ADV_EP_N_POSTJET_OVERRIDE = parseBoolString(earlyPlumeSubmenu["Override post-jet ice crystal count (T/F)"].as<string>(), "Override post-jet ice crystal count (T/F)");
                 input.ADV_EP_N_POSTJET = parseDoubleString(earlyPlumeSubmenu["Post-jet ice crystal count [#/m] (double)"].as<string>(), "Post-jet ice crystal count [#/m] (double)");
@@ -347,8 +339,6 @@ namespace YamlInputReader{
             input.ADV_EP_N_REF = 0;
             input.ADV_EP_WVAPOR_OVERRIDE = false;
             input.ADV_EP_WVAPOR = 0;
-            input.ADV_EP_N_PREJET_OVERRIDE = false;
-            input.ADV_EP_N_PREJET = 0;
             input.ADV_EP_N_POSTJET_OVERRIDE = false;
             input.ADV_EP_N_POSTJET = 0;
         }
