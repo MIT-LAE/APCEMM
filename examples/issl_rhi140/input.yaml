@@ -209,6 +209,7 @@ ADVANCED OPTIONS MENU:
   Tropopause Pressure [Pa] (double): 2.0e+4
   EARLY PLUME SUBMENU:
     Reference ice crystal count [#/m] (double): 3.38e12
+    Reference wingspan [m] (double): 60.3
     # The values below can be overriden if required.
     Override post-jet ice crystal count (T/F): F
     Post-jet ice crystal count [#/m] (double): 1e15
