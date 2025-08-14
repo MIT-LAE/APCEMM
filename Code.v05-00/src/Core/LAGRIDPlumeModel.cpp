@@ -230,10 +230,12 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
     const double EI_icenum = EI_.getSoot() / massParticle; /* [#/kg_fuel] */
     const double N0 = EI_icenum * aircraft_.fuel_per_dist();
+    std::cout << "EI_icenum prejet: " << EI_icenum << " [#/kg]" << std::endl;
     std::cout << "Emitted soot: " << N0 << " [#/m]" << std::endl;
 
     // Calculate the number of ice particles past the jet regime
     const double N_postjet = epmOutput.IceAer.Moment(0) * epmOutput.area * 1e6;
+    std::cout << "EI_icenum postjet: " << N_postjet / aircraft_.fuel_per_dist() << " [#/kg]" << std::endl;
     std::cout << "Post-jet ice particle count: " << N_postjet << " [#/m]" << std::endl;
 
     // Run vortex phase parameterization
