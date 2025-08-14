@@ -87,7 +87,7 @@ double Aircraft::VortexLosses( const double N_postjet, const double WV_exhaust )
     std::cout << "Survival Fraction   = " << vortex_.icenum_survfrac() << std::endl; //
     std::cout << std::endl;
     std::cout << "PARAMETRISATION RESULTS (GEOMETRY)" << std::endl;
-    std::cout << "z_delta (survfrac)  = " << vortex_.z_delta_h() << " [m]" << std::endl; //
+    std::cout << "z_delta (depth)  = " << vortex_.z_delta_h() << " [m]" << std::endl; //
     std::cout << "Survfrac (depth)    = " << vortex_.icenum_survfrac_h() << std::endl; //
     std::cout << "Contrail Depth      = " << vortex_.depth_mature() << " [m]" << std::endl; //
     std::cout << "Contrail Area Width = " << vortex_.width_rect_mature() << " [m]" << std::endl; //
