@@ -234,15 +234,14 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     epmOutput.area *= aircraft_.EngNumber();
 
 
-
     // Calculate the number of ice particles past the jet regime
     const double N_postjet = epmOutput.IceAer.Moment(0) * epmOutput.area * 1e6;
     std::cout << "EI_icenum postjet: " << N_postjet / aircraft_.fuel_per_dist() << " [#/kg]" << std::endl;
     std::cout << "Post-jet ice particle count: " << N_postjet << " [#/m]" << std::endl;
 
     // Run vortex phase parameterization
-    const double icenum_survfrac = aircraft_.VortexLosses(N_postjet, WV_exhaust_);
-
+    const double N0_ref = optInput_.ADV_EP_N_REF;
+    const double icenum_survfrac = aircraft_.VortexLosses(N_postjet, WV_exhaust_, N0_ref);
     std::cout << "Parameterized vortex sinking survival fraction: " << icenum_survfrac
                 << std::endl;
     if (icenum_survfrac <= 0.00E+00) {

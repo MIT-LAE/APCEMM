@@ -25,7 +25,7 @@ class Vortex
         Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
                 double N_BV, double wingspan, double ac_mass, \
                 double vFlight, double WV_exhaust, double N_postjet, \
-                double N0_ref = 3.38E12 );
+                double N0_ref );
 
         /* Getters: */
 
