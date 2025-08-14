@@ -61,6 +61,38 @@ double Aircraft::VortexLosses( const double N_postjet, const double WV_exhaust )
     vortex_ = Vortex( RHi_CA_PC_, T_CA_K_, p_CA_Pa_, nBV_Hz_, wingspan_, \
                     currMass_, vFlight_ms_, WV_exhaust, N_postjet );
 
+
+    std::cout << std::endl << std::endl;
+    std::cout << "***** Vortex parametrisation START *****" << std::endl;
+    std::cout << std::endl;
+    std::cout << "AMBIENT PARAMS" << std::endl;
+    std::cout << "Cruise Temperature  = " << T_CA_K_ << " [K]" << std::endl; //
+    std::cout << "Cruise RHi          = " << RHi_CA_PC_ << " [%]" << std::endl; //
+    std::cout << "N_BV                = " << vortex_.N_BV() << " [1/s]" << std::endl; //
+    std::cout << std::endl;
+    std::cout << "VORTEX PARAMS" << std::endl;
+    std::cout << "Post-jet ice count  = " << N_postjet << " [#/m]" << std::endl; //
+    std::cout << "Exhaust Water Vapor = " << WV_exhaust << " [g/m]" << std::endl; //
+    std::cout << "gamma               = " << vortex_.gamma() << " [m^2/s]" << std::endl;
+    std::cout << std::endl;
+    std::cout << "AIRCRAFT PARAMS" << std::endl;
+    std::cout << "wingspan            = " << wingspan_ << " [m]" << std::endl; //
+    std::cout << "flight speed        = " << vFlight_ms_ << " [m/s]" << std::endl; //
+    std::cout << std::endl;
+    std::cout << "PARAMETRISATION RESULTS" << std::endl;
+    std::cout << "z_desc              = " << vortex_.z_desc() << " [m]" << std::endl; //
+    std::cout << "z_atm               = " << vortex_.z_atm() << " [m]" << std::endl; //
+    std::cout << "z_emit              = " << vortex_.z_emit() << " [m]" << std::endl; //
+    std::cout << "z_delta (survfrac)  = " << vortex_.z_delta_fns() << " [m]" << std::endl; //
+    std::cout << "Survival Fraction   = " << vortex_.icenum_survfrac() << std::endl; //
+    std::cout << "Contrail Depth      = " << vortex_.depth_mature() << " [m]" << std::endl; //
+    std::cout << "Contrail Area Width = " << vortex_.width_rect_mature() << " [m]" << std::endl; //
+    std::cout << "Contrail Area       = " << vortex_.area_mature() << " [m*2]" << std::endl; //
+    std::cout << "Contrail Center y   = " << vortex_.z_center() << " [m]" << std::endl; //
+    std::cout << std::endl;
+    std::cout << "***** Vortex parametrisation END *****" << std::endl;
+    std::cout << std::endl << std::endl;
+
     return vortex_.icenum_survfrac();
 
 } /* End of Aircraft::VortexLosses */
