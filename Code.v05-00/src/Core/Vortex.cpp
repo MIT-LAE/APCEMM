@@ -93,6 +93,7 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
 
     /* Height an air parcel has to descend until it just saturated when the emitted water vapor is added */
     rho_emit_ = WV_exhaust / plume_area_0_; // Eq. 6 in U2016
+    std::cout << "Density of emitted water vapor: " << rho_emit_ << " [kg/m^3]" << std::endl;
     const double rho_divisor = 10.; // 10 mg per m3
     z_emit_ = 1106.6 * pow(rho_emit_ * 1000. / rho_divisor, 0.678 + 0.0116 * T_205_) * exp((-(0.0807+0.000428*T_205_)*T_205_));
 
