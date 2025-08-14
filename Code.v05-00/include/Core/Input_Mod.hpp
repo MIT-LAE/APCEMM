@@ -154,8 +154,6 @@ struct OptInput
     double ADV_AMBIENT_LAPSERATE;
     double ADV_TROPOPAUSE_PRESSURE;
     double ADV_EP_N_REF;
-    bool ADV_EP_WVAPOR_OVERRIDE;
-    double ADV_EP_WVAPOR;
     bool ADV_EP_N_POSTJET_OVERRIDE;
     double ADV_EP_N_POSTJET;
 

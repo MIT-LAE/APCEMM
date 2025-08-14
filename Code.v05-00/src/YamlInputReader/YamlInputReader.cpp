@@ -319,15 +319,6 @@ namespace YamlInputReader{
             YAML::Node earlyPlumeSubmenu = advancedNode["EARLY PLUME SUBMENU"];
             input.ADV_EP_N_REF = parseDoubleString(earlyPlumeSubmenu["Reference ice crystal count [#/m] (double)"].as<string>(), "Reference ice crystal count [#/m] (double)");
 
-            if (earlyPlumeSubmenu["Override emitted water vapor (T/F)"]) {
-                input.ADV_EP_WVAPOR_OVERRIDE = parseBoolString(earlyPlumeSubmenu["Override emitted water vapor (T/F)"].as<string>(), "Override emitted water vapor (T/F)");
-                input.ADV_EP_WVAPOR = parseDoubleString(earlyPlumeSubmenu["Emitted water vapor [g/m] (double)"].as<string>(), "Emitted water vapor [g/m] (double)");
-            }
-            else {
-                input.ADV_EP_WVAPOR_OVERRIDE = false;
-                input.ADV_EP_WVAPOR = 0;
-            }
-
             if (earlyPlumeSubmenu["Override post-jet ice crystal count (T/F)"]) {
                 input.ADV_EP_N_POSTJET_OVERRIDE = parseBoolString(earlyPlumeSubmenu["Override post-jet ice crystal count (T/F)"].as<string>(), "Override post-jet ice crystal count (T/F)");
                 input.ADV_EP_N_POSTJET = parseDoubleString(earlyPlumeSubmenu["Post-jet ice crystal count [#/m] (double)"].as<string>(), "Post-jet ice crystal count [#/m] (double)");
