@@ -71,6 +71,7 @@ double Aircraft::VortexLosses( const double N_postjet, const double WV_exhaust, 
     std::cout << "N_BV                = " << vortex_.N_BV() << " [1/s]" << std::endl; //
     std::cout << std::endl;
     std::cout << "VORTEX PARAMS" << std::endl;
+    std::cout << "Reference ice count  = " << N0_ref << " [#/m]" << std::endl; //
     std::cout << "Post-jet ice count  = " << N_postjet << " [#/m]" << std::endl; //
     std::cout << "Exhaust Water Vapor = " << WV_exhaust << " [g/m]" << std::endl; //
     std::cout << "gamma               = " << vortex_.gamma() << " [m^2/s]" << std::endl;
