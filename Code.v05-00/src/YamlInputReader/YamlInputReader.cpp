@@ -327,7 +327,7 @@ namespace YamlInputReader{
                 input.ADV_EP_N_POSTJET = 0;
             }
         } else {
-            input.ADV_EP_N_REF = 0;
+            input.ADV_EP_N_REF = 3.38e12;
             input.ADV_EP_WVAPOR_OVERRIDE = false;
             input.ADV_EP_WVAPOR = 0;
             input.ADV_EP_N_POSTJET_OVERRIDE = false;
