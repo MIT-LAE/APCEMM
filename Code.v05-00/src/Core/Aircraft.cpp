@@ -73,13 +73,14 @@ double Aircraft::VortexLosses( const double N_postjet, const double WV_exhaust, 
     std::cout << "N_BV                = " << vortex_.N_BV() << " [1/s]" << std::endl; //
     std::cout << std::endl;
     std::cout << "VORTEX PARAMS" << std::endl;
-    std::cout << "Reference ice count  = " << N0_ref << " [#/m]" << std::endl; //
+    std::cout << "Reference ice count = " << N0_ref << " [#/m]" << std::endl; //
     std::cout << "Post-jet ice count  = " << N_postjet << " [#/m]" << std::endl; //
     std::cout << "Exhaust Water Vapor = " << WV_exhaust << " [g/m]" << std::endl; //
     std::cout << "gamma               = " << vortex_.gamma() << " [m^2/s]" << std::endl;
     std::cout << std::endl;
     std::cout << "AIRCRAFT PARAMS" << std::endl;
     std::cout << "wingspan            = " << wingspan_ << " [m]" << std::endl; //
+    std::cout << "reference wingspan  = " << wingspan_ref << " [m]" << std::endl; //
     std::cout << "flight speed        = " << vFlight_ms_ << " [m/s]" << std::endl; //
     std::cout << std::endl;
     std::cout << "PARAMETRISATION RESULTS (SURVIVAL FRACTION)" << std::endl;
@@ -90,7 +91,7 @@ double Aircraft::VortexLosses( const double N_postjet, const double WV_exhaust, 
     std::cout << "Survival Fraction   = " << vortex_.icenum_survfrac() << std::endl; //
     std::cout << std::endl;
     std::cout << "PARAMETRISATION RESULTS (GEOMETRY)" << std::endl;
-    std::cout << "z_delta (depth)  = " << vortex_.z_delta_h() << " [m]" << std::endl; //
+    std::cout << "z_delta (depth)     = " << vortex_.z_delta_h() << " [m]" << std::endl; //
     std::cout << "Survfrac (depth)    = " << vortex_.icenum_survfrac_h() << std::endl; //
     std::cout << "Contrail Depth      = " << vortex_.depth_mature() << " [m]" << std::endl; //
     std::cout << "Contrail Area Width = " << vortex_.width_rect_mature() << " [m]" << std::endl; //

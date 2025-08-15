@@ -240,8 +240,9 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
 
     if (optInput_.ADV_EP_N_POSTJET_OVERRIDE) {
         epmOutput.IceAer.scalePdf(optInput_.ADV_EP_N_POSTJET / N_postjet);
-        N_postjet = optInput_.ADV_EP_N_POSTJET;
-        std::cout << "Overriding post-jet ice crystal count to: " << N_postjet << " [#/m]" << std::endl;
+        N_postjet = epmOutput.IceAer.Moment(0) * epmOutput.area * 1e6; // recalculate after scaling
+        std::cout << "Overriding post-jet ice crystal count to: " << N_postjet;
+        std::cout << " [#/m] (Requested value:" << optInput_.ADV_EP_N_POSTJET << " [#/m])" << std::endl;
     } else {
         std::cout << "Post-jet ice crystal count: " << N_postjet << " [#/m]" << std::endl;
     }
