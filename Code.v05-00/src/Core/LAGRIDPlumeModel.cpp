@@ -59,6 +59,7 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, Input &input) :
     aircraft_ = Aircraft(input_, optInput_.SIMULATION_INPUT_ENG_EI);
     EI_ = Emission(aircraft_.engine(), jetA_, input_.EI_SO2TOSO4());
     WV_exhaust_ = EI_.getH2O() * aircraft_.fuel_per_dist();
+    std::cout << "H2O EI     = " << EI_.getH2O() << std::endl;
 
     timestepVars_.setTimeArray(PlumeModelUtils::BuildTime (
             timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt));
