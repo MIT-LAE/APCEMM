@@ -80,6 +80,9 @@ namespace LAGRID {
     Vector_2D initVarToGrid(double mass, const Vector_1D& xEdges, const Vector_1D& yEdges,
                             std::function<double(double, double)> weightFunction, double logBinRatio = 1 );
 
+    Vector_2D initVarToGridRectangular(double mass, const Vector_1D& xEdges, const Vector_1D& yEdges, double x0, double y0,
+                                    double width, double depth, double logBinRatio );
+
     Vector_2D initVarToGridGaussian(double mass, const Vector_1D& xEdges, const Vector_1D& yEdges, double x0, double y0,
                             double sigmaX, double sigmaY, double logBinRatio = 1);
 

@@ -28,15 +28,17 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
     /* Flight characteristics */
     //Sets both flight speed and mach number
 
-    double T_CA_K = input.temperature_K(); // From the meteorology, at the reference altitude
-    double RHW_CA = input.relHumidity_w(); // From the meteorology, at the reference altitude
-    double p_CA_Pa = input.pressure_Pa(); // From the yaml input
+    T_CA_K_ = input.temperature_K(); // From the meteorology, at the reference altitude
+    RHW_CA_PC_ = input.relHumidity_w(); // From the meteorology, at the reference altitude
+    RHi_CA_PC_ = input.relHumidity_i(); // From the meteorology, at the reference altitude
+    nBV_Hz_ = input.nBV(); // From the yaml input
+    p_CA_Pa_ = input.pressure_Pa(); // From the yaml input
 
-    setVFlight(input.flightSpeed(), T_CA_K);
+    setVFlight(input.flightSpeed(), T_CA_K_);
 
     /* Engine characteristics */
-    engine_ = Engine( engineName.c_str(), engineFilePath, T_CA_K, p_CA_Pa, \
-                        RHW_CA, machNumber_ );
+    engine_ = Engine( engineName.c_str(), engineFilePath, T_CA_K_, p_CA_Pa_, \
+                        RHW_CA_PC_, machNumber_ );
 
     engNumber_ = input.numEngines();
     setFuelFlow( input.fuelFlow() );
@@ -45,120 +47,61 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
     setEI_HC( input.EI_HC() );
     setEI_Soot( input.EI_Soot() );
     setSootRad( input.sootRad() );
+    fuel_per_dist_ = input.fuelFlow() / vFlight_ms_;
+
     /* Dimensions */
     wingspan_ = input.wingspan();
     currMass_ = input.aircraftMass();
-    vortex_ = Vortex( T_CA_K, p_CA_Pa, input.nBV(), wingspan_, \
-                    currMass_, vFlight_ms_ );
-
 }
 
-double Aircraft::VortexLosses( const double EI_Soot,    \
-                                   const double EI_SootRad, \
-                                   const double wetDepth )
+double Aircraft::VortexLosses( const double N_postjet, const double WV_exhaust, \
+    const double N0_ref, const double wingspan_ref )
 {
 
-    /* This function computes the fraction of contrail ice particles lost in
-     * the vortex sinking phase because of turbulent sublimation.
-     * This fraction is computed according to a parameterization derived from
-     * large-eddy simulations and described in: 
-     * Unterstrasser, Simon. "Properties of young contrails–a parametrisation based on large-eddy simulations."
-     * Atmospheric Chemistry and Physics 16.4 (2016): 2059-2082.
-     * */
-
-    /* Debug flag? */
-    // const bool ACDEBUG = 0;
-
-    /* Compute volume and mass of soot particles emitted */
-    const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_SootRad, 3.0 ); //EI_SootRad in m -> volume in m3
-    const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
-
-    /* Declare and initialize remaining fraction of ice crystals */
-    double iceNumFrac = 0.0E+00;
-
-    /* Declare and initialize each length scales */
-    double z_Atm   = 0.0E+00;
-    double z_Emit  = 0.0E+00;
-    double z_Desc  = 0.0E+00;
-    double z_Delta = 0.0E+00;
-
-    /* Exponents */
-    const double gamma_Atm  = 0.18;
-    const double gamma_Emit = 0.18;
-
-    /* Fitting coefficients */
-    const double beta_0  = +0.45;
-    const double beta_1  = +1.19;
-    const double alpha_0 = -1.35;
-    /* After reaching out to S. Unterstrasser, the beta_0 coefficient should
-     * be 0.45 instead of 0.40. The paper contains a typo and equation (10a)
-     * should be:
-     * \beta_0 = 0.45
-     */
-
-    /* Scaling for particle number */
-    const double EIice_ref = 2.8E+14; /* [#/kg_fuel] */
-
-    /* Number of particles emitted */
-    const double EIice     = EI_Soot / massParticle; /* [#/kg_fuel] */
-    
-    /* z_Atm = Depth of the supersaturated layer */
-    z_Atm  = wetDepth;
-
-    /* z_Desc = Vertical displacement of the wake vortex */
-    if ( vortex_.N_BV() < 1.0E-05 )
-        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * 1.3E-02        ), 0.5 );
-    else
-        z_Desc = pow( 8.0 * vortex_.gamma() / ( physConst::PI * vortex_.N_BV() ), 0.5 ); //Equation 4
-
-    /* z_Emit = ... */
-    z_Emit = 90;
-
-    /* ==================================== */
-    /* ... Parameterization starts here ... */
-    /* ==================================== */
-
-    const double alpha_Atm  = +1.70 * pow( EIice_ref / EIice, gamma_Atm  );
-    const double alpha_Emit = +1.15 * pow( EIice_ref / EIice, gamma_Emit );
-    const double alpha_Desc = -0.60;
-
-    /* Combine each length scale into a single variable, zDelta, expressed in m. */
-    z_Delta = + alpha_Atm  * z_Atm  \
-              + alpha_Emit * z_Emit \
-              + alpha_Desc * z_Desc;
-
-    iceNumFrac = beta_0 + beta_1 / physConst::PI * atan( alpha_0 + z_Delta / 1.0E+02 );
-
-//     if ( ( ACDEBUG ) || ( iceNumFrac < 0.1E+00 ) || ( iceNumFrac > 1.0E+00 ) ) {
-//         /* If DEBUG is on or if we lose more than 90% of the initial number of 
-//          * ice crystals, then print diagnostic */
-// #pragma omp critical
-//         {
-//         if ( ACDEBUG )
-//             std::cout << "----------------- DEBUG -----------------" << std::endl;
-//         std::cout << "In Aircraft::VortexLosses: " << std::endl;
-//         std::cout << "alpha_Atm  = " << alpha_Atm  << std::endl;
-//         std::cout << "alpha_Emit = " << alpha_Emit << std::endl;
-//         std::cout << "EIice      = " << EIice      << " [#/kg_fuel]" << std::endl;
-//         std::cout << "EIice*     = " << EIice / EIice_ref << " [#/kg_fuel]" << std::endl;
-//         std::cout << "alpha_Desc = " << alpha_Desc << std::endl;
-//         std::cout << "z_Atm      = " << z_Atm  / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << "z_Emit     = " << z_Emit / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << "z_Desc     = " << z_Desc / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << " -> Gamma  = " << vortex_.gamma() << " [m^2/s]" << std::endl;
-//         std::cout << " -> N_BV   = " << vortex_.N_BV() << " [Hz]" << std::endl;
-//         std::cout << "z_Delta    = " << z_Delta / 1.0E+02 << " [100m]" << std::endl;
-//         std::cout << "rem. frac. = " << iceNumFrac << " [-]" << std::endl;
-//         }
-//     }
-
-    iceNumFrac = std::min( std::max( iceNumFrac, 0.0E+00 ), 1.0E+00 );
+    /* Perform the vortex parametrisation (in the Vortex constructor) */
+    vortex_ = Vortex( RHi_CA_PC_, T_CA_K_, p_CA_Pa_, nBV_Hz_, wingspan_, \
+                    currMass_, vFlight_ms_, WV_exhaust, N_postjet, N0_ref,\
+                    wingspan_ref );
 
 
-    if ( iceNumFrac == 0.0E+00 )
-        std::cout << "Contrail has fully melted because of vortex-sinking losses" << std::endl;
+    std::cout << std::endl << std::endl;
+    std::cout << "***** Vortex parametrisation START *****" << std::endl;
+    std::cout << std::endl;
+    std::cout << "AMBIENT PARAMS" << std::endl;
+    std::cout << "Cruise Temperature  = " << T_CA_K_ << " [K]" << std::endl; //
+    std::cout << "Cruise RHi          = " << RHi_CA_PC_ << " [%]" << std::endl; //
+    std::cout << "N_BV                = " << vortex_.N_BV() << " [1/s]" << std::endl; //
+    std::cout << std::endl;
+    std::cout << "VORTEX PARAMS" << std::endl;
+    std::cout << "Reference ice count = " << N0_ref << " [#/m]" << std::endl; //
+    std::cout << "Post-jet ice count  = " << N_postjet << " [#/m]" << std::endl; //
+    std::cout << "Exhaust Water Vapor = " << WV_exhaust << " [g/m]" << std::endl; //
+    std::cout << "gamma               = " << vortex_.gamma() << " [m^2/s]" << std::endl;
+    std::cout << std::endl;
+    std::cout << "AIRCRAFT PARAMS" << std::endl;
+    std::cout << "wingspan            = " << wingspan_ << " [m]" << std::endl; //
+    std::cout << "reference wingspan  = " << wingspan_ref << " [m]" << std::endl; //
+    std::cout << "flight speed        = " << vFlight_ms_ << " [m/s]" << std::endl; //
+    std::cout << std::endl;
+    std::cout << "PARAMETRISATION RESULTS (SURVIVAL FRACTION)" << std::endl;
+    std::cout << "z_desc              = " << vortex_.z_desc() << " [m]" << std::endl; //
+    std::cout << "z_atm               = " << vortex_.z_atm() << " [m]" << std::endl; //
+    std::cout << "z_emit              = " << vortex_.z_emit() << " [m]" << std::endl; //
+    std::cout << "z_delta (survfrac)  = " << vortex_.z_delta_fns() << " [m]" << std::endl; //
+    std::cout << "Survival Fraction   = " << vortex_.icenum_survfrac() << std::endl; //
+    std::cout << std::endl;
+    std::cout << "PARAMETRISATION RESULTS (GEOMETRY)" << std::endl;
+    std::cout << "z_delta (depth)     = " << vortex_.z_delta_h() << " [m]" << std::endl; //
+    std::cout << "Survfrac (depth)    = " << vortex_.icenum_survfrac_h() << std::endl; //
+    std::cout << "Contrail Depth      = " << vortex_.depth_mature() << " [m]" << std::endl; //
+    std::cout << "Contrail Area Width = " << vortex_.width_rect_mature() << " [m]" << std::endl; //
+    std::cout << "Contrail Area       = " << vortex_.area_mature() << " [m*2]" << std::endl; //
+    std::cout << "Contrail Center y   = " << vortex_.z_center() << " [m]" << std::endl; //
+    std::cout << std::endl;
+    std::cout << "***** Vortex parametrisation END *****" << std::endl;
+    std::cout << std::endl << std::endl;
 
-    return iceNumFrac;
+    return vortex_.icenum_survfrac();
 
 } /* End of Aircraft::VortexLosses */
 
@@ -303,22 +246,14 @@ void Aircraft::Debug( ) const
 
     std::cout << "      +Brunt-Vaisala frequency : ";
     std::cout << std::setw(10) << vortex_.N_BV() << " [ Hz ]" << "\n";
-    std::cout << "      +Wake vortex separation  : ";
-    std::cout << std::setw(10) << vortex_.b() << " [ m ]" << "\n";
     std::cout << "      +Initial circulation     : ";
     std::cout << std::setw(10) << vortex_.gamma() << " [ m^2/s ]" << "\n";
-    std::cout << "      +Wake eff. time scale    : ";
-    std::cout << std::setw(10) << vortex_.t() << " [ s ]" << "\n";
-    std::cout << "      +Initial velocity scale  : ";
-    std::cout << std::setw(10) << vortex_.w() << " [ m/s ]" << "\n";
-    std::cout << "      +Normalized dissip. rate : ";
-    std::cout << std::setw(10) << vortex_.eps_star() << " [ - ]" << "\n";
     std::cout << "      +Max. downwash displace. : ";
-    std::cout << std::setw(10) << vortex_.delta_zw() << " [ m ]" << "\n";
+    std::cout << std::setw(10) << vortex_.z_desc() << " [ m ]" << "\n";
     std::cout << "      +Mean downwash displace. : ";
-    std::cout << std::setw(10) << vortex_.delta_z1() << " [ m ]" << "\n";
+    std::cout << std::setw(10) << vortex_.z_center() << " [ m ]" << "\n";
     std::cout << "      +Initial contrail depth  : ";
-    std::cout << std::setw(10) << vortex_.D1() << " [ m ]" << "\n";
+    std::cout << std::setw(10) << vortex_.depth_mature() << " [ m ]" << "\n";
     std::cout << "\n";
     std::cout << "\n";
 
