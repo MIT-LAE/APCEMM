@@ -51,12 +51,15 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, Input &input) :
     // Set the met variables in the input object
     input.set_temperature_K(met_.tempRef());
     input.set_relHumidity_w(met_.rhwRef());
+    input.set_relHumidity_i(met_.rhiRef());
     input_ = input;
 
     simVars_ = MPMSimVarsWrapper(input_, optInput_, met_.satdepthEstimate());
     timestepVars_ = TimestepVarsWrapper(input_, optInput_);
     aircraft_ = Aircraft(input_, optInput_.SIMULATION_INPUT_ENG_EI);
     EI_ = Emission(aircraft_.engine(), jetA_, input_.EI_SO2TOSO4());
+    WV_exhaust_ = EI_.getH2O() * aircraft_.fuel_per_dist();
+    std::cout << "H2O EI     = " << EI_.getH2O() << std::endl;
 
     timestepVars_.setTimeArray(PlumeModelUtils::BuildTime (
             timestepVars_.tInitial_s, timestepVars_.tFinal_s, timestepVars_.dt));
@@ -208,6 +211,14 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 }
 
 std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
+    // Calculate the number of emitted soot particles
+    const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_.getSootRad(), 3.0 ); //EI_SootRad in m -> volume in m3
+    const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
+    const double EI_icenum = EI_.getSoot() / massParticle; /* [#/kg_fuel] */
+    const double N0 = EI_icenum * aircraft_.fuel_per_dist();
+    std::cout << "EI_icenum prejet: " << EI_icenum << " [#/kg]" << std::endl;
+    std::cout << "Emitted soot: " << N0 << " [#/m]" << std::endl;
+
     std::unique_ptr<EPM::Models::Base> epm = EPM::make_epm(
         optInput_, input_, aircraft_, EI_, met_, simVars_);
     std::variant<EPM::Output, SimStatus> epmResult = epm->run();
@@ -223,17 +234,33 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     use - recalling that the EPM is only actually run for one engine. */
     epmOutput.area *= aircraft_.EngNumber();
 
-    // Run vortex sink parameterization
-    const double iceNumFrac = aircraft_.VortexLosses(
-        EI_.getSoot(), EI_.getSootRad(), met_.satdepthEstimate());
 
-    std::cout << "Parameterized vortex sinking survival fraction: " << iceNumFrac
+    // Calculate the number of ice particles past the jet regime
+    double N_postjet = epmOutput.IceAer.Moment(0) * epmOutput.area * 1e6;
+
+    if (optInput_.ADV_EP_N_POSTJET_OVERRIDE) {
+        epmOutput.IceAer.scalePdf(optInput_.ADV_EP_N_POSTJET / N_postjet);
+        N_postjet = epmOutput.IceAer.Moment(0) * epmOutput.area * 1e6; // recalculate after scaling
+        std::cout << "Overriding post-jet ice crystal count to: " << N_postjet;
+        std::cout << " [#/m] (Requested value:" << optInput_.ADV_EP_N_POSTJET << " [#/m])" << std::endl;
+    } else {
+        std::cout << "Post-jet ice crystal count: " << N_postjet << " [#/m]" << std::endl;
+    }
+    std::cout << "EI_icenum postjet: " << N_postjet / aircraft_.fuel_per_dist() << " [#/kg]" << std::endl;
+
+    // Run vortex phase parameterization
+    const double N0_ref = optInput_.ADV_EP_N_REF;
+    const double wingspan_ref = optInput_.ADV_EP_WINGSPAN_REF;
+    const double icenum_survfrac = aircraft_.VortexLosses(N_postjet, WV_exhaust_, N0_ref, wingspan_ref);
+    std::cout << "Parameterized vortex sinking survival fraction: " << icenum_survfrac
                 << std::endl;
-    if (iceNumFrac <= 0.00E+00) {
+    if (icenum_survfrac <= 0.00E+00) {
         std::cout << "EndSim: vortex sinking" << std::endl;
         return SimStatus::NoSurvivalVortex;
     }
-    epmOutput.IceAer.scalePdf(iceNumFrac);
+    epmOutput.IceAer.scalePdf(icenum_survfrac);
+
+    std::cout << "Post-vortex ice particle count: " << epmOutput.IceAer.Moment(0) * epmOutput.area * 1e6 << " [#/m]" << std::endl;
 
     return epmOutput;
 }
@@ -262,44 +289,26 @@ void LAGRIDPlumeModel::initializeGrid(const EPM::Output &epmOut) {
 
     iceAerosol_ = AIM::Grid_Aerosol(nx_init, yCoords_.size(), epmIceAer.getBinCenters(), epmIceAer.getBinEdges(), 0, 1, 1.6);
 
-    /* Estimate initial contrail depth/width to estimate aspect ratio, from Schumann, U. "A contrail cirrus prediction model." Geoscientific Model Development 5.3 (2012) */
-    double D1 = optInput_.ADV_CSIZE_DEPTH_BASE + optInput_.ADV_CSIZE_DEPTH_SCALING_FACTOR * 0.5 * aircraft_.vortex().delta_zw();
-    auto N_dil = [](double t0) -> double {
-        double ts = 1; 
-        return 7000 * pow(t0/ts, 0.8);
-    };
-    double m_F = aircraft_.FuelFlow() / aircraft_.VFlight(); //fuel consumption per flight distance [kg / m]
-    double rho_air = simVars_.pressure_Pa / (R_Air * epmOut.finalTemp);
-    double B1 = optInput_.ADV_CSIZE_WIDTH_BASE + optInput_.ADV_CSIZE_WIDTH_SCALING_FACTOR * N_dil(aircraft_.vortex().t()) * m_F / ( PI/4 * rho_air * D1); // initial contrail width [m]
-
     Vector_3D pdf_init;
     
-    //Initialize area assuming ellipse-like shape
-    double initPlumeArea = epmOut.area;
-    double aspectRatio = D1/B1;
-    //Currently ignoring EPM area results.
-    double initWidth = 2 * std::sqrt(initPlumeArea / (PI * aspectRatio));
-    double initDepth = aspectRatio * initWidth;
-
-    double sigma_x = initWidth/8;
-    double sigma_y = initDepth/8;
-    std::cout << "Initial Contrail Width: " << initWidth << std::endl;
-    std::cout << "Initial Contrail Depth: " << initDepth << std::endl;
+    //Initialize the mature plume as a rectangle
+    const double initWidth = aircraft_.vortex().width_rect_mature();
+    const double initDepth = aircraft_.vortex().depth_mature();
+    const double xcenter = 0;
+    const double ycenter = -aircraft_.vortex().z_center();
 
     for (UInt n = 0; n < iceAerosol_.getNBin(); n++) {
         double EPM_nPart_bin = epmIceAer.binMoment(n) * epmOut.area;
         double logBinRatio = log(iceAerosol_.getBinEdges()[n+1] / iceAerosol_.getBinEdges()[n]);
-        //Start contrail at altitude -D1/2 to reflect the sinking.
-        pdf_init.push_back( LAGRID::initVarToGridGaussian(EPM_nPart_bin, xEdges_, yEdges_, 0, -D1/2, sigma_x, sigma_y, logBinRatio) );
-        //pdf_init.push_back( LAGRID::initVarToGridBimodalY(EPM_nPart_bin, xEdges_, yEdges_, 0, -D1/2, initWidth, initDepth, logBinRatio) );
+        pdf_init.push_back( LAGRID::initVarToGridRectangular(EPM_nPart_bin, xEdges_, yEdges_, xcenter, ycenter, initWidth, initDepth, logBinRatio) );
+
     }
     iceAerosol_.updatePdf(std::move(pdf_init));
     Vector_2D areas = VectorUtils::cellAreas(xEdges_, yEdges_);
     initNumParts_ = iceAerosol_.TotalNumber_sum(areas);
-    std::cout << "EPM Num Particles: " << epmIceAer.Moment(0) * epmOut.area * 1e6 << std::endl;
-    std::cout << "Initial Num Particles: " << initNumParts_ << std::endl;
-    std::cout << "Initial Ice Mass: " << iceAerosol_.TotalIceMass_sum(areas) << std::endl;
 
+    std::cout << "Mature Plume Initial Num Particles: " << initNumParts_ << std::endl;
+    std::cout << "Mature Plume Initial Ice Mass: " << iceAerosol_.TotalIceMass_sum(areas) << std::endl;
 }
 
 void LAGRIDPlumeModel::initH2O() {
@@ -316,8 +325,7 @@ void LAGRIDPlumeModel::initH2O() {
     auto areas = VectorUtils::cellAreas(xEdges_, yEdges_);
     const double icemass = iceAerosol_.TotalIceMass_sum(areas);
 
-    double fuelPerDist = aircraft_.FuelFlow() / aircraft_.VFlight();
-    double mass_WV = EI_.getH2O() * fuelPerDist - icemass;
+    double mass_WV = WV_exhaust_ - icemass;
     double E_H2O = mass_WV / (MW_H2O * 1e3) * Na;
 
     // Spread the emitted water evenly over the cells that contain ice crystals

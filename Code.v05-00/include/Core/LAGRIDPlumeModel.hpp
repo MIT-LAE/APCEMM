@@ -59,6 +59,7 @@ class LAGRIDPlumeModel {
         double simTime_h_;
         double solarTime_h_;
         double shear_rep_;
+        double WV_exhaust_; // Exhaust water vapour
 
         typedef std::pair<std::vector<std::vector<int>>, VectorUtils::MaskInfo> MaskType;
         inline MaskType iceNumberMask(double cutoff_ratio = NUM_FILTER_RATIO) {

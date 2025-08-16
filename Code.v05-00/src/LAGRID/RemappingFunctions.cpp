@@ -231,6 +231,20 @@ namespace LAGRID {
         }
         return gridPDF;
     }
+
+    Vector_2D initVarToGridRectangular(double mass, const Vector_1D& xEdges, const Vector_1D& yEdges, double x0, double y0,
+                                    double width, double depth, double logBinRatio ) 
+    {
+        const double xlim_high = x0 + width/2.0;
+        const double xlim_low = x0 - width/2.0;
+        const double ylim_low = y0 - depth/2.0;
+        const double ylim_high = y0 + depth/2.0;
+        auto rectFunc = [xlim_low, xlim_high, ylim_low, ylim_high] (double x, double y) -> double {
+            return (x >= xlim_low && x <= xlim_high && y >= ylim_low && y <= ylim_high) ? 1.0 : 0.0;
+        };
+        return initVarToGrid(mass, xEdges, yEdges, rectFunc, logBinRatio);
+    }
+
     Vector_2D initVarToGridGaussian(double mass, const Vector_1D& xEdges, const Vector_1D& yEdges, double x0, double y0,
                             double sigmaX, double sigmaY, double logBinRatio ) 
     {

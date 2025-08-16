@@ -36,17 +36,25 @@ class Aircraft
 
         /* Compute vortex losses */
 
-        double VortexLosses( const double EI_Soot, const double EI_SootRad, \
-                             const double wetDepth );
+        double VortexLosses( const double N_postjet, const double WV_exhaust, const double N0_ref,\
+                        const double wingspan_ref );
 
         /* Getters: */
 
+        /* Flight conditions */
+        inline double T_CA_K() const { return T_CA_K_; }
+        inline double RHW_CA_PC() const { return RHW_CA_PC_; }
+        inline double RHi_CA_PC() const { return RHi_CA_PC_; }
+        inline double nBV_Hz() const { return nBV_Hz_; }
+        inline double p_CA_Pa() const { return p_CA_Pa_; }
         /* Aircraft name */
         inline std::string Name() const { return Name_; }
         /* Flight velocity */
         inline double VFlight() const { return vFlight_ms_; }
         /* Mach number */
         inline double Mach() const { return machNumber_; }
+        /* Fuel consumption per distance */
+        inline double fuel_per_dist() const { return fuel_per_dist_; }
         /* Wingspan */
         inline double Wingspan() const { return wingspan_; }
         /* Current mass */
@@ -55,10 +63,6 @@ class Aircraft
         inline double FuelFlow() const { return engine_.getFuelFlow() * engNumber_; }
         /* Engine number */
         inline UInt EngNumber() const { return engNumber_; }
-        /* Mean vertical displacement */
-        inline double deltaz1() const { return vortex_.delta_z1(); }
-        /* Maximum vertical displacement */
-        inline double deltazw() const { return vortex_.delta_zw(); }
         /* Engine */
         inline const Engine& engine() const { return engine_; }
         /* Vortex */
@@ -81,12 +85,22 @@ class Aircraft
 
     protected:
 
+        /* Flight conditions */
+        double T_CA_K_;
+        double RHW_CA_PC_;
+        double RHi_CA_PC_;
+        double nBV_Hz_;
+        double p_CA_Pa_;
+
         /* Aircraft name */
         std::string Name_;
 
         /* Flight speed & mach Number */
         double vFlight_ms_;
         double machNumber_;
+
+        /* Fuel consumption */
+        double fuel_per_dist_; /* [kg/m] */
 
         /* Dimensions */
         double wingspan_; /* [m] */
