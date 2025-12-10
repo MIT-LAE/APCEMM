@@ -107,6 +107,38 @@ namespace Diag {
         delete[] array;
     }
 
+    void add3DVar(NcFile& currFile, const Vector_3D& toSave, const vector<NcDim> dims, const string& name, const string& desc, const string& units) {
+        if((toSave.size() != dims[0].getSize()) || (toSave[0].size() != dims[1].getSize()) || (toSave[0][0].size() != dims[2].getSize())) {
+            throw std::runtime_error("Save failed! NcDim dimension size and array sizes don't match! Variable name: " + name );
+        }
+        float* array = util::vect2float (toSave, toSave.size(), toSave[0].size(), toSave[0][0].size() );
+
+        float max_val = -1.0e100;
+        for (unsigned int i=0; i < toSave.size(); i++){
+        for (unsigned int j=0; j < toSave.size(); j++){
+        for (unsigned int k=0; k < toSave.size(); k++){
+            //max_val = std::max(max_val,toSave[i][j][k]);
+            float test_val = toSave[i][j][k];
+            max_val = std::max(max_val,test_val);
+        }
+        }
+        }
+        std::cout << " 3DVAR A: " << max_val << std::endl;
+       
+        max_val = -1.0e100; 
+        unsigned int n_elements = toSave.size() * toSave[0].size() * toSave[0][0].size();
+        for (unsigned int i=0; i < n_elements; i++){
+            max_val = std::max(max_val,array[i]);
+        }
+        std::cout << " 3DVAR B: " << max_val << std::endl;
+        NcVar var = currFile.addVar( name, varDataType, dims );
+        var.putAtt("units", units );
+        var.putAtt("long_name", desc );
+        var.putVar( array );
+
+        delete[] array;
+    }
+
     void Diag_TS_Phys( const char* rootName,
                     const int hh, const int mm, const int ss,
                     const AIM::Grid_Aerosol& iceAer, const Vector_2D& H2O,
@@ -240,6 +272,35 @@ namespace Diag {
         add0DVar(currFile, iceAer.extinctionWidth(xCoord), tDim, "width", "Contrail Extinction-Defined Width", "m");
         add0DVar(currFile, iceAer.extinctionDepth(yCoord), tDim, "depth", "Contrail Extinction-Defined Depth", "m");
         add0DVar(currFile, iceAer.intYOD(dx_vec, dy_vec), tDim, "intOD", "Integrated Vertical Optical Depth", "m");
+
+        bool storePSD = true;
+        if (storePSD)
+        {
+            //Vector_3D toSave = iceAer.Number();
+            const Vector_3D& toSave = iceAer.getPDF();
+            float max_val = -1.0e100;
+            for (unsigned int i=0; i < toSave.size(); i++){
+            for (unsigned int j=0; j < toSave.size(); j++){
+            for (unsigned int k=0; k < toSave.size(); k++){
+                //max_val = std::max(max_val,toSave[i][j][k]);
+                float test_val = toSave[i][j][k];
+                max_val = std::max(max_val,test_val);
+            }
+            }
+            }
+            std::cout << " DIAG 0 : " << max_val << std::endl;
+            Vector_2D toSave2D = iceAer.TotalNumber();
+            max_val = -1.0e100;
+            for (unsigned int i=0; i < toSave2D.size(); i++){
+            for (unsigned int j=0; j < toSave2D.size(); j++){
+                //max_val = std::max(max_val,toSave2D[i][j][k]);
+                float test_val = toSave2D[i][j];
+                max_val = std::max(max_val,test_val);
+            }
+            }
+            std::cout << " DIAG 2 : " << max_val << std::endl;
+            add3DVar(currFile, iceAer.Number(), xycDims, "n_aer", "Ice aerosol particle number concentration by radius", "# / cm^3");
+        }
     } /* End of Diag_TS_Phys */
 
 }

@@ -1160,14 +1160,17 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         for (iBin = 0; iBin < nBin; iBin++)
         {
             ratio = log(bin_Edges[iBin + 1] / bin_Edges[iBin]);
+            double n_total = 0.0;
             for (jNy = 0; jNy < Ny; jNy++)
             {
                 for (iNx = 0; iNx < Nx; iNx++)
                 {
                     number[iBin][jNy][iNx] = ratio * pdf[iBin][jNy][iNx];
+                    n_total = n_total + (ratio * pdf[iBin][jNy][iNx]);
                     /* Unit check: [#/cm^3] */
                 }
             }
+            std::cout << "TOTAL IN BIN " << iBin << " is " << n_total << std::endl;
         }
 
         return number;
