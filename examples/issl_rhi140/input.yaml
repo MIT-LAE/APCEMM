@@ -190,6 +190,7 @@ DIAGNOSTIC MENU:
 # Sometimes you have to change YLIM_DOWN here if the supersaturated layer is very thick
 # because YLIM_DOWN must be larger than the layer thickness.
 ADVANCED OPTIONS MENU:
+  Save gridded particle size distribution (T/F): F # WARNING: If T, it can generate very large output files and slow down the simulation
   # Domain is defined as: X [-XLIM_LEFT, XLIM_RIGHT], Y [-YLIM_DOWN, YLIM_UP]
   GRID SUBMENU:
     NX (positive int): 200
