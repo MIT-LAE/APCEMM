@@ -157,6 +157,7 @@ struct OptInput
     double ADV_EP_WINGSPAN_REF;
     bool ADV_EP_N_POSTJET_OVERRIDE;
     double ADV_EP_N_POSTJET;
+    bool ADV_SAVE_PSD_GRID;
 
 };
 

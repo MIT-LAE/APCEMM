@@ -333,6 +333,12 @@ namespace YamlInputReader{
             input.ADV_EP_N_POSTJET_OVERRIDE = false;
             input.ADV_EP_N_POSTJET = 0;
         }
+
+        if (advancedNode["Save gridded particle size distribution (T/F)"]){
+            input.ADV_SAVE_PSD_GRID = parseBoolString(advancedNode["Save gridded particle size distribution (T/F)"].as<string>(), "Save gridded particle size distribution (T/F)");
+        } else {
+            input.ADV_SAVE_PSD_GRID = false;
+        }
     }
 
     vector<std::unordered_map<string, double>> generateCasesHelper(vector<std::unordered_map<string, double>>& allCases, const vector<std::pair<string, Vector_1D>>& params, const std::size_t row){

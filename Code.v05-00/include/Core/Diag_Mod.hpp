@@ -51,6 +51,14 @@ namespace Diag {
     void add3DVar(NcFile& currFile, const Vector_3D& toSave, const vector<NcDim> dims, const string& name, const string& desc, const string& units);
     void replace_hhmmss(string& fileName, int hh, int mm, int ss);
 
+    namespace {
+        bool storePSD = false;
+    }
+
+    inline void set_storePSD(bool val) {
+        storePSD = val;
+    }
+
 } // namespace Diag
 
 #endif /* DIAG_MOD_H_INCLUDED */
