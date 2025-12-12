@@ -31,6 +31,7 @@
 #include "Core/Input.hpp"
 #include "Core/LAGRIDPlumeModel.hpp"
 #include "Core/Status.hpp"
+#include "Core/Diag_Mod.hpp"
 #include "Util/MC_Rand.hpp"
 
 void CreateREADME( const std::string folder, const std::string fileName, \
@@ -94,6 +95,10 @@ int main( int argc, char* argv[])
         }
         
         YamlInputReader::readYamlInputFiles( Input_Opt, INPUT_FILE_PATHS );
+
+        if (Input_Opt.ADV_SAVE_PSD_GRID){
+            Diag::set_storePSD(true);
+        }
     }  /* master CPU */
 
     // Set the seed once at the top-level

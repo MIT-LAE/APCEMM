@@ -23,6 +23,14 @@
 
 namespace Diag {
 
+    namespace {
+        bool storePSD = false;
+    }
+
+    void set_storePSD(bool val){
+        storePSD = val;
+    }
+
     static const NcType& varDataType = ncFloat;
 
     void replace_hhmmss(string& fileName, int hh, int mm, int ss) {
@@ -254,8 +262,6 @@ namespace Diag {
         add0DVar(currFile, iceAer.extinctionDepth(yCoord), tDim, "depth", "Contrail Extinction-Defined Depth", "m");
         add0DVar(currFile, iceAer.intYOD(dx_vec, dy_vec), tDim, "intOD", "Integrated Vertical Optical Depth", "m");
 
-        // Set this to true to store out the full PSD. Warning - this is a lot of data and takes time to save out!
-        bool storePSD = false;
         if (storePSD)
         {
             add3DVar(currFile, iceAer.Number(), xycDims, "n_aer", "Ice aerosol particle number concentration by radius", "# / cm^3");

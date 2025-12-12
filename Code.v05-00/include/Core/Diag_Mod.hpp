@@ -50,6 +50,7 @@ namespace Diag {
     void add2DVar(NcFile& currFile, const Vector_2D& toSave, const vector<NcDim> dims, const string& name, const string& desc, const string& units);
     void add3DVar(NcFile& currFile, const Vector_3D& toSave, const vector<NcDim> dims, const string& name, const string& desc, const string& units);
     void replace_hhmmss(string& fileName, int hh, int mm, int ss);
+    void set_storePSD(bool val);
 
 } // namespace Diag
 
