@@ -23,6 +23,14 @@
 
 namespace Diag {
 
+    namespace {
+        bool storePSD = false;
+    }
+
+    void set_storePSD(bool val){
+        storePSD = val;
+    }
+
     static const NcType& varDataType = ncFloat;
 
     void replace_hhmmss(string& fileName, int hh, int mm, int ss) {
