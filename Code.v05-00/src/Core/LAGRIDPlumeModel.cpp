@@ -367,7 +367,7 @@ void LAGRIDPlumeModel::updateDiffVecs() {
         }
     }
 }
-void LAGRIDPlumeModel::runTransport(double timestep) {
+void LAGRIDPlumeModel::runTrans,port(double timestep) {
     //Update the zero bc to reflect grid size changes
     auto ZERO_BC = FVM_ANDS::bcFrom2DVector(iceAerosol_.getPDF()[0], true);
 

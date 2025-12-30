@@ -100,11 +100,31 @@ class LAGRIDPlumeModel {
         void updateDiffVecs();
         void runTransport(double timestep);
         void remapAllVars(double remapTimestep, const std::vector<std::vector<int>>& mask, const VectorUtils::MaskInfo& maskInfo);
-        std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask);
+        std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> remapVariable(
+            const VectorUtils::MaskInfo& maskInfo, 
+            const BufferInfo& buffers, 
+            const Vector_2D& phi, 
+            const std::vector<std::vector<int>>& mask
+        );
         double totalAirMass();
 
-        Eigen::SparseMatrix<double> createRegriddingWeightsSparse(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const std::vector<std::vector<int>>& mask, Vector_1D& xEdgesNew, Vector_1D& yEdgesNew, Vector_1D& xCoordsNew, Vector_1D& yCoordsNew);
-        Vector_2D applyWeights(const Eigen::SparseMatrix<double>& weights, int nx_old, int ny_old, int nx_new, int ny_new, const Vector_2D& dataIn); 
+        Eigen::SparseMatrix<double> createRegriddingWeightsSparse(
+            const VectorUtils::MaskInfo& maskInfo, 
+            const BufferInfo& buffers, 
+            const std::vector<std::vector<int>>& mask, 
+            Vector_1D& xEdgesNew, 
+            Vector_1D& yEdgesNew, 
+            Vector_1D& xCoordsNew, V
+            ector_1D& yCoordsNew
+        );
+        Vector_2D applyWeights(
+            const Eigen::SparseMatrix<double>& weights, 
+            int nx_old, 
+            int ny_old, 
+            int nx_new, 
+            int ny_new, 
+            const Vector_2D& dataIn
+        ); 
 
         void printVector2D(const std::string fieldName, const Vector_2D& dataIn);
 

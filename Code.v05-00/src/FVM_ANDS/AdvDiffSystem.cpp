@@ -36,12 +36,24 @@ namespace FVM_ANDS{
         Dv_vec_.resize(nInteriorPoints_);
         rhs_.resize(nTotalPoints_);
         phi_.resize(nTotalPoints_);
-        points_.reserve(nTotalPoints_);
+        points_.resize(nTotalPoints_);
+        bcCache_.resize(nTotalPoints_);
+        directionCache_.resize(nTotalPoints_);
+        secondBoundaryCache_.resize(nTotalPoints_);
+        corrCache_.resize(nTotalPoints_);
         deferredCorr_.resize(nInteriorPoints_);
         deferredCorr_.setZero();
         source_.resize(nInteriorPoints_);
         source_.setZero();
-        std::generate_n(std::back_inserter(points_), nTotalPoints_, [] { return std::make_unique<Point>(); });
+        std::generate_n(std::back_inserter(points_), nTotalPoints_, [] { 
+            return Point();  // Construct directly in vector
+        });
+        for (size_t i = 0; i < points_.size(); ++i) {
+            bcTypeCache_[i] = points_[i]->bcType();
+            directionCache_[i] = points_[i]->bcDirection();
+            secondBoundaryCache_[i] = points_[i]->secondBoundaryConds();
+            corrCache_[i] = points_[i]->corrPoint();
+        }
         totalCoefMatrix_.resize(nTotalPoints_, nTotalPoints_);
 
         updateDiffusion(params.Dh, params.Dv);
@@ -69,7 +81,7 @@ namespace FVM_ANDS{
                 if(j == ny_ - 1){
                     BoundaryCondDescription bc_ghost = BoundaryCondDescription(bcType_top_, FaceDirection::NORTH, bcVals_top_[i], vector_idx);
                     int corrGhostPoint = nInteriorPoints_ + i;
-                    points_[corrGhostPoint] = std::make_unique<GhostPoint>(bc_ghost);
+                    points_[corrGhostPoint] = GhostPoint{bc_ghost};
 
                     BoundaryCondDescription bc_top = BoundaryCondDescription(bcType_top_, FaceDirection::NORTH, bcVals_top_[i], corrGhostPoint);
 
@@ -79,27 +91,27 @@ namespace FVM_ANDS{
                         int corrGhostPoint2 = nInteriorPoints_ + nx_ + j;
                         BoundaryCondDescription bc_left = BoundaryCondDescription(bcType_left_, FaceDirection::WEST, bcVals_left_[j], corrGhostPoint2);
                         BoundaryCondDescription bc_ghost2 = BoundaryCondDescription(bcType_left_, FaceDirection::WEST, bcVals_left_[j], vector_idx);
-                        points_[vector_idx] = std::make_unique<IntBoundPoint>(bc_top, bc_left);
-                        points_[corrGhostPoint2] = std::make_unique<GhostPoint>(bc_ghost2);
+                        points_[vector_idx] = IntBoundPoint(bc_top, bc_left);
+                        points_[corrGhostPoint2] = GhostPoint(bc_ghost2);
                     }
                     //top right
                     else if(i == nx_ - 1){
                         int corrGhostPoint2 = nInteriorPoints_ + nx_ + ny_ + j;
                         BoundaryCondDescription bc_right = BoundaryCondDescription(bcType_right_, FaceDirection::EAST, bcVals_right_[j], corrGhostPoint2);
                         BoundaryCondDescription bc_ghost2 = BoundaryCondDescription(bcType_right_, FaceDirection::EAST, bcVals_right_[j], vector_idx);
-                        points_[vector_idx] = std::make_unique<IntBoundPoint>(bc_top, bc_right);
-                        points_[corrGhostPoint2] = std::make_unique<GhostPoint>(bc_ghost2);
+                        points_[vector_idx] = IntBoundPoint(bc_top, bc_right);
+                        points_[corrGhostPoint2] = GhostPoint(bc_ghost2);
                     }
                     //if not corner boundary make normal interior node.
                     else{
-                        points_[vector_idx] = std::make_unique<IntBoundPoint>(bc_top);
+                        points_[vector_idx] = IntBoundPoint(bc_top);
                     }
                 }
                 //bottom 
                 else if (j == 0){
                     int corrGhostPoint = nInteriorPoints_ + nx_ + 2*ny_ + i;
                     BoundaryCondDescription bc_ghost = BoundaryCondDescription(bcType_bot_, FaceDirection::SOUTH, bcVals_bot_[i], vector_idx);
-                    points_[corrGhostPoint] = std::make_unique<GhostPoint>(bc_ghost);
+                    points_[corrGhostPoint] = GhostPoint(bc_ghost);
 
                     BoundaryCondDescription bc_bot = BoundaryCondDescription(bcType_bot_, FaceDirection::SOUTH, bcVals_bot_[i], corrGhostPoint);
 
@@ -111,8 +123,8 @@ namespace FVM_ANDS{
                         BoundaryCondDescription bc_left = BoundaryCondDescription(bcType_left_, FaceDirection::WEST, bcVals_left_[j], corrGhostPoint2);
                         BoundaryCondDescription bc_ghost2 = BoundaryCondDescription(bcType_left_, FaceDirection::WEST, bcVals_left_[j], vector_idx);
                         
-                        points_[vector_idx] = std::make_unique<IntBoundPoint>(bc_bot, bc_left);
-                        points_[corrGhostPoint2] = std::make_unique<GhostPoint>(bc_ghost2);
+                        points_[vector_idx] = IntBoundPoint(bc_bot, bc_left);
+                        points_[corrGhostPoint2] = GhostPoint(bc_ghost2);
                     }
                     //bot right
                     else if(i == nx_ - 1){
@@ -120,13 +132,13 @@ namespace FVM_ANDS{
                         BoundaryCondDescription bc_right = BoundaryCondDescription(bcType_right_, FaceDirection::EAST, bcVals_right_[j], corrGhostPoint2);
                         BoundaryCondDescription bc_ghost2 = BoundaryCondDescription(bcType_right_, FaceDirection::EAST, bcVals_right_[j], vector_idx);
                         
-                        points_[vector_idx] = std::make_unique<IntBoundPoint>(bc_bot, bc_right);
-                        points_[corrGhostPoint2] = std::make_unique<GhostPoint>(bc_ghost2);
+                        points_[vector_idx] = IntBoundPoint(bc_bot, bc_right);
+                        points_[corrGhostPoint2] = GhostPoint(bc_ghost2);
 
                     }
                     //if not corner boundary make normal interior node
                     else {
-                        points_[vector_idx] = std::make_unique<IntBoundPoint>(bc_bot);
+                        points_[vector_idx] = IntBoundPoint(bc_bot);
                     }
 
                 }
@@ -136,8 +148,8 @@ namespace FVM_ANDS{
                     BoundaryCondDescription bc_left = BoundaryCondDescription(bcType_left_, FaceDirection::WEST, bcVals_left_[j], corrGhostPoint);
                     BoundaryCondDescription bc_ghost = BoundaryCondDescription(bcType_left_, FaceDirection::WEST, bcVals_left_[j], vector_idx);
 
-                    points_[vector_idx] = std::make_unique<IntBoundPoint>(bc_left);
-                    points_[corrGhostPoint] = std::make_unique<GhostPoint>(bc_ghost);
+                    points_[vector_idx] = IntBoundPoint(bc_left);
+                    points_[corrGhostPoint] = GhostPoint(bc_ghost);
                 } 
                 //right 
                 else if (i == nx_ - 1){
@@ -145,11 +157,11 @@ namespace FVM_ANDS{
                     BoundaryCondDescription bc_right = BoundaryCondDescription(bcType_right_, FaceDirection::EAST, bcVals_right_[j], corrGhostPoint);
                     BoundaryCondDescription bc_ghost = BoundaryCondDescription(bcType_right_, FaceDirection::EAST, bcVals_right_[j], vector_idx);
 
-                    points_[vector_idx] = std::make_unique<IntBoundPoint>(bc_right);
-                    points_[corrGhostPoint] = std::make_unique<GhostPoint>(bc_ghost);
+                    points_[vector_idx] = IntBoundPoint(bc_right);
+                    points_[corrGhostPoint] = GhostPoint(bc_ghost);
                 }
                 else {
-                    points_[vector_idx] = std::make_unique<Point>(BoundaryConditionFlag::INTERIOR);
+                    points_[vector_idx] = Point(BoundaryConditionFlag::INTERIOR);
                 }
             }
         }
@@ -505,6 +517,12 @@ namespace FVM_ANDS{
 
     Eigen::VectorXd AdvDiffSystem::forwardEulerAdvection(bool operatorSplit, bool parallelAdvection) const noexcept{
         Eigen::VectorXd soln(nTotalPoints_);
+        // cache results outside of hotloop
+        for (const auto& point : points_) {
+            bcTypes_.push_back(std::visit([](auto&& p) { return p.bcType(); }, point));
+            directions_.push_back(std::visit([](auto&& p) { return p.bcDirection(); }, point));
+        }
+
         // double avgBackgroundCalcTime = 0;
         //Explicit Time-Stepping
         #pragma omp parallel for    \
@@ -522,24 +540,28 @@ namespace FVM_ANDS{
 
             //commenting out this results in ~30% speedup
             //The calls involving the optional are maybe 1/3 of the cost. Maybe something to look at later.
-            if(points_[i]->bcType() != BoundaryConditionFlag::INTERIOR){
-                Point* point = points_[i].get();
-                FaceDirection direction = point->bcDirection();
+             if(bcCache_[i] != BoundaryConditionFlag::INTERIOR){
+                // const Point& point = points_[i];
+                // FaceDirection direction = point->bcDirection();
+                // isNorthBoundary = direction == FaceDirection::NORTH;
+                // isSouthBoundary = direction == FaceDirection::SOUTH;
+
+                FaceDirection direction = directions_[i];
                 isNorthBoundary = direction == FaceDirection::NORTH;
                 isSouthBoundary = direction == FaceDirection::SOUTH;
-
+                
                 //Corner cases...
-                bool secondaryWestBound = (point->secondBoundaryConds() && point->secondBoundaryConds()->direction == FaceDirection::WEST);
-                bool secondaryEastBound = (point->secondBoundaryConds() && point->secondBoundaryConds()->direction == FaceDirection::EAST);
+                bool secondaryWestBound = (secondBoundaryCache_[i]->direction == FaceDirection::WEST);
+                bool secondaryEastBound = (secondBoundaryCache_[i]->direction == FaceDirection::EAST);
 
                 isWestBoundary = (direction == FaceDirection::WEST || secondaryWestBound);
                 isEastBoundary = (direction == FaceDirection::EAST || secondaryEastBound);
 
                 //only call this lookup function on boundary nodes which are inconsequential in number
-                idx_N = isNorthBoundary? point->corrPoint() : idx_N;
-                idx_S = isSouthBoundary? point->corrPoint() : idx_S;
-                idx_E = isEastBoundary? (secondaryEastBound ? point->secondBoundaryConds()->corrPoint : point->corrPoint()) : idx_E;
-                idx_W = isWestBoundary? (secondaryEastBound ? point->secondBoundaryConds()->corrPoint : point->corrPoint()) : idx_W;
+                idx_N = isNorthBoundary? corrCache_[i] : idx_N;
+                idx_S = isSouthBoundary? corrCache_[i] : idx_S;
+                idx_E = isEastBoundary? (secondaryEastBound ? secondBoundaryCache_[i]->corrPoint : corrCache_[i]) : idx_E;
+                idx_W = isWestBoundary? (secondaryEastBound ? secondBoundaryCache_[i]->corrPoint : corrCache_[i]) : idx_W;
             }
             //When you declare these vars (inside or outside loop) has 0 impact)
             //takes ~ 6 out of 18 ns on background var calcs
