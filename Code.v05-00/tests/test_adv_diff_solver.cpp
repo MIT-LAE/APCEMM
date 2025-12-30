@@ -159,7 +159,7 @@ namespace FVM_ANDS{
         solver.buildCoeffMatrix();
     
         auto mat = solver.coefMatrix();
-        const std::vector<std::unique_ptr<Point>>&  points = solver.points();
+        const std::vector<Point>&  points = solver.points();
         
         SECTION("Basic Sanity Checks"){
             REQUIRE(mat.cols() == 26);
@@ -168,8 +168,8 @@ namespace FVM_ANDS{
             int numGhost = 0;
             int numBound = 0;
             for(int i = 0; i < 26; i++){
-                if(points[i]->isGhost()) {numGhost++;}
-                else if (points[i]->bcType() != BoundaryConditionFlag::INTERIOR) numBound++;
+                if(points[i].isGhost()) {numGhost++;}
+                else if (points[i].bcType() != BoundaryConditionFlag::INTERIOR) numBound++;
             }
             REQUIRE(numGhost == 14);
             REQUIRE(numBound == 10);

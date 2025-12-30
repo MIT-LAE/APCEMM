@@ -114,8 +114,8 @@ class LAGRIDPlumeModel {
             const std::vector<std::vector<int>>& mask, 
             Vector_1D& xEdgesNew, 
             Vector_1D& yEdgesNew, 
-            Vector_1D& xCoordsNew, V
-            ector_1D& yCoordsNew
+            Vector_1D& xCoordsNew, 
+            Vector_1D& yCoordsNew
         );
         Vector_2D applyWeights(
             const Eigen::SparseMatrix<double>& weights, 

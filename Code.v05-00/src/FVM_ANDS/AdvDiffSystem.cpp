@@ -544,11 +544,16 @@ namespace FVM_ANDS{
                 FaceDirection direction = directionCache_[i];
                 isNorthBoundary = direction == FaceDirection::NORTH;
                 isSouthBoundary = direction == FaceDirection::SOUTH;
-                
+
+                bool secondaryWestBound = false;
+                bool secondaryEastBound = false;
+
+                std::optional<BoundaryCondDescription> secondBC = secondBoundaryCache_[i];
+
                 //Corner cases...
-                if (secondBoundaryCache_[i]) {
-                    bool secondaryWestBound = (secondBoundaryCache_[i]->direction == FaceDirection::WEST);
-                    bool secondaryEastBound = (secondBoundaryCache_[i]->direction == FaceDirection::EAST);
+                if (secondBC) {
+                    secondaryWestBound = (secondBC->direction == FaceDirection::WEST);
+                    secondaryEastBound = (secondBC->direction == FaceDirection::EAST);
                 }
 
                 isWestBoundary = (direction == FaceDirection::WEST || secondaryWestBound);
@@ -557,8 +562,17 @@ namespace FVM_ANDS{
                 //only call this lookup function on boundary nodes which are inconsequential in number
                 idx_N = isNorthBoundary? corrCache_[i] : idx_N;
                 idx_S = isSouthBoundary? corrCache_[i] : idx_S;
-                idx_E = isEastBoundary? (secondaryEastBound ? secondBoundaryCache_[i]->corrPoint : corrCache_[i]) : idx_E;
-                idx_W = isWestBoundary? (secondaryEastBound ? secondBoundaryCache_[i]->corrPoint : corrCache_[i]) : idx_W;
+                if (isEastBoundary && secondaryEastBound && secondBC) {
+                    idx_E = secondBC->corrPoint;
+                } else if (isEastBoundary) {
+                    idx_E = corrCache_[i];
+                }
+
+                if (isWestBoundary && secondaryWestBound && secondBC) {
+                    idx_W = secondBC->corrPoint;
+                } else if (isWestBoundary) {
+                    idx_W = corrCache_[i];
+                }
             }
             //When you declare these vars (inside or outside loop) has 0 impact)
             //takes ~ 6 out of 18 ns on background var calcs

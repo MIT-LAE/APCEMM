@@ -44,7 +44,7 @@ namespace FVM_ANDS{
             inline virtual void setBCType(BoundaryConditionFlag bcType){
                 bc_.bcType = bcType;
             }
-            constexpr virtual bool isGhost(){
+            constexpr virtual bool isGhost() const {
                 return false;
             }
             inline virtual void setSecondaryBC(BoundaryCondDescription bc)  {
@@ -60,7 +60,7 @@ namespace FVM_ANDS{
         public:
             GhostPoint() = delete;
             GhostPoint(BoundaryCondDescription bc);
-            constexpr bool isGhost() override {
+            constexpr bool isGhost() const override {
                 return true;
             }
             inline void setBCType(BoundaryConditionFlag bcType) override {
