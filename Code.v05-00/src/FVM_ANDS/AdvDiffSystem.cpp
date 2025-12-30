@@ -546,8 +546,10 @@ namespace FVM_ANDS{
                 isSouthBoundary = direction == FaceDirection::SOUTH;
                 
                 //Corner cases...
-                bool secondaryWestBound = (secondBoundaryCache_[i].direction == FaceDirection::WEST);
-                bool secondaryEastBound = (secondBoundaryCache_[i].direction == FaceDirection::EAST);
+                if (secondBoundaryCache_[i]) {
+                    bool secondaryWestBound = (secondBoundaryCache_[i]->direction == FaceDirection::WEST);
+                    bool secondaryEastBound = (secondBoundaryCache_[i]->direction == FaceDirection::EAST);
+                }
 
                 isWestBoundary = (direction == FaceDirection::WEST || secondaryWestBound);
                 isEastBoundary = (direction == FaceDirection::EAST || secondaryEastBound);
@@ -555,8 +557,8 @@ namespace FVM_ANDS{
                 //only call this lookup function on boundary nodes which are inconsequential in number
                 idx_N = isNorthBoundary? corrCache_[i] : idx_N;
                 idx_S = isSouthBoundary? corrCache_[i] : idx_S;
-                idx_E = isEastBoundary? (secondaryEastBound ? secondBoundaryCache_[i].corrPoint : corrCache_[i]) : idx_E;
-                idx_W = isWestBoundary? (secondaryEastBound ? secondBoundaryCache_[i].corrPoint : corrCache_[i]) : idx_W;
+                idx_E = isEastBoundary? (secondaryEastBound ? secondBoundaryCache_[i]->corrPoint : corrCache_[i]) : idx_E;
+                idx_W = isWestBoundary? (secondaryEastBound ? secondBoundaryCache_[i]->corrPoint : corrCache_[i]) : idx_W;
             }
             //When you declare these vars (inside or outside loop) has 0 impact)
             //takes ~ 6 out of 18 ns on background var calcs

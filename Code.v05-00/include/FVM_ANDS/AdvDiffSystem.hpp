@@ -323,14 +323,14 @@ namespace FVM_ANDS{
                 return std::max(0.0, std::min(r, 1.0));
             }
             inline int neighbor_point(FaceDirection direction, int pointID) const noexcept{
-                Point* point = points_[pointID];
-                if(point->bcType() == BoundaryConditionFlag::INTERIOR) return neighbor_point_interior(direction, pointID);
+                Point point = points_[pointID];
+                if(point.bcType() == BoundaryConditionFlag::INTERIOR) return neighbor_point_interior(direction, pointID);
                 
-                if(point->bcDirection() == direction){
+                if(point.bcDirection() == direction){
                     return point->corrPoint();
                 }
-                else if (point->secondBoundaryConds() && point->secondBoundaryConds().value().direction == direction){
-                    return point->secondBoundaryConds().value().corrPoint;
+                else if (point.secondBoundaryConds() && point.secondBoundaryConds().value().direction == direction){
+                    return point.secondBoundaryConds().value().corrPoint;
                 }
                 return neighbor_point_interior(direction, pointID);        
             }
