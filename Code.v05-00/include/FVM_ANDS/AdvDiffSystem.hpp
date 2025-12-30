@@ -6,9 +6,9 @@
 #include "FVM_ANDS_HelperFunctions.hpp"
 #include <memory>
 #include <variant>
-using PointVariant = std::variant<InteriorPoint, IntBoundPoint, GhostPoint>;
 
 namespace FVM_ANDS{
+    using PointVariant = std::variant<IntBoundPoint, GhostPoint>;
 
     // Separate the SOR solver for testing without having to build an AdvDiffSystem object
     void sor_solve(const Eigen::SparseMatrix<double, Eigen::RowMajor> &A, const Eigen::VectorXd &rhs, Eigen::VectorXd &phi, double omega = 1.0, double threshold = 1e-3, int n_iters = 3);
@@ -150,7 +150,7 @@ namespace FVM_ANDS{
             std::vector<Point> points_;
             std::vector<BoundaryConditionFlag> bcCache_;  // Cache bcType()
             std::vector<FaceDirection> directionCache_;   // Cache bcDirection()
-            std::vector<std::optional<BoundaryCondDescription>> secondBounaryCache_;    // Cache secondBoundaryConds()
+            std::vector<std::optional<BoundaryCondDescription>> secondBoundaryCache_;    // Cache secondBoundaryConds()
             std::vector<int> corrCache_;   // Cache corrPoint()
             Eigen::SparseMatrix<double, Eigen::RowMajor> totalCoefMatrix_;
             Eigen::VectorXd rhs_;
@@ -323,7 +323,7 @@ namespace FVM_ANDS{
                 return std::max(0.0, std::min(r, 1.0));
             }
             inline int neighbor_point(FaceDirection direction, int pointID) const noexcept{
-                Point* point = points_[pointID].get();
+                Point* point = points_[pointID];
                 if(point->bcType() == BoundaryConditionFlag::INTERIOR) return neighbor_point_interior(direction, pointID);
                 
                 if(point->bcDirection() == direction){
