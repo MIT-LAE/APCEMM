@@ -327,7 +327,7 @@ namespace FVM_ANDS{
                 if(point.bcType() == BoundaryConditionFlag::INTERIOR) return neighbor_point_interior(direction, pointID);
                 
                 if(point.bcDirection() == direction){
-                    return point->corrPoint();
+                    return point.corrPoint();
                 }
                 else if (point.secondBoundaryConds() && point.secondBoundaryConds().value().direction == direction){
                     return point.secondBoundaryConds().value().corrPoint;
