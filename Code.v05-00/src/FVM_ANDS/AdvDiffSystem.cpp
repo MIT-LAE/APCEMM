@@ -37,8 +37,8 @@ namespace FVM_ANDS{
         Dv_vec_.resize(nInteriorPoints_);
         rhs_.resize(nTotalPoints_);
         phi_.resize(nTotalPoints_);
-        points_.resize(nTotalPoints_);
         bcCache_.resize(nTotalPoints_);
+        valCache_.resize(nTotalPoints_);
         directionCache_.resize(nTotalPoints_);
         secondBoundaryCache_.resize(nTotalPoints_);
         corrCache_.resize(nTotalPoints_);
@@ -49,17 +49,19 @@ namespace FVM_ANDS{
         std::generate_n(std::back_inserter(points_), nTotalPoints_, [] { 
             return Point();  // Construct directly in vector
         });
-        for (size_t i = 0; i < points_.size(); ++i) {
-            bcCache_[i] = points_[i].bcType();
-            directionCache_[i] = points_[i].bcDirection();
-            secondBoundaryCache_[i] = points_[i].secondBoundaryConds();
-            corrCache_[i] = points_[i].corrPoint();
-        }
         totalCoefMatrix_.resize(nTotalPoints_, nTotalPoints_);
-
         updateDiffusion(params.Dh, params.Dv);
         initVelocVecs();
         buildPointList();
+        for (size_t i = 0; i < points_.size(); ++i) {
+            std::visit([&](const auto& point) {
+                bcCache_[i] = point.bcType();
+                valCache_[i] = point.bcVal();
+                directionCache_[i] = point.bcDirection();
+                secondBoundaryCache_[i] = point.secondBoundaryConds();
+                corrCache_[i] = point.corrPoint();
+            }, points_[i]);
+        }
         applyBoundaryCondition();
     }
 
@@ -175,14 +177,15 @@ namespace FVM_ANDS{
         std::vector<Eigen::Triplet<double>> tripletList;
         auto start = std::chrono::high_resolution_clock::now();
         for(int i = 0; i < nTotalPoints_; i++){
+            bool isGhost = std::visit([](const auto& p) { return p.isGhost(); }, points_[i]);
 
-            if(points_[i].isGhost()){
-                switch(points_[i].bcType()){
+            if(isGhost){
+                switch(bcCache_[i]){
                     case BoundaryConditionFlag::DIRICHLET_GHOSTPOINT:{
                         // (phi_int + phi_ghost) / 2 = phi_boundary
                         // if inhomog, the bc value will appear in the rhs.
                         tripletList.emplace_back(i, i, 0.5);
-                        tripletList.emplace_back(i, points_[i].corrPoint(), 0.5);
+                        tripletList.emplace_back(i, corrCache_[i], 0.5);
                         break;
                     }
                     case BoundaryConditionFlag::PERIODIC_GHOSTPOINT:{
@@ -233,16 +236,19 @@ namespace FVM_ANDS{
         //Therefore, that term goes to the RHS and the contribution of that face to the coeffs goes to 0.
 
         bool isNorthBoundary = 0, isWestBoundary = 0, isEastBoundary = 0, isSouthBoundary = 0;
-        if(points_[i].bcType() != BoundaryConditionFlag::INTERIOR){
-            isNorthBoundary = points_[i].bcDirection() == FaceDirection::NORTH;
-            isSouthBoundary = points_[i].bcDirection() == FaceDirection::SOUTH;
+        if(bcCache_[i] != BoundaryConditionFlag::INTERIOR){
+            isNorthBoundary = directionCache_[i] == FaceDirection::NORTH;
+            isSouthBoundary = directionCache_[i] == FaceDirection::SOUTH;
 
             //Corner cases...
-            bool secondaryWestBound = (points_[i].secondBoundaryConds() && points_[i].secondBoundaryConds().value().direction == FaceDirection::WEST);
-            bool secondaryEastBound = (points_[i].secondBoundaryConds() && points_[i].secondBoundaryConds().value().direction == FaceDirection::EAST);
+            auto secondBC = secondBoundaryCache_[i];
+            bool secondaryWestBound = (secondBC && secondBC->direction == FaceDirection::WEST);
+            bool secondaryEastBound = (secondBC && secondBC->direction == FaceDirection::EAST);
+            // bool secondaryWestBound = (points_[i].secondBoundaryConds() && points_[i].secondBoundaryConds().value().direction == FaceDirection::WEST);
+            // bool secondaryEastBound = (points_[i].secondBoundaryConds() && points_[i].secondBoundaryConds().value().direction == FaceDirection::EAST);
 
-            isWestBoundary = (points_[i].bcDirection() == FaceDirection::WEST || secondaryWestBound);
-            isEastBoundary = (points_[i].bcDirection() == FaceDirection::EAST || secondaryEastBound);
+            isWestBoundary = (directionCache_[i] == FaceDirection::WEST || secondaryWestBound);
+            isEastBoundary = (directionCache_[i] == FaceDirection::EAST || secondaryEastBound);
         }
 
         int idx_E = neighbor_point(FaceDirection::EAST, i);
@@ -290,11 +296,12 @@ namespace FVM_ANDS{
 
     const Eigen::VectorXd& AdvDiffSystem::calcRHS(){
         for(int i = 0; i < nTotalPoints_; i++){
-            if(points_[i].isGhost()){
-                switch(points_[i].bcType()){
+            bool isGhost = std::visit([](const auto& p) { return p.isGhost(); }, points_[i]);
+            if(isGhost){
+                switch(bcCache_[i]){
                     case BoundaryConditionFlag::DIRICHLET_GHOSTPOINT:{
                         // Equation: (phi_int + phi_ghost) / 2 = phi_boundary
-                        rhs_[i] = points_[i].bcVal();
+                        rhs_[i] = valCache_[i];
                         break;
                     }
                     case BoundaryConditionFlag::PERIODIC_GHOSTPOINT:{
@@ -310,31 +317,32 @@ namespace FVM_ANDS{
                 continue;
             }
 
-            switch(points_[i].bcType()){
+            switch(bcCache_[i]){
                 case BoundaryConditionFlag::INTERIOR:{
                     rhs_[i] = phi_[i] + deferredCorr_[i] + source_[i]*dt_;
                     break;
                 }
                 case BoundaryConditionFlag::DIRICHLET_INT_BPOINT:{
                     rhs_[i] = phi_[i] + deferredCorr_[i] + source_[i]*dt_;
-                    switch(points_[i].bcDirection()){
+                    switch(directionCache_[i]){
                         case FaceDirection::NORTH:
-                            rhs_[i] -= v_vec_[i] * dt_ / dy_ * points_[i].bcVal();
+                            rhs_[i] -= v_vec_[i] * dt_ / dy_ * valCache_[i];
                             break;
                         case FaceDirection::SOUTH:
-                            rhs_[i] += v_vec_[i] * dt_ / dy_ * points_[i].bcVal();
+                            rhs_[i] += v_vec_[i] * dt_ / dy_ * valCache_[i];
                             break;
                         case FaceDirection::EAST:
-                            rhs_[i] -= u_vec_[i] * dt_ / dx_ * points_[i].bcVal();
+                            rhs_[i] -= u_vec_[i] * dt_ / dx_ * valCache_[i];
                             break;
                         case FaceDirection::WEST:
-                            rhs_[i] += u_vec_[i] * dt_ / dx_ * points_[i].bcVal();
+                            rhs_[i] += u_vec_[i] * dt_ / dx_ * valCache_[i];
                             break;
                         case FaceDirection::ERROR:
                             throw std::runtime_error("Invalid FaceDirection in Dirichlet boundary condition");
                     }
-                    if (!points_[i].secondBoundaryConds()) break;
-                    BoundaryCondDescription bc_2 = points_[i].secondBoundaryConds().value();
+                    auto secondBC = secondBoundaryCache_[i];
+                    if (!secondBC) break;
+                    BoundaryCondDescription bc_2 = *secondBC;
                     switch(bc_2.direction){
                         case FaceDirection::EAST:
                             rhs_[i] -= u_vec_[i] * dt_ / dx_ * bc_2.bcVal;
@@ -367,8 +375,8 @@ namespace FVM_ANDS{
             int bPointID_top = twoDIdx_to_vecIdx(i, ny_ - 1, nx_, ny_, format_);
             switch(bcType_top_){
                 case BoundaryConditionFlag::DIRICHLET_INT_BPOINT: {
-                    int ghostPointID = points_[bPointID_top].corrPoint();
-                    phi_[ghostPointID] = 2 * points_[bPointID_top].bcVal() - phi_[bPointID_top];
+                    int ghostPointID = corrCache_[bPointID_top];
+                    phi_[ghostPointID] = 2 * valCache_[bPointID_top] - phi_[bPointID_top];
                     break;
                 }
                 default: {
@@ -380,8 +388,8 @@ namespace FVM_ANDS{
             int bPointID_bot = twoDIdx_to_vecIdx(i, 0, nx_, ny_, format_);
             switch(bcType_bot_){
                 case BoundaryConditionFlag::DIRICHLET_INT_BPOINT: {
-                    int ghostPointID = points_[bPointID_bot].corrPoint();
-                    phi_[ghostPointID] = 2 * points_[bPointID_bot].bcVal() - phi_[bPointID_bot];
+                    int ghostPointID = corrCache_[bPointID_bot];
+                    phi_[ghostPointID] = 2 * valCache_[bPointID_bot] - phi_[bPointID_bot];
                     break;
                 }
                 default: {
@@ -395,8 +403,10 @@ namespace FVM_ANDS{
             //corner cases
             if(j == 0 || j == ny_ - 1){
                 int bPointID_cornerLeft = twoDIdx_to_vecIdx(0, j, nx_, ny_, format_);
-                int ghostPointID = points_[bPointID_cornerLeft].secondBoundaryConds().value().corrPoint;
-                double bcVal =  points_[bPointID_cornerLeft].secondBoundaryConds().value().bcVal;
+                auto secondBC_left = secondBoundaryCache_[bPointID_cornerLeft];
+                int ghostPointID = secondBoundaryCache_[bPointID_cornerLeft].value().corrPoint;
+                double bcVal = secondBoundaryCache_[bPointID_cornerLeft].value().bcVal;
+
                 switch(bcType_left_){
                     case BoundaryConditionFlag::DIRICHLET_INT_BPOINT: {
                         phi_[ghostPointID] = 2 * bcVal - phi_[bPointID_cornerLeft];
@@ -408,8 +418,9 @@ namespace FVM_ANDS{
                 }
 
                 int bPointID_cornerRight = twoDIdx_to_vecIdx(nx_ - 1, j, nx_, ny_, format_);
-                ghostPointID = points_[bPointID_cornerRight].secondBoundaryConds().value().corrPoint;
-                bcVal = points_[bPointID_cornerRight].secondBoundaryConds().value().bcVal;
+                auto secondBC_right = secondBoundaryCache_[bPointID_cornerRight];
+                ghostPointID = secondBoundaryCache_[bPointID_cornerRight].value().corrPoint;
+                bcVal = secondBoundaryCache_[bPointID_cornerRight].value().bcVal;
 
                 switch(bcType_right_){
                     case BoundaryConditionFlag::DIRICHLET_INT_BPOINT: {
@@ -426,8 +437,8 @@ namespace FVM_ANDS{
             int bPointID_left = twoDIdx_to_vecIdx(0, j, nx_, ny_, format_);
             switch(bcType_left_){
                 case BoundaryConditionFlag::DIRICHLET_INT_BPOINT: {
-                    int ghostPointID = points_[bPointID_left].corrPoint();
-                    phi_[ghostPointID] = 2 * points_[bPointID_left].bcVal() - phi_[bPointID_left];
+                    int ghostPointID = corrCache_[bPointID_left];
+                    phi_[ghostPointID] = 2 * valCache_[bPointID_left] - phi_[bPointID_left];
                     break;
                 }
                 default: {
@@ -438,8 +449,8 @@ namespace FVM_ANDS{
             int bPointID_right = twoDIdx_to_vecIdx(nx_ - 1, j, nx_, ny_, format_);
             switch(bcType_right_){
                 case BoundaryConditionFlag::DIRICHLET_INT_BPOINT: {
-                    int ghostPointID = points_[bPointID_right].corrPoint();
-                    phi_[ghostPointID] = 2 * points_[bPointID_right].bcVal() - phi_[bPointID_right];
+                    int ghostPointID = corrCache_[bPointID_right];
+                    phi_[ghostPointID] = 2 * valCache_[bPointID_right] - phi_[bPointID_right];
                     break;
                 }
                 default: {
@@ -463,54 +474,80 @@ namespace FVM_ANDS{
         int currIdx = nInteriorPoints_;
         //top
         for(int i = 0; i < nx_; i++){
-            int corrPointID = points_[currIdx].corrPoint();
-            points_[currIdx].setBCType(bcType_top_); 
-            points_[currIdx].setBCVal(bcVals_top_[i]); 
-            points_[corrPointID].setBCType(bcType_top_); 
-            points_[corrPointID].setBCVal(bcVals_top_[i]); 
+            int corrPointID = corrCache_[currIdx];
+            visitPoint(currIdx, [&](auto& point) {
+                point.setBCType(bcType_top_);
+                point.setBCVal(bcVals_top_[i]);
+            });
+            visitPoint(corrPointID, [&](auto& point) {
+                point.setBCType(bcType_top_);
+                point.setBCVal(bcVals_top_[i]);
+            });
             currIdx++;
         }
         //left
         for(int i = 0; i < ny_; i++){
-            int corrPointID = points_[currIdx].corrPoint();
+            int corrPointID = corrCache_[currIdx];
             if(i == 0 || i == ny_ - 1){
-                points_[currIdx].setBCType(bcType_left_); 
-                points_[currIdx].setBCVal(bcVals_left_[i]);
+                visitPoint(currIdx, [&](auto& point) {
+                    point.setBCType(bcType_left_);
+                    point.setBCVal(bcVals_left_[i]);
+                });
+                
                 BoundaryCondDescription bc(bcType_left_, FaceDirection::WEST, bcVals_left_[i], currIdx);
-                points_[corrPointID].setSecondaryBC(bc);
+                visitPoint(corrPointID, [&](auto& point) {
+                    point.setSecondaryBC(bc);
+                });
                 currIdx++;
                 continue;
             }
-            points_[currIdx].setBCType(bcType_left_); 
-            points_[currIdx].setBCVal(bcVals_left_[i]); 
-            points_[corrPointID].setBCType(bcType_left_); 
-            points_[corrPointID].setBCVal(bcVals_left_[i]);
+            visitPoint(currIdx, [&](auto& point) {
+                point.setBCType(bcType_left_);
+                point.setBCVal(bcVals_left_[i]);
+            });
+            visitPoint(corrPointID, [&](auto& point) {
+                point.setBCType(bcType_left_);
+                point.setBCVal(bcVals_left_[i]);
+            });
             currIdx++;
         }
         //right
         for(int i = 0; i < ny_; i++){
-            int corrPointID = points_[currIdx].corrPoint();
+            int corrPointID = corrCache_[currIdx];
             if(i == 0 || i == ny_ - 1){
-                points_[currIdx].setBCType(bcType_right_); 
-                points_[currIdx].setBCVal(bcVals_right_[i]);
+                visitPoint(currIdx, [&](auto& point) {
+                    point.setBCType(bcType_right_);
+                    point.setBCVal(bcVals_right_[i]);
+                });
+
                 BoundaryCondDescription bc(bcType_right_, FaceDirection::EAST, bcVals_right_[i], currIdx);
-                points_[corrPointID].setSecondaryBC(bc);
+                visitPoint(corrPointID, [&](auto& point) {
+                    point.setSecondaryBC(bc);
+                });
                 currIdx++;
                 continue;
             }
-            points_[currIdx].setBCType(bcType_right_); 
-            points_[currIdx].setBCVal(bcVals_right_[i]); 
-            points_[corrPointID].setBCType(bcType_right_); 
-            points_[corrPointID].setBCVal(bcVals_right_[i]);
+            visitPoint(currIdx, [&](auto& point) {
+                point.setBCType(bcType_right_);
+                point.setBCVal(bcVals_right_[i]);
+            });
+            visitPoint(corrPointID, [&](auto& point) {
+                point.setBCType(bcType_right_);
+                point.setBCVal(bcVals_right_[i]);
+            });
             currIdx++;
         }
         //bot
         for(int i = 0; i < nx_; i++){
-            int corrPointID = points_[currIdx].corrPoint();
-            points_[currIdx].setBCType(bcType_bot_); 
-            points_[currIdx].setBCVal(bcVals_bot_[i]); 
-            points_[corrPointID].setBCType(bcType_bot_); 
-            points_[corrPointID].setBCVal(bcVals_bot_[i]); 
+            int corrPointID = corrCache_[currIdx];
+            visitPoint(currIdx, [&](auto& point) {
+                point.setBCType(bcType_bot_);
+                point.setBCVal(bcVals_bot_[i]);
+            });
+            visitPoint(corrPointID, [&](auto& point) {
+                point.setBCType(bcType_bot_);
+                point.setBCVal(bcVals_bot_[i]);
+            });
             currIdx++;
         }
         applyBoundaryCondition(); //need this to calculate minmod function at some timestep.
@@ -567,8 +604,8 @@ namespace FVM_ANDS{
                 } else if (isEastBoundary) {
                     idx_E = corrCache_[i];
                 }
-
-                if (isWestBoundary && secondaryWestBound && secondBC) {
+                
+                if (isWestBoundary && secondaryEastBound && secondBC) {
                     idx_W = secondBC->corrPoint;
                 } else if (isWestBoundary) {
                     idx_W = corrCache_[i];
@@ -603,7 +640,7 @@ namespace FVM_ANDS{
             //Using only first order upwind can result in a ~40% speedup of the total advection calc.
             //So... there is significantly more cost from actually doing the calculation than from branching.
             if(isNorthBoundary){
-                phi_N = points_[i].bcVal();
+                phi_N = valCache_[i];
             }
             else if (v_local >= 0){
                 phi_N = phi_[i] + 0.5 * minmod_N_vPos(i) * (phi_[idx_N] - phi_[i]);
@@ -612,7 +649,7 @@ namespace FVM_ANDS{
                 phi_N = phi_[idx_N] + 0.5 * minmod_N_vNeg(i) * (phi_[i] - phi_[idx_N]);
             }
             if(isSouthBoundary){
-                phi_S = points_[i].bcVal();
+                phi_S = valCache_[i];
             }
             else if (v_local >= 0){
                 phi_S = phi_[idx_S] +  0.5 * minmod_S_vPos(i) * (phi_[i] - phi_[idx_S]);
@@ -622,9 +659,14 @@ namespace FVM_ANDS{
             }
 
             if(isWestBoundary){
-                phi_W = secondaryWestBound ? points_[i].secondBoundaryConds().value().bcVal : points_[i].bcVal();
+                phi_W = secondaryWestBound ? secondBoundaryCache_[i].value().bcVal : valCache_[i];
             }
             else if (u_local >= 0){
+                // if (idx_W < 0) {
+                //     printf("BUG at i=%d: idx_W=%d, isWestBoundary=%d, secondaryWestBound=%d, secondaryEastBound=%d, direction=%d\n",
+                //         i, idx_W, isWestBoundary, secondaryWestBound, secondaryEastBound, (int)directionCache_[i]);
+                //     continue;
+                // }
                 phi_W = phi_[idx_W] + 0.5 * minmod_W_vPos(i) * (phi_[i] - phi_[idx_W]);
             }
             else {
@@ -632,7 +674,7 @@ namespace FVM_ANDS{
             }
 
             if(isEastBoundary){
-                phi_E = secondaryEastBound ? points_[i].secondBoundaryConds().value().bcVal : points_[i].bcVal();
+                phi_E = phi_E = secondaryEastBound ? secondBoundaryCache_[i].value().bcVal : valCache_[i];
             }
             else if (u_local >= 0){
                 phi_E = phi_[i] + 0.5 * minmod_E_vPos(i) * (phi_[idx_E] - phi_[i]);

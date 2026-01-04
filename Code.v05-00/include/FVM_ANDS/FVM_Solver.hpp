@@ -53,7 +53,7 @@ namespace FVM_ANDS{
             inline const Eigen::SparseMatrix<double, Eigen::RowMajor>& coefMatrix(){
                 return advDiffSys_.getCoefMatrix();
             }
-            inline const std::vector<Point>& points(){
+            inline const std::vector<PointVariant>& points(){
                 return advDiffSys_.points();
             }
             const Eigen::VectorXd& calcRHS(){

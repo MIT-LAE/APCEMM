@@ -383,7 +383,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     const FVM_ANDS::BoundaryConditions ZERO_BC_INIT = FVM_ANDS::bcFrom2DVector(iceAerosol_.getPDF()[0], true);
     updateDiffVecs();
     //Transport the Ice Aerosol PDF
-    #pragma omp parallel for default(shared)
+    #pragma omp single
     for ( UInt n = 0; n < iceAerosol_.getNBin(); n++ ) {
         /* Transport particle number and volume for each bin and
             * recompute centers of each bin for each grid cell
