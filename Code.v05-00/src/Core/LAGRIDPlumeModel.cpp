@@ -325,8 +325,8 @@ void LAGRIDPlumeModel::initH2O() {
     auto areas = VectorUtils::cellAreas(xEdges_, yEdges_);
     const double icemass = iceAerosol_.TotalIceMass_sum(areas);
 
-    double mass_WV = WV_exhaust_ - icemass;
-    double E_H2O = mass_WV / (MW_H2O * 1e3) * Na;
+    double mass_WV = WV_exhaust_ / 1e3 - icemass; // WV_exhaust converted from [g/m] -> [kg/m]
+    double E_H2O = mass_WV / (MW_H2O) * Na;
 
     // Spread the emitted water evenly over the cells that contain ice crystals
     auto localPlumeEmission = [&](std::size_t j, std::size_t i) -> double {
