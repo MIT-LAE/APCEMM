@@ -29,6 +29,9 @@ namespace FVM_ANDS{
             inline void updateDiffusion(const Vector_2D& Dh, const Vector_2D& Dv){
                 advDiffSys_.updateDiffusion(Dh, Dv);
             }
+            inline void updateDiffusion(const Eigen::VectorXd& Dh, const Eigen::VectorXd& Dv){
+                advDiffSys_.updateDiffusion(Dh, Dv);
+            }
             inline void updateAdvection(double u, double v, double shear){
                 advDiffSys_.updateAdvection(u, v, shear);
             }

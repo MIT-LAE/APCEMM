@@ -472,16 +472,22 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     start = std::chrono::high_resolution_clock::now();
     #endif
 
+    // Convert this once for all ~38 aerosol size bins as it reused for all of them
+    // The real solution is to use Eigen::VectorXd from the start...
+    Eigen::VectorXd H2O_eigen = FVM_ANDS::std2dVec_to_eigenVec(H2O_);
+    Eigen::VectorXd diffCoeffX_eigen = FVM_ANDS::std2dVec_to_eigenVec(diffCoeffX_);
+    Eigen::VectorXd diffCoeffY_eigen = FVM_ANDS::std2dVec_to_eigenVec(diffCoeffY_);
+
     //Transport the Ice Aerosol PDF
     #pragma omp parallel for default(shared)
     for ( UInt n = 0; n < iceAerosol_.getNBin(); n++ ) {
         /* Transport particle number and volume for each bin and
             * recompute centers of each bin for each grid cell
             * accordingly */
-        FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, FVM_ANDS::std2dVec_to_eigenVec(H2O_));
+        FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, H2O_eigen);
         //Update solver params
         solver.updateTimestep(timestep);
-        solver.updateDiffusion(diffCoeffX_, diffCoeffY_);
+        solver.updateDiffusion(diffCoeffX_eigen, diffCoeffY_eigen);
         solver.updateAdvection(0, -vFall_[n], shear_rep_);
 
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
@@ -499,7 +505,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     //Transport H2O
     {   
         //Dont use enhanced diffusion on the H2O (and zero settling velocity)
-        FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, FVM_ANDS::std2dVec_to_eigenVec(H2O_));
+        FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, H2O_eigen);
         solver.updateTimestep(timestep);
         solver.updateDiffusion(input_.horizDiff(), input_.vertiDiff());
         solver.updateAdvection(0, 0, shear_rep_);

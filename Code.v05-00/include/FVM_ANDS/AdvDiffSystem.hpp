@@ -62,6 +62,10 @@ namespace FVM_ANDS{
                 Dh_vec_ = std2dVec_to_eigenVec(Dh);
                 Dv_vec_ = std2dVec_to_eigenVec(Dv);
             }
+            inline void updateDiffusion(const Eigen::VectorXd& Dh, const Eigen::VectorXd& Dv){
+                Dh_vec_ = Dh;
+                Dv_vec_ = Dv;
+            }
             inline void updateAdvection(double u, double v, double shear){
                 u_double_ = u;
                 v_double_ = v;
