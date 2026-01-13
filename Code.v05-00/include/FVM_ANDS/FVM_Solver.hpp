@@ -6,7 +6,7 @@
 namespace FVM_ANDS{
     class FVM_Solver{
         public:
-            FVM_Solver(const AdvDiffParams& params, const Vector_1D xCoords, const Vector_1D yCoords, const BoundaryConditions& bc, const Eigen::VectorXd& phi_init, bool useDiagPreCond = false, int maxIters_ = 1000, double convergenceThres_ = 1e-5);
+            FVM_Solver(const AdvDiffParams& params, const Vector_1D& xCoords, const Vector_1D& yCoords, const BoundaryConditions& bc, const Eigen::VectorXd& phi_init, bool useDiagPreCond = false, int maxIters_ = 1000, double convergenceThres_ = 1e-5);
             const Eigen::VectorXd& solve();
             const Eigen::VectorXd& solve(const Eigen::VectorXd& source);
             const Eigen::VectorXd& explicitSolve();
