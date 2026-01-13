@@ -6,6 +6,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/submodules/vcpkg/scripts/b
 project(APCEMM)
 
 # Options
+option(ENABLE_TIMING "Enable detailed timing instrumentation" OFF)
 option(DEBUG "Enable debug mode" OFF)
 SET(RINGS 0)
 SET(OMP 1)

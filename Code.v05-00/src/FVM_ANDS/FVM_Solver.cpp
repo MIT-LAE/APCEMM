@@ -1,3 +1,6 @@
+#include <chrono>
+#include <iostream>
+#include "APCEMM.h"
 #include "FVM_ANDS/FVM_Solver.hpp"
 namespace FVM_ANDS{
     FVM_Solver::FVM_Solver(const AdvDiffParams& params, const Vector_1D xCoords, const Vector_1D yCoords, const BoundaryConditions& bc, const Eigen::VectorXd& phi_init, bool useDiagPreCond, int maxIters, double convergenceThres)
@@ -56,6 +59,11 @@ namespace FVM_ANDS{
     }
 
     const Eigen::VectorXd& FVM_Solver::operatorSplitSolve(bool parallelAdvection, double courant_max) {
+
+        #ifdef ENABLE_TIMING
+        auto opsplit_start = std::chrono::high_resolution_clock::now();
+        #endif
+
         //Strang Splitting
         //Step 1: Calculate explicit advection timestep based on CFL condition set
 
@@ -67,7 +75,10 @@ namespace FVM_ANDS{
         int n_timesteps_advection_half =  std::ceil((0.5 * dt_max) / dt_adv);
         dt_adv = (0.5 * dt_max) / n_timesteps_advection_half;
 
-        // auto start = std::chrono::high_resolution_clock::now();
+        #ifdef ENABLE_TIMING
+        std::cout << "              N Advection timesteps = 2 * " << n_timesteps_advection_half << std::endl;
+        auto start = std::chrono::high_resolution_clock::now();
+        #endif
 
         //Step 2: Solve Advection for half timestep
         advDiffSys_.updateTimestep(dt_adv);
@@ -76,17 +87,35 @@ namespace FVM_ANDS{
             advDiffSys_.applyBoundaryCondition();
         }
 
-        // auto stop = std::chrono::high_resolution_clock::now();
-        // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
-        // std::cout << "First Halfstep Advection Solve Time: " << duration.count() << std::endl;
+        #ifdef ENABLE_TIMING
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
+        std::cout << "              First Halfstep Advection Solve Time: " << duration.count() << " ms" << std::endl;
 
-        // start = std::chrono::high_resolution_clock::now();
+        start = std::chrono::high_resolution_clock::now();
+        #endif
 
         //Step 3: Implicitly solve diffusion (first to help smoothen out potential steep gradients)
         advDiffSys_.updateTimestep(dt_max);
-        //Build matrix takes ~40ms atm
         advDiffSys_.buildCoeffMatrix(operatorSplit);
+
+        #ifdef ENABLE_TIMING
+        stop = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
+        std::cout << "              Build diffusion matrix Time: " << duration.count() << " ms" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        #endif
+
         advDiffSys_.calcRHS();
+
+        #ifdef ENABLE_TIMING
+        stop = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
+        std::cout << "              Calc RHS matrix Time: " << duration.count() << " ms" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        #endif
 
         // auto mat = advDiffSys_.getCoefMatrix();
         // auto b = advDiffSys_.getRHS();
@@ -96,13 +125,16 @@ namespace FVM_ANDS{
         
         advDiffSys_.sor_solve();
 
-        // stop = std::chrono::high_resolution_clock::now();
-        // duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
-        // std::cout << "Diffusion Solve Time: " << duration.count() << std::endl;
+        #ifdef ENABLE_TIMING
+        stop = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
+        std::cout << "              Diffusion SOR Solve Time: " << duration.count() << " ms" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        #endif
 
         //Step 4: Explicitly solve advection to full timestep
 
-        // start = std::chrono::high_resolution_clock::now();
         advDiffSys_.updateTimestep(dt_adv);
         for(int i = 0; i < n_timesteps_advection_half; i++){
             advDiffSys_.updatePhi(advDiffSys_.forwardEulerAdvection(operatorSplit));
@@ -111,9 +143,14 @@ namespace FVM_ANDS{
 
         advDiffSys_.updateTimestep(dt_max);
 
-        // stop = std::chrono::high_resolution_clock::now();
-        // duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
-        // std::cout << "Advection second step Solve Time: " << duration.count() << std::endl;
+        #ifdef ENABLE_TIMING
+        stop = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
+        std::cout << "              Advection second step Solve Time: " << duration.count() << " ms" << std::endl;
+
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-opsplit_start);
+        std::cout << "          Ran operatorSplitSolve in " << duration.count() << " ms" << std::endl;
+        #endif
 
         return advDiffSys_.phi();
     }

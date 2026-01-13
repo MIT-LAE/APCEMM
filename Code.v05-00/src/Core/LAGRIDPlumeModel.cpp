@@ -1,3 +1,4 @@
+#include <chrono>
 #include <filesystem>
 #include <memory>
 #include "AIM/Settling.hpp"
@@ -91,16 +92,31 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
     SimStatus status = SimStatus::Incomplete;
     //Start time loop
     while ( timestepVars_.curr_Time_s < timestepVars_.tFinal_s ) {
+        #ifdef ENABLE_TIMING
+        auto timestep_start = std::chrono::high_resolution_clock::now();
+        #endif
+
         /* Print message */
         std::cout << "\n";
         std::cout << "\n - Time step: " << timestepVars_.nTime + 1 << " out of " << timestepVars_.timeArray.size();
         std::cout << "\n -> Solar time: " << std::fmod( timestepVars_.curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
 
         // Run Transport
-        std::cout << "Running Transport" << std::endl;
+        std::cout << "Running Transport..." << std::endl;
         bool timeForTransport = (simVars_.TRANSPORT && (timestepVars_.nTime == 0 || timestepVars_.checkTimeForTransport()));
         if (timeForTransport) {
+
+            #ifdef ENABLE_TIMING
+            auto transport_start = std::chrono::high_resolution_clock::now();
+            #endif
+
             runTransport(timestepVars_.TRANSPORT_DT);
+
+            #ifdef ENABLE_TIMING
+            auto transport_end = std::chrono::high_resolution_clock::now();
+            auto transport_duration = std::chrono::duration_cast<std::chrono::milliseconds>(transport_end - transport_start);
+            std::cout << "  Ran transport in " << transport_duration.count() << " ms" << std::endl;
+            #endif
         }
 
         /*  With LAGRID remapping every transport timestep, it fundamentally only makes physical sense to update
@@ -117,9 +133,24 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         // Run Ice Growth
         if (simVars_.ICE_GROWTH && timestepVars_.checkTimeForIceGrowth()) {
             std::cout << "Running ice growth..." << std::endl;
+
+            #ifdef ENABLE_TIMING
+            auto icegrowth_start = std::chrono::high_resolution_clock::now();
+            #endif
+
             timestepVars_.lastTimeIceGrowth = timestepVars_.curr_Time_s + timestepVars_.dt;
             iceAerosol_.Grow( timestepVars_.ICE_GROWTH_DT, H2O_, met_.Temp(), met_.Press());
+
+            #ifdef ENABLE_TIMING
+            auto icegrowth_end = std::chrono::high_resolution_clock::now();
+            auto icegrowth_duration = std::chrono::duration_cast<std::chrono::milliseconds>(icegrowth_end - icegrowth_start);
+            std::cout << "  Ran ice growth in " << icegrowth_duration.count() << " ms" << std::endl;
+            #endif
         }
+
+        #ifdef ENABLE_TIMING
+        auto tracer_start = std::chrono::high_resolution_clock::now();
+        #endif
 
         // Update the tracer of contrail influence to include all locations where we have ice
         // Set it to 1 when there's at least 1 particle per m3 
@@ -129,6 +160,14 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
                 Contrail_[j][i] = std::max(0.0,std::min(1.0,Contrail_[j][i] + number[j][i]*1.0e6));
             }
         }
+
+        #ifdef ENABLE_TIMING
+        auto tracer_end = std::chrono::high_resolution_clock::now();
+        auto tracer_duration = std::chrono::duration_cast<std::chrono::milliseconds>(tracer_end - tracer_start);
+        std::cout << "  Ran tracer update in " << tracer_duration.count() << " ms" << std::endl;
+
+        auto met_update_start = std::chrono::high_resolution_clock::now();
+        #endif
 
         // Create the mask of cells to retain, and terminate if none left
         auto dataMask = ContrailMask(0.90);
@@ -171,6 +210,15 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         // update altitudeInit_ and altitudeEdgesInit_ (pressureInit_ unchanged)
         std::cout << "Updating Met..." << std::endl;
         met_.Update( timestepVars_.TRANSPORT_DT, solarTime_h_, simTime_h_);
+
+
+        #ifdef ENABLE_TIMING
+        auto met_update_end = std::chrono::high_resolution_clock::now();
+        auto met_update_duration = std::chrono::duration_cast<std::chrono::milliseconds>(met_update_end - met_update_start);
+        std::cout << "  Ran met update in " << met_update_duration.count() << " ms" << std::endl;
+
+        auto regrid_start = std::chrono::high_resolution_clock::now();
+        #endif
         
         // Determine the altitude of each pressure edge after vertical advection and the 
         // application of new temperatures
@@ -184,6 +232,12 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         std::cout << "Remapping... " << std::endl;
         remapAllVars(timestepVars_.TRANSPORT_DT, mask, maskInfo);
 
+        #ifdef ENABLE_TIMING
+        auto regrid_end = std::chrono::high_resolution_clock::now();
+        auto regrid_duration = std::chrono::duration_cast<std::chrono::milliseconds>(regrid_end - regrid_start);
+        std::cout << "  Ran remapping in " << regrid_duration.count() << " ms" << std::endl;
+        #endif
+
         Vector_2D areas = VectorUtils::cellAreas(xEdges_, yEdges_);
         double numparts = iceAerosol_.TotalNumber_sum(areas);
         std::cout << "Num Particles: " << numparts << std::endl;
@@ -196,8 +250,22 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         // Advance time
         timestepVars_.curr_Time_s += timestepVars_.dt;
         timestepVars_.nTime++;
-        // Save data to file if it is time to do so
+
+        #ifdef ENABLE_TIMING
+        auto save_start = std::chrono::high_resolution_clock::now();
+        #endif
+
         saveTSAerosol();
+
+        #ifdef ENABLE_TIMING
+        auto save_end = std::chrono::high_resolution_clock::now();
+        auto save_duration = std::chrono::duration_cast<std::chrono::milliseconds>(save_end - save_start);
+        std::cout << "  Ran save in " << save_duration.count() << " ms" << std::endl;
+
+        auto timestep_end = std::chrono::high_resolution_clock::now();
+        auto timestep_duration = std::chrono::duration_cast<std::chrono::milliseconds>(timestep_end - timestep_start);
+        std::cout << "Ran timestep in " << timestep_duration.count() << " ms" << std::endl;
+        #endif
 
         if(EARLY_STOP) {
             status = SimStatus::Complete;
@@ -368,6 +436,10 @@ void LAGRIDPlumeModel::updateDiffVecs() {
     }
 }
 void LAGRIDPlumeModel::runTransport(double timestep) {
+
+    #ifdef ENABLE_TIMING
+    auto start = std::chrono::high_resolution_clock::now();
+    #endif
     //Update the zero bc to reflect grid size changes
     auto ZERO_BC = FVM_ANDS::bcFrom2DVector(iceAerosol_.getPDF()[0], true);
 
@@ -381,7 +453,25 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
 
     const FVM_ANDS::AdvDiffParams fvmSolverInitParams(0, 0, shear_rep_, input_.horizDiff(), input_.vertiDiff(), timestepVars_.TRANSPORT_DT);
     const FVM_ANDS::BoundaryConditions ZERO_BC_INIT = FVM_ANDS::bcFrom2DVector(iceAerosol_.getPDF()[0], true);
+
+    #ifdef ENABLE_TIMING
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "      Initialized transport in " << duration.count() << " ms" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    #endif
+
     updateDiffVecs();
+
+    #ifdef ENABLE_TIMING
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "      Updated DiffVecs in " << duration.count() << " ms" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    #endif
+
     //Transport the Ice Aerosol PDF
     #pragma omp parallel for default(shared)
     for ( UInt n = 0; n < iceAerosol_.getNBin(); n++ ) {
@@ -397,6 +487,14 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
         solver.operatorSplitSolve2DVec(iceAerosol_.getPDF()[n], ZERO_BC, false);
     }
+
+    #ifdef ENABLE_TIMING
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "      Ran ice aerosol transport in " << duration.count() << " ms" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    #endif
 
     //Transport H2O
     {   
@@ -426,6 +524,14 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         }
     }
 
+    #ifdef ENABLE_TIMING
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "      Ran H2O transport in " << duration.count() << " ms" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    #endif
+
     //Transport the contrail tracer
     {   
         //Identical settings to H2O
@@ -436,6 +542,12 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
 
         solver.operatorSplitSolve2DVec(Contrail_, ZERO_BC);
     }
+
+    #ifdef ENABLE_TIMING
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "      Ran contrail tracer transport in " << duration.count() << " ms" << std::endl;
+    #endif
 }
 
 std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> LAGRIDPlumeModel::remapVariable(const VectorUtils::MaskInfo& maskInfo, const BufferInfo& buffers, const Vector_2D& phi, const std::vector<std::vector<int>>& mask) {
