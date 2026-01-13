@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+#include <stdexcept>
 #include "APCEMM.h"
 #include "FVM_ANDS/FVM_Solver.hpp"
 namespace FVM_ANDS{
@@ -97,7 +98,17 @@ namespace FVM_ANDS{
 
         //Step 3: Implicitly solve diffusion (first to help smoothen out potential steep gradients)
         advDiffSys_.updateTimestep(dt_max);
-        advDiffSys_.buildCoeffMatrix(operatorSplit);
+
+        // Should never happen given using operatorSplit is hard coded into runTransport and above, but serves as
+        // a guardrail for future code changes
+        if (!operatorSplit && matrix_prebuilt_){
+            throw std::runtime_error("When not using operatorSlit, the matrix coefficients cannot be reused");
+        }
+
+        // If the matrix has not already been set, compute it
+        if (!matrix_prebuilt_){
+            advDiffSys_.buildCoeffMatrix(operatorSplit);
+        }
 
         #ifdef ENABLE_TIMING
         stop = std::chrono::high_resolution_clock::now();

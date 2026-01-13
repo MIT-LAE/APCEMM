@@ -478,17 +478,39 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     Eigen::VectorXd diffCoeffX_eigen = FVM_ANDS::std2dVec_to_eigenVec(diffCoeffX_);
     Eigen::VectorXd diffCoeffY_eigen = FVM_ANDS::std2dVec_to_eigenVec(diffCoeffY_);
 
+    // Cache the coefficients matrix because it is expensive to build and is identical
+    // across all aerosol bins.
+    // This is only true for operator splitting because the matrix is only used
+    // for diffusion. The boolean here is to make this explicit, it gets compiled away.
+    bool useOperatorSplit = true;
+    // Need to instantiate a solver instance to compute the matrix, this solver is not used otherwise
+    FVM_ANDS::FVM_Solver template_solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, H2O_eigen);
+    if (useOperatorSplit) {
+        template_solver.updateTimestep(timestep);
+        template_solver.updateDiffusion(diffCoeffX_eigen, diffCoeffY_eigen);
+        template_solver.buildCoeffMatrix(useOperatorSplit);
+    }
+
     //Transport the Ice Aerosol PDF
     #pragma omp parallel for default(shared)
     for ( UInt n = 0; n < iceAerosol_.getNBin(); n++ ) {
         /* Transport particle number and volume for each bin and
             * recompute centers of each bin for each grid cell
             * accordingly */
+        // Ideally we would create 1 solver and use it for all bins, but solver.updateAdvection()
+        // mutates the solver which would not work with this parallel loop. This is why
+        // we create 1 solver per iteration, and why caching the coefficient matrix is useful
+        // Refactoring the solver to enable 1 solver for all would save some data copies
         FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, H2O_eigen);
         //Update solver params
         solver.updateTimestep(timestep);
         solver.updateDiffusion(diffCoeffX_eigen, diffCoeffY_eigen);
         solver.updateAdvection(0, -vFall_[n], shear_rep_);
+
+        // Set the weights which we already computed, saves ~0-10 ms per bin depending on grid size
+        if (useOperatorSplit){
+            solver.setPrebuiltMatrix(template_solver.coefMatrix());
+        }
 
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
         solver.operatorSplitSolve2DVec(iceAerosol_.getPDF()[n], ZERO_BC, false);

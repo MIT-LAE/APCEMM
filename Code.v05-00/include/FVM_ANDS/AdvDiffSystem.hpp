@@ -43,6 +43,10 @@ namespace FVM_ANDS{
             inline const Eigen::VectorXd& phi() const { return phi_; }
             inline const std::vector<std::unique_ptr<Point>>& points() const { return points_; }
             inline const Eigen::SparseMatrix<double, Eigen::RowMajor>& getCoefMatrix() const { return totalCoefMatrix_; }
+            inline void setCoefMatrix(const Eigen::SparseMatrix<double, Eigen::RowMajor>& matrix) {
+                // If we reuse an existing matrix, we can set it directly
+                totalCoefMatrix_ = matrix; 
+            }
             inline void updatePhi(const Eigen::VectorXd& phi_new){ 
                 //Need to resize to account for grid changing in size.
                 phi_.resize(nx_ * ny_ + 2*nx_ + 2*ny_);

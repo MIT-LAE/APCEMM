@@ -20,6 +20,11 @@ namespace FVM_ANDS{
             void buildCoeffMatrix(bool operatorSplit = false){
                 advDiffSys_.buildCoeffMatrix(operatorSplit);
             }
+
+            inline void setPrebuiltMatrix(const Eigen::SparseMatrix<double, Eigen::RowMajor>& matrix) {
+                advDiffSys_.setCoefMatrix(matrix);
+                matrix_prebuilt_ = true;
+            }
             inline void updateTimestep(double dt){
                 advDiffSys_.updateTimestep(dt);
             }
@@ -97,6 +102,7 @@ namespace FVM_ANDS{
             double convergenceThres_;
             AdvDiffSystem advDiffSys_;
             bool useDiagPreCond_;
+            bool matrix_prebuilt_ = false;
             Eigen::DiagonalMatrix<double, -1> diagPreCond;
             Eigen::DiagonalMatrix<double, -1> diagPreCond_inv;
             Eigen::BiCGSTAB<Eigen::SparseMatrix<double, Eigen::RowMajor>, Eigen::DiagonalPreconditioner<double> > solver_;
