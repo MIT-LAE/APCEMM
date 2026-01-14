@@ -1,6 +1,8 @@
 #include <FVM_ANDS/AdvDiffSystem.hpp>
 #include <chrono>
 #include <math.h>
+#include <iostream>
+#include "APCEMM.h"
 
 namespace FVM_ANDS{
     AdvDiffSystem::AdvDiffSystem(const AdvDiffParams& params, const Vector_1D xCoords, const Vector_1D yCoords, const BoundaryConditions& bc, const Eigen::VectorXd& phi_init, vecFormat format) :
@@ -44,10 +46,41 @@ namespace FVM_ANDS{
         std::generate_n(std::back_inserter(points_), nTotalPoints_, [] { return std::make_unique<Point>(); });
         totalCoefMatrix_.resize(nTotalPoints_, nTotalPoints_);
 
+        #ifdef ENABLE_TIMING
+        auto start = std::chrono::high_resolution_clock::now();
+        #endif
         updateDiffusion(params.Dh, params.Dv);
+        #ifdef ENABLE_TIMING
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        std::cout << "          AdvDiffSys Construtor: updateDiff " << duration_us.count() << " us" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        #endif
         initVelocVecs();
+        #ifdef ENABLE_TIMING
+        end = std::chrono::high_resolution_clock::now();
+        duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        std::cout << "          AdvDiffSys Construtor: initVelocVecs " << duration_us.count() << " us" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        #endif
         buildPointList();
+        #ifdef ENABLE_TIMING
+        end = std::chrono::high_resolution_clock::now();
+        duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        std::cout << "          AdvDiffSys Construtor: buildPointList " << duration_us.count() << " us" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        #endif
         applyBoundaryCondition();
+        #ifdef ENABLE_TIMING
+        end = std::chrono::high_resolution_clock::now();
+        duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        std::cout << "          AdvDiffSys Construtor: applyBoundaryCondition " << duration_us.count() << " us" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        #endif
     }
 
     void AdvDiffSystem::initVelocVecs(){

@@ -500,7 +500,18 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> prebuilt_matrix;
     if (useOperatorSplit) {
         template_solver.updateTimestep(timestep);
+
+        #ifdef ENABLE_TIMING
+        auto start_diff = std::chrono::high_resolution_clock::now();
+        #endif
+
         template_solver.updateDiffusion(diffCoeffX_eigen, diffCoeffY_eigen);
+
+        #ifdef ENABLE_TIMING
+        auto end_diff = std::chrono::high_resolution_clock::now();
+        duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end_diff - start_diff);
+        std::cout << "      updateDiffusion " << duration_us.count() << " us" << std::endl;
+        #endif
 
         #ifdef ENABLE_TIMING
         end = std::chrono::high_resolution_clock::now();
