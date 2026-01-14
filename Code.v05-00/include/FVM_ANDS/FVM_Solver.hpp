@@ -20,11 +20,6 @@ namespace FVM_ANDS{
             void buildCoeffMatrix(bool operatorSplit = false){
                 advDiffSys_.buildCoeffMatrix(operatorSplit);
             }
-
-            inline void setPrebuiltMatrix(const Eigen::SparseMatrix<double, Eigen::RowMajor>& matrix) {
-                advDiffSys_.setCoefMatrix(matrix);
-                matrix_prebuilt_ = true;
-            }
             inline void updateTimestep(double dt){
                 advDiffSys_.updateTimestep(dt);
             }
@@ -60,6 +55,13 @@ namespace FVM_ANDS{
             }
             inline const Eigen::SparseMatrix<double, Eigen::RowMajor>& coefMatrix(){
                 return advDiffSys_.getCoefMatrix();
+            }
+            inline std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> coefMatrixPtr(){
+                return advDiffSys_.getCoefMatrixPtr();
+            }
+            inline void setPrebuiltMatrix(std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> matrix) {
+                advDiffSys_.setCoefMatrix(matrix);
+                matrix_prebuilt_ = true;
             }
             inline const std::vector<std::unique_ptr<Point>>& points(){
                 return advDiffSys_.points();

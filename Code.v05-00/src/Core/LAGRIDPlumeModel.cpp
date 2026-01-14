@@ -1,6 +1,7 @@
 #include <chrono>
 #include <filesystem>
 #include <memory>
+#include <ratio>
 #include "AIM/Settling.hpp"
 #include "Util/PlumeModelUtils.hpp"
 #include "Core/Status.hpp"
@@ -478,6 +479,17 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     Eigen::VectorXd diffCoeffX_eigen = FVM_ANDS::std2dVec_to_eigenVec(diffCoeffX_);
     Eigen::VectorXd diffCoeffY_eigen = FVM_ANDS::std2dVec_to_eigenVec(diffCoeffY_);
 
+    #ifdef ENABLE_TIMING
+    end = std::chrono::high_resolution_clock::now();
+    auto duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "      Copies vec2Eigen in " << duration_us.count() << " us" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    #endif
+
+
+    /* PRECOMPUTE THE COEFFICIENT MATRIX FOR ALL AEROSOL BINS */
+
     // Cache the coefficients matrix because it is expensive to build and is identical
     // across all aerosol bins.
     // This is only true for operator splitting because the matrix is only used
@@ -485,32 +497,80 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     bool useOperatorSplit = true;
     // Need to instantiate a solver instance to compute the matrix, this solver is not used otherwise
     FVM_ANDS::FVM_Solver template_solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, H2O_eigen);
+    std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> prebuilt_matrix;
     if (useOperatorSplit) {
         template_solver.updateTimestep(timestep);
         template_solver.updateDiffusion(diffCoeffX_eigen, diffCoeffY_eigen);
+
+        #ifdef ENABLE_TIMING
+        end = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        std::cout << "      Template solver instantiation " << duration.count() << " ms" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        #endif
+
         template_solver.buildCoeffMatrix(useOperatorSplit);
+
+        #ifdef ENABLE_TIMING
+        end = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        std::cout << "      Template build matrix creation " << duration.count() << " ms" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        #endif
+
+        prebuilt_matrix = template_solver.coefMatrixPtr();
     }
 
     //Transport the Ice Aerosol PDF
-    #pragma omp parallel for default(shared)
+
+    /* PRE-ALLOCATE A SOLVER POOL */
+
+    // Pre-allocate one solver per thread to creating a new solver each iteration
+    // Each thread will reuse its solver for all its assigned bins.
+    // Use vector<unique_ptr<solver>> and not directly a vector<solver> because of unique_pointers
+    // in the solver object which cannot be moved...
+    // This forces the instantiation of the solvers to be serial which is a slowdown
+    // relative to the naive each iteration creates a new solver...
+    // This slowdown is mostly compensated for by the gains of caching the matrix:
+    // For 8 cpus there is a slight slowdown between naive and preallocating solvers:
+    // -> preallocating solvers + caching the matrix (this)
+    // -> Naive each iteration of the aerosol bins loop creates its own solver (previous)
+    // For 1 cpu however we get a 15-35% speedup on transport (which gets better as the grid is larger
+    // e.g. the older the contrail the better the speedup for each transport step)
+    std::vector<std::unique_ptr<FVM_ANDS::FVM_Solver>> solver_pool;
+    solver_pool.reserve(numThreads_);
+    
+    for (int i = 0; i < numThreads_; ++i) {
+        solver_pool.emplace_back(std::make_unique<FVM_ANDS::FVM_Solver>(
+            fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, H2O_eigen));
+        solver_pool.back()->updateTimestep(timestep);
+        solver_pool.back()->updateDiffusion(diffCoeffX_eigen, diffCoeffY_eigen);
+        if (useOperatorSplit) {
+            solver_pool.back()->setPrebuiltMatrix(prebuilt_matrix);
+        }
+    }
+
+    #ifdef ENABLE_TIMING
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "      Init solver pool " << duration.count() << " ms" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    #endif
+    
+    #pragma omp parallel for default(shared) schedule(dynamic)
     for ( UInt n = 0; n < iceAerosol_.getNBin(); n++ ) {
         /* Transport particle number and volume for each bin and
             * recompute centers of each bin for each grid cell
             * accordingly */
-        // Ideally we would create 1 solver and use it for all bins, but solver.updateAdvection()
-        // mutates the solver which would not work with this parallel loop. This is why
-        // we create 1 solver per iteration, and why caching the coefficient matrix is useful
-        // Refactoring the solver to enable 1 solver for all would save some data copies
-        FVM_ANDS::FVM_Solver solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, H2O_eigen);
-        //Update solver params
-        solver.updateTimestep(timestep);
-        solver.updateDiffusion(diffCoeffX_eigen, diffCoeffY_eigen);
+        
+        int tid = omp_get_thread_num();
+        auto& solver = *solver_pool[tid];
+        
+        //Update solver params for this bin
         solver.updateAdvection(0, -vFall_[n], shear_rep_);
-
-        // Set the weights which we already computed, saves ~0-10 ms per bin depending on grid size
-        if (useOperatorSplit){
-            solver.setPrebuiltMatrix(template_solver.coefMatrix());
-        }
 
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
         solver.operatorSplitSolve2DVec(iceAerosol_.getPDF()[n], ZERO_BC, false);

@@ -38,14 +38,21 @@ namespace FVM_ANDS{
             Eigen::VectorXd forwardEulerAdvection(bool operatorSplit = false, bool parallelAdvection = false) const noexcept;
             // Breakup the implementation of sor_solve to allow for easy testing by inputing an arbitrary linear system to solve:
             // Implementation is moved outside of the class, and make class method to be used in code
-            void sor_solve(double omega = 1.0, double threshold = 1e-3, int n_iters = 3){ FVM_ANDS::sor_solve(totalCoefMatrix_, rhs_, phi_, omega, threshold, n_iters); };
+            void sor_solve(double omega = 1.0, double threshold = 1e-3, int n_iters = 3){ 
+                FVM_ANDS::sor_solve(getCoefMatrix(), rhs_, phi_, omega, threshold, n_iters); 
+            };
             inline const Eigen::VectorXd& getRHS() const { return rhs_; }
             inline const Eigen::VectorXd& phi() const { return phi_; }
             inline const std::vector<std::unique_ptr<Point>>& points() const { return points_; }
-            inline const Eigen::SparseMatrix<double, Eigen::RowMajor>& getCoefMatrix() const { return totalCoefMatrix_; }
-            inline void setCoefMatrix(const Eigen::SparseMatrix<double, Eigen::RowMajor>& matrix) {
-                // If we reuse an existing matrix, we can set it directly
-                totalCoefMatrix_ = matrix; 
+            inline const Eigen::SparseMatrix<double, Eigen::RowMajor>& getCoefMatrix() const { 
+                return use_prebuilt_matrix_ ? *prebuilt_matrix_ : totalCoefMatrix_; 
+            }
+            inline std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> getCoefMatrixPtr() {
+                return std::make_shared<const Eigen::SparseMatrix<double, Eigen::RowMajor>>(totalCoefMatrix_);
+            }
+            inline void setCoefMatrix(std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> matrix) {
+                prebuilt_matrix_ = matrix;
+                use_prebuilt_matrix_ = true;
             }
             inline void updatePhi(const Eigen::VectorXd& phi_new){ 
                 //Need to resize to account for grid changing in size.
@@ -150,6 +157,8 @@ namespace FVM_ANDS{
             Vector_1D bcVals_bot_;
             std::vector<std::unique_ptr<Point>> points_;
             Eigen::SparseMatrix<double, Eigen::RowMajor> totalCoefMatrix_;
+            std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> prebuilt_matrix_;
+            bool use_prebuilt_matrix_ = false;
             Eigen::VectorXd rhs_;
             Eigen::VectorXd phi_;
             Eigen::VectorXd source_;

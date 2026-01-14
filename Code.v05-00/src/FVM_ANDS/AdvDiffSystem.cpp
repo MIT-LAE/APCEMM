@@ -155,6 +155,11 @@ namespace FVM_ANDS{
         }
     }
     void AdvDiffSystem::buildCoeffMatrix(bool operatorSplit){
+        // Skip if we have a prebuilt matrix
+        if (use_prebuilt_matrix_) {
+            return;
+        }
+        
         //Crank-Nicholson Discretization. Builds the Advection terms of the A matrix 
         //in the system A * phi_t+1 = b.
 
