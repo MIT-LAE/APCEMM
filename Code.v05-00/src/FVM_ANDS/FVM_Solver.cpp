@@ -102,7 +102,7 @@ namespace FVM_ANDS{
         // Should never happen given using operatorSplit is hard coded into runTransport and above, but serves as
         // a guardrail for future code changes
         if (!operatorSplit && matrix_prebuilt_){
-            throw std::runtime_error("When not using operatorSlit, the matrix coefficients cannot be reused");
+            throw std::runtime_error("When not using operatorSplitSolve, the matrix coefficients cannot be reused");
         }
 
         // If the matrix has not already been set, compute it

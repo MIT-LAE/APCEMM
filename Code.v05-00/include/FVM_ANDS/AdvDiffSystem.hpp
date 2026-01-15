@@ -45,14 +45,22 @@ namespace FVM_ANDS{
             inline const Eigen::VectorXd& phi() const { return phi_; }
             inline const std::vector<std::unique_ptr<Point>>& points() const { return points_; }
             inline const Eigen::SparseMatrix<double, Eigen::RowMajor>& getCoefMatrix() const { 
-                return use_prebuilt_matrix_ ? *prebuilt_matrix_ : totalCoefMatrix_; 
+                // If using prebuilt matrix, this instance of AdvDiffSystem does not have its own
+                // totalCoefMatrix_, instead it holds a pointer to a shared matrix held in another AdvDiffSystem
+                // Getter abstracts that away to have one access pattern
+                return use_shared_totalCoefMatrix_ ? *shared_totalCoefMatrixPtr_ : totalCoefMatrix_; 
             }
             inline std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> getCoefMatrixPtr() {
+                // Only used by the AdvDiffSystem instance that actually computed the matrix to make it available to
+                // other instances without copying the full matrix. Other instances will just hold a copy of
+                // this shared pointer
                 return std::make_shared<const Eigen::SparseMatrix<double, Eigen::RowMajor>>(totalCoefMatrix_);
             }
-            inline void setCoefMatrix(std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> matrix) {
-                prebuilt_matrix_ = matrix;
-                use_prebuilt_matrix_ = true;
+            inline void setCoefMatrix(std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> matrixPtr) {
+                // Only used by AdvDiffSystem instances that did not compute the matrix. This sets the shared pointer
+                // to the matrix that is held in another instance
+                shared_totalCoefMatrixPtr_ = matrixPtr;
+                use_shared_totalCoefMatrix_ = true;
             }
             inline void updatePhi(const Eigen::VectorXd& phi_new){ 
                 //Need to resize to account for grid changing in size.
@@ -157,8 +165,8 @@ namespace FVM_ANDS{
             Vector_1D bcVals_bot_;
             std::vector<std::unique_ptr<Point>> points_;
             Eigen::SparseMatrix<double, Eigen::RowMajor> totalCoefMatrix_;
-            std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> prebuilt_matrix_;
-            bool use_prebuilt_matrix_ = false;
+            std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> shared_totalCoefMatrixPtr_;
+            bool use_shared_totalCoefMatrix_ = false;
             Eigen::VectorXd rhs_;
             Eigen::VectorXd phi_;
             Eigen::VectorXd source_;

@@ -1,7 +1,6 @@
 #include <chrono>
 #include <filesystem>
 #include <memory>
-#include <ratio>
 #include "AIM/Settling.hpp"
 #include "Util/PlumeModelUtils.hpp"
 #include "Core/Status.hpp"
@@ -497,7 +496,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     bool useOperatorSplit = true;
     // Need to instantiate a solver instance to compute the matrix, this solver is not used otherwise
     FVM_ANDS::FVM_Solver template_solver(fvmSolverInitParams, xCoords_, yCoords_, ZERO_BC_INIT, H2O_eigen);
-    std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> prebuilt_matrix;
+    std::shared_ptr<const Eigen::SparseMatrix<double, Eigen::RowMajor>> shared_totalCoefMatrixPtr;
     if (useOperatorSplit) {
         template_solver.updateTimestep(timestep);
 
@@ -531,7 +530,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         start = std::chrono::high_resolution_clock::now();
         #endif
 
-        prebuilt_matrix = template_solver.coefMatrixPtr();
+        shared_totalCoefMatrixPtr = template_solver.coefMatrixPtr();
     }
 
     //Transport the Ice Aerosol PDF
@@ -559,7 +558,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
         solver_pool.back()->updateTimestep(timestep);
         solver_pool.back()->updateDiffusion(diffCoeffX_eigen, diffCoeffY_eigen);
         if (useOperatorSplit) {
-            solver_pool.back()->setPrebuiltMatrix(prebuilt_matrix);
+            solver_pool.back()->setPrebuiltMatrix(shared_totalCoefMatrixPtr);
         }
     }
 
@@ -577,6 +576,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
             * recompute centers of each bin for each grid cell
             * accordingly */
         
+        // Fetch the solver for this thread
         int tid = omp_get_thread_num();
         auto& solver = *solver_pool[tid];
         

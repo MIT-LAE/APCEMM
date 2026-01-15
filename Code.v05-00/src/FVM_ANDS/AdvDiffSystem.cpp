@@ -189,7 +189,7 @@ namespace FVM_ANDS{
     }
     void AdvDiffSystem::buildCoeffMatrix(bool operatorSplit){
         // Skip if we have a prebuilt matrix
-        if (use_prebuilt_matrix_) {
+        if (use_shared_totalCoefMatrix_) {
             return;
         }
         
