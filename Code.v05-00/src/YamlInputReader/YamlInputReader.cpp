@@ -112,6 +112,10 @@ namespace YamlInputReader{
             input.SIMULATION_OMP_NUM_THREADS = 1;
         #endif
 
+        if (input.SIMULATION_OMP_NUM_THREADS > 4){
+            std::cout << ">>> Hint: APCEMM performance does not scale past 4 threads... ('OpenMP Num Threads' is set to " << input.SIMULATION_OMP_NUM_THREADS << ") <<<" << std::endl;
+        }
+
         YAML::Node paramSweepSubmenu = simNode["PARAM SWEEP SUBMENU"];
         input.SIMULATION_PARAMETER_SWEEP = parseBoolString(paramSweepSubmenu["Parameter sweep (T/F)"].as<string>(), "Parameter sweep (T/F)");
         input.SIMULATION_MONTECARLO = parseBoolString(paramSweepSubmenu["Run Monte Carlo (T/F)"].as<string>(), "Run Monte Carlo (T/F)");
