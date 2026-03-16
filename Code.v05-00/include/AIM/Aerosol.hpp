@@ -69,6 +69,8 @@ class AIM::Aerosol
             return pow(bin_Centers[iBin], n) * pdf[iBin];
         }
         //NOTE: This gives the moment in [- / cm3]. You need to multiply by factors to get it in [ / m] or something.
+        template <UInt N>
+        double Moment() const;
         double Moment( UInt n = 0 ) const;
         double Radius( ) const;
         double EffRadius( ) const;
@@ -83,6 +85,7 @@ class AIM::Aerosol
         inline const Vector_1D& getBinVCenters() const { return bin_VCenters; };
         inline const Vector_1D& getBinEdges() const { return bin_Edges; };
         inline const Vector_1D& getBinSizes() const { return bin_Sizes; };
+        inline const Vector_1D& getLogBinEdges() const { return log_Bin_Edges; };
         inline UInt getNBin() const { return nBin; };
         inline const Vector_1D& getPDF() const { return pdf; };
 
@@ -92,6 +95,7 @@ class AIM::Aerosol
         Vector_1D bin_VCenters;
         Vector_1D bin_Edges;
         Vector_1D bin_Sizes;
+        Vector_1D log_Bin_Edges;
         UInt nBin;
         Vector_1D pdf; // represents dN [-/cm3] / d(ln r)
 };
@@ -128,8 +132,14 @@ class AIM::Grid_Aerosol
         inline void updateNy(int ny_new) { Ny = ny_new; };
 
         /* Moments */
+        template <UInt N>
+        Vector_2D Moment() const;
         Vector_2D Moment( UInt n ) const;
+        template <UInt N>
+        double Moment( const Vector_1D& PDF ) const;
         double Moment( UInt n, const Vector_1D& PDF ) const;
+        template <UInt N>
+        double Moment( UInt iNx, UInt jNy ) const;
         double Moment( UInt n, UInt iNx, UInt jNy ) const;
 
         /* Extra utils */
@@ -181,6 +191,7 @@ class AIM::Grid_Aerosol
         inline const Vector_3D& getBinVCenters() const { return bin_VCenters; };
         inline const Vector_1D& getBinEdges() const { return bin_Edges; };
         inline const Vector_1D& getBinSizes() const { return bin_Sizes; };
+        inline const Vector_1D& getLogBinEdges() const { return log_Bin_Edges; };
         inline UInt getNBin() const { return nBin; };
         inline const Vector_3D& getPDF() const { return pdf; };
         inline Vector_3D& getPDF() { return pdf; };
@@ -193,6 +204,7 @@ class AIM::Grid_Aerosol
         Vector_1D bin_Edges;
         Vector_1D bin_VEdges;
         Vector_1D bin_Sizes;
+        Vector_1D log_Bin_Edges;
         UInt nBin;
         unsigned int Nx, Ny;
         Vector_3D pdf; //Everything with the pdf is implicitly in [ / cm3]
