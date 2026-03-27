@@ -317,8 +317,6 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.MET_TEMP_PERTURB_AMPLITUDE == 2.0);
         REQUIRE(input.MET_TEMP_PERTURB_TIMESCALE == 10);
 
-
-        REQUIRE(error == "Cannot fix both moist layer depth and lapse rate");
     }
     SECTION("Read Diagnostic Menu"){
         OptInput input;
@@ -390,7 +388,7 @@ TEST_CASE("Generate Input Objects"){
     OptInput input;
     YamlInputReader::readYamlInputFiles(input, {filename});
     vector<std::unordered_map<string,double>> cases = generateCases(input);
-    REQUIRE(cases.size() == 18);
+    REQUIRE(cases.size() == 6);
     Input caseInput = Input(0, cases, "", "", "", "", "");
     REQUIRE(caseInput.simulationTime() == 24);
     REQUIRE(caseInput.pressure_Pa() == 22000);
@@ -428,7 +426,7 @@ TEST_CASE("Merge Input Files"){
     OptInput input;
     YamlInputReader::readYamlInputFiles(input, {filename1, filename2});
     vector<std::unordered_map<string,double>> cases = generateCases(input);
-    REQUIRE(cases.size() == 18);
+    REQUIRE(cases.size() == 6);
     Input caseInput = Input(0, cases, "", "", "", "", "");
     REQUIRE(caseInput.simulationTime() == 24);
     REQUIRE(caseInput.pressure_Pa() == 32000);

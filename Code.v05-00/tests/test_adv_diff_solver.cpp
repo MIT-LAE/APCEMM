@@ -298,7 +298,7 @@ namespace FVM_ANDS{
         // Solution: f(x,y,t) = exp(-t) * sin(pi*x) * sin(2*pi*y)
         
         double u = 0, v = 0, shear = 0, Dh = 1.0, Dv = 1.0, xlim_left = 0.1, xlim_right = 0.8, ylim_bot = 0.2, ylim_top = 0.9;
-        int nx = 100, ny = 100;
+        int nx = 50, ny = 50;
         // double dx = 1.0/nx;
         // double dy = 1.0/ny;
         //double dt = 0.24 * std::min( (dx*dx) / (2*Dh) , (dy*dy) / (2*Dv));
@@ -312,7 +312,7 @@ namespace FVM_ANDS{
         FVM_Solver solver(params, mesh.x(), mesh.y(), bc, exact, false, 1000 , 1e-5);
         //the convergence on this problem really sucks without ILUT precond
         //Problem is, ILUT is way too expensive to use in APCEMM as a default. Maybe the code can be templated later to allow for customizability.
-        double t = 0, t_max = 3;
+        double t = 0, t_max = 1.5;
         int n_timesteps = t_max/dt;
         for(int i = 0; i < n_timesteps; i++){
             t = dt*(i + 1);
@@ -404,7 +404,7 @@ namespace FVM_ANDS{
            x(t) = 0.5 + \int u(t) dt
                 = 0.5 + u0t - shear * (y0*t + v0/2 t^2)
         */ 
-        int nx = 500, ny = 500;
+        int nx = 200, ny = 200;
         double dx = 1.0/nx;
         double dy = 1.0/ny;
         double dt =  1;

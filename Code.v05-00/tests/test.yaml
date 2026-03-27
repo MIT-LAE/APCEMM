@@ -32,12 +32,9 @@ PARAMETER MENU:
   #                        : for MC runs where it should be 200 240 or 200:240)
   Plume Process [hr] (double): 24
   METEOROLOGICAL PARAMETERS SUBMENU:
-    Temperature [K] (double): 215:5:225
-    R.Hum. wrt water [%] (double): 43.9432
     Pressure [hPa] (double): 220 230 240
     Horiz. diff. coeff. [m^2/s] (double): 15.0
     Verti. diff. [m^2/s] (double): 0.15
-    Wind shear [1/s] (double): 0.002
     Brunt-Vaisala Frequency [s^-1] (double): 0.013
   LOCATION AND TIME SUBMENU:
     LON [deg] (double): -15
@@ -107,21 +104,6 @@ METEOROLOGY MENU:
     Init vert. veloc. from met. data (T/F): T
     Vert. veloc. time series input (T/F): T
     Interpolate vert. veloc. met. data (T/F): T
-    HUMIDITY SCALING OPTIONS:
-      Humidity modification scheme (none / constant / scaling): none
-      Constant RHi [%] (double): 110.0
-      Humidity scaling constant a (double): 0.9779
-      Humidity scaling constant b (double): 1.635
-  #- OR -------------------+
-  IMPOSE MOIST LAYER DEPTH SUBMENU:
-    Impose moist layer depth (T/F): T
-    Moist layer depth [m] (double): 200
-    Subsaturated air RHi [%] (double): 80
-  #--- OR -----------------+
-  IMPOSE LAPSE RATE SUBMENU:
-    Impose lapse rate (T/F): T
-    Lapse rate [K/m] (T/F): -6.0E-03
-  Add diurnal variations (T/F): T
   TEMPERATURE PERTURBATION SUBMENU:
     Enable Temp. Pert. (T/F): T
     Temp. Perturb. Amplitude (double): 2.0
