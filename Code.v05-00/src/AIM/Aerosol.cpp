@@ -31,6 +31,7 @@ namespace AIM
         bin_VCenters(bin_Centers_.size()),
         bin_Edges(bin_Edges_),
         bin_Sizes(bin_Centers_.size()),
+        log_Bin_Edges(bin_Edges_.size()),
         nBin(bin_Centers_.size()),
         pdf(bin_Centers_.size()) {
     /* In the following cases, the aerosol pdf represents the following quantity: dn/d(ln(r))
@@ -48,8 +49,10 @@ namespace AIM
     /* Compute size of each bin */
     for (UInt iBin = 0; iBin < nBin; iBin++) {
         bin_Sizes[iBin] = bin_Edges[iBin + 1] - bin_Edges[iBin];
-        bin_VCenters[iBin] = 4.0 / 3.0 * PI * (pow(bin_Edges_[iBin], 3) + pow(bin_Edges_[iBin + 1], 3)) * 0.5;
+        bin_VCenters[iBin] = 4.0 / 3.0 * PI * (bin_Edges_[iBin] * bin_Edges_[iBin] * bin_Edges_[iBin] + bin_Edges_[iBin + 1] * bin_Edges_[iBin + 1] * bin_Edges_[iBin + 1]) * 0.5;
+        log_Bin_Edges[iBin] = log(bin_Edges[iBin]);
     }
+    log_Bin_Edges[nBin] = log(bin_Edges[nBin]);
 
     /* Check mean and standard deviation */
     if (mu <= 0) {
@@ -84,8 +87,9 @@ namespace AIM
 
         if (alpha <= 0.0) { std::cout << "\nIn Aerosol::Aerosol: power law requires that alpha > 0 ( alpha = " << alpha << " )\n"; }
 
+        double inv_bin_Centers_0 = 1/bin_Centers[0];
         for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++) {
-            pdf[iBin] = nPart_ * alpha * pow(bin_Centers[iBin] / bin_Centers[0], -alpha);
+            pdf[iBin] = nPart_ * alpha * pow(bin_Centers[iBin] * inv_bin_Centers_0, -alpha);
         }
     } else if ((strcmp(type, "gam") == 0) || (strcmp(type, "gamma") == 0) || (strcmp(type, "generalized gamma") == 0)) {
         /* Gamma distribution:
@@ -96,9 +100,10 @@ namespace AIM
         if ((alpha <= 0) || (std::fmod(alpha, 1.0) != 0)) { std::cout << "\nIn Aerosol::Aerosol: (generalized) gamma distribution requires that alpha is a positive integer ( alpha = " << alpha << " )\n"; }
         if (gamma <= 0) { std::cout << "\nIn Aerosol::Aerosol: (generalized) gamma distribution requires that gamma is positive ( gamma = " << gamma << " )\n"; }
         if (b <= 0) { std::cout << "\nIn Aerosol::Aerosol: (generalized) gamma distribution requires that b is positive ( b = " << b << " )\n"; }
-
+        
+        double pow_value = pow(b, (alpha + 1) / gamma);
         for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++) {
-            pdf[iBin] = nPart_ * gamma * pow(b, (alpha + 1) / gamma) / boost::math::tgamma((alpha + 1) / gamma) * pow(bin_Centers[iBin], alpha + 1) * exp(-b * pow(bin_Centers[iBin], gamma));
+            pdf[iBin] = nPart_ * gamma * pow_value / boost::math::tgamma((alpha + 1) / gamma) * pow(bin_Centers[iBin], alpha + 1) * exp(-b * pow(bin_Centers[iBin], gamma));
         }
     } else {
         std::cout << "\nIn Aerosol::Aerosol: distribution type must be either lognormal, normal, power or (generalized) gamma\n";
@@ -113,12 +118,15 @@ namespace AIM
         bin_VCenters(bin_Centers.size()),
         bin_Edges(bin_Edges),
         bin_Sizes(bin_Centers.size()),
+        log_Bin_Edges(bin_Edges.size()),
         nBin(bin_Centers.size()),
         pdf(pdf) {
             for (UInt iBin = 0; iBin < nBin; iBin++) {
                 bin_Sizes[iBin] = bin_Edges[iBin + 1] - bin_Edges[iBin];
-                bin_VCenters[iBin] = 4.0 / 3.0 * PI * (pow(bin_Edges[iBin], 3) + pow(bin_Edges[iBin + 1], 3)) * 0.5;
+                bin_VCenters[iBin] = 4.0 / 3.0 * PI * (bin_Edges[iBin] * bin_Edges[iBin] * bin_Edges[iBin] + bin_Edges[iBin + 1] * bin_Edges[iBin + 1] * bin_Edges[iBin + 1]) * 0.5;
+                log_Bin_Edges[iBin] = log(bin_Edges[iBin]);
             }
+            log_Bin_Edges[nBin] = log(bin_Edges[nBin]);
         }
 
 
@@ -300,19 +308,45 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
     } /* End of Aerosol::Coagulate */
 
-    double Aerosol::Moment(UInt n) const
+    template <UInt N>
+    double Aerosol::Moment() const
     {
 
         double moment = 0;
 
         for (UInt iBin = 0; iBin < nBin; iBin++)
         {
-            moment += (log(bin_Edges[iBin + 1]) - log(bin_Edges[iBin])) * pow(bin_Centers[iBin], n) * pdf[iBin];
+            double pow_value;
+            // Moment function only used for N = 0, 1, 2, 3 --> eliminate usage of pow() to save time
+            if constexpr (N == 0)
+                pow_value = 1;
+            else if constexpr (N == 1)
+                pow_value = bin_Centers[iBin];
+            else if constexpr (N == 2)
+                pow_value = bin_Centers[iBin] * bin_Centers[iBin];
+            else if constexpr (N == 3)
+                pow_value = bin_Centers[iBin] * bin_Centers[iBin] * bin_Centers[iBin];
+            else
+                pow_value = pow(bin_Centers[iBin], N);  // fallback for safety
+
+            moment += (log_Bin_Edges[iBin+1] - log_Bin_Edges[iBin]) * pow_value * pdf[iBin];
         }
 
         return moment;
 
-    } /* End of Aerosol::Moment */
+    }
+    // overload function to call and evaluate branch in template function for different powers N at runtime
+    double Aerosol::Moment(UInt n) const
+    {
+        switch(n) {
+            case 0: return Moment<0>();
+            case 1: return Moment<1>();
+            case 2: return Moment<2>();
+            case 3: return Moment<3>();
+            default: return Moment<4>();
+        }
+    } 
+    /* End of Aerosol::Moment */
 
     double Aerosol::Radius() const
     {
@@ -355,7 +389,8 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
         if (N > 0)
         {
-            return sqrt(Moment(2) / N - pow(Moment(1) / N, 2.0));
+            double Moment_1_N = Moment(1) / N;
+            return sqrt(Moment(2) / N - Moment_1_N * Moment_1_N);
         }
         else
         {
@@ -401,6 +436,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         bin_Edges(bin_Edges_),
         bin_VEdges(bin_Centers_.size() + 1),
         bin_Sizes(bin_Centers_.size()),
+        log_Bin_Edges(bin_Edges_.size()),
         nBin(bin_Centers.size()),
         Nx(Nx_), Ny(Ny_) {
         /* In the following cases, the aerosol pdf represents the following quantity: dn/d(ln(r))
@@ -417,10 +453,12 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         /* Compute size of each bin */
         for (UInt iBin = 0; iBin < nBin; iBin++)
         {
-            bin_VEdges[iBin] = 4.0 / 3.0 * PI * pow(bin_Edges[iBin], 3);
+            bin_VEdges[iBin] = 4.0 / 3.0 * PI * bin_Edges[iBin] * bin_Edges[iBin] * bin_Edges[iBin];
             bin_Sizes[iBin] = bin_Edges[iBin + 1] - bin_Edges[iBin];
+            log_Bin_Edges[iBin] = log(bin_Edges[iBin]);
         }
-        bin_VEdges[nBin] = 4.0 / 3.0 * PI * pow(bin_Edges[nBin], 3);
+        log_Bin_Edges[nBin] = log(bin_Edges[nBin]);
+        bin_VEdges[nBin] = 4.0 / 3.0 * PI * bin_Edges[nBin] * bin_Edges[nBin] * bin_Edges[nBin];
 
         bin_VCenters.resize(nBin, Vector_2D(Ny, Vector_1D(Nx, 0.0E+00)));
 
@@ -485,10 +523,11 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
             if (alpha <= 0.0) {
                 std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: power law requires that alpha > 0 ( alpha = " << alpha << " )\n"; }
-
+            
+            double inv_bin_Centers_0 = 1/ bin_Centers[0];
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin][0][0] = nPart_ * alpha * pow(bin_Centers[iBin] / bin_Centers[0], -alpha);
+                pdf[iBin][0][0] = nPart_ * alpha * pow(bin_Centers[iBin] * inv_bin_Centers_0, -alpha);
                 for (UInt jNy = 0; jNy < Ny; jNy++)
                 {
                     for (UInt iNx = 0; iNx < Nx; iNx++)
@@ -509,9 +548,10 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
             if (gamma <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: (generalized) gamma distribution requires that gamma is positive ( gamma = " << gamma << " )\n"; }
             if (b <= 0) { std::cout << "\nIn Grid_Aerosol::Grid_Aerosol: (generalized) gamma distribution requires that b is positive ( b = " << b << " )\n"; }
 
+            double pow_value = pow(b, (alpha + 1) / gamma);
             for (UInt iBin = 0; iBin < bin_Centers.size(); iBin++)
             {
-                pdf[iBin][0][0] = nPart_ * gamma * pow(b, (alpha + 1) / gamma) / boost::math::tgamma((alpha + 1) / gamma) * pow(bin_Centers[iBin], alpha + 1) * exp(-b * pow(bin_Centers[iBin], gamma));
+                pdf[iBin][0][0] = nPart_ * gamma * pow_value / boost::math::tgamma((alpha + 1) / gamma) * pow(bin_Centers[iBin], alpha + 1) * exp(-b * pow(bin_Centers[iBin], gamma));
                 for (UInt jNy = 0; jNy < Ny; jNy++)
                 {
                     for (UInt iNx = 0; iNx < Nx; iNx++)
@@ -634,7 +674,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                         for (jBin = 0; jBin < nBin; jBin++)
                         {
 
-                            nPart = pdf[jBin][jNy][iNx] * log(bin_Edges[jBin + 1] / bin_Edges[jBin]);
+                            nPart = pdf[jBin][jNy][iNx] * (log_Bin_Edges[jBin + 1] - log_Bin_Edges[jBin]);
 
                             if (jBin <= iBin)
                             {
@@ -947,7 +987,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
             {
                 // Bin is not empty. Compute particle volume, and clip it between min and max volume allowed.
                 bin_VCenters[iBin][y_index][x_index] = std::max(std::min(iceVol_ / icePart_, bin_VEdges[iBin + 1]), bin_VEdges[iBin]);
-                pdf[iBin][y_index][x_index] = icePart_ / (log(bin_Edges[iBin + 1] / bin_Edges[iBin]));
+                pdf[iBin][y_index][x_index] = icePart_ / (log_Bin_Edges[iBin + 1] - log_Bin_Edges[iBin]);
             }
             else
             {
@@ -1098,7 +1138,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         {   
             //Must resize the bin_VCenters to avoid indexing errors
             bin_VCenters[iBin] = Vector_2D(Ny, Vector_1D(Nx));
-            double ratio = log(bin_Edges[iBin + 1] / bin_Edges[iBin]);
+            double ratio = log_Bin_Edges[iBin + 1] - log_Bin_Edges[iBin];
             for (UInt jNy = 0; jNy < Ny; jNy++)
             {
                 for (UInt iNx = 0; iNx < Nx; iNx++)
@@ -1118,7 +1158,8 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
     } /* End of Grid_Aerosol::UpdateCenters */
 
-    Vector_2D Grid_Aerosol::Moment(UInt n) const
+    template <UInt N>
+    Vector_2D Grid_Aerosol::Moment() const
     {
 
         UInt jNy = 0;
@@ -1132,17 +1173,40 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
             schedule(dynamic, 1) if (!PARALLEL_CASES)
         for (iBin = 0; iBin < nBin; iBin++)
         {
+            double pow_value;
             for (jNy = 0; jNy < Ny; jNy++)
             {
                 for (iNx = 0; iNx < Nx; iNx++)
                 {
-                    moment[jNy][iNx] += (log(bin_Edges[iBin + 1] / bin_Edges[iBin])) * pow(FACTOR * bin_VCenters[iBin][jNy][iNx], n / 3.0) * pdf[iBin][jNy][iNx];
+                    // Moment function only used for N = 0, 1, 2, 3 --> eliminate usage of pow() to save time
+                    if constexpr (N == 0)
+                        pow_value = 1;
+                    else if constexpr (N == 1)
+                        pow_value = cbrt(FACTOR * bin_VCenters[iBin][jNy][iNx]);
+                    else if constexpr (N == 2)
+                        pow_value = cbrt(FACTOR * FACTOR * bin_VCenters[iBin][jNy][iNx] * bin_VCenters[iBin][jNy][iNx]);
+                    else if constexpr (N == 3)
+                        pow_value = FACTOR * bin_VCenters[iBin][jNy][iNx];
+                    else
+                        pow_value = pow(FACTOR * bin_VCenters[iBin][jNy][iNx], N / 3.0);  // fallback for safety
+                    moment[jNy][iNx] += (log_Bin_Edges[iBin+1] - log_Bin_Edges[iBin]) * pow_value * pdf[iBin][jNy][iNx];
                 }
             }
         }
 
         return moment;
 
+    }
+    // overload function to call and evaluate branch in template function for different powers N at runtime
+    Vector_2D Grid_Aerosol::Moment(UInt n) const
+    {
+        switch(n) {
+            case 0: return Moment<0>();
+            case 1: return Moment<1>();
+            case 2: return Moment<2>();
+            case 3: return Moment<3>();
+            default: return Moment<4>();
+        }
     } /* End of Grid_Aerosol::Moment */
 
     Vector_3D Grid_Aerosol::Number() const
@@ -1159,7 +1223,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
             schedule(dynamic, 1) if (!PARALLEL_CASES)
         for (iBin = 0; iBin < nBin; iBin++)
         {
-            ratio = log(bin_Edges[iBin + 1] / bin_Edges[iBin]);
+            ratio = log_Bin_Edges[iBin + 1] - log_Bin_Edges[iBin];
             for (jNy = 0; jNy < Ny; jNy++)
             {
                 for (iNx = 0; iNx < Nx; iNx++)
@@ -1243,7 +1307,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
             schedule(dynamic, 1) if (!PARALLEL_CASES)
         for (iBin = 0; iBin < nBin; iBin++)
         {
-            ratio = log(bin_Edges[iBin + 1] / bin_Edges[iBin]);
+            ratio = log_Bin_Edges[iBin + 1] - log_Bin_Edges[iBin];
             for (jNy = 0; jNy < Ny; jNy++)
             {
                 for (iNx = 0; iNx < Nx; iNx++)
@@ -1612,7 +1676,8 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
     } /* End of Grid_Aerosol::StdDev */
 
-    double Grid_Aerosol::Moment(UInt n, const Vector_1D& PDF) const
+    template <UInt N>
+    double Grid_Aerosol::Moment(const Vector_1D& PDF) const
     {
 
         UInt iBin = 0;
@@ -1625,14 +1690,39 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                 schedule(dynamic, 1) if (!PARALLEL_CASES)
         for (iBin = 0; iBin < nBin; iBin++)
         {
-            moment += (log(bin_Edges[iBin + 1] / bin_Edges[iBin])) * pow(bin_Centers[iBin], n) * PDF[iBin];
+            // Moment function only used for N = 0, 1, 2, 3 --> eliminate usage of pow() to save time
+            double pow_value;
+            if constexpr (N == 0)
+                pow_value = 1;
+            else if constexpr (N == 1)
+                pow_value = bin_Centers[iBin];
+            else if constexpr (N == 2)
+                pow_value = bin_Centers[iBin] * bin_Centers[iBin];
+            else if constexpr (N == 3)
+                pow_value = bin_Centers[iBin] * bin_Centers[iBin] * bin_Centers[iBin];
+            else
+                pow_value = pow(bin_Centers[iBin], N);  // fallback for safety
+
+            moment += (log_Bin_Edges[iBin+1] - log_Bin_Edges[iBin]) * pow_value * PDF[iBin];
         }
 
         return moment;
 
-    } /* End of Grid_Aerosol::Moment */
+    } 
+    // overload function to call and evaluate branch in template function for different powers N at runtime
+    double Grid_Aerosol::Moment(UInt n, const Vector_1D& PDF) const
+    {
+        switch(n) {
+            case 0: return Moment<0>(PDF);
+            case 1: return Moment<1>(PDF);
+            case 2: return Moment<2>(PDF);
+            case 3: return Moment<3>(PDF);
+            default: return Moment<4>(PDF);
+        }
+    }/* End of Grid_Aerosol::Moment */
 
-    double Grid_Aerosol::Moment(UInt n, UInt jNy, UInt iNx) const
+    template <UInt N>
+    double Grid_Aerosol::Moment(UInt jNy, UInt iNx) const
     {
 
         UInt iBin = 0;
@@ -1644,12 +1734,38 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
             reduction(+                                        \
                     : moment)                                \
                 schedule(dynamic, 1) if (!PARALLEL_CASES)
-        for (iBin = 0; iBin < nBin; iBin++)
-            moment += (log(bin_Edges[iBin + 1] / bin_Edges[iBin])) * pow(FACTOR * bin_VCenters[iBin][jNy][iNx], n / double(3.0)) * pdf[iBin][jNy][iNx];
+        for (iBin = 0; iBin < nBin; iBin++){
+            double pow_value;
+            // Moment function only used for N = 0, 1, 2, 3 --> eliminate usage of pow() to save time
+            if constexpr (N == 0)
+                pow_value = 1;
+            else if constexpr (N == 1)
+                pow_value = cbrt(FACTOR * bin_VCenters[iBin][jNy][iNx]);
+            else if constexpr (N == 2)
+                pow_value = cbrt(FACTOR * FACTOR * bin_VCenters[iBin][jNy][iNx] * bin_VCenters[iBin][jNy][iNx]);
+            else if constexpr (N == 3)
+                pow_value = FACTOR * bin_VCenters[iBin][jNy][iNx];
+            else
+                pow_value = pow(FACTOR * bin_VCenters[iBin][jNy][iNx], N / 3.0);  // fallback for safety
+
+            moment += (log_Bin_Edges[iBin+1] - log_Bin_Edges[iBin]) * pow_value * pdf[iBin][jNy][iNx];
+        }
 
         return moment;
 
-    } /* End of Grid_Aerosol::Moment */
+    }
+    // overload function to call and evaluate branch in template function for different powers N at runtime
+    double Grid_Aerosol::Moment(UInt n, UInt jNy, UInt iNx) const
+    {
+        switch(n) {
+            case 0: return Moment<0>(jNy, iNx);
+            case 1: return Moment<1>(jNy, iNx);
+            case 2: return Moment<2>(jNy, iNx);
+            case 3: return Moment<3>(jNy, iNx);
+            default: return Moment<4>(jNy, iNx);
+        }
+    }
+     /* End of Grid_Aerosol::Moment */
 
     double Grid_Aerosol::Radius(UInt jNy, UInt iNx) const
     {
@@ -1692,7 +1808,8 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
         if (N > 0)
         {
-            return sqrt(Moment(2, jNy, iNx) / N - pow(Moment(1, jNy, iNx) / N, 2.0));
+            double Moment_1_N = Moment(1, jNy, iNx) / N;
+            return sqrt(Moment(2, jNy, iNx) / N - Moment_1_N * Moment_1_N);
         }
         else
         {

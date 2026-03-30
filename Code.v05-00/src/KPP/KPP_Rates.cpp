@@ -315,14 +315,16 @@ double GC_OHCO( float A0, float B0, float C0, double PRESS, double AIRDENS, doub
     K0 = GCARR( (double)A0, (double)B0, (double)C0, TEMP );
     K0 = K0 * (1.0E+00 + 0.6E+00*9.871E+07*PRESS);
 
-    KLO1 = 5.9E-33*pow( (300.0/TEMP), (1.4E+00) );
-    KHI1 = 1.1E-12*pow( (300.0/TEMP), (-1.3E+00) );
+    double temp_300 = 300.0/TEMP;
+
+    KLO1 = 5.9E-33*pow( (temp_300), (1.4E+00) );
+    KHI1 = 1.1E-12*pow( (temp_300), (-1.3E+00) );
     XYRAT1 = KLO1*AIRDENS/KHI1;
     BLOG1 = log10(XYRAT1);
     FEXP1 = 1.0E+00/(1.0E+00 + BLOG1 * BLOG1);
     KCO1 = KLO1 * AIRDENS * pow( 0.6, (FEXP1) ) / (1.0E+00 + XYRAT1);
-    KLO2 = 1.5E-13*pow( (300.0/TEMP), (-0.6E+00) );
-    KHI2 = 2.1E+09*pow( (300.0/TEMP), (-6.1E+00) );
+    KLO2 = 1.5E-13*pow( (temp_300), (-0.6E+00) );
+    KHI2 = 2.1E+09*pow( (temp_300), (-6.1E+00) );
     XYRAT2 = KLO2*AIRDENS / KHI2;
     BLOG2 = log10(XYRAT2);
     FEXP2 = 1.0E+00 / (1.0E+00 + BLOG2*BLOG2);

@@ -100,14 +100,15 @@ void Solution::Initialize(std::string fileName,
     VectorUtils::set_value(sootDens, aer_Value[0][0]);
     VectorUtils::set_value(sootRadi, aer_Value[0][1]);
     VectorUtils::set_value(sootArea, 4.0 / double(3.0) * PI * aer_Value[0][0] * aer_Value[0][1] * aer_Value[0][1] * aer_Value[0][1]);
-
-    nBin_LA = std::floor(1 + log(pow((LA_R_HIG/LA_R_LOW), 3.0)) / log(LA_VRAT));
+    
+    double la_r_hig_low = LA_R_HIG/LA_R_LOW;
+    nBin_LA = std::floor(1 + log(la_r_hig_low * la_r_hig_low * la_r_hig_low) / log(LA_VRAT));
 
     Vector_1D LA_rE( nBin_LA + 1, 0.0 ); /* Bin edges in m */
     Vector_1D LA_rJ( nBin_LA    , 0.0 ); /* Bin center radius in m */
     Vector_1D LA_vJ( nBin_LA    , 0.0 ); /* Bin volume centers in m^3 */
 
-    const double LA_RRAT = pow( LA_VRAT, 1.0 / double(3.0) );
+    const double LA_RRAT = cbrt( LA_VRAT );
     LA_rE[0] = LA_R_LOW;
     for ( UInt iBin_LA = 1; iBin_LA < nBin_LA + 1; iBin_LA++ )
         LA_rE[iBin_LA] = LA_rE[iBin_LA-1] * LA_RRAT; /* [m] */
@@ -142,14 +143,14 @@ void Solution::Initialize(std::string fileName,
         nBin_LA = 2;
         //dumb hardcoded Grid_Aerosol default constructor
     }
-
-    nBin_PA = std::floor( 1 + log( pow( (PA_R_HIG/PA_R_LOW), 3.0 ) ) / log( PA_VRAT ) );
+    double pa_r_hig_low = PA_R_HIG/PA_R_LOW;
+    nBin_PA = std::floor( 1 + log( pa_r_hig_low * pa_r_hig_low* pa_r_hig_low ) / log( PA_VRAT ) );
 
     Vector_1D PA_rE( nBin_PA + 1, 0.0 ); /* Bin edges in m */
     Vector_1D PA_rJ( nBin_PA    , 0.0 ); /* Bin center radius in m */
     Vector_1D PA_vJ( nBin_PA    , 0.0 ); /* Bin volume centers in m^3 */
 
-    const double PA_RRAT = pow( PA_VRAT, 1.0 / double(3.0) );
+    const double PA_RRAT = cbrt( PA_VRAT );
     PA_rE[0] = PA_R_LOW;
     for ( UInt iBin_PA = 1; iBin_PA < nBin_PA + 1; iBin_PA++ )
         PA_rE[iBin_PA] = PA_rE[iBin_PA-1] * PA_RRAT;                                        /* [m]   */

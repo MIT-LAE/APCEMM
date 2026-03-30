@@ -96,7 +96,7 @@ namespace EPM::Models
        * radii * and volume ratio between two adjacent bins */
       const UInt SO4_NBIN =
           static_cast<UInt>(
-              std::floor(1 + log(pow(LA_R_HIG / LA_R_LOW, 3.0)) / log(LA_VRAT)));
+              std::floor(1 + 3.0*log(LA_R_HIG / LA_R_LOW) / log(LA_VRAT)));
 
       if (LA_VRAT <= 1.0) {
         std::cout << "\nVolume ratio of consecutive bins for SO4 has to be "
@@ -110,7 +110,7 @@ namespace EPM::Models
       Vector_1D SO4_vJ( SO4_NBIN    , 0.0 ); // bin centers, volume
 
       /* Adjacent bin radius ratio */
-      const double LA_RRAT = pow( LA_VRAT, 1.0 / double(3.0) );
+      const double LA_RRAT = cbrt(LA_VRAT);
 
         /* Initialize bin center and edge radii, as well as volume */
         SO4_rE[0] = LA_R_LOW;
@@ -125,10 +125,10 @@ namespace EPM::Models
         /* Number of ice size distribution bins based on specified min and max radii *
         * and volume ratio between two adjacent bins */
         const UInt Ice_NBIN = static_cast<UInt>(
-            std::floor(1 + log(pow(PA_R_HIG / PA_R_LOW, 3.0)) / log(PA_VRAT)));
+            std::floor(1 + 3.0*log(PA_R_HIG / PA_R_LOW) / log(PA_VRAT)));
 
         /* Adjacent bin radius ratio */
-        const double PA_RRAT = pow( PA_VRAT, 1.0 / double(3.0) );
+        const double PA_RRAT = cbrt( PA_VRAT );
 
         /* Ice bin center and edge radii */
         Vector_1D Ice_rJ( Ice_NBIN    , 0.0 );
@@ -208,8 +208,9 @@ namespace EPM::Models
         double log10_timeInitial = log10(timeInitial);
         double timeFinal   = 2.0E+03;
         double log10_timeFinal = log10(timeFinal);
+        double denominator = 1/double( nTime - 1.0 );
         for ( iTime = 0; iTime < nTime; iTime++ ) {
-            timeArray[iTime] = pow( 10.0, log10_timeInitial + iTime * ( log10_timeFinal - log10_timeInitial ) / double( nTime - 1.0 ) );
+            timeArray[iTime] = pow( 10.0, log10_timeInitial + iTime * ( log10_timeFinal - log10_timeInitial ) * denominator );
         }
 
         UInt iTime_3mins;

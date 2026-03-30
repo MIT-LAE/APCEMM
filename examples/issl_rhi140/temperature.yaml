@@ -133,7 +133,7 @@ METEOROLOGY MENU:
   # --- MET INPUT OPTIONS ---+
   METEOROLOGICAL INPUT SUBMENU:
     Use met. input (T/F): T
-    Met input file path (string): example_met_file.nc
+    Met input file path (string): example_met_file_temperature.nc
     # Frequency of met data availability
     Time series data timestep [hr] (double): 1.0
     # If off, uses the parameter specified in METEOROLOGICAL PARAMETERS SUBMENU
@@ -190,7 +190,6 @@ DIAGNOSTIC MENU:
 # Sometimes you have to change YLIM_DOWN here if the supersaturated layer is very thick
 # because YLIM_DOWN must be larger than the layer thickness.
 ADVANCED OPTIONS MENU:
-  Save gridded particle size distribution (T/F): F # WARNING: If T, it can generate very large output files and slow down the simulation
   # Domain is defined as: X [-XLIM_LEFT, XLIM_RIGHT], Y [-YLIM_DOWN, YLIM_UP]
   GRID SUBMENU:
     NX (positive int): 200

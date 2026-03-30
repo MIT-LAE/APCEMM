@@ -65,12 +65,14 @@ namespace met
             Atmospheric Chemistry and Physics
             https://doi.org/10.5194/acp-22-10919-2022
          */
+        
+        double rhi_abs = rhi * 0.01;
 
-        double rhi_abs = rhi / 100.0;
+        double rhi_abs_a = rhi_abs / a;
 
-        double rhi_corr = (rhi_abs / a) <= 1
-                        ? rhi_abs / a
-                        : std::min(std::pow(rhi_abs / a, b), 1.65);
+        double rhi_corr = (rhi_abs_a) <= 1
+                        ? rhi_abs_a
+                        : std::min(std::pow(rhi_abs_a, b), 1.65);
         return rhi_corr * 100.0;
     }
     struct newXCoordsPair {

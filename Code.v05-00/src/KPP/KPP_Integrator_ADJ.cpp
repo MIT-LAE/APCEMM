@@ -1837,7 +1837,7 @@ double ros_ErrorNorm ( double Y[], double Ynew[], double Yerr[],
         else
             Scale = AbsTol[0]+RelTol[0]*Ymax;
 
-        Err = Err+pow((Yerr[i]/Scale),2);
+        Err = Err+((Yerr[i]/Scale) * (Yerr[i]/Scale));
     }
     Err  = SQRT(Err/NVAR);
 
@@ -2057,9 +2057,10 @@ void ros_Hermite3( double a, double b, double T, double Ya[],
 
     Tau = T - a;
     WCOPY(NVAR,&C[3][0],1,Y,1);
-    WSCAL(NVAR,pow(Tau,3),Y,1);
-    for(j=2; j>=0; j--)
-        WAXPY(NVAR,pow(Tau,(j-1)),&C[j][0],1,Y,1);
+    WSCAL(NVAR,Tau*Tau*Tau,Y,1);
+    WAXPY(NVAR,Tau,&C[2][0],1,Y,1);
+    WAXPY(NVAR,1,&C[1][0],1,Y,1);
+    WAXPY(NVAR,1/Tau,&C[0][0],1,Y,1);
 
 } /* End of ros_Hermite3 */
 
