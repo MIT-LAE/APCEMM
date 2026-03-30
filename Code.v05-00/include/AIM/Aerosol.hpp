@@ -61,6 +61,7 @@ class AIM::Aerosol
 
         /* Moments */
         //NOTE: This gives the moment in [- / cm3]. You need to multiply by factors to get it in [ / m] or something.
+        //NOTE: now returning binMoment without the log bin ratio, as the only instance calling this function already calculates it
         inline double binMoment(int iBin, int n = 0) const {
             if (n == 0){
                 return pdf[iBin]; // if n = 0, it can skip the pow() calculation
@@ -69,7 +70,7 @@ class AIM::Aerosol
             return pow(bin_Centers[iBin], n) * pdf[iBin];
         }
         //NOTE: This gives the moment in [- / cm3]. You need to multiply by factors to get it in [ / m] or something.
-        template <UInt N>
+        template <UInt N> //Template allows us to evaulate the power at compile time to decrease runtime
         double Moment() const;
         double Moment( UInt n = 0 ) const;
         double Radius( ) const;
@@ -132,10 +133,10 @@ class AIM::Grid_Aerosol
         inline void updateNy(int ny_new) { Ny = ny_new; };
 
         /* Moments */
-        template <UInt N>
+        template <UInt N> //Templates allow us to evaulate the power at compile time to decrease runtime
         Vector_2D Moment() const;
         Vector_2D Moment( UInt n ) const;
-        template <UInt N>
+        template <UInt N> 
         double Moment( const Vector_1D& PDF ) const;
         double Moment( UInt n, const Vector_1D& PDF ) const;
         template <UInt N>

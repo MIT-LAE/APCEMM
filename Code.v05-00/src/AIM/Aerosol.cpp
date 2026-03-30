@@ -317,6 +317,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         for (UInt iBin = 0; iBin < nBin; iBin++)
         {
             double pow_value;
+            // Moment function only used for N = 0, 1, 2, 3 --> eliminate usage of pow() to save time
             if constexpr (N == 0)
                 pow_value = 1;
             else if constexpr (N == 1)
@@ -334,6 +335,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         return moment;
 
     }
+    // overload function to call and evaluate branch in template function for different powers N at runtime
     double Aerosol::Moment(UInt n) const
     {
         switch(n) {
@@ -1176,6 +1178,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
             {
                 for (iNx = 0; iNx < Nx; iNx++)
                 {
+                    // Moment function only used for N = 0, 1, 2, 3 --> eliminate usage of pow() to save time
                     if constexpr (N == 0)
                         pow_value = 1;
                     else if constexpr (N == 1)
@@ -1194,6 +1197,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         return moment;
 
     }
+    // overload function to call and evaluate branch in template function for different powers N at runtime
     Vector_2D Grid_Aerosol::Moment(UInt n) const
     {
         switch(n) {
@@ -1686,6 +1690,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                 schedule(dynamic, 1) if (!PARALLEL_CASES)
         for (iBin = 0; iBin < nBin; iBin++)
         {
+            // Moment function only used for N = 0, 1, 2, 3 --> eliminate usage of pow() to save time
             double pow_value;
             if constexpr (N == 0)
                 pow_value = 1;
@@ -1704,6 +1709,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         return moment;
 
     } 
+    // overload function to call and evaluate branch in template function for different powers N at runtime
     double Grid_Aerosol::Moment(UInt n, const Vector_1D& PDF) const
     {
         switch(n) {
@@ -1730,6 +1736,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                 schedule(dynamic, 1) if (!PARALLEL_CASES)
         for (iBin = 0; iBin < nBin; iBin++){
             double pow_value;
+            // Moment function only used for N = 0, 1, 2, 3 --> eliminate usage of pow() to save time
             if constexpr (N == 0)
                 pow_value = 1;
             else if constexpr (N == 1)
@@ -1747,6 +1754,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         return moment;
 
     }
+    // overload function to call and evaluate branch in template function for different powers N at runtime
     double Grid_Aerosol::Moment(UInt n, UInt jNy, UInt iNx) const
     {
         switch(n) {
