@@ -11,6 +11,7 @@ option(DEBUG "Enable debug mode" OFF)
 SET(RINGS 0)
 SET(OMP 1)
 option(BUILD_TEST ON)
+option(ENABLE_PROFILING "Enable perf-friendly build (-g -O2)" OFF)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")	
     include(CheckCXXCompilerFlag)
@@ -34,6 +35,10 @@ elseif (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     #Enabling unsafe optimizations doesn't seem to affect the runtime much, but could be something to check just in case later.
     #-Michael
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -fno-trapping-math -funsafe-math-optimizations")
+endif()
+if(ENABLE_PROFILING)
+    message(STATUS "Profiling enabled: adding debug symbols and frame pointers")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -fno-omit-frame-pointer")
 endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

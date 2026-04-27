@@ -97,8 +97,9 @@ namespace AIM
                 }
 
                 X = 8.0E+00 * physConst::g * rhoA / eta2 * binCenters[iBin] * binCenters[iBin] * mi_Ai;
-
-                Re = C2 * pow(sqrt(1.0E+00 + C1 * sqrt(X)) - 1.0E+00, 2.0) - a0 * pow( X, b0 );
+                
+                double nested_sqrt = sqrt(1.0E+00 + C1 * sqrt(X)) - 1.0E+00;
+                Re = C2 * nested_sqrt * nested_sqrt - a0 * pow( X, b0 );
 
                 vFall[iBin] = Re * eta / ( rhoA * 2.0E+00 * binCenters[iBin] );
 

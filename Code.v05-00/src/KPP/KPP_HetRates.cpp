@@ -582,7 +582,7 @@ double HETNO3( const double A, const double B, const double AREA[NAERO], const d
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -693,7 +693,7 @@ double HETHO2( const double A, const double B, const double AREA[NAERO], const d
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -754,7 +754,7 @@ double HETHBr( const double A, const double B, const double KHETI_SLA[11], const
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -831,7 +831,7 @@ double HETN2O5( const double A, const double B, const double KHETI_SLA[11], cons
         if ( N == 1 ) {
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -899,7 +899,7 @@ double HETBrNO3( const double A, const double B, const double KHETI_SLA[11], con
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -966,7 +966,7 @@ double HETHOBr( const double A, const double B, const double KHETI_SLA[11], cons
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -1465,7 +1465,7 @@ double HETN2O5_PSC( const double A, const double B, const double KHETI_SLA[11], 
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -1538,7 +1538,7 @@ double HETClNO3_PSC1( const double A, const double B, const double KHETI_SLA[11]
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -1611,7 +1611,7 @@ double HETClNO3_PSC2( const double A, const double B, const double KHETI_SLA[11]
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -1684,7 +1684,7 @@ double HETClNO3_PSC3( const double A, const double B, const double KHETI_SLA[11]
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -1757,7 +1757,7 @@ double HETBrNO3_PSC( const double A, const double B, const double KHETI_SLA[11],
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -1830,7 +1830,7 @@ double HETHOCl_PSC1( const double A, const double B, const double KHETI_SLA[11],
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -1903,7 +1903,7 @@ double HETHOCl_PSC2( const double A, const double B, const double KHETI_SLA[11],
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {
@@ -1976,7 +1976,7 @@ double HETHOBr_PSC( const double A, const double B, const double KHETI_SLA[11], 
             ADJUSTEDRATE = AREA[N] * XSTKCF;
         } else {
             /* Reaction rate for surface of aerosol */
-            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, pow( TEMP, 0.5 ), pow( A, 0.5 ) );
+            ADJUSTEDRATE = ARSL1K( AREA[N], RADI[N], AIRDENS, XSTKCF, sqrt( TEMP ), sqrt( A ) );
         }
 
         if ( ( DO_EDUCT ) && ( N < 2 ) ) {

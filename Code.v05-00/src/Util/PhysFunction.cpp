@@ -149,7 +149,7 @@ namespace physFunc
          * OUTPUT PARAMETERS:
          * - double :: Dynamic viscosity in kg/m/s */
 
-        return 1.8325E-05 * ( 416.16 / ( T + 120.0 ) ) * pow( T / 296.16, 1.5 );
+        return 1.8325E-05 * ( 416.16 / ( T + 120.0 ) ) * ( T / 296.16 ) * sqrt ( T / 296.16);
 
     } /* End of dynVisc */
 
@@ -344,7 +344,7 @@ namespace physFunc
 
         double l = lambda_p( r, m, T, P );
 
-        return ( pow( 2.0 * r + l , 3.0 ) - pow( 4.0 * r * r + l * l , 1.5 ) ) / ( 6.0 * r * l ) - 2.0 * r;
+        return ( (2.0 * r + l)*(2.0 * r + l)*(2.0 * r + l) - (4.0 * r * r + l * l) * sqrt(4.0 * r * r + l * l) ) / ( 6.0 * r * l ) - 2.0 * r;
 
     } /* End of delta_p */
 
@@ -468,7 +468,8 @@ namespace physFunc
             /* r_M = r_1 and r_m = r_2 */
             s = Stokes_p( r_2, rho_2, r_1, rho_1, T, P );
             if ( s > 1.214 ) {
-                E_V = pow(1 + 0.75*log(2*s)/(s - 1.214), -2);
+                double pow_var = 1 + 0.75*log(2*s)/(s - 1.214);
+                E_V = 1 / (pow_var * pow_var);
             } else {
                 E_V = 0.0;
             }
@@ -478,7 +479,8 @@ namespace physFunc
             /* r_M = r_2 and r_m = r_1 */
             s = Stokes_p( r_1, rho_1, r_2, rho_2, T, P );
             if ( s > 1.214 ) {
-                E_V = pow(1 + 0.75*log(2*s)/(s - 1.214), -2);
+                double pow_var = 1 + 0.75*log(2*s)/(s - 1.214);
+                E_V = 1 / (pow_var * pow_var);
             } else {
                 E_V = 0.0;
             }
