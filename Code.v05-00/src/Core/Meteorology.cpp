@@ -506,9 +506,8 @@ Vector_1D Meteorology::interpMetTimeseriesData(double simTime_h, const Vector_2D
 }
 
 void Meteorology::updateTempPerturb() {
-    #pragma omp parallel for\
-    if(!PARALLEL_CASES) \
-    default(shared)
+    /* Do not parallelize, otherwise there is a race condition in access to the global random state
+       which makes results non-deterministic even with fixed seed */ 
     for (int j = 0; j < ny_; j++){
         for(int i = 0; i < nx_; i++){
             double epsilon1 = fRand(-1.0, 1.0);
