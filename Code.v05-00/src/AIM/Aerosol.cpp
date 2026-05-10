@@ -666,15 +666,11 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                     /* Only run coagulation where aerosol volume is greater
                      * than 0.1 um^3/cm^3 */
 
-                    #pragma omp master
-                    {
-                        /* Update kernel (updates kernel.f and kernel.indices).
-                         * This needs to be performed in serial as the class
-                         * kernel is specific to the grid cell (jNy, iNx) */
-                        kernel.buildF(bin_VCenters, jNy, iNx);
-                    }
+                    /* Update kernel (updates kernel.f and kernel.indices).
+                        * This needs to be performed in serial as the class
+                        * kernel is specific to the grid cell (jNy, iNx) */
+                    kernel.buildF(bin_VCenters, jNy, iNx);
 
-                    #pragma omp barrier
 
                     #pragma omp parallel for default(shared) private(iBin, jBin, kBin, kBin_, nPart) \
                         schedule(dynamic, 1) if (!PARALLEL_CASES)
@@ -772,8 +768,6 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         Vector_3D iceVol  = Volume( );
         Vector_2D totH2O  = H2O;
         
-        double pSat;
-
         #pragma omp parallel if( !PARALLEL_CASES ) default( shared )
         {
 
@@ -814,7 +808,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                     locT = T[jNy][iNx];
 
                     /* Store local saturation pressure w.r.t ice */
-                    pSat = physFunc::pSat_H2Os( locT );
+                    double pSat = physFunc::pSat_H2Os( locT );
 
                     if ( H2O[jNy][iNx] * kB_ * locT / pSat > 0.0 ) {
                         APC_Scheme(jNy,iNx, locT, locP, dt, H2O, totH2O, icePart, iceVol );
@@ -1177,34 +1171,39 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
     Vector_2D Grid_Aerosol::Moment() const
     {
 
-        UInt jNy = 0;
-        UInt iNx = 0;
-        UInt iBin = 0;
-
         Vector_2D moment(Ny, Vector_1D(Nx, 0.0E+00));
         const double FACTOR = 3.0 / double(4.0 * PI);
 
-        #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
-        for (iBin = 0; iBin < nBin; iBin++)
+        /* Parallelize over the row, not the bin so that each iteration computes
+         * moment[jNy] so there is no race.
+         * The bin summation order per cell is fixed, so results are reproducible
+         * with varying thread counts. Innermost loop keeps the contiguous data 
+         * access pattern */
+        #pragma omp parallel for default(shared) schedule(static) if (!PARALLEL_CASES)
+        for (UInt jNy = 0; jNy < Ny; jNy++)
         {
-            double pow_value;
-            for (jNy = 0; jNy < Ny; jNy++)
+            Vector_1D& momentRow = moment[jNy];
+            for (UInt iBin = 0; iBin < nBin; iBin++)
             {
-                for (iNx = 0; iNx < Nx; iNx++)
+                // [[maybe_unused]] because N = 0 does not use vCenterRow and compiler would flag it
+                [[maybe_unused]] const Vector_1D& vCenterRow = bin_VCenters[iBin][jNy];
+                const Vector_1D& pdfRow = pdf[iBin][jNy];
+                const double dLogBin = log_Bin_Edges[iBin+1] - log_Bin_Edges[iBin];
+                for (UInt iNx = 0; iNx < Nx; iNx++)
                 {
+                    double pow_value;
                     // Moment function only used for N = 0, 1, 2, 3 --> eliminate usage of pow() to save time
                     if constexpr (N == 0)
                         pow_value = 1;
                     else if constexpr (N == 1)
-                        pow_value = cbrt(FACTOR * bin_VCenters[iBin][jNy][iNx]);
+                        pow_value = cbrt(FACTOR * vCenterRow[iNx]);
                     else if constexpr (N == 2)
-                        pow_value = cbrt(FACTOR * FACTOR * bin_VCenters[iBin][jNy][iNx] * bin_VCenters[iBin][jNy][iNx]);
+                        pow_value = cbrt(FACTOR * FACTOR * vCenterRow[iNx] * vCenterRow[iNx]);
                     else if constexpr (N == 3)
-                        pow_value = FACTOR * bin_VCenters[iBin][jNy][iNx];
+                        pow_value = FACTOR * vCenterRow[iNx];
                     else
-                        pow_value = pow(FACTOR * bin_VCenters[iBin][jNy][iNx], N / 3.0);  // fallback for safety
-                    moment[jNy][iNx] += (log_Bin_Edges[iBin+1] - log_Bin_Edges[iBin]) * pow_value * pdf[iBin][jNy][iNx];
+                        pow_value = pow(FACTOR * vCenterRow[iNx], N / 3.0);  // fallback for safety
+                    momentRow[iNx] += dLogBin * pow_value * pdfRow[iNx];
                 }
             }
         }
@@ -1222,24 +1221,23 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
             case 3: return Moment<3>();
             default:
             {
-                UInt jNy = 0;
-                UInt iNx = 0;
-                UInt iBin = 0;
-
                 Vector_2D moment(Ny, Vector_1D(Nx, 0.0E+00));
                 const double FACTOR = 3.0 / double(4.0 * PI);
 
-                #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
-                    schedule(dynamic, 1) if (!PARALLEL_CASES)
-                for (iBin = 0; iBin < nBin; iBin++)
+                // See Moment<N>() for parallelization pattern
+                #pragma omp parallel for default(shared) schedule(static) if (!PARALLEL_CASES)
+                for (UInt jNy = 0; jNy < Ny; jNy++)
                 {
-                    double pow_value;
-                    for (jNy = 0; jNy < Ny; jNy++)
+                    Vector_1D& momentRow = moment[jNy];
+                    for (UInt iBin = 0; iBin < nBin; iBin++)
                     {
-                        for (iNx = 0; iNx < Nx; iNx++)
+                        const Vector_1D& vCenterRow = bin_VCenters[iBin][jNy];
+                        const Vector_1D& pdfRow = pdf[iBin][jNy];
+                        const double dLogBin = log_Bin_Edges[iBin+1] - log_Bin_Edges[iBin];
+                        for (UInt iNx = 0; iNx < Nx; iNx++)
                         {
-                            pow_value = pow(FACTOR * bin_VCenters[iBin][jNy][iNx], n / 3.0);
-                            moment[jNy][iNx] += (log_Bin_Edges[iBin+1] - log_Bin_Edges[iBin]) * pow_value * pdf[iBin][jNy][iNx];
+                            double pow_value = pow(FACTOR * vCenterRow[iNx], n / 3.0);
+                            momentRow[iNx] += dLogBin * pow_value * pdfRow[iNx];
                         }
                     }
                 }
@@ -1293,10 +1291,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         UInt iNx = 0;
         UInt jNy = 0;
 
-        #pragma omp parallel for default(shared) private(iNx, jNy) \
-            reduction(+                                            \
-                    : totalnumber_sum)                           \
-                schedule(dynamic, 1) if (!PARALLEL_CASES)
+        // Do not parallelize: floating point parallel reduction is not deterministic
         for (jNy = 0; jNy < Ny; jNy++)
         {
             for (iNx = 0; iNx < Nx; iNx++)
@@ -1416,10 +1411,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         UInt iNx = 0;
         UInt jNy = 0;
 
-        #pragma omp parallel for default(shared) private(iNx, jNy) \
-            reduction(+                                            \
-                    : totalicemass_sum)                           \
-                schedule(dynamic, 1) if (!PARALLEL_CASES)
+        // Do not parallelize: floating point parallel reduction is not deterministic
         for (jNy = 0; jNy < Ny; jNy++)
         {
             for (iNx = 0; iNx < Nx; iNx++)
@@ -1724,10 +1716,6 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
         double moment = 0.0E+00;
 
-        #pragma omp parallel for default(shared) private(iBin) \
-            reduction(+                                        \
-                    : moment)                                \
-                schedule(dynamic, 1) if (!PARALLEL_CASES)
         for (iBin = 0; iBin < nBin; iBin++)
         {
             // Moment function only used for N = 0, 1, 2, 3 --> eliminate usage of pow() to save time
@@ -1762,10 +1750,6 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                 UInt iBin = 0;
                 double moment = 0.0E+00;
 
-                #pragma omp parallel for default(shared) private(iBin) \
-                    reduction(+                                        \
-                            : moment)                                \
-                        schedule(dynamic, 1) if (!PARALLEL_CASES)
                 for (iBin = 0; iBin < nBin; iBin++)
                 {
                     moment += (log_Bin_Edges[iBin+1] - log_Bin_Edges[iBin]) * pow(bin_Centers[iBin], n) * PDF[iBin];
@@ -1785,10 +1769,6 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         double moment = 0.0E+00;
         const double FACTOR = 3.0 / double(4.0 * PI);
 
-        #pragma omp parallel for default(shared) private(iBin) \
-            reduction(+                                        \
-                    : moment)                                \
-                schedule(dynamic, 1) if (!PARALLEL_CASES)
         for (iBin = 0; iBin < nBin; iBin++){
             double pow_value;
             // Moment function only used for N = 0, 1, 2, 3 --> eliminate usage of pow() to save time
@@ -1823,10 +1803,6 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                 double moment = 0.0E+00;
                 const double FACTOR = 3.0 / double(4.0 * PI);
 
-                #pragma omp parallel for default(shared) private(iBin) \
-                    reduction(+                                        \
-                            : moment)                                \
-                        schedule(dynamic, 1) if (!PARALLEL_CASES)
                 for (iBin = 0; iBin < nBin; iBin++){
                     moment += (log_Bin_Edges[iBin+1] - log_Bin_Edges[iBin]) * pow(FACTOR * bin_VCenters[iBin][jNy][iNx], n / 3.0) * pdf[iBin][jNy][iNx];
                 }

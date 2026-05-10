@@ -187,10 +187,9 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         //    dp/dz = -rho*g = -(n/V)Mg
         Vector_3D& pdfRef = iceAerosol_.getPDF();
         auto pressureEdges = met_.PressEdges();
-        double localND;
         #pragma omp parallel for
         for (std::size_t j=0; j<yCoords_.size(); j++){
-            localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);
+            double localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);
             for (std::size_t i=0; i<xCoords_.size(); i++){
                 Contrail_[j][i] = Contrail_[j][i] / localND; // parts per trillion
                 H2O_[j][i] = H2O_[j][i] / localND; // parts per trillion
@@ -764,10 +763,9 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     // included it). This uses the hydrostatic assumption:
     //    dp/dz = -rho*g = -(n/V)Mg
     auto pressureEdges = met_.PressEdges(); 
-    double localND;
     #pragma omp parallel for
     for (std::size_t j=0; j<yCoords_.size(); j++){
-        localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);
+        double localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);
         for (std::size_t i=0; i<xCoords_.size(); i++){
             Contrail_[j][i] = Contrail_[j][i] * localND;
             H2O_[j][i] = H2O_[j][i] * localND;
