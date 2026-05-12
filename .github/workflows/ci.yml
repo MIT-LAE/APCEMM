@@ -1,0 +1,50 @@
+name: Build and test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        gcc-version: [11, 14]
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'recursive'
+
+    - name: Install GCC and dependencies
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install -y gcc-${{ matrix.gcc-version }} g++-${{ matrix.gcc-version }} cmake
+
+
+
+    - name: Bootstrap vcpkg
+      run: ./Code.v05-00/submodules/vcpkg/bootstrap-vcpkg.sh
+      working-directory: ${{ github.workspace }}
+
+    - name: Configure CMake
+      run: >
+        cmake -B build
+        -S Code.v05-00
+        -DCMAKE_C_COMPILER=gcc-${{ matrix.gcc-version }}
+        -DCMAKE_CXX_COMPILER=g++-${{ matrix.gcc-version }}
+        -DCMAKE_BUILD_TYPE=Release
+      env:
+        CC: gcc-${{ matrix.gcc-version }}
+        CXX: g++-${{ matrix.gcc-version }}
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Run tests
+      working-directory: ./build
+      run: ctest -C Release --output-on-failure
