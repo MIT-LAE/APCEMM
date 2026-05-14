@@ -100,7 +100,6 @@ METEOROLOGY MENU:
     Init wind shear from met. (T/F): T
     Wind shear time series input (T/F): T
     Interpolate shear met. data (T/F): T
-    Init vertical velocity from met. data: T
     Init vert. veloc. from met. data (T/F): T
     Vert. veloc. time series input (T/F): T
     Interpolate vert. veloc. met. data (T/F): T 

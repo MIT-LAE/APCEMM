@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <YamlInputReader/YamlInputReader.hpp>
 #include <Core/Input.hpp>
 #include "APCEMM.h"
@@ -457,4 +458,46 @@ TEST_CASE("Merge Input Files"){
     REQUIRE(caseInput.wingspan() == 69.8);
     REQUIRE(caseInput.coreExitTemp() == 547.3);
     REQUIRE(caseInput.bypassArea() == 1.804);
+}
+
+TEST_CASE("Validate Input Files"){
+    OptInput input;
+    string validFile = string(APCEMM_TESTS_DIR)+"/test1.yaml";
+    
+    string filename1 = string(APCEMM_TESTS_DIR)+"/test3.yaml";
+    string filename2 = string(APCEMM_TESTS_DIR)+"/test4.yaml";
+    string filename3 = string(APCEMM_TESTS_DIR)+"/test5.yaml";
+
+    SECTION("Invalid key (scalar) at the root level") {
+        // Check that it detects the invalid key, that it points to the correct file and that
+        // it prints out the name of the invalid key (here a scalar)
+        string invalid_file = string(APCEMM_TESTS_DIR) + "/test3.yaml";
+
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, {validFile, filename1}), 
+            Catch::Matchers::ContainsSubstring("Unknown key found") &&
+            Catch::Matchers::ContainsSubstring("test3.yaml") &&
+            Catch::Matchers::ContainsSubstring("INVALID YAML INPUT")
+    );
+    }
+
+    SECTION("Invalid key (map) in a submenu"){
+        // Check that it detects the invalid key and that it prints out the name
+        // of the invalid key (here a map)
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, {filename2}),
+            Catch::Matchers::ContainsSubstring("Unknown key found") &&
+            Catch::Matchers::ContainsSubstring("INVALID YAML KEY")
+        );
+    }
+
+    SECTION("Valid key but wrong type (map instead of scalar)"){
+        // Here we have a key that is supposed to be a scalar but instead is a map
+        // Check that if detects this and prints the name correctly
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, {filename3}),
+            Catch::Matchers::ContainsSubstring("is a map in provided YAML but not in the default input.yaml") &&
+            Catch::Matchers::ContainsSubstring("Met input file path (string)")
+        );
+    }
 }

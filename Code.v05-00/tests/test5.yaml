@@ -1,0 +1,7 @@
+METEOROLOGY MENU:
+  METEOROLOGICAL INPUT SUBMENU:
+    Use met. input (T/F): F
+    # This is a valid value in the default yaml
+    # but it is not a valid key! Should throw
+    Met input file path (string):
+      BAD VALUE: 0

@@ -1,0 +1,9 @@
+PARAMETER MENU:
+  Plume Process [hr] (double): 14
+
+METEOROLOGY MENU:
+  METEOROLOGICAL INPUT SUBMENU:
+    Use met. input (T/F): F
+    Met input file path (string): /path/to/met/input
+    INVALID YAML KEY:
+      BAD FIELD: 0

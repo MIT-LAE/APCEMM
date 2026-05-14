@@ -5,7 +5,11 @@
 #include <algorithm> // std::equal
 #include <cctype>    // std::tolower
 #include <iostream>
+#include <stdexcept>
 #include <string_view> // std::string_view
+#include <set>
+#include <string>
+#include <vector>
 
 
 // Read default configuration from CMake-generated include file.
@@ -25,15 +29,70 @@ bool iequals(std::string_view lhs, std::string_view rhs) {
 
 
 namespace YamlInputReader{
+    // Helper function to get all keys from a YAML Map node
+    std::set<std::string> getYamlKeys(const YAML::Node& node) {
+        std::set<std::string> keys;
+        if (!node.IsMap()) {
+            return keys;
+        }
+        for (const auto& it : node) {
+            keys.insert(it.first.as<std::string>());
+        }
+        return keys;
+    }
+
+    void validateYamlKeys(const YAML::Node& defaultNode, const YAML::Node& userNode, const std::string& currentPath = "") {
+        if (!userNode.IsMap()) {
+            // If the user node is not a map, we don't need to check its keys.
+            return;
+        }
+
+        if (!defaultNode.IsMap()) {
+            // If the user node is a map but the default is not, it's an error
+            // because the user is trying to add a structure that doesn't exist.
+            throw std::runtime_error("Invalid key: '" + currentPath + "' is a map in provided YAML but not in the default input.yaml (should be a value).");
+        }
+
+        auto defaultKeys = getYamlKeys(defaultNode);
+        auto userKeys = getYamlKeys(userNode);
+
+        for (const auto& key : userKeys) {
+            if (defaultKeys.find(key) == defaultKeys.end()) {
+                // The key from the user's YAML does not exist in the default YAML.
+                std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
+                throw std::runtime_error("Unknown key found: '" + errorPath + "'");
+            }
+
+            // Recurse to check nested maps
+            const YAML::Node nextUserNode = userNode[key];
+            const YAML::Node nextDefaultNode = defaultNode[key];
+
+            if (nextUserNode.IsMap()) {
+                std::string nextPath = currentPath.empty() ? key : currentPath + " -> " + key;
+                validateYamlKeys(nextDefaultNode, nextUserNode, nextPath);
+            }
+        }
+    }
+
     void readYamlInputFiles(OptInput& input, const vector<string> &filenames){
-        YAML::Node data = YAML::Load(default_input);
+        YAML::Node defaultData = YAML::Load(default_input);
+        YAML::Node mergedData = YAML::Load(default_input);
+
         for (auto filename: filenames) {
+            YAML::Node userData = YAML::LoadFile(filename);
+        
+            // Validate the user's YAML file against the default structure
+            try {
+                validateYamlKeys(defaultData, userData);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Invalid field in YAML input file '" + filename + "': " + e.what());
+            }
             INPUT_FILE_PATH = std::filesystem::path(filename);
-            data = mergeYamlNodes(data, YAML::LoadFile(filename));
+            mergedData = mergeYamlNodes(mergedData, userData);
         }
 
         try {
-            readSimMenu(input, data["SIMULATION MENU"]);
+            readSimMenu(input, mergedData["SIMULATION MENU"]);
         }
         catch (...) {
             std::cout << "Something went wrong in reading the SIMULATION MENU! Please double-check your input file with the reference in SampleRunDir!";
@@ -41,7 +100,7 @@ namespace YamlInputReader{
         }
 
         try {
-            readParamMenu(input, data["PARAMETER MENU"]);
+            readParamMenu(input, mergedData["PARAMETER MENU"]);
         }
         catch (...) {
             std::cout << "Something went wrong in reading the PARAMETER MENU! Please double-check your input file with the reference in SampleRunDir!";
@@ -49,7 +108,7 @@ namespace YamlInputReader{
         }
 
         try {
-            readTransportMenu(input, data["TRANSPORT MENU"]);
+            readTransportMenu(input, mergedData["TRANSPORT MENU"]);
         }
         catch (...) {
             std::cout << "Something went wrong in reading the TRANSPORT MENU! Please double-check your input file with the reference in SampleRunDir!";
@@ -57,7 +116,7 @@ namespace YamlInputReader{
         }
         
         try {
-            readChemMenu(input, data["CHEMISTRY MENU"]);
+            readChemMenu(input, mergedData["CHEMISTRY MENU"]);
         }
         catch (...) {
             std::cout << "Something went wrong in reading the CHEMISTRY MENU! Please double-check your input file with the reference in SampleRunDir!";
@@ -65,7 +124,7 @@ namespace YamlInputReader{
         }
 
         try {
-            readAeroMenu(input, data["AEROSOL MENU"]);  
+            readAeroMenu(input, mergedData["AEROSOL MENU"]);  
         }
         catch (...) {
             std::cout << "Something went wrong in reading the AEROSOL MENU! Please double-check your input file with the reference in SampleRunDir!";
@@ -73,7 +132,7 @@ namespace YamlInputReader{
         }
 
         try {
-            readMetMenu(input, data["METEOROLOGY MENU"]);
+            readMetMenu(input, mergedData["METEOROLOGY MENU"]);
         }
         catch (const std::invalid_argument& e) {
             std::cerr << "ERROR: " << e.what() << std::endl;
@@ -85,7 +144,7 @@ namespace YamlInputReader{
         }
 
         try {
-            readDiagMenu(input, data["DIAGNOSTIC MENU"]);
+            readDiagMenu(input, mergedData["DIAGNOSTIC MENU"]);
         }
         catch (...) {
             std::cout << "Something went wrong in reading the DIAGNOSTIC MENU! Please double-check your input file with the reference in SampleRunDir!";
@@ -93,7 +152,7 @@ namespace YamlInputReader{
         }
 
         try {
-            readAdvancedMenu(input, data["ADVANCED OPTIONS MENU"]);
+            readAdvancedMenu(input, mergedData["ADVANCED OPTIONS MENU"]);
         }
         catch (...) {
             std::cout << "Something went wrong in reading the ADVANCED OPTIONS MENU! Please double-check your input file with the reference in SampleRunDir!";
