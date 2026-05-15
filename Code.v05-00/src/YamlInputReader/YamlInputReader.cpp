@@ -57,7 +57,7 @@ namespace YamlInputReader{
         auto userKeys = getYamlKeys(userNode);
 
         for (const auto& key : userKeys) {
-            if (defaultKeys.find(key) == defaultKeys.end()) {
+            if (!defaultKeys.contains(key)) {
                 // The key from the user's YAML does not exist in the default YAML.
                 std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
                 throw std::runtime_error("Unknown key found: '" + errorPath + "'");
@@ -94,69 +94,57 @@ namespace YamlInputReader{
         try {
             readSimMenu(input, mergedData["SIMULATION MENU"]);
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the SIMULATION MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the SIMULATION MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
 
         try {
             readParamMenu(input, mergedData["PARAMETER MENU"]);
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the PARAMETER MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the PARAMETER MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
 
         try {
             readTransportMenu(input, mergedData["TRANSPORT MENU"]);
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the TRANSPORT MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the TRANSPORT MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
         
         try {
             readChemMenu(input, mergedData["CHEMISTRY MENU"]);
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the CHEMISTRY MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the CHEMISTRY MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
 
         try {
             readAeroMenu(input, mergedData["AEROSOL MENU"]);  
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the AEROSOL MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the AEROSOL MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
 
         try {
             readMetMenu(input, mergedData["METEOROLOGY MENU"]);
         }
-        catch (const std::invalid_argument& e) {
-            std::cerr << "ERROR: " << e.what() << std::endl;
-            exit(1);
-        }
-        catch (...) {
-            std::cout << "Something went wrong in reading the METEOROLOGY MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the METEOROLOGY MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
 
         try {
             readDiagMenu(input, mergedData["DIAGNOSTIC MENU"]);
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the DIAGNOSTIC MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the DIAGNOSTIC MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
 
         try {
             readAdvancedMenu(input, mergedData["ADVANCED OPTIONS MENU"]);
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the ADVANCED OPTIONS MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the ADVANCED OPTIONS MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
     }
     void readSimMenu(OptInput& input, const YAML::Node& simNode){
