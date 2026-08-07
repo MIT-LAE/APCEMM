@@ -249,7 +249,7 @@ namespace LAGRID {
                             double sigmaX, double sigmaY, double logBinRatio ) 
     {
         auto gaussianFunc = [x0, y0, sigmaX, sigmaY] (double x, double y) -> double {
-            return exp(- (pow(x - x0, 2.0) / (2.0 * sigmaX * sigmaX) + pow(y - y0, 2.0) / (2.0 * sigmaY * sigmaY)));
+            return exp(- ( ( (x - x0)*(x - x0) ) / (2.0 * sigmaX * sigmaX) + ( (y - y0)*(y - y0) ) / (2.0 * sigmaY * sigmaY) ) );
         };
         return initVarToGrid(mass, xEdges, yEdges, gaussianFunc, logBinRatio);
     }
@@ -260,7 +260,7 @@ namespace LAGRID {
         double sigmaX = width / 8;
         double omega = 2 * (physConst::PI / depth);
         auto func = [omega, x0, y0, sigmaX, depth] (double x, double y) -> double {
-            return exp(- (pow(x - x0, 2.0) / (2.0 * sigmaX * sigmaX) )) * ( std::abs(y - y0) < depth/2 ) * std::abs( std::sin(omega * (y - y0)) );
+            return exp(- ( ( (x - x0)*(x - x0) ) / (2.0 * sigmaX * sigmaX) )) * ( std::abs(y - y0) < depth/2 ) * std::abs( std::sin(omega * (y - y0)) );
         };
         return initVarToGrid(mass, xEdges, yEdges, func, logBinRatio);    
     }

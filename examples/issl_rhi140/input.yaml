@@ -2,7 +2,7 @@ SIMULATION MENU:
   # Only one of parameter sweep or MC simulation can be on.
   # Parameter sweep lets you specify an arbitrary number of custom values for each parameter; Monte Carlo simulation is self-explanatory.
   # At the moment, you cannot mix and match MC sim and param sweep on each individual parameter.
-  OpenMP Num Threads (positive int): 8
+  OpenMP Num Threads (positive int): 1
   PARAM SWEEP SUBMENU:
     Parameter sweep (T/F): T
   #-OR---------------
@@ -32,7 +32,7 @@ SIMULATION MENU:
     Run box model (T/F): F
     netCDF filename format (string): APCEMM_BOX_CASE_*
   RANDOM NUMBER GENERATION SUBMENU:
-    Force seed value (T/F): F
+    Force seed value (T/F): T
     Seed value (positive int): 0
   EPM type (original/external/new): original
 

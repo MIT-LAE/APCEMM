@@ -141,15 +141,15 @@ namespace AIM
         for ( unsigned int iBin = 0; iBin < bin_Centers.size(); iBin++ ) {
             if ( bin_Centers[iBin] <= bin_R ) {
                 if ( physFunc::Reynolds_p( bin_R, rho_2, temperature_K, pressure_Pa ) <= 1 ) {
-                    K_DE[iBin] = K_Brow[iBin] * 0.45 * pow( physFunc::Reynolds_p( bin_R, rho_2, temperature_K, pressure_Pa ), 1.0 / double(3.0) ) * pow( physFunc::Schmidt_p( bin_Centers[iBin], temperature_K, pressure_Pa ), 1.0 / double(3.0) );
+                    K_DE[iBin] = K_Brow[iBin] * 0.45 * cbrt( physFunc::Reynolds_p( bin_R, rho_2, temperature_K, pressure_Pa )) * cbrt( physFunc::Schmidt_p( bin_Centers[iBin], temperature_K, pressure_Pa ));
                 } else {
-                    K_DE[iBin] = K_Brow[iBin] * 0.45 * pow( physFunc::Reynolds_p( bin_R, rho_2, temperature_K, pressure_Pa ), 0.5               ) * pow( physFunc::Schmidt_p( bin_Centers[iBin], temperature_K, pressure_Pa ), 1.0 / double(3.0) );
+                    K_DE[iBin] = K_Brow[iBin] * 0.45 * sqrt( physFunc::Reynolds_p( bin_R, rho_2, temperature_K, pressure_Pa )) * cbrt( physFunc::Schmidt_p( bin_Centers[iBin], temperature_K, pressure_Pa ));
                 }
             } else {
                 if ( physFunc::Reynolds_p( bin_Centers[iBin], rho_1, temperature_K, pressure_Pa ) <= 1 ) {
-                    K_DE[iBin] = K_Brow[iBin] * 0.45 * pow( physFunc::Reynolds_p( bin_Centers[iBin], rho_1, temperature_K, pressure_Pa ), 1.0 / double(3.0) ) * pow( physFunc::Schmidt_p( bin_R, temperature_K, pressure_Pa ), 1.0 / double(3.0) );
+                    K_DE[iBin] = K_Brow[iBin] * 0.45 * cbrt( physFunc::Reynolds_p( bin_Centers[iBin], rho_1, temperature_K, pressure_Pa )) * cbrt( physFunc::Schmidt_p( bin_R, temperature_K, pressure_Pa ));
                 } else {
-                    K_DE[iBin] = K_Brow[iBin] * 0.45 * pow( physFunc::Reynolds_p( bin_Centers[iBin], rho_1, temperature_K, pressure_Pa ), 0.5               ) * pow( physFunc::Schmidt_p( bin_R, temperature_K, pressure_Pa ), 1.0 / double(3.0) );
+                    K_DE[iBin] = K_Brow[iBin] * 0.45 * sqrt( physFunc::Reynolds_p( bin_Centers[iBin], rho_1, temperature_K, pressure_Pa )) * cbrt( physFunc::Schmidt_p( bin_R, temperature_K, pressure_Pa ));
                 }
             }
         }
@@ -174,17 +174,20 @@ namespace AIM
         for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
             K_DE.push_back( Vector_1D( bin_Centers_2.size() ) );
             for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_2.size(); iBin_2++ ) {
+                double reynolds_p_1 = physFunc::Reynolds_p( bin_Centers_1[iBin_1], rho_1, temperature_K, pressure_Pa);
+                double reynolds_p_2 = physFunc::Reynolds_p( bin_Centers_2[iBin_2], rho_2, temperature_K, pressure_Pa);
+
                 if ( bin_Centers_1[iBin_1] <= bin_Centers_2[iBin_2]) {
-                    if ( physFunc::Reynolds_p( bin_Centers_2[iBin_2], rho_2, temperature_K, pressure_Pa ) <= 1 ) {
-                        K_DE[iBin_1][iBin_2] = K_Brow[iBin_1][iBin_2] * 0.45 * pow( physFunc::Reynolds_p( bin_Centers_2[iBin_2], rho_2, temperature_K, pressure_Pa ), 1.0 / double(3.0) ) * pow( physFunc::Schmidt_p( bin_Centers_1[iBin_1], temperature_K, pressure_Pa ), 1.0 / double(3.0) );
+                    if ( reynolds_p_2 <= 1 ) {
+                        K_DE[iBin_1][iBin_2] = K_Brow[iBin_1][iBin_2] * 0.45 * cbrt( reynolds_p_2 ) * cbrt( physFunc::Schmidt_p( bin_Centers_1[iBin_1], temperature_K, pressure_Pa ));
                     } else {
-                        K_DE[iBin_1][iBin_2] = K_Brow[iBin_1][iBin_2] * 0.45 * pow( physFunc::Reynolds_p( bin_Centers_2[iBin_2], rho_2, temperature_K, pressure_Pa ), 0.5               ) * pow( physFunc::Schmidt_p( bin_Centers_1[iBin_1], temperature_K, pressure_Pa ), 1.0 / double(3.0) );
+                        K_DE[iBin_1][iBin_2] = K_Brow[iBin_1][iBin_2] * 0.45 * sqrt( reynolds_p_2 ) * cbrt( physFunc::Schmidt_p( bin_Centers_1[iBin_1], temperature_K, pressure_Pa ));
                     }
                 } else {
-                    if ( physFunc::Reynolds_p( bin_Centers_1[iBin_1], rho_1, temperature_K, pressure_Pa ) <= 1 ) {
-                        K_DE[iBin_1][iBin_2] = K_Brow[iBin_1][iBin_2] * 0.45 * pow( physFunc::Reynolds_p( bin_Centers_1[iBin_1], rho_1, temperature_K, pressure_Pa ), 1.0 / double(3.0) ) * pow( physFunc::Schmidt_p( bin_Centers_2[iBin_2], temperature_K, pressure_Pa ), 1.0 / double(3.0) );
+                    if ( reynolds_p_1 <= 1 ) {
+                        K_DE[iBin_1][iBin_2] = K_Brow[iBin_1][iBin_2] * 0.45 * cbrt( reynolds_p_1 ) * cbrt( physFunc::Schmidt_p( bin_Centers_2[iBin_2], temperature_K, pressure_Pa ));
                     } else {
-                        K_DE[iBin_1][iBin_2] = K_Brow[iBin_1][iBin_2] * 0.45 * pow( physFunc::Reynolds_p( bin_Centers_1[iBin_1], rho_1, temperature_K, pressure_Pa ), 0.5               ) * pow( physFunc::Schmidt_p( bin_Centers_2[iBin_2], temperature_K, pressure_Pa ), 1.0 / double(3.0) );
+                        K_DE[iBin_1][iBin_2] = K_Brow[iBin_1][iBin_2] * 0.45 * sqrt( reynolds_p_1 ) * cbrt( physFunc::Schmidt_p( bin_Centers_2[iBin_2], temperature_K, pressure_Pa ));
                     }
 
                 }
@@ -251,7 +254,7 @@ namespace AIM
 
         /* Initialize TI kernel */
         for ( unsigned int iBin = 0; iBin < bin_Centers.size(); iBin++ ) {
-            K_TI[iBin] = physConst::PI * pow ( physConst::EPSILON , 0.75 ) / ( physConst::g * pow( physFunc::kinVisc( temperature_K, pressure_Pa ), 0.25 ) ) * ( bin_Centers[iBin] + bin_R ) * ( bin_Centers[iBin] + bin_R ) * std::abs( physFunc::vFall( bin_Centers[iBin], rho_1, temperature_K, pressure_Pa ) - physFunc::vFall( bin_R, rho_2, temperature_K, pressure_Pa ) );
+            K_TI[iBin] = physConst::PI * pow ( physConst::EPSILON , 0.75 ) / ( physConst::g * sqrt(sqrt( physFunc::kinVisc( temperature_K, pressure_Pa ))) ) * ( bin_Centers[iBin] + bin_R ) * ( bin_Centers[iBin] + bin_R ) * std::abs( physFunc::vFall( bin_Centers[iBin], rho_1, temperature_K, pressure_Pa ) - physFunc::vFall( bin_R, rho_2, temperature_K, pressure_Pa ) );
         }
 
         return K_TI;
@@ -272,7 +275,7 @@ namespace AIM
         for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
             K_TI.push_back( Vector_1D( bin_Centers_2.size() ) );
             for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_2.size(); iBin_2++ ) {
-                K_TI[iBin_1][iBin_2] = physConst::PI * pow ( physConst::EPSILON , 0.75 ) / ( physConst::g * pow( physFunc::kinVisc( temperature_K, pressure_Pa ), 0.25 ) ) * ( bin_Centers_1[iBin_1] + bin_Centers_2[iBin_2] ) * ( bin_Centers_1[iBin_1] + bin_Centers_2[iBin_2] ) * std::abs( physFunc::vFall( bin_Centers_1[iBin_1], rho_1, temperature_K, pressure_Pa ) - physFunc::vFall( bin_Centers_2[iBin_2], rho_2, temperature_K, pressure_Pa ) );
+                K_TI[iBin_1][iBin_2] = physConst::PI * pow ( physConst::EPSILON , 0.75 ) / ( physConst::g * sqrt(sqrt( physFunc::kinVisc( temperature_K, pressure_Pa ))) ) * ( bin_Centers_1[iBin_1] + bin_Centers_2[iBin_2] ) * ( bin_Centers_1[iBin_1] + bin_Centers_2[iBin_2] ) * std::abs( physFunc::vFall( bin_Centers_1[iBin_1], rho_1, temperature_K, pressure_Pa ) - physFunc::vFall( bin_Centers_2[iBin_2], rho_2, temperature_K, pressure_Pa ) );
             }
         }
 

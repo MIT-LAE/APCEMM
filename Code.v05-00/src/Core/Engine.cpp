@@ -241,7 +241,8 @@ Engine::Engine(std::string engineName, std::string engineFileName,
   H = -19.0 * (0.37318 * relHum_w / 100.0 * Pv) /
       (14.696 * delta - relHum_w / 100.0 * Pv);
 
-  EI_NOx *= exp(H) * pow(pow(delta, 1.02) / pow(theta, 3.3), 0.5);
+  double cruise_correction =  pow(theta, 3.3) * pow(delta, -1.02);
+  EI_NOx *= exp(H) * sqrt(1 / cruise_correction);
 
   /* EI_NO in g(NO)/kg:
    * NOxtoNO is in mole of NO per mole of N
@@ -299,7 +300,7 @@ Engine::Engine(std::string engineName, std::string engineFileName,
     EI_CO = pow(10.0, horzline);
 
   /* Cruise correction for CO */
-  EI_CO *= pow(theta, 3.3) / pow(delta, 1.02);
+  EI_CO *= cruise_correction;
 
   /** Computing engine CO emission index **/
   line1 = (log10(LTO_HC[1]) - log10(LTO_HC[0])) /
@@ -340,7 +341,7 @@ Engine::Engine(std::string engineName, std::string engineFileName,
     EI_HC = pow(10.0, horzline);
 
   /* Cruise correction for HC */
-  EI_HC *= pow(theta, 3.3) / pow(delta, 1.02);
+  EI_HC *= cruise_correction;
 
   /** Computing engine Soot emission index **/
   EI_Soot = 0.02;     /* [g/kg fuel] */

@@ -74,7 +74,7 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
     N_BV_ = N_BV;
 
     /* Maximum downwash displacement, Eq. 5 in Lottermosser and Unterstrasser (2025) */
-    z_desc_ = pow( 8.0 * gamma_ / ( physConst::PI * N_BV_ ), 0.5 );
+    z_desc_ = sqrt( 8.0 * gamma_ / ( physConst::PI * N_BV_ ) );
 
     /* Height an air parcel has to descend until it is no longer supersaturated */
     s_ = RHi_PC / 100 - 1; // RHi in % -> excess supersaturation ratio, See S2 in U2016
@@ -85,8 +85,8 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
     r_p_ref_ = 1.5 + 0.314 * wingspan_ref; /* [m], from Eq. A6 in U2016 */
 
     /* Plume area before vortex breakup*/
-    plume_area_0_ = 2 * physConst::PI * pow(r_p_, 2); /* [m2], see Appendix 2 in LU2025 */
-    plume_area_0_ref_ = 2 * physConst::PI * pow(r_p_ref_, 2); /* [m2], see Appendix 2 in LU2025 */
+    plume_area_0_ = 2 * physConst::PI * r_p_ * r_p_; /* [m2], see Appendix 2 in LU2025 */
+    plume_area_0_ref_ = 2 * physConst::PI * r_p_ref_ * r_p_ref_; /* [m2], see Appendix 2 in LU2025 */
 
     /* Temperature - 205 K*/
     T_205_ = temperature_K - 205.0; /* [K], from Eq. A3 in LU2025*/

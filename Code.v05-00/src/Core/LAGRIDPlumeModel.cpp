@@ -280,7 +280,8 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 
 std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     // Calculate the number of emitted soot particles
-    const double volParticle  = 4.0 / 3.0 * physConst::PI * pow( EI_.getSootRad(), 3.0 ); //EI_SootRad in m -> volume in m3
+    double EI_getSootRad = EI_.getSootRad();
+    const double volParticle  = 4.0 / 3.0 * physConst::PI * EI_getSootRad * EI_getSootRad * EI_getSootRad; //EI_SootRad in m -> volume in m3
     const double massParticle = volParticle * physConst::RHO_SOOT * 1.0E+03; //Gives mass of a particle in grams
     const double EI_icenum = EI_.getSoot() / massParticle; /* [#/kg_fuel] */
     const double N0 = EI_icenum * aircraft_.fuel_per_dist();
