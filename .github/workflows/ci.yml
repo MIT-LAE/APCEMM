@@ -53,3 +53,29 @@ jobs:
       - name: Run tests
         working-directory: ./build
         run: ctest --output-on-failure
+
+      # Additional multithreading reproducibility step for one build (no need to do it for both)
+      - name: Install uv for multithreading reproducibility test
+        if: strategy.job-index == 0
+        uses: astral-sh/setup-uv@v9.0.0
+
+      - name: Multithreading reproducibility test
+        if: strategy.job-index == 0
+        shell: bash
+        timeout-minutes: 15
+        env:
+          PYTHONUNBUFFERED: "1"
+        # Run steps:
+        # Define where the test is and where its inputs are
+        # Run APCEMM twice, using a base.yaml overridden by a second yaml setting the thread count to 1 or 4
+        # Use tee to also write stdout to a log file
+        # grep the log to ensure that APCEMM correctly ran with the expected number of threads
+        # Run the comparison script with uv to ensure they are bitwise identical
+        run: |
+          TEST_DIR="$GITHUB_WORKSPACE/Code.v05-00/tests/multithreading"
+          INPUTS="$TEST_DIR/inputs"
+          "$GITHUB_WORKSPACE/build/APCEMM" "$INPUTS/base.yaml" "$INPUTS/1_thread.yaml"  | tee run_1_thread.log
+          "$GITHUB_WORKSPACE/build/APCEMM" "$INPUTS/base.yaml" "$INPUTS/4_threads.yaml" | tee run_4_threads.log
+          grep -q ">>> APCEMM OpenMP Num Threads is set to 1$" run_1_thread.log
+          grep -q ">>> APCEMM OpenMP Num Threads is set to 4$" run_4_threads.log
+          uv run "$TEST_DIR/compare_outputs.py" "$TEST_DIR/APCEMM_out_1_thread/" "$TEST_DIR/APCEMM_out_4_threads/"

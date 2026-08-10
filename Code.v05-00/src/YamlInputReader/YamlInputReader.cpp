@@ -112,8 +112,9 @@ namespace YamlInputReader{
             input.SIMULATION_OMP_NUM_THREADS = 1;
         #endif
 
+        std::cout << ">>> APCEMM OpenMP Num Threads is set to " << input.SIMULATION_OMP_NUM_THREADS << std::endl;
         if (input.SIMULATION_OMP_NUM_THREADS > 4){
-            std::cout << ">>> Hint: APCEMM performance does not scale past 4 threads... ('OpenMP Num Threads' is set to " << input.SIMULATION_OMP_NUM_THREADS << ") <<<" << std::endl;
+            std::cout << ">>> Hint: APCEMM performance does not scale past 4 threads..." << std::endl;
         }
 
         YAML::Node paramSweepSubmenu = simNode["PARAM SWEEP SUBMENU"];
