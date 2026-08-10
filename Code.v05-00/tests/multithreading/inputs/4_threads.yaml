@@ -1,0 +1,4 @@
+SIMULATION MENU:
+  OpenMP Num Threads (positive int): 4
+  OUTPUT SUBMENU:
+    Output folder (string): ../APCEMM_out_4_threads/
