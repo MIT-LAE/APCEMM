@@ -41,13 +41,30 @@ namespace YamlInputReader{
         return keys;
     }
 
+    // Reject a map node that uses the same key twice.
+    // YAML standard does not allow it, but yaml-cpp keeps both entries
+    // while node[key] returns only the first one.
+    // This will be fixed in a newer version of yaml-cpp (post 2026/03/12), but 
+    // we use v0.8.0 which is much older.
+    // This means the user must group all the entries of a menu under a single heading.
+    void checkNoDuplicateKeys(const YAML::Node& node, const std::string& currentPath) {
+        std::set<std::string> seenKeys;
+        for (const auto& it : node) {
+            const std::string key = it.first.as<std::string>();
+            if (!seenKeys.insert(key).second) {
+                std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
+                throw std::runtime_error("Duplicate key found: '" + errorPath + "'. Each key must appear only once. Group all the entries of a menu under a single heading.");
+            }
+        }
+    }
+
     void validateYamlKeys(const YAML::Node& defaultNode, const YAML::Node& userNode, const std::string& currentPath = "") {
-        // Values in user yaml will replace the default node so we ensure that the types are compatible
+        // Values in user yaml will replace the default node so we ensure that the types are compatible (value vs map)
+        // If the userNode is a value, defaultNode should also be a value
         if (!userNode.IsMap()) {
-            // e.g. if the default is a map than the user replacement should also be a map.
             // A missing or null user value means "no override": mergeYamlNodes keeps the default.
             if (defaultNode.IsMap() && userNode.IsDefined() && !userNode.IsNull()) {
-                // Edge case of top level of YAML is just a value (e.g empty file with only a number)
+                // Edge case: top level of YAML is just a value (e.g empty file with only a value)
                 if (currentPath.empty()) {
                     throw std::runtime_error("The document root is a value in provided YAML but a map in the default input.yaml (should be a set of menus).");
                 }
@@ -59,12 +76,20 @@ namespace YamlInputReader{
             return;
         }
 
+        // Second compatibility check that is the reciprocal of ^
+        // If the userNode is a map, then defaultNode should also be a map,
+        // otherwise the user is trying to add a structure that doesn't exist
         if (!defaultNode.IsMap()) {
-            // Second compatibility check that is the reciprocal of ^
-            // If the user node is a map but the default is not, it's also an error
-            // because the user is trying to add a structure that doesn't exist
             throw std::runtime_error("Invalid key: '" + currentPath + "' is a map in provided YAML but not in the default input.yaml (should be a value).");
         }
+
+        // Check this level before looking at the keys: getYamlKeys() returns a set,
+        // which hides a repeated key.
+        checkNoDuplicateKeys(userNode, currentPath);
+        // Same check for default file
+        // Errors here should not happen as the default should not be modified and
+        // hopefully not be distributed with errors in it, but this is cheap to verify.
+        checkNoDuplicateKeys(defaultNode, std::string("[Unexpected error in defaults/input.yaml, check the state of your APCEMM repository]: ") + currentPath);
 
         auto defaultKeys = getYamlKeys(defaultNode);
         auto userKeys = getYamlKeys(userNode);

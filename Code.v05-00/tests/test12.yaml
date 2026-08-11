@@ -1,0 +1,6 @@
+# The same key twice inside a submenu, under a single menu heading.
+# The second value would be dropped without warning.
+SIMULATION MENU:
+  OUTPUT SUBMENU:
+    Output folder (string): ./first
+    Output folder (string): ./second

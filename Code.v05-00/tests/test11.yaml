@@ -1,0 +1,10 @@
+# The same menu heading twice at the root. yaml-cpp keeps both entries but
+# returns the first one, so the second block would be dropped without warning.
+SIMULATION MENU:
+  OpenMP Num Threads (positive int): 8
+SIMULATION MENU:
+  OpenMP Num Threads (positive int): 8
+
+  OUTPUT SUBMENU:
+    Output folder (string): ./
+    Output folder (string): ./

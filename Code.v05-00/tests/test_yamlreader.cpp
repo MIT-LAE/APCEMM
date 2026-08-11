@@ -593,4 +593,27 @@ TEST_CASE("Validate Input Files"){
             Catch::Matchers::ContainsSubstring("test10.yaml")
         );
     }
+
+    SECTION("Repeated menu heading at the root"){
+        // yaml-cpp keeps both entries but reads the first one, so the second
+        // heading would be dropped silently.
+        string filename9 = string(APCEMM_TESTS_DIR)+"/test11.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, {filename9}),
+            Catch::Matchers::ContainsSubstring("Duplicate key found") &&
+            Catch::Matchers::ContainsSubstring("SIMULATION MENU") &&
+            Catch::Matchers::ContainsSubstring("test11.yaml")
+        );
+    }
+
+    SECTION("Repeated key inside a submenu"){
+        // The error names the full path of the key, not just the key itself.
+        string filename10 = string(APCEMM_TESTS_DIR)+"/test12.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, {filename10}),
+            Catch::Matchers::ContainsSubstring("Duplicate key found") &&
+            Catch::Matchers::ContainsSubstring("SIMULATION MENU -> OUTPUT SUBMENU -> Output folder (string)") &&
+            Catch::Matchers::ContainsSubstring("test12.yaml")
+        );
+    }
 }
