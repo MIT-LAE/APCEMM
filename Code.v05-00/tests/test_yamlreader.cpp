@@ -517,8 +517,6 @@ TEST_CASE("Validate Input Files"){
     SECTION("Invalid key (scalar) at the root level") {
         // Check that it detects the invalid key, that it points to the correct file and that
         // it prints out the name of the invalid key (here a scalar)
-        string invalid_file = string(APCEMM_TESTS_DIR) + "/test3.yaml";
-
         REQUIRE_THROWS_WITH(
             YamlInputReader::readYamlInputFiles(input, {validFile, filename1}), 
             Catch::Matchers::ContainsSubstring("Unknown key found") &&
