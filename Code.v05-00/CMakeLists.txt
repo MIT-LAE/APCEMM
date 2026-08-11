@@ -51,6 +51,9 @@ configure_file(${CMAKE_SOURCE_DIR}/include/APCEMM.h.in ${CMAKE_SOURCE_DIR}/inclu
 
 # Generate an include file containing a single raw C++ string from a text file.
 function(make_includable input_file output_file)
+    # Re-run CMake when the source text changes, otherwise the build step
+    # will rebuild against a stale generated header.
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${input_file})
     file(READ ${input_file} content)
     set(delim "====")
     set(content "R\"${delim}(\n${content})${delim}\"")
