@@ -403,30 +403,12 @@ namespace YamlInputReader{
             throw std::invalid_argument("No values in GRID SUBMENU can be less than zero!");
         }
 
-        if (advancedNode["EARLY PLUME SUBMENU"]){
-            YAML::Node earlyPlumeSubmenu = advancedNode["EARLY PLUME SUBMENU"];
-            input.ADV_EP_N_REF = parseDoubleString(earlyPlumeSubmenu["Reference ice crystal count [#/m] (double)"].as<string>(), "Reference ice crystal count [#/m] (double)");
-            input.ADV_EP_WINGSPAN_REF = parseDoubleString(earlyPlumeSubmenu["Reference wingspan [m] (double)"].as<string>(), "Reference wingspan [m] (double)");
-
-            if (earlyPlumeSubmenu["Override post-jet ice crystal count (T/F)"]) {
-                input.ADV_EP_N_POSTJET_OVERRIDE = parseBoolString(earlyPlumeSubmenu["Override post-jet ice crystal count (T/F)"].as<string>(), "Override post-jet ice crystal count (T/F)");
-                input.ADV_EP_N_POSTJET = parseDoubleString(earlyPlumeSubmenu["Post-jet ice crystal count [#/m] (double)"].as<string>(), "Post-jet ice crystal count [#/m] (double)");
-            } else {
-                input.ADV_EP_N_POSTJET_OVERRIDE = false;
-                input.ADV_EP_N_POSTJET = 0;
-            }
-        } else {
-            input.ADV_EP_N_REF = 3.38e12;
-            input.ADV_EP_WINGSPAN_REF = 60.3;
-            input.ADV_EP_N_POSTJET_OVERRIDE = false;
-            input.ADV_EP_N_POSTJET = 0;
-        }
-
-        if (advancedNode["Save gridded particle size distribution (T/F)"]){
-            input.ADV_SAVE_PSD_GRID = parseBoolString(advancedNode["Save gridded particle size distribution (T/F)"].as<string>(), "Save gridded particle size distribution (T/F)");
-        } else {
-            input.ADV_SAVE_PSD_GRID = false;
-        }
+        YAML::Node earlyPlumeSubmenu = advancedNode["EARLY PLUME SUBMENU"];
+        input.ADV_EP_N_REF = parseDoubleString(earlyPlumeSubmenu["Reference ice crystal count [#/m] (double)"].as<string>(), "Reference ice crystal count [#/m] (double)");
+        input.ADV_EP_WINGSPAN_REF = parseDoubleString(earlyPlumeSubmenu["Reference wingspan [m] (double)"].as<string>(), "Reference wingspan [m] (double)");
+        input.ADV_EP_N_POSTJET_OVERRIDE = parseBoolString(earlyPlumeSubmenu["Override post-jet ice crystal count (T/F)"].as<string>(), "Override post-jet ice crystal count (T/F)");
+        input.ADV_EP_N_POSTJET = parseDoubleString(earlyPlumeSubmenu["Post-jet ice crystal count [#/m] (double)"].as<string>(), "Post-jet ice crystal count [#/m] (double)");
+        input.ADV_SAVE_PSD_GRID = parseBoolString(advancedNode["Save gridded particle size distribution (T/F)"].as<string>(), "Save gridded particle size distribution (T/F)");
     }
 
     vector<std::unordered_map<string, double>> generateCasesHelper(vector<std::unordered_map<string, double>>& allCases, const vector<std::pair<string, Vector_1D>>& params, const std::size_t row){
