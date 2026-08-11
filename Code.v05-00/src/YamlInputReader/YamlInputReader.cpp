@@ -51,7 +51,8 @@ namespace YamlInputReader{
         std::set<std::string> seenKeys;
         for (const auto& it : node) {
             const std::string key = it.first.as<std::string>();
-            if (!seenKeys.insert(key).second) {
+            const bool isNewKey = seenKeys.insert(key).second;
+            if (!isNewKey) {
                 std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
                 throw std::runtime_error("Duplicate key found: '" + errorPath + "'. Each key must appear only once. Group all the entries of a menu under a single heading.");
             }

@@ -7,10 +7,12 @@
 
 using namespace YamlInputReader;
 
+string YAML_DIR = "/input-yamls";
+
 //APCEMM_TEST_DIR is a preprocessor macro
 TEST_CASE("YamlInputReader Helper Functions"){
     SECTION("Yaml Compiles"){
-        string filename = string(APCEMM_TESTS_DIR)+"/test.yaml";
+        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test.yaml";
         YAML::Node n = YAML::LoadFile(filename);
     }
     SECTION("String Trim"){
@@ -186,7 +188,7 @@ TEST_CASE("YamlInputReader Helper Functions"){
     }
 }
 TEST_CASE("Read Yaml File"){
-    string filename = string(APCEMM_TESTS_DIR)+"/test.yaml";
+    string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test.yaml";
 
     YAML::Node data = YAML::LoadFile(filename);
     SECTION("Read Simulation Menu"){
@@ -205,13 +207,9 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.SIMULATION_PARAMETER_SWEEP == true);
         REQUIRE(input.SIMULATION_MONTECARLO == true);
         REQUIRE(input.SIMULATION_MCRUNS == 2);
-        //REQUIRE(input.SIMULATION_OUTPUT_FOLDER == "./");
         REQUIRE(input.SIMULATION_OVERWRITE == true);
         REQUIRE(input.SIMULATION_THREADED_FFT == true);
         REQUIRE(input.SIMULATION_USE_FFTW_WISDOM == true);
-        //REQUIRE(input.SIMULATION_DIRECTORY_W_WRITE_PERMISSION == "./");
-        //REQUIRE(input.SIMULATION_INPUT_BACKG_COND == "../../input_data/init.txt");
-        //REQUIRE(input.SIMULATION_INPUT_ENG_EI == "../../input_data/ENG_EI.txt");
         REQUIRE(input.SIMULATION_SAVE_FORWARD == true);
         REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
         REQUIRE(input.SIMULATION_ADJOINT == true);
@@ -386,7 +384,7 @@ TEST_CASE("Generate All Cases"){
     REQUIRE(combinations.size() == 72);
 }
 TEST_CASE("Generate Input Objects"){
-    string filename = string(APCEMM_TESTS_DIR)+"/test1.yaml";
+    string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
     OptInput input;
     YamlInputReader::readYamlInputFiles(input, {filename});
     vector<std::unordered_map<string,double>> cases = generateCases(input);
@@ -470,8 +468,8 @@ TEST_CASE("mergeYamlNodes rejects non-scalar keys"){
 }
 
 TEST_CASE("Merge Input Files"){
-    string filename1 = string(APCEMM_TESTS_DIR)+"/test1.yaml";
-    string filename2 = string(APCEMM_TESTS_DIR)+"/test2.yaml";
+    string filename1 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
+    string filename2 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test2.yaml";
     OptInput input;
     YamlInputReader::readYamlInputFiles(input, {filename1, filename2});
     vector<std::unordered_map<string,double>> cases = generateCases(input);
@@ -510,11 +508,11 @@ TEST_CASE("Merge Input Files"){
 
 TEST_CASE("Validate Input Files"){
     OptInput input;
-    string validFile = string(APCEMM_TESTS_DIR)+"/test1.yaml";
+    string validFile = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
     
-    string filename1 = string(APCEMM_TESTS_DIR)+"/test3.yaml";
-    string filename2 = string(APCEMM_TESTS_DIR)+"/test4.yaml";
-    string filename3 = string(APCEMM_TESTS_DIR)+"/test5.yaml";
+    string filename1 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test3.yaml";
+    string filename2 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test4.yaml";
+    string filename3 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test5.yaml";
 
     SECTION("Invalid key (scalar) at the root level") {
         // Check that it detects the invalid key, that it points to the correct file and that
@@ -549,10 +547,10 @@ TEST_CASE("Validate Input Files"){
         );
     }
 
-    string filename4 = string(APCEMM_TESTS_DIR)+"/test6.yaml";
-    string filename5 = string(APCEMM_TESTS_DIR)+"/test7.yaml";
-    string filename6 = string(APCEMM_TESTS_DIR)+"/test8.yaml";
-    string filename7 = string(APCEMM_TESTS_DIR)+"/test9.yaml";
+    string filename4 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test6.yaml";
+    string filename5 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test7.yaml";
+    string filename6 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test8.yaml";
+    string filename7 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test9.yaml";
 
     SECTION("Valid key but wrong type (scalar instead of map)"){
         // A scalar where the default holds a submenu would replace the whole
@@ -586,7 +584,7 @@ TEST_CASE("Validate Input Files"){
     }
 
     SECTION("Document root is a bare value"){
-        string filename8 = string(APCEMM_TESTS_DIR)+"/test10.yaml";
+        string filename8 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test10.yaml";
         REQUIRE_THROWS_WITH(
             YamlInputReader::readYamlInputFiles(input, {filename8}),
             Catch::Matchers::ContainsSubstring("The document root is a value in provided YAML") &&
@@ -597,7 +595,7 @@ TEST_CASE("Validate Input Files"){
     SECTION("Repeated menu heading at the root"){
         // yaml-cpp keeps both entries but reads the first one, so the second
         // heading would be dropped silently.
-        string filename9 = string(APCEMM_TESTS_DIR)+"/test11.yaml";
+        string filename9 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test11.yaml";
         REQUIRE_THROWS_WITH(
             YamlInputReader::readYamlInputFiles(input, {filename9}),
             Catch::Matchers::ContainsSubstring("Duplicate key found") &&
@@ -608,7 +606,7 @@ TEST_CASE("Validate Input Files"){
 
     SECTION("Repeated key inside a submenu"){
         // The error names the full path of the key, not just the key itself.
-        string filename10 = string(APCEMM_TESTS_DIR)+"/test12.yaml";
+        string filename10 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test12.yaml";
         REQUIRE_THROWS_WITH(
             YamlInputReader::readYamlInputFiles(input, {filename10}),
             Catch::Matchers::ContainsSubstring("Duplicate key found") &&
