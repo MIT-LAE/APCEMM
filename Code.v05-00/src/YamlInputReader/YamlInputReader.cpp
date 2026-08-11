@@ -42,14 +42,27 @@ namespace YamlInputReader{
     }
 
     void validateYamlKeys(const YAML::Node& defaultNode, const YAML::Node& userNode, const std::string& currentPath = "") {
+        // Values in user yaml will replace the default node so we ensure that the types are compatible
         if (!userNode.IsMap()) {
-            // If the user node is not a map, we don't need to check its keys.
+            // e.g. if the default is a map than the user replacement should also be a map.
+            // A missing or null user value means "no override": mergeYamlNodes keeps the default.
+            if (defaultNode.IsMap() && userNode.IsDefined() && !userNode.IsNull()) {
+                // Edge case of top level of YAML is just a value (e.g empty file with only a number)
+                if (currentPath.empty()) {
+                    throw std::runtime_error("The document root is a value in provided YAML but a map in the default input.yaml (should be a set of menus).");
+                }
+                throw std::runtime_error("Invalid key: '" + currentPath + "' is a value in provided YAML but a map in the default input.yaml (should be a submenu).");
+            }
+            // User node is not a map, and default is not either so they are compatible
+            // Because the user node is not a map it has no keys to check so we are done
+            // validating this branch.
             return;
         }
 
         if (!defaultNode.IsMap()) {
-            // If the user node is a map but the default is not, it's an error
-            // because the user is trying to add a structure that doesn't exist.
+            // Second compatibility check that is the reciprocal of ^
+            // If the user node is a map but the default is not, it's also an error
+            // because the user is trying to add a structure that doesn't exist
             throw std::runtime_error("Invalid key: '" + currentPath + "' is a map in provided YAML but not in the default input.yaml (should be a value).");
         }
 
@@ -63,14 +76,12 @@ namespace YamlInputReader{
                 throw std::runtime_error("Unknown key found: '" + errorPath + "'");
             }
 
-            // Recurse to check nested maps
+            // Recurse into every map/value to check their validity
             const YAML::Node nextUserNode = userNode[key];
             const YAML::Node nextDefaultNode = defaultNode[key];
+            std::string nextPath = currentPath.empty() ? key : currentPath + " -> " + key;
 
-            if (nextUserNode.IsMap()) {
-                std::string nextPath = currentPath.empty() ? key : currentPath + " -> " + key;
-                validateYamlKeys(nextDefaultNode, nextUserNode, nextPath);
-            }
+            validateYamlKeys(nextDefaultNode, nextUserNode, nextPath);
         }
     }
 

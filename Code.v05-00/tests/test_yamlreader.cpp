@@ -548,4 +548,49 @@ TEST_CASE("Validate Input Files"){
             Catch::Matchers::ContainsSubstring("Met input file path (string)")
         );
     }
+
+    string filename4 = string(APCEMM_TESTS_DIR)+"/test6.yaml";
+    string filename5 = string(APCEMM_TESTS_DIR)+"/test7.yaml";
+    string filename6 = string(APCEMM_TESTS_DIR)+"/test8.yaml";
+    string filename7 = string(APCEMM_TESTS_DIR)+"/test9.yaml";
+
+    SECTION("Valid key but wrong type (scalar instead of map)"){
+        // A scalar where the default holds a submenu would replace the whole
+        // submenu. Check that if detects this and prints the name correctly
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, {filename4}),
+            Catch::Matchers::ContainsSubstring("is a value in provided YAML but a map in the default input.yaml") &&
+            Catch::Matchers::ContainsSubstring("SIMULATION MENU -> OUTPUT SUBMENU") &&
+            Catch::Matchers::ContainsSubstring("test6.yaml")
+        );
+    }
+
+    SECTION("Valid key but wrong type (sequence instead of map)"){
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, {filename5}),
+            Catch::Matchers::ContainsSubstring("is a value in provided YAML but a map in the default input.yaml") &&
+            Catch::Matchers::ContainsSubstring("SIMULATION MENU")
+        );
+    }
+
+    SECTION("Null values mean no override and stay valid"){
+        // Reading must succeed and leave the compiled defaults in place. If a null
+        // cleared out the submenu, readSimMenu would fail on the missing keys.
+        REQUIRE_NOTHROW(YamlInputReader::readYamlInputFiles(input, {filename6}));
+        REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
+    }
+
+    SECTION("Empty input file stays valid"){
+        REQUIRE_NOTHROW(YamlInputReader::readYamlInputFiles(input, {filename7}));
+        REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
+    }
+
+    SECTION("Document root is a bare value"){
+        string filename8 = string(APCEMM_TESTS_DIR)+"/test10.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, {filename8}),
+            Catch::Matchers::ContainsSubstring("The document root is a value in provided YAML") &&
+            Catch::Matchers::ContainsSubstring("test10.yaml")
+        );
+    }
 }
