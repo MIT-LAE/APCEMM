@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <Util/YamlUtils.hpp>
 #include <YamlInputReader/YamlInputReader.hpp>
 #include <Core/Input.hpp>
 #include "APCEMM.h"
@@ -421,6 +422,53 @@ TEST_CASE("Generate Input Objects"){
     REQUIRE(caseInput.coreExitTemp() == 547.3);
     REQUIRE(caseInput.bypassArea() == 1.804);
 }
+
+TEST_CASE("mergeYamlNodes keeps each key exactly once"){
+    // Minimal test before using real files
+    // Override contains the same keys as defaults, ensure that only one remains after merge
+    // and that it is the value of the "later" file (the override)
+    YAML::Node defaults = YAML::Load("MENU:\n  alpha: 1\n  beta: 2\n  gamma: 3\n");
+    YAML::Node overrides = YAML::Load("MENU:\n  beta: 20\n  delta: 4\n");
+
+    YAML::Node merged = mergeYamlNodes(defaults, overrides);
+
+    REQUIRE(merged.size() == 1);          // one MENU, not two
+    REQUIRE(merged["MENU"].size() == 4);  // alpha beta gamma delta, not 6
+
+    // Check that later file wins, earlier-only keys survive.
+    REQUIRE(merged["MENU"]["alpha"].as<int>() == 1);   // defaults only
+    REQUIRE(merged["MENU"]["beta"].as<int>() == 20);   // overridden
+    REQUIRE(merged["MENU"]["gamma"].as<int>() == 3);   // defaults only
+    REQUIRE(merged["MENU"]["delta"].as<int>() == 4);   // overrides only
+}
+
+TEST_CASE("mergeYamlNodes rejects non-scalar keys"){
+    // YAML's allows for non scalar keys.
+    // APCEMM inputs never use it, and the merge matches keys by string representation
+    // of the key. If we had a non scalar key, the merging would break
+    YAML::Node plain = YAML::Load("MENU:\n  alpha: 1\n");
+    YAML::Node complexKey = YAML::Load("? [a, b]\n: 1\n");
+
+    // Bad key in overrides
+    REQUIRE_THROWS_WITH(
+        mergeYamlNodes(plain, complexKey),
+        Catch::Matchers::ContainsSubstring("map keys must be scalars")
+    );
+
+    // Bad key in defaults
+    REQUIRE_THROWS_WITH(
+        mergeYamlNodes(complexKey, plain),
+        Catch::Matchers::ContainsSubstring("map keys must be scalars")
+    );
+
+    // A nested non-scalar key is caught too.
+    YAML::Node nested = YAML::Load("MENU:\n  ? {x: 1}\n  : 2\n");
+    REQUIRE_THROWS_WITH(
+        mergeYamlNodes(plain, nested),
+        Catch::Matchers::ContainsSubstring("map keys must be scalars")
+    );
+}
+
 TEST_CASE("Merge Input Files"){
     string filename1 = string(APCEMM_TESTS_DIR)+"/test1.yaml";
     string filename2 = string(APCEMM_TESTS_DIR)+"/test2.yaml";
