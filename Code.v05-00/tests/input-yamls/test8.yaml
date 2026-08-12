@@ -1,0 +1,5 @@
+# Null values mean "no override". They must stay valid and leave the
+# compiled defaults untouched, at the top level and inside a submenu.
+SIMULATION MENU:
+  OUTPUT SUBMENU:
+PARAMETER MENU:

@@ -1,0 +1,4 @@
+# A scalar where the default input.yaml holds a submenu.
+# Accepting this would replace the whole submenu.
+SIMULATION MENU:
+  OUTPUT SUBMENU: 5

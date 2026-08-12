@@ -5,7 +5,11 @@
 #include <algorithm> // std::equal
 #include <cctype>    // std::tolower
 #include <iostream>
+#include <stdexcept>
 #include <string_view> // std::string_view
+#include <set>
+#include <string>
+#include <vector>
 
 
 // Read default configuration from CMake-generated include file.
@@ -25,79 +29,183 @@ bool iequals(std::string_view lhs, std::string_view rhs) {
 
 
 namespace YamlInputReader{
+    // Helper function to get all keys from a YAML Map node
+    std::set<std::string> getYamlKeys(const YAML::Node& node) {
+        std::set<std::string> keys;
+        if (!node.IsMap()) {
+            return keys;
+        }
+        for (const auto& it : node) {
+            keys.insert(getScalarKey(it.first));
+        }
+        return keys;
+    }
+
+    // Reject a map node that uses the same key twice.
+    // YAML standard does not allow it, but yaml-cpp keeps both entries
+    // while node[key] returns only the first one.
+    // This will be fixed in a newer version of yaml-cpp (post 2026/03/12), but
+    // we use v0.8.0 which is much older.
+    // This means the user must group all the entries of a menu under a single heading.
+    // "source" names the file the node comes from, so the message points at the
+    // right file.
+    void checkNoDuplicateKeys(const YAML::Node& node, const std::string& source, const std::string& currentPath = "") {
+        std::set<std::string> seenKeys;
+        for (const auto& it : node) {
+            const std::string key = getScalarKey(it.first);
+            const bool isNewKey = seenKeys.insert(key).second;
+            if (!isNewKey) {
+                std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
+                throw std::runtime_error("Duplicate key found in " + source + ": '" + errorPath + "'. Each key must appear only once. Group all the entries of a menu under a single heading.");
+            }
+        }
+    }
+
+    // Same check, applied to every map of a document.
+    // Iterate the entries directly instead of node[key]: with a repeated key,
+    // node[key] only ever returns the first entry, so the second subtree would
+    // never be visited.
+    void checkNoDuplicateKeysRecursive(const YAML::Node& node, const std::string& source, const std::string& currentPath = "") {
+        if (!node.IsMap()) {
+            return;
+        }
+        checkNoDuplicateKeys(node, source, currentPath);
+        for (const auto& it : node) {
+            const std::string key = getScalarKey(it.first);
+            const std::string nextPath = currentPath.empty() ? key : currentPath + " -> " + key;
+            checkNoDuplicateKeysRecursive(it.second, source, nextPath);
+        }
+    }
+
+    void validateYamlKeys(const YAML::Node& defaultNode, const YAML::Node& userNode, const std::string& currentPath = "") {
+        // Values in user yaml will replace the default node so we ensure that the types are compatible (value vs map)
+        // If the userNode is a value, defaultNode should also be a value
+        if (!userNode.IsMap()) {
+            // A missing or null user value means "no override": mergeYamlNodes keeps the default.
+            if (defaultNode.IsMap() && userNode.IsDefined() && !userNode.IsNull()) {
+                // Edge case: top level of YAML is just a value (e.g empty file with only a value)
+                if (currentPath.empty()) {
+                    throw std::runtime_error("The document root is a value in provided YAML but a map in the default input.yaml (should be a set of menus).");
+                }
+                throw std::runtime_error("Invalid key: '" + currentPath + "' is a value in provided YAML but a map in the default input.yaml (should be a submenu).");
+            }
+            // User node is not a map, and default is not either so they are compatible
+            // Because the user node is not a map it has no keys to check so we are done
+            // validating this branch.
+            return;
+        }
+
+        // Second compatibility check that is the reciprocal of ^
+        // If the userNode is a map, then defaultNode should also be a map,
+        // otherwise the user is trying to add a structure that doesn't exist
+        if (!defaultNode.IsMap()) {
+            throw std::runtime_error("Invalid key: '" + currentPath + "' is a map in provided YAML but not in the default input.yaml (should be a value).");
+        }
+
+        // Check this level before looking at the keys: getYamlKeys() returns a set,
+        // which hides a repeated key.
+        checkNoDuplicateKeys(userNode, "the input file", currentPath);
+
+        auto defaultKeys = getYamlKeys(defaultNode);
+        auto userKeys = getYamlKeys(userNode);
+
+        for (const auto& key : userKeys) {
+            if (!defaultKeys.contains(key)) {
+                // The key from the user's YAML does not exist in the default YAML.
+                std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
+                throw std::runtime_error("Unknown key found: '" + errorPath + "'");
+            }
+
+            // Recurse into every map/value to check their validity
+            const YAML::Node nextUserNode = userNode[key];
+            const YAML::Node nextDefaultNode = defaultNode[key];
+            std::string nextPath = currentPath.empty() ? key : currentPath + " -> " + key;
+
+            validateYamlKeys(nextDefaultNode, nextUserNode, nextPath);
+        }
+    }
+
     void readYamlInputFiles(OptInput& input, const vector<string> &filenames){
-        YAML::Node data = YAML::Load(default_input);
+        YAML::Node defaultData = YAML::Load(default_input);
+        YAML::Node mergedData = YAML::Load(default_input);
+
+        // The defaults are compiled in and do not depend on the input files, so
+        // check them once, before the loop. Errors here should not happen as the
+        // default should not be modified and hopefully not be distributed with
+        // errors in it, but this is cheap to verify.
+        try {
+            checkNoDuplicateKeysRecursive(defaultData, "the default input.yaml");
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error(std::string(e.what()) + " This is not a problem with your input file: check the state of your APCEMM repository.");
+        }
+
         for (auto filename: filenames) {
+            YAML::Node userData = YAML::LoadFile(filename);
+        
+            // Validate the user's YAML file against the default structure
+            try {
+                validateYamlKeys(defaultData, userData);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Invalid field in YAML input file '" + filename + "': " + e.what());
+            }
             INPUT_FILE_PATH = std::filesystem::path(filename);
-            data = mergeYamlNodes(data, YAML::LoadFile(filename));
+            mergedData = mergeYamlNodes(mergedData, userData);
         }
 
         try {
-            readSimMenu(input, data["SIMULATION MENU"]);
+            readSimMenu(input, mergedData["SIMULATION MENU"]);
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the SIMULATION MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
-        }
-
-        try {
-            readParamMenu(input, data["PARAMETER MENU"]);
-        }
-        catch (...) {
-            std::cout << "Something went wrong in reading the PARAMETER MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the SIMULATION MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
 
         try {
-            readTransportMenu(input, data["TRANSPORT MENU"]);
+            readParamMenu(input, mergedData["PARAMETER MENU"]);
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the TRANSPORT MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the PARAMETER MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
+        }
+
+        try {
+            readTransportMenu(input, mergedData["TRANSPORT MENU"]);
+        }
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the TRANSPORT MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
         
         try {
-            readChemMenu(input, data["CHEMISTRY MENU"]);
+            readChemMenu(input, mergedData["CHEMISTRY MENU"]);
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the CHEMISTRY MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
-        }
-
-        try {
-            readAeroMenu(input, data["AEROSOL MENU"]);  
-        }
-        catch (...) {
-            std::cout << "Something went wrong in reading the AEROSOL MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the CHEMISTRY MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
 
         try {
-            readMetMenu(input, data["METEOROLOGY MENU"]);
+            readAeroMenu(input, mergedData["AEROSOL MENU"]);  
         }
-        catch (const std::invalid_argument& e) {
-            std::cerr << "ERROR: " << e.what() << std::endl;
-            exit(1);
-        }
-        catch (...) {
-            std::cout << "Something went wrong in reading the METEOROLOGY MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the AEROSOL MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
 
         try {
-            readDiagMenu(input, data["DIAGNOSTIC MENU"]);
+            readMetMenu(input, mergedData["METEOROLOGY MENU"]);
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the DIAGNOSTIC MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the METEOROLOGY MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
 
         try {
-            readAdvancedMenu(input, data["ADVANCED OPTIONS MENU"]);
+            readDiagMenu(input, mergedData["DIAGNOSTIC MENU"]);
         }
-        catch (...) {
-            std::cout << "Something went wrong in reading the ADVANCED OPTIONS MENU! Please double-check your input file with the reference in SampleRunDir!";
-            exit(1);
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the DIAGNOSTIC MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
+        }
+
+        try {
+            readAdvancedMenu(input, mergedData["ADVANCED OPTIONS MENU"]);
+        }
+        catch (const std::exception& e) {
+            throw std::runtime_error("Something went wrong in reading the ADVANCED OPTIONS MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
     }
     void readSimMenu(OptInput& input, const YAML::Node& simNode){
@@ -148,16 +256,11 @@ namespace YamlInputReader{
         input.SIMULATION_BOXMODEL = parseBoolString(boxModelSubmenu["Run box model (T/F)"].as<string>(), "Run box model (T/F)");
         input.SIMULATION_BOX_FILENAME = boxModelSubmenu["netCDF filename format (string)"].as<string>();
 
-        if (simNode["RANDOM NUMBER GENERATION SUBMENU"]){
-            YAML::Node seedSubmenu = simNode["RANDOM NUMBER GENERATION SUBMENU"];
-            input.SIMULATION_FORCE_SEED = parseBoolString(seedSubmenu["Force seed value (T/F)"].as<string>(), "Force seed value (T/F)");
-            input.SIMULATION_SEED_VALUE = parseIntString(seedSubmenu["Seed value (positive int)"].as<string>(), "Seed value (positive int)");
-            if(input.SIMULATION_SEED_VALUE < 0){
-                throw std::invalid_argument("Seed value (under SIMULATION MENU) cannot be less than 0!");
-            }
-        } else {
-            input.SIMULATION_FORCE_SEED = false;
-            input.SIMULATION_SEED_VALUE = 0;
+        YAML::Node seedSubmenu = simNode["RANDOM NUMBER GENERATION SUBMENU"];
+        input.SIMULATION_FORCE_SEED = parseBoolString(seedSubmenu["Force seed value (T/F)"].as<string>(), "Force seed value (T/F)");
+        input.SIMULATION_SEED_VALUE = parseIntString(seedSubmenu["Seed value (positive int)"].as<string>(), "Seed value (positive int)");
+        if(input.SIMULATION_SEED_VALUE < 0){
+            throw std::invalid_argument("Seed value (under SIMULATION MENU) cannot be less than 0!");
         }
 
         if(input.SIMULATION_PARAMETER_SWEEP == input.SIMULATION_MONTECARLO){
@@ -320,30 +423,12 @@ namespace YamlInputReader{
             throw std::invalid_argument("No values in GRID SUBMENU can be less than zero!");
         }
 
-        if (advancedNode["EARLY PLUME SUBMENU"]){
-            YAML::Node earlyPlumeSubmenu = advancedNode["EARLY PLUME SUBMENU"];
-            input.ADV_EP_N_REF = parseDoubleString(earlyPlumeSubmenu["Reference ice crystal count [#/m] (double)"].as<string>(), "Reference ice crystal count [#/m] (double)");
-            input.ADV_EP_WINGSPAN_REF = parseDoubleString(earlyPlumeSubmenu["Reference wingspan [m] (double)"].as<string>(), "Reference wingspan [m] (double)");
-
-            if (earlyPlumeSubmenu["Override post-jet ice crystal count (T/F)"]) {
-                input.ADV_EP_N_POSTJET_OVERRIDE = parseBoolString(earlyPlumeSubmenu["Override post-jet ice crystal count (T/F)"].as<string>(), "Override post-jet ice crystal count (T/F)");
-                input.ADV_EP_N_POSTJET = parseDoubleString(earlyPlumeSubmenu["Post-jet ice crystal count [#/m] (double)"].as<string>(), "Post-jet ice crystal count [#/m] (double)");
-            } else {
-                input.ADV_EP_N_POSTJET_OVERRIDE = false;
-                input.ADV_EP_N_POSTJET = 0;
-            }
-        } else {
-            input.ADV_EP_N_REF = 3.38e12;
-            input.ADV_EP_WINGSPAN_REF = 60.3;
-            input.ADV_EP_N_POSTJET_OVERRIDE = false;
-            input.ADV_EP_N_POSTJET = 0;
-        }
-
-        if (advancedNode["Save gridded particle size distribution (T/F)"]){
-            input.ADV_SAVE_PSD_GRID = parseBoolString(advancedNode["Save gridded particle size distribution (T/F)"].as<string>(), "Save gridded particle size distribution (T/F)");
-        } else {
-            input.ADV_SAVE_PSD_GRID = false;
-        }
+        YAML::Node earlyPlumeSubmenu = advancedNode["EARLY PLUME SUBMENU"];
+        input.ADV_EP_N_REF = parseDoubleString(earlyPlumeSubmenu["Reference ice crystal count [#/m] (double)"].as<string>(), "Reference ice crystal count [#/m] (double)");
+        input.ADV_EP_WINGSPAN_REF = parseDoubleString(earlyPlumeSubmenu["Reference wingspan [m] (double)"].as<string>(), "Reference wingspan [m] (double)");
+        input.ADV_EP_N_POSTJET_OVERRIDE = parseBoolString(earlyPlumeSubmenu["Override post-jet ice crystal count (T/F)"].as<string>(), "Override post-jet ice crystal count (T/F)");
+        input.ADV_EP_N_POSTJET = parseDoubleString(earlyPlumeSubmenu["Post-jet ice crystal count [#/m] (double)"].as<string>(), "Post-jet ice crystal count [#/m] (double)");
+        input.ADV_SAVE_PSD_GRID = parseBoolString(advancedNode["Save gridded particle size distribution (T/F)"].as<string>(), "Save gridded particle size distribution (T/F)");
     }
 
     vector<std::unordered_map<string, double>> generateCasesHelper(vector<std::unordered_map<string, double>>& allCases, const vector<std::pair<string, Vector_1D>>& params, const std::size_t row){

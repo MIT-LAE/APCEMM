@@ -26,6 +26,9 @@ SIMULATION MENU:
     Run box model (T/F): T
     netCDF filename format (string): APCEMM_BOX_CASE_*
   EPM type (original/external/new): original
+  RANDOM NUMBER GENERATION SUBMENU:
+    Force seed value (T/F): F
+    Seed value (positive int): 0
 
 PARAMETER MENU:
   #Parameter sweep format  : Format is either 200 220 240 or 200:20:240 (except
@@ -130,6 +133,7 @@ DIAGNOSTIC MENU:
 #Sometimes you have to change YLIM_DOWN here if the supersaturated layer is very thick
 #because YLIM_DOWN must be larger than the layer thickness.
 ADVANCED OPTIONS MENU:
+  Save gridded particle size distribution (T/F): F # WARNING: If T, it can generate very large output files and slow down the simulation
   # Domain is defined as: X [-XLIM_LEFT, XLIM_RIGHT], Y [-YLIM_DOWN, YLIM_UP]
   GRID SUBMENU:
     NX (positive int): 200
@@ -147,3 +151,9 @@ ADVANCED OPTIONS MENU:
     Contrail Width Scaling Factor [-] (double): 0.5
   Ambient Lapse Rate [K/km] (double): -3.0
   Tropopause Pressure [Pa] (double): 2.0e+4
+  EARLY PLUME SUBMENU:
+    Reference ice crystal count [#/m] (double): 3.38e12
+    Reference wingspan [m] (double): 60.3
+    # The values below can be overriden if required.
+    Override post-jet ice crystal count (T/F): F
+    Post-jet ice crystal count [#/m] (double): 0

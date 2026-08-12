@@ -1,0 +1,5 @@
+# A sequence used as a map key at the root level.
+# YAML allows it, APCEMM does not: a non-scalar key has no string form, so the
+# reader cannot match it against the default input.yaml.
+? [SIMULATION MENU, PARAMETER MENU]
+: 1

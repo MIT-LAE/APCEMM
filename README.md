@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/256520978.svg)](https://zenodo.org/badge/latestdoi/256520978)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.3755701-blue)](https://doi.org/10.5281/zenodo.3755701)
 
 # README for the APCEMM source code repository
 
@@ -56,20 +56,21 @@ The `git submodule update` command installs the `vcpkg` dependency management to
 
 The above commands will generate the `APCEMM` executable in the `build` directory (an "out-of-source" build). It is also possible to perform a build directly in the `Code.v05-00` directory, but this is not preferred. You can perform an "out-of-source" build anywhere that it's convenient, simply by calling CMake from within a different directory. For example,
 ```
-cd APCEMM/rundirs/SampleRunDir/
+mkdir -p rundirs/build/
+cd rundirs/build/
 cmake ../../Code.v05-00
 cmake --build .
 ```
-will generate the executable in the `rundirs/SampleRunDir/` directory. 
+will generate the executable in the `rundirs/build/` directory. 
 
 ## Getting started
-To start a run from the aforementioned `rundirs/SampleRunDir`, simply call:
+To start a run from the aforementioned `rundirs/build/`, simply call:
 ```
-./../../Code.v05-00 input.yaml
+./APCEMM ../../examples/issl_rhi140/input.yaml
 ```
-Three examples and their accompanying jupyter notebooks for postprocessing tutorials are provided in the `examples` folder. The first example is one where the contrail doesn't persists, and only focuses on analyzing the output of the early plume model (EPM) module of APCEMM. The second example is a persistent contrail simulation where the ice supersaturated layer depth is specified. The third example features using a meteorological input file.
+Examples and their accompanying jupyter notebooks for postprocessing tutorials are provided in the `examples` folder. The `issl_rhi140` example evolves a contrail in an ice-supersatured layer with RHi = 140% using a meteorological input file.
 
-The input file options are explained via comments in the file `rundirs/SampleRunDir/input.yaml`
+The input file options are explained via comments in the file `Code.v05-00/defaults/input.yaml`
 
 Advanced simulation parameters hidden in the input files (e.g. Aerosol bin size ratios, minimum/max bin aerosol sizes, etc) can be modified in `Code.v05-00/src/include/Parameters.hpp`. 
 
