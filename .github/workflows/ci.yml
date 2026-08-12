@@ -19,6 +19,10 @@ jobs:
         gcc: [11.2, 14.3]
 
     steps:
+
+      - name: Detect CPU count
+        run: echo "NPROC=$(nproc)" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v6
         with:
           submodules: 'recursive'
@@ -47,8 +51,9 @@ jobs:
           mkdir -p vcpkg-binary-cache
           cmake -B build -S Code.v05-00 -DCMAKE_BUILD_TYPE=Release
 
+      # Build with the detected number of CPUs or 1 if detection failed
       - name: Build
-        run: cmake --build build
+        run: cmake --build build -j"${NPROC:-1}"
 
       - name: Run tests
         working-directory: ./build
