@@ -44,18 +44,36 @@ namespace YamlInputReader{
     // Reject a map node that uses the same key twice.
     // YAML standard does not allow it, but yaml-cpp keeps both entries
     // while node[key] returns only the first one.
-    // This will be fixed in a newer version of yaml-cpp (post 2026/03/12), but 
+    // This will be fixed in a newer version of yaml-cpp (post 2026/03/12), but
     // we use v0.8.0 which is much older.
     // This means the user must group all the entries of a menu under a single heading.
-    void checkNoDuplicateKeys(const YAML::Node& node, const std::string& currentPath) {
+    // "source" names the file the node comes from, so the message points at the
+    // right file.
+    void checkNoDuplicateKeys(const YAML::Node& node, const std::string& source, const std::string& currentPath = "") {
         std::set<std::string> seenKeys;
         for (const auto& it : node) {
             const std::string key = it.first.as<std::string>();
             const bool isNewKey = seenKeys.insert(key).second;
             if (!isNewKey) {
                 std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
-                throw std::runtime_error("Duplicate key found: '" + errorPath + "'. Each key must appear only once. Group all the entries of a menu under a single heading.");
+                throw std::runtime_error("Duplicate key found in " + source + ": '" + errorPath + "'. Each key must appear only once. Group all the entries of a menu under a single heading.");
             }
+        }
+    }
+
+    // Same check, applied to every map of a document.
+    // Iterate the entries directly instead of node[key]: with a repeated key,
+    // node[key] only ever returns the first entry, so the second subtree would
+    // never be visited.
+    void checkNoDuplicateKeysRecursive(const YAML::Node& node, const std::string& source, const std::string& currentPath = "") {
+        if (!node.IsMap()) {
+            return;
+        }
+        checkNoDuplicateKeys(node, source, currentPath);
+        for (const auto& it : node) {
+            const std::string key = it.first.as<std::string>();
+            const std::string nextPath = currentPath.empty() ? key : currentPath + " -> " + key;
+            checkNoDuplicateKeysRecursive(it.second, source, nextPath);
         }
     }
 
@@ -86,11 +104,7 @@ namespace YamlInputReader{
 
         // Check this level before looking at the keys: getYamlKeys() returns a set,
         // which hides a repeated key.
-        checkNoDuplicateKeys(userNode, currentPath);
-        // Same check for default file
-        // Errors here should not happen as the default should not be modified and
-        // hopefully not be distributed with errors in it, but this is cheap to verify.
-        checkNoDuplicateKeys(defaultNode, std::string("[Unexpected error in defaults/input.yaml, check the state of your APCEMM repository]: ") + currentPath);
+        checkNoDuplicateKeys(userNode, "the input file", currentPath);
 
         auto defaultKeys = getYamlKeys(defaultNode);
         auto userKeys = getYamlKeys(userNode);
@@ -114,6 +128,16 @@ namespace YamlInputReader{
     void readYamlInputFiles(OptInput& input, const vector<string> &filenames){
         YAML::Node defaultData = YAML::Load(default_input);
         YAML::Node mergedData = YAML::Load(default_input);
+
+        // The defaults are compiled in and do not depend on the input files, so
+        // check them once, before the loop. Errors here should not happen as the
+        // default should not be modified and hopefully not be distributed with
+        // errors in it, but this is cheap to verify.
+        try {
+            checkNoDuplicateKeysRecursive(defaultData, "the default input.yaml");
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error(std::string(e.what()) + " This is not a problem with your input file: check the state of your APCEMM repository.");
+        }
 
         for (auto filename: filenames) {
             YAML::Node userData = YAML::LoadFile(filename);
