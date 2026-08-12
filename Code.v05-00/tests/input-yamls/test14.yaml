@@ -1,0 +1,4 @@
+# A map used as a map key, inside a valid menu.
+SIMULATION MENU:
+  ? {OpenMP Num Threads (positive int): 8}
+  : 8

@@ -36,7 +36,7 @@ namespace YamlInputReader{
             return keys;
         }
         for (const auto& it : node) {
-            keys.insert(it.first.as<std::string>());
+            keys.insert(getScalarKey(it.first));
         }
         return keys;
     }
@@ -52,7 +52,7 @@ namespace YamlInputReader{
     void checkNoDuplicateKeys(const YAML::Node& node, const std::string& source, const std::string& currentPath = "") {
         std::set<std::string> seenKeys;
         for (const auto& it : node) {
-            const std::string key = it.first.as<std::string>();
+            const std::string key = getScalarKey(it.first);
             const bool isNewKey = seenKeys.insert(key).second;
             if (!isNewKey) {
                 std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
@@ -71,7 +71,7 @@ namespace YamlInputReader{
         }
         checkNoDuplicateKeys(node, source, currentPath);
         for (const auto& it : node) {
-            const std::string key = it.first.as<std::string>();
+            const std::string key = getScalarKey(it.first);
             const std::string nextPath = currentPath.empty() ? key : currentPath + " -> " + key;
             checkNoDuplicateKeysRecursive(it.second, source, nextPath);
         }

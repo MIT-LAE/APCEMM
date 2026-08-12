@@ -602,6 +602,27 @@ TEST_CASE("Validate Input Files"){
         );
     }
 
+    SECTION("Non-scalar key at the root"){
+        // The validator reads every key as a string. It must reject a non-scalar
+        // key with its own message, not with a yaml-cpp "bad conversion".
+        string filename11 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test13.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, {filename11}),
+            Catch::Matchers::ContainsSubstring("map keys must be scalars") &&
+            Catch::Matchers::ContainsSubstring("test13.yaml")
+        );
+    }
+
+    SECTION("Non-scalar key inside a submenu"){
+        // Same check, one level down, where the recursion reaches the key.
+        string filename12 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test14.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, {filename12}),
+            Catch::Matchers::ContainsSubstring("map keys must be scalars") &&
+            Catch::Matchers::ContainsSubstring("test14.yaml")
+        );
+    }
+
     SECTION("Repeated key inside a submenu"){
         // The error names the full path of the key, not just the key itself.
         string filename10 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test12.yaml";

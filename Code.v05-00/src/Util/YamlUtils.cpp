@@ -4,21 +4,18 @@
 #include <string>
 
 /*
-Return the key as a string. Throw if the key is not a scalar.
-YAML allows non-scalar keys. APCEMM inputs never use them, and the merge
-below cannot handle them: the merge matches keys by string, and a
-non-scalar key does not have a string form: Node::Scalar() returns "".
-The lookup with node[key] which the merge relies on then searches for ""
-and does not finds the real entry.
-The merge concludes the key is missing, inserts it again, and duplicates it.
-validateYamlKeys() already rejects non-scalar keys because there are none in the
-defaults/input.yaml
-This is for completeness so that the merge code does not depend on the default.
+See YamlUtils.hpp.
 */
 const std::string& getScalarKey(const YAML::Node& key)
 {
     if (key.IsScalar()) return key.Scalar();
-    throw std::runtime_error("Found invalid YAML map key: map keys must be scalars.");
+    // Keep the position that yaml-cpp records, so the user can find the key.
+    // Nodes built in memory instead of parsed from a file have no position.
+    const YAML::Mark mark = key.Mark();
+    const std::string where = mark.is_null()
+        ? ""
+        : " at line " + std::to_string(mark.line + 1) + ", column " + std::to_string(mark.column + 1);
+    throw std::runtime_error("Found invalid YAML map key" + where + ": map keys must be scalars.");
 }
 
 // Adapted from https://stackoverflow.com/a/66205210
