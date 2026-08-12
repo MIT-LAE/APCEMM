@@ -6,7 +6,7 @@
 /*
 See YamlUtils.hpp.
 */
-const std::string& getScalarKey(const YAML::Node& key)
+const std::string getScalarKey(const YAML::Node& key)
 {
     if (key.IsScalar()) return key.Scalar();
     // Keep the position that yaml-cpp records, so the user can find the key.

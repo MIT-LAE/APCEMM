@@ -13,7 +13,7 @@ Every place that turns a map key into a string must go through this function.
 Node::as<std::string>() throws a yaml-cpp "bad conversion" instead, which does
 not tell the user what is wrong with their input file.
 */
-const std::string& getScalarKey(const YAML::Node& key);
+const std::string getScalarKey(const YAML::Node& key);
 
 const YAML::Node mergeYamlNodes(const YAML::Node& defaults, const YAML::Node& overrides);
 
