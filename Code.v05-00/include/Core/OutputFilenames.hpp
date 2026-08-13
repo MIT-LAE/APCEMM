@@ -1,3 +1,5 @@
+#ifndef OUTFILENAMES_H_INCLUDED
+#define OUTFILENAMES_H_INCLUDED
 #include <string>
 
 // Default files names that cannot be changed by
@@ -9,3 +11,5 @@ inline const std::string STATUS = "status";
 inline const std::string EPM_OUTPUT = "epm-output.nc";
 inline const std::string MICROPHYSICS = "Micro.out";
 } // namespace OutputFiles
+
+#endif
