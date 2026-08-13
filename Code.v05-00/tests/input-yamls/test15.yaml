@@ -1,5 +1,5 @@
-# Deliberately stale: written for the removed multi-case runs.
-# Reading it must fail with the migration message, not "Unknown key found".
+# Test that the removed multi-case runs correctly fail with 
+# the migration message
 SIMULATION MENU:
   PARAM SWEEP SUBMENU:
     Parameter sweep (T/F): T

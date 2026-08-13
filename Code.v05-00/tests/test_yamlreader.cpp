@@ -126,8 +126,8 @@ TEST_CASE("YamlInputReader Helper Functions"){
         REQUIRE(parseScalarParam("-30.5") == -30.5);
         REQUIRE(parseScalarParam(" 20.0E-09 ") == 20.0e-9);
 
-        // Both formats the removed parameter sweep accepted are rejected, and
-        // the message points at the one-process-per-input-file workflow.
+        // Both formats the removed parameter sweep accepted are rejected, and print
+        // the migration message.
         REQUIRE_THROWS_WITH(
             parseScalarParam("200 220 240", "Pressure [hPa] (double)"),
             Catch::Matchers::ContainsSubstring("Several values given at Pressure [hPa] (double)") &&
