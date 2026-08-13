@@ -74,42 +74,15 @@ The input file options are explained via comments in the file `Code.v05-00/defau
 
 Advanced simulation parameters hidden in the input files (e.g. Aerosol bin size ratios, minimum/max bin aerosol sizes, etc) can be modified in `Code.v05-00/src/include/Parameters.hpp`. 
 
-## One run per process
-
-APCEMM runs exactly one simulation per process. One process reads one input file and writes to one output folder. Several input files may still be layered on the command line, where each later file overrides values from the earlier ones:
-
-```
-./APCEMM base.yaml 4_threads.yaml
-```
-
-Layering builds a single run, not several.
-
 ### Migrating an input file that used a parameter sweep
 
-Earlier versions could run many cases from one input file, through a `PARAM SWEEP SUBMENU` in the `SIMULATION MENU` and multi-value entries in the `PARAMETER MENU`. Both were removed. APCEMM rejects an input file that still uses them and names the option that went away.
+Earlier versions could run many cases from one input file, through a `PARAM SWEEP SUBMENU` in the `SIMULATION MENU` and multi-value entries in the `PARAMETER MENU`. These options have been removed and APCEMM rejects an input file that still uses them.
 
 To migrate:
 
 1. Delete the `PARAM SWEEP SUBMENU` block from the `SIMULATION MENU`.
-2. Give every `PARAMETER MENU` entry exactly one value. Neither `200 220 240` nor `200:20:240` is accepted.
+2. Give every `PARAMETER MENU` entry exactly one value. Sweep inputs e.g. `200 220 240` and `200:20:240` are not accepted.
 3. To vary a parameter, write one input file per value and start one APCEMM process for each. Give each process its own output folder.
-
-A shell loop replaces a sweep over pressure:
-
-```bash
-for p in 200 220 240; do
-  printf 'SIMULATION MENU:\n  OUTPUT SUBMENU:\n    Output folder (string): out_$p/\nPARAMETER MENU:\n  METEOROLOGICAL PARAMETERS SUBMENU:\n    Pressure [hPa] (double): %s\n' "$p" > sweep_$p.yaml
-  ./APCEMM base.yaml sweep_$p.yaml
-done
-```
-
-On a cluster, use a job array instead of the loop. Each run is then independently traceable, and rerunning one point costs one process rather than the whole cross product.
-
-Space-separated lists are unaffected where they describe a list of outputs rather than a swept parameter, such as `Species indices to include (list of ints)` in the `DIAGNOSTIC MENU`.
-
-The exit code reports the outcome: 0 for every physical result, including a run that reaches its configured `Plume Process` end time with the contrail still alive, and 1 only for a failure of the model.
-
-One run owns one output folder. The run starts only if the folder does not exist yet, or if it exists and is empty. If the folder holds anything at all and `Overwrite if folder exists (T/F)` is `F`, the run stops with an error instead of writing into it. The check does not look at what the files are, so it also protects files APCEMM did not write.
 
 ## Debugging
 
