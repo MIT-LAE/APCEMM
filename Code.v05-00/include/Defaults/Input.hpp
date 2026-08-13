@@ -1,7 +1,6 @@
 R"====(
 SIMULATION MENU:
   OpenMP Num Threads (positive int): 8
-  # Where the output of this run will go. One run owns one output folder.
   OUTPUT SUBMENU:
     Output folder (string): APCEMM_out/
     Overwrite if folder exists (T/F): T
@@ -32,8 +31,7 @@ SIMULATION MENU:
 
 # Format of parameter items:
 # Param name [unit] (Variable type)
-# Every entry takes exactly one value. To vary a parameter, write one input
-# file per value and start one APCEMM process for each.
+# Every entry takes exactly one value
 PARAMETER MENU:
   # Maximum simulation time if contrail isn't gone by then:
   Plume Process [hr] (double): 12

@@ -38,12 +38,8 @@ void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
 void CreateStatusOutput(const std::string folder, const SimStatus status);
 
-/* One run owns one output folder. A folder that holds anything at all may hold
- * work that is not ours, so refuse to write into it unless overwriting is
- * enabled. Only two states are safe: the folder does not exist yet, or it
- * exists and is empty. Recognising APCEMM's own output would be enough to
- * protect an earlier run, but it would not protect anything else the user put
- * there. */
+/* Check if save dir exists and is occupied. Only allows writing there if
+ * directory does not exist of is empty with overwrite = false */
 bool folderIsOccupied( const std::string &folder )
 {
 
@@ -183,9 +179,6 @@ int main( int argc, char* argv[])
 
     if ( status == SimStatus::Failed ) {
         std::cout << "\n APCEMM failed." << std::endl;
-        // This error reporting is not being used right now
-        // std::cout << " Error: " << iERR << "" << std::endl;
-
         // Report contrail location
         // {:>8.2f} = right align with a width of 8 with 2 decimals
         fmt::print(" LON [deg]: {:>8.2f}\n", scenario.longitude_deg());
@@ -202,10 +195,7 @@ int main( int argc, char* argv[])
 
     CreateStatusOutput(Input_Opt.SIMULATION_OUTPUT_FOLDER, status);
 
-    /* Every physical outcome is a success. Only a failure of the model itself
-     * reports a non-zero exit code, so a batch driver can rely on it.
-     * Incomplete means the run reached its configured Plume Process end time
-     * with the contrail still alive, which is a normal result. */
+    // Return 1 on failed runs only, the rest is a "successful" physical outcome
     return status == SimStatus::Failed ? 1 : 0;
 
 } /* End of Main */

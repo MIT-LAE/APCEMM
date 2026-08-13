@@ -47,8 +47,9 @@ struct OptInput
     epm_type     SIMULATION_EPM_TYPE;
     std::string  SIMULATION_EXTERNAL_EPM_NETCDF_FILENAME;
 
-    /* The PARAMETER MENU describes the scenario, not the model
-     * configuration. It is read into an Input object. */
+    /* PARAMETER MENU is read into another Input object
+     * because it describes the simulation scenario, whereas
+     * OptInput describes the model configuration. */
 
     /* ========================================== */
     /* ---- TRANSPORT MENU ---------------------- */

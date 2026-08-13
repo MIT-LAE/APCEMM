@@ -14,7 +14,7 @@ using std::vector;
 
 namespace YamlInputReader{
     // Appended to every error raised by an input file written for the removed
-    // multi-case runs, so a stale file points at the replacement workflow.
+    // multi-case runs, to make the error and fix clear.
     inline const string ONE_RUN_PER_PROCESS_MESSAGE =
         "APCEMM runs exactly one simulation per process. The parameter sweep and the Monte Carlo "
         "mode were removed, so every PARAMETER MENU entry takes exactly one value. To vary a "

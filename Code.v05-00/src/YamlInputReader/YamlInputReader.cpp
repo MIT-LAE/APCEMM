@@ -76,8 +76,8 @@ namespace YamlInputReader{
         }
     }
 
-    // Keys that a previous version accepted and that this one rejects. Checked
-    // before the generic unknown-key error so a stale input file gets a message
+    // Keys that previous versions accepted and that we now reject. Checked
+    // before the generic unknown-key error so an outdated input file gets a message
     // naming the option that went away instead of "Unknown key found".
     void checkRemovedKey(const std::string& key, const std::string& errorPath) {
         static const std::set<std::string> removedKeys = {
@@ -430,9 +430,8 @@ namespace YamlInputReader{
         input.ADV_SAVE_PSD_GRID = parseBoolString(advancedNode["Save gridded particle size distribution (T/F)"].as<string>(), "Save gridded particle size distribution (T/F)");
     }
 
-    // A PARAMETER MENU entry holds exactly one number. Reject the two formats
-    // the removed parameter sweep accepted, "200 220 240" and "200:20:240",
-    // with the migration message rather than a parse error.
+    // Wrapper around parseDoubleString to have a nice rejection message for
+    // deprecated sweep style inputs (e.g. "200 220 240" and "200:20:240")
     double parseScalarParam(const string paramString, const string paramLocation){
         const string s = trim(paramString);
         if(s.find(':') != string::npos || split(s, " ").size() > 1){
@@ -442,7 +441,7 @@ namespace YamlInputReader{
     }
 
     // Space-separated list, used by the species and aerosol index lists of the
-    // DIAGNOSTIC MENU. Those are lists of outputs, not swept parameters.
+    // DIAGNOSTIC MENU. Those are lists of outputs so we still support it for now.
     Vector_1D parseVectorDoubleString(const string paramString, const string paramLocation){
         const vector<string> tokens = split(trim(paramString), " ");
         Vector_1D values;
