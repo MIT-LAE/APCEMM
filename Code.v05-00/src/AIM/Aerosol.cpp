@@ -673,7 +673,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
 
                     #pragma omp parallel for default(shared) private(iBin, jBin, kBin, kBin_, nPart) \
-                        schedule(dynamic, 1) if (!PARALLEL_CASES)
+                        schedule(dynamic, 1)
                     for (iBin = 0; iBin < nBin; iBin++)
                     {
 
@@ -768,7 +768,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         Vector_3D iceVol  = Volume( );
         Vector_2D totH2O  = H2O;
         
-        #pragma omp parallel if( !PARALLEL_CASES ) default( shared )
+        #pragma omp parallel default( shared )
         {
 
             std::vector<int> toBin( nBin, 0 );
@@ -1053,8 +1053,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
             #pragma omp parallel for                                                      \
             default ( shared                                                ) \
             private ( iNx, jNy, iBin                                        ) \
-            schedule( dynamic, 1                                            ) \
-            if      ( !PARALLEL_CASES                                       )
+            schedule( dynamic, 1                                            )
             for ( jNy = 0; jNy < Ny; jNy++ ) {
                 for ( iNx = 0; iNx < Nx; iNx++ ) {
                     if(strcmp(funcName, "Grow") == 0) { H2O[jNy][iNx] = H2O[0][0]; }
@@ -1076,8 +1075,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                 #pragma omp parallel for                                                      \
                 default ( shared                                            ) \
                 private ( iNx, jNy, iBin                                    ) \
-                schedule( dynamic, 1                                        ) \
-                if      ( !PARALLEL_CASES                                   )
+                schedule( dynamic, 1                                        )
                 for ( jNy = 0; jNy < Ny; jNy++ ) {
                     for ( iNx = Nx_max; iNx < Nx; iNx++ ) {
                         if(strcmp(funcName, "Grow") == 0) { H2O[jNy][iNx] = H2O[jNy][Nx-1-iNx]; }
@@ -1091,8 +1089,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                 #pragma omp parallel for                                                      \
                 default ( shared                                            ) \
                 private ( iNx, jNy, iBin                                    ) \
-                schedule( dynamic, 1                                        ) \
-                if      ( !PARALLEL_CASES                                   )
+                schedule( dynamic, 1                                        )
                 for ( jNy = Ny_max; jNy < Ny; jNy++ ) {
                     for ( iNx = 0; iNx < Nx; iNx++ ) {
                         if(strcmp(funcName, "Grow") == 0) { H2O[jNy][iNx] = H2O[Ny-1-jNy][iNx]; };
@@ -1106,8 +1103,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                 #pragma omp parallel for                                                      \
                 default ( shared                                            ) \
                 private ( iNx, jNy, iBin                                    ) \
-                schedule( dynamic, 1                                        ) \
-                if      ( !PARALLEL_CASES                                   )
+                schedule( dynamic, 1                                        )
                 for ( jNy = Ny_max; jNy < Ny; jNy++ ) {
                     for ( iNx = Nx_max; iNx < Nx; iNx++ ) {
                         if(strcmp(funcName, "Grow") == 0) { H2O[jNy][iNx] = H2O[Ny-1-jNy][Nx-1-iNx]; };
@@ -1125,8 +1121,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                 #pragma omp parallel for                                                      \
                 default ( shared                                            ) \
                 private ( iNx, jNy, iBin                                    ) \
-                schedule( dynamic, 1                                        ) \
-                if      ( !PARALLEL_CASES                                   )
+                schedule( dynamic, 1                                        )
                 for ( jNy = 0; jNy < Ny; jNy++ ) {
                     for ( iNx = Nx_max; iNx < Nx; iNx++ ) {
                         if(strcmp(funcName, "Grow") == 0) { H2O[jNy][iNx] = H2O[jNy][Nx-1-iNx]; };
@@ -1179,7 +1174,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
          * The bin summation order per cell is fixed, so results are reproducible
          * with varying thread counts. Innermost loop keeps the contiguous data 
          * access pattern */
-        #pragma omp parallel for default(shared) schedule(static) if (!PARALLEL_CASES)
+        #pragma omp parallel for default(shared) schedule(static)
         for (UInt jNy = 0; jNy < Ny; jNy++)
         {
             Vector_1D& momentRow = moment[jNy];
@@ -1225,7 +1220,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                 const double FACTOR = 3.0 / double(4.0 * PI);
 
                 // See Moment<N>() for parallelization pattern
-                #pragma omp parallel for default(shared) schedule(static) if (!PARALLEL_CASES)
+                #pragma omp parallel for default(shared) schedule(static)
                 for (UInt jNy = 0; jNy < Ny; jNy++)
                 {
                     Vector_1D& momentRow = moment[jNy];
@@ -1258,7 +1253,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         double ratio = 0.0E+00;
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin, ratio) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (iBin = 0; iBin < nBin; iBin++)
         {
             ratio = log_Bin_Edges[iBin + 1] - log_Bin_Edges[iBin];
@@ -1313,7 +1308,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         UInt iBin = 0;
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (iBin = 0; iBin < nBin; iBin++)
         {
             for (jNy = 0; jNy < Ny; jNy++)
@@ -1339,7 +1334,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         double ratio = 0.0E+00;
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin, ratio) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (iBin = 0; iBin < nBin; iBin++)
         {
             ratio = log_Bin_Edges[iBin + 1] - log_Bin_Edges[iBin];
@@ -1371,7 +1366,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         /* A = 4.0*pi*m2 */
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (jNy = 0; jNy < Ny; jNy++)
         {
             for (iNx = 0; iNx < Nx; iNx++)
@@ -1393,7 +1388,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         /* V = 4.0/3.0*pi*m3 */
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (jNy = 0; jNy < Ny; jNy++)
         {
             for (iNx = 0; iNx < Nx; iNx++)
@@ -1432,7 +1427,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         const double FACTOR = RHO_ICE * 1.0E+06;
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (jNy = 0; jNy < Ny; jNy++)
         {
             for (iNx = 0; iNx < Nx; iNx++)
@@ -1457,7 +1452,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         const double b = 2.431E-03; /* [m^3/kg] */
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (jNy = 0; jNy < Ny; jNy++)
         {
             for (iNx = 0; iNx < Nx; iNx++)
@@ -1533,7 +1528,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         Vector_1D PDF(nBin, 0.0E+00);
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (iBin = 0; iBin < nBin; iBin++)
         {
             for (jNy = 0; jNy < Ny; jNy++)
@@ -1563,7 +1558,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         Vector_1D PDF(nBin, 0.0E+00);
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (iBin = 0; iBin < nBin; iBin++)
         {
             for (jNy = 0; jNy < Ny; jNy++)
@@ -1591,7 +1586,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         Vector_2D chi = Extinction();
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (jNy = 0; jNy < Ny; jNy++)
         {
             for (iNx = 0; iNx < Nx; iNx++)
@@ -1612,7 +1607,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         Vector_2D chi = Extinction();
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (iNx = 0; iNx < Nx; iNx++)
         {
             for (jNy = 0; jNy < Ny; jNy++)
@@ -1635,7 +1630,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         const Vector_2D m1 = Moment(1);
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (jNy = 0; jNy < Ny; jNy++)
         {
             for (iNx = 0; iNx < Nx; iNx++)
@@ -1663,7 +1658,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         const Vector_2D m3 = Moment(3);
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (jNy = 0; jNy < Ny; jNy++)
         {
             for (iNx = 0; iNx < Nx; iNx++)
@@ -1692,7 +1687,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         const Vector_2D m2 = Moment(2);
 
         #pragma omp parallel for default(shared) private(iNx, jNy) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (jNy = 0; jNy < Ny; jNy++)
         {
             for (iNx = 0; iNx < Nx; iNx++)
@@ -1878,7 +1873,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         Vector_1D PDF(nBin, 0.0E+00);
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (iBin = 0; iBin < nBin; iBin++)
         {
             for (jNy = 0; jNy < Ny; jNy++)
@@ -1922,7 +1917,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         UInt iBin = 0;
 
         #pragma omp parallel for default(shared) private(iNx, jNy, iBin) \
-            schedule(dynamic, 1) if (!PARALLEL_CASES)
+            schedule(dynamic, 1)
         for (jNy = 0; jNy < Ny; jNy++)
         {
             for (iNx = 0; iNx < Nx; iNx++)

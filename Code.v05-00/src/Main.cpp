@@ -167,13 +167,10 @@ int main( int argc, char* argv[])
     //     #endif /* OMP */
     // }
 
-    //PARALLEL_CASES = Input_Opt.SIMULATION_PARAMETER_SWEEP;
-
     /* ====================================================================== */
     /* ---- CASE LOOP STARTS HERE ------------------------------------------- */
     /* ====================================================================== */
 
-    #pragma omp parallel for schedule(dynamic, 1) shared(Input_Opt, parameters, nCases) if( PARALLEL_CASES )
     for ( iCase = 0; iCase < nCases; iCase++ ) {
 
         unsigned int jCase = iOFFSET + iCase;

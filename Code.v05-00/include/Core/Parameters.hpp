@@ -14,12 +14,6 @@
 #ifndef PARAMETERS_H_INCLUDED
 #define PARAMETERS_H_INCLUDED
 
-/* How to handle multithreading?
- * 1. Each cases are run in parallel (efficient for low-requirement runs)
- * 2. Each case is run one at a time on multiple CPUs (efficient for contrail
- *    simulations) */
-
-#define PARALLEL_CASES 0
 /* Grid parameters */
 
 /* Aerosol Size Ratios */

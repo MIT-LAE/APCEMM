@@ -285,7 +285,7 @@ void Meteorology::interpolateMetToSimulationGrid() {
     // This ONLY populates the fields of the met data object - it does not overwrite anything
     // for the main simulation object (i.e. H2O_ here is the meteorological H2O, not the
     // H2O for the main simulation)
-    #pragma omp parallel for if (!PARALLEL_CASES)
+    #pragma omp parallel for
     for ( int j = 0; j < ny_; j++ ) {
         // Closest grid cell (if using nearest neighbor rather than interpolating)
         int i_Z = met::nearestNeighbor( altitudeInit_, altitude_[j] );
