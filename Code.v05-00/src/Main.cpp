@@ -29,6 +29,7 @@
 #include "YamlInputReader/YamlInputReader.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Input.hpp"
+#include "Core/OutputFilenames.hpp"
 #include "Core/LAGRIDPlumeModel.hpp"
 #include "Core/Status.hpp"
 #include "Core/Diag_Mod.hpp"
@@ -133,7 +134,7 @@ int main( int argc, char* argv[])
 
         /* Create README */
         const std::string description = "";
-        CreateREADME( Input_Opt.SIMULATION_OUTPUT_FOLDER, "README", description );
+        CreateREADME( Input_Opt.SIMULATION_OUTPUT_FOLDER, OutputFiles::README, description );
 
     }
 
@@ -285,7 +286,7 @@ void CreateStatusOutput(const std::string folder, const SimStatus status)
 {
     std::ofstream statusFile;
 
-    const std::string fullPath = folder + "/status";
+    const std::string fullPath = folder + OutputFiles::STATUS;
     statusFile.open( fullPath.c_str() );
 
     switch (status)

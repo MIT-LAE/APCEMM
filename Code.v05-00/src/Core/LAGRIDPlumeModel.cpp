@@ -3,6 +3,7 @@
 #include <memory>
 #include "AIM/Settling.hpp"
 #include "Util/PlumeModelUtils.hpp"
+#include "Core/OutputFilenames.hpp"
 #include "Core/Status.hpp"
 #include "KPP/KPP_Parameters.h"
 #include "Core/LAGRIDPlumeModel.hpp"
@@ -294,7 +295,7 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
         return std::get<SimStatus>(epmResult);
     }
     EPM::Output &epmOutput = std::get<EPM::Output>(epmResult);
-    epmOutput.write(optInput_.SIMULATION_OUTPUT_FOLDER + "/epm-output.nc");
+    epmOutput.write(optInput_.SIMULATION_OUTPUT_FOLDER + OutputFiles::EPM_OUTPUT);
 
     /* The output area from the EPM is principally used just to scale from
     number densities (eg #/cm3) to totals (eg #/m). Increasing the area
