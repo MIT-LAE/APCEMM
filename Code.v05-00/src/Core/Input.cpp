@@ -14,15 +14,6 @@
 #include <iostream>
 #include "Core/Input.hpp"
 
-Input::~Input()
-{
-
-    /* Destructor */
-
-} /* End of Input::~Input */
-
-/* End of Input.cpp */
-
 void Input::checkInputValidity(){
         if ( simulationTime_ <= 0.0 || simulationTime_ >= 48.0 ) {
         std::cout << " In Input::Input:";

@@ -16,10 +16,11 @@
 
 #include "Util/ForwardDecl.hpp"
 
-/* The scenario a run simulates: the aircraft, its emissions and the atmosphere
- * at the point of emission. Read from the PARAMETER MENU by
- * YamlInputReader::readParamMenu, which fills one object through the setters
- * below. Everything that decides how the model runs lives in OptInput. */
+/* Input is the scenario a run simulates (aircraft, emissions and atmospheric
+ * parameters).
+ * Read from the PARAMETER MENU by YamlInputReader::readParamMenu
+ * which fills the Input object through setters.
+ * Everything that decides how the model runs is in OptInput. */
 class Input
 {
 
@@ -75,7 +76,6 @@ class Input
     public:
 
         Input() = default;
-        ~Input();
 
         double simulationTime() const { return simulationTime_; }
         double temperature_K() const { return temperature_K_; } // From the meteorology
