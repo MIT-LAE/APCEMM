@@ -121,70 +121,64 @@ TEST_CASE("YamlInputReader Helper Functions"){
         }
         REQUIRE(err.find("Unable to read boolean value") == 0);
     }
-    SECTION("Parse Parameter Sweep/Monte Carlo Sim input"){
-        string teststr;
-        Vector_1D vec;
-        teststr = " 20:40 ";
-        //Test monte carlo case
-        vec = parseParamSweepInput(teststr, "", true, 10);
-        REQUIRE(vec.size() == 10);
-        REQUIRE(vec[0] != vec[1]);
-        for (double d: vec){
-            REQUIRE (d >= 20);
-            REQUIRE (d <= 40);
-        }
-        //Parameter sweep min:step:max case
-        teststr = " 20 : 5.0 : 40 "; // results in 20 25 30 35 40 (length 5)
-        vec = parseParamSweepInput(teststr);
-        REQUIRE (vec.size() == 5);
-        REQUIRE (vec[0] == 20);
-        REQUIRE (vec[1] == 25);
-        REQUIRE (vec[4] == 40);
-        //Standard a b c d .... case
-        teststr = " 20 30.4 40.0 50 ";
-        vec = parseParamSweepInput(teststr);
-        REQUIRE (vec.size() == 4);
-        REQUIRE (vec[0] == 20);
-        REQUIRE (abs(vec[1] - 30) < 1e-40);
-        REQUIRE (vec[3] == 50);
+    SECTION("Parse a scalar parameter"){
+        REQUIRE(parseScalarParam(" 20 ") == 20);
+        REQUIRE(parseScalarParam("-30.5") == -30.5);
+        REQUIRE(parseScalarParam(" 20.0E-09 ") == 20.0e-9);
 
-        // some exceptions
-        string err;
-        try{
-            vec = parseParamSweepInput("1:2:3:4", "", true, 10);
-        }
-        catch (std::invalid_argument &e){
-            err = e.what();
-        }
-        REQUIRE(err.find("Monte Carlo Simulation requires") == 0);
-        try{
-            vec = parseParamSweepInput("1:2");
-        }
-        catch (std::invalid_argument &e){
-            err = e.what();
-        }
-        REQUIRE(err.find("Parameter sweep step input requires") == 0);
-        try{
-            vec = parseParamSweepInput("1 asdf ed 3");
-        }
-        catch (std::invalid_argument &e){
-            err = e.what();
-        }
-        REQUIRE(err.find("Something went wrong with processing a number") == 0);
-        try{
-            vec = parseParamSweepInput("10:10:20 0");
-        }
-        catch(std::invalid_argument &e){
-            if(string(e.what()).find("Something went wrong with processing a number") == 0) err = "stod fail 1";
-        }
-        REQUIRE(err == "stod fail 1");
-        try{
-            vec = parseParamSweepInput("10:10:20..0");
-        }
-        catch(std::invalid_argument &e){
-            if(string(e.what()).find("Something went wrong with processing a number") == 0) err = "stod fail 2";
-        }
-        REQUIRE(err == "stod fail 2");
+        // Both formats the removed parameter sweep accepted are rejected, and
+        // the message points at the one-process-per-input-file workflow.
+        REQUIRE_THROWS_WITH(
+            parseScalarParam("200 220 240", "Pressure [hPa] (double)"),
+            Catch::Matchers::ContainsSubstring("Several values given at Pressure [hPa] (double)") &&
+            Catch::Matchers::ContainsSubstring("exactly one simulation per process") &&
+            Catch::Matchers::ContainsSubstring("one input file per value")
+        );
+        REQUIRE_THROWS_WITH(
+            parseScalarParam("200:20:240", "Pressure [hPa] (double)"),
+            Catch::Matchers::ContainsSubstring("Several values given at Pressure [hPa] (double)") &&
+            Catch::Matchers::ContainsSubstring("one input file per value")
+        );
+        // The Monte Carlo min:max format goes the same way.
+        REQUIRE_THROWS_WITH(
+            parseScalarParam("200:240"),
+            Catch::Matchers::ContainsSubstring("one input file per value")
+        );
+
+        REQUIRE_THROWS_WITH(
+            parseScalarParam("asdf"),
+            Catch::Matchers::ContainsSubstring("Something went wrong with processing a number")
+        );
+    }
+    SECTION("Parse a list of values"){
+        Vector_1D vec = parseVectorDoubleString(" 20 30.4 40.0 50 ");
+        REQUIRE(vec.size() == 4);
+        REQUIRE(vec[0] == 20);
+        REQUIRE(vec[1] == 30.4);
+        REQUIRE(vec[3] == 50);
+
+        // A single value is still a list of one
+        REQUIRE(parseVectorDoubleString("1").size() == 1);
+
+        REQUIRE_THROWS_WITH(
+            parseVectorDoubleString("1 asdf ed 3"),
+            Catch::Matchers::ContainsSubstring("Something went wrong with processing a number")
+        );
+    }
+    SECTION("Parse a list of integer indices"){
+        // Species and aerosol timeseries indices keep the space-separated form
+        vector<int> indices = parseVectorIntString(" 1 3 5 ");
+        REQUIRE(indices.size() == 3);
+        REQUIRE(indices[0] == 1);
+        REQUIRE(indices[1] == 3);
+        REQUIRE(indices[2] == 5);
+
+        REQUIRE(parseVectorIntString("1") == vector<int>{1});
+
+        REQUIRE_THROWS_WITH(
+            parseVectorIntString("1 2.5", "Species indices to include (list of ints)"),
+            Catch::Matchers::ContainsSubstring("Decimals not allowed in int inputs")
+        );
     }
 }
 TEST_CASE("Read Yaml File"){
@@ -193,20 +187,11 @@ TEST_CASE("Read Yaml File"){
     YAML::Node data = YAML::LoadFile(filename);
     SECTION("Read Simulation Menu"){
         OptInput input;
-        string err;
-        try{
-            readSimMenu(input, data["SIMULATION MENU"]);
-        }
-        catch (std::invalid_argument &e){
-            err = e.what();
-        }
+        readSimMenu(input, data["SIMULATION MENU"]);
         // If in DEBUG, SIMULATION_OMP_NUM_THREADS is set to 1 which fails the test
         #ifndef DEBUG
             REQUIRE(input.SIMULATION_OMP_NUM_THREADS == 8);
         #endif
-        REQUIRE(input.SIMULATION_PARAMETER_SWEEP == true);
-        REQUIRE(input.SIMULATION_MONTECARLO == true);
-        REQUIRE(input.SIMULATION_MCRUNS == 2);
         REQUIRE(input.SIMULATION_OVERWRITE == true);
         REQUIRE(input.SIMULATION_THREADED_FFT == true);
         REQUIRE(input.SIMULATION_USE_FFTW_WISDOM == true);
@@ -216,49 +201,47 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.SIMULATION_ADJOINT_FILENAME == "APCEMM_ADJ_Case_*");
         REQUIRE(input.SIMULATION_BOXMODEL == true);
         REQUIRE(input.SIMULATION_BOX_FILENAME == "APCEMM_BOX_CASE_*");
-        REQUIRE(err == "In Simulation Menu: Parameter sweep and Monte Carlo cannot have the same value!");
 
     }
     SECTION("Read Param Menu"){
-        OptInput input;
-        string err;
-        readParamMenu(input, data["PARAMETER MENU"]);
+        // readParamMenu fills an Input object directly, with hPa converted to
+        // Pa and the SO2 to SO4 conversion turned from a percentage to a ratio.
+        Input scenario;
+        readParamMenu(scenario, data["PARAMETER MENU"]);
 
-        REQUIRE(input.PARAMETER_PARAM_MAP["PLUMEPROCESS"][0] == 24);
-        REQUIRE(input.PARAMETER_PARAM_MAP["PRESSURE"].size() == 3);
-        REQUIRE(input.PARAMETER_PARAM_MAP["PRESSURE"][0] == 22000);
-        REQUIRE(input.PARAMETER_PARAM_MAP["PRESSURE"][1] == 23000);
-        REQUIRE(input.PARAMETER_PARAM_MAP["DH"][0] == 15.0);
-        REQUIRE(input.PARAMETER_PARAM_MAP["DV"][0] == 0.15);
-        REQUIRE(input.PARAMETER_PARAM_MAP["NBV"][0] == 0.013);
+        REQUIRE(scenario.simulationTime() == 24);
+        REQUIRE(scenario.pressure_Pa() == 22000);
+        REQUIRE(scenario.horizDiff() == 15.0);
+        REQUIRE(scenario.vertiDiff() == 0.15);
+        REQUIRE(scenario.nBV() == 0.013);
 
-        REQUIRE(input.PARAMETER_PARAM_MAP["LONGITUDE"][0] == -15);
-        REQUIRE(input.PARAMETER_PARAM_MAP["LATITUDE"][0] == 60);
-        REQUIRE(input.PARAMETER_PARAM_MAP["EDAY"][0] == 81);
-        REQUIRE(input.PARAMETER_PARAM_MAP["ETIME"][0] == 8);
+        REQUIRE(scenario.longitude_deg() == -15);
+        REQUIRE(scenario.latitude_deg() == 60);
+        REQUIRE(scenario.emissionDOY() == 81);
+        REQUIRE(scenario.emissionTime() == 8);
 
-        REQUIRE(input.PARAMETER_PARAM_MAP["BACKG_NOX"][0] == 5100);
-        REQUIRE(input.PARAMETER_PARAM_MAP["BACKG_HNO3"][0] == 81.5);
-        REQUIRE(input.PARAMETER_PARAM_MAP["BACKG_O3"][0] == 100);
-        REQUIRE(input.PARAMETER_PARAM_MAP["BACKG_CO"][0] == 40);
-        REQUIRE(input.PARAMETER_PARAM_MAP["BACKG_CH4"][0] == 1.76);
-        REQUIRE(input.PARAMETER_PARAM_MAP["BACKG_SO2"][0] == 7.25);
+        REQUIRE(scenario.backgNOx() == 5100);
+        REQUIRE(scenario.backgHNO3() == 81.5);
+        REQUIRE(scenario.backgO3() == 100);
+        REQUIRE(scenario.backgCO() == 40);
+        REQUIRE(scenario.backgCH4() == 1.76);
+        REQUIRE(scenario.backgSO2() == 7.25);
 
-        REQUIRE(input.PARAMETER_PARAM_MAP["EI_NOX"][0] == 10);
-        REQUIRE(input.PARAMETER_PARAM_MAP["EI_CO"][0] == 1);
-        REQUIRE(input.PARAMETER_PARAM_MAP["EI_UHC"][0] == 0.6);
-        REQUIRE(input.PARAMETER_PARAM_MAP["EI_SO2"][0] == 0.1);
-        REQUIRE(input.PARAMETER_PARAM_MAP["EI_SO2TOSO4"][0] == 0.05);
-        REQUIRE(input.PARAMETER_PARAM_MAP["EI_SOOT"][0] == 0.06);
+        REQUIRE(scenario.EI_NOx() == 10);
+        REQUIRE(scenario.EI_CO() == 1);
+        REQUIRE(scenario.EI_HC() == 0.6);
+        REQUIRE(scenario.EI_SO2() == 0.1);
+        REQUIRE(scenario.EI_SO2TOSO4() == 0.05);
+        REQUIRE(scenario.EI_Soot() == 0.06);
 
-        REQUIRE(input.PARAMETER_PARAM_MAP["EI_SOOTRAD"][0] == 20.0e-9);
-        REQUIRE(input.PARAMETER_PARAM_MAP["FF"][0] == 2.8);
-        REQUIRE(input.PARAMETER_PARAM_MAP["AMASS"][0] == 2.00e5);
-        REQUIRE(input.PARAMETER_PARAM_MAP["FSPEED"][0] == 250.0);
-        REQUIRE(input.PARAMETER_PARAM_MAP["NUMENG"][0] == 4);
-        REQUIRE(input.PARAMETER_PARAM_MAP["WINGSPAN"][0] == 69.8);
-        REQUIRE(input.PARAMETER_PARAM_MAP["COREEXITTEMP"][0] == 547.3);
-        REQUIRE(input.PARAMETER_PARAM_MAP["BYPASSAREA"][0] == 1.804);
+        REQUIRE(scenario.sootRad() == 20.0e-9);
+        REQUIRE(scenario.fuelFlow() == 2.8);
+        REQUIRE(scenario.aircraftMass() == 2.00e5);
+        REQUIRE(scenario.flightSpeed() == 250.0);
+        REQUIRE(scenario.numEngines() == 4);
+        REQUIRE(scenario.wingspan() == 69.8);
+        REQUIRE(scenario.coreExitTemp() == 547.3);
+        REQUIRE(scenario.bypassArea() == 1.804);
     }
     SECTION("Read Transport Menu"){
         OptInput input;
@@ -354,71 +337,69 @@ TEST_CASE("Read Yaml File"){
     }
 
 }
-TEST_CASE("Generate All Cases"){
-    OptInput input;
-    input.PARAMETER_PARAM_MAP = {{"test1", {1}}};
-    vector<std::unordered_map<string,double>> combinations = generateCases(input);
-    REQUIRE(combinations.size() == 1);
-
-    input.PARAMETER_PARAM_MAP = {{"test1", {1}}, {"test2", {2}}};
-    combinations = generateCases(input);
-    REQUIRE(combinations.size() == 1);
-    REQUIRE(combinations[0]["test1"] == 1);
-    REQUIRE(combinations[0]["test2"] == 2);
-
-    input.PARAMETER_PARAM_MAP = {{"test1", {1, 2, 3}}, {"test2", {4}}, {"test3", {5, 6}}};
-    combinations = generateCases(input);
-    //should result in {(1,4,5), (2,4,5), (3,4,5), (1,4,6), (2,4,6), (3,4,6)}
-    REQUIRE(combinations.size() == 6);
-
-    REQUIRE(combinations[0]["test1"] == 1);
-    REQUIRE(combinations[0]["test2"] == 4);
-    REQUIRE(combinations[0]["test3"] == 5);
-    REQUIRE(combinations[1]["test1"] == 2);
-    REQUIRE(combinations[1]["test3"] == 5);
-    REQUIRE(combinations[5]["test1"] == 3);
-    REQUIRE(combinations[5]["test3"] == 6);
-
-    input.PARAMETER_PARAM_MAP = {{"test1", {1, 2, 3}}, {"test2", {4, 0}}, {"test3", {5, 6, 7, 8}}, {"test4", {9, 10, 11}}};
-    combinations = generateCases(input);
-    REQUIRE(combinations.size() == 72);
-}
-TEST_CASE("Generate Input Objects"){
+TEST_CASE("Read one input file into a scenario"){
     string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
     OptInput input;
-    YamlInputReader::readYamlInputFiles(input, {filename});
-    vector<std::unordered_map<string,double>> cases = generateCases(input);
-    REQUIRE(cases.size() == 6);
-    Input caseInput = Input(0, cases, "", "", "", "", "");
-    REQUIRE(caseInput.simulationTime() == 24);
-    REQUIRE(caseInput.pressure_Pa() == 22000);
-    REQUIRE(caseInput.horizDiff() == 15.0);
-    REQUIRE(caseInput.vertiDiff() == 0.15);
-    REQUIRE(caseInput.nBV() == 0.013);
-    REQUIRE(caseInput.longitude_deg() == -15);
-    REQUIRE(caseInput.latitude_deg() == 60);
-    REQUIRE(caseInput.emissionDOY() == 81);
-    REQUIRE(caseInput.emissionTime() == 8);
-    REQUIRE(caseInput.backgNOx() == 5100);
-    REQUIRE(caseInput.backgHNO3() == 81.5);
-    REQUIRE(caseInput.backgO3() == 100);
-    REQUIRE(caseInput.backgCO() == 40);
-    REQUIRE(caseInput.backgCH4() == 1.76);
-    REQUIRE(caseInput.backgSO2() == 7.25);
-    REQUIRE(caseInput.EI_NOx() == 10);
-    REQUIRE(caseInput.EI_CO() == 1);
-    REQUIRE(caseInput.EI_HC() == 0.6);
-    REQUIRE(caseInput.EI_SO2() == 0.1);
-    REQUIRE(caseInput.EI_SO2TOSO4() == 0.05);
-    REQUIRE(caseInput.EI_Soot() == 0.06);
-    REQUIRE(caseInput.sootRad() == 20.0e-9);
-    REQUIRE(caseInput.fuelFlow() == 2.8);
-    REQUIRE(caseInput.aircraftMass() == 2.00e5);
-    REQUIRE(caseInput.flightSpeed() == 250.0);
-    REQUIRE(caseInput.numEngines() == 4);
-    REQUIRE(caseInput.wingspan() == 69.8);
-    REQUIRE(caseInput.coreExitTemp() == 547.3);
-    REQUIRE(caseInput.bypassArea() == 1.804);
+    Input scenario;
+    YamlInputReader::readYamlInputFiles(input, scenario, {filename});
+    REQUIRE(scenario.simulationTime() == 24);
+    REQUIRE(scenario.pressure_Pa() == 22000);
+    // Not set by test1.yaml, so it keeps the compiled default
+    REQUIRE(scenario.horizDiff() == 15.0);
+    REQUIRE(scenario.vertiDiff() == 0.15);
+    REQUIRE(scenario.nBV() == 0.013);
+    REQUIRE(scenario.longitude_deg() == -15);
+    REQUIRE(scenario.latitude_deg() == 60);
+    REQUIRE(scenario.emissionDOY() == 81);
+    REQUIRE(scenario.emissionTime() == 8);
+    REQUIRE(scenario.backgNOx() == 5100);
+    REQUIRE(scenario.backgHNO3() == 81.5);
+    REQUIRE(scenario.backgO3() == 100);
+    REQUIRE(scenario.backgCO() == 40);
+    REQUIRE(scenario.backgCH4() == 1.76);
+    REQUIRE(scenario.backgSO2() == 7.25);
+    REQUIRE(scenario.EI_NOx() == 10);
+    REQUIRE(scenario.EI_CO() == 1);
+    REQUIRE(scenario.EI_HC() == 0.6);
+    REQUIRE(scenario.EI_SO2() == 0.1);
+    REQUIRE(scenario.EI_SO2TOSO4() == 0.05);
+    REQUIRE(scenario.EI_Soot() == 0.06);
+    REQUIRE(scenario.sootRad() == 20.0e-9);
+    REQUIRE(scenario.fuelFlow() == 2.8);
+    REQUIRE(scenario.aircraftMass() == 2.00e5);
+    REQUIRE(scenario.flightSpeed() == 250.0);
+    REQUIRE(scenario.numEngines() == 4);
+    REQUIRE(scenario.wingspan() == 69.8);
+    REQUIRE(scenario.coreExitTemp() == 547.3);
+    REQUIRE(scenario.bypassArea() == 1.804);
+}
+
+TEST_CASE("Reject input files written for the removed multi-case runs"){
+    OptInput input;
+    Input scenario;
+
+    SECTION("A PARAM SWEEP SUBMENU names the removed option"){
+        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test15.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, scenario, {filename}),
+            Catch::Matchers::ContainsSubstring("Removed option found") &&
+            Catch::Matchers::ContainsSubstring("PARAM SWEEP SUBMENU") &&
+            Catch::Matchers::ContainsSubstring("exactly one simulation per process") &&
+            Catch::Matchers::ContainsSubstring("one input file per value") &&
+            Catch::Matchers::ContainsSubstring("test15.yaml") &&
+            !Catch::Matchers::ContainsSubstring("Unknown key found")
+        );
+    }
+
+    SECTION("A swept PARAMETER MENU entry gets the same message"){
+        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test16.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::readYamlInputFiles(input, scenario, {filename}),
+            Catch::Matchers::ContainsSubstring("Several values given at Pressure [hPa] (double)") &&
+            Catch::Matchers::ContainsSubstring("exactly one simulation per process") &&
+            Catch::Matchers::ContainsSubstring("one input file per value")
+        );
+    }
 }
 
 TEST_CASE("mergeYamlNodes keeps each key exactly once"){
@@ -471,43 +452,42 @@ TEST_CASE("Merge Input Files"){
     string filename1 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
     string filename2 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test2.yaml";
     OptInput input;
-    YamlInputReader::readYamlInputFiles(input, {filename1, filename2});
-    vector<std::unordered_map<string,double>> cases = generateCases(input);
-    REQUIRE(cases.size() == 6);
-    Input caseInput = Input(0, cases, "", "", "", "", "");
-    REQUIRE(caseInput.simulationTime() == 24);
-    REQUIRE(caseInput.pressure_Pa() == 32000);
-    REQUIRE(caseInput.horizDiff() == 17.0);
-    REQUIRE(caseInput.vertiDiff() == 0.15);
-    REQUIRE(caseInput.nBV() == 0.017);
-    REQUIRE(caseInput.longitude_deg() == -45);
-    REQUIRE(caseInput.latitude_deg() == 65);
-    REQUIRE(caseInput.emissionDOY() == 143);
-    REQUIRE(caseInput.emissionTime() == 12);
-    REQUIRE(caseInput.backgNOx() == 5100);
-    REQUIRE(caseInput.backgHNO3() == 81.5);
-    REQUIRE(caseInput.backgO3() == 100);
-    REQUIRE(caseInput.backgCO() == 40);
-    REQUIRE(caseInput.backgCH4() == 1.76);
-    REQUIRE(caseInput.backgSO2() == 7.25);
-    REQUIRE(caseInput.EI_NOx() == 10);
-    REQUIRE(caseInput.EI_CO() == 1);
-    REQUIRE(caseInput.EI_HC() == 0.6);
-    REQUIRE(caseInput.EI_SO2() == 0.1);
-    REQUIRE(caseInput.EI_SO2TOSO4() == 0.05);
-    REQUIRE(caseInput.EI_Soot() == 0.06);
-    REQUIRE(caseInput.sootRad() == 20.0e-9);
-    REQUIRE(caseInput.fuelFlow() == 2.9);
-    REQUIRE(caseInput.aircraftMass() == 2.30e5);
-    REQUIRE(caseInput.flightSpeed() == 250.0);
-    REQUIRE(caseInput.numEngines() == 4);
-    REQUIRE(caseInput.wingspan() == 69.8);
-    REQUIRE(caseInput.coreExitTemp() == 547.3);
-    REQUIRE(caseInput.bypassArea() == 1.804);
+    Input scenario;
+    YamlInputReader::readYamlInputFiles(input, scenario, {filename1, filename2});
+    REQUIRE(scenario.simulationTime() == 24);
+    REQUIRE(scenario.pressure_Pa() == 32000);
+    REQUIRE(scenario.horizDiff() == 17.0);
+    REQUIRE(scenario.vertiDiff() == 0.15);
+    REQUIRE(scenario.nBV() == 0.017);
+    REQUIRE(scenario.longitude_deg() == -45);
+    REQUIRE(scenario.latitude_deg() == 65);
+    REQUIRE(scenario.emissionDOY() == 143);
+    REQUIRE(scenario.emissionTime() == 12);
+    REQUIRE(scenario.backgNOx() == 5100);
+    REQUIRE(scenario.backgHNO3() == 81.5);
+    REQUIRE(scenario.backgO3() == 100);
+    REQUIRE(scenario.backgCO() == 40);
+    REQUIRE(scenario.backgCH4() == 1.76);
+    REQUIRE(scenario.backgSO2() == 7.25);
+    REQUIRE(scenario.EI_NOx() == 10);
+    REQUIRE(scenario.EI_CO() == 1);
+    REQUIRE(scenario.EI_HC() == 0.6);
+    REQUIRE(scenario.EI_SO2() == 0.1);
+    REQUIRE(scenario.EI_SO2TOSO4() == 0.05);
+    REQUIRE(scenario.EI_Soot() == 0.06);
+    REQUIRE(scenario.sootRad() == 20.0e-9);
+    REQUIRE(scenario.fuelFlow() == 2.9);
+    REQUIRE(scenario.aircraftMass() == 2.30e5);
+    REQUIRE(scenario.flightSpeed() == 250.0);
+    REQUIRE(scenario.numEngines() == 4);
+    REQUIRE(scenario.wingspan() == 69.8);
+    REQUIRE(scenario.coreExitTemp() == 547.3);
+    REQUIRE(scenario.bypassArea() == 1.804);
 }
 
 TEST_CASE("Validate Input Files"){
     OptInput input;
+    Input scenario;
     string validFile = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
     
     string filename1 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test3.yaml";
@@ -518,7 +498,7 @@ TEST_CASE("Validate Input Files"){
         // Check that it detects the invalid key, that it points to the correct file and that
         // it prints out the name of the invalid key (here a scalar)
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, {validFile, filename1}), 
+            YamlInputReader::readYamlInputFiles(input, scenario, {validFile, filename1}), 
             Catch::Matchers::ContainsSubstring("Unknown key found") &&
             Catch::Matchers::ContainsSubstring("test3.yaml") &&
             Catch::Matchers::ContainsSubstring("INVALID YAML INPUT")
@@ -529,7 +509,7 @@ TEST_CASE("Validate Input Files"){
         // Check that it detects the invalid key and that it prints out the name
         // of the invalid key (here a map)
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, {filename2}),
+            YamlInputReader::readYamlInputFiles(input, scenario, {filename2}),
             Catch::Matchers::ContainsSubstring("Unknown key found") &&
             Catch::Matchers::ContainsSubstring("INVALID YAML KEY")
         );
@@ -539,7 +519,7 @@ TEST_CASE("Validate Input Files"){
         // Here we have a key that is supposed to be a scalar but instead is a map
         // Check that if detects this and prints the name correctly
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, {filename3}),
+            YamlInputReader::readYamlInputFiles(input, scenario, {filename3}),
             Catch::Matchers::ContainsSubstring("is a map in provided YAML but not in the default input.yaml") &&
             Catch::Matchers::ContainsSubstring("Met input file path (string)")
         );
@@ -554,7 +534,7 @@ TEST_CASE("Validate Input Files"){
         // A scalar where the default holds a submenu would replace the whole
         // submenu. Check that if detects this and prints the name correctly
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, {filename4}),
+            YamlInputReader::readYamlInputFiles(input, scenario, {filename4}),
             Catch::Matchers::ContainsSubstring("is a value in provided YAML but a map in the default input.yaml") &&
             Catch::Matchers::ContainsSubstring("SIMULATION MENU -> OUTPUT SUBMENU") &&
             Catch::Matchers::ContainsSubstring("test6.yaml")
@@ -563,7 +543,7 @@ TEST_CASE("Validate Input Files"){
 
     SECTION("Valid key but wrong type (sequence instead of map)"){
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, {filename5}),
+            YamlInputReader::readYamlInputFiles(input, scenario, {filename5}),
             Catch::Matchers::ContainsSubstring("is a value in provided YAML but a map in the default input.yaml") &&
             Catch::Matchers::ContainsSubstring("SIMULATION MENU")
         );
@@ -572,19 +552,19 @@ TEST_CASE("Validate Input Files"){
     SECTION("Null values mean no override and stay valid"){
         // Reading must succeed and leave the compiled defaults in place. If a null
         // cleared out the submenu, readSimMenu would fail on the missing keys.
-        REQUIRE_NOTHROW(YamlInputReader::readYamlInputFiles(input, {filename6}));
+        REQUIRE_NOTHROW(YamlInputReader::readYamlInputFiles(input, scenario, {filename6}));
         REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
     }
 
     SECTION("Empty input file stays valid"){
-        REQUIRE_NOTHROW(YamlInputReader::readYamlInputFiles(input, {filename7}));
+        REQUIRE_NOTHROW(YamlInputReader::readYamlInputFiles(input, scenario, {filename7}));
         REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
     }
 
     SECTION("Document root is a bare value"){
         string filename8 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test10.yaml";
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, {filename8}),
+            YamlInputReader::readYamlInputFiles(input, scenario, {filename8}),
             Catch::Matchers::ContainsSubstring("The document root is a value in provided YAML") &&
             Catch::Matchers::ContainsSubstring("test10.yaml")
         );
@@ -595,7 +575,7 @@ TEST_CASE("Validate Input Files"){
         // heading would be dropped silently.
         string filename9 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test11.yaml";
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, {filename9}),
+            YamlInputReader::readYamlInputFiles(input, scenario, {filename9}),
             Catch::Matchers::ContainsSubstring("Duplicate key found") &&
             Catch::Matchers::ContainsSubstring("SIMULATION MENU") &&
             Catch::Matchers::ContainsSubstring("test11.yaml")
@@ -607,7 +587,7 @@ TEST_CASE("Validate Input Files"){
         // key with its own message, not with a yaml-cpp "bad conversion".
         string filename11 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test13.yaml";
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, {filename11}),
+            YamlInputReader::readYamlInputFiles(input, scenario, {filename11}),
             Catch::Matchers::ContainsSubstring("map keys must be scalars") &&
             Catch::Matchers::ContainsSubstring("test13.yaml")
         );
@@ -617,7 +597,7 @@ TEST_CASE("Validate Input Files"){
         // Same check, one level down, where the recursion reaches the key.
         string filename12 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test14.yaml";
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, {filename12}),
+            YamlInputReader::readYamlInputFiles(input, scenario, {filename12}),
             Catch::Matchers::ContainsSubstring("map keys must be scalars") &&
             Catch::Matchers::ContainsSubstring("test14.yaml")
         );
@@ -627,7 +607,7 @@ TEST_CASE("Validate Input Files"){
         // The error names the full path of the key, not just the key itself.
         string filename10 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test12.yaml";
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, {filename10}),
+            YamlInputReader::readYamlInputFiles(input, scenario, {filename10}),
             Catch::Matchers::ContainsSubstring("Duplicate key found") &&
             Catch::Matchers::ContainsSubstring("SIMULATION MENU -> OUTPUT SUBMENU -> Output folder (string)") &&
             Catch::Matchers::ContainsSubstring("test12.yaml")

@@ -1,15 +1,7 @@
 R"====(
 SIMULATION MENU:
-  # Only one of parameter sweep or MC simulation can be on.
-  # Parameter sweep lets you specify an arbitrary number of custom values for each parameter; Monte Carlo simulation is self-explanatory.
-  # At the moment, you cannot mix and match MC sim and param sweep on each individual parameter.
   OpenMP Num Threads (positive int): 8
-  PARAM SWEEP SUBMENU:
-    Parameter sweep (T/F): T
-  #-OR---------------
-    Run Monte Carlo (T/F): F
-    Num Monte Carlo runs (int): 2
-  # Where APCEMM output for this set of runs will go
+  # Where the output of this run will go. One run owns one output folder.
   OUTPUT SUBMENU:
     Output folder (string): APCEMM_out/
     Overwrite if folder exists (T/F): T
@@ -40,13 +32,9 @@ SIMULATION MENU:
 
 # Format of parameter items:
 # Param name [unit] (Variable type)
+# Every entry takes exactly one value. To vary a parameter, write one input
+# file per value and start one APCEMM process for each.
 PARAMETER MENU:
-  # Parameter sweep format : Format is either: x1 x2 x3 or start:increment:end
-  #                        : Example: 200 220 240 and 200:20:240 are identical
-
-  # Monte Carlo simulation : min:max 
-  #                        : Example: 200:240 will generate values for the parameter in between 200 and 240
-
   # Maximum simulation time if contrail isn't gone by then:
   Plume Process [hr] (double): 12
 

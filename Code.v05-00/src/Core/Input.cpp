@@ -14,59 +14,6 @@
 #include <iostream>
 #include "Core/Input.hpp"
 
-Input::Input( unsigned int iCase,               \
-        const std::vector<std::unordered_map<std::string, double>> &parameters,      \
-        const std::string fileName,       \
-        const std::string fileName_ADJ,   \
-        const std::string fileName_BOX,   \
-        const std::string fileName_micro, \
-        const std::string author          ):
-    Case_          ( iCase                 ),
-    simulationTime_( parameters[iCase].at("PLUMEPROCESS")),
-    horizDiff_     ( parameters[iCase].at("DH")),
-    vertiDiff_     ( parameters[iCase].at("DV")),
-
-    longitude_deg_ ( parameters[iCase].at("LONGITUDE")),
-    latitude_deg_  ( parameters[iCase].at("LATITUDE")),
-    pressure_Pa_   ( parameters[iCase].at("PRESSURE")),
-
-    emissionDOY_   ( parameters[iCase].at("EDAY")),
-    emissionTime_  ( parameters[iCase].at("ETIME")),
-
-    EI_NOx_        ( parameters[iCase].at("EI_NOX")),
-    EI_CO_         ( parameters[iCase].at("EI_CO")),
-    EI_HC_         ( parameters[iCase].at("EI_UHC")),
-    EI_SO2_        ( parameters[iCase].at("EI_SO2")),
-    EI_SO2TOSO4_   ( parameters[iCase].at("EI_SO2TOSO4")),
-    EI_Soot_       ( parameters[iCase].at("EI_SOOT")),
-    sootRad_       ( parameters[iCase].at("EI_SOOTRAD")),
-
-    fuelFlow_      ( parameters[iCase].at("FF")),
-    aircraftMass_  ( parameters[iCase].at("AMASS")),
-
-    backgNOx_      ( parameters[iCase].at("BACKG_NOX")),
-    backgHNO3_     ( parameters[iCase].at("BACKG_HNO3")),
-    backgO3_       ( parameters[iCase].at("BACKG_O3")),
-    backgCO_       ( parameters[iCase].at("BACKG_CO")),
-    backgCH4_      ( parameters[iCase].at("BACKG_CH4")),
-    backgSO2_      ( parameters[iCase].at("BACKG_SO2")),
-
-    flightSpeed_   ( parameters[iCase].at("FSPEED")),
-    numEngines_    ( parameters[iCase].at("NUMENG")),
-    wingspan_      ( parameters[iCase].at("WINGSPAN")),
-    coreExitTemp_  ( parameters[iCase].at("COREEXITTEMP")),
-    bypassArea_    ( parameters[iCase].at("BYPASSAREA")),
-    fileName_      ( fileName ),
-    fileName_ADJ_  ( fileName_ADJ ),
-    fileName_BOX_  ( fileName_BOX ),
-    fileName_micro_ ( fileName_micro ),
-    author_        ( author ),
-
-    nBV_           ( parameters[iCase].at("NBV"))
-
-{
-
-}
 Input::~Input()
 {
 

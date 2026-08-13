@@ -14,65 +14,58 @@
 #ifndef INPUT_H_INCLUDED
 #define INPUT_H_INCLUDED
 
-#include <string>
-#include <vector>
-#include <unordered_map>
 #include "Util/ForwardDecl.hpp"
 
+/* The scenario a run simulates: the aircraft, its emissions and the atmosphere
+ * at the point of emission. Read from the PARAMETER MENU by
+ * YamlInputReader::readParamMenu, which fills one object through the setters
+ * below. Everything that decides how the model runs lives in OptInput. */
 class Input
 {
 
-    UInt Case_;
+    double simulationTime_ = 0.0;
 
-    double simulationTime_;
+    double temperature_K_ = 0.0;
+    double relHumidity_w_ = 0.0;
+    double relHumidity_i_ = 0.0;
+    double horizDiff_ = 0.0;
+    double vertiDiff_ = 0.0;
 
-    double temperature_K_;
-    double relHumidity_w_;
-    double relHumidity_i_;
-    double horizDiff_;
-    double vertiDiff_;
+    double longitude_deg_ = 0.0;
+    double latitude_deg_ = 0.0;
+    double pressure_Pa_ = 0.0;
 
-    double longitude_deg_;
-    double latitude_deg_;
-    double pressure_Pa_;
+    UInt emissionDOY_ = 0;
+    double emissionTime_ = 0.0;
 
-    UInt emissionDOY_;
-    double emissionTime_;
+    double EI_NOx_ = 0.0;
+    double EI_CO_ = 0.0;
+    double EI_HC_ = 0.0;
+    double EI_SO2_ = 0.0;
+    double EI_SO2TOSO4_ = 0.0;
+    double EI_Soot_ = 0.0;
+    double sootRad_ = 0.0;
 
-    double EI_NOx_;
-    double EI_CO_;
-    double EI_HC_;
-    double EI_SO2_;
-    double EI_SO2TOSO4_;
-    double EI_Soot_;
-    double sootRad_;
+    double fuelFlow_ = 0.0;
+    double aircraftMass_ = 0.0;
 
-    double fuelFlow_;
-    double aircraftMass_;
+    double backgNOx_ = 0.0;
+    double backgHNO3_ = 0.0;
+    double backgO3_ = 0.0;
+    double backgCO_ = 0.0;
+    double backgCH4_ = 0.0;
+    double backgSO2_ = 0.0;
 
-    double backgNOx_;
-    double backgHNO3_;
-    double backgO3_;
-    double backgCO_;
-    double backgCH4_;
-    double backgSO2_;
-    
-    double flightSpeed_;
-    double numEngines_;
-    double wingspan_;
-    double coreExitTemp_;
-    double bypassArea_;
+    double flightSpeed_ = 0.0;
+    double numEngines_ = 0.0;
+    double wingspan_ = 0.0;
+    double coreExitTemp_ = 0.0;
+    double bypassArea_ = 0.0;
 
-    std::string fileName_;
-    std::string fileName_ADJ_;
-    std::string fileName_BOX_;
-    std::string fileName_micro_;
-    std::string author_;
+    double nBV_ = 0.0;
 
-    double nBV_;
-
-    UInt emissionDay_;
-    UInt emissionMonth_;
+    UInt emissionDay_ = 0;
+    UInt emissionMonth_ = 0;
 
     private:
         void checkInputValidity();
@@ -81,23 +74,8 @@ class Input
 
     public:
 
-        Input( unsigned int iCase,               \
-               const Vector_2D &parameters,      \
-               const std::string fileName,       \
-               const std::string fileName_ADJ,   \
-               const std::string fileName_BOX,   \
-               const std::string fileName_micro, \
-               const std::string author          );
-        Input( unsigned int iCase,               \
-                const std::vector<std::unordered_map<std::string, double>> &parameters,      \
-                const std::string fileName,       \
-                const std::string fileName_ADJ,   \
-                const std::string fileName_BOX,   \
-                const std::string fileName_micro, \
-                const std::string author          );
-
+        Input() = default;
         ~Input();
-        UInt Case() const { return Case_; }
 
         double simulationTime() const { return simulationTime_; }
         double temperature_K() const { return temperature_K_; } // From the meteorology
@@ -127,7 +105,7 @@ class Input
         double EI_SO2TOSO4() const { return EI_SO2TOSO4_; }
         double EI_Soot() const { return EI_Soot_; }
         double sootRad() const { return sootRad_; }
-        
+
         double fuelFlow() const { return fuelFlow_; }
 
         double aircraftMass() const { return aircraftMass_; }
@@ -136,7 +114,7 @@ class Input
         double wingspan() const { return wingspan_; }
         double coreExitTemp() const { return coreExitTemp_; }
         double bypassArea() const { return bypassArea_; }
-        
+
         double backgNOx() const { return backgNOx_; }
         double backgHNO3() const { return backgHNO3_; }
         double backgO3() const { return backgO3_; }
@@ -144,15 +122,43 @@ class Input
         double backgCH4() const { return backgCH4_; }
         double backgSO2() const { return backgSO2_; }
 
-        std::string fileName() const { return fileName_; }
-        std::string fileName_ADJ() const { return fileName_ADJ_; }
-        std::string fileName_BOX() const { return fileName_BOX_; }
-        std::string fileName_micro() const { return fileName_micro_; }
-        std::string author() const { return author_; }
-        const char* fileName2char() const { return fileName_.c_str(); }
-        const char* fileName_ADJ2char() const { return fileName_ADJ_.c_str(); }
-        const char* fileName_BOX2char() const { return fileName_BOX_.c_str(); }
-        const char* fileName_micro2char() const { return fileName_micro_.c_str(); }
+        /* Setters used by the input reader. The meteorology setters above
+         * overwrite temperature and humidity later in the run. */
+
+        void set_simulationTime( double simulationTime ) { simulationTime_ = simulationTime; }
+        void set_horizDiff( double horizDiff ) { horizDiff_ = horizDiff; }
+        void set_vertiDiff( double vertiDiff ) { vertiDiff_ = vertiDiff; }
+        void set_nBV( double nBV ) { nBV_ = nBV; }
+
+        void set_longitude_deg( double longitude_deg ) { longitude_deg_ = longitude_deg; }
+        void set_latitude_deg( double latitude_deg ) { latitude_deg_ = latitude_deg; }
+        void set_pressure_Pa( double pressure_Pa ) { pressure_Pa_ = pressure_Pa; }
+
+        void set_emissionDOY( UInt emissionDOY ) { emissionDOY_ = emissionDOY; }
+        void set_emissionTime( double emissionTime ) { emissionTime_ = emissionTime; }
+
+        void set_EI_NOx( double EI_NOx ) { EI_NOx_ = EI_NOx; }
+        void set_EI_CO( double EI_CO ) { EI_CO_ = EI_CO; }
+        void set_EI_HC( double EI_HC ) { EI_HC_ = EI_HC; }
+        void set_EI_SO2( double EI_SO2 ) { EI_SO2_ = EI_SO2; }
+        void set_EI_SO2TOSO4( double EI_SO2TOSO4 ) { EI_SO2TOSO4_ = EI_SO2TOSO4; }
+        void set_EI_Soot( double EI_Soot ) { EI_Soot_ = EI_Soot; }
+        void set_sootRad( double sootRad ) { sootRad_ = sootRad; }
+
+        void set_fuelFlow( double fuelFlow ) { fuelFlow_ = fuelFlow; }
+        void set_aircraftMass( double aircraftMass ) { aircraftMass_ = aircraftMass; }
+        void set_flightSpeed( double flightSpeed ) { flightSpeed_ = flightSpeed; }
+        void set_numEngines( double numEngines ) { numEngines_ = numEngines; }
+        void set_wingspan( double wingspan ) { wingspan_ = wingspan; }
+        void set_coreExitTemp( double coreExitTemp ) { coreExitTemp_ = coreExitTemp; }
+        void set_bypassArea( double bypassArea ) { bypassArea_ = bypassArea; }
+
+        void set_backgNOx( double backgNOx ) { backgNOx_ = backgNOx; }
+        void set_backgHNO3( double backgHNO3 ) { backgHNO3_ = backgHNO3; }
+        void set_backgO3( double backgO3 ) { backgO3_ = backgO3; }
+        void set_backgCO( double backgCO ) { backgCO_ = backgCO; }
+        void set_backgCH4( double backgCH4 ) { backgCH4_ = backgCH4; }
+        void set_backgSO2( double backgSO2 ) { backgSO2_ = backgSO2; }
 
 };
 

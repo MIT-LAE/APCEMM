@@ -3,7 +3,9 @@
 
 MPMSimVarsWrapper::MPMSimVarsWrapper(const Input& input, const OptInput& Input_Opt, const double depth_estimate):
 	RUN_BOXMODEL(Input_Opt.SIMULATION_BOXMODEL),
-	BUILD_LUT(Input_Opt.SIMULATION_PARAMETER_SWEEP),
+	// Placeholder for a future look-up table build. Nothing reads it: it used
+	// to mirror the parameter sweep flag, which no longer exists.
+	BUILD_LUT(false),
 	SAVE_FORWARD(Input_Opt.SIMULATION_SAVE_FORWARD),
 	ADJOINT(Input_Opt.SIMULATION_ADJOINT),
 	BACKG_FILENAME(Input_Opt.SIMULATION_INPUT_BACKG_COND),

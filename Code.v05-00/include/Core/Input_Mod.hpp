@@ -30,9 +30,6 @@ struct OptInput
     /* ========================================== */
 
     int          SIMULATION_OMP_NUM_THREADS;
-    bool         SIMULATION_PARAMETER_SWEEP;
-    bool         SIMULATION_MONTECARLO;
-    unsigned int SIMULATION_MCRUNS;
     std::string  SIMULATION_OUTPUT_FOLDER;
     bool         SIMULATION_OVERWRITE;
     bool         SIMULATION_THREADED_FFT;
@@ -51,11 +48,8 @@ struct OptInput
     epm_type     SIMULATION_EPM_TYPE;
     std::string  SIMULATION_EXTERNAL_EPM_NETCDF_FILENAME;
 
-    /* ========================================== */
-    /* ---- PARAMETER MENU ---------------------- */
-    /* ========================================== */
-
-    std::unordered_map<std::string, Vector_1D> PARAMETER_PARAM_MAP;
+    /* The PARAMETER MENU describes the scenario, not the model
+     * configuration. It is read into an Input object. */
 
     /* ========================================== */
     /* ---- TRANSPORT MENU ---------------------- */

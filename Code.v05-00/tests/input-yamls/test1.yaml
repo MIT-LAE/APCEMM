@@ -2,11 +2,6 @@
 # Param_name [unit] (Variable_type)
 SIMULATION MENU:
   OpenMP Num Threads (positive int): 8
-  PARAM SWEEP SUBMENU:
-    Parameter sweep (T/F): T
-  #-OR---------------
-    Run Monte Carlo (T/F): F
-    Num Monte Carlo runs (int): 2
   OUTPUT SUBMENU:
     Output folder (string): ./
     Overwrite if folder exists (T/F): T
@@ -28,11 +23,9 @@ SIMULATION MENU:
   EPM type (original/external/new): original
 
 PARAMETER MENU:
-  #Parameter sweep format  : Format is either 200 220 240 or 200:20:240 (except
-  #                        : for MC runs where it should be 200 240 or 200:240)
   Plume Process [hr] (double): 24
   METEOROLOGICAL PARAMETERS SUBMENU:
-    Pressure [hPa] (double): 220 230 240
+    Pressure [hPa] (double): 220
     Verti. diff. [m^2/s] (double): 0.15
     Brunt-Vaisala Frequency [s^-1] (double): 0.013
   LOCATION AND TIME SUBMENU:
@@ -61,7 +54,7 @@ PARAMETER MENU:
   Num. of engines [2/4] (int): 4
   Wingspan [m] (double): 69.8
   Core exit temp. [K] (double): 547.3
-  Exit bypass area [m^2] (double): 1.804 1
+  Exit bypass area [m^2] (double): 1.804
 
 TRANSPORT MENU:
   Turn on Transport (T/F): T

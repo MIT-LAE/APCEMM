@@ -1,0 +1,5 @@
+# Deliberately stale: a PARAMETER MENU entry holding a swept list of values.
+# Every entry now takes exactly one value.
+PARAMETER MENU:
+  METEOROLOGICAL PARAMETERS SUBMENU:
+    Pressure [hPa] (double): 220 230 240

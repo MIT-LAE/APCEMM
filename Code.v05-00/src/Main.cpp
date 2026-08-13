@@ -36,40 +36,53 @@
 
 void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
-void CreateStatusOutput(const std::string folder, const int caseNumber, const SimStatus status);
+void CreateStatusOutput(const std::string folder, const SimStatus status);
 int PlumeModel( OptInput &Input_Opt, const Input &inputCase );
 
-inline bool exist( const std::string &name )
+/* One run owns one output folder. Refuse to write into a folder that already
+ * holds the output of an earlier run unless overwriting is enabled. Every run
+ * writes a status file, and every run that reaches the plume model writes
+ * epm-output.nc, so those two catch a finished run. The timeseries and the EPM
+ * microphysics file catch a run that was interrupted before its status was
+ * written. */
+bool holdsAPCEMMOutput( const std::string &folder )
 {
 
-    struct stat buffer;
-    return (stat (name.c_str(), &buffer) == 0 );
+    std::error_code error;
+    if ( !std::filesystem::is_directory( folder, error ) )
+        return false;
 
-} /* End of exist */
+    for ( const auto &entry : std::filesystem::directory_iterator( folder, error ) ) {
+        if ( !entry.is_regular_file() )
+            continue;
+        const std::string name = entry.path().filename().string();
+        if ( name == "status" || name == "epm-output.nc" || name == "Micro.out" )
+            return true;
+        if ( name.starts_with( "ts" ) && entry.path().extension() == ".nc" )
+            return true;
+    }
+    return false;
+
+} /* End of holdsAPCEMMOutput */
 
 int main( int argc, char* argv[])
 {
 
-    std::vector<std::unordered_map<std::string, double> > parameters;
-    unsigned int iCase;
-    // Help compiler tell this variable is initialized
-    unsigned int nCases = 0;
-    const unsigned int iOFFSET = 0;
-    
     const unsigned int model = 1;
 
     #ifdef DEBUG
         std::cout << "-------- DEBUG is enabled --------" << std::endl;
     #endif
 
-    /* Declaring the Input Option object for use in APCEMM */
-    OptInput Input_Opt; // Input Option object
+    /* Model configuration and the scenario to simulate */
+    OptInput Input_Opt;
+    Input scenario;
 
     /*
      * model = 0 -> Box Model
      *
      * model = 1 -> Plume Model
-     *                   + 
+     *                   +
      *              Adjoint Model
      *
      * model = 2 -> Adjoint Model
@@ -84,226 +97,125 @@ int main( int argc, char* argv[])
         return 1;
     }
 
-    #pragma omp master
-    {
-        std::vector<std::string> INPUT_FILE_PATHS;
-        for (int i = 1; i < argc; ++i) {
-          std::string FILENAME = argv[i];
-          std::filesystem::path INPUT_FILE_PATH(FILENAME);
-          INPUT_FILE_PATH = std::filesystem::canonical(INPUT_FILE_PATH);
-          INPUT_FILE_PATHS.push_back(INPUT_FILE_PATH);
-        }
-        
-        YamlInputReader::readYamlInputFiles( Input_Opt, INPUT_FILE_PATHS );
+    /* Later input files override values from the earlier ones. This layers one
+     * run, it does not create several. */
+    std::vector<std::string> INPUT_FILE_PATHS;
+    for (int i = 1; i < argc; ++i) {
+      std::string FILENAME = argv[i];
+      std::filesystem::path INPUT_FILE_PATH(FILENAME);
+      INPUT_FILE_PATH = std::filesystem::canonical(INPUT_FILE_PATH);
+      INPUT_FILE_PATHS.push_back(INPUT_FILE_PATH);
+    }
 
-        if (Input_Opt.ADV_SAVE_PSD_GRID){
-            Diag::set_storePSD(true);
-        }
-    }  /* master CPU */
+    YamlInputReader::readYamlInputFiles( Input_Opt, scenario, INPUT_FILE_PATHS );
+
+    if (Input_Opt.ADV_SAVE_PSD_GRID){
+        Diag::set_storePSD(true);
+    }
 
     // Set the seed once at the top-level
     setSeed( Input_Opt );
 
-    #pragma omp master
-    {
-        /* Collect parameters and create cases */
-        parameters = YamlInputReader::generateCases( Input_Opt );
+    if ( holdsAPCEMMOutput( Input_Opt.SIMULATION_OUTPUT_FOLDER ) \
+            && !Input_Opt.SIMULATION_OVERWRITE ) {
+        std::cout << " Output folder already holds APCEMM output: ";
+        std::cout << Input_Opt.SIMULATION_OUTPUT_FOLDER << std::endl;
+        std::cout << " Point the run at an empty folder, or set";
+        std::cout << " 'Overwrite if folder exists (T/F)' to T." << std::endl;
+        std::cout << "Exiting ... " << std::endl;
+        return 1;
+    }
 
-        /* Number of cases */
-        nCases  = parameters.size();
-        
-        /* Ensure cases were created properly */
-        if (nCases == 0)
-        {
-            std::cout << "Failed generating cases from input file" << std::endl;
-            std::cout << "Exiting ... " << std::endl;
-            exit(1);
-        }
-        
-        /* Create output directory */
-        struct stat sb;
-        if ( !( stat( Input_Opt.SIMULATION_OUTPUT_FOLDER.c_str(), &sb) == 0 \
-                    && S_ISDIR(sb.st_mode) ) ) {
+    /* Create output directory */
+    struct stat sb;
+    if ( !( stat( Input_Opt.SIMULATION_OUTPUT_FOLDER.c_str(), &sb) == 0 \
+                && S_ISDIR(sb.st_mode) ) ) {
 
-            /* Create directory */
-            const int dir_err = \
-                    mkdir( Input_Opt.SIMULATION_OUTPUT_FOLDER.c_str(), \
-                            S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+        /* Create directory */
+        const int dir_err = \
+                mkdir( Input_Opt.SIMULATION_OUTPUT_FOLDER.c_str(), \
+                        S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
 
-            if ( dir_err == -1 ) {
-                std::cout << " Could not create directory: ";
-                std::cout << Input_Opt.SIMULATION_OUTPUT_FOLDER << std::endl;
-                std::cout << " You may not have write permission" << std::endl;
-                exit(1);
-            }
-            
-            /* Create README */
-            const std::string description = "";
-            CreateREADME( Input_Opt.SIMULATION_OUTPUT_FOLDER, "README", description );
-
-        }
-    } /* master CPU */
-
-    /* ====================================================================== */
-    /* ---- Synchronize the threads ----------------------------------------- */
-    /* ====================================================================== */
-    // #pragma omp barrier
-
-    // /* Print number of cases considered */
-    // #pragma omp single
-    // {
-    //     #ifdef OMP 
-    //         const char* numberprocs = std::getenv("SLURM_CPUS_ON_NODE");
-    //         if ( nCases > 1 )
-    //             std::cout << "\n Running model for " << nCases << " cases on ";
-    //         else
-    //             std::cout << "\n Running model for " << nCases << " case on ";
-    //         std::cout << numberprocs << " processors." << std::endl;
-    //     #else
-    //         if ( nCases > 1 )
-    //             std::cout << "\n Running model for " << nCases << " cases." << std::endl; 
-    //         else
-    //             std::cout << "\n Running model for " << nCases << " case." << std::endl; 
-    //     #endif /* OMP */
-    // }
-
-    /* ====================================================================== */
-    /* ---- CASE LOOP STARTS HERE ------------------------------------------- */
-    /* ====================================================================== */
-
-    for ( iCase = 0; iCase < nCases; iCase++ ) {
-
-        unsigned int jCase = iOFFSET + iCase;
-
-        std::string fullPath, fullPath_ADJ, fullPath_BOX, fullPath_micro, jCaseString;
-
-        jCaseString = fmt::format("{:06}", jCase);
-        std::string file = Input_Opt.SIMULATION_FORWARD_FILENAME + jCaseString + ".nc";
-        std::string file_ADJ = Input_Opt.SIMULATION_ADJOINT_FILENAME + jCaseString + ".nc";
-        std::string file_BOX = Input_Opt.SIMULATION_BOX_FILENAME + jCaseString + ".nc";
-        std::string file_micro = "Micro" + jCaseString + ".out";
-
-        // "/" termination is checked when reading input file
-        fullPath       = Input_Opt.SIMULATION_OUTPUT_FOLDER + file;
-        fullPath_ADJ   = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_ADJ;
-        fullPath_BOX   = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_BOX;
-        fullPath_micro = Input_Opt.SIMULATION_OUTPUT_FOLDER + file_micro;
-
-        bool fileExist = 0;
-
-        if ( Input_Opt.SIMULATION_ADJOINT ) {
-            #pragma omp critical
-            { fileExist = exist( fullPath_ADJ ); }
-        } else {
-            #pragma omp critical
-            { fileExist = exist( fullPath ); }
+        if ( dir_err == -1 ) {
+            std::cout << " Could not create directory: ";
+            std::cout << Input_Opt.SIMULATION_OUTPUT_FOLDER << std::endl;
+            std::cout << " You may not have write permission" << std::endl;
+            return 1;
         }
 
-        // Hardcode for now
-        std::string author = "Thibaud M. Fritz (fritzt@mit.edu)";
-
-        if ( !fileExist || Input_Opt.SIMULATION_OVERWRITE ) {
-
-            Input inputCase( iCase, parameters, \
-                                   fullPath,          \
-                                   fullPath_ADJ,      \
-                                   fullPath_BOX,      \
-                                   fullPath_micro,    \
-                                   author );
-
-            #pragma omp critical
-            { 
-                std::cout << " -> Running case " << iCase;
-                #ifdef OMP
-                    std::cout << " on thread " << omp_get_thread_num();
-                #endif /* OMP */
-                std::cout << "" << std::endl;
-            }
-            Input_Opt.TS_AERO_FILENAME = "ts_aerosol_case" + std::to_string(iCase) + "_hhmm.nc";
-
-            SimStatus case_status;
-            switch (model) {
-
-                /* Box Model */
-                case 0:
-
-                    std::cout << "Not implemented yet" << std::endl;
-                    break;
-
-                /* Plume Model (APCEMM) */
-                case 1: {
-                    std::cout << "running epm... " << std::endl;
-                    LAGRIDPlumeModel LAGRID_Model(Input_Opt, inputCase);
-                    case_status = LAGRID_Model.runFullModel();
-                    // iERR = PlumeModel( Input_Opt, inputCase );
-                    break;
-                    
-                }
-
-                /* Adjoint Model */
-                case 2:
-
-                    std::cout << "Not implemented yet" << std::endl;
-                    break;
-
-                case 3:
-
-                    std::cout << "Not implemented yet" << std::endl;
-                    break;
-
-                default:
-
-                    std::cout << "Wrong input for model" << std::endl;
-                    std::cout << "model = " << model << "" << std::endl;
-                    std::cout << "Value should be between 0 and 3" << std::endl;
-                    break;
-                    
-            }
-
-            #pragma omp critical 
-            {
-                if ( case_status == SimStatus::Failed ) {
-                    std::cout << "\n APCEMM Case: " << iCase << " failed";
-                    #ifdef OMP
-                        std::cout << " on thread " << omp_get_thread_num();
-                    #endif /* OMP */
-                    std::cout << "." << std::endl;
-                    // This error reporting is not being used right now
-                    // std::cout << " Error: " << iERR << "" << std::endl;
-
-                    // Report contrail location
-                    // {:>8.2f} = right align with a width of 8 with 2 decimals
-                    fmt::print(" LON [deg]: {:>8.2f}\n", inputCase.latitude_deg());
-                    fmt::print(" LAT [deg]: {:>8.2f}\n", inputCase.longitude_deg());
-                    fmt::print(" P   [hPa]: {:>8.2f}\n", inputCase.pressure_Pa()/100.0);
-
-                    // Report relevant input met data when crashing
-                    if (Input_Opt.MET_LOADMET)
-                    {
-                        fmt::print(" Met file : {:>}\n",  Input_Opt.MET_FILENAME);
-                    }
-                }
-                else { std::cout << " APCEMM Case: " << iCase << " completed." << std::endl; }
-                
-                CreateStatusOutput(Input_Opt.SIMULATION_OUTPUT_FOLDER, iCase, case_status);
-            }
-
-        }
+        /* Create README */
+        const std::string description = "";
+        CreateREADME( Input_Opt.SIMULATION_OUTPUT_FOLDER, "README", description );
 
     }
-    
-    /* ====================================================================== */
-    /* ---- CASE LOOP ENDS HERE --------------------------------------------- */
-    /* ====================================================================== */
-   
-    std::cout << "\n All cases have been completed!" << std::endl;
 
-    /* ====================================================================== */
-    /* ---- END NORMALLY ---------------------------------------------------- */
-    /* ====================================================================== */
+    /* The switch is a placeholder for future models. Only the plume model is
+     * implemented, so every other arm leaves the status at Failed. */
+    SimStatus status = SimStatus::Failed;
+    switch (model) {
 
-    return 0;
+        /* Box Model */
+        case 0:
 
+            std::cout << "Not implemented yet" << std::endl;
+            break;
+
+        /* Plume Model (APCEMM) */
+        case 1: {
+            std::cout << "running epm... " << std::endl;
+            LAGRIDPlumeModel LAGRID_Model(Input_Opt, scenario);
+            status = LAGRID_Model.runFullModel();
+            // iERR = PlumeModel( Input_Opt, scenario );
+            break;
+
+        }
+
+        /* Adjoint Model */
+        case 2:
+
+            std::cout << "Not implemented yet" << std::endl;
+            break;
+
+        case 3:
+
+            std::cout << "Not implemented yet" << std::endl;
+            break;
+
+        default:
+
+            std::cout << "Wrong input for model" << std::endl;
+            std::cout << "model = " << model << "" << std::endl;
+            std::cout << "Value should be between 0 and 3" << std::endl;
+            break;
+
+    }
+
+    if ( status == SimStatus::Failed ) {
+        std::cout << "\n APCEMM failed." << std::endl;
+        // This error reporting is not being used right now
+        // std::cout << " Error: " << iERR << "" << std::endl;
+
+        // Report contrail location
+        // {:>8.2f} = right align with a width of 8 with 2 decimals
+        fmt::print(" LON [deg]: {:>8.2f}\n", scenario.longitude_deg());
+        fmt::print(" LAT [deg]: {:>8.2f}\n", scenario.latitude_deg());
+        fmt::print(" P   [hPa]: {:>8.2f}\n", scenario.pressure_Pa()/100.0);
+
+        // Report relevant input met data when crashing
+        if (Input_Opt.MET_LOADMET)
+        {
+            fmt::print(" Met file : {:>}\n",  Input_Opt.MET_FILENAME);
+        }
+    }
+    else { std::cout << "\n APCEMM completed." << std::endl; }
+
+    CreateStatusOutput(Input_Opt.SIMULATION_OUTPUT_FOLDER, status);
+
+    /* Every physical outcome is a success. Only a failure of the model itself
+     * reports a non-zero exit code, so a batch driver can rely on it.
+     * Incomplete means the run reached its configured Plume Process end time
+     * with the contrail still alive, which is a normal result. */
+    return status == SimStatus::Failed ? 1 : 0;
 
 } /* End of Main */
 
@@ -388,12 +300,11 @@ void CreateREADME( const std::string folder, const std::string fileName, const s
 
 } /* End of PrintMessage */
 
-void CreateStatusOutput(const std::string folder, const int caseNumber, const SimStatus status)
+void CreateStatusOutput(const std::string folder, const SimStatus status)
 {
-    std::string fileName = "status_case" + std::to_string(caseNumber);
     std::ofstream statusFile;
 
-    const std::string fullPath = folder + "/" + fileName;
+    const std::string fullPath = folder + "/status";
     statusFile.open( fullPath.c_str() );
 
     switch (status)
