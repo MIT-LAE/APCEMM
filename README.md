@@ -109,7 +109,7 @@ Space-separated lists are unaffected where they describe a list of outputs rathe
 
 The exit code reports the outcome: 0 for every physical result, including a run that reaches its configured `Plume Process` end time with the contrail still alive, and 1 only for a failure of the model.
 
-One run owns one output folder. If the folder already holds APCEMM output and `Overwrite if folder exists (T/F)` is `F`, the run stops with an error instead of writing into it.
+One run owns one output folder. The run starts only if the folder does not exist yet, or if it exists and is empty. If the folder holds anything at all and `Overwrite if folder exists (T/F)` is `F`, the run stops with an error instead of writing into it. The check does not look at what the files are, so it also protects files APCEMM did not write.
 
 ## Debugging
 

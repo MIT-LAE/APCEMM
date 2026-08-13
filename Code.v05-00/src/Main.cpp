@@ -37,33 +37,26 @@
 void CreateREADME( const std::string folder, const std::string fileName, \
                    const std::string purpose );
 void CreateStatusOutput(const std::string folder, const SimStatus status);
-int PlumeModel( OptInput &Input_Opt, const Input &inputCase );
 
-/* One run owns one output folder. Refuse to write into a folder that already
- * holds the output of an earlier run unless overwriting is enabled. Every run
- * writes a status file, and every run that reaches the plume model writes
- * epm-output.nc, so those two catch a finished run. The timeseries and the EPM
- * microphysics file catch a run that was interrupted before its status was
- * written. */
-bool holdsAPCEMMOutput( const std::string &folder )
+/* One run owns one output folder. A folder that holds anything at all may hold
+ * work that is not ours, so refuse to write into it unless overwriting is
+ * enabled. Only two states are safe: the folder does not exist yet, or it
+ * exists and is empty. Recognising APCEMM's own output would be enough to
+ * protect an earlier run, but it would not protect anything else the user put
+ * there. */
+bool folderIsOccupied( const std::string &folder )
 {
 
     std::error_code error;
     if ( !std::filesystem::is_directory( folder, error ) )
         return false;
 
-    for ( const auto &entry : std::filesystem::directory_iterator( folder, error ) ) {
-        if ( !entry.is_regular_file() )
-            continue;
-        const std::string name = entry.path().filename().string();
-        if ( name == "status" || name == "epm-output.nc" || name == "Micro.out" )
-            return true;
-        if ( name.starts_with( "ts" ) && entry.path().extension() == ".nc" )
-            return true;
-    }
-    return false;
+    /* On an empty directory, and on a directory we cannot read, the iterator
+     * compares equal to the end iterator. */
+    return std::filesystem::directory_iterator( folder, error ) \
+            != std::filesystem::directory_iterator();
 
-} /* End of holdsAPCEMMOutput */
+} /* End of folderIsOccupied */
 
 int main( int argc, char* argv[])
 {
@@ -97,8 +90,7 @@ int main( int argc, char* argv[])
         return 1;
     }
 
-    /* Later input files override values from the earlier ones. This layers one
-     * run, it does not create several. */
+    // Later input files override values from the earlier ones
     std::vector<std::string> INPUT_FILE_PATHS;
     for (int i = 1; i < argc; ++i) {
       std::string FILENAME = argv[i];
@@ -116,11 +108,11 @@ int main( int argc, char* argv[])
     // Set the seed once at the top-level
     setSeed( Input_Opt );
 
-    if ( holdsAPCEMMOutput( Input_Opt.SIMULATION_OUTPUT_FOLDER ) \
+    if ( folderIsOccupied( Input_Opt.SIMULATION_OUTPUT_FOLDER ) \
             && !Input_Opt.SIMULATION_OVERWRITE ) {
-        std::cout << " Output folder already holds APCEMM output: ";
+        std::cout << " Output folder is not empty: ";
         std::cout << Input_Opt.SIMULATION_OUTPUT_FOLDER << std::endl;
-        std::cout << " Point the run at an empty folder, or set";
+        std::cout << " Point the run at an empty or new folder, or set";
         std::cout << " 'Overwrite if folder exists (T/F)' to T." << std::endl;
         std::cout << "Exiting ... " << std::endl;
         return 1;
@@ -165,7 +157,6 @@ int main( int argc, char* argv[])
             std::cout << "running epm... " << std::endl;
             LAGRIDPlumeModel LAGRID_Model(Input_Opt, scenario);
             status = LAGRID_Model.runFullModel();
-            // iERR = PlumeModel( Input_Opt, scenario );
             break;
 
         }
