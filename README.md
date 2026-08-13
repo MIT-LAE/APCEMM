@@ -84,6 +84,11 @@ To migrate:
 2. Give every `PARAMETER MENU` entry exactly one value. Sweep inputs e.g. `200 220 240` and `200:20:240` are not accepted.
 3. To vary a parameter, write one input file per value and start one APCEMM process for each. Give each process its own output folder.
 
+Finally, output files have been renamed to drop their reference to case number:
+- `ts_aerosol_caseXX_0000.nc` -> `ts_aerosol_0000.nc`
+- `Micro000000.out` -> `Micro.out`
+- `status_caseXX` -> `status`
+
 ## Debugging
 
 APCEMM can be compiled in debug mode to ensure reproducible results during testing. This fixes the seed of the random number generator and enforces single threaded computation. It can be enabled by passing the ```-DDEBUG=ON``` flag to CMake:
