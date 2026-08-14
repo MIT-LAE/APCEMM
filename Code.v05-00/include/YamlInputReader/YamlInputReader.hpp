@@ -3,8 +3,9 @@
 
 #include <algorithm>
 #include <stdexcept>
-#include <yaml-cpp/yaml.h> 
+#include <yaml-cpp/yaml.h>
 #include <filesystem>
+#include "Core/Input.hpp"
 #include "Core/Input_Mod.hpp"
 #include "Util/ForwardDecl.hpp"
 
@@ -12,20 +13,28 @@ using std::string;
 using std::vector;
 
 namespace YamlInputReader{
+    // Appended to every error raised by an input file written for the removed
+    // multi-case runs, to make the error and fix clear.
+    inline const string ONE_RUN_PER_PROCESS_MESSAGE =
+        "APCEMM runs exactly one simulation per process. The parameter sweep and the Monte Carlo "
+        "mode were removed, so every PARAMETER MENU entry takes exactly one value. To vary a "
+        "parameter, write one input file per value and start one APCEMM process for each.";
+
     static std::filesystem::path INPUT_FILE_PATH;
-    void readYamlInputFiles(OptInput& input, const vector<string> &filenames);
+    void readYamlInputFiles(OptInput& input, Input& scenario, const vector<string> &filenames);
     void readSimMenu(OptInput& input, const YAML::Node& simNode);
-    void readParamMenu(OptInput& input, const YAML::Node& paramNode);
+    void readParamMenu(Input& scenario, const YAML::Node& paramNode);
     void readTransportMenu(OptInput& input, const YAML::Node& transportNode);
     void readChemMenu(OptInput& input, const YAML::Node& chemNode);
     void readAeroMenu(OptInput& input, const YAML::Node& aeroNode);
     void readMetMenu(OptInput& input, const YAML::Node& metNode);
     void readDiagMenu(OptInput& input, const YAML::Node& diagNode);
     void readAdvancedMenu(OptInput& input, const YAML::Node& advancedNode);
-    
+
     void performOtherInputValidnessChecks(OptInput& input);
-    vector<std::unordered_map<string, double>> generateCases(const OptInput& input);
-    Vector_1D parseParamSweepInput(const string paramString, const string paramLocation = "", bool monteCarlo = false, int nRuns = 0);
+    double parseScalarParam(const string paramString, const string paramLocation = "");
+    UInt parseScalarUIntParam(const string paramString, const string paramLocation = "");
+    Vector_1D parseVectorDoubleString(const string paramString, const string paramLocation = "");
     vector<string> split(const string str, const string delimiter);
 
     inline string trim(const string str){

@@ -1,0 +1,7 @@
+# Test that the removed multi-case runs correctly fail with 
+# the migration message
+SIMULATION MENU:
+  PARAM SWEEP SUBMENU:
+    Parameter sweep (T/F): T
+    Run Monte Carlo (T/F): F
+    Num Monte Carlo runs (int): 2

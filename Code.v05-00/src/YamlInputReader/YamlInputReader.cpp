@@ -1,10 +1,11 @@
 #include "YamlInputReader/YamlInputReader.hpp"
 #include "APCEMM.h"
-#include "Util/MC_Rand.hpp"
+#include "Util/ForwardDecl.hpp"
 #include "Util/YamlUtils.hpp"
 #include <algorithm> // std::equal
 #include <cctype>    // std::tolower
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <string_view> // std::string_view
 #include <set>
@@ -77,6 +78,21 @@ namespace YamlInputReader{
         }
     }
 
+    // Keys that previous versions accepted and that we now reject. Checked
+    // before the generic unknown-key error so an outdated input file gets a message
+    // naming the option that went away instead of "Unknown key found".
+    void checkRemovedKey(const std::string& key, const std::string& errorPath) {
+        static const std::set<std::string> removedKeys = {
+            "PARAM SWEEP SUBMENU",
+            "Parameter sweep (T/F)",
+            "Run Monte Carlo (T/F)",
+            "Num Monte Carlo runs (int)",
+        };
+        if (removedKeys.contains(key)) {
+            throw std::runtime_error("Removed option found: '" + errorPath + "'. Delete it from your input file. " + ONE_RUN_PER_PROCESS_MESSAGE);
+        }
+    }
+
     void validateYamlKeys(const YAML::Node& defaultNode, const YAML::Node& userNode, const std::string& currentPath = "") {
         // Values in user yaml will replace the default node so we ensure that the types are compatible (value vs map)
         // If the userNode is a value, defaultNode should also be a value
@@ -113,6 +129,7 @@ namespace YamlInputReader{
             if (!defaultKeys.contains(key)) {
                 // The key from the user's YAML does not exist in the default YAML.
                 std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
+                checkRemovedKey(key, errorPath);
                 throw std::runtime_error("Unknown key found: '" + errorPath + "'");
             }
 
@@ -125,7 +142,7 @@ namespace YamlInputReader{
         }
     }
 
-    void readYamlInputFiles(OptInput& input, const vector<string> &filenames){
+    void readYamlInputFiles(OptInput& input, Input& scenario, const vector<string> &filenames){
         YAML::Node defaultData = YAML::Load(default_input);
         YAML::Node mergedData = YAML::Load(default_input);
 
@@ -160,11 +177,14 @@ namespace YamlInputReader{
         }
 
         try {
-            readParamMenu(input, mergedData["PARAMETER MENU"]);
+            readParamMenu(scenario, mergedData["PARAMETER MENU"]);
         }
         catch (const std::exception& e) {
             throw std::runtime_error("Something went wrong in reading the PARAMETER MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
+
+        // Inputs have successfully been parsed, now check that they seem physical
+        scenario.checkInputValidity();
 
         try {
             readTransportMenu(input, mergedData["TRANSPORT MENU"]);
@@ -225,11 +245,6 @@ namespace YamlInputReader{
             std::cout << ">>> Hint: APCEMM performance does not scale past 4 threads..." << std::endl;
         }
 
-        YAML::Node paramSweepSubmenu = simNode["PARAM SWEEP SUBMENU"];
-        input.SIMULATION_PARAMETER_SWEEP = parseBoolString(paramSweepSubmenu["Parameter sweep (T/F)"].as<string>(), "Parameter sweep (T/F)");
-        input.SIMULATION_MONTECARLO = parseBoolString(paramSweepSubmenu["Run Monte Carlo (T/F)"].as<string>(), "Run Monte Carlo (T/F)");
-        input.SIMULATION_MCRUNS =  parseUIntString(paramSweepSubmenu["Num Monte Carlo runs (int)"].as<string>(), "Num Monte Carlo runs (int)");
-
         YAML::Node outputSubmenu = simNode["OUTPUT SUBMENU"];
         std::string outputFolder =  parseFileSystemPath(outputSubmenu["Output folder (string)"].as<string>());
         // Ensure path to save directory is terminated by "/"
@@ -263,11 +278,7 @@ namespace YamlInputReader{
             throw std::invalid_argument("Seed value (under SIMULATION MENU) cannot be less than 0!");
         }
 
-        if(input.SIMULATION_PARAMETER_SWEEP == input.SIMULATION_MONTECARLO){
-            throw std::invalid_argument("In Simulation Menu: Parameter sweep and Monte Carlo cannot have the same value!");
-        }
-
-        string epm = 
+        string epm =
             simNode["EPM type (original/external/new)"].as<string>();
         if (iequals(epm, "original")) {
             input.SIMULATION_EPM_TYPE = epm_type::EPM_ORIGINAL;
@@ -281,55 +292,48 @@ namespace YamlInputReader{
 
         input.SIMULATION_EXTERNAL_EPM_NETCDF_FILENAME = simNode["External EPM NetCDF file"].as<string>();
     }
-    void readParamMenu(OptInput& input, const YAML::Node& paramNode){
+    void readParamMenu(Input& scenario, const YAML::Node& paramNode){
 
-        input.PARAMETER_PARAM_MAP["PLUMEPROCESS"] = parseParamSweepInput(paramNode["Plume Process [hr] (double)"].as<string>(), "Plume Process [hr] (double)");
+        scenario.set_simulationTime(parseScalarParam(paramNode["Plume Process [hr] (double)"].as<string>(), "Plume Process [hr] (double)"));
 
         YAML::Node metParamSubmenu = paramNode["METEOROLOGICAL PARAMETERS SUBMENU"];
-        input.PARAMETER_PARAM_MAP["PRESSURE"] = parseParamSweepInput(metParamSubmenu["Pressure [hPa] (double)"].as<string>(), "Pressure [hPa] (double)");
-        input.PARAMETER_PARAM_MAP["DH"] = parseParamSweepInput(metParamSubmenu["Horiz. diff. coeff. [m^2/s] (double)"].as<string>(), "Horiz. diff. coeff. [m^2/s] (double)");
-        input.PARAMETER_PARAM_MAP["DV"] = parseParamSweepInput(metParamSubmenu["Verti. diff. [m^2/s] (double)"].as<string>(), "Verti. diff. [m^2/s] (double)");
-        input.PARAMETER_PARAM_MAP["NBV"] = parseParamSweepInput(metParamSubmenu["Brunt-Vaisala Frequency [s^-1] (double)"].as<string>(), "Brunt-Vaisala Frequency [s^-1] (double)");
+        //convert hPa to Pa because the solver uses Pa as the default unit
+        scenario.set_pressure_Pa(100 * parseScalarParam(metParamSubmenu["Pressure [hPa] (double)"].as<string>(), "Pressure [hPa] (double)"));
+        scenario.set_horizDiff(parseScalarParam(metParamSubmenu["Horiz. diff. coeff. [m^2/s] (double)"].as<string>(), "Horiz. diff. coeff. [m^2/s] (double)"));
+        scenario.set_vertiDiff(parseScalarParam(metParamSubmenu["Verti. diff. [m^2/s] (double)"].as<string>(), "Verti. diff. [m^2/s] (double)"));
+        scenario.set_nBV(parseScalarParam(metParamSubmenu["Brunt-Vaisala Frequency [s^-1] (double)"].as<string>(), "Brunt-Vaisala Frequency [s^-1] (double)"));
 
         YAML::Node locTimeSubmenu = paramNode["LOCATION AND TIME SUBMENU"];
-        input.PARAMETER_PARAM_MAP["LONGITUDE"] = parseParamSweepInput(locTimeSubmenu["LON [deg] (double)"].as<string>(), "LAT [deg] (double)");
-        input.PARAMETER_PARAM_MAP["LATITUDE"] = parseParamSweepInput(locTimeSubmenu["LAT [deg] (double)"].as<string>(), "LON [deg] (double)");
-        input.PARAMETER_PARAM_MAP["EDAY"] = parseParamSweepInput(locTimeSubmenu["Emission day [1-365] (int)"].as<string>(), "Emission day [1-365] (int)");
-        input.PARAMETER_PARAM_MAP["ETIME"] = parseParamSweepInput(locTimeSubmenu["Emission time [hr] (double)"].as<string>(), "Emission time [hr] (double)");
-       
+        scenario.set_longitude_deg(parseScalarParam(locTimeSubmenu["LON [deg] (double)"].as<string>(), "LON [deg] (double)"));
+        scenario.set_latitude_deg(parseScalarParam(locTimeSubmenu["LAT [deg] (double)"].as<string>(), "LAT [deg] (double)"));
+        scenario.set_emissionDOY(parseScalarUIntParam(locTimeSubmenu["Emission day [1-365] (int)"].as<string>(), "Emission day [1-365] (int)"));
+        scenario.set_emissionTime(parseScalarParam(locTimeSubmenu["Emission time [hr] (double)"].as<string>(), "Emission time [hr] (double)"));
+
         YAML::Node backMixRatioSubmenu = paramNode["BACKGROUND MIXING RATIOS SUBMENU"];
-        input.PARAMETER_PARAM_MAP["BACKG_NOX"] = parseParamSweepInput(backMixRatioSubmenu["NOx [ppt] (double)"].as<string>(), "NOx [ppt] (double)");
-        input.PARAMETER_PARAM_MAP["BACKG_HNO3"] = parseParamSweepInput(backMixRatioSubmenu["HNO3 [ppt] (double)"].as<string>(), "HNO3 [ppt] (double)");
-        input.PARAMETER_PARAM_MAP["BACKG_O3"] = parseParamSweepInput(backMixRatioSubmenu["O3 [ppb] (double)"].as<string>(), "O3 [ppb] (double)");
-        input.PARAMETER_PARAM_MAP["BACKG_CO"] = parseParamSweepInput(backMixRatioSubmenu["CO [ppb] (double)"].as<string>(), "CO [ppb] (double)");
-        input.PARAMETER_PARAM_MAP["BACKG_CH4"] = parseParamSweepInput(backMixRatioSubmenu["CH4 [ppm] (double)"].as<string>(), "CH4 [ppm] (double)");
-        input.PARAMETER_PARAM_MAP["BACKG_SO2"] = parseParamSweepInput(backMixRatioSubmenu["SO2 [ppt] (double)"].as<string>(), "SO2 [ppt] (double)");
+        scenario.set_backgNOx(parseScalarParam(backMixRatioSubmenu["NOx [ppt] (double)"].as<string>(), "NOx [ppt] (double)"));
+        scenario.set_backgHNO3(parseScalarParam(backMixRatioSubmenu["HNO3 [ppt] (double)"].as<string>(), "HNO3 [ppt] (double)"));
+        scenario.set_backgO3(parseScalarParam(backMixRatioSubmenu["O3 [ppb] (double)"].as<string>(), "O3 [ppb] (double)"));
+        scenario.set_backgCO(parseScalarParam(backMixRatioSubmenu["CO [ppb] (double)"].as<string>(), "CO [ppb] (double)"));
+        scenario.set_backgCH4(parseScalarParam(backMixRatioSubmenu["CH4 [ppm] (double)"].as<string>(), "CH4 [ppm] (double)"));
+        scenario.set_backgSO2(parseScalarParam(backMixRatioSubmenu["SO2 [ppt] (double)"].as<string>(), "SO2 [ppt] (double)"));
 
         YAML::Node eiSubmenu = paramNode["EMISSION INDICES SUBMENU"];
-        input.PARAMETER_PARAM_MAP["EI_NOX"] = parseParamSweepInput(eiSubmenu["NOx [g(NO2)/kg_fuel] (double)"].as<string>(), "NOx [g(NO2)/kg_fuel] (double)");
-        input.PARAMETER_PARAM_MAP["EI_CO"] = parseParamSweepInput(eiSubmenu["CO [g/kg_fuel] (double)"].as<string>(), "CO [g/kg_fuel] (double)");
-        input.PARAMETER_PARAM_MAP["EI_UHC"] = parseParamSweepInput(eiSubmenu["UHC [g/kg_fuel] (double)"].as<string>(), "UHC [g/kg_fuel] (double)");
-        input.PARAMETER_PARAM_MAP["EI_SO2"] = parseParamSweepInput(eiSubmenu["SO2 [g/kg_fuel] (double)"].as<string>(), "SO2 [g/kg_fuel] (double)");
-        input.PARAMETER_PARAM_MAP["EI_SO2TOSO4"] =  parseParamSweepInput(eiSubmenu["SO2 to SO4 conv [%] (double)"].as<string>(), "SO2 to SO4 conv [%] (double)");
-        input.PARAMETER_PARAM_MAP["EI_SOOT"] = parseParamSweepInput(eiSubmenu["Soot [g/kg_fuel] (double)"].as<string>(), "Soot [g/kg_fuel] (double)");
-        
-        input.PARAMETER_PARAM_MAP["EI_SOOTRAD"] = parseParamSweepInput(paramNode["Soot Radius [m] (double)"].as<string>(), "Soot Radius [m] (double)");
-        input.PARAMETER_PARAM_MAP["FF"] = parseParamSweepInput(paramNode["Total fuel flow [kg/s] (double)"].as<string>(), "Total fuel flow [kg/s] (double)");
-        input.PARAMETER_PARAM_MAP["AMASS"] = parseParamSweepInput(paramNode["Aircraft mass [kg] (double)"].as<string>(), "Aircraft mass [kg] (double)");
-        input.PARAMETER_PARAM_MAP["FSPEED"] = parseParamSweepInput(paramNode["Flight speed [m/s] (double)"].as<string>(), "Flight speed [m/s] (double)");
-        input.PARAMETER_PARAM_MAP["NUMENG"] = parseParamSweepInput(paramNode["Num. of engines [2/4] (int)"].as<string>(), " Num. of engines [2/4] (int)"); // Why is this a vector1d in the first place...
-        input.PARAMETER_PARAM_MAP["WINGSPAN"] = parseParamSweepInput(paramNode["Wingspan [m] (double)"].as<string>(), "Wingspan [m] (double)");
-        input.PARAMETER_PARAM_MAP["COREEXITTEMP"] = parseParamSweepInput(paramNode["Core exit temp. [K] (double)"].as<string>(), "Core exit temp. [K] (double)");
-        input.PARAMETER_PARAM_MAP["BYPASSAREA"] = parseParamSweepInput(paramNode["Exit bypass area [m^2] (double)"].as<string>(), "Exit bypass area [m^2] (double)");
-        
-        //convert hPa to Pa because the solver uses Pa as the default unit
-        for(double& i: input.PARAMETER_PARAM_MAP["PRESSURE"]){
-            i *= 100;
-        }
+        scenario.set_EI_NOx(parseScalarParam(eiSubmenu["NOx [g(NO2)/kg_fuel] (double)"].as<string>(), "NOx [g(NO2)/kg_fuel] (double)"));
+        scenario.set_EI_CO(parseScalarParam(eiSubmenu["CO [g/kg_fuel] (double)"].as<string>(), "CO [g/kg_fuel] (double)"));
+        scenario.set_EI_HC(parseScalarParam(eiSubmenu["UHC [g/kg_fuel] (double)"].as<string>(), "UHC [g/kg_fuel] (double)"));
+        scenario.set_EI_SO2(parseScalarParam(eiSubmenu["SO2 [g/kg_fuel] (double)"].as<string>(), "SO2 [g/kg_fuel] (double)"));
         //Convert % to ratio
-        for(double& i : input.PARAMETER_PARAM_MAP["EI_SO2TOSO4"] ){
-            i *= 1.0/100.0;
-        }
+        scenario.set_EI_SO2TOSO4(parseScalarParam(eiSubmenu["SO2 to SO4 conv [%] (double)"].as<string>(), "SO2 to SO4 conv [%] (double)") / 100.0);
+        scenario.set_EI_Soot(parseScalarParam(eiSubmenu["Soot [g/kg_fuel] (double)"].as<string>(), "Soot [g/kg_fuel] (double)"));
+
+        scenario.set_sootRad(parseScalarParam(paramNode["Soot Radius [m] (double)"].as<string>(), "Soot Radius [m] (double)"));
+        scenario.set_fuelFlow(parseScalarParam(paramNode["Total fuel flow [kg/s] (double)"].as<string>(), "Total fuel flow [kg/s] (double)"));
+        scenario.set_aircraftMass(parseScalarParam(paramNode["Aircraft mass [kg] (double)"].as<string>(), "Aircraft mass [kg] (double)"));
+        scenario.set_flightSpeed(parseScalarParam(paramNode["Flight speed [m/s] (double)"].as<string>(), "Flight speed [m/s] (double)"));
+        scenario.set_numEngines(parseScalarParam(paramNode["Num. of engines [2/4] (int)"].as<string>(), "Num. of engines [2/4] (int)"));
+        scenario.set_wingspan(parseScalarParam(paramNode["Wingspan [m] (double)"].as<string>(), "Wingspan [m] (double)"));
+        scenario.set_coreExitTemp(parseScalarParam(paramNode["Core exit temp. [K] (double)"].as<string>(), "Core exit temp. [K] (double)"));
+        scenario.set_bypassArea(parseScalarParam(paramNode["Exit bypass area [m^2] (double)"].as<string>(), "Exit bypass area [m^2] (double)"));
     }
     void readTransportMenu(OptInput& input, const YAML::Node& transportNode){
         input.TRANSPORT_TRANSPORT = parseBoolString(transportNode["Turn on Transport (T/F)"].as<string>(), "Turn on Transport (T/F)");
@@ -431,85 +435,37 @@ namespace YamlInputReader{
         input.ADV_SAVE_PSD_GRID = parseBoolString(advancedNode["Save gridded particle size distribution (T/F)"].as<string>(), "Save gridded particle size distribution (T/F)");
     }
 
-    vector<std::unordered_map<string, double>> generateCasesHelper(vector<std::unordered_map<string, double>>& allCases, const vector<std::pair<string, Vector_1D>>& params, const std::size_t row){
-        if(row ==  params.size()){
-            return allCases;
-        }
-
-        //For first row, just add maps with one entry for each case, these will be duplicated and filled up.
-        string paramName = params[row].first;
-        Vector_1D paramCases = params[row].second;
-        if(allCases.empty()){
-            for(const auto& c: paramCases){
-                allCases.push_back(std::unordered_map<string, double>({{paramName, c}}));
-            }   
-        }
-        else{
-            //Generate new cases from existing ones as we go down the parameter list
-            vector<std::unordered_map<string,double>> newCases;
-            for(const auto& i: allCases){
-                for(const auto& j: paramCases){
-                    std::unordered_map<string,double> tempMap = i;
-                    tempMap[paramName] = j;
-                    newCases.push_back(tempMap);
-                }
-            }
-            allCases = std::move(newCases);
-        }
-        //Repeat pattern of adding to the list of cases as we go down the param list until end and all cases have been generated
-        return generateCasesHelper(allCases, params, row + 1);
-    }
-
-    vector<std::unordered_map<string, double>> generateCases(const OptInput& input){
-
-        //Convert parameter map to vector, each row of the vector represents one parameter
-        vector<std::pair<string, Vector_1D>> params;
-        for (const auto& p: input.PARAMETER_PARAM_MAP){
-            params.push_back(p);
-        }
-        vector<std::unordered_map<string, double>> allCases;
-        return generateCasesHelper(allCases, params, 0);
-    }
-
-    Vector_1D parseParamSweepInput(const string paramString, const string paramLocation, bool monteCarlo, int nRuns){
+    // Wrapper around parseDoubleString to have a nice rejection message for
+    // deprecated sweep style inputs (e.g. "200 220 240" and "200:20:240")
+    double parseScalarParam(const string paramString, const string paramLocation){
         const string s = trim(paramString);
-        const vector<string> colon_split_tokens = split(s, ":");
-        if(monteCarlo){
-            if(colon_split_tokens.size() != 0 && colon_split_tokens.size() != 2){
-                throw std::invalid_argument("Monte Carlo Simulation requires parameter input format of min:max or a singular (constant) value at " + paramLocation + "!");
-            }
-            Vector_1D paramVector;
-            const double min = parseDoubleString(colon_split_tokens[0], "");
-            const double max = parseDoubleString(colon_split_tokens[1], "");
-            for(int i = 0; i < nRuns; i++){
-                paramVector.push_back(fRand(min, max));
-            }
-            return paramVector;
+        if(s.find(':') != string::npos || split(s, " ").size() > 1){
+            throw std::invalid_argument("Several values given at " + paramLocation + ". " + ONE_RUN_PER_PROCESS_MESSAGE);
         }
-        // Non-monte carlo case
-        if(colon_split_tokens.size() != 1 && colon_split_tokens.size() != 3){
-            throw std::invalid_argument("Parameter sweep step input requires the format min:step:max at " + paramLocation + "!");
+        return parseDoubleString(s, paramLocation);
+    }
+
+    // Same as parseScalarParam but returns a UInt
+    UInt parseScalarUIntParam(const string paramString, const string paramLocation){
+        double valueDouble = parseScalarParam(paramString, paramLocation);
+        if (valueDouble < 0 || valueDouble > std::numeric_limits<UInt>::max()) {
+            throw std::invalid_argument("Value out of range [0, maxUInt] at " + paramLocation);
         }
-        //min:step:max case
-        if(colon_split_tokens.size() == 3){
-            const double epsilon = 1e-40;
-            const double min = parseDoubleString(colon_split_tokens[0], paramLocation);
-            const double step = parseDoubleString(colon_split_tokens[1], paramLocation);
-            const double max = parseDoubleString(colon_split_tokens[2], paramLocation);
-            Vector_1D paramVector;
-            for(double d = min; d < max; d+= step){
-                paramVector.push_back(d);
-            }
-            if(abs(paramVector[paramVector.size()-1] - max ) > epsilon) paramVector.push_back(max);
-            return paramVector;
+        if(std::fmod(valueDouble, 1.0) > 1e-40) {
+            throw (std::invalid_argument("Decimals not allowed in int inputs at " + paramLocation + "!"));
         }
-        //a b c d ... case
-        const vector<string> space_split_tokens = split(s, " ");
-        Vector_1D paramVector;
-        for (string stri: space_split_tokens){
-            paramVector.push_back(parseDoubleString(stri, paramLocation));
+        return static_cast<UInt>(valueDouble);
+    }
+
+    // Space-separated list, used by the species and aerosol index lists of the
+    // DIAGNOSTIC MENU. Those are lists of outputs so we still support it for now.
+    Vector_1D parseVectorDoubleString(const string paramString, const string paramLocation){
+        const vector<string> tokens = split(trim(paramString), " ");
+        Vector_1D values;
+        for (const string& token: tokens){
+            values.push_back(parseDoubleString(token, paramLocation));
         }
-        return paramVector;
+        return values;
     }
 
     vector<string> split(const string str, const string delimiter){
@@ -531,7 +487,7 @@ namespace YamlInputReader{
     }
 
     vector<int> parseVectorIntString(const string paramString, const string paramLocation){
-        Vector_1D vec1d = parseParamSweepInput(paramString, paramLocation);
+        Vector_1D vec1d = parseVectorDoubleString(paramString, paramLocation);
         vector<int> vecint;
         for (double d: vec1d){
             if(std::fmod(d,1.0) > 1e-40) throw (std::invalid_argument("Decimals not allowed in int inputs at " + paramLocation + "!"));

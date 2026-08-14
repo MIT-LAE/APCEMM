@@ -23,6 +23,7 @@
 #include "Util/PhysConstant.hpp"
 #include "Util/PhysFunction.hpp"
 #include "Core/Monitor.hpp"
+#include "Core/OutputFilenames.hpp"
 #include "Core/Parameters.hpp"
 #include "Core/Status.hpp"
 #include "EPM/EPM.hpp"
@@ -254,7 +255,7 @@ namespace EPM::Models
         Vector_2D obs_Var;
         Vector_1D obs_Time;
 
-        StateObserver observer(obs_Var, obs_Time, EPM_ind, input_.fileName_micro(), 2);
+        StateObserver observer(obs_Var, obs_Time, EPM_ind, simVars_.TS_FOLDER + OutputFiles::MICROPHYSICS, 2);
 
         /* Creating ode's right hand side */
         gas_aerosol_rhs rhs(

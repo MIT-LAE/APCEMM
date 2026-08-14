@@ -16,7 +16,6 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
 #include "Util/ForwardDecl.hpp"
 
 enum class epm_type { EPM_ORIGINAL, EPM_EXTERNAL, EPM_NEW_PHYSICS };
@@ -30,9 +29,6 @@ struct OptInput
     /* ========================================== */
 
     int          SIMULATION_OMP_NUM_THREADS;
-    bool         SIMULATION_PARAMETER_SWEEP;
-    bool         SIMULATION_MONTECARLO;
-    unsigned int SIMULATION_MCRUNS;
     std::string  SIMULATION_OUTPUT_FOLDER;
     bool         SIMULATION_OVERWRITE;
     bool         SIMULATION_THREADED_FFT;
@@ -51,11 +47,9 @@ struct OptInput
     epm_type     SIMULATION_EPM_TYPE;
     std::string  SIMULATION_EXTERNAL_EPM_NETCDF_FILENAME;
 
-    /* ========================================== */
-    /* ---- PARAMETER MENU ---------------------- */
-    /* ========================================== */
-
-    std::unordered_map<std::string, Vector_1D> PARAMETER_PARAM_MAP;
+    /* PARAMETER MENU is read into an Input object
+     * because it describes the simulation scenario, whereas
+     * OptInput describes the model configuration. */
 
     /* ========================================== */
     /* ---- TRANSPORT MENU ---------------------- */
