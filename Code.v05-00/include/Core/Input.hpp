@@ -74,7 +74,7 @@ class Input
 
     public:
 
-        void checkInputValidity();
+        void checkInputValidity() const;
 
         double simulationTime() const { return simulationTime_; }
         double temperature_K() const { return temperature_K_; } // From the meteorology

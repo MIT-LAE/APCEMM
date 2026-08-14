@@ -18,7 +18,7 @@
 #include <vector>
 #include "Core/Input.hpp"
 
-void Input::checkInputValidity(){
+void Input::checkInputValidity() const {
 
     /* Collect all error messages before throwing */
     std::vector<std::string> errors;

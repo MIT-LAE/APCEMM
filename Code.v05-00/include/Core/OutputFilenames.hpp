@@ -1,5 +1,5 @@
-#ifndef OUTFILENAMES_H_INCLUDED
-#define OUTFILENAMES_H_INCLUDED
+#ifndef OUTPUTFILENAMES_H_INCLUDED
+#define OUTPUTFILENAMES_H_INCLUDED
 #include <string>
 
 // Default files names that cannot be changed by
