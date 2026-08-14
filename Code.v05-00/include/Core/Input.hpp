@@ -69,13 +69,12 @@ class Input
     UInt emissionMonth_ = 0;
 
     private:
-        void checkInputValidity();
         void adjustLatLong();
         void calculate_emissionMonth();
 
     public:
 
-        Input() = default;
+        void checkInputValidity();
 
         double simulationTime() const { return simulationTime_; }
         double temperature_K() const { return temperature_K_; } // From the meteorology

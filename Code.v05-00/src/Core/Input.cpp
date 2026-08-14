@@ -12,185 +12,119 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
 #include "Core/Input.hpp"
 
 void Input::checkInputValidity(){
-        if ( simulationTime_ <= 0.0 || simulationTime_ >= 48.0 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " simulationTime takes an odd value: simulationTime = ";
-        std::cout << simulationTime_ << " [hrs]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( pressure_Pa_ >= 1.00E+05 || pressure_Pa_ <= 1.00E+03 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " pressure_Pa takes an odd value: pressure_Pa_ = ";
-        std::cout << pressure_Pa_ << " [Pa]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( horizDiff_ >= 4.00E+01 || horizDiff_ < 1.00E+00 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " horizDiff takes an odd value: horizDiff_ = ";
-        std::cout << horizDiff_ << " [m^2/s]" << std::endl;
-        if ( horizDiff_ < 0.00E+00 )
-            exit(-1);
-    }
 
-    if ( vertiDiff_ >= 4.00E-01 || vertiDiff_ < 1.00E-02 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " vertiDiff takes an odd value: vertiDiff_ = ";
-        std::cout << vertiDiff_ << " [m^2/s]" << std::endl;
-        if ( vertiDiff_ < 0.00E+00 )
-            exit(-1);
-    }
+    /* Collect all error messages before throwing */
+    std::vector<std::string> errors;
 
-    if ( emissionDOY_ < 1  || emissionDOY_ > 365) {
-        std::cout << " In Input::Input:";
-        std::cout << " emissionDOY takes an unrealisable value: emissionDOY = ";
-        std::cout << emissionDOY_ << " [-]" << std::endl;
-        exit(-1);
-    }
+    /* Value is outside of normal range, report and crash the run */
+    auto reject = [&errors]( const char* name, auto value,
+                             const char* unit, const char* expected ){
+        std::ostringstream os;
+        os << name << " = " << value << " [" << unit << "]"
+           << ", expected " << expected;
+        errors.push_back( os.str() );
+    };
 
-    if ( emissionTime_ < 0 || emissionTime_ > 24) {
-        std::cout << " In Input::Input:";
-        std::cout << " emissionTime takes an unrealisable value: emissionDOY = ";
-        std::cout << emissionTime_ << " [-]" << std::endl;
-        exit(-1);
-    }
+    /* Value is unusual, so we warn */
+    auto warn = []( const char* name, auto value,
+                    const char* unit, const char* typical ){
+        std::cout << " In Input::checkInputValidity: " << name << " = " << value
+                  << " [" << unit << "] is outside the typical range "
+                  << typical << std::endl;
+    };
 
-    if ( EI_NOx_ < 0.0E+00 || EI_NOx_ > 5.0E+01 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " EI_NOx takes an unrealisable value: EI_NOx = ";
-        std::cout << EI_NOx_ << " [g/kg_fuel]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( EI_CO_ < 0.0E+00 || EI_CO_ > 3.0E+01 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " EI_CO takes an unrealisable value: EI_CO = ";
-        std::cout << EI_CO_ << " [g/kg_fuel]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( EI_HC_ < 0.0E+00 || EI_HC_ > 1.0E+01 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " EI_HC takes an unrealisable value: EI_HC = ";
-        std::cout << EI_HC_ << " [g/kg_fuel]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( EI_SO2_ < 0.0E+00 || EI_SO2_ > 1.0E+02 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " EI_SO2 takes an unrealisable value: EI_SO2 = ";
-        std::cout << EI_SO2_ << " [g/kg_fuel]" << std::endl;
-        exit(-1);
-    }
+    if ( simulationTime_ <= 0.0 || simulationTime_ >= 48.0 )
+        reject( "simulationTime", simulationTime_, "hrs", "0 < simulationTime < 48" );
 
-    if ( EI_Soot_ < 0.0E+00 || EI_Soot_ > 2.0E-01 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " EI_Soot takes an unrealisable value: EI_Soot = ";
-        std::cout << EI_Soot_ << " [g/kg_fuel]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( ( ( sootRad_ < 1.0E-10 ) && ( sootRad_ != 0.0E+00 ) ) || sootRad_ > 1.0E-07 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " sootRad takes an unrealisable value: sootRad = ";
-        std::cout << sootRad_ * 1.0E+09 << " [nm]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( fuelFlow_ < 0.0E+00 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " fuelFlow takes an unrealisable value: fuelFlow = ";
-        std::cout << fuelFlow_ << " [kg/s]" << std::endl;
-        exit(-1);
-    }
+    if ( pressure_Pa_ >= 1.00E+05 || pressure_Pa_ <= 1.00E+03 )
+        reject( "pressure_Pa", pressure_Pa_, "Pa", "1.0E+03 < pressure_Pa < 1.0E+05" );
 
-    /* if ( aircraftMass_ < 50.0E+03 ) { */
-    if ( aircraftMass_ < 0.0E+00 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " aircraftMass takes an unrealisable value: aircraftMass = ";
-        std::cout << aircraftMass_ << " [kg]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( backgNOx_ < 0.0E+00 || backgNOx_ > 1.0E+09 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " backgNOx takes an unrealisable value: backgNOx = ";
-        std::cout << backgNOx_ << " [ppb]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( backgHNO3_ < 0.0E+00 || backgHNO3_ > 1.0E+09 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " backgHNO3 takes an unrealisable value: backgHNO3 = ";
-        std::cout << backgHNO3_ << " [ppb]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( backgO3_ < 0.0E+00 || backgO3_ > 1.0E+09 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " backgO3 takes an unrealisable value: backgO3 = ";
-        std::cout << backgO3_ << " [ppb]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( backgCO_ < 0.0E+00 || backgCO_ > 1.0E+09 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " backgCO takes an unrealisable value: backgCO = ";
-        std::cout << backgCO_ << " [ppb]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( backgCH4_ < 0.0E+00 || backgCH4_ > 1.0E+09 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " backgCH4 takes an unrealisable value: backgCH4 = ";
-        std::cout << backgCH4_ << " [ppb]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( backgSO2_ < 0.0E+00 || backgSO2_ > 1.0E+09 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " backgSO2 takes an unrealisable value: backgCH4 = ";
-        std::cout << backgSO2_ << " [ppb]" << std::endl;
-        exit(-1);
-    }
+    if ( horizDiff_ < 0.00E+00 )
+        reject( "horizDiff", horizDiff_, "m^2/s", "horizDiff >= 0" );
+    else if ( horizDiff_ >= 4.00E+01 || horizDiff_ < 1.00E+00 )
+        warn( "horizDiff", horizDiff_, "m^2/s", "1 to 40" );
 
-    if ( flightSpeed_ < 0.0E+00 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " Flight speed takes an unrealisable value: flightSpeed = ";
-        std::cout << flightSpeed_ << " [m/s]" << std::endl;
-        exit(-1);
-    }
-    
-    if ( !( numEngines_ == 2 || numEngines_ == 3 ||  numEngines_ == 4 ) ) {
-        std::cout << " In Input::Input:";
-        std::cout << " Number of engines takes an unrealisable value: numEngines = ";
-        std::cout << numEngines_ << " []" << std::endl;
-        exit(-1);
-    }
+    if ( vertiDiff_ < 0.00E+00 )
+        reject( "vertiDiff", vertiDiff_, "m^2/s", "vertiDiff >= 0" );
+    else if ( vertiDiff_ >= 4.00E-01 || vertiDiff_ < 1.00E-02 )
+        warn( "vertiDiff", vertiDiff_, "m^2/s", "0.01 to 0.4" );
 
-    if ( wingspan_ < 0.0E+00 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " Wingspan takes an unrealisable value: wingspan_ = ";
-        std::cout << wingspan_ << " [m]" << std::endl;
-        exit(-1);
-    }
+    if ( emissionDOY_ < 1 || emissionDOY_ > 365 )
+        reject( "emissionDOY", emissionDOY_, "-", "1 to 365" );
 
-    if ( coreExitTemp_ < 0.0E+00 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " Exhaust temperature takes an unrealisable value: coreExitTemp = ";
-        std::cout << coreExitTemp_ << " [K]" << std::endl;
-        exit(-1);
-    }
+    if ( emissionTime_ < 0 || emissionTime_ > 24 )
+        reject( "emissionTime", emissionTime_, "hrs", "0 to 24" );
 
-    if ( bypassArea_ < 0.0E+00 ) {
-        std::cout << " In Input::Input:";
-        std::cout << " Exhaust area takes an unrealisable value: bypassArea = ";
-        std::cout << bypassArea_ << " [m^2]" << std::endl;
-        exit(-1);
+    if ( EI_NOx_ < 0.0E+00 || EI_NOx_ > 5.0E+01 )
+        reject( "EI_NOx", EI_NOx_, "g/kg_fuel", "0 to 50" );
+
+    if ( EI_CO_ < 0.0E+00 || EI_CO_ > 3.0E+01 )
+        reject( "EI_CO", EI_CO_, "g/kg_fuel", "0 to 30" );
+
+    if ( EI_HC_ < 0.0E+00 || EI_HC_ > 1.0E+01 )
+        reject( "EI_HC", EI_HC_, "g/kg_fuel", "0 to 10" );
+
+    if ( EI_SO2_ < 0.0E+00 || EI_SO2_ > 1.0E+02 )
+        reject( "EI_SO2", EI_SO2_, "g/kg_fuel", "0 to 100" );
+
+    if ( EI_Soot_ < 0.0E+00 || EI_Soot_ > 2.0E-01 )
+        reject( "EI_Soot", EI_Soot_, "g/kg_fuel", "0 to 0.2" );
+
+    if ( ( ( sootRad_ < 1.0E-10 ) && ( sootRad_ != 0.0E+00 ) ) || sootRad_ > 1.0E-07 )
+        reject( "sootRad", sootRad_ * 1.0E+09, "nm", "0, or 0.1 to 100" );
+
+    if ( fuelFlow_ < 0.0E+00 )
+        reject( "fuelFlow", fuelFlow_, "kg/s", "fuelFlow >= 0" );
+
+    if ( aircraftMass_ < 0.0E+00 )
+        reject( "aircraftMass", aircraftMass_, "kg", "aircraftMass >= 0" );
+
+    if ( backgNOx_ < 0.0E+00 || backgNOx_ > 1.0E+09 )
+        reject( "backgNOx", backgNOx_, "ppb", "0 to 1.0E+09" );
+
+    if ( backgHNO3_ < 0.0E+00 || backgHNO3_ > 1.0E+09 )
+        reject( "backgHNO3", backgHNO3_, "ppb", "0 to 1.0E+09" );
+
+    if ( backgO3_ < 0.0E+00 || backgO3_ > 1.0E+09 )
+        reject( "backgO3", backgO3_, "ppb", "0 to 1.0E+09" );
+
+    if ( backgCO_ < 0.0E+00 || backgCO_ > 1.0E+09 )
+        reject( "backgCO", backgCO_, "ppb", "0 to 1.0E+09" );
+
+    if ( backgCH4_ < 0.0E+00 || backgCH4_ > 1.0E+09 )
+        reject( "backgCH4", backgCH4_, "ppb", "0 to 1.0E+09" );
+
+    if ( backgSO2_ < 0.0E+00 || backgSO2_ > 1.0E+09 )
+        reject( "backgSO2", backgSO2_, "ppb", "0 to 1.0E+09" );
+
+    if ( flightSpeed_ < 0.0E+00 )
+        reject( "flightSpeed", flightSpeed_, "m/s", "flightSpeed >= 0" );
+
+    if ( !( numEngines_ == 2 || numEngines_ == 3 || numEngines_ == 4 ) )
+        reject( "numEngines", numEngines_, "-", "2, 3 or 4" );
+
+    if ( wingspan_ < 0.0E+00 )
+        reject( "wingspan", wingspan_, "m", "wingspan >= 0" );
+
+    if ( coreExitTemp_ < 0.0E+00 )
+        reject( "coreExitTemp", coreExitTemp_, "K", "coreExitTemp >= 0" );
+
+    if ( bypassArea_ < 0.0E+00 )
+        reject( "bypassArea", bypassArea_, "m^2", "bypassArea >= 0" );
+
+    if ( !errors.empty() ) {
+        std::ostringstream os;
+        os << "Invalid value(s) in the PARAMETER MENU:";
+        for ( const std::string& error : errors )
+            os << "\n    - " << error;
+        throw std::invalid_argument( os.str() );
     }
 }
 

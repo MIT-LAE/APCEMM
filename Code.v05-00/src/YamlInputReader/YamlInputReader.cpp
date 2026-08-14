@@ -181,6 +181,9 @@ namespace YamlInputReader{
             throw std::runtime_error("Something went wrong in reading the PARAMETER MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
 
+        // Inputs have successfully been parsed, now check that they seem physical
+        scenario.checkInputValidity();
+
         try {
             readTransportMenu(input, mergedData["TRANSPORT MENU"]);
         }
