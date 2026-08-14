@@ -4,6 +4,7 @@
 #include "Util/YamlUtils.hpp"
 #include <algorithm> // std::equal
 #include <cctype>    // std::tolower
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
@@ -142,7 +143,7 @@ namespace YamlInputReader{
         }
     }
 
-    void readYamlInputFiles(OptInput& input, Input& scenario, const vector<string> &filenames){
+    YAML::Node mergeYamlInputFiles(const vector<string>& filenames){
         YAML::Node defaultData = YAML::Load(default_input);
         YAML::Node mergedData = YAML::Load(default_input);
 
@@ -169,6 +170,10 @@ namespace YamlInputReader{
             mergedData = mergeYamlNodes(mergedData, userData);
         }
 
+        return mergedData;
+    }
+
+    void populateInput(OptInput& input, Input& scenario, const YAML::Node& mergedData){
         try {
             readSimMenu(input, mergedData["SIMULATION MENU"]);
         }
@@ -228,6 +233,20 @@ namespace YamlInputReader{
             throw std::runtime_error("Something went wrong in reading the ADVANCED OPTIONS MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
         }
     }
+
+    // Output dir must exist before calling this
+    void writeYaml(const YAML::Node& node, const std::filesystem::path& outputDir, const string& filename){
+        const std::filesystem::path fullPath = outputDir / filename;
+        std::ofstream out(fullPath);
+        if (!out) {
+            throw std::runtime_error("Could not open '" + fullPath.string() + "' for writing merged YAML.");
+        }
+        out << node << std::endl;
+        if (!out) {
+            throw std::runtime_error("Could not write merged YAML at '" + fullPath.string() + "'.");
+        }
+    }
+
     void readSimMenu(OptInput& input, const YAML::Node& simNode){
         input.SIMULATION_OMP_NUM_THREADS = parseIntString(simNode["OpenMP Num Threads (positive int)"].as<string>(), "OpenMP Num Threads (positive int)");
         if(input.SIMULATION_OMP_NUM_THREADS < 1){

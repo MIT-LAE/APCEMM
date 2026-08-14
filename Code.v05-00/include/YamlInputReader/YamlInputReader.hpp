@@ -21,7 +21,16 @@ namespace YamlInputReader{
         "parameter, write one input file per value and start one APCEMM process for each.";
 
     static std::filesystem::path INPUT_FILE_PATH;
-    void readYamlInputFiles(OptInput& input, Input& scenario, const vector<string> &filenames);
+
+    // Merge default and user provided files, returns a merged YAML::Node
+    YAML::Node mergeYamlInputFiles(const vector<string>& filenames);
+
+    // Fill OptInput and Input from an already merged node.
+    void populateInput(OptInput& input, Input& scenario, const YAML::Node& merged);
+
+    // Write a node to outputDir/filename. The directory must already exist.
+    void writeYaml(const YAML::Node& node, const std::filesystem::path& outputDir, const string& filename);
+
     void readSimMenu(OptInput& input, const YAML::Node& simNode);
     void readParamMenu(Input& scenario, const YAML::Node& paramNode);
     void readTransportMenu(OptInput& input, const YAML::Node& transportNode);

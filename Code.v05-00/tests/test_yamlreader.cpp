@@ -3,6 +3,7 @@
 #include <Util/YamlUtils.hpp>
 #include <YamlInputReader/YamlInputReader.hpp>
 #include <Core/Input.hpp>
+#include "Core/OutputFilenames.hpp"
 #include "APCEMM.h"
 
 using namespace YamlInputReader;
@@ -341,7 +342,8 @@ TEST_CASE("Read one input file into a scenario"){
     string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
     OptInput input;
     Input scenario;
-    YamlInputReader::readYamlInputFiles(input, scenario, {filename});
+    YAML::Node merged = YamlInputReader::mergeYamlInputFiles({filename});
+    YamlInputReader::populateInput(input, scenario, merged);
     REQUIRE(scenario.simulationTime() == 24);
     REQUIRE(scenario.pressure_Pa() == 22000);
     // Not set by test1.yaml, so it keeps the compiled default
@@ -379,9 +381,10 @@ TEST_CASE("Reject input files written for the removed multi-case runs"){
     Input scenario;
 
     SECTION("A PARAM SWEEP SUBMENU names the removed option"){
+        // A removed key is a key validation error, so the merge phase raises it.
         string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test15.yaml";
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {filename}),
+            YamlInputReader::mergeYamlInputFiles({filename}),
             Catch::Matchers::ContainsSubstring("Removed option found") &&
             Catch::Matchers::ContainsSubstring("PARAM SWEEP SUBMENU") &&
             Catch::Matchers::ContainsSubstring("exactly one simulation per process") &&
@@ -392,9 +395,13 @@ TEST_CASE("Reject input files written for the removed multi-case runs"){
     }
 
     SECTION("A swept PARAMETER MENU entry gets the same message"){
+        // The key is valid, but its value is a swept list, so the merge phase
+        // accepts the file and the populate phase raises the error.
         string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test16.yaml";
+        YAML::Node merged;
+        REQUIRE_NOTHROW(merged = YamlInputReader::mergeYamlInputFiles({filename}));
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {filename}),
+            YamlInputReader::populateInput(input, scenario, merged),
             Catch::Matchers::ContainsSubstring("Several values given at Pressure [hPa] (double)") &&
             Catch::Matchers::ContainsSubstring("exactly one simulation per process") &&
             Catch::Matchers::ContainsSubstring("one input file per value")
@@ -448,12 +455,59 @@ TEST_CASE("mergeYamlNodes rejects non-scalar keys"){
     );
 }
 
+TEST_CASE("mergeYamlInputFiles resolves defaults and overrides into one node"){
+    string filename1 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
+    string filename2 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test2.yaml";
+    YAML::Node merged = YamlInputReader::mergeYamlInputFiles({filename1, filename2});
+
+    YAML::Node metParams = merged["PARAMETER MENU"]["METEOROLOGICAL PARAMETERS SUBMENU"];
+    // Set by both files: the later one wins.
+    REQUIRE(metParams["Pressure [hPa] (double)"].as<double>() == 320);
+    // Set by the first file only
+    REQUIRE(metParams["Verti. diff. [m^2/s] (double)"].as<double>() == 0.15);
+    // Set by the second file only
+    REQUIRE(metParams["Horiz. diff. coeff. [m^2/s] (double)"].as<double>() == 17.0);
+    // Set by neither file, so the compiled-in default stays
+    REQUIRE(merged["SIMULATION MENU"]["External EPM NetCDF file"].as<string>() == "=MISSING=");
+    REQUIRE(merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Force seed value (T/F)"].as<string>() == "F");
+}
+
+TEST_CASE("writeYaml round trip"){
+    string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
+    YAML::Node merged = YamlInputReader::mergeYamlInputFiles({filename});
+
+    std::filesystem::path outputDir = std::filesystem::temp_directory_path() / "apcemm-writeyaml-test";
+    std::filesystem::remove_all(outputDir);
+
+    SECTION("Round trip through the file"){
+        std::filesystem::create_directories(outputDir);
+        YamlInputReader::writeYaml(merged, outputDir, OutputFiles::MERGED_YAML);
+
+        std::filesystem::path written = outputDir / OutputFiles::MERGED_YAML;
+        REQUIRE(std::filesystem::exists(written));
+
+        YAML::Node reloaded = YAML::LoadFile(written.string());
+        REQUIRE(YAML::Dump(reloaded) == YAML::Dump(merged));
+    }
+
+    SECTION("Missing output directory raises"){
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::writeYaml(merged, outputDir, OutputFiles::MERGED_YAML),
+            Catch::Matchers::ContainsSubstring("Could not open") &&
+            Catch::Matchers::ContainsSubstring(OutputFiles::MERGED_YAML)
+        );
+    }
+
+    std::filesystem::remove_all(outputDir);
+}
+
 TEST_CASE("Merge Input Files"){
     string filename1 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
     string filename2 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test2.yaml";
     OptInput input;
     Input scenario;
-    YamlInputReader::readYamlInputFiles(input, scenario, {filename1, filename2});
+    YAML::Node merged = YamlInputReader::mergeYamlInputFiles({filename1, filename2});
+    YamlInputReader::populateInput(input, scenario, merged);
     REQUIRE(scenario.simulationTime() == 24);
     REQUIRE(scenario.pressure_Pa() == 32000);
     REQUIRE(scenario.horizDiff() == 17.0);
@@ -489,7 +543,6 @@ TEST_CASE("Validate Input Files"){
     OptInput input;
     Input scenario;
     string validFile = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
-    
     string filename1 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test3.yaml";
     string filename2 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test4.yaml";
     string filename3 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test5.yaml";
@@ -498,7 +551,7 @@ TEST_CASE("Validate Input Files"){
         // Check that it detects the invalid key, that it points to the correct file and that
         // it prints out the name of the invalid key (here a scalar)
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {validFile, filename1}), 
+            YamlInputReader::mergeYamlInputFiles({validFile, filename1}),
             Catch::Matchers::ContainsSubstring("Unknown key found") &&
             Catch::Matchers::ContainsSubstring("test3.yaml") &&
             Catch::Matchers::ContainsSubstring("INVALID YAML INPUT")
@@ -509,7 +562,7 @@ TEST_CASE("Validate Input Files"){
         // Check that it detects the invalid key and that it prints out the name
         // of the invalid key (here a map)
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {filename2}),
+            YamlInputReader::mergeYamlInputFiles({filename2}),
             Catch::Matchers::ContainsSubstring("Unknown key found") &&
             Catch::Matchers::ContainsSubstring("INVALID YAML KEY")
         );
@@ -519,7 +572,7 @@ TEST_CASE("Validate Input Files"){
         // Here we have a key that is supposed to be a scalar but instead is a map
         // Check that if detects this and prints the name correctly
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {filename3}),
+            YamlInputReader::mergeYamlInputFiles({filename3}),
             Catch::Matchers::ContainsSubstring("is a map in provided YAML but not in the default input.yaml") &&
             Catch::Matchers::ContainsSubstring("Met input file path (string)")
         );
@@ -534,7 +587,7 @@ TEST_CASE("Validate Input Files"){
         // A scalar where the default holds a submenu would replace the whole
         // submenu. Check that if detects this and prints the name correctly
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {filename4}),
+            YamlInputReader::mergeYamlInputFiles({filename4}),
             Catch::Matchers::ContainsSubstring("is a value in provided YAML but a map in the default input.yaml") &&
             Catch::Matchers::ContainsSubstring("SIMULATION MENU -> OUTPUT SUBMENU") &&
             Catch::Matchers::ContainsSubstring("test6.yaml")
@@ -543,28 +596,30 @@ TEST_CASE("Validate Input Files"){
 
     SECTION("Valid key but wrong type (sequence instead of map)"){
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {filename5}),
+            YamlInputReader::mergeYamlInputFiles({filename5}),
             Catch::Matchers::ContainsSubstring("is a value in provided YAML but a map in the default input.yaml") &&
             Catch::Matchers::ContainsSubstring("SIMULATION MENU")
         );
     }
 
     SECTION("Null values mean no override and stay valid"){
-        // Reading must succeed and leave the compiled defaults in place. If a null
-        // cleared out the submenu, readSimMenu would fail on the missing keys.
-        REQUIRE_NOTHROW(YamlInputReader::readYamlInputFiles(input, scenario, {filename6}));
+        YAML::Node merged;
+        REQUIRE_NOTHROW(merged = YamlInputReader::mergeYamlInputFiles({filename6}));
+        REQUIRE_NOTHROW(YamlInputReader::populateInput(input, scenario, merged));
         REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
     }
 
     SECTION("Empty input file stays valid"){
-        REQUIRE_NOTHROW(YamlInputReader::readYamlInputFiles(input, scenario, {filename7}));
+        YAML::Node merged;
+        REQUIRE_NOTHROW(merged = YamlInputReader::mergeYamlInputFiles({filename7}));
+        REQUIRE_NOTHROW(YamlInputReader::populateInput(input, scenario, merged));
         REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
     }
 
     SECTION("Document root is a bare value"){
         string filename8 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test10.yaml";
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {filename8}),
+            YamlInputReader::mergeYamlInputFiles({filename8}),
             Catch::Matchers::ContainsSubstring("The document root is a value in provided YAML") &&
             Catch::Matchers::ContainsSubstring("test10.yaml")
         );
@@ -575,7 +630,7 @@ TEST_CASE("Validate Input Files"){
         // heading would be dropped silently.
         string filename9 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test11.yaml";
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {filename9}),
+            YamlInputReader::mergeYamlInputFiles({filename9}),
             Catch::Matchers::ContainsSubstring("Duplicate key found") &&
             Catch::Matchers::ContainsSubstring("SIMULATION MENU") &&
             Catch::Matchers::ContainsSubstring("test11.yaml")
@@ -587,7 +642,7 @@ TEST_CASE("Validate Input Files"){
         // key with its own message, not with a yaml-cpp "bad conversion".
         string filename11 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test13.yaml";
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {filename11}),
+            YamlInputReader::mergeYamlInputFiles({filename11}),
             Catch::Matchers::ContainsSubstring("map keys must be scalars") &&
             Catch::Matchers::ContainsSubstring("test13.yaml")
         );
@@ -597,7 +652,7 @@ TEST_CASE("Validate Input Files"){
         // Same check, one level down, where the recursion reaches the key.
         string filename12 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test14.yaml";
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {filename12}),
+            YamlInputReader::mergeYamlInputFiles({filename12}),
             Catch::Matchers::ContainsSubstring("map keys must be scalars") &&
             Catch::Matchers::ContainsSubstring("test14.yaml")
         );
@@ -607,7 +662,7 @@ TEST_CASE("Validate Input Files"){
         // The error names the full path of the key, not just the key itself.
         string filename10 = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test12.yaml";
         REQUIRE_THROWS_WITH(
-            YamlInputReader::readYamlInputFiles(input, scenario, {filename10}),
+            YamlInputReader::mergeYamlInputFiles({filename10}),
             Catch::Matchers::ContainsSubstring("Duplicate key found") &&
             Catch::Matchers::ContainsSubstring("SIMULATION MENU -> OUTPUT SUBMENU -> Output folder (string)") &&
             Catch::Matchers::ContainsSubstring("test12.yaml")

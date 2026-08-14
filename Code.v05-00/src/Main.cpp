@@ -96,7 +96,9 @@ int main( int argc, char* argv[])
       INPUT_FILE_PATHS.push_back(INPUT_FILE_PATH);
     }
 
-    YamlInputReader::readYamlInputFiles( Input_Opt, scenario, INPUT_FILE_PATHS );
+    // Merge input files first and keep the merged node to write it to the output folder later
+    YAML::Node mergedInput = YamlInputReader::mergeYamlInputFiles( INPUT_FILE_PATHS );
+    YamlInputReader::populateInput( Input_Opt, scenario, mergedInput );
 
     if (Input_Opt.ADV_SAVE_PSD_GRID){
         Diag::set_storePSD(true);
@@ -137,6 +139,9 @@ int main( int argc, char* argv[])
         CreateREADME( Input_Opt.SIMULATION_OUTPUT_FOLDER, OutputFiles::README, description );
 
     }
+
+    // Write merged YAML input files to output directory
+    YamlInputReader::writeYaml( mergedInput, Input_Opt.SIMULATION_OUTPUT_FOLDER, OutputFiles::MERGED_YAML );
 
     /* The switch is a placeholder for future models. Only the plume model is
      * implemented, so every other arm leaves the status at Failed. */
