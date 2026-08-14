@@ -33,6 +33,7 @@ namespace YamlInputReader{
 
     void performOtherInputValidnessChecks(OptInput& input);
     double parseScalarParam(const string paramString, const string paramLocation = "");
+    UInt parseScalarUIntParam(const string paramString, const string paramLocation = "");
     Vector_1D parseVectorDoubleString(const string paramString, const string paramLocation = "");
     vector<string> split(const string str, const string delimiter);
 

@@ -1,9 +1,11 @@
 #include "YamlInputReader/YamlInputReader.hpp"
 #include "APCEMM.h"
+#include "Util/ForwardDecl.hpp"
 #include "Util/YamlUtils.hpp"
 #include <algorithm> // std::equal
 #include <cctype>    // std::tolower
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <string_view> // std::string_view
 #include <set>
@@ -304,7 +306,7 @@ namespace YamlInputReader{
         YAML::Node locTimeSubmenu = paramNode["LOCATION AND TIME SUBMENU"];
         scenario.set_longitude_deg(parseScalarParam(locTimeSubmenu["LON [deg] (double)"].as<string>(), "LON [deg] (double)"));
         scenario.set_latitude_deg(parseScalarParam(locTimeSubmenu["LAT [deg] (double)"].as<string>(), "LAT [deg] (double)"));
-        scenario.set_emissionDOY(parseScalarParam(locTimeSubmenu["Emission day [1-365] (int)"].as<string>(), "Emission day [1-365] (int)"));
+        scenario.set_emissionDOY(parseScalarUIntParam(locTimeSubmenu["Emission day [1-365] (int)"].as<string>(), "Emission day [1-365] (int)"));
         scenario.set_emissionTime(parseScalarParam(locTimeSubmenu["Emission time [hr] (double)"].as<string>(), "Emission time [hr] (double)"));
 
         YAML::Node backMixRatioSubmenu = paramNode["BACKGROUND MIXING RATIOS SUBMENU"];
@@ -441,6 +443,18 @@ namespace YamlInputReader{
             throw std::invalid_argument("Several values given at " + paramLocation + ". " + ONE_RUN_PER_PROCESS_MESSAGE);
         }
         return parseDoubleString(s, paramLocation);
+    }
+
+    // Same as parseScalarParam but returns a UInt
+    UInt parseScalarUIntParam(const string paramString, const string paramLocation){
+        double valueDouble = parseScalarParam(paramString, paramLocation);
+        if (valueDouble < 0 || valueDouble > std::numeric_limits<UInt>::max()) {
+            throw std::invalid_argument("Value out of range [0, maxUInt] at " + paramLocation);
+        }
+        if(std::fmod(valueDouble, 1.0) > 1e-40) {
+            throw (std::invalid_argument("Decimals not allowed in int inputs at " + paramLocation + "!"));
+        }
+        return static_cast<UInt>(valueDouble);
     }
 
     // Space-separated list, used by the species and aerosol index lists of the
