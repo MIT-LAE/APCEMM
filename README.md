@@ -72,6 +72,8 @@ Examples and their accompanying jupyter notebooks for postprocessing tutorials a
 
 The input file options are explained via comments in the file `Code.v05-00/defaults/input.yaml`
 
+Each run writes `merged-input.yaml` into its output folder to record the result of the input merging step. It holds the defaults overwritten by every parameter in user input files passed to APCEMM, in the order they were passed.
+
 Advanced simulation parameters hidden in the input files (e.g. Aerosol bin size ratios, minimum/max bin aerosol sizes, etc) can be modified in `Code.v05-00/src/include/Parameters.hpp`. 
 
 ### Migrating an input file that used a parameter sweep
