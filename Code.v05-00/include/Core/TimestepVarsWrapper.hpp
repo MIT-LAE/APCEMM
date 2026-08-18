@@ -39,24 +39,13 @@ struct TimestepVarsWrapper
 
     bool LAST_STEP;
     bool ITS_TIME_FOR_TRANSPORT;
-    bool ITS_TIME_FOR_CHEM;
-    bool ITS_TIME_FOR_LIQ_COAGULATION;
-    bool ITS_TIME_FOR_ICE_COAGULATION;
     bool ITS_TIME_FOR_ICE_GROWTH;
-    bool ITS_TIME_FOR_TEMPPERTURB;
 
     double TRANSPORT_DT;    // [s]
-    double CHEMISTRY_DT;    // [s]
-    double COAG_DT;         //[s]
-    double TEMP_PERTURB_DT; //[s]
     double ICE_GROWTH_DT;   // [s]
 
     double lastTimeTransport;
-    double lastTimeChem;
-    double lastTimeLiqCoag;
-    double lastTimeIceCoag;
     double lastTimeIceGrowth;
-    double lastTimeTempPerturb;
 
     double totalIceParticles_before;
     double totalIceMass_before;
@@ -87,26 +76,6 @@ struct TimestepVarsWrapper
     {
         ITS_TIME_FOR_TRANSPORT = (((curr_Time_s + dt - lastTimeTransport) >= TRANSPORT_DT) || LAST_STEP);
         return ITS_TIME_FOR_TRANSPORT;
-    }
-    inline bool checkTimeForChem()
-    {
-        ITS_TIME_FOR_CHEM = (((curr_Time_s + dt - lastTimeChem) >= CHEMISTRY_DT) || LAST_STEP);
-        return ITS_TIME_FOR_CHEM;
-    }
-    inline bool checkTimeForTempPerturb()
-    {
-        ITS_TIME_FOR_TEMPPERTURB = (((curr_Time_s + dt - lastTimeTempPerturb) >= TEMP_PERTURB_DT) || LAST_STEP);
-        return ITS_TIME_FOR_TEMPPERTURB;
-    }
-    inline bool checkTimeForLiqCoag()
-    {
-        ITS_TIME_FOR_LIQ_COAGULATION = (((curr_Time_s + dt - lastTimeLiqCoag) >= COAG_DT) || LAST_STEP);
-        return ITS_TIME_FOR_LIQ_COAGULATION;
-    }
-    inline bool checkTimeForIceCoag()
-    {
-        ITS_TIME_FOR_ICE_COAGULATION = (((curr_Time_s + dt - lastTimeIceCoag) >= COAG_DT) || LAST_STEP);
-        return ITS_TIME_FOR_ICE_COAGULATION;
     }
     inline bool checkTimeForIceGrowth()
     {
