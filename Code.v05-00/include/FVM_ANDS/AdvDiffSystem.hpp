@@ -11,6 +11,9 @@ namespace FVM_ANDS{
     // Separate the SOR solver for testing without having to build an AdvDiffSystem object
     void sor_solve(const Eigen::SparseMatrix<double, Eigen::RowMajor> &A, const Eigen::VectorXd &rhs, Eigen::VectorXd &phi, double omega = 1.0, double threshold = 1e-3, int n_iters = 3);
 
+    // 1D Semi-Lagrangian advection helper
+    void semiLagrangianAdvection1D(std::vector<double>& slice, double velocity, double dt, double ds, double bc_left, double bc_right);
+
     struct AdvDiffParams {
         AdvDiffParams(double u, double v, double shear, double Dh, double Dv, double dt){
             this->u = u;
@@ -35,6 +38,7 @@ namespace FVM_ANDS{
             const Eigen::VectorXd& calcRHS();
             void applyBoundaryCondition();
             void updateBoundaryCondition(const BoundaryConditions& bc);
+            void semiLagrangianAdvection(double dt);
             Eigen::VectorXd forwardEulerAdvection(bool operatorSplit = false, bool parallelAdvection = false) const noexcept;
             // Breakup the implementation of sor_solve to allow for easy testing by inputing an arbitrary linear system to solve:
             // Implementation is moved outside of the class, and make class method to be used in code

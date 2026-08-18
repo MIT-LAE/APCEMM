@@ -505,4 +505,71 @@ namespace FVM_ANDS{
         REQUIRE(std::abs(maxy-0.381) < 0.01);
 
     }
+
+    TEST_CASE("Semi-Lagrangian 1D Advection", "[advection]"){
+        SECTION("Pure integer shift right (positive velocity)"){
+            std::vector<double> slice = {1.0, 2.0, 3.0, 4.0, 5.0};
+            double velocity = 3.0; // dx = 1.0, dt = 1.0 -> disp = 3.0 -> shift by 3
+            double dt = 1.0;
+            double ds = 1.0;
+            double bc_left = 0.0;
+            double bc_right = 0.0;
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, bc_left, bc_right);
+            REQUIRE(slice[0] == Catch::Approx(0.0));
+            REQUIRE(slice[1] == Catch::Approx(0.0));
+            REQUIRE(slice[2] == Catch::Approx(0.0));
+            REQUIRE(slice[3] == Catch::Approx(1.0));
+            REQUIRE(slice[4] == Catch::Approx(2.0));
+        }
+
+        SECTION("Pure integer shift left (negative velocity)"){
+            std::vector<double> slice = {1.0, 2.0, 3.0, 4.0, 5.0};
+            double velocity = -2.0; // dx = 1.0, dt = 1.0 -> disp = -2.0 -> shift left by 2
+            double dt = 1.0;
+            double ds = 1.0;
+            double bc_left = 0.0;
+            double bc_right = 0.0;
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, bc_left, bc_right);
+            REQUIRE(slice[0] == Catch::Approx(3.0));
+            REQUIRE(slice[1] == Catch::Approx(4.0));
+            REQUIRE(slice[2] == Catch::Approx(5.0));
+            REQUIRE(slice[3] == Catch::Approx(0.0));
+            REQUIRE(slice[4] == Catch::Approx(0.0));
+        }
+
+        SECTION("Inflow boundary condition padding"){
+            std::vector<double> slice = {1.0, 2.0, 3.0, 4.0, 5.0};
+            double velocity = 2.0;
+            double dt = 1.0;
+            double ds = 1.0;
+            double bc_left = 9.9;
+            double bc_right = 0.0;
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, bc_left, bc_right);
+            REQUIRE(slice[0] == Catch::Approx(9.9));
+            REQUIRE(slice[1] == Catch::Approx(9.9));
+            REQUIRE(slice[2] == Catch::Approx(1.0));
+            REQUIRE(slice[3] == Catch::Approx(2.0));
+            REQUIRE(slice[4] == Catch::Approx(3.0));
+        }
+
+        SECTION("Mass conservation on interior pulse"){
+            int N = 50;
+            std::vector<double> slice(N, 0.0);
+            slice[20] = 1.0;
+            slice[21] = 2.0;
+            slice[22] = 1.0;
+            double initial_mass = 4.0;
+
+            double velocity = 15.5; // moves ~15.5 cells
+            double dt = 1.0;
+            double ds = 1.0;
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, 0.0, 0.0);
+
+            double final_mass = 0.0;
+            for (double val : slice) {
+                final_mass += val;
+            }
+            REQUIRE(final_mass == Catch::Approx(initial_mass).margin(1e-10));
+        }
+    }
 }
