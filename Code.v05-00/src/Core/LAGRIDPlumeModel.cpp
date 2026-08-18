@@ -106,6 +106,7 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         std::cout << "Running Transport..." << std::endl;
         bool timeForTransport = (simVars_.TRANSPORT && (timestepVars_.nTime == 0 || timestepVars_.checkTimeForTransport()));
         if (timeForTransport) {
+            timestepVars_.lastTimeTransport = timestepVars_.curr_Time_s + timestepVars_.dt;
 
             #ifdef ENABLE_TIMING
             auto transport_start = std::chrono::high_resolution_clock::now();
@@ -128,8 +129,8 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
             met_.updateTempPerturb();
         }
 
-        solarTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.TRANSPORT_DT / 2 ) / 3600.0;
-        simTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.TRANSPORT_DT / 2 - timestepVars_.timeArray[0] ) / 3600;
+        solarTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.dt / 2.0 ) / 3600.0;
+        simTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.dt / 2.0 - timestepVars_.timeArray[0] ) / 3600.0;
 
         // Run Ice Growth
         if (simVars_.ICE_GROWTH && timestepVars_.checkTimeForIceGrowth()) {
@@ -202,14 +203,14 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 
         // Run vertical advection to get the new pressure edges
         if (std::abs(met_.lastOmega()) > 1.0e-10){
-            met_.applyUpdraft(timestepVars_.TRANSPORT_DT);
+            met_.applyUpdraft(timestepVars_.dt);
         }
 
         // Read in the meteorology for the next time step, interpolating in time 
         // This only affects the xInit_ values in the meteorology object, but does
         // update altitudeInit_ and altitudeEdgesInit_ (pressureInit_ unchanged)
         std::cout << "Updating Met..." << std::endl;
-        met_.Update( timestepVars_.TRANSPORT_DT, solarTime_h_, simTime_h_);
+        met_.Update( timestepVars_.dt, solarTime_h_, simTime_h_);
 
 
         #ifdef ENABLE_TIMING
@@ -230,7 +231,7 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 
         //Remap the grid to account for changes in shape due to vertical advection and the growth of the contrail
         std::cout << "Remapping... " << std::endl;
-        remapAllVars(timestepVars_.TRANSPORT_DT, mask, maskInfo);
+        remapAllVars(timestepVars_.dt, mask, maskInfo);
 
         #ifdef ENABLE_TIMING
         auto regrid_end = std::chrono::high_resolution_clock::now();
