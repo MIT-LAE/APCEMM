@@ -87,6 +87,8 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
     if ( simVars_.GRAVSETTLING ) {
         vFall_ = AIM::SettlingVelocity( iceAerosol_.getBinCenters(), \
                                        met_.tempRef(), simVars_.pressure_Pa );
+    } else {
+        vFall_.assign( iceAerosol_.getNBin(), 0.0 );
     }
 
     bool EARLY_STOP = false;
