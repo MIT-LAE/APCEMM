@@ -269,6 +269,7 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.AEROSOL_COAGULATION_LIQUID == true);
         REQUIRE(input.AEROSOL_ICE_GROWTH == true);
         REQUIRE(input.AEROSOL_ICE_GROWTH_TIMESTEP == 10);
+        REQUIRE(input.AEROSOL_ICE_GROWTH_SUBSTEP == 60.0);
     }
     SECTION("Read Met Menu"){
         OptInput input;

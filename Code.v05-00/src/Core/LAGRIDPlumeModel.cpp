@@ -143,7 +143,17 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
             #endif
 
             timestepVars_.lastTimeIceGrowth = timestepVars_.curr_Time_s + timestepVars_.dt;
-            iceAerosol_.Grow( timestepVars_.ICE_GROWTH_DT, H2O_, met_.Temp(), met_.Press());
+
+            // Substep ice growth in increments of <= dt_micro_target seconds (default 60s)
+            const double dt_micro_target = (optInput_.AEROSOL_ICE_GROWTH_SUBSTEP > 0.0) 
+                                         ? optInput_.AEROSOL_ICE_GROWTH_SUBSTEP : 60.0;
+            const double dt_growth_total = timestepVars_.ICE_GROWTH_DT;
+            const int n_growth_substeps = std::max(1, static_cast<int>(std::ceil(dt_growth_total / dt_micro_target)));
+            const double dt_growth_sub = dt_growth_total / n_growth_substeps;
+
+            for (int sub = 0; sub < n_growth_substeps; ++sub) {
+                iceAerosol_.Grow(dt_growth_sub, H2O_, met_.Temp(), met_.Press());
+            }
 
             #ifdef ENABLE_TIMING
             auto icegrowth_end = std::chrono::high_resolution_clock::now();
@@ -422,8 +432,9 @@ void LAGRIDPlumeModel::initH2O() {
 
 void LAGRIDPlumeModel::updateDiffVecs() {
     double dh_enhanced, dv_enhanced;
-    // Update Diffusion
-    PlumeModelUtils::DiffParam( timestepVars_.curr_Time_s - timestepVars_.tInitial_s + timestepVars_.TRANSPORT_DT / 2.0,
+    // Update Diffusion with exact time-averaged diffusivity over the transport step
+    const double time_start = timestepVars_.curr_Time_s - timestepVars_.tInitial_s;
+    PlumeModelUtils::DiffParam( time_start, timestepVars_.TRANSPORT_DT,
                                 dh_enhanced, dv_enhanced, input_.horizDiff(), input_.vertiDiff() );
     auto number = iceAerosol_.TotalNumber();
     auto num_max = VectorUtils::max(number);

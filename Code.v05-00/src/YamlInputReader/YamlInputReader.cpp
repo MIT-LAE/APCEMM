@@ -394,6 +394,11 @@ namespace YamlInputReader{
         input.AEROSOL_COAGULATION_LIQUID = parseBoolString(aeroNode["Turn on liquid coagulation (T/F)"].as<string>(), "Turn on liquid coagulation (T/F)");
         input.AEROSOL_ICE_GROWTH = parseBoolString(aeroNode["Turn on ice growth (T/F)"].as<string>(), "Turn on ice growth (T/F)");
         input.AEROSOL_ICE_GROWTH_TIMESTEP = parseDoubleString(aeroNode["Ice growth timestep [min] (double)"].as<string>(), "Ice growth timestep [min] (double)");
+        if (aeroNode["Ice growth substep [s] (double)"]) {
+            input.AEROSOL_ICE_GROWTH_SUBSTEP = parseDoubleString(aeroNode["Ice growth substep [s] (double)"].as<string>(), "Ice growth substep [s] (double)");
+        } else {
+            input.AEROSOL_ICE_GROWTH_SUBSTEP = 60.0;
+        }
     }
     void readMetMenu(OptInput& input, const YAML::Node& metNode){
         YAML::Node metInputSubmenu = metNode["METEOROLOGICAL INPUT SUBMENU"];

@@ -79,6 +79,7 @@ struct OptInput
     bool        AEROSOL_COAGULATION_LIQUID;
     bool        AEROSOL_ICE_GROWTH;
     double      AEROSOL_ICE_GROWTH_TIMESTEP;
+    double      AEROSOL_ICE_GROWTH_SUBSTEP;
 
     /* ========================================== */
     /* ---- METEOROLOGY MENU -------------------- */
