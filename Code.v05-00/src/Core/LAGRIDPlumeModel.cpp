@@ -104,24 +104,15 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         std::cout << "\n - Time step: " << timestepVars_.nTime + 1 << " out of " << timestepVars_.timeArray.size();
         std::cout << "\n -> Solar time: " << std::fmod( timestepVars_.curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
 
-        // Interleaved Transport and Ice Growth Subcycling
-        bool timeForTransport = (simVars_.TRANSPORT && (timestepVars_.nTime == 0 || timestepVars_.checkTimeForTransport()));
-        bool timeForIceGrowth = (simVars_.ICE_GROWTH && timestepVars_.checkTimeForIceGrowth());
-
-        if (timeForTransport || timeForIceGrowth) {
-            double dt_total = timeForTransport ? timestepVars_.TRANSPORT_DT : timestepVars_.ICE_GROWTH_DT;
+        // Interleaved Transport and Ice Growth Subcycling over the outer timestep dt
+        if (simVars_.TRANSPORT || simVars_.ICE_GROWTH) {
+            const double dt_step = timestepVars_.dt;
             const double dt_sub_target = (optInput_.TRANSPORT_ICE_GROWTH_SUBSTEP > 0.0) 
                                        ? optInput_.TRANSPORT_ICE_GROWTH_SUBSTEP : 60.0;
-            const int n_subcycles = std::max(1, static_cast<int>(std::ceil(dt_total / dt_sub_target)));
-            const double dt_sub = dt_total / n_subcycles;
+            const int n_subcycles = std::max(1, static_cast<int>(std::ceil(dt_step / dt_sub_target)));
+            const double dt_sub = dt_step / n_subcycles;
 
-            if (timeForTransport) {
-                std::cout << "Running Transport and ice growth subcycling (" << n_subcycles << " x " << dt_sub << " s)..." << std::endl;
-                timestepVars_.lastTimeTransport = timestepVars_.curr_Time_s + timestepVars_.dt;
-            }
-            if (timeForIceGrowth) {
-                timestepVars_.lastTimeIceGrowth = timestepVars_.curr_Time_s + timestepVars_.dt;
-            }
+            std::cout << "Running Transport and ice growth subcycling (" << n_subcycles << " x " << dt_sub << " s)..." << std::endl;
 
             #ifdef ENABLE_TIMING
             auto subcycling_start = std::chrono::high_resolution_clock::now();
@@ -129,10 +120,10 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 
             for (int sub = 0; sub < n_subcycles; ++sub) {
                 const double t_sub_start = (timestepVars_.curr_Time_s - timestepVars_.tInitial_s) + sub * dt_sub;
-                if (timeForTransport) {
+                if (simVars_.TRANSPORT) {
                     runTransport(dt_sub, t_sub_start);
                 }
-                if (timeForIceGrowth) {
+                if (simVars_.ICE_GROWTH) {
                     iceAerosol_.Grow(dt_sub, H2O_, met_.Temp(), met_.Press());
                 }
             }

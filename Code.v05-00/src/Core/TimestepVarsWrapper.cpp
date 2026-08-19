@@ -33,27 +33,8 @@ totPart_lost(0),
 totIce_lost(0),
 ABORT_THRESHOLD(1.0e-3)
 {
-    /* The base (heartbeat) timestep is determined from enabled transport and ice growth processes. */
-    
-    Vector_1D timesteps;
-
-    if(Input_Opt.TRANSPORT_TRANSPORT) 
-        timesteps.push_back(TRANSPORT_DT);
-    if(Input_Opt.AEROSOL_ICE_GROWTH)
-        timesteps.push_back(ICE_GROWTH_DT);
-    
-    if (timesteps.empty()) {
-        throw std::runtime_error("No active processes to determine timestep");
-    }
-
-    dt = *(std::min_element(timesteps.begin(), timesteps.end()));
-    std::cout << "Calculated Timestep: " << dt/60.0 << "[min]" << std::endl;
+    dt = TRANSPORT_DT;
     if (dt <= 0) throw std::runtime_error("Invalid Timestep"); 
-
-    for (const double &step : timesteps) {
-        double ratio = step / dt;
-        if (std::abs(ratio - std::round(ratio)) > 1.0e-6) {
-            throw std::runtime_error("Process timesteps must be integer multiples of the heartbeat timestep");
-        }
-    }
+    std::cout << "Outer Timestep: " << dt/60.0 << " [min]" << std::endl;
+    std::cout << "Inner Physics Substep: " << Input_Opt.TRANSPORT_ICE_GROWTH_SUBSTEP << " [s]" << std::endl;
 }
