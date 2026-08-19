@@ -58,6 +58,7 @@ struct OptInput
     bool        TRANSPORT_TRANSPORT;
     bool        TRANSPORT_FILL;
     double      TRANSPORT_TIMESTEP;
+    double      TRANSPORT_ICE_GROWTH_SUBSTEP;
     bool        TRANSPORT_UPDRAFT;
     double      TRANSPORT_UPDRAFT_TIMESCALE;
     double      TRANSPORT_UPDRAFT_VELOCITY;
@@ -79,7 +80,6 @@ struct OptInput
     bool        AEROSOL_COAGULATION_LIQUID;
     bool        AEROSOL_ICE_GROWTH;
     double      AEROSOL_ICE_GROWTH_TIMESTEP;
-    double      AEROSOL_ICE_GROWTH_SUBSTEP;
 
     /* ========================================== */
     /* ---- METEOROLOGY MENU -------------------- */

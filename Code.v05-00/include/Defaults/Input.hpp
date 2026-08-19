@@ -86,6 +86,7 @@ TRANSPORT MENU:
   # Outdated, not used (was used by spectral solver)
   Fill Negative Values (T/F): T
   Transport Timestep [min] (double): 1
+  Transport and ice growth substep [s] (double): 60.0
   # Keep off: not sure of the effect yet + met updraft is included (if met file input)
   PLUME UPDRAFT SUBMENU:
     Turn on plume updraft (T/F): F
@@ -108,7 +109,6 @@ AEROSOL MENU:
   # Keep on
   Turn on ice growth (T/F): T
   Ice growth timestep [min] (double): 1
-  Ice growth substep [s] (double): 60.0
 
 # At least one of "Use met. input", "Impose moist layer depth", or "Impose lapse rate" must be true
 # Imposing moist layer depth will automatically calculate the lapse rate and override the imposed lapse rate

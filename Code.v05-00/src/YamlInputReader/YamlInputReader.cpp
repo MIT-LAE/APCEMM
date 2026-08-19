@@ -377,6 +377,11 @@ namespace YamlInputReader{
         input.TRANSPORT_TRANSPORT = parseBoolString(transportNode["Turn on Transport (T/F)"].as<string>(), "Turn on Transport (T/F)");
         input.TRANSPORT_FILL = parseBoolString(transportNode["Fill Negative Values (T/F)"].as<string>(), "Fill Negative Values (T/F)");
         input.TRANSPORT_TIMESTEP = parseDoubleString(transportNode["Transport Timestep [min] (double)"].as<string>(), "Transport Timestep [min] (double)");
+        if (transportNode["Transport and ice growth substep [s] (double)"]) {
+            input.TRANSPORT_ICE_GROWTH_SUBSTEP = parseDoubleString(transportNode["Transport and ice growth substep [s] (double)"].as<string>(), "Transport and ice growth substep [s] (double)");
+        } else {
+            input.TRANSPORT_ICE_GROWTH_SUBSTEP = 60.0;
+        }
 
         YAML::Node updraftSubmenu = transportNode["PLUME UPDRAFT SUBMENU"];
         input.TRANSPORT_UPDRAFT = parseBoolString(updraftSubmenu["Turn on plume updraft (T/F)"].as<string>(), "Turn on plume updraft (T/F)");
@@ -394,11 +399,6 @@ namespace YamlInputReader{
         input.AEROSOL_COAGULATION_LIQUID = parseBoolString(aeroNode["Turn on liquid coagulation (T/F)"].as<string>(), "Turn on liquid coagulation (T/F)");
         input.AEROSOL_ICE_GROWTH = parseBoolString(aeroNode["Turn on ice growth (T/F)"].as<string>(), "Turn on ice growth (T/F)");
         input.AEROSOL_ICE_GROWTH_TIMESTEP = parseDoubleString(aeroNode["Ice growth timestep [min] (double)"].as<string>(), "Ice growth timestep [min] (double)");
-        if (aeroNode["Ice growth substep [s] (double)"]) {
-            input.AEROSOL_ICE_GROWTH_SUBSTEP = parseDoubleString(aeroNode["Ice growth substep [s] (double)"].as<string>(), "Ice growth substep [s] (double)");
-        } else {
-            input.AEROSOL_ICE_GROWTH_SUBSTEP = 60.0;
-        }
     }
     void readMetMenu(OptInput& input, const YAML::Node& metNode){
         YAML::Node metInputSubmenu = metNode["METEOROLOGICAL INPUT SUBMENU"];

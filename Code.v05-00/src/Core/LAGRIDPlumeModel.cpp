@@ -104,22 +104,43 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         std::cout << "\n - Time step: " << timestepVars_.nTime + 1 << " out of " << timestepVars_.timeArray.size();
         std::cout << "\n -> Solar time: " << std::fmod( timestepVars_.curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
 
-        // Run Transport
-        std::cout << "Running Transport..." << std::endl;
+        // Interleaved Transport and Ice Growth Subcycling
         bool timeForTransport = (simVars_.TRANSPORT && (timestepVars_.nTime == 0 || timestepVars_.checkTimeForTransport()));
-        if (timeForTransport) {
-            timestepVars_.lastTimeTransport = timestepVars_.curr_Time_s + timestepVars_.dt;
+        bool timeForIceGrowth = (simVars_.ICE_GROWTH && timestepVars_.checkTimeForIceGrowth());
+
+        if (timeForTransport || timeForIceGrowth) {
+            double dt_total = timeForTransport ? timestepVars_.TRANSPORT_DT : timestepVars_.ICE_GROWTH_DT;
+            const double dt_sub_target = (optInput_.TRANSPORT_ICE_GROWTH_SUBSTEP > 0.0) 
+                                       ? optInput_.TRANSPORT_ICE_GROWTH_SUBSTEP : 60.0;
+            const int n_subcycles = std::max(1, static_cast<int>(std::ceil(dt_total / dt_sub_target)));
+            const double dt_sub = dt_total / n_subcycles;
+
+            if (timeForTransport) {
+                std::cout << "Running Transport and ice growth subcycling (" << n_subcycles << " x " << dt_sub << " s)..." << std::endl;
+                timestepVars_.lastTimeTransport = timestepVars_.curr_Time_s + timestepVars_.dt;
+            }
+            if (timeForIceGrowth) {
+                timestepVars_.lastTimeIceGrowth = timestepVars_.curr_Time_s + timestepVars_.dt;
+            }
 
             #ifdef ENABLE_TIMING
-            auto transport_start = std::chrono::high_resolution_clock::now();
+            auto subcycling_start = std::chrono::high_resolution_clock::now();
             #endif
 
-            runTransport(timestepVars_.TRANSPORT_DT);
+            for (int sub = 0; sub < n_subcycles; ++sub) {
+                const double t_sub_start = (timestepVars_.curr_Time_s - timestepVars_.tInitial_s) + sub * dt_sub;
+                if (timeForTransport) {
+                    runTransport(dt_sub, t_sub_start);
+                }
+                if (timeForIceGrowth) {
+                    iceAerosol_.Grow(dt_sub, H2O_, met_.Temp(), met_.Press());
+                }
+            }
 
             #ifdef ENABLE_TIMING
-            auto transport_end = std::chrono::high_resolution_clock::now();
-            auto transport_duration = std::chrono::duration_cast<std::chrono::milliseconds>(transport_end - transport_start);
-            std::cout << "  Ran transport in " << transport_duration.count() << " ms" << std::endl;
+            auto subcycling_end = std::chrono::high_resolution_clock::now();
+            auto subcycling_duration = std::chrono::duration_cast<std::chrono::milliseconds>(subcycling_end - subcycling_start);
+            std::cout << "  Ran transport & ice growth subcycling in " << subcycling_duration.count() << " ms" << std::endl;
             #endif
         }
 
@@ -133,34 +154,6 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 
         solarTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.dt / 2.0 ) / 3600.0;
         simTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.dt / 2.0 - timestepVars_.timeArray[0] ) / 3600.0;
-
-        // Run Ice Growth
-        if (simVars_.ICE_GROWTH && timestepVars_.checkTimeForIceGrowth()) {
-            std::cout << "Running ice growth..." << std::endl;
-
-            #ifdef ENABLE_TIMING
-            auto icegrowth_start = std::chrono::high_resolution_clock::now();
-            #endif
-
-            timestepVars_.lastTimeIceGrowth = timestepVars_.curr_Time_s + timestepVars_.dt;
-
-            // Substep ice growth in increments of <= dt_micro_target seconds (default 60s)
-            const double dt_micro_target = (optInput_.AEROSOL_ICE_GROWTH_SUBSTEP > 0.0) 
-                                         ? optInput_.AEROSOL_ICE_GROWTH_SUBSTEP : 60.0;
-            const double dt_growth_total = timestepVars_.ICE_GROWTH_DT;
-            const int n_growth_substeps = std::max(1, static_cast<int>(std::ceil(dt_growth_total / dt_micro_target)));
-            const double dt_growth_sub = dt_growth_total / n_growth_substeps;
-
-            for (int sub = 0; sub < n_growth_substeps; ++sub) {
-                iceAerosol_.Grow(dt_growth_sub, H2O_, met_.Temp(), met_.Press());
-            }
-
-            #ifdef ENABLE_TIMING
-            auto icegrowth_end = std::chrono::high_resolution_clock::now();
-            auto icegrowth_duration = std::chrono::duration_cast<std::chrono::milliseconds>(icegrowth_end - icegrowth_start);
-            std::cout << "  Ran ice growth in " << icegrowth_duration.count() << " ms" << std::endl;
-            #endif
-        }
 
         #ifdef ENABLE_TIMING
         auto tracer_start = std::chrono::high_resolution_clock::now();
@@ -430,11 +423,10 @@ void LAGRIDPlumeModel::initH2O() {
     }
 }
 
-void LAGRIDPlumeModel::updateDiffVecs() {
+void LAGRIDPlumeModel::updateDiffVecs(double time_start, double dt) {
     double dh_enhanced, dv_enhanced;
-    // Update Diffusion with exact time-averaged diffusivity over the transport step
-    const double time_start = timestepVars_.curr_Time_s - timestepVars_.tInitial_s;
-    PlumeModelUtils::DiffParam( time_start, timestepVars_.TRANSPORT_DT,
+    // Update Diffusion with exact time-averaged diffusivity over the subcycle transport step
+    PlumeModelUtils::DiffParam( time_start, dt,
                                 dh_enhanced, dv_enhanced, input_.horizDiff(), input_.vertiDiff() );
     auto number = iceAerosol_.TotalNumber();
     auto num_max = VectorUtils::max(number);
@@ -450,7 +442,7 @@ void LAGRIDPlumeModel::updateDiffVecs() {
         }
     }
 }
-void LAGRIDPlumeModel::runTransport(double timestep) {
+void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
 
     #ifdef ENABLE_TIMING
     auto start = std::chrono::high_resolution_clock::now();
@@ -466,7 +458,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     }
     shear_rep_ = met_.shear(maxIdx);
 
-    const FVM_ANDS::AdvDiffParams fvmSolverInitParams(0, 0, shear_rep_, input_.horizDiff(), input_.vertiDiff(), timestepVars_.TRANSPORT_DT);
+    const FVM_ANDS::AdvDiffParams fvmSolverInitParams(0, 0, shear_rep_, input_.horizDiff(), input_.vertiDiff(), timestep);
     const FVM_ANDS::BoundaryConditions ZERO_BC_INIT = FVM_ANDS::bcFrom2DVector(iceAerosol_.getPDF()[0], true);
 
     #ifdef ENABLE_TIMING
@@ -477,7 +469,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     start = std::chrono::high_resolution_clock::now();
     #endif
 
-    updateDiffVecs();
+    updateDiffVecs(time_start, timestep);
 
     #ifdef ENABLE_TIMING
     end = std::chrono::high_resolution_clock::now();
