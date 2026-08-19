@@ -259,7 +259,6 @@ TEST_CASE("Read Yaml File"){
         readChemMenu(input, data["CHEMISTRY MENU"]);
         REQUIRE(input.CHEMISTRY_CHEMISTRY == true);
         REQUIRE(input.CHEMISTRY_HETCHEM == true);
-        REQUIRE(input.CHEMISTRY_TIMESTEP == 10);
         REQUIRE(input.CHEMISTRY_JRATE_FOLDER == "/net/d04/data/fritzt/APCEMM_Data/J-Rates");
     }
     SECTION("Read Aerosol Menu"){
@@ -268,7 +267,6 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.AEROSOL_GRAVSETTLING == true);
         REQUIRE(input.AEROSOL_COAGULATION_SOLID == true);
         REQUIRE(input.AEROSOL_COAGULATION_LIQUID == true);
-        REQUIRE(input.AEROSOL_COAGULATION_TIMESTEP == 60);
         REQUIRE(input.AEROSOL_ICE_GROWTH == true);
         REQUIRE(input.AEROSOL_ICE_GROWTH_TIMESTEP == 10);
     }
@@ -299,7 +297,6 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.MET_INTERPVERTVELOC == true);
         REQUIRE(input.MET_ENABLE_TEMP_PERTURB == true);
         REQUIRE(input.MET_TEMP_PERTURB_AMPLITUDE == 2.0);
-        REQUIRE(input.MET_TEMP_PERTURB_TIMESCALE == 10);
 
     }
     SECTION("Read Diagnostic Menu"){
@@ -406,6 +403,12 @@ TEST_CASE("Reject input files written for the removed multi-case runs"){
             Catch::Matchers::ContainsSubstring("exactly one simulation per process") &&
             Catch::Matchers::ContainsSubstring("one input file per value")
         );
+    }
+
+    SECTION("Deprecated options do not cause validation failure"){
+        // Deprecated timesteps in user YAML should be accepted with a warning rather than throwing
+        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
+        REQUIRE_NOTHROW(YamlInputReader::mergeYamlInputFiles({filename}));
     }
 }
 

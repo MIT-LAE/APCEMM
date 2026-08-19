@@ -79,6 +79,22 @@ namespace YamlInputReader{
         }
     }
 
+    // Keys that previous versions accepted and that we now ignore with a warning. Checked
+    // before the generic unknown-key error so an outdated input file gets a warning
+    // naming the option that is deprecated instead of failing with "Unknown key found".
+    bool checkDeprecatedKey(const std::string& key, const std::string& errorPath) {
+        static const std::set<std::string> deprecatedKeys = {
+            "Chemistry Timestep [min] (double)",
+            "Coag. timestep [min] (double)",
+            "Temp. Perturb. Timescale (min)",
+        };
+        if (deprecatedKeys.contains(key)) {
+            std::cout << "WARNING: Deprecated option found: '" << errorPath << "'. This option is no longer used and has no effect." << std::endl;
+            return true;
+        }
+        return false;
+    }
+
     // Keys that previous versions accepted and that we now reject. Checked
     // before the generic unknown-key error so an outdated input file gets a message
     // naming the option that went away instead of "Unknown key found".
@@ -130,6 +146,9 @@ namespace YamlInputReader{
             if (!defaultKeys.contains(key)) {
                 // The key from the user's YAML does not exist in the default YAML.
                 std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
+                if (checkDeprecatedKey(key, errorPath)) {
+                    continue;
+                }
                 checkRemovedKey(key, errorPath);
                 throw std::runtime_error("Unknown key found: '" + errorPath + "'");
             }
@@ -367,14 +386,12 @@ namespace YamlInputReader{
     void readChemMenu(OptInput& input, const YAML::Node& chemNode){
         input.CHEMISTRY_CHEMISTRY = parseBoolString(chemNode["Turn on Chemistry (T/F)"].as<string>(), "Turn on Chemistry (T/F)");
         input.CHEMISTRY_HETCHEM = parseBoolString(chemNode["Perform hetero. chem. (T/F)"].as<string>(), "Perform hetero. chem. (T/F)");
-        input.CHEMISTRY_TIMESTEP = parseDoubleString(chemNode["Chemistry Timestep [min] (double)"].as<string>(), "Chemistry Timestep [min] (double)");
         input.CHEMISTRY_JRATE_FOLDER = parseFileSystemPath(chemNode["Photolysis rates folder (string)"].as<string>());
     }
     void readAeroMenu(OptInput& input, const YAML::Node& aeroNode){
         input.AEROSOL_GRAVSETTLING = parseBoolString(aeroNode["Turn on grav. settling (T/F)"].as<string>(), "Turn on grav. settling (T/F)");
         input.AEROSOL_COAGULATION_SOLID = parseBoolString(aeroNode["Turn on solid coagulation (T/F)"].as<string>(), "Turn on solid coagulation (T/F)");
         input.AEROSOL_COAGULATION_LIQUID = parseBoolString(aeroNode["Turn on liquid coagulation (T/F)"].as<string>(), "Turn on liquid coagulation (T/F)");
-        input.AEROSOL_COAGULATION_TIMESTEP = parseDoubleString(aeroNode["Coag. timestep [min] (double)"].as<string>(), "Coag. timestep [min] (double)");
         input.AEROSOL_ICE_GROWTH = parseBoolString(aeroNode["Turn on ice growth (T/F)"].as<string>(), "Turn on ice growth (T/F)");
         input.AEROSOL_ICE_GROWTH_TIMESTEP = parseDoubleString(aeroNode["Ice growth timestep [min] (double)"].as<string>(), "Ice growth timestep [min] (double)");
     }
@@ -399,7 +416,6 @@ namespace YamlInputReader{
         YAML::Node tempPerturbMenu = metNode["TEMPERATURE PERTURBATION SUBMENU"];
         input.MET_ENABLE_TEMP_PERTURB = parseBoolString( tempPerturbMenu["Enable Temp. Pert. (T/F)"].as<string>(), "Enable Temp. Pert. (T/F)" );
         input.MET_TEMP_PERTURB_AMPLITUDE = parseDoubleString( tempPerturbMenu["Temp. Perturb. Amplitude (double)"].as<string>(), "Temp. Perturb. Amplitude (double)" );
-        input.MET_TEMP_PERTURB_TIMESCALE = parseDoubleString( tempPerturbMenu["Temp. Perturb. Timescale (min)"].as<string>(), "Temp. Perturb. Timescale (min)" );
     }
     void readDiagMenu(OptInput& input, const YAML::Node& diagNode){
         input.DIAG_FILENAME = diagNode["netCDF filename format (string)"].as<string>();

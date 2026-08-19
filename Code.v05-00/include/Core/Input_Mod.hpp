@@ -68,7 +68,6 @@ struct OptInput
 
     bool        CHEMISTRY_CHEMISTRY;
     bool        CHEMISTRY_HETCHEM;
-    double      CHEMISTRY_TIMESTEP;
     std::string CHEMISTRY_JRATE_FOLDER;
 
     /* ========================================== */
@@ -78,7 +77,6 @@ struct OptInput
     bool        AEROSOL_GRAVSETTLING;
     bool        AEROSOL_COAGULATION_SOLID;
     bool        AEROSOL_COAGULATION_LIQUID;
-    double      AEROSOL_COAGULATION_TIMESTEP;
     bool        AEROSOL_ICE_GROWTH;
     double      AEROSOL_ICE_GROWTH_TIMESTEP;
 
@@ -103,7 +101,6 @@ struct OptInput
     bool        MET_INTERPVERTVELOC;
     bool        MET_ENABLE_TEMP_PERTURB;
     double      MET_TEMP_PERTURB_AMPLITUDE;
-    double      MET_TEMP_PERTURB_TIMESCALE;
 
     /* ========================================== */
     /* ---- DIAGNOSTIC MENU --------------------- */
