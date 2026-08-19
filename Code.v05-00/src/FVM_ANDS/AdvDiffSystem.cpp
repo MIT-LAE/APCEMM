@@ -649,10 +649,10 @@ namespace FVM_ANDS{
                     face_flux[m + 1] = slice[m + 1] - slope_weight * slope;
                 }
 
-                // Outflow face at m = 0
-                double diff_up_0 = 2.0 * (slice[0] - bc_left);
-                double diff_down_0 = (N >= 2) ? (slice[1] - slice[0]) : diff_up_0;
-                double slope_0 = minmod(diff_down_0, diff_up_0);
+                // Outflow face at m = 0 (leftward flow towards bc_left)
+                double diff_down_0 = 2.0 * (slice[0] - bc_left);
+                double diff_up_0 = (N >= 2) ? (slice[1] - slice[0]) : diff_down_0;
+                double slope_0 = minmod(diff_up_0, diff_down_0);
                 face_flux[0] = slice[0] - slope_weight * slope_0;
 
                 for (int m = 0; m < N; ++m) {
