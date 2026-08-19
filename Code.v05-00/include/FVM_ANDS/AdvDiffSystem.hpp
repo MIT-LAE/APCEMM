@@ -106,7 +106,7 @@ namespace FVM_ANDS{
             const Eigen::VectorXd& calcRHS();
             void applyBoundaryCondition();
             void updateBoundaryCondition(const BoundaryConditions& bc);
-            void semiLagrangianAdvection(double dt);
+            void semiLagrangianAdvection(double dt, bool parallelAdvection = false);
             Eigen::VectorXd forwardEulerAdvection(bool operatorSplit = false, bool parallelAdvection = false) const noexcept;
             // Breakup the implementation of sor_solve to allow for easy testing by inputing an arbitrary linear system to solve:
             // Implementation is moved outside of the class, and make class method to be used in code

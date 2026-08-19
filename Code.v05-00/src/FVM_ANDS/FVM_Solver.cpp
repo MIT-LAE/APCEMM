@@ -74,7 +74,7 @@ namespace FVM_ANDS{
         #endif
 
         //Step 1: Solve Advection for half timestep via Semi-Lagrangian advection
-        advDiffSys_.semiLagrangianAdvection(0.5 * dt_max);
+        advDiffSys_.semiLagrangianAdvection(0.5 * dt_max, parallelAdvection);
 
         #ifdef ENABLE_TIMING
         auto stop = std::chrono::high_resolution_clock::now();
@@ -127,7 +127,7 @@ namespace FVM_ANDS{
         #endif
 
         //Step 3: Solve advection for second half timestep via Semi-Lagrangian advection
-        advDiffSys_.semiLagrangianAdvection(0.5 * dt_max);
+        advDiffSys_.semiLagrangianAdvection(0.5 * dt_max, parallelAdvection);
 
         #ifdef ENABLE_TIMING
         stop = std::chrono::high_resolution_clock::now();

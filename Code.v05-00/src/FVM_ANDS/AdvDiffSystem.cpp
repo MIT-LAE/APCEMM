@@ -662,9 +662,9 @@ namespace FVM_ANDS{
         }
     }
 
-    void AdvDiffSystem::semiLagrangianAdvection(double dt) {
+    void AdvDiffSystem::semiLagrangianAdvection(double dt, bool parallelAdvection) {
         // 1. Horizontal Advection along X (row by row)
-        #pragma omp parallel for default(shared) schedule(static)
+        #pragma omp parallel for if (parallelAdvection) default(shared) schedule(static)
         for (int j = 0; j < ny_; ++j) {
             double u_j = u_double_ - yCoord_[j] * shear_;
             if (std::abs(u_j) > 1.0e-14) {
@@ -685,7 +685,7 @@ namespace FVM_ANDS{
 
         // 2. Vertical Advection along Y (column by column)
         if (std::abs(v_double_) > 1.0e-14) {
-            #pragma omp parallel for default(shared) schedule(static)
+            #pragma omp parallel for if (parallelAdvection) default(shared) schedule(static)
             for (int i = 0; i < nx_; ++i) {
                 std::vector<double> col(ny_);
                 for (int j = 0; j < ny_; ++j) {
