@@ -183,6 +183,11 @@ ADVANCED OPTIONS MENU:
     XLIM_LEFT (positive double): 1.0e+3
     YLIM_UP (positive double): 300
     YLIM_DOWN (positive double): 1.5e+3
+    Target points in plume [-] (int): 50
+    Min DX [m] (double): 20.0
+    Max DX [m] (double): 50.0
+    Min DY [m] (double): 5.0
+    Max DY [m] (double): 7.0
   INITIAL CONTRAIL SIZE SUBMENU:
     #Depth = BaseDepth + DepthScalingFactor * Default_Depth
     #Same formula for width
