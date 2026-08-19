@@ -541,6 +541,10 @@ namespace FVM_ANDS{
         applyBoundaryCondition(); //need this to calculate minmod function at some timestep.
     }
 
+    /**
+     * @brief 1D Flux-Form Semi-Lagrangian (FFSL) advection with Lax-Wendroff TVD subgrid reconstruction.
+     * @see AdvDiffSystem.hpp for detailed algorithmic documentation and literature references.
+     */
     void semiLagrangianAdvection1D(
         std::vector<double>& slice,
         double velocity,
@@ -576,6 +580,9 @@ namespace FVM_ANDS{
 
             // Step 2: Fractional Forward Euler step
             if (rem_disp > 1.0e-12 && rem_dt > 0.0) {
+                const double cfl_frac = velocity * rem_dt / ds;
+                const double slope_weight = 0.5 * (1.0 - cfl_frac);
+
                 std::vector<double> face_flux(N + 1, 0.0);
                 face_flux[0] = bc_left;
 
@@ -588,16 +595,15 @@ namespace FVM_ANDS{
                     double diff_up = (m == 0) ? (2.0 * (slice[0] - bc_left)) : (slice[m] - slice[m - 1]);
                     double diff_down = slice[m + 1] - slice[m];
                     double slope = minmod(diff_up, diff_down);
-                    face_flux[m + 1] = slice[m] + 0.5 * slope;
+                    face_flux[m + 1] = slice[m] + slope_weight * slope;
                 }
 
                 // Outflow face at m = N
                 double diff_up_last = (N >= 2) ? (slice[N - 1] - slice[N - 2]) : (2.0 * (slice[0] - bc_left));
                 double diff_down_last = 2.0 * (bc_right - slice[N - 1]);
                 double slope_last = minmod(diff_up_last, diff_down_last);
-                face_flux[N] = slice[N - 1] + 0.5 * slope_last;
+                face_flux[N] = slice[N - 1] + slope_weight * slope_last;
 
-                double cfl_frac = velocity * rem_dt / ds;
                 for (int m = 0; m < N; ++m) {
                     slice[m] -= cfl_frac * (face_flux[m + 1] - face_flux[m]);
                 }
@@ -625,6 +631,9 @@ namespace FVM_ANDS{
 
             // Step 2: Fractional Forward Euler step
             if (rem_disp > 1.0e-12 && rem_dt > 0.0) {
+                const double cfl_frac = abs_vel * rem_dt / ds;
+                const double slope_weight = 0.5 * (1.0 - cfl_frac);
+
                 std::vector<double> face_flux(N + 1, 0.0);
                 face_flux[N] = bc_right;
 
@@ -637,16 +646,15 @@ namespace FVM_ANDS{
                     double diff_up = (m + 1 == N - 1) ? (2.0 * (bc_right - slice[N - 1])) : (slice[m + 2] - slice[m + 1]);
                     double diff_down = slice[m + 1] - slice[m];
                     double slope = minmod(diff_down, diff_up);
-                    face_flux[m + 1] = slice[m + 1] - 0.5 * slope;
+                    face_flux[m + 1] = slice[m + 1] - slope_weight * slope;
                 }
 
                 // Outflow face at m = 0
                 double diff_up_0 = 2.0 * (slice[0] - bc_left);
                 double diff_down_0 = (N >= 2) ? (slice[1] - slice[0]) : diff_up_0;
                 double slope_0 = minmod(diff_down_0, diff_up_0);
-                face_flux[0] = slice[0] - 0.5 * slope_0;
+                face_flux[0] = slice[0] - slope_weight * slope_0;
 
-                double cfl_frac = abs_vel * rem_dt / ds;
                 for (int m = 0; m < N; ++m) {
                     slice[m] -= cfl_frac * (face_flux[m] - face_flux[m + 1]);
                 }
