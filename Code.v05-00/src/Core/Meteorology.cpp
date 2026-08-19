@@ -482,25 +482,29 @@ double Meteorology::estimateSatDepth() {
 }
 
 Vector_1D Meteorology::interpMetTimeseriesData(double simTime_h, const Vector_2D& ts_data, bool timeseries) const {
-    int itime = timeseries 
-              ? std::min(static_cast<int>(simTime_h / met_dt_h_), timeDim_ - 1)
-              : 0;
-
-    double before;
-    double after;
     Vector_1D interp(altitudeDim_);
 
-    /* Extract temperature data before and after current time, and interpolate */
-    for ( int i = 0; i < altitudeDim_; i++ ) {
-        before = ts_data[i][itime];
-        if ( itime >= timeDim_ - 1 ) {
-            std::cout <<  "WARNING: Simulation time exceeded extent of timeseries data. Using last entry provided in timeseries data." << std::endl;
-            after = ts_data[i][itime];
+    if (!timeseries || timeDim_ <= 1) {
+        for (int i = 0; i < altitudeDim_; i++) {
+            interp[i] = ts_data[i][0];
         }
-        else {
-            after = ts_data[i][itime+1];
+        return interp;
+    }
+
+    int itime = static_cast<int>(simTime_h / met_dt_h_);
+    if (itime >= timeDim_ - 1) {
+        std::cout << "WARNING: Simulation time exceeded extent of timeseries data. Using last entry provided in timeseries data." << std::endl;
+        for (int i = 0; i < altitudeDim_; i++) {
+            interp[i] = ts_data[i][timeDim_ - 1];
         }
-        interp[i] = before + ( after - before ) * ( simTime_h - itime * met_dt_h_ );
+        return interp;
+    }
+
+    double weight = (simTime_h - itime * met_dt_h_) / met_dt_h_;
+    for (int i = 0; i < altitudeDim_; i++) {
+        double before = ts_data[i][itime];
+        double after = ts_data[i][itime + 1];
+        interp[i] = before + (after - before) * weight;
     }
     return interp;
 }
