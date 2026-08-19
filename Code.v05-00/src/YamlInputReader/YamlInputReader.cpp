@@ -496,6 +496,43 @@ namespace YamlInputReader{
         input.ADV_GRID_XLIM_LEFT = parseDoubleString(gridSubmenu["XLIM_LEFT (positive double)"].as<string>(), "XLIM_LEFT (positive double)");
         input.ADV_GRID_YLIM_UP = parseDoubleString(gridSubmenu["YLIM_UP (positive double)"].as<string>(), "YLIM_UP (positive double)");
         input.ADV_GRID_YLIM_DOWN = parseDoubleString(gridSubmenu["YLIM_DOWN (positive double)"].as<string>(), "YLIM_DOWN (positive double)");
+
+        if (gridSubmenu["Target points in plume [-] (int)"]) {
+            input.ADV_GRID_TARGET_PLUME_PTS = parseUIntString(gridSubmenu["Target points in plume [-] (int)"].as<string>(), "Target points in plume [-] (int)");
+        } else {
+            input.ADV_GRID_TARGET_PLUME_PTS = 50;
+        }
+
+        if (gridSubmenu["Min DX [m] (double)"]) {
+            input.ADV_GRID_MIN_DX = parseDoubleString(gridSubmenu["Min DX [m] (double)"].as<string>(), "Min DX [m] (double)");
+        } else {
+            input.ADV_GRID_MIN_DX = 20.0;
+        }
+
+        if (gridSubmenu["Max DX [m] (double)"]) {
+            input.ADV_GRID_MAX_DX = parseDoubleString(gridSubmenu["Max DX [m] (double)"].as<string>(), "Max DX [m] (double)");
+        } else {
+            input.ADV_GRID_MAX_DX = 50.0;
+        }
+
+        if (gridSubmenu["Min DY [m] (double)"]) {
+            input.ADV_GRID_MIN_DY = parseDoubleString(gridSubmenu["Min DY [m] (double)"].as<string>(), "Min DY [m] (double)");
+        } else {
+            input.ADV_GRID_MIN_DY = 5.0;
+        }
+
+        if (gridSubmenu["Max DY [m] (double)"]) {
+            input.ADV_GRID_MAX_DY = parseDoubleString(gridSubmenu["Max DY [m] (double)"].as<string>(), "Max DY [m] (double)");
+        } else {
+            input.ADV_GRID_MAX_DY = 7.0;
+        }
+
+        if (input.ADV_GRID_MIN_DX > input.ADV_GRID_MAX_DX) {
+            throw std::invalid_argument("Min DX [m] cannot be greater than Max DX [m] in GRID SUBMENU!");
+        }
+        if (input.ADV_GRID_MIN_DY > input.ADV_GRID_MAX_DY) {
+            throw std::invalid_argument("Min DY [m] cannot be greater than Max DY [m] in GRID SUBMENU!");
+        }
         
         YAML::Node csizeSubmenu = advancedNode["INITIAL CONTRAIL SIZE SUBMENU"];
         input.ADV_CSIZE_DEPTH_BASE = parseDoubleString(csizeSubmenu["Base Contrail Depth [m] (double)"].as<string>(), "Base Contrail Depth [m] (double)");

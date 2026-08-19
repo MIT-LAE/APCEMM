@@ -651,9 +651,15 @@ std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> LAGRIDPlumeModel::r
     double dx_grid_old = xCoords_[1] - xCoords_[0];
     auto boxGrid = LAGRID::rectToBoxGrid(met_.dy_vec(), dx_grid_old, xEdges_[0], yEdges_[0], phi, mask);
 
-    //Enforce at least x many points in the contrail while limiting minimum/maximum dx and dy
-    double dx_grid_new =  std::max(20.0, std::min((maskInfo.maxX - maskInfo.minX) / 50.0, 50.0));
-    double dy_grid_new = std::max(5.0, std::min((maskInfo.maxY - maskInfo.minY) / 50.0, 7.0));
+    //Enforce at least target points in the contrail while limiting minimum/maximum dx and dy
+    const double target_pts = (optInput_.ADV_GRID_TARGET_PLUME_PTS > 0) ? static_cast<double>(optInput_.ADV_GRID_TARGET_PLUME_PTS) : 50.0;
+    const double min_dx = (optInput_.ADV_GRID_MIN_DX > 0) ? optInput_.ADV_GRID_MIN_DX : 20.0;
+    const double max_dx = (optInput_.ADV_GRID_MAX_DX >= min_dx) ? optInput_.ADV_GRID_MAX_DX : 50.0;
+    const double min_dy = (optInput_.ADV_GRID_MIN_DY > 0) ? optInput_.ADV_GRID_MIN_DY : 5.0;
+    const double max_dy = (optInput_.ADV_GRID_MAX_DY >= min_dy) ? optInput_.ADV_GRID_MAX_DY : 7.0;
+
+    double dx_grid_new =  std::max(min_dx, std::min((maskInfo.maxX - maskInfo.minX) / target_pts, max_dx));
+    double dy_grid_new = std::max(min_dy, std::min((maskInfo.maxY - maskInfo.minY) / target_pts, max_dy));
     //Need 2 extra points account for the buffer
     int nx_new = floor((maskInfo.maxX - maskInfo.minX) / dx_grid_new) + 2;
     int ny_new = floor((maskInfo.maxY - maskInfo.minY) / dy_grid_new) + 2;
@@ -811,9 +817,15 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
     double dx_grid_old = xCoords_[1] - xCoords_[0];
     auto boxGrid = LAGRID::rectToBoxGrid(met_.dy_vec(), dx_grid_old, xEdges_[0], yEdges_[0], phi, mask);
 
-    //Enforce at least x many points in the contrail while limiting minimum/maximum dx and dy
-    double dx_grid_new =  std::max(20.0, std::min((maskInfo.maxX - maskInfo.minX) / 50.0, 50.0));
-    double dy_grid_new = std::max(5.0, std::min((maskInfo.maxY - maskInfo.minY) / 50.0, 7.0));
+    //Enforce at least target points in the contrail while limiting minimum/maximum dx and dy
+    const double target_pts = (optInput_.ADV_GRID_TARGET_PLUME_PTS > 0) ? static_cast<double>(optInput_.ADV_GRID_TARGET_PLUME_PTS) : 50.0;
+    const double min_dx = (optInput_.ADV_GRID_MIN_DX > 0) ? optInput_.ADV_GRID_MIN_DX : 20.0;
+    const double max_dx = (optInput_.ADV_GRID_MAX_DX >= min_dx) ? optInput_.ADV_GRID_MAX_DX : 50.0;
+    const double min_dy = (optInput_.ADV_GRID_MIN_DY > 0) ? optInput_.ADV_GRID_MIN_DY : 5.0;
+    const double max_dy = (optInput_.ADV_GRID_MAX_DY >= min_dy) ? optInput_.ADV_GRID_MAX_DY : 7.0;
+
+    double dx_grid_new =  std::max(min_dx, std::min((maskInfo.maxX - maskInfo.minX) / target_pts, max_dx));
+    double dy_grid_new = std::max(min_dy, std::min((maskInfo.maxY - maskInfo.minY) / target_pts, max_dy));
     //Need 2 extra points account for the buffer
     int nx_new = floor((maskInfo.maxX - maskInfo.minX) / dx_grid_new) + 2;
     int ny_new = floor((maskInfo.maxY - maskInfo.minY) / dy_grid_new) + 2;
