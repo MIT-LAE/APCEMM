@@ -572,4 +572,53 @@ namespace FVM_ANDS{
             REQUIRE(final_mass == Catch::Approx(initial_mass).margin(1e-10));
         }
     }
+
+    TEST_CASE("Semi-Lagrangian 1D Advection preserves monotonicity", "[advection]"){
+
+        // Monotone non-decreasing profile
+        const std::vector<double> initial = {0.0, 1.0, 3.0, 4.0, 5.0, 5.0};
+        const double dt = 1.0;
+        const double ds = 1.0;
+        const double bc_left = 0.0;
+        const double bc_right = 5.0;
+
+        auto checkMonotonicity = [&](const std::vector<double>& slice){
+            // 1. Values should stay in the range spanned by the initial data and the BCs.
+            for (std::size_t m = 0; m < slice.size(); m++) {
+                INFO("cell " << m << " = " << slice[m]);
+                REQUIRE(slice[m] >= 0.0 - 1e-12);
+                REQUIRE(slice[m] <= 5.0 + 1e-12);
+            }
+
+            // 2. A monotone profile must stay monotone
+            for (std::size_t m = 1; m < slice.size(); m++) {
+                INFO("cells " << m - 1 << ", " << m << " = " << slice[m-1] << ", " << slice[m]);
+                REQUIRE(slice[m] >= slice[m-1] - 1e-12);
+            }
+
+            // 3. Total variation must not increase
+            double tv_initial = 0.0;
+            double tv_final = 0.0;
+            for (std::size_t m = 1; m < slice.size(); m++) {
+                tv_initial += std::abs(initial[m] - initial[m-1]);
+                tv_final += std::abs(slice[m] - slice[m-1]);
+            }
+            INFO("TV before = " << tv_initial << ", TV after = " << tv_final);
+            REQUIRE(tv_final <= tv_initial + 1e-12);
+        };
+
+        SECTION("Fractional CFL 0.80, above the 2/3 TVD limit"){
+            std::vector<double> slice = initial;
+            double velocity = 0.8; // dt = ds = 1 -> no integer shift, fractional CFL = 0.8
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, bc_left, bc_right);
+            checkMonotonicity(slice);
+        }
+
+        SECTION("Fractional CFL 0.60, below the 2/3 TVD limit"){
+            std::vector<double> slice = initial;
+            double velocity = 0.6; // dt = ds = 1 -> no integer shift, fractional CFL = 0.6
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, bc_left, bc_right);
+            checkMonotonicity(slice);
+        }
+    }
 }
