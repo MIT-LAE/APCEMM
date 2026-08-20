@@ -1,5 +1,7 @@
 #include <cctype>
+#include <filesystem>
 #include <netcdf>
+#include <stdexcept>
 
 #include "Core/Input_Mod.hpp"
 #include "EPM/EPM.hpp"
@@ -68,6 +70,13 @@ void Output::write(std::string filename) const {
 }
 
 void Output::read(std::string filename) {
+    if (!std::filesystem::exists(filename)) {
+        throw std::runtime_error(
+            "External EPM NetCDF file does not exist: '" + filename +
+            "'. It is set by 'External EPM NetCDF file' under SIMULATION MENU. A "
+            "relative path is resolved against the directory of the input file that "
+            "sets it.");
+    }
     NcFile nc(filename, NcFile::read);
 
     // Scalar variables.
