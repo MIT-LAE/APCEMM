@@ -1,4 +1,5 @@
 set(SRCS
-    YamlInputReader.cpp)
+    YamlInputReader.cpp
+    YamlPathUtils.cpp)
 add_library(YamlInputReader STATIC ${SRCS})
 target_link_libraries(YamlInputReader yaml-cpp::yaml-cpp Core)

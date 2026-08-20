@@ -1,14 +1,12 @@
 #include "YamlInputReader/YamlInputReader.hpp"
+#include "YamlInputReader/YamlPathUtils.hpp"
 #include "APCEMM.h"
 #include "Util/ForwardDecl.hpp"
 #include "Util/YamlUtils.hpp"
-#include <algorithm> // std::equal
-#include <cctype>    // std::tolower
 #include <fstream>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
-#include <string_view> // std::string_view
 #include <set>
 #include <string>
 #include <vector>
@@ -18,16 +16,6 @@
 const std::string default_input =
 #include "Defaults/Input.hpp"
 ;
-
-
-bool ichar_equals(char a, char b) {
-  return std::tolower(static_cast<unsigned char>(a)) ==
-         std::tolower(static_cast<unsigned char>(b));
-}
-
-bool iequals(std::string_view lhs, std::string_view rhs) {
-  return std::ranges::equal(lhs, rhs, ichar_equals);
-}
 
 
 namespace YamlInputReader{
@@ -172,9 +160,15 @@ namespace YamlInputReader{
         // errors in it, but this is cheap to verify.
         try {
             checkNoDuplicateKeysRecursive(defaultData, "the default input.yaml");
+            checkDefaultPaths(defaultData);
         } catch (const std::runtime_error& e) {
             throw std::runtime_error(std::string(e.what()) + " This is not a problem with your input file: check the state of your APCEMM repository.");
         }
+
+        // What each path looked like before it was resolved, so an error can name the
+        // text the user wrote and the file they wrote it in. A later file overwrites an
+        // earlier one, which is what the merge does with the value itself.
+        PathOriginMap origins;
 
         for (auto filename: filenames) {
             YAML::Node userData = YAML::LoadFile(filename);
@@ -185,9 +179,14 @@ namespace YamlInputReader{
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Invalid field in YAML input file '" + filename + "': " + e.what());
             }
-            INPUT_FILE_PATH = std::filesystem::path(filename);
+            // Resolve before merging: this is the only point where the file a path was
+            // declared in is still known. Resolving after the merge would resolve every
+            // path against whichever file came last.
+            resolvePathsInPlace(userData, std::filesystem::path(filename).parent_path(), filename, origins);
             mergedData = mergeYamlNodes(mergedData, userData);
         }
+
+        checkPathsExist(mergedData, origins);
 
         return mergedData;
     }
@@ -284,7 +283,15 @@ namespace YamlInputReader{
         }
 
         YAML::Node outputSubmenu = simNode["OUTPUT SUBMENU"];
-        std::string outputFolder =  parseFileSystemPath(outputSubmenu["Output folder (string)"].as<string>());
+        std::string outputFolder = readPath(outputSubmenu, "Output folder (string)");
+        // Neither sentinel names a folder, and nothing downstream checks them: Main.cpp
+        // would create a directory called "=MISSING=".
+        if (isPathSentinel(outputFolder)) {
+            throw std::invalid_argument("No output folder set: 'Output folder (string)' under SIMULATION MENU -> "
+                                        "OUTPUT SUBMENU is '" + outputFolder + "'. APCEMM has no default output "
+                                        "folder, so set one in your input file. A relative path resolves against "
+                                        "the directory of the file that sets it.");
+        }
         // Ensure path to save directory is terminated by "/"
         if ( outputFolder.back() != '/' ) {outputFolder = outputFolder + "/";}
         input.SIMULATION_OUTPUT_FOLDER = outputFolder;
@@ -293,9 +300,9 @@ namespace YamlInputReader{
 
         YAML::Node fftwWisdomSubmenu = simNode["FFTW WISDOM SUBMENU"];
         input.SIMULATION_USE_FFTW_WISDOM = parseBoolString(fftwWisdomSubmenu["Use FFTW WISDOM (T/F)"].as<string>(), "Use FFTW WISDOM (T/F)");
-        input.SIMULATION_DIRECTORY_W_WRITE_PERMISSION = parseFileSystemPath(fftwWisdomSubmenu["Dir w/ write permission (string)"].as<string>());
-        input.SIMULATION_INPUT_BACKG_COND = parseFileSystemPath(simNode["Input background condition (string)"].as<string>());
-        input.SIMULATION_INPUT_ENG_EI = parseFileSystemPath(simNode["Input engine emissions (string)"].as<string>());
+        input.SIMULATION_DIRECTORY_W_WRITE_PERMISSION = readPath(fftwWisdomSubmenu, "Dir w/ write permission (string)");
+        input.SIMULATION_INPUT_BACKG_COND = readPath(simNode, "Input background condition (string)");
+        input.SIMULATION_INPUT_ENG_EI = readPath(simNode, "Input engine emissions (string)");
 
         YAML::Node saveForwardSubmenu = simNode["SAVE FORWARD RESULTS SUBMENU"];
         input.SIMULATION_SAVE_FORWARD = parseBoolString(saveForwardSubmenu["Save forward results (T/F)"].as<string>(), "Save forward results (T/F)");
@@ -328,7 +335,7 @@ namespace YamlInputReader{
             throw std::invalid_argument("Invalid EPM type specified in SIMULATION MENU: " + epm);
         }
 
-        input.SIMULATION_EXTERNAL_EPM_NETCDF_FILENAME = simNode["External EPM NetCDF file"].as<string>();
+        input.SIMULATION_EXTERNAL_EPM_NETCDF_FILENAME = readPath(simNode, "External EPM NetCDF file");
     }
     void readParamMenu(Input& scenario, const YAML::Node& paramNode){
 
@@ -386,7 +393,7 @@ namespace YamlInputReader{
     void readChemMenu(OptInput& input, const YAML::Node& chemNode){
         input.CHEMISTRY_CHEMISTRY = parseBoolString(chemNode["Turn on Chemistry (T/F)"].as<string>(), "Turn on Chemistry (T/F)");
         input.CHEMISTRY_HETCHEM = parseBoolString(chemNode["Perform hetero. chem. (T/F)"].as<string>(), "Perform hetero. chem. (T/F)");
-        input.CHEMISTRY_JRATE_FOLDER = parseFileSystemPath(chemNode["Photolysis rates folder (string)"].as<string>());
+        input.CHEMISTRY_JRATE_FOLDER = readPath(chemNode, "Photolysis rates folder (string)");
     }
     void readAeroMenu(OptInput& input, const YAML::Node& aeroNode){
         input.AEROSOL_GRAVSETTLING = parseBoolString(aeroNode["Turn on grav. settling (T/F)"].as<string>(), "Turn on grav. settling (T/F)");
@@ -398,7 +405,7 @@ namespace YamlInputReader{
     void readMetMenu(OptInput& input, const YAML::Node& metNode){
         YAML::Node metInputSubmenu = metNode["METEOROLOGICAL INPUT SUBMENU"];
         input.MET_LOADMET = parseBoolString(metInputSubmenu["Use met. input (T/F)"].as<string>(), "Use met. input (T/F)");
-        input.MET_FILENAME = parseFileSystemPath(metInputSubmenu["Met input file path (string)"].as<string>());
+        input.MET_FILENAME = readPath(metInputSubmenu, "Met input file path (string)");
         input.MET_DT = parseDoubleString(metInputSubmenu["Time series data timestep [hr] (double)"].as<string>(), "Time series data timestep [hr] (double)");
         input.MET_LOADTEMP = parseBoolString(metInputSubmenu["Init temp. from met. (T/F)"].as<string>(), "Init temp. from met. (T/F)");
         input.MET_TEMPTIMESERIES = parseBoolString(metInputSubmenu["Temp. time series input (T/F)"].as<string>(), "Temp. time series input (T/F)");
@@ -529,11 +536,5 @@ namespace YamlInputReader{
             vecint.push_back((int)(d));
         }
         return vecint;
-    }
-
-    std::string parseFileSystemPath(std::string str){
-        if (str == "=MISSING=" || str == "=DEFAULT=") return str;
-        std::filesystem::path p(str);
-        return p.is_absolute() ? str : std::filesystem::weakly_canonical(INPUT_FILE_PATH.parent_path() / str).generic_string();
     }
 }

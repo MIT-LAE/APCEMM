@@ -1,14 +1,27 @@
 R"====(
+# Every file system path in this file and in your own input files follows one rule:
+# a relative path resolves against the directory of the file that declares it, not
+# against the working directory and not against the last file passed with -i.
+# This file is compiled into APCEMM and has no directory of its own, so it must hold
+# no relative path. The paths it does hold are the '=MISSING=' and '=DEFAULT='
+# sentinels, which mean "unset" and "use the compiled-in data".
+# The keys treated as paths are listed in PATH_KEYS, in
+# Code.v05-00/src/YamlInputReader/YamlPathUtils.cpp.
+
 SIMULATION MENU:
   OpenMP Num Threads (positive int): 8
   OUTPUT SUBMENU:
-    Output folder (string): APCEMM_out/
+    # Required: APCEMM has no default output folder. A relative path resolves
+    # against the directory of the file that sets it.
+    Output folder (string): =MISSING=
     Overwrite if folder exists (T/F): T
   # FFT options (for spectral solver)
   Use threaded FFT (T/F): F
   FFTW WISDOM SUBMENU:
     Use FFTW WISDOM (T/F): T
-    Dir w/ write permission (string): ./
+    # Unset: the compiled-in defaults hold no relative path, and './' would have to
+    # resolve against a directory this file does not have.
+    Dir w/ write permission (string): =MISSING=
   # This mostly contains information on background aerosol concentration; Not too relevant for contrail behavior
   Input background condition (string): =DEFAULT=
   # All parameters here are overwritten in EMISSION INDICES SUBMENU

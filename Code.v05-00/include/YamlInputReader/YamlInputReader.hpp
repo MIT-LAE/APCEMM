@@ -2,7 +2,9 @@
 #define YAMLINPUTREADER_H
 
 #include <algorithm>
+#include <cctype>
 #include <stdexcept>
+#include <string_view>
 #include <yaml-cpp/yaml.h>
 #include <filesystem>
 #include "Core/Input.hpp"
@@ -20,7 +22,9 @@ namespace YamlInputReader{
         "mode were removed, so every PARAMETER MENU entry takes exactly one value. To vary a "
         "parameter, write one input file per value and start one APCEMM process for each.";
 
-    static std::filesystem::path INPUT_FILE_PATH;
+    // Everything about file system paths in an input file lives in YamlPathUtils.hpp:
+    // the resolution rule, the set of keys that hold a path, and the readPath accessor
+    // the menu readers below use.
 
     // Merge default and user provided files, returns a merged YAML::Node
     YAML::Node mergeYamlInputFiles(const vector<string>& filenames);
@@ -45,6 +49,17 @@ namespace YamlInputReader{
     UInt parseScalarUIntParam(const string paramString, const string paramLocation = "");
     Vector_1D parseVectorDoubleString(const string paramString, const string paramLocation = "");
     vector<string> split(const string str, const string delimiter);
+
+    // Case-insensitive compare, used for the option values APCEMM accepts in any case
+    // (e.g. the EPM type). Shared because both the menu readers and the path checks
+    // have to agree on what "external" means.
+    inline bool ichar_equals(char a, char b) {
+        return std::tolower(static_cast<unsigned char>(a)) ==
+               std::tolower(static_cast<unsigned char>(b));
+    }
+    inline bool iequals(std::string_view lhs, std::string_view rhs) {
+        return std::ranges::equal(lhs, rhs, ichar_equals);
+    }
 
     inline string trim(const string str){
         string s = str;
@@ -122,6 +137,5 @@ namespace YamlInputReader{
     }
 
     vector<int> parseVectorIntString(const string paramString, const string paramLocation = "");
-    std::string parseFileSystemPath(std::string str);
 }
 #endif
