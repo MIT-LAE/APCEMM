@@ -45,7 +45,7 @@ namespace YamlInputReader{
             const std::string key = getScalarKey(it.first);
             const bool isNewKey = seenKeys.insert(key).second;
             if (!isNewKey) {
-                std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
+                std::string errorPath = buildKeyPath(currentPath, key);
                 throw std::runtime_error("Duplicate key found in " + source + ": '" + errorPath + "'. Each key must appear only once. Group all the entries of a menu under a single heading.");
             }
         }
@@ -62,7 +62,7 @@ namespace YamlInputReader{
         checkNoDuplicateKeys(node, source, currentPath);
         for (const auto& it : node) {
             const std::string key = getScalarKey(it.first);
-            const std::string nextPath = currentPath.empty() ? key : currentPath + " -> " + key;
+            const std::string nextPath = buildKeyPath(currentPath, key);
             checkNoDuplicateKeysRecursive(it.second, source, nextPath);
         }
     }
@@ -133,7 +133,7 @@ namespace YamlInputReader{
         for (const auto& key : userKeys) {
             if (!defaultKeys.contains(key)) {
                 // The key from the user's YAML does not exist in the default YAML.
-                std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
+                std::string errorPath = buildKeyPath(currentPath, key);
                 if (checkDeprecatedKey(key, errorPath)) {
                     continue;
                 }
@@ -144,7 +144,7 @@ namespace YamlInputReader{
             // Recurse into every map/value to check their validity
             const YAML::Node nextUserNode = userNode[key];
             const YAML::Node nextDefaultNode = defaultNode[key];
-            std::string nextPath = currentPath.empty() ? key : currentPath + " -> " + key;
+            std::string nextPath = buildKeyPath(currentPath, key);
 
             validateYamlKeys(nextDefaultNode, nextUserNode, nextPath);
         }
@@ -165,11 +165,6 @@ namespace YamlInputReader{
             throw std::runtime_error(std::string(e.what()) + " This is not a problem with your input file: check the state of your APCEMM repository.");
         }
 
-        // What each path looked like before it was resolved, so an error can name the
-        // text the user wrote and the file they wrote it in. A later file overwrites an
-        // earlier one, which is what the merge does with the value itself.
-        PathOriginMap origins;
-
         for (auto filename: filenames) {
             YAML::Node userData = YAML::LoadFile(filename);
         
@@ -179,14 +174,10 @@ namespace YamlInputReader{
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Invalid field in YAML input file '" + filename + "': " + e.what());
             }
-            // Resolve before merging: this is the only point where the file a path was
-            // declared in is still known. Resolving after the merge would resolve every
-            // path against whichever file came last.
-            resolvePathsInPlace(userData, std::filesystem::path(filename).parent_path(), filename, origins);
+            // Resolve relative paths against the location of the current input file before merging
+            resolvePathsInPlace(userData, std::filesystem::path(filename).parent_path());
             mergedData = mergeYamlNodes(mergedData, userData);
         }
-
-        checkPathsExist(mergedData, origins);
 
         return mergedData;
     }
@@ -284,8 +275,7 @@ namespace YamlInputReader{
 
         YAML::Node outputSubmenu = simNode["OUTPUT SUBMENU"];
         std::string outputFolder = readPath(outputSubmenu, "Output folder (string)");
-        // Neither sentinel names a folder, and nothing downstream checks them: Main.cpp
-        // would create a directory called "=MISSING=".
+        // Ensure that outputFolder has a real value set by the user
         if (isPathSentinel(outputFolder)) {
             throw std::invalid_argument("No output folder set: 'Output folder (string)' under SIMULATION MENU -> "
                                         "OUTPUT SUBMENU is '" + outputFolder + "'. APCEMM has no default output "

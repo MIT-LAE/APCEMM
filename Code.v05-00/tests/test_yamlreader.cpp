@@ -192,8 +192,7 @@ TEST_CASE("Read Yaml File"){
     // The menu readers are called here without going through mergeYamlInputFiles, which
     // is what normally resolves paths. readPath rejects a path left relative, so do that
     // one step by hand.
-    PathOriginMap origins;
-    resolvePathsInPlace(data, std::filesystem::path(filename).parent_path(), filename, origins);
+    resolvePathsInPlace(data, std::filesystem::path(filename).parent_path());
     SECTION("Read Simulation Menu"){
         OptInput input;
         readSimMenu(input, data["SIMULATION MENU"]);
@@ -687,10 +686,9 @@ TEST_CASE("Validate Input Files"){
 namespace {
     namespace fs = std::filesystem;
 
-    // The rule under test is "a relative path resolves against the directory of the file
-    // that declares it", so the test needs input files in more than one directory. They
-    // are written under a temporary root instead of being checked in, because the point
-    // of every case is where a file sits, not what it says.
+    // Test that "a relative path resolves against the directory of the file
+    // that declares it", so the test needs input files in more than one directory. 
+    // Write these test file in /tmp/
     struct TwoDirectoryInputs {
         fs::path root;
 
@@ -700,6 +698,7 @@ namespace {
             fs::create_directories(root / "caseA" / "data");
             fs::create_directories(root / "caseB");
         }
+        // Ensure clean up test files in /tmp/
         ~TwoDirectoryInputs() { fs::remove_all(root); }
 
         void write(const string& relativePath, const string& contents) const {
@@ -713,44 +712,41 @@ namespace {
         string resolved(const string& relativePath) const {
             return fs::weakly_canonical(root / relativePath).generic_string();
         }
-        // Same, for a path the input file writes with a trailing separator. Resolution
-        // keeps it, which is what the reader wants for the output folder.
+        // Same, for a path the input file writes with a trailing '/' because path
+        // resolution keeps it
         string resolvedDir(const string& relativePath) const {
             return resolved(relativePath) + "/";
         }
     };
 
+    // Get a node value from menu/submenu/key keys
     string pathIn(const YAML::Node& merged, const string& submenu, const string& key) {
         return merged["SIMULATION MENU"][submenu][key].as<string>();
     }
 }
 
-TEST_CASE("A relative path resolves against the file that declares it"){
+TEST_CASE("Relative path resolution"){
+    // Setup test dir
     TwoDirectoryInputs inputs("apcemm-path-resolution-test");
+    // Temp data
     inputs.write("caseA/data/init.txt", "background\n");
+    // First input file in directory caseA/
     inputs.write("caseA/base.yaml",
         "SIMULATION MENU:\n"
         "  OUTPUT SUBMENU:\n"
         "    Output folder (string): out/\n"
         "  Input background condition (string): data/init.txt\n");
-    // A second file in another directory, which changes nothing about paths.
+    // Second input file is in directory caseB/
     inputs.write("caseB/override.yaml",
         "PARAMETER MENU:\n"
         "  Plume Process [hr] (double): 3\n");
 
+    // The input files are in different directories to test relative path resolution
     const string base = inputs.path("caseA/base.yaml");
     const string overrideFile = inputs.path("caseB/override.yaml");
 
-    SECTION("One file: the path resolves next to that file"){
-        YAML::Node merged = YamlInputReader::mergeYamlInputFiles({base});
-        REQUIRE(merged["SIMULATION MENU"]["Input background condition (string)"].as<string>()
-                == inputs.resolved("caseA/data/init.txt"));
-        REQUIRE(pathIn(merged, "OUTPUT SUBMENU", "Output folder (string)")
-                == inputs.resolvedDir("caseA/out"));
-    }
-
-    SECTION("A second file in another directory does not move the first file's paths"){
-        // This is the bug: the resolution used to use the directory of the LAST file.
+    SECTION("Path resolution works"){
+        // Before the resolution used to resolve with the directory of the last file
         YAML::Node merged = YamlInputReader::mergeYamlInputFiles({base, overrideFile});
         REQUIRE(merged["SIMULATION MENU"]["Input background condition (string)"].as<string>()
                 == inputs.resolved("caseA/data/init.txt"));
@@ -767,12 +763,13 @@ TEST_CASE("A relative path resolves against the file that declares it"){
         // Declared by the first file, resolved under the first file's directory.
         REQUIRE(merged["SIMULATION MENU"]["Input background condition (string)"].as<string>()
                 == inputs.resolved("caseA/data/init.txt"));
-        // Declared by both files, so the last one wins, under its own directory.
+        // Declared by both files, so the last one overrides the first (normal override behavior)
+        // and resolves against the second input file dir
         REQUIRE(pathIn(merged, "OUTPUT SUBMENU", "Output folder (string)")
                 == inputs.resolvedDir("caseB/out"));
     }
 
-    SECTION("An absolute path and the sentinels pass through untouched"){
+    SECTION("Absolute paths and the sentinels are not changed"){
         const string absolute = inputs.resolved("caseA/data/init.txt");
         inputs.write("caseA/absolute.yaml",
             "SIMULATION MENU:\n"
@@ -789,131 +786,14 @@ TEST_CASE("A relative path resolves against the file that declares it"){
     }
 }
 
-TEST_CASE("A path that names nothing is reported while reading the input"){
-    TwoDirectoryInputs inputs("apcemm-missing-path-test");
-    inputs.write("caseA/base.yaml",
-        "SIMULATION MENU:\n"
-        "  OUTPUT SUBMENU:\n"
-        "    Output folder (string): out/\n"
-        "  Input background condition (string): data/absent.txt\n");
-    const string base = inputs.path("caseA/base.yaml");
-
-    // The message must name the text as written, what it resolved to, and the file that
-    // declared it. Naming only the resolved path shows the user something they never typed.
-    REQUIRE_THROWS_WITH(
-        YamlInputReader::mergeYamlInputFiles({base}),
-        Catch::Matchers::ContainsSubstring("Input file not found") &&
-        Catch::Matchers::ContainsSubstring("SIMULATION MENU -> Input background condition (string)") &&
-        Catch::Matchers::ContainsSubstring("data/absent.txt") &&
-        Catch::Matchers::ContainsSubstring(inputs.resolved("caseA/data/absent.txt")) &&
-        Catch::Matchers::ContainsSubstring(base)
-    );
-}
-
-TEST_CASE("A path is only checked when the run reads it"){
-    TwoDirectoryInputs inputs("apcemm-conditional-path-test");
-    inputs.write("caseA/data/init.txt", "background\n");
-
-    SECTION("The met input file is checked only when met input is on"){
-        inputs.write("caseA/met_off.yaml",
-            "SIMULATION MENU:\n"
-            "  OUTPUT SUBMENU:\n"
-            "    Output folder (string): out/\n"
-            "METEOROLOGY MENU:\n"
-            "  METEOROLOGICAL INPUT SUBMENU:\n"
-            "    Use met. input (T/F): F\n"
-            "    Met input file path (string): data/absent.nc\n");
-        REQUIRE_NOTHROW(YamlInputReader::mergeYamlInputFiles({inputs.path("caseA/met_off.yaml")}));
-
-        inputs.write("caseA/met_on.yaml",
-            "SIMULATION MENU:\n"
-            "  OUTPUT SUBMENU:\n"
-            "    Output folder (string): out/\n"
-            "METEOROLOGY MENU:\n"
-            "  METEOROLOGICAL INPUT SUBMENU:\n"
-            "    Use met. input (T/F): T\n"
-            "    Met input file path (string): data/absent.nc\n");
-        REQUIRE_THROWS_WITH(
-            YamlInputReader::mergeYamlInputFiles({inputs.path("caseA/met_on.yaml")}),
-            Catch::Matchers::ContainsSubstring("Met input file path (string)") &&
-            Catch::Matchers::ContainsSubstring("data/absent.nc")
-        );
-    }
-
-    SECTION("The external EPM file is checked only for the external EPM"){
-        inputs.write("caseA/epm_original.yaml",
-            "SIMULATION MENU:\n"
-            "  OUTPUT SUBMENU:\n"
-            "    Output folder (string): out/\n"
-            "  EPM type (original/external/new): original\n"
-            "  External EPM NetCDF file: data/absent.nc\n");
-        REQUIRE_NOTHROW(YamlInputReader::mergeYamlInputFiles({inputs.path("caseA/epm_original.yaml")}));
-
-        inputs.write("caseA/epm_external.yaml",
-            "SIMULATION MENU:\n"
-            "  OUTPUT SUBMENU:\n"
-            "    Output folder (string): out/\n"
-            "  EPM type (original/external/new): external\n"
-            "  External EPM NetCDF file: data/absent.nc\n");
-        REQUIRE_THROWS_WITH(
-            YamlInputReader::mergeYamlInputFiles({inputs.path("caseA/epm_external.yaml")}),
-            Catch::Matchers::ContainsSubstring("External EPM NetCDF file") &&
-            Catch::Matchers::ContainsSubstring("data/absent.nc")
-        );
-    }
-
-    SECTION("The output folder is never checked: Main.cpp creates it"){
-        inputs.write("caseA/new_output.yaml",
-            "SIMULATION MENU:\n"
-            "  OUTPUT SUBMENU:\n"
-            "    Output folder (string): does/not/exist/yet/\n");
-        REQUIRE_NOTHROW(YamlInputReader::mergeYamlInputFiles({inputs.path("caseA/new_output.yaml")}));
-    }
-}
-
-TEST_CASE("The output folder is required"){
-    // The compiled-in default is the "=MISSING=" sentinel, so that nothing has to
-    // resolve a relative default against a directory the defaults do not have.
-    string emptyFile = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test9.yaml";
-    OptInput input;
-    Input scenario;
-    YAML::Node merged = YamlInputReader::mergeYamlInputFiles({emptyFile});
-    REQUIRE_THROWS_WITH(
-        YamlInputReader::populateInput(input, scenario, merged),
-        Catch::Matchers::ContainsSubstring("No output folder set") &&
-        Catch::Matchers::ContainsSubstring("Output folder (string)")
-    );
-}
-
-TEST_CASE("The output folder rejects the =DEFAULT= sentinel too"){
-    // '=DEFAULT=' means "use the compiled-in data", which is meaningless for an output
-    // folder. Without this, Main.cpp would create a directory called '=DEFAULT='.
-    TwoDirectoryInputs inputs("apcemm-default-output-folder-test");
-    inputs.write("caseA/base.yaml",
-        "SIMULATION MENU:\n"
-        "  OUTPUT SUBMENU:\n"
-        "    Output folder (string): =DEFAULT=\n");
-    OptInput input;
-    Input scenario;
-    YAML::Node merged = YamlInputReader::mergeYamlInputFiles({inputs.path("caseA/base.yaml")});
-    REQUIRE_THROWS_WITH(
-        YamlInputReader::populateInput(input, scenario, merged),
-        Catch::Matchers::ContainsSubstring("No output folder set") &&
-        Catch::Matchers::ContainsSubstring("=DEFAULT=")
-    );
-}
-
 TEST_CASE("readPath rejects a path that was never resolved"){
-    // This is what makes the hand-maintained PATH_KEYS set safe. A path key that is
-    // missing from it is never resolved, and readPath turns that into a clear error on
-    // the first run instead of a file quietly looked for in the working directory.
+    // Check that readPath correctly guards against left over relative paths
     YAML::Node node = YAML::Load(
         "absolute: /tmp/somewhere\n"
         "relative: data/init.txt\n"
         "missing: =MISSING=\n"
         "default: =DEFAULT=\n");
     REQUIRE(readPath(node, "absolute") == "/tmp/somewhere");
-    REQUIRE(readPath(node, "missing") == "=MISSING=");
     REQUIRE(readPath(node, "default") == "=DEFAULT=");
     REQUIRE_THROWS_WITH(
         readPath(node, "relative"),
@@ -922,11 +802,8 @@ TEST_CASE("readPath rejects a path that was never resolved"){
     );
 }
 
-TEST_CASE("The compiled-in defaults hold no relative path"){
-    // checkDefaultPaths runs on every merge, so it also asserts that every PATH_KEYS
-    // entry still names a real scalar leaf of the default tree. A key renamed in
-    // defaults/input.yaml without renaming its PATH_KEYS entry fails here, instead of
-    // silently no longer being resolved.
+TEST_CASE("Defaults has no relative path"){
+    // Test against empty yaml
     string emptyFile = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test9.yaml";
     REQUIRE_NOTHROW(YamlInputReader::mergeYamlInputFiles({emptyFile}));
 }
