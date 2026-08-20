@@ -664,40 +664,42 @@ namespace FVM_ANDS{
 
     void AdvDiffSystem::semiLagrangianAdvection(double dt, bool parallelAdvection) {
         // 1. Horizontal Advection along X (row by row)
-        #pragma omp parallel for if (parallelAdvection) default(shared) schedule(static)
-        for (int j = 0; j < ny_; ++j) {
-            double u_j = u_double_ - yCoord_[j] * shear_;
-            if (std::abs(u_j) > 1.0e-14) {
-                std::vector<double> row(nx_);
-                for (int i = 0; i < nx_; ++i) {
-                    int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
-                    row[i] = phi_[idx];
-                }
-                double bc_left = bcVals_left_.empty() ? 0.0 : bcVals_left_[j];
-                double bc_right = bcVals_right_.empty() ? 0.0 : bcVals_right_[j];
-                semiLagrangianAdvection1D(row, u_j, dt, dx_, bc_left, bc_right);
-                for (int i = 0; i < nx_; ++i) {
-                    int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
-                    phi_[idx] = row[i];
+        #pragma omp parallel if (parallelAdvection) default(shared)
+        {
+            std::vector<double> row(nx_);
+            #pragma omp for schedule(static)
+            for (int j = 0; j < ny_; ++j) {
+                double u_j = u_double_ - yCoord_[j] * shear_;
+                if (std::abs(u_j) > 1.0e-14) {
+                    for (int i = 0; i < nx_; ++i) {
+                        int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
+                        row[i] = phi_[idx];
+                    }
+                    semiLagrangianAdvection1D(row, u_j, dt, dx_, bcVals_left_[j], bcVals_right_[j]);
+                    for (int i = 0; i < nx_; ++i) {
+                        int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
+                        phi_[idx] = row[i];
+                    }
                 }
             }
         }
 
         // 2. Vertical Advection along Y (column by column)
         if (std::abs(v_double_) > 1.0e-14) {
-            #pragma omp parallel for if (parallelAdvection) default(shared) schedule(static)
-            for (int i = 0; i < nx_; ++i) {
+            #pragma omp parallel if (parallelAdvection) default(shared)
+            {
                 std::vector<double> col(ny_);
-                for (int j = 0; j < ny_; ++j) {
-                    int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
-                    col[j] = phi_[idx];
-                }
-                double bc_bot = bcVals_bot_.empty() ? 0.0 : bcVals_bot_[i];
-                double bc_top = bcVals_top_.empty() ? 0.0 : bcVals_top_[i];
-                semiLagrangianAdvection1D(col, v_double_, dt, dy_, bc_bot, bc_top);
-                for (int j = 0; j < ny_; ++j) {
-                    int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
-                    phi_[idx] = col[j];
+                #pragma omp for schedule(static)
+                for (int i = 0; i < nx_; ++i) {
+                    for (int j = 0; j < ny_; ++j) {
+                        int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
+                        col[j] = phi_[idx];
+                    }
+                    semiLagrangianAdvection1D(col, v_double_, dt, dy_, bcVals_bot_[i], bcVals_top_[i]);
+                    for (int j = 0; j < ny_; ++j) {
+                        int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
+                        phi_[idx] = col[j];
+                    }
                 }
             }
         }
