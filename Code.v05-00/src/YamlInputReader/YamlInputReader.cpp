@@ -87,12 +87,21 @@ namespace YamlInputReader{
             "Chemistry Timestep [min] (double)",
             "Coag. timestep [min] (double)",
             "Temp. Perturb. Timescale (min)",
+            "Ice growth timestep [min] (double)",
         };
         if (deprecatedKeys.contains(key)) {
             std::cout << "WARNING: Deprecated option found: '" << errorPath << "'. This option is no longer used and has no effect." << std::endl;
             return true;
         }
         return false;
+    }
+
+    bool checkAliasedKey(const std::string& key) {
+        static const std::set<std::string> aliasedKeys = {
+            "Transport Timestep [min] (double)",
+            "Transport and ice growth substep [s] (double)",
+        };
+        return aliasedKeys.contains(key);
     }
 
     // Keys that previous versions accepted and that we now reject. Checked
@@ -144,6 +153,9 @@ namespace YamlInputReader{
 
         for (const auto& key : userKeys) {
             if (!defaultKeys.contains(key)) {
+                if (checkAliasedKey(key)) {
+                    continue;
+                }
                 // The key from the user's YAML does not exist in the default YAML.
                 std::string errorPath = currentPath.empty() ? key : currentPath + " -> " + key;
                 if (checkDeprecatedKey(key, errorPath)) {
@@ -186,6 +198,21 @@ namespace YamlInputReader{
                 throw std::runtime_error("Invalid field in YAML input file '" + filename + "': " + e.what());
             }
             INPUT_FILE_PATH = std::filesystem::path(filename);
+
+            // Map legacy aliases if present
+            if (userData["TRANSPORT MENU"]) {
+                if (userData["TRANSPORT MENU"]["Transport Timestep [min] (double)"] && 
+                    !userData["TRANSPORT MENU"]["Outer time step [min] (double)"]) {
+                    userData["TRANSPORT MENU"]["Outer time step [min] (double)"] = 
+                        userData["TRANSPORT MENU"]["Transport Timestep [min] (double)"];
+                }
+                if (userData["TRANSPORT MENU"]["Transport and ice growth substep [s] (double)"] && 
+                    !userData["TRANSPORT MENU"]["Inner physics time step [s] (double)"]) {
+                    userData["TRANSPORT MENU"]["Inner physics time step [s] (double)"] = 
+                        userData["TRANSPORT MENU"]["Transport and ice growth substep [s] (double)"];
+                }
+            }
+
             mergedData = mergeYamlNodes(mergedData, userData);
         }
 
@@ -376,7 +403,29 @@ namespace YamlInputReader{
     void readTransportMenu(OptInput& input, const YAML::Node& transportNode){
         input.TRANSPORT_TRANSPORT = parseBoolString(transportNode["Turn on Transport (T/F)"].as<string>(), "Turn on Transport (T/F)");
         input.TRANSPORT_FILL = parseBoolString(transportNode["Fill Negative Values (T/F)"].as<string>(), "Fill Negative Values (T/F)");
-        input.TRANSPORT_TIMESTEP = parseDoubleString(transportNode["Transport Timestep [min] (double)"].as<string>(), "Transport Timestep [min] (double)");
+        
+        if (transportNode["Outer time step [min] (double)"]) {
+            input.TRANSPORT_TIMESTEP = parseDoubleString(transportNode["Outer time step [min] (double)"].as<string>(), "Outer time step [min] (double)");
+        } else if (transportNode["Transport Timestep [min] (double)"]) {
+            input.TRANSPORT_TIMESTEP = parseDoubleString(transportNode["Transport Timestep [min] (double)"].as<string>(), "Transport Timestep [min] (double)");
+        } else {
+            throw std::invalid_argument("In YamlInputReader::readTransportMenu: Missing 'Outer time step [min] (double)'");
+        }
+
+        if (transportNode["Inner physics time step [s] (double)"]) {
+            input.TRANSPORT_ICE_GROWTH_SUBSTEP = parseDoubleString(transportNode["Inner physics time step [s] (double)"].as<string>(), "Inner physics time step [s] (double)");
+        } else if (transportNode["Transport and ice growth substep [s] (double)"]) {
+            input.TRANSPORT_ICE_GROWTH_SUBSTEP = parseDoubleString(transportNode["Transport and ice growth substep [s] (double)"].as<string>(), "Transport and ice growth substep [s] (double)");
+        } else {
+            input.TRANSPORT_ICE_GROWTH_SUBSTEP = 60.0;
+        }
+
+        if (input.TRANSPORT_ICE_GROWTH_SUBSTEP > input.TRANSPORT_TIMESTEP * 60.0) {
+            throw std::invalid_argument("In YamlInputReader::readTransportMenu: 'Inner physics time step [s]' (" + 
+                                       std::to_string(input.TRANSPORT_ICE_GROWTH_SUBSTEP) + 
+                                       " s) cannot be greater than 'Outer time step [min]' (" + 
+                                       std::to_string(input.TRANSPORT_TIMESTEP * 60.0) + " s)");
+        }
 
         YAML::Node updraftSubmenu = transportNode["PLUME UPDRAFT SUBMENU"];
         input.TRANSPORT_UPDRAFT = parseBoolString(updraftSubmenu["Turn on plume updraft (T/F)"].as<string>(), "Turn on plume updraft (T/F)");
@@ -393,7 +442,9 @@ namespace YamlInputReader{
         input.AEROSOL_COAGULATION_SOLID = parseBoolString(aeroNode["Turn on solid coagulation (T/F)"].as<string>(), "Turn on solid coagulation (T/F)");
         input.AEROSOL_COAGULATION_LIQUID = parseBoolString(aeroNode["Turn on liquid coagulation (T/F)"].as<string>(), "Turn on liquid coagulation (T/F)");
         input.AEROSOL_ICE_GROWTH = parseBoolString(aeroNode["Turn on ice growth (T/F)"].as<string>(), "Turn on ice growth (T/F)");
-        input.AEROSOL_ICE_GROWTH_TIMESTEP = parseDoubleString(aeroNode["Ice growth timestep [min] (double)"].as<string>(), "Ice growth timestep [min] (double)");
+        if (aeroNode["Ice growth timestep [min] (double)"]) {
+            std::cout << "WARNING: 'Ice growth timestep [min] (double)' in input.yaml is deprecated and ignored. Time stepping is now controlled by 'Outer time step [min]' and 'Inner physics time step [s]' under TRANSPORT MENU." << std::endl;
+        }
     }
     void readMetMenu(OptInput& input, const YAML::Node& metNode){
         YAML::Node metInputSubmenu = metNode["METEOROLOGICAL INPUT SUBMENU"];
@@ -445,6 +496,43 @@ namespace YamlInputReader{
         input.ADV_GRID_XLIM_LEFT = parseDoubleString(gridSubmenu["XLIM_LEFT (positive double)"].as<string>(), "XLIM_LEFT (positive double)");
         input.ADV_GRID_YLIM_UP = parseDoubleString(gridSubmenu["YLIM_UP (positive double)"].as<string>(), "YLIM_UP (positive double)");
         input.ADV_GRID_YLIM_DOWN = parseDoubleString(gridSubmenu["YLIM_DOWN (positive double)"].as<string>(), "YLIM_DOWN (positive double)");
+
+        if (gridSubmenu["Target points in plume [-] (int)"]) {
+            input.ADV_GRID_TARGET_PLUME_PTS = parseUIntString(gridSubmenu["Target points in plume [-] (int)"].as<string>(), "Target points in plume [-] (int)");
+        } else {
+            input.ADV_GRID_TARGET_PLUME_PTS = 50;
+        }
+
+        if (gridSubmenu["Min DX [m] (double)"]) {
+            input.ADV_GRID_MIN_DX = parseDoubleString(gridSubmenu["Min DX [m] (double)"].as<string>(), "Min DX [m] (double)");
+        } else {
+            input.ADV_GRID_MIN_DX = 20.0;
+        }
+
+        if (gridSubmenu["Max DX [m] (double)"]) {
+            input.ADV_GRID_MAX_DX = parseDoubleString(gridSubmenu["Max DX [m] (double)"].as<string>(), "Max DX [m] (double)");
+        } else {
+            input.ADV_GRID_MAX_DX = 50.0;
+        }
+
+        if (gridSubmenu["Min DY [m] (double)"]) {
+            input.ADV_GRID_MIN_DY = parseDoubleString(gridSubmenu["Min DY [m] (double)"].as<string>(), "Min DY [m] (double)");
+        } else {
+            input.ADV_GRID_MIN_DY = 5.0;
+        }
+
+        if (gridSubmenu["Max DY [m] (double)"]) {
+            input.ADV_GRID_MAX_DY = parseDoubleString(gridSubmenu["Max DY [m] (double)"].as<string>(), "Max DY [m] (double)");
+        } else {
+            input.ADV_GRID_MAX_DY = 7.0;
+        }
+
+        if (input.ADV_GRID_MIN_DX > input.ADV_GRID_MAX_DX) {
+            throw std::invalid_argument("Min DX [m] cannot be greater than Max DX [m] in GRID SUBMENU!");
+        }
+        if (input.ADV_GRID_MIN_DY > input.ADV_GRID_MAX_DY) {
+            throw std::invalid_argument("Min DY [m] cannot be greater than Max DY [m] in GRID SUBMENU!");
+        }
         
         YAML::Node csizeSubmenu = advancedNode["INITIAL CONTRAIL SIZE SUBMENU"];
         input.ADV_CSIZE_DEPTH_BASE = parseDoubleString(csizeSubmenu["Base Contrail Depth [m] (double)"].as<string>(), "Base Contrail Depth [m] (double)");

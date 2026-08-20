@@ -85,7 +85,8 @@ TRANSPORT MENU:
   Turn on Transport (T/F): T
   # Outdated, not used (was used by spectral solver)
   Fill Negative Values (T/F): T
-  Transport Timestep [min] (double): 1
+  Outer time step [min] (double): 1
+  Inner physics time step [s] (double): 60.0
   # Keep off: not sure of the effect yet + met updraft is included (if met file input)
   PLUME UPDRAFT SUBMENU:
     Turn on plume updraft (T/F): F
@@ -107,7 +108,6 @@ AEROSOL MENU:
   Turn on liquid coagulation (T/F): F
   # Keep on
   Turn on ice growth (T/F): T
-  Ice growth timestep [min] (double): 1
 
 # At least one of "Use met. input", "Impose moist layer depth", or "Impose lapse rate" must be true
 # Imposing moist layer depth will automatically calculate the lapse rate and override the imposed lapse rate
@@ -183,6 +183,11 @@ ADVANCED OPTIONS MENU:
     XLIM_LEFT (positive double): 1.0e+3
     YLIM_UP (positive double): 300
     YLIM_DOWN (positive double): 1.5e+3
+    Target points in plume [-] (int): 50
+    Min DX [m] (double): 20.0
+    Max DX [m] (double): 50.0
+    Min DY [m] (double): 5.0
+    Max DY [m] (double): 7.0
   INITIAL CONTRAIL SIZE SUBMENU:
     #Depth = BaseDepth + DepthScalingFactor * Default_Depth
     #Same formula for width

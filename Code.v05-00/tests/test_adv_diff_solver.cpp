@@ -505,4 +505,120 @@ namespace FVM_ANDS{
         REQUIRE(std::abs(maxy-0.381) < 0.01);
 
     }
+
+    TEST_CASE("Semi-Lagrangian 1D Advection", "[advection]"){
+        SECTION("Pure integer shift right (positive velocity)"){
+            std::vector<double> slice = {1.0, 2.0, 3.0, 4.0, 5.0};
+            double velocity = 3.0; // dx = 1.0, dt = 1.0 -> disp = 3.0 -> shift by 3
+            double dt = 1.0;
+            double ds = 1.0;
+            double bc_left = 0.0;
+            double bc_right = 0.0;
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, bc_left, bc_right);
+            REQUIRE(slice[0] == Catch::Approx(0.0));
+            REQUIRE(slice[1] == Catch::Approx(0.0));
+            REQUIRE(slice[2] == Catch::Approx(0.0));
+            REQUIRE(slice[3] == Catch::Approx(1.0));
+            REQUIRE(slice[4] == Catch::Approx(2.0));
+        }
+
+        SECTION("Pure integer shift left (negative velocity)"){
+            std::vector<double> slice = {1.0, 2.0, 3.0, 4.0, 5.0};
+            double velocity = -2.0; // dx = 1.0, dt = 1.0 -> disp = -2.0 -> shift left by 2
+            double dt = 1.0;
+            double ds = 1.0;
+            double bc_left = 0.0;
+            double bc_right = 0.0;
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, bc_left, bc_right);
+            REQUIRE(slice[0] == Catch::Approx(3.0));
+            REQUIRE(slice[1] == Catch::Approx(4.0));
+            REQUIRE(slice[2] == Catch::Approx(5.0));
+            REQUIRE(slice[3] == Catch::Approx(0.0));
+            REQUIRE(slice[4] == Catch::Approx(0.0));
+        }
+
+        SECTION("Inflow boundary condition padding"){
+            std::vector<double> slice = {1.0, 2.0, 3.0, 4.0, 5.0};
+            double velocity = 2.0;
+            double dt = 1.0;
+            double ds = 1.0;
+            double bc_left = 9.9;
+            double bc_right = 0.0;
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, bc_left, bc_right);
+            REQUIRE(slice[0] == Catch::Approx(9.9));
+            REQUIRE(slice[1] == Catch::Approx(9.9));
+            REQUIRE(slice[2] == Catch::Approx(1.0));
+            REQUIRE(slice[3] == Catch::Approx(2.0));
+            REQUIRE(slice[4] == Catch::Approx(3.0));
+        }
+
+        SECTION("Mass conservation on interior pulse"){
+            int N = 50;
+            std::vector<double> slice(N, 0.0);
+            slice[20] = 1.0;
+            slice[21] = 2.0;
+            slice[22] = 1.0;
+            double initial_mass = 4.0;
+
+            double velocity = 15.5; // moves ~15.5 cells
+            double dt = 1.0;
+            double ds = 1.0;
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, 0.0, 0.0);
+
+            double final_mass = 0.0;
+            for (double val : slice) {
+                final_mass += val;
+            }
+            REQUIRE(final_mass == Catch::Approx(initial_mass).margin(1e-10));
+        }
+    }
+
+    TEST_CASE("Semi-Lagrangian 1D Advection preserves monotonicity", "[advection]"){
+
+        // Monotone non-decreasing profile
+        const std::vector<double> initial = {0.0, 1.0, 3.0, 4.0, 5.0, 5.0};
+        const double dt = 1.0;
+        const double ds = 1.0;
+        const double bc_left = 0.0;
+        const double bc_right = 5.0;
+
+        auto checkMonotonicity = [&](const std::vector<double>& slice){
+            // 1. Values should stay in the range spanned by the initial data and the BCs.
+            for (std::size_t m = 0; m < slice.size(); m++) {
+                INFO("cell " << m << " = " << slice[m]);
+                REQUIRE(slice[m] >= 0.0 - 1e-12);
+                REQUIRE(slice[m] <= 5.0 + 1e-12);
+            }
+
+            // 2. A monotone profile must stay monotone
+            for (std::size_t m = 1; m < slice.size(); m++) {
+                INFO("cells " << m - 1 << ", " << m << " = " << slice[m-1] << ", " << slice[m]);
+                REQUIRE(slice[m] >= slice[m-1] - 1e-12);
+            }
+
+            // 3. Total variation must not increase
+            double tv_initial = 0.0;
+            double tv_final = 0.0;
+            for (std::size_t m = 1; m < slice.size(); m++) {
+                tv_initial += std::abs(initial[m] - initial[m-1]);
+                tv_final += std::abs(slice[m] - slice[m-1]);
+            }
+            INFO("TV before = " << tv_initial << ", TV after = " << tv_final);
+            REQUIRE(tv_final <= tv_initial + 1e-12);
+        };
+
+        SECTION("Fractional CFL 0.80, above the 2/3 TVD limit"){
+            std::vector<double> slice = initial;
+            double velocity = 0.8; // dt = ds = 1 -> no integer shift, fractional CFL = 0.8
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, bc_left, bc_right);
+            checkMonotonicity(slice);
+        }
+
+        SECTION("Fractional CFL 0.60, below the 2/3 TVD limit"){
+            std::vector<double> slice = initial;
+            double velocity = 0.6; // dt = ds = 1 -> no integer shift, fractional CFL = 0.6
+            semiLagrangianAdvection1D(slice, velocity, dt, ds, bc_left, bc_right);
+            checkMonotonicity(slice);
+        }
+    }
 }

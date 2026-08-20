@@ -104,22 +104,34 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         std::cout << "\n - Time step: " << timestepVars_.nTime + 1 << " out of " << timestepVars_.timeArray.size();
         std::cout << "\n -> Solar time: " << std::fmod( timestepVars_.curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
 
-        // Run Transport
-        std::cout << "Running Transport..." << std::endl;
-        bool timeForTransport = (simVars_.TRANSPORT && (timestepVars_.nTime == 0 || timestepVars_.checkTimeForTransport()));
-        if (timeForTransport) {
-            timestepVars_.lastTimeTransport = timestepVars_.curr_Time_s + timestepVars_.dt;
+        // Interleaved Transport and Ice Growth Subcycling over the outer timestep dt
+        if (simVars_.TRANSPORT || simVars_.ICE_GROWTH) {
+            const double dt_step = timestepVars_.dt;
+            const double dt_sub_target = (optInput_.TRANSPORT_ICE_GROWTH_SUBSTEP > 0.0) 
+                                       ? optInput_.TRANSPORT_ICE_GROWTH_SUBSTEP : 60.0;
+            const int n_subcycles = std::max(1, static_cast<int>(std::ceil(dt_step / dt_sub_target)));
+            const double dt_sub = dt_step / n_subcycles;
+
+            std::cout << "Running Transport and ice growth subcycling (" << n_subcycles << " x " << dt_sub << " s)..." << std::endl;
 
             #ifdef ENABLE_TIMING
-            auto transport_start = std::chrono::high_resolution_clock::now();
+            auto subcycling_start = std::chrono::high_resolution_clock::now();
             #endif
 
-            runTransport(timestepVars_.TRANSPORT_DT);
+            for (int sub = 0; sub < n_subcycles; ++sub) {
+                const double t_sub_start = (timestepVars_.curr_Time_s - timestepVars_.tInitial_s) + sub * dt_sub;
+                if (simVars_.TRANSPORT) {
+                    runTransport(dt_sub, t_sub_start);
+                }
+                if (simVars_.ICE_GROWTH) {
+                    iceAerosol_.Grow(dt_sub, H2O_, met_.Temp(), met_.Press());
+                }
+            }
 
             #ifdef ENABLE_TIMING
-            auto transport_end = std::chrono::high_resolution_clock::now();
-            auto transport_duration = std::chrono::duration_cast<std::chrono::milliseconds>(transport_end - transport_start);
-            std::cout << "  Ran transport in " << transport_duration.count() << " ms" << std::endl;
+            auto subcycling_end = std::chrono::high_resolution_clock::now();
+            auto subcycling_duration = std::chrono::duration_cast<std::chrono::milliseconds>(subcycling_end - subcycling_start);
+            std::cout << "  Ran transport & ice growth subcycling in " << subcycling_duration.count() << " ms" << std::endl;
             #endif
         }
 
@@ -133,24 +145,6 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
 
         solarTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.dt / 2.0 ) / 3600.0;
         simTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.dt / 2.0 - timestepVars_.timeArray[0] ) / 3600.0;
-
-        // Run Ice Growth
-        if (simVars_.ICE_GROWTH && timestepVars_.checkTimeForIceGrowth()) {
-            std::cout << "Running ice growth..." << std::endl;
-
-            #ifdef ENABLE_TIMING
-            auto icegrowth_start = std::chrono::high_resolution_clock::now();
-            #endif
-
-            timestepVars_.lastTimeIceGrowth = timestepVars_.curr_Time_s + timestepVars_.dt;
-            iceAerosol_.Grow( timestepVars_.ICE_GROWTH_DT, H2O_, met_.Temp(), met_.Press());
-
-            #ifdef ENABLE_TIMING
-            auto icegrowth_end = std::chrono::high_resolution_clock::now();
-            auto icegrowth_duration = std::chrono::duration_cast<std::chrono::milliseconds>(icegrowth_end - icegrowth_start);
-            std::cout << "  Ran ice growth in " << icegrowth_duration.count() << " ms" << std::endl;
-            #endif
-        }
 
         #ifdef ENABLE_TIMING
         auto tracer_start = std::chrono::high_resolution_clock::now();
@@ -420,10 +414,10 @@ void LAGRIDPlumeModel::initH2O() {
     }
 }
 
-void LAGRIDPlumeModel::updateDiffVecs() {
+void LAGRIDPlumeModel::updateDiffVecs(double time_start, double dt) {
     double dh_enhanced, dv_enhanced;
-    // Update Diffusion
-    PlumeModelUtils::DiffParam( timestepVars_.curr_Time_s - timestepVars_.tInitial_s + timestepVars_.TRANSPORT_DT / 2.0,
+    // Update Diffusion with exact time-averaged diffusivity over the subcycle transport step
+    PlumeModelUtils::DiffParam( time_start, dt,
                                 dh_enhanced, dv_enhanced, input_.horizDiff(), input_.vertiDiff() );
     auto number = iceAerosol_.TotalNumber();
     auto num_max = VectorUtils::max(number);
@@ -439,7 +433,7 @@ void LAGRIDPlumeModel::updateDiffVecs() {
         }
     }
 }
-void LAGRIDPlumeModel::runTransport(double timestep) {
+void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
 
     #ifdef ENABLE_TIMING
     auto start = std::chrono::high_resolution_clock::now();
@@ -455,7 +449,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     }
     shear_rep_ = met_.shear(maxIdx);
 
-    const FVM_ANDS::AdvDiffParams fvmSolverInitParams(0, 0, shear_rep_, input_.horizDiff(), input_.vertiDiff(), timestepVars_.TRANSPORT_DT);
+    const FVM_ANDS::AdvDiffParams fvmSolverInitParams(0, 0, shear_rep_, input_.horizDiff(), input_.vertiDiff(), timestep);
     const FVM_ANDS::BoundaryConditions ZERO_BC_INIT = FVM_ANDS::bcFrom2DVector(iceAerosol_.getPDF()[0], true);
 
     #ifdef ENABLE_TIMING
@@ -466,7 +460,7 @@ void LAGRIDPlumeModel::runTransport(double timestep) {
     start = std::chrono::high_resolution_clock::now();
     #endif
 
-    updateDiffVecs();
+    updateDiffVecs(time_start, timestep);
 
     #ifdef ENABLE_TIMING
     end = std::chrono::high_resolution_clock::now();
@@ -657,9 +651,15 @@ std::pair<LAGRID::twoDGridVariable,LAGRID::twoDGridVariable> LAGRIDPlumeModel::r
     double dx_grid_old = xCoords_[1] - xCoords_[0];
     auto boxGrid = LAGRID::rectToBoxGrid(met_.dy_vec(), dx_grid_old, xEdges_[0], yEdges_[0], phi, mask);
 
-    //Enforce at least x many points in the contrail while limiting minimum/maximum dx and dy
-    double dx_grid_new =  std::max(20.0, std::min((maskInfo.maxX - maskInfo.minX) / 50.0, 50.0));
-    double dy_grid_new = std::max(5.0, std::min((maskInfo.maxY - maskInfo.minY) / 50.0, 7.0));
+    //Enforce at least target points in the contrail while limiting minimum/maximum dx and dy
+    const double target_pts = (optInput_.ADV_GRID_TARGET_PLUME_PTS > 0) ? static_cast<double>(optInput_.ADV_GRID_TARGET_PLUME_PTS) : 50.0;
+    const double min_dx = (optInput_.ADV_GRID_MIN_DX > 0) ? optInput_.ADV_GRID_MIN_DX : 20.0;
+    const double max_dx = (optInput_.ADV_GRID_MAX_DX >= min_dx) ? optInput_.ADV_GRID_MAX_DX : 50.0;
+    const double min_dy = (optInput_.ADV_GRID_MIN_DY > 0) ? optInput_.ADV_GRID_MIN_DY : 5.0;
+    const double max_dy = (optInput_.ADV_GRID_MAX_DY >= min_dy) ? optInput_.ADV_GRID_MAX_DY : 7.0;
+
+    double dx_grid_new =  std::max(min_dx, std::min((maskInfo.maxX - maskInfo.minX) / target_pts, max_dx));
+    double dy_grid_new = std::max(min_dy, std::min((maskInfo.maxY - maskInfo.minY) / target_pts, max_dy));
     //Need 2 extra points account for the buffer
     int nx_new = floor((maskInfo.maxX - maskInfo.minX) / dx_grid_new) + 2;
     int ny_new = floor((maskInfo.maxY - maskInfo.minY) / dy_grid_new) + 2;
@@ -817,9 +817,15 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
     double dx_grid_old = xCoords_[1] - xCoords_[0];
     auto boxGrid = LAGRID::rectToBoxGrid(met_.dy_vec(), dx_grid_old, xEdges_[0], yEdges_[0], phi, mask);
 
-    //Enforce at least x many points in the contrail while limiting minimum/maximum dx and dy
-    double dx_grid_new =  std::max(20.0, std::min((maskInfo.maxX - maskInfo.minX) / 50.0, 50.0));
-    double dy_grid_new = std::max(5.0, std::min((maskInfo.maxY - maskInfo.minY) / 50.0, 7.0));
+    //Enforce at least target points in the contrail while limiting minimum/maximum dx and dy
+    const double target_pts = (optInput_.ADV_GRID_TARGET_PLUME_PTS > 0) ? static_cast<double>(optInput_.ADV_GRID_TARGET_PLUME_PTS) : 50.0;
+    const double min_dx = (optInput_.ADV_GRID_MIN_DX > 0) ? optInput_.ADV_GRID_MIN_DX : 20.0;
+    const double max_dx = (optInput_.ADV_GRID_MAX_DX >= min_dx) ? optInput_.ADV_GRID_MAX_DX : 50.0;
+    const double min_dy = (optInput_.ADV_GRID_MIN_DY > 0) ? optInput_.ADV_GRID_MIN_DY : 5.0;
+    const double max_dy = (optInput_.ADV_GRID_MAX_DY >= min_dy) ? optInput_.ADV_GRID_MAX_DY : 7.0;
+
+    double dx_grid_new =  std::max(min_dx, std::min((maskInfo.maxX - maskInfo.minX) / target_pts, max_dx));
+    double dy_grid_new = std::max(min_dy, std::min((maskInfo.maxY - maskInfo.minY) / target_pts, max_dy));
     //Need 2 extra points account for the buffer
     int nx_new = floor((maskInfo.maxX - maskInfo.minX) / dx_grid_new) + 2;
     int ny_new = floor((maskInfo.maxY - maskInfo.minY) / dy_grid_new) + 2;
