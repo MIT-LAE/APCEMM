@@ -798,8 +798,66 @@ TEST_CASE("readPath rejects a path that was never resolved"){
     );
 }
 
-TEST_CASE("Defaults has no relative path"){
-    // Test against empty yaml
-    string emptyFile = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test9.yaml";
-    REQUIRE_NOTHROW(YamlInputReader::mergeYamlInputFiles({emptyFile}));
+namespace {
+    // Load in the defaults via loading an empty file. This is so that we can mutate
+    // the default yaml for tests here
+    YAML::Node compiledDefaults() {
+        const string emptyFile = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test9.yaml";
+        return YamlInputReader::mergeYamlInputFiles({emptyFile});
+    }
+}
+
+TEST_CASE("checkDefaultPaths guards the compiled-in defaults"){
+    const string pathKey = "Input background condition (string)";
+
+    SECTION("Real defaults pass"){
+        REQUIRE_NOTHROW(checkDefaultPaths(compiledDefaults()));
+    }
+
+    SECTION("A PATH_KEYS entry that is no longer a leaf is rejected"){
+        // Renaming a key in defaults/input.yaml means one of the elements in
+        // PATH_KEYS is not being used, so the path resolution would not occur
+        // for the renamed key.
+        // This test ensures that checkDefaultPaths throws if one of the PATH_KEYS
+        // is not present in the default file. Most likely, this means that a key
+        // was renamed in default/input.yaml but not updated in PATH_KEYS
+        YAML::Node defaults = compiledDefaults();
+        YAML::Node simMenu = defaults["SIMULATION MENU"];
+        REQUIRE(simMenu.remove(pathKey));
+        REQUIRE_THROWS_WITH(
+            checkDefaultPaths(defaults),
+            Catch::Matchers::ContainsSubstring("not a scalar leaf") &&
+            Catch::Matchers::ContainsSubstring("SIMULATION MENU -> " + pathKey)
+        );
+    }
+
+    SECTION("A relative path in the defaults is rejected"){
+        // Paths in the defaults cannot be relative, instead they should be
+        // =MISSING= or =DEFAULT=. Ensure checkDefaultPaths throws if it
+        // finds a relative path
+        YAML::Node defaults = compiledDefaults();
+        defaults["SIMULATION MENU"][pathKey] = "relative/init.txt";
+        REQUIRE_THROWS_WITH(
+            checkDefaultPaths(defaults),
+            Catch::Matchers::ContainsSubstring("relative path") &&
+            Catch::Matchers::ContainsSubstring("relative/init.txt") &&
+            Catch::Matchers::ContainsSubstring("SIMULATION MENU -> " + pathKey)
+        );
+    }
+}
+
+TEST_CASE("An unset output folder is reported while reading the input"){
+    // 'Output folder (string)' is required and the defaults is set to '=MISSING='.
+    // Check that populateInput throws if the output dir is unspecified.
+    // Without this check APCEMM creates a directory named '=MISSING=' in the
+    // working directory.
+    OptInput input;
+    Input scenario;
+    YAML::Node merged = compiledDefaults();
+    REQUIRE_THROWS_WITH(
+        YamlInputReader::populateInput(input, scenario, merged),
+        Catch::Matchers::ContainsSubstring("No output folder set") &&
+        Catch::Matchers::ContainsSubstring("Output folder (string)") &&
+        Catch::Matchers::ContainsSubstring("=MISSING=")
+    );
 }
