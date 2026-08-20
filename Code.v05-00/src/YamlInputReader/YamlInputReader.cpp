@@ -19,6 +19,15 @@ const std::string default_input =
 
 
 namespace YamlInputReader{
+    // Case insensitive string comparison
+    inline bool ichar_equals(char a, char b) {
+        return std::tolower(static_cast<unsigned char>(a)) ==
+               std::tolower(static_cast<unsigned char>(b));
+    }
+    inline bool iequals(std::string_view lhs, std::string_view rhs) {
+        return std::ranges::equal(lhs, rhs, ichar_equals);
+    }
+
     // Helper function to get all keys from a YAML Map node
     std::set<std::string> getYamlKeys(const YAML::Node& node) {
         std::set<std::string> keys;

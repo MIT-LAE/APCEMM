@@ -28,8 +28,8 @@ namespace YamlInputReader{
     // This set needs to be kept up to date with defaults/input.yaml, every path that
     // appears in the default path must also appear here to be checked.
     // To ensure this set is up to date:
-    // checkDefaultPaths() rejects an key in the default/input.yaml
-    // is not in this set so a key rename cannot bypass the check.
+    // checkDefaultPaths() checks that all keys in the PATH_KEYS set
+    // are also in default/input.yaml so a key rename cannot bypass the check.
     // readPath() throws on a value left relative, so a path key missing
     // from this set returns an error instead of potentially resolving against the wrong
     // directory.
@@ -43,7 +43,7 @@ namespace YamlInputReader{
         "METEOROLOGY MENU -> METEOROLOGICAL INPUT SUBMENU -> Met input file path (string)",
     };
 
-    // Sentinal values used in the default/input.yaml
+    // Sentinel values used in the default/input.yaml
     bool isPathSentinel(const std::string& value) {
         return value == "=MISSING=" || value == "=DEFAULT=";
     }
@@ -82,7 +82,13 @@ namespace YamlInputReader{
             // and weakly_canonical() would then leave the result relative.
             const std::filesystem::path base = baseDir.empty() ? std::filesystem::current_path() : baseDir;
             // Update the node value to be the resolved absolute path
-            node[key] = std::filesystem::weakly_canonical(base / written).generic_string();
+            // Direct assignment updates the node inplace
+            std::filesystem::path resolved = std::filesystem::weakly_canonical(base / written);
+            // Normalize trailing / at the end of a directory path
+            if (!resolved.has_filename()) {
+                resolved = resolved.parent_path();
+            }
+            value = resolved.generic_string();
         }
         }
 

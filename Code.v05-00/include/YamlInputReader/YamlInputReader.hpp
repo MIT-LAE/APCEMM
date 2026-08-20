@@ -50,17 +50,6 @@ namespace YamlInputReader{
     Vector_1D parseVectorDoubleString(const string paramString, const string paramLocation = "");
     vector<string> split(const string str, const string delimiter);
 
-    // Case-insensitive compare, used for the option values APCEMM accepts in any case
-    // (e.g. the EPM type). Shared because both the menu readers and the path checks
-    // have to agree on what "external" means.
-    inline bool ichar_equals(char a, char b) {
-        return std::tolower(static_cast<unsigned char>(a)) ==
-               std::tolower(static_cast<unsigned char>(b));
-    }
-    inline bool iequals(std::string_view lhs, std::string_view rhs) {
-        return std::ranges::equal(lhs, rhs, ichar_equals);
-    }
-
     inline string trim(const string str){
         string s = str;
         //trim left

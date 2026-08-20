@@ -712,11 +712,6 @@ namespace {
         string resolved(const string& relativePath) const {
             return fs::weakly_canonical(root / relativePath).generic_string();
         }
-        // Same, for a path the input file writes with a trailing '/' because path
-        // resolution keeps it
-        string resolvedDir(const string& relativePath) const {
-            return resolved(relativePath) + "/";
-        }
     };
 
     // Get a node value from menu/submenu/key keys
@@ -750,8 +745,9 @@ TEST_CASE("Relative path resolution"){
         YAML::Node merged = YamlInputReader::mergeYamlInputFiles({base, overrideFile});
         REQUIRE(merged["SIMULATION MENU"]["Input background condition (string)"].as<string>()
                 == inputs.resolved("caseA/data/init.txt"));
+        // 'out/' is written with a trailing '/', resolution drops it.
         REQUIRE(pathIn(merged, "OUTPUT SUBMENU", "Output folder (string)")
-                == inputs.resolvedDir("caseA/out"));
+                == inputs.resolved("caseA/out"));
     }
 
     SECTION("Each file's own paths resolve against its own directory"){
@@ -766,7 +762,7 @@ TEST_CASE("Relative path resolution"){
         // Declared by both files, so the last one overrides the first (normal override behavior)
         // and resolves against the second input file dir
         REQUIRE(pathIn(merged, "OUTPUT SUBMENU", "Output folder (string)")
-                == inputs.resolvedDir("caseB/out"));
+                == inputs.resolved("caseB/out"));
     }
 
     SECTION("Absolute paths and the sentinels are not changed"){
