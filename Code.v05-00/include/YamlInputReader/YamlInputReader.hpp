@@ -22,9 +22,6 @@ namespace YamlInputReader{
         "mode were removed, so every PARAMETER MENU entry takes exactly one value. To vary a "
         "parameter, write one input file per value and start one APCEMM process for each.";
 
-    // Everything about file system paths in an input file lives in YamlPathUtils.hpp:
-    // the resolution rule, the set of keys that hold a path, and the readPath accessor
-    // the menu readers below use.
 
     // Merge default and user provided files, returns a merged YAML::Node
     YAML::Node mergeYamlInputFiles(const vector<string>& filenames);

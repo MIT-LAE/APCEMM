@@ -35,11 +35,11 @@ namespace YamlInputReader{
     // directory.
     static const std::set<std::string> PATH_KEYS = {
         "SIMULATION MENU -> OUTPUT SUBMENU -> Output folder (string)",
-        "SIMULATION MENU -> FFTW WISDOM SUBMENU -> Dir w/ write permission (string)",  // removed by TASK-56
+        "SIMULATION MENU -> FFTW WISDOM SUBMENU -> Dir w/ write permission (string)",
         "SIMULATION MENU -> Input background condition (string)",
         "SIMULATION MENU -> Input engine emissions (string)",
         "SIMULATION MENU -> External EPM NetCDF file",
-        "CHEMISTRY MENU -> Photolysis rates folder (string)",                          // removed by TASK-56
+        "CHEMISTRY MENU -> Photolysis rates folder (string)",
         "METEOROLOGY MENU -> METEOROLOGICAL INPUT SUBMENU -> Met input file path (string)",
     };
 
@@ -93,7 +93,7 @@ namespace YamlInputReader{
         }
 
         // Get a value from the YAML node tree from a key path but as a vector of keys e.g.
-        // ['METEOROLOGY MENU', 'METEOROLOGICAL INPUT SUBMENU' 'Met input file path (string)'
+        // ['METEOROLOGY MENU', 'METEOROLOGICAL INPUT SUBMENU' 'Met input file path (string)']
         std::string getValueFromKeyPath(const YAML::Node& node, const std::vector<std::string>& keys, std::size_t depth) {
             if (depth == keys.size()) {
                 return node.IsScalar() ? node.as<std::string>() : "";
