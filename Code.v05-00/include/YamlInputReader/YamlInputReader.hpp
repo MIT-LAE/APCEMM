@@ -29,6 +29,11 @@ namespace YamlInputReader{
     // Fill OptInput and Input from an already merged node.
     void populateInput(OptInput& input, Input& scenario, const YAML::Node& merged);
 
+    // Rewrite the seed of a merged node to the seed the run actually used, so that
+    // re-running APCEMM on the written node reproduces the run. Sets
+    // 'Force seed value (T/F)' to T and 'Seed value (positive int)' to seed.
+    void recordEffectiveSeed(YAML::Node& node, unsigned int seed);
+
     // Write a node to outputDir/filename. The directory must already exist.
     void writeYaml(const YAML::Node& node, const std::filesystem::path& outputDir, const string& filename);
 

@@ -482,6 +482,30 @@ TEST_CASE("mergeYamlInputFiles resolves defaults and overrides into one node"){
     REQUIRE(merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Force seed value (T/F)"].as<string>() == "F");
 }
 
+TEST_CASE("recordEffectiveSeed updates seed submenu"){
+    string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
+    YAML::Node merged = YamlInputReader::mergeYamlInputFiles({filename});
+    // Verify that the default is an unforced seed otherwise the rest of the test is useless
+    REQUIRE(merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Force seed value (T/F)"].as<string>() == "F");
+
+    SECTION("The seed submenu is rewritten in place"){
+        YamlInputReader::recordEffectiveSeed(merged, 1755792000);
+
+        // Verify that the node is correctly updated
+        YAML::Node seedSubmenu = merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"];
+        REQUIRE(seedSubmenu["Force seed value (T/F)"].as<string>() == "T");
+        REQUIRE(seedSubmenu["Seed value (positive int)"].as<string>() == "1755792000");
+
+        // Sanity check that if we recreate an input from the new node
+        // the seed menu is correct
+        OptInput input;
+        Input scenario;
+        YamlInputReader::populateInput(input, scenario, merged);
+        REQUIRE(input.SIMULATION_FORCE_SEED == true);
+        REQUIRE(input.SIMULATION_SEED_VALUE == 1755792000);
+    }
+}
+
 TEST_CASE("writeYaml round trip"){
     string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
     YAML::Node merged = YamlInputReader::mergeYamlInputFiles({filename});

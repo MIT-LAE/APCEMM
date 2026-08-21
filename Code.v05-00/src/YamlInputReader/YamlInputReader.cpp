@@ -253,6 +253,14 @@ namespace YamlInputReader{
         }
     }
 
+    // Overwrite both seed fields with the actual seed used so the saved merged input file
+    // can exactly reproduce the run.
+    void recordEffectiveSeed(YAML::Node& node, unsigned int seed){
+        YAML::Node seedSubmenu = node["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"];
+        seedSubmenu["Force seed value (T/F)"] = "T";
+        seedSubmenu["Seed value (positive int)"] = seed;
+    }
+
     // Output dir must exist before calling this
     void writeYaml(const YAML::Node& node, const std::filesystem::path& outputDir, const string& filename){
         const std::filesystem::path fullPath = outputDir / filename;
@@ -318,10 +326,7 @@ namespace YamlInputReader{
 
         YAML::Node seedSubmenu = simNode["RANDOM NUMBER GENERATION SUBMENU"];
         input.SIMULATION_FORCE_SEED = parseBoolString(seedSubmenu["Force seed value (T/F)"].as<string>(), "Force seed value (T/F)");
-        input.SIMULATION_SEED_VALUE = parseIntString(seedSubmenu["Seed value (positive int)"].as<string>(), "Seed value (positive int)");
-        if(input.SIMULATION_SEED_VALUE < 0){
-            throw std::invalid_argument("Seed value (under SIMULATION MENU) cannot be less than 0!");
-        }
+        input.SIMULATION_SEED_VALUE = parseScalarUIntParam(seedSubmenu["Seed value (positive int)"].as<string>(), "Seed value (positive int)");
 
         string epm =
             simNode["EPM type (original/external/new)"].as<string>();
