@@ -32,6 +32,7 @@ namespace YamlInputReader{
     // Rewrite the seed of a merged node to the seed the run actually used, so that
     // re-running APCEMM on the written node reproduces the run. Sets
     // 'Force seed value (T/F)' to T and 'Seed value (positive int)' to seed.
+    // Throws if the node does not already carry that submenu and both keys.
     void recordEffectiveSeed(YAML::Node& node, unsigned int seed);
 
     // Write a node to outputDir/filename. The directory must already exist.
