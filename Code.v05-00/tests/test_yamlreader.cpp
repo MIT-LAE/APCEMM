@@ -1,7 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <filesystem>
+#include <fstream>
 #include <Util/YamlUtils.hpp>
 #include <YamlInputReader/YamlInputReader.hpp>
+#include <YamlInputReader/YamlPathUtils.hpp>
 #include <Core/Input.hpp>
 #include "Core/OutputFilenames.hpp"
 #include "APCEMM.h"
@@ -186,6 +189,10 @@ TEST_CASE("Read Yaml File"){
     string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test.yaml";
 
     YAML::Node data = YAML::LoadFile(filename);
+    // The menu readers are called here without going through mergeYamlInputFiles, which
+    // is what normally resolves paths. readPath rejects a path left relative, so do that
+    // one step by hand.
+    resolvePathsInPlace(data, std::filesystem::path(filename).parent_path());
     SECTION("Read Simulation Menu"){
         OptInput input;
         readSimMenu(input, data["SIMULATION MENU"]);
@@ -613,10 +620,13 @@ TEST_CASE("Validate Input Files"){
     }
 
     SECTION("Empty input file stays valid"){
+        // The file stays empty on purpose, so it cannot set the required output folder
+        // and cannot reach populateInput. What it tests is that the merge accepts it and
+        // leaves every compiled default in place.
         YAML::Node merged;
         REQUIRE_NOTHROW(merged = YamlInputReader::mergeYamlInputFiles({filename7}));
-        REQUIRE_NOTHROW(YamlInputReader::populateInput(input, scenario, merged));
-        REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
+        REQUIRE(merged["SIMULATION MENU"]["SAVE FORWARD RESULTS SUBMENU"]["netCDF filename format (string)"].as<string>() == "APCEMM_Case_*");
+        REQUIRE(merged["SIMULATION MENU"]["OUTPUT SUBMENU"]["Output folder (string)"].as<string>() == "=MISSING=");
     }
 
     SECTION("Document root is a bare value"){
@@ -671,4 +681,183 @@ TEST_CASE("Validate Input Files"){
             Catch::Matchers::ContainsSubstring("test12.yaml")
         );
     }
+}
+
+namespace {
+    namespace fs = std::filesystem;
+
+    // Test that "a relative path resolves against the directory of the file
+    // that declares it", so the test needs input files in more than one directory. 
+    // Write these test file in /tmp/
+    struct TwoDirectoryInputs {
+        fs::path root;
+
+        explicit TwoDirectoryInputs(const string& name)
+            : root(fs::temp_directory_path() / name) {
+            fs::remove_all(root);
+            fs::create_directories(root / "caseA" / "data");
+            fs::create_directories(root / "caseB");
+        }
+        // Ensure clean up test files in /tmp/
+        ~TwoDirectoryInputs() { fs::remove_all(root); }
+
+        void write(const string& relativePath, const string& contents) const {
+            std::ofstream out(root / relativePath);
+            out << contents;
+        }
+        string path(const string& relativePath) const {
+            return (root / relativePath).string();
+        }
+        // What the resolution rule must produce for a path written in a given file.
+        string resolved(const string& relativePath) const {
+            return fs::weakly_canonical(root / relativePath).generic_string();
+        }
+    };
+
+    // Get a node value from menu/submenu/key keys
+    string pathIn(const YAML::Node& merged, const string& submenu, const string& key) {
+        return merged["SIMULATION MENU"][submenu][key].as<string>();
+    }
+}
+
+TEST_CASE("Relative path resolution"){
+    // Setup test dir
+    TwoDirectoryInputs inputs("apcemm-path-resolution-test");
+    // Temp data
+    inputs.write("caseA/data/init.txt", "background\n");
+    // First input file in directory caseA/
+    inputs.write("caseA/base.yaml",
+        "SIMULATION MENU:\n"
+        "  OUTPUT SUBMENU:\n"
+        "    Output folder (string): out/\n"
+        "  Input background condition (string): data/init.txt\n");
+    // Second input file is in directory caseB/
+    inputs.write("caseB/override.yaml",
+        "PARAMETER MENU:\n"
+        "  Plume Process [hr] (double): 3\n");
+
+    // The input files are in different directories to test relative path resolution
+    const string base = inputs.path("caseA/base.yaml");
+    const string overrideFile = inputs.path("caseB/override.yaml");
+
+    SECTION("Path resolution works"){
+        // Before the resolution used to resolve with the directory of the last file
+        YAML::Node merged = YamlInputReader::mergeYamlInputFiles({base, overrideFile});
+        REQUIRE(merged["SIMULATION MENU"]["Input background condition (string)"].as<string>()
+                == inputs.resolved("caseA/data/init.txt"));
+        // 'out/' is written with a trailing '/', resolution drops it.
+        REQUIRE(pathIn(merged, "OUTPUT SUBMENU", "Output folder (string)")
+                == inputs.resolved("caseA/out"));
+    }
+
+    SECTION("Each file's own paths resolve against its own directory"){
+        inputs.write("caseB/override.yaml",
+            "SIMULATION MENU:\n"
+            "  OUTPUT SUBMENU:\n"
+            "    Output folder (string): out/\n");
+        YAML::Node merged = YamlInputReader::mergeYamlInputFiles({base, overrideFile});
+        // Declared by the first file, resolved under the first file's directory.
+        REQUIRE(merged["SIMULATION MENU"]["Input background condition (string)"].as<string>()
+                == inputs.resolved("caseA/data/init.txt"));
+        // Declared by both files, so the last one overrides the first (normal override behavior)
+        // and resolves against the second input file dir
+        REQUIRE(pathIn(merged, "OUTPUT SUBMENU", "Output folder (string)")
+                == inputs.resolved("caseB/out"));
+    }
+
+    SECTION("Absolute paths and the sentinels are not changed"){
+        const string absolute = inputs.resolved("caseA/data/init.txt");
+        inputs.write("caseA/absolute.yaml",
+            "SIMULATION MENU:\n"
+            "  OUTPUT SUBMENU:\n"
+            "    Output folder (string): " + absolute + "\n"
+            "  Input background condition (string): " + absolute + "\n"
+            "  Input engine emissions (string): =DEFAULT=\n"
+            "  External EPM NetCDF file: =MISSING=\n");
+        YAML::Node merged = YamlInputReader::mergeYamlInputFiles({inputs.path("caseA/absolute.yaml")});
+        REQUIRE(pathIn(merged, "OUTPUT SUBMENU", "Output folder (string)") == absolute);
+        REQUIRE(merged["SIMULATION MENU"]["Input background condition (string)"].as<string>() == absolute);
+        REQUIRE(merged["SIMULATION MENU"]["Input engine emissions (string)"].as<string>() == "=DEFAULT=");
+        REQUIRE(merged["SIMULATION MENU"]["External EPM NetCDF file"].as<string>() == "=MISSING=");
+    }
+}
+
+TEST_CASE("readPath rejects a path that was never resolved"){
+    // Check that readPath correctly guards against left over relative paths
+    YAML::Node node = YAML::Load(
+        "absolute: /tmp/somewhere\n"
+        "relative: data/init.txt\n"
+        "missing: =MISSING=\n"
+        "default: =DEFAULT=\n");
+    REQUIRE(readPath(node, "absolute") == "/tmp/somewhere");
+    REQUIRE(readPath(node, "default") == "=DEFAULT=");
+    REQUIRE_THROWS_WITH(
+        readPath(node, "relative"),
+        Catch::Matchers::ContainsSubstring("still relative") &&
+        Catch::Matchers::ContainsSubstring("PATH_KEYS")
+    );
+}
+
+namespace {
+    // Load in the defaults via loading an empty file. This is so that we can mutate
+    // the default yaml for tests here
+    YAML::Node compiledDefaults() {
+        const string emptyFile = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test9.yaml";
+        return YamlInputReader::mergeYamlInputFiles({emptyFile});
+    }
+}
+
+TEST_CASE("checkDefaultPaths guards the compiled-in defaults"){
+    const string pathKey = "Input background condition (string)";
+
+    SECTION("Real defaults pass"){
+        REQUIRE_NOTHROW(checkDefaultPaths(compiledDefaults()));
+    }
+
+    SECTION("A PATH_KEYS entry that is no longer a leaf is rejected"){
+        // Renaming a key in defaults/input.yaml means one of the elements in
+        // PATH_KEYS is not being used, so the path resolution would not occur
+        // for the renamed key.
+        // This test ensures that checkDefaultPaths throws if one of the PATH_KEYS
+        // is not present in the default file. Most likely, this means that a key
+        // was renamed in default/input.yaml but not updated in PATH_KEYS
+        YAML::Node defaults = compiledDefaults();
+        YAML::Node simMenu = defaults["SIMULATION MENU"];
+        REQUIRE(simMenu.remove(pathKey));
+        REQUIRE_THROWS_WITH(
+            checkDefaultPaths(defaults),
+            Catch::Matchers::ContainsSubstring("not a scalar leaf") &&
+            Catch::Matchers::ContainsSubstring("SIMULATION MENU -> " + pathKey)
+        );
+    }
+
+    SECTION("A relative path in the defaults is rejected"){
+        // Paths in the defaults cannot be relative, instead they should be
+        // =MISSING= or =DEFAULT=. Ensure checkDefaultPaths throws if it
+        // finds a relative path
+        YAML::Node defaults = compiledDefaults();
+        defaults["SIMULATION MENU"][pathKey] = "relative/init.txt";
+        REQUIRE_THROWS_WITH(
+            checkDefaultPaths(defaults),
+            Catch::Matchers::ContainsSubstring("relative path") &&
+            Catch::Matchers::ContainsSubstring("relative/init.txt") &&
+            Catch::Matchers::ContainsSubstring("SIMULATION MENU -> " + pathKey)
+        );
+    }
+}
+
+TEST_CASE("An unset output folder is reported while reading the input"){
+    // 'Output folder (string)' is required and the defaults is set to '=MISSING='.
+    // Check that populateInput throws if the output dir is unspecified.
+    // Without this check APCEMM creates a directory named '=MISSING=' in the
+    // working directory.
+    OptInput input;
+    Input scenario;
+    YAML::Node merged = compiledDefaults();
+    REQUIRE_THROWS_WITH(
+        YamlInputReader::populateInput(input, scenario, merged),
+        Catch::Matchers::ContainsSubstring("No output folder set") &&
+        Catch::Matchers::ContainsSubstring("Output folder (string)") &&
+        Catch::Matchers::ContainsSubstring("=MISSING=")
+    );
 }

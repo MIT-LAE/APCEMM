@@ -1,5 +1,9 @@
 # Test that the removed multi-case runs correctly fail with 
 # the migration message, each entry now takes exactly one value
+SIMULATION MENU:
+  OUTPUT SUBMENU:
+    Output folder (string): ./
+
 PARAMETER MENU:
   METEOROLOGICAL PARAMETERS SUBMENU:
     Pressure [hPa] (double): 220 230 240

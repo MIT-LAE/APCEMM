@@ -17,4 +17,8 @@ const std::string getScalarKey(const YAML::Node& key);
 
 const YAML::Node mergeYamlNodes(const YAML::Node& defaults, const YAML::Node& overrides);
 
+inline const std::string buildKeyPath(const std::string& currentPath, const std::string& key){
+    return currentPath.empty() ? key : currentPath + " -> " + key;
+}
+
 #endif // YAMLUTILS_H_

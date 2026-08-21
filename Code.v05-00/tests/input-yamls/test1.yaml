@@ -9,8 +9,8 @@ SIMULATION MENU:
   FFTW WISDOM SUBMENU:
     Use FFTW WISDOM (T/F): T
     Dir w/ write permission (string): ./
-  Input background condition (string): ../../input_data/init.txt
-  Input engine emissions (string): ../../input_data/ENG_EI.txt
+  Input background condition (string): ../../../input_data/init.txt
+  Input engine emissions (string): ../../../input_data/ENG_EI.txt
   SAVE FORWARD RESULTS SUBMENU:
     Save forward results (T/F): T
     netCDF filename format (string): APCEMM_Case_*

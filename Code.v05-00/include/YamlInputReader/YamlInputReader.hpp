@@ -2,7 +2,9 @@
 #define YAMLINPUTREADER_H
 
 #include <algorithm>
+#include <cctype>
 #include <stdexcept>
+#include <string_view>
 #include <yaml-cpp/yaml.h>
 #include <filesystem>
 #include "Core/Input.hpp"
@@ -20,7 +22,6 @@ namespace YamlInputReader{
         "mode were removed, so every PARAMETER MENU entry takes exactly one value. To vary a "
         "parameter, write one input file per value and start one APCEMM process for each.";
 
-    static std::filesystem::path INPUT_FILE_PATH;
 
     // Merge default and user provided files, returns a merged YAML::Node
     YAML::Node mergeYamlInputFiles(const vector<string>& filenames);
@@ -122,6 +123,5 @@ namespace YamlInputReader{
     }
 
     vector<int> parseVectorIntString(const string paramString, const string paramLocation = "");
-    std::string parseFileSystemPath(std::string str);
 }
 #endif

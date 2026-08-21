@@ -15,6 +15,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 #include "Util/PhysConstant.hpp"
 #include "Core/Engine.hpp"
 
@@ -47,10 +48,11 @@ Engine::Engine(std::string engineName, std::string engineFileName,
   } else {
     std::ifstream engineFile(engineFileName);
     if (!engineFile) {
-      std::string const currFunc("Engine::Engine");
-      std::cout << "ERROR: In " << currFunc << ": Cannot read ("
-                << engineFileName << ")" << std::endl;
-      return;
+      throw std::runtime_error(
+          "Cannot open the engine emissions file '" + engineFileName +
+          "'. It is set by 'Input engine emissions (string)' under SIMULATION MENU. "
+          "A relative path is resolved against the directory of the input file that "
+          "sets it. Use '=DEFAULT=' for the emissions data compiled into APCEMM.");
     }
 
     foundEngine =

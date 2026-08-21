@@ -12,6 +12,7 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include <fstream>
+#include <stdexcept>
 
 #include "KPP/KPP.hpp"
 #include "KPP/KPP_Parameters.h"
@@ -209,9 +210,12 @@ void Solution::readInputBackgroundConditions(const Input& input, Vector_1D& amb_
     } else {
         std::ifstream file(fileName);
         if (!file) {
-            std::cout << "ERROR: In Structure::Initialize: Can't read (" << fileName
-                      << ")" << std::endl;
-            exit(-1);
+            throw std::runtime_error(
+                "Cannot open the background condition file '" + fileName +
+                "'. It is set by 'Input background condition (string)' under SIMULATION "
+                "MENU. A relative path is resolved against the directory of the input "
+                "file that sets it. Use '=DEFAULT=' for the background data compiled "
+                "into APCEMM.");
         }
 
         processInputBackgroundLine(file, amb_Value, aer_Value);
