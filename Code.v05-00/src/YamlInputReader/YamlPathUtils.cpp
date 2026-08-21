@@ -78,8 +78,16 @@ namespace YamlInputReader{
             if (written.is_absolute()) {
                 continue;
             }
-            // parent_path() is empty when the input file is named without a directory,
-            // and weakly_canonical() would then leave the result relative.
+            // baseDir is computed using std::filesystem::parent_path(input_file_path).
+            // It is empty when the input file was named without a directory (e.g. passed
+            // to APCEMM as './path/to/APCEMM input.yaml'). This means that when baseDir is empty,
+            // the input file is in the same dir as the current working directory (assuming no
+            // part of APCEMM changes the CWD which is true).
+            // weakly_canonical() only makes absolute the leading portion of the path that
+            // already exists. A value whose first element does not exist yet, such as an
+            // output folder APCEMM creates later (APCEMM_out/ in input.yaml in CWD), stays
+            // relative and readPath() then rejects it.
+            // Set the base explicitly so the result is absolute either way.
             const std::filesystem::path base = baseDir.empty() ? std::filesystem::current_path() : baseDir;
             // Update the node value to be the resolved absolute path
             // Direct assignment updates the node inplace
