@@ -16,9 +16,10 @@
 #include "Util/MC_Rand.hpp"
 #include "Core/Input_Mod.hpp"
 
-void setSeed(OptInput& input) {
+unsigned int setSeed(OptInput& input) {
 
-    // Sets seed for pseudo-random generator and updates OptInput
+    // Sets the seed of the pseudo-random generator, stores it in OptInput and returns
+    // it, so the caller can record the seed the run actually used.
     #ifdef DEBUG
         // With DEBUG compile flag set a constant seed for reproducibility
         input.SIMULATION_SEED_VALUE = 0;
@@ -34,6 +35,7 @@ void setSeed(OptInput& input) {
     #endif
 
     srand(input.SIMULATION_SEED_VALUE);
+    return input.SIMULATION_SEED_VALUE;
 } /* End of setSeed */
 
 template <typename T>

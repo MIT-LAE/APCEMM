@@ -267,7 +267,7 @@ namespace YamlInputReader{
         // Only happens if the RNG submenu is changed and keys are not updated here
         const YAML::Node& readOnly = node;
         const YAML::Node existing = readOnly["SIMULATION MENU"][submenuKey];
-        if (!existing.IsMap() || !existing[forceKey].IsDefined() || !existing[seedKey].IsDefined()){
+        if (!existing.IsDefined() || !existing.IsMap() || !existing[forceKey].IsDefined() || !existing[seedKey].IsDefined()){
             throw std::runtime_error("Cannot record the effective seed: 'SIMULATION MENU -> "
                                      + submenuKey + "' with keys '" + forceKey + "' and '"
                                      + seedKey + "' is missing from the merged input.");
