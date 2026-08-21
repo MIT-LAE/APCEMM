@@ -104,9 +104,8 @@ int main( int argc, char* argv[])
         Diag::set_storePSD(true);
     }
 
-    // Set the seed once at the top-level and keep the seed that was used, to save
-    // it in the merged input file output
-    const unsigned int effectiveSeed = setSeed( Input_Opt );
+    // Set the seed once at the top-level
+    setSeed( Input_Opt );
 
     if ( folderIsOccupied( Input_Opt.SIMULATION_OUTPUT_FOLDER ) \
             && !Input_Opt.SIMULATION_OVERWRITE ) {
@@ -142,7 +141,7 @@ int main( int argc, char* argv[])
     }
 
     // Write merged YAML input files to output directory, with the seed this run used
-    YamlInputReader::recordEffectiveSeed( mergedInput, effectiveSeed );
+    YamlInputReader::recordEffectiveSeed( mergedInput, Input_Opt.SIMULATION_SEED_VALUE );
     YamlInputReader::writeYaml( mergedInput, Input_Opt.SIMULATION_OUTPUT_FOLDER, OutputFiles::MERGED_YAML );
 
     /* The switch is a placeholder for future models. Only the plume model is

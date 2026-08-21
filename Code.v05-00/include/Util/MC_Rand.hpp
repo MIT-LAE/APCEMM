@@ -17,8 +17,8 @@
 #include <cstdlib>
 #include "Core/Input_Mod.hpp"
 
-// Set seed for pseudo-random generator and return the seed it was given/set.
-unsigned int setSeed(const OptInput& input);
+// Set seed for pseudo-random generator
+void setSeed(OptInput& input);
 
 /* Generates a random number of type T between fMin and fMax */
 template <typename T>
