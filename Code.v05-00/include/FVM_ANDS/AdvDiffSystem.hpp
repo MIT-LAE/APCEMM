@@ -11,6 +11,77 @@ namespace FVM_ANDS{
     // Separate the SOR solver for testing without having to build an AdvDiffSystem object
     void sor_solve(const Eigen::SparseMatrix<double, Eigen::RowMajor> &A, const Eigen::VectorXd &rhs, Eigen::VectorXd &phi, double omega = 1.0, double threshold = 1e-3, int n_iters = 3);
 
+    /**
+     * @brief 1D Flux-Form Semi-Lagrangian (FFSL) advection with Lax-Wendroff TVD subgrid reconstruction.
+     *
+     * @details
+     * Solves the 1D linear advection equation for a scalar field \f$\phi(s, t)\f$:
+     * \f[
+     *   \frac{\partial \phi}{\partial t} + v \frac{\partial \phi}{\partial s} = 0
+     * \f]
+     * across a uniform grid with spacing \f$\Delta s\f$ and arbitrary timestep \f$\Delta t\f$ without CFL restrictions.
+     *
+     * ### Method Overview
+     *
+     * The method combines two key concepts from atmospheric transport and hyperbolic conservation laws:
+     *
+     * 1. **Integer-Shift Trajectory Decomposition (Ritchie, 1986)**:
+     *    The advective displacement \f$\Delta s_{\text{total}} = v \Delta t\f$ is decomposed into an integer
+     *    grid-cell translation \f$k\f$ and a subgrid residual displacement \f$\delta s\f$:
+     *    \f[
+     *      k = \left\lfloor \frac{|v| \Delta t}{\Delta s} \right\rfloor \in \mathbb{Z}_{\ge 0}, \quad
+     *      \delta s = |v| \Delta t - k \Delta s \in [0, \Delta s)
+     *    \f]
+     *    The fractional Courant number is \f$c_{\text{frac}} = \frac{\delta s}{\Delta s} \in [0, 1)\f$,
+     *    and the residual timestep is \f$\Delta t_{\text{rem}} = \frac{\delta s}{|v|}\f$.
+     *    - For \f$v > 0\f$: cells are shifted rightward by \f$k\f$ positions (\f$\phi_m \leftarrow \phi_{m-k}\f$),
+     *      with inflow \f$m \in [0, k-1]\f$ padded by \f$\text{bc\_left}\f$.
+     *    - For \f$v < 0\f$: cells are shifted leftward by \f$k\f$ positions (\f$\phi_m \leftarrow \phi_{m+k}\f$),
+     *      with inflow \f$m \in [N-k, N-1]\f$ padded by \f$\text{bc\_right}\f$.
+     *
+     * 2. **Flux-Form Subgrid Advection with TVD Limiter (Lin & Rood, 1996; LeVeque, 2002)**:
+     *    The remaining subgrid displacement is evolved via a single-step conservative finite-volume update:
+     *    \f[
+     *      \phi_m^{n+1} = \phi_m^n - c_{\text{frac}} \left( F_{m+1/2} - F_{m-1/2} \right)
+     *    \f]
+     *    To maintain second-order accuracy in time and total-variation-diminishing (TVD) monotonicity,
+     *    numerical interface fluxes \f$F_{m+1/2}\f$ represent the time-average of the characteristic departure
+     *    interval \f$[x_{m+1/2} - v \Delta t_{\text{rem}}, \, x_{m+1/2}]\f$. As derived in LeVeque (2002, Ch. 6),
+     *    evaluating the linear reconstruction at the centroid of this interval introduces the Lax-Wendroff factor
+     *    \f$(1 - c_{\text{frac}})\f$:
+     *    \f[
+     *      F_{m+1/2} = 
+     *      \begin{cases}
+     *        \phi_m + \frac{1}{2} (1 - c_{\text{frac}}) \, \text{minmod}(\Delta \phi_{m-1/2}, \Delta \phi_{m+1/2}) & \text{if } v > 0 \\
+     *        \phi_{m+1} - \frac{1}{2} (1 - c_{\text{frac}}) \, \text{minmod}(\Delta \phi_{m+1/2}, \Delta \phi_{m+3/2}) & \text{if } v < 0
+     *      \end{cases}
+     *    \f]
+     *    where \f$\text{minmod}(a, b) = \text{sgn}(a) \max\left(0, \min(|a|, b \cdot \text{sgn}(a))\right)\f$.
+     *
+     * ### Key Properties
+     * - **Strict Mass Conservation**: Guaranteed by the conservative flux-differencing formulation (Lin & Rood, 1996).
+     * - **Monotonicity (TVD)**: The minmod limiter with the \f$(1 - c_{\text{frac}})\f$ Lax-Wendroff correction
+     *   prevents spurious numerical oscillations for all Courant numbers.
+     * - **Unconditional Stability**: The integer translation ensures the residual Eulerian step always satisfies
+     *   \f$c_{\text{frac}} < 1\f$.
+     *
+     * ### References
+     * - Ritchie, H. (1986). Eliminating the interpolation associated with the semi-Lagrangian scheme.
+     *   *Monthly Weather Review*, 114(1), 135–146.
+     * - Lin, S.-J., & Rood, R. B. (1996). Multidimensional flux-form semi-Lagrangian transport schemes.
+     *   *Monthly Weather Review*, 124(9), 2046–2070.
+     * - LeVeque, R. J. (2002). *Finite Volume Methods for Hyperbolic Problems*. Cambridge University Press,
+     *   Chapters 6 (TVD Limiters) & 9 (Variable-Coefficient and Large Time-Step Methods).
+     *
+     * @param[in,out] slice     1D vector of cell-centered scalar values across the slice (modified in place).
+     * @param[in]     velocity  Advecting velocity (\f$v\f$) along the coordinate direction [m/s].
+     * @param[in]     dt        Advective timestep (\f$\Delta t\f$) [s].
+     * @param[in]     ds        Grid cell spacing (\f$\Delta s\f$) [m].
+     * @param[in]     bc_left   Dirichlet boundary value at the left (inflow/outflow) face.
+     * @param[in]     bc_right  Dirichlet boundary value at the right (inflow/outflow) face.
+     */
+    void semiLagrangianAdvection1D(std::vector<double>& slice, double velocity, double dt, double ds, double bc_left, double bc_right);
+
     struct AdvDiffParams {
         AdvDiffParams(double u, double v, double shear, double Dh, double Dv, double dt){
             this->u = u;
@@ -35,6 +106,7 @@ namespace FVM_ANDS{
             const Eigen::VectorXd& calcRHS();
             void applyBoundaryCondition();
             void updateBoundaryCondition(const BoundaryConditions& bc);
+            void semiLagrangianAdvection(double dt, bool parallelAdvection = false);
             Eigen::VectorXd forwardEulerAdvection(bool operatorSplit = false, bool parallelAdvection = false) const noexcept;
             // Breakup the implementation of sor_solve to allow for easy testing by inputing an arbitrary linear system to solve:
             // Implementation is moved outside of the class, and make class method to be used in code
