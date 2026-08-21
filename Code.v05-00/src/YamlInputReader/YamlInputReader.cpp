@@ -1,4 +1,5 @@
 #include "YamlInputReader/YamlInputReader.hpp"
+#include "Core/Input_Mod.hpp"
 #include "YamlInputReader/YamlPathUtils.hpp"
 #include "APCEMM.h"
 #include "Util/ForwardDecl.hpp"
@@ -253,6 +254,31 @@ namespace YamlInputReader{
         }
     }
 
+    // Overwrite both seed fields with the actual seed used so the saved merged input file
+    // can exactly reproduce the run.
+    void recordEffectiveSeed(YAML::Node& node, unsigned int seed){
+        const string submenuKey = "RANDOM NUMBER GENERATION SUBMENU";
+        const string forceKey = "Force seed value (T/F)";
+        const string seedKey = "Seed value (positive int)";
+
+        // Double check that these keys exist otherwise we'd be creating
+        // new nodes instead of updating in place. const[] look-up
+        // does not create a new node if it does not exist
+        // Only happens if the RNG submenu is changed and keys are not updated here
+        const YAML::Node& readOnly = node;
+        const YAML::Node existing = readOnly["SIMULATION MENU"][submenuKey];
+        if (!existing.IsDefined() || !existing.IsMap() || !existing[forceKey].IsDefined() || !existing[seedKey].IsDefined()){
+            throw std::runtime_error("Cannot record the effective seed: 'SIMULATION MENU -> "
+                                     + submenuKey + "' with keys '" + forceKey + "' and '"
+                                     + seedKey + "' is missing from the merged input.");
+        }
+
+        // Update seed values here
+        YAML::Node seedSubmenu = node["SIMULATION MENU"][submenuKey];
+        seedSubmenu[forceKey] = "T";
+        seedSubmenu[seedKey] = seed;
+    }
+
     // Output dir must exist before calling this
     void writeYaml(const YAML::Node& node, const std::filesystem::path& outputDir, const string& filename){
         const std::filesystem::path fullPath = outputDir / filename;
@@ -318,10 +344,7 @@ namespace YamlInputReader{
 
         YAML::Node seedSubmenu = simNode["RANDOM NUMBER GENERATION SUBMENU"];
         input.SIMULATION_FORCE_SEED = parseBoolString(seedSubmenu["Force seed value (T/F)"].as<string>(), "Force seed value (T/F)");
-        input.SIMULATION_SEED_VALUE = parseIntString(seedSubmenu["Seed value (positive int)"].as<string>(), "Seed value (positive int)");
-        if(input.SIMULATION_SEED_VALUE < 0){
-            throw std::invalid_argument("Seed value (under SIMULATION MENU) cannot be less than 0!");
-        }
+        input.SIMULATION_SEED_VALUE = parseScalarUIntParam(seedSubmenu["Seed value (positive int)"].as<string>(), "Seed value (positive int)");
 
         string epm =
             simNode["EPM type (original/external/new)"].as<string>();

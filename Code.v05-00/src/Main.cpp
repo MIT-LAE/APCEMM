@@ -104,8 +104,10 @@ int main( int argc, char* argv[])
         Diag::set_storePSD(true);
     }
 
-    // Set the seed once at the top-level
-    setSeed( Input_Opt );
+    // Set the seed once at the top-level, update in place in
+    // OptInput and return it as well to ensure setSeed cannot be called
+    // after writeYaml
+    const unsigned int seed = setSeed( Input_Opt );
 
     if ( folderIsOccupied( Input_Opt.SIMULATION_OUTPUT_FOLDER ) \
             && !Input_Opt.SIMULATION_OVERWRITE ) {
@@ -140,7 +142,8 @@ int main( int argc, char* argv[])
 
     }
 
-    // Write merged YAML input files to output directory
+    // Write merged YAML input files to output directory, with the seed this run used
+    YamlInputReader::recordEffectiveSeed( mergedInput, seed );
     YamlInputReader::writeYaml( mergedInput, Input_Opt.SIMULATION_OUTPUT_FOLDER, OutputFiles::MERGED_YAML );
 
     /* The switch is a placeholder for future models. Only the plume model is

@@ -10,30 +10,32 @@
 /* File                 : MC_Rand.cpp                               */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#include <ctime>
 #include <iostream>
 #include "APCEMM.h"
 #include "Util/MC_Rand.hpp"
 #include "Core/Input_Mod.hpp"
 
-void setSeed(const OptInput& input) {
+unsigned int setSeed(OptInput& input) {
 
-    // Sets seed for pseudo-random generator.
+    // Sets the seed of the pseudo-random generator, stores it in OptInput and returns
+    // it, so the caller can record the seed the run actually used.
     #ifdef DEBUG
         // With DEBUG compile flag set a constant seed for reproducibility
-        std::cout << "Compiled in DEBUG mode: random seed is set to 0 for all simulations" << std::endl;
-        srand(0);
+        input.SIMULATION_SEED_VALUE = 0;
+        std::cout << "Compiled in DEBUG mode: random seed is set to " << input.SIMULATION_SEED_VALUE << " for all simulations" << std::endl;
     #else
-        if(input.SIMULATION_FORCE_SEED){
-            srand(input.SIMULATION_SEED_VALUE);
-            std::cout << "Random seed is set to " << input.SIMULATION_SEED_VALUE << " for all simulations" << std::endl;
+        if(!input.SIMULATION_FORCE_SEED){
+            // If the seed is not being forced to a value use the current unix timestamp
+            // instead. The conversion from time_t to unsigned int wraps (time_t is larger)
+            // but that's fine as any unsigned int is a usable seed.
+            input.SIMULATION_SEED_VALUE = static_cast<unsigned int>(std::time(nullptr));
         }
-        else{
-            // If the seed is not being forced to a value use the current unix timestamp instead. 
-            srand(time(NULL));
-        }
-
+        std::cout << "Random seed is set to " << input.SIMULATION_SEED_VALUE << " for all simulations" << std::endl;
     #endif
 
+    srand(input.SIMULATION_SEED_VALUE);
+    return input.SIMULATION_SEED_VALUE;
 } /* End of setSeed */
 
 template <typename T>
