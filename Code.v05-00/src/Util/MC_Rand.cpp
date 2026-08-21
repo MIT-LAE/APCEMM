@@ -18,7 +18,7 @@
 
 void setSeed(OptInput& input) {
 
-    // Sets seed for pseudo-random generator and return its value to save it later.
+    // Sets seed for pseudo-random generator and updates OptInput
     #ifdef DEBUG
         // With DEBUG compile flag set a constant seed for reproducibility
         input.SIMULATION_SEED_VALUE = 0;
