@@ -62,15 +62,6 @@ void Input::checkInputValidity() const {
     if ( emissionTime_ < 0 || emissionTime_ > 24 )
         reject( "emissionTime", emissionTime_, "hrs", "0 to 24" );
 
-    if ( EI_NOx_ < 0.0E+00 || EI_NOx_ > 5.0E+01 )
-        reject( "EI_NOx", EI_NOx_, "g/kg_fuel", "0 to 50" );
-
-    if ( EI_CO_ < 0.0E+00 || EI_CO_ > 3.0E+01 )
-        reject( "EI_CO", EI_CO_, "g/kg_fuel", "0 to 30" );
-
-    if ( EI_HC_ < 0.0E+00 || EI_HC_ > 1.0E+01 )
-        reject( "EI_HC", EI_HC_, "g/kg_fuel", "0 to 10" );
-
     if ( EI_SO2_ < 0.0E+00 || EI_SO2_ > 1.0E+02 )
         reject( "EI_SO2", EI_SO2_, "g/kg_fuel", "0 to 100" );
 

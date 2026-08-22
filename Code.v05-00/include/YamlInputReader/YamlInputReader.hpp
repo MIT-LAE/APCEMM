@@ -22,6 +22,12 @@ namespace YamlInputReader{
         "mode were removed, so every PARAMETER MENU entry takes exactly one value. To vary a "
         "parameter, write one input file per value and start one APCEMM process for each.";
 
+    // Appended to every error raised by an input file that still names an option which was
+    // parsed and stored but never read on any run path.
+    inline const string UNUSED_OPTION_MESSAGE =
+        "This option was read but never used, setting it never changed a "
+        "result. It is removed so that it can no longer be misleading.";
+
 
     // Merge default and user provided files, returns a merged YAML::Node
     YAML::Node mergeYamlInputFiles(const vector<string>& filenames);
@@ -41,7 +47,6 @@ namespace YamlInputReader{
     void readSimMenu(OptInput& input, const YAML::Node& simNode);
     void readParamMenu(Input& scenario, const YAML::Node& paramNode);
     void readTransportMenu(OptInput& input, const YAML::Node& transportNode);
-    void readChemMenu(OptInput& input, const YAML::Node& chemNode);
     void readAeroMenu(OptInput& input, const YAML::Node& aeroNode);
     void readMetMenu(OptInput& input, const YAML::Node& metNode);
     void readDiagMenu(OptInput& input, const YAML::Node& diagNode);

@@ -9,33 +9,14 @@ struct MPMSimVarsWrapper{
     /* --- Input options from the SIMULATION MENU ---------------------------- */
     /* ======================================================================= */
 
-    bool RUN_BOXMODEL;
     bool BUILD_LUT;
-    bool SAVE_FORWARD;
-    bool ADJOINT;
     std::string BACKG_FILENAME;
-    bool THREADED_FFT;
-    bool USE_WISDOM;
-    std::string FFTW_DIR;
 
     /* ======================================================================= */
     /* ---- Input options from the TRANSPORT MENU ---------------------------- */
     /* ======================================================================= */
 
     bool TRANSPORT;
-    bool FILLNEG;
-
-    bool UPDRAFT;
-    double UPDRAFT_TIME;
-    double UPDRAFT_VEL;
-
-    /* ======================================================================= */
-    /* ---- Input options from the CHEMISTRY MENU ---------------------------- */
-    /* ======================================================================= */
-
-    bool CHEMISTRY;
-    bool HETCHEM;
-    std::string JRATE_FOLDER;
 
     /* ======================================================================= */
     /* ---- Input options from the AEROSOL MENU ------------------------------ */
@@ -57,33 +38,13 @@ struct MPMSimVarsWrapper{
     double metDepth;
 
     /* ======================================================================= */
-    /* ---- Input options from the DIAGNOSTIC MENU --------------------------- */
-    /* ======================================================================= */
-    
-    std::string DIAG_FILENAME;
-    
-    /* ======================================================================= */
     /* ---- Input options from the TIMESERIES MENU --------------------------- */
     /* ======================================================================= */
 
     std::string TS_FOLDER;
-    bool TS_SPEC;
-    std::string TS_SPEC_FILEPATH;
-    std::vector<int> TS_SPEC_LIST;
-    double TS_FREQ;
-
     bool TS_AERO;
     std::string TS_AERO_FILEPATH;
-    std::vector<int> TS_AERO_LIST;
     double TS_AERO_FREQ;
-
-    /* ======================================================================= */
-    /* ---- Input options from the PROD & LOSS MENU -------------------------- */
-    /* ======================================================================= */
-
-    /* TODO: Implement PL rates */
-    bool SAVE_PL;
-    bool SAVE_O3PL;
 
     /* If DIAG_OUTPUT is turned on, make sure that output timestep is a
      * multiple of the dynamic timestep */

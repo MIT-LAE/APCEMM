@@ -217,7 +217,6 @@ class Meteorology
 
 
         //Information on loading
-        bool useMetFileInput_;
         MetVarLoadType tempLoadType_;
         MetVarLoadType rhLoadType_;
         MetVarLoadType shearLoadType_;
