@@ -39,9 +39,6 @@ class Input
     UInt emissionDOY_ = 0;
     double emissionTime_ = 0.0;
 
-    double EI_NOx_ = 0.0;
-    double EI_CO_ = 0.0;
-    double EI_HC_ = 0.0;
     double EI_SO2_ = 0.0;
     double EI_SO2TOSO4_ = 0.0;
     double EI_Soot_ = 0.0;
@@ -97,9 +94,6 @@ class Input
         UInt emissionMonth() const { return emissionMonth_; }
         double emissionTime() const { return emissionTime_; }
 
-        double EI_NOx() const { return EI_NOx_; }
-        double EI_CO() const { return EI_CO_; }
-        double EI_HC() const { return EI_HC_; }
         double EI_SO2() const { return EI_SO2_; }
         double EI_SO2TOSO4() const { return EI_SO2TOSO4_; }
         double EI_Soot() const { return EI_Soot_; }
@@ -136,9 +130,6 @@ class Input
         void set_emissionDOY( UInt emissionDOY ) { emissionDOY_ = emissionDOY; }
         void set_emissionTime( double emissionTime ) { emissionTime_ = emissionTime; }
 
-        void set_EI_NOx( double EI_NOx ) { EI_NOx_ = EI_NOx; }
-        void set_EI_CO( double EI_CO ) { EI_CO_ = EI_CO; }
-        void set_EI_HC( double EI_HC ) { EI_HC_ = EI_HC; }
         void set_EI_SO2( double EI_SO2 ) { EI_SO2_ = EI_SO2; }
         void set_EI_SO2TOSO4( double EI_SO2TOSO4 ) { EI_SO2TOSO4_ = EI_SO2TOSO4; }
         void set_EI_Soot( double EI_Soot ) { EI_Soot_ = EI_Soot; }

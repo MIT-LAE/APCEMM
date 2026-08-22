@@ -82,11 +82,9 @@ namespace YamlInputReader{
     // before the generic unknown-key error so an outdated input file gets a warning
     // naming the option that is deprecated instead of failing with "Unknown key found".
     bool checkDeprecatedKey(const std::string& key, const std::string& errorPath) {
-        static const std::set<std::string> deprecatedKeys = {
-            "Chemistry Timestep [min] (double)",
-            "Coag. timestep [min] (double)",
-            "Temp. Perturb. Timescale (min)",
-        };
+        // Currently empty: every option deprecated is now put in checkRemovedKey()
+        // instead. Kept here for future deprecations.
+        static const std::set<std::string> deprecatedKeys = {};
         if (deprecatedKeys.contains(key)) {
             std::cout << "WARNING: Deprecated option found: '" << errorPath << "'. This option is no longer used and has no effect." << std::endl;
             return true;
@@ -98,14 +96,81 @@ namespace YamlInputReader{
     // before the generic unknown-key error so an outdated input file gets a message
     // naming the option that went away instead of "Unknown key found".
     void checkRemovedKey(const std::string& key, const std::string& errorPath) {
-        static const std::set<std::string> removedKeys = {
+        // Options removed with the multi-case runs
+        static const std::set<std::string> removedSweepKeys = {
             "PARAM SWEEP SUBMENU",
             "Parameter sweep (T/F)",
             "Run Monte Carlo (T/F)",
             "Num Monte Carlo runs (int)",
         };
-        if (removedKeys.contains(key)) {
+        if (removedSweepKeys.contains(key)) {
             throw std::runtime_error("Removed option found: '" + errorPath + "'. Delete it from your input file. " + ONE_RUN_PER_PROCESS_MESSAGE);
+        }
+
+        // Options that were parsed and stored but never used in a simulation. They are now
+        // removed to not be misleading to users.
+        // Because we match by node key (and not full path), options that appear multiple times
+        // under the same name would trigger this warning everywhere. By not including them here
+        // they do not have a nice message to explain their removal.
+        // They are still refused by validateYamlKeys() however as it validates against the structure
+        // of the defaults/input.yaml by parsing every branch of the tree checking the keys.
+        // This is the case for "Inst timeseries file (string)" and "Save frequency [min] (double)"
+        static const std::set<std::string> removedUnusedKeys = {
+            // SIMULATION MENU: spectral solver leftovers and never-implemented run modes
+            "Use threaded FFT (T/F)",
+            "FFTW WISDOM SUBMENU",
+            "Use FFTW WISDOM (T/F)",
+            "Dir w/ write permission (string)",
+            "SAVE FORWARD RESULTS SUBMENU",
+            "Save forward results (T/F)",
+            "ADJOINT OPTIMIZATION SUBMENU",
+            "Turn on adjoint optim. (T/F)",
+            "BOX MODEL SUBMENU",
+            "Run box model (T/F)",
+            "netCDF filename format (string)",
+            // PARAMETER MENU: emission indices that reach Emission and stop
+            "NOx [g(NO2)/kg_fuel] (double)",
+            "CO [g/kg_fuel] (double)",
+            "UHC [g/kg_fuel] (double)",
+            // TRANSPORT MENU: spectral solver leftover, and updraft now comes from the met file
+            "Fill Negative Values (T/F)",
+            "PLUME UPDRAFT SUBMENU",
+            "Turn on plume updraft (T/F)",
+            "Updraft timescale [s] (double)",
+            "Updraft veloc. [cm/s] (double)",
+            // CHEMISTRY MENU: chemistry is no longer supported
+            "CHEMISTRY MENU",
+            "Turn on Chemistry (T/F)",
+            "Chemistry Timestep [min] (double)",
+            "Perform hetero. chem. (T/F)",
+            "Photolysis rates folder (string)",
+            // AEROSOL MENU: no coagulation runs, so its timestep never applied
+            "Coag. timestep [min] (double)",
+            "Turn on liquid coagulation (T/F)",
+            // METEOROLOGY MENU: met now comes from the netCDF file only
+            "Use met. input (T/F)",
+            "Init temp. from met. (T/F)",
+            "Init RH from met. (T/F)",
+            "Init wind shear from met. (T/F)",
+            "Init vert. veloc. from met. data (T/F)",
+            "Temp. Perturb. Timescale (min)",
+            // DIAGNOSTIC MENU: species and P/L diagnostics needed chemistry
+            "SPECIES TIMESERIES SUBMENU",
+            "Save species timeseries (T/F)",
+            "Species indices to include (list of ints)",
+            "Aerosol indices to include (list of ints)",
+            "PRODUCTION & LOSS SUBMENU",
+            "Turn on P/L diag (T/F)",
+            "Save O3 P/L (T/F)",
+            // ADVANCED OPTIONS MENU: the documented scaling formula was never implemented
+            "INITIAL CONTRAIL SIZE SUBMENU",
+            "Base Contrail Depth [m] (double)",
+            "Contrail Depth Scaling Factor [-] (double)",
+            "Base Contrail Width [m] (double)",
+            "Contrail Width Scaling Factor [-] (double)",
+        };
+        if (removedUnusedKeys.contains(key)) {
+            throw std::runtime_error("Removed option found: '" + errorPath + "'. Delete it from your input file. " + UNUSED_OPTION_MESSAGE);
         }
     }
 
@@ -219,13 +284,6 @@ namespace YamlInputReader{
         }
         
         try {
-            readChemMenu(input, mergedData["CHEMISTRY MENU"]);
-        }
-        catch (const std::exception& e) {
-            throw std::runtime_error("Something went wrong in reading the CHEMISTRY MENU! Please double-check your input file with the reference in Code.v05-00/defaults/input.yaml\n  Exception: " + std::string(e.what()));
-        }
-
-        try {
             readAeroMenu(input, mergedData["AEROSOL MENU"]);  
         }
         catch (const std::exception& e) {
@@ -322,25 +380,8 @@ namespace YamlInputReader{
         if ( outputFolder.back() != '/' ) {outputFolder = outputFolder + "/";}
         input.SIMULATION_OUTPUT_FOLDER = outputFolder;
         input.SIMULATION_OVERWRITE = parseBoolString(outputSubmenu["Overwrite if folder exists (T/F)"].as<string>(), "Overwrite if folder exists (T/F)");
-        input.SIMULATION_THREADED_FFT = parseBoolString(simNode["Use threaded FFT (T/F)"].as<string>(), "Use threaded FFT (T/F)");
-
-        YAML::Node fftwWisdomSubmenu = simNode["FFTW WISDOM SUBMENU"];
-        input.SIMULATION_USE_FFTW_WISDOM = parseBoolString(fftwWisdomSubmenu["Use FFTW WISDOM (T/F)"].as<string>(), "Use FFTW WISDOM (T/F)");
-        input.SIMULATION_DIRECTORY_W_WRITE_PERMISSION = readPath(fftwWisdomSubmenu, "Dir w/ write permission (string)");
         input.SIMULATION_INPUT_BACKG_COND = readPath(simNode, "Input background condition (string)");
         input.SIMULATION_INPUT_ENG_EI = readPath(simNode, "Input engine emissions (string)");
-
-        YAML::Node saveForwardSubmenu = simNode["SAVE FORWARD RESULTS SUBMENU"];
-        input.SIMULATION_SAVE_FORWARD = parseBoolString(saveForwardSubmenu["Save forward results (T/F)"].as<string>(), "Save forward results (T/F)");
-        input.SIMULATION_FORWARD_FILENAME = saveForwardSubmenu["netCDF filename format (string)"].as<string>();
-
-        YAML::Node adjointSubmenu = simNode["ADJOINT OPTIMIZATION SUBMENU"];
-        input.SIMULATION_ADJOINT = parseBoolString(adjointSubmenu["Turn on adjoint optim. (T/F)"].as<string>(), "Turn on adjoint optim. (T/F)");
-        input.SIMULATION_ADJOINT_FILENAME = adjointSubmenu["netCDF filename format (string)"].as<string>();
-
-        YAML::Node boxModelSubmenu = simNode["BOX MODEL SUBMENU"];
-        input.SIMULATION_BOXMODEL = parseBoolString(boxModelSubmenu["Run box model (T/F)"].as<string>(), "Run box model (T/F)");
-        input.SIMULATION_BOX_FILENAME = boxModelSubmenu["netCDF filename format (string)"].as<string>();
 
         YAML::Node seedSubmenu = simNode["RANDOM NUMBER GENERATION SUBMENU"];
         input.SIMULATION_FORCE_SEED = parseBoolString(seedSubmenu["Force seed value (T/F)"].as<string>(), "Force seed value (T/F)");
@@ -386,9 +427,6 @@ namespace YamlInputReader{
         scenario.set_backgSO2(parseScalarParam(backMixRatioSubmenu["SO2 [ppt] (double)"].as<string>(), "SO2 [ppt] (double)"));
 
         YAML::Node eiSubmenu = paramNode["EMISSION INDICES SUBMENU"];
-        scenario.set_EI_NOx(parseScalarParam(eiSubmenu["NOx [g(NO2)/kg_fuel] (double)"].as<string>(), "NOx [g(NO2)/kg_fuel] (double)"));
-        scenario.set_EI_CO(parseScalarParam(eiSubmenu["CO [g/kg_fuel] (double)"].as<string>(), "CO [g/kg_fuel] (double)"));
-        scenario.set_EI_HC(parseScalarParam(eiSubmenu["UHC [g/kg_fuel] (double)"].as<string>(), "UHC [g/kg_fuel] (double)"));
         scenario.set_EI_SO2(parseScalarParam(eiSubmenu["SO2 [g/kg_fuel] (double)"].as<string>(), "SO2 [g/kg_fuel] (double)"));
         //Convert % to ratio
         scenario.set_EI_SO2TOSO4(parseScalarParam(eiSubmenu["SO2 to SO4 conv [%] (double)"].as<string>(), "SO2 to SO4 conv [%] (double)") / 100.0);
@@ -405,41 +443,24 @@ namespace YamlInputReader{
     }
     void readTransportMenu(OptInput& input, const YAML::Node& transportNode){
         input.TRANSPORT_TRANSPORT = parseBoolString(transportNode["Turn on Transport (T/F)"].as<string>(), "Turn on Transport (T/F)");
-        input.TRANSPORT_FILL = parseBoolString(transportNode["Fill Negative Values (T/F)"].as<string>(), "Fill Negative Values (T/F)");
         input.TRANSPORT_TIMESTEP = parseDoubleString(transportNode["Transport Timestep [min] (double)"].as<string>(), "Transport Timestep [min] (double)");
-
-        YAML::Node updraftSubmenu = transportNode["PLUME UPDRAFT SUBMENU"];
-        input.TRANSPORT_UPDRAFT = parseBoolString(updraftSubmenu["Turn on plume updraft (T/F)"].as<string>(), "Turn on plume updraft (T/F)");
-        input.TRANSPORT_UPDRAFT_TIMESCALE = parseDoubleString(updraftSubmenu["Updraft timescale [s] (double)"].as<string>(), "Updraft timescale [s] (double)");
-        input.TRANSPORT_UPDRAFT_VELOCITY = parseDoubleString(updraftSubmenu["Updraft veloc. [cm/s] (double)"].as<string>(), "Updraft veloc. [cm/s] (double)");
-    }
-    void readChemMenu(OptInput& input, const YAML::Node& chemNode){
-        input.CHEMISTRY_CHEMISTRY = parseBoolString(chemNode["Turn on Chemistry (T/F)"].as<string>(), "Turn on Chemistry (T/F)");
-        input.CHEMISTRY_HETCHEM = parseBoolString(chemNode["Perform hetero. chem. (T/F)"].as<string>(), "Perform hetero. chem. (T/F)");
-        input.CHEMISTRY_JRATE_FOLDER = readPath(chemNode, "Photolysis rates folder (string)");
     }
     void readAeroMenu(OptInput& input, const YAML::Node& aeroNode){
         input.AEROSOL_GRAVSETTLING = parseBoolString(aeroNode["Turn on grav. settling (T/F)"].as<string>(), "Turn on grav. settling (T/F)");
         input.AEROSOL_COAGULATION_SOLID = parseBoolString(aeroNode["Turn on solid coagulation (T/F)"].as<string>(), "Turn on solid coagulation (T/F)");
-        input.AEROSOL_COAGULATION_LIQUID = parseBoolString(aeroNode["Turn on liquid coagulation (T/F)"].as<string>(), "Turn on liquid coagulation (T/F)");
         input.AEROSOL_ICE_GROWTH = parseBoolString(aeroNode["Turn on ice growth (T/F)"].as<string>(), "Turn on ice growth (T/F)");
         input.AEROSOL_ICE_GROWTH_TIMESTEP = parseDoubleString(aeroNode["Ice growth timestep [min] (double)"].as<string>(), "Ice growth timestep [min] (double)");
     }
     void readMetMenu(OptInput& input, const YAML::Node& metNode){
         YAML::Node metInputSubmenu = metNode["METEOROLOGICAL INPUT SUBMENU"];
-        input.MET_LOADMET = parseBoolString(metInputSubmenu["Use met. input (T/F)"].as<string>(), "Use met. input (T/F)");
         input.MET_FILENAME = readPath(metInputSubmenu, "Met input file path (string)");
         input.MET_DT = parseDoubleString(metInputSubmenu["Time series data timestep [hr] (double)"].as<string>(), "Time series data timestep [hr] (double)");
-        input.MET_LOADTEMP = parseBoolString(metInputSubmenu["Init temp. from met. (T/F)"].as<string>(), "Init temp. from met. (T/F)");
         input.MET_TEMPTIMESERIES = parseBoolString(metInputSubmenu["Temp. time series input (T/F)"].as<string>(), "Temp. time series input (T/F)");
         input.MET_INTERPTEMPDATA = parseBoolString(metInputSubmenu["Interpolate temp. met. data (T/F)"].as<string>(), "Interpolate temp. met. data (T/F)");
-        input.MET_LOADRH = parseBoolString(metInputSubmenu["Init RH from met. (T/F)"].as<string>(), "Init RH from met. (T/F)");
         input.MET_RHTIMESERIES = parseBoolString(metInputSubmenu["RH time series input (T/F)"].as<string>(), "RH time series input (T/F)");
         input.MET_INTERPRHDATA = parseBoolString(metInputSubmenu["Interpolate RH met. data (T/F)"].as<string>(), "Interpolate RH met. data (T/F)");
-        input.MET_LOADSHEAR = parseBoolString(metInputSubmenu["Init wind shear from met. (T/F)"].as<string>(), "Init wind shear from met. (T/F)");
         input.MET_SHEARTIMESERIES = parseBoolString(metInputSubmenu["Wind shear time series input (T/F)"].as<string>(), "Wind shear time series input (T/F)");
         input.MET_INTERPSHEARDATA = parseBoolString(metInputSubmenu["Interpolate shear met. data (T/F)"].as<string>(), "Interpolate shear met. data (T/F)");
-        input.MET_LOADVERTVELOC = parseBoolString(metInputSubmenu["Init vert. veloc. from met. data (T/F)"].as<string>(), "Init vert. veloc. from met. data (T/F)");
         input.MET_VERTVELOCTIMESERIES = parseBoolString(metInputSubmenu["Vert. veloc. time series input (T/F)"].as<string>(), "Vert. veloc. time series input (T/F)");
         input.MET_INTERPVERTVELOC = parseBoolString(metInputSubmenu["Interpolate vert. veloc. met. data (T/F)"].as<string>(), "Interpolate vert. veloc. met. data (T/F)");
         
@@ -448,23 +469,10 @@ namespace YamlInputReader{
         input.MET_TEMP_PERTURB_AMPLITUDE = parseDoubleString( tempPerturbMenu["Temp. Perturb. Amplitude (double)"].as<string>(), "Temp. Perturb. Amplitude (double)" );
     }
     void readDiagMenu(OptInput& input, const YAML::Node& diagNode){
-        input.DIAG_FILENAME = diagNode["netCDF filename format (string)"].as<string>();
-
-        YAML::Node specTsSubmenu = diagNode["SPECIES TIMESERIES SUBMENU"];
-        input.TS_SPEC = parseBoolString(specTsSubmenu["Save species timeseries (T/F)"].as<string>(), "Save species timeseries (T/F)");
-        input.TS_FILENAME = specTsSubmenu["Inst timeseries file (string)"].as<string>();
-        input.TS_SPECIES = parseVectorIntString(specTsSubmenu["Species indices to include (list of ints)"].as<string>(), "Species indices to include (list of ints)");
-        input.TS_FREQ = parseDoubleString(specTsSubmenu["Save frequency [min] (double)"].as<string>(), "Save frequency [min] (double)");
-
         YAML::Node aeroTsSubmenu = diagNode["AEROSOL TIMESERIES SUBMENU"];
         input.TS_AERO = parseBoolString(aeroTsSubmenu["Save aerosol timeseries (T/F)"].as<string>(), "Save aerosol timeseries (T/F)");
         input.TS_AERO_FILENAME = aeroTsSubmenu["Inst timeseries file (string)"].as<string>();
-        input.TS_AEROSOL = parseVectorIntString(aeroTsSubmenu["Aerosol indices to include (list of ints)"].as<string>(), "Aerosol indices to include (list of ints)");
         input.TS_AERO_FREQ = parseDoubleString(aeroTsSubmenu["Save frequency [min] (double)"].as<string>(), "Save frequency [min] (double)");
-
-        YAML::Node plSubmenu = diagNode["PRODUCTION & LOSS SUBMENU"];
-        input.PL_PL = parseBoolString(plSubmenu["Turn on P/L diag (T/F)"].as<string>(), "Turn on P/L diag (T/F)");
-        input.PL_O3 = parseBoolString(plSubmenu["Save O3 P/L (T/F)"].as<string>(), "Save O3 P/L (T/F)");
     }
 
     void readAdvancedMenu(OptInput& input, const YAML::Node& advancedNode) {
@@ -475,12 +483,6 @@ namespace YamlInputReader{
         input.ADV_GRID_XLIM_LEFT = parseDoubleString(gridSubmenu["XLIM_LEFT (positive double)"].as<string>(), "XLIM_LEFT (positive double)");
         input.ADV_GRID_YLIM_UP = parseDoubleString(gridSubmenu["YLIM_UP (positive double)"].as<string>(), "YLIM_UP (positive double)");
         input.ADV_GRID_YLIM_DOWN = parseDoubleString(gridSubmenu["YLIM_DOWN (positive double)"].as<string>(), "YLIM_DOWN (positive double)");
-        
-        YAML::Node csizeSubmenu = advancedNode["INITIAL CONTRAIL SIZE SUBMENU"];
-        input.ADV_CSIZE_DEPTH_BASE = parseDoubleString(csizeSubmenu["Base Contrail Depth [m] (double)"].as<string>(), "Base Contrail Depth [m] (double)");
-        input.ADV_CSIZE_DEPTH_SCALING_FACTOR = parseDoubleString(csizeSubmenu["Contrail Depth Scaling Factor [-] (double)"].as<string>(), "Contrail Depth Scaling Factor [-] (double)");
-        input.ADV_CSIZE_WIDTH_BASE = parseDoubleString(csizeSubmenu["Base Contrail Width [m] (double)"].as<string>(), "Base Contrail Width [m] (double)");
-        input.ADV_CSIZE_WIDTH_SCALING_FACTOR = parseDoubleString(csizeSubmenu["Contrail Width Scaling Factor [-] (double)"].as<string>(), "Contrail Width Scaling Factor [-] (double)");
 
         input.ADV_AMBIENT_LAPSERATE = parseDoubleString(advancedNode["Ambient Lapse Rate [K/km] (double)"].as<string>(), "Ambient Lapse Rate [K/km] (double)");
         input.ADV_TROPOPAUSE_PRESSURE = parseDoubleString(advancedNode["Tropopause Pressure [Pa] (double)"].as<string>(), "Tropopause Pressure [Pa] (double)");

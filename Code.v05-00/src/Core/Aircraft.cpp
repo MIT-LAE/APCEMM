@@ -42,9 +42,6 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
 
     engNumber_ = input.numEngines();
     setFuelFlow( input.fuelFlow() );
-    setEI_NOx( input.EI_NOx() );
-    setEI_CO( input.EI_CO() );
-    setEI_HC( input.EI_HC() );
     setEI_Soot( input.EI_Soot() );
     setSootRad( input.sootRad() );
     fuel_per_dist_ = input.fuelFlow() / vFlight_ms_;
@@ -104,30 +101,6 @@ double Aircraft::VortexLosses( const double N_postjet, const double WV_exhaust, 
     return vortex_.icenum_survfrac();
 
 } /* End of Aircraft::VortexLosses */
-
-void Aircraft::setEI_NOx(const double NOx)
-{
-
-    if ( NOx > 0.0E+00 )
-        engine_.setEI_NOx(NOx);
-
-} /* End of Aircraft::setEI_NOx */
-
-void Aircraft::setEI_CO(const double CO)
-{
-
-    if ( CO > 0.0E+00 )
-        engine_.setEI_CO(CO);
-
-} /* End of Aircraft::setEI_CO */
-
-void Aircraft::setEI_HC(const double HC)
-{
-
-    if ( HC > 0.0E+00 )
-        engine_.setEI_HC(HC);
-
-} /* End of Aircraft::setEI_HC */
 
 void Aircraft::setEI_Soot(const double Soot)
 {

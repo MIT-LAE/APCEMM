@@ -69,9 +69,6 @@ class Aircraft
         inline const Vortex& vortex() const { return vortex_; }
 
         /* Setters for engine properties */
-        void setEI_NOx(const double NOx);
-        void setEI_CO(const double CO);
-        void setEI_HC(const double HC);
         void setEI_Soot(const double Soot);
         void setSootRad(const double sootRad);
         void setFuelFlow(const double ff);
