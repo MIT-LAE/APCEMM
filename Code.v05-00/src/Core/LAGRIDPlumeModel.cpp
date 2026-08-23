@@ -104,6 +104,13 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         std::cout << "\n - Time step: " << timestepVars_.nTime + 1 << " out of " << timestepVars_.timeArray.size();
         std::cout << "\n -> Solar time: " << std::fmod( timestepVars_.curr_Time_s/3600.0, 24.0 ) << " [hr]" << std::endl;
 
+        /*  Update the temperature perturbations at the start of the transport/microphysics step
+            so that deposition/sublimation subcycling evaluates with the active perturbed temperature field.
+        */
+        if (simVars_.TEMP_PERTURB){
+            met_.updateTempPerturb();
+        }
+
         // Interleaved Transport and Ice Growth Subcycling over the outer timestep dt
         if (simVars_.TRANSPORT || simVars_.ICE_GROWTH) {
             const double dt_step = timestepVars_.dt;
@@ -133,14 +140,6 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
             auto subcycling_duration = std::chrono::duration_cast<std::chrono::milliseconds>(subcycling_end - subcycling_start);
             std::cout << "  Ran transport & ice growth subcycling in " << subcycling_duration.count() << " ms" << std::endl;
             #endif
-        }
-
-        /*  With LAGRID remapping every transport timestep, it fundamentally only makes physical sense to update
-            the temperature perturbations at the same interval as the transport timestep. Turbulence timestep is one
-            tool used to tune the intensity of the simulated turbulence, but we can also just vary the amplitude.
-        */
-        if (simVars_.TEMP_PERTURB){
-            met_.updateTempPerturb();
         }
 
         solarTime_h_ = ( timestepVars_.curr_Time_s + timestepVars_.dt / 2.0 ) / 3600.0;
