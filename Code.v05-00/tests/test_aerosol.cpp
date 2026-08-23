@@ -229,3 +229,99 @@ TEST_CASE ("Aerosol", "[single-file]" ) {
     }
 
 }
+
+TEST_CASE("Aerosol Flexible Bin Grid Construction", "[aerosol][bins]") {
+    const double r_low = 5.0e-8;  // 0.05 um
+    const double r_hig = 8.0e-5;  // 80.0 um
+
+    SECTION("Default Grid Parameters (VRAT = 1.80)") {
+        const double vrat = 1.80;
+        const UInt expected_nbins = static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(vrat)));
+        REQUIRE(expected_nbins == 38);
+
+        const double rrat = cbrt(vrat);
+        Vector_1D edges(expected_nbins + 1);
+        Vector_1D centers(expected_nbins);
+        edges[0] = r_low;
+        for (UInt i = 1; i <= expected_nbins; i++) {
+            edges[i] = edges[i - 1] * rrat;
+        }
+        for (UInt i = 0; i < expected_nbins; i++) {
+            centers[i] = 0.5 * (edges[i] + edges[i + 1]);
+        }
+
+        REQUIRE(edges.front() == Catch::Approx(5.0e-8));
+        REQUIRE(edges.back() >= 8.0e-5);
+    }
+
+    SECTION("VRAT Spectrum Geometric Invariance (1.2 to 3.0)") {
+        const std::vector<double> vrats = {1.2, 1.5, 1.8, 2.0, 2.1, 2.4, 2.7, 3.0};
+        const std::vector<UInt> expected_counts = {
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.2))), // ~122
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.5))), // 55
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.8))), // 38
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.0))), // 32
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.1))), // 30
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.4))), // 26
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.7))), // 23
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(3.0)))  // 21
+        };
+
+        for (size_t k = 0; k < vrats.size(); k++) {
+            const double vrat = vrats[k];
+            const UInt nbins = static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(vrat)));
+            REQUIRE(nbins == expected_counts[k]);
+
+            const double rrat = cbrt(vrat);
+            Vector_1D edges(nbins + 1);
+            Vector_1D centers(nbins);
+            edges[0] = r_low;
+            for (UInt i = 1; i <= nbins; i++) {
+                edges[i] = edges[i - 1] * rrat;
+                // Ratio test for each adjacent edge
+                REQUIRE(edges[i] / edges[i - 1] == Catch::Approx(rrat).epsilon(1e-12));
+            }
+            for (UInt i = 0; i < nbins; i++) {
+                centers[i] = 0.5 * (edges[i] + edges[i + 1]);
+            }
+
+            REQUIRE(edges.front() == Catch::Approx(r_low));
+            REQUIRE(edges.back() >= r_hig);
+        }
+    }
+
+    SECTION("Physical Moment Conservation across VRAT Spectrum") {
+        const double nPart = 1.0e12; // #/cm3
+        const double mu = 1.0e-6;    // 1.0 um
+        const double sigma = 1.6;
+
+        const std::vector<double> vrats = {1.2, 1.5, 1.8, 2.0, 2.1, 2.4, 2.7, 3.0};
+        const double analytic_m0 = nPart;
+        const double analytic_m3 = nPart * pow(mu, 3.0) * exp((9.0 / 2.0) * pow(log(sigma), 2.0));
+
+        for (double vrat : vrats) {
+            const UInt nbins = static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(vrat)));
+            const double rrat = cbrt(vrat);
+            Vector_1D edges(nbins + 1);
+            Vector_1D centers(nbins);
+            edges[0] = r_low;
+            for (UInt i = 1; i <= nbins; i++) {
+                edges[i] = edges[i - 1] * rrat;
+            }
+            for (UInt i = 0; i < nbins; i++) {
+                centers[i] = 0.5 * (edges[i] + edges[i + 1]);
+            }
+
+            Aerosol aer(centers, edges, nPart, mu, sigma, "lognormal");
+
+            // Zeroth moment (total particle number) should be preserved to < 1%
+            double m0 = aer.Moment(0);
+            REQUIRE(m0 == Catch::Approx(analytic_m0).epsilon(0.01));
+
+            // Third moment (volume / mass proportional) should be preserved to < 5%
+            double m3 = aer.Moment(3);
+            REQUIRE(m3 == Catch::Approx(analytic_m3).epsilon(0.05));
+        }
+    }
+}
+

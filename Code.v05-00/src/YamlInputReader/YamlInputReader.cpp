@@ -556,6 +556,29 @@ namespace YamlInputReader{
         input.ADV_EP_N_POSTJET_OVERRIDE = parseBoolString(earlyPlumeSubmenu["Override post-jet ice crystal count (T/F)"].as<string>(), "Override post-jet ice crystal count (T/F)");
         input.ADV_EP_N_POSTJET = parseDoubleString(earlyPlumeSubmenu["Post-jet ice crystal count [#/m] (double)"].as<string>(), "Post-jet ice crystal count [#/m] (double)");
         input.ADV_SAVE_PSD_GRID = parseBoolString(advancedNode["Save gridded particle size distribution (T/F)"].as<string>(), "Save gridded particle size distribution (T/F)");
+
+        if (advancedNode["AEROSOL GRID SUBMENU"]) {
+            YAML::Node aeroGridSubmenu = advancedNode["AEROSOL GRID SUBMENU"];
+            if (aeroGridSubmenu["Ice bin volume ratio [-] (double)"]) {
+                input.ADV_AERO_ICE_BIN_VRAT = parseDoubleString(aeroGridSubmenu["Ice bin volume ratio [-] (double)"].as<string>(), "Ice bin volume ratio [-] (double)");
+            }
+            if (aeroGridSubmenu["Ice bin r_min [m] (double)"]) {
+                input.ADV_AERO_ICE_BIN_R_LOW = parseDoubleString(aeroGridSubmenu["Ice bin r_min [m] (double)"].as<string>(), "Ice bin r_min [m] (double)");
+            }
+            if (aeroGridSubmenu["Ice bin r_max [m] (double)"]) {
+                input.ADV_AERO_ICE_BIN_R_HIG = parseDoubleString(aeroGridSubmenu["Ice bin r_max [m] (double)"].as<string>(), "Ice bin r_max [m] (double)");
+            }
+        }
+
+        if (input.ADV_AERO_ICE_BIN_VRAT <= 1.0) {
+            throw std::invalid_argument("Ice bin volume ratio [-] in AEROSOL GRID SUBMENU must be strictly greater than 1.0!");
+        }
+        if (input.ADV_AERO_ICE_BIN_R_LOW <= 0.0 || input.ADV_AERO_ICE_BIN_R_HIG <= 0.0) {
+            throw std::invalid_argument("Ice bin radius limits in AEROSOL GRID SUBMENU must be strictly positive!");
+        }
+        if (input.ADV_AERO_ICE_BIN_R_LOW >= input.ADV_AERO_ICE_BIN_R_HIG) {
+            throw std::invalid_argument("Ice bin r_min cannot be greater than or equal to r_max in AEROSOL GRID SUBMENU!");
+        }
     }
 
     // Wrapper around parseDoubleString to have a nice rejection message for

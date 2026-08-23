@@ -125,16 +125,19 @@ namespace EPM::Models
 
         /* Number of ice size distribution bins based on specified min and max radii *
         * and volume ratio between two adjacent bins */
+        const double ice_vrat = optInput_.ADV_AERO_ICE_BIN_VRAT;
+        const double ice_r_low = optInput_.ADV_AERO_ICE_BIN_R_LOW;
+        const double ice_r_hig = optInput_.ADV_AERO_ICE_BIN_R_HIG;
         const UInt Ice_NBIN = static_cast<UInt>(
-            std::floor(1 + 3.0*log(PA_R_HIG / PA_R_LOW) / log(PA_VRAT)));
+            std::floor(1 + 3.0*log(ice_r_hig / ice_r_low) / log(ice_vrat)));
 
         /* Adjacent bin radius ratio */
-        const double PA_RRAT = cbrt( PA_VRAT );
+        const double PA_RRAT = cbrt( ice_vrat );
 
         /* Ice bin center and edge radii */
         Vector_1D Ice_rJ( Ice_NBIN    , 0.0 );
         Vector_1D Ice_rE( Ice_NBIN + 1, 0.0 );
-        Ice_rE[0] = PA_R_LOW;
+        Ice_rE[0] = ice_r_low;
         for ( UInt iBin = 1; iBin < Ice_NBIN + 1; iBin++ )
             Ice_rE[iBin] = Ice_rE[iBin-1] * PA_RRAT;                                                           /* [m] */
 
@@ -401,7 +404,7 @@ namespace EPM::Models
         SO4Aer = pSO4pdf_3mins;
 
         const double expsIce = 1.15;
-        AIM::Aerosol solidAer( Ice_rJ, Ice_rE, Ice_den, std::max(Ice_rad * exp ( -2.5 * log(expsIce) * log(expsIce) ), 1.5 * PA_R_LOW ), expsIce, "lognormal" );
+        AIM::Aerosol solidAer( Ice_rJ, Ice_rE, Ice_den, std::max(Ice_rad * exp ( -2.5 * log(expsIce) * log(expsIce) ), 1.5 * optInput_.ADV_AERO_ICE_BIN_R_LOW ), expsIce, "lognormal" );
         IceAer = solidAer;
 
         /* Compute plume area */

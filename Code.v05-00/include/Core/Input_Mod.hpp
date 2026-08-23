@@ -155,6 +155,9 @@ struct OptInput
     bool ADV_EP_N_POSTJET_OVERRIDE;
     double ADV_EP_N_POSTJET;
     bool ADV_SAVE_PSD_GRID;
+    double ADV_AERO_ICE_BIN_VRAT = 1.80;
+    double ADV_AERO_ICE_BIN_R_LOW = 5.00E-08;
+    double ADV_AERO_ICE_BIN_R_HIG = 8.00E-05;
 
 };
 

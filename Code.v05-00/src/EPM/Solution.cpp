@@ -143,15 +143,18 @@ void Solution::Initialize(std::string fileName,
         nBin_LA = 2;
         //dumb hardcoded Grid_Aerosol default constructor
     }
-    double pa_r_hig_low = PA_R_HIG/PA_R_LOW;
-    nBin_PA = std::floor( 1 + log( pa_r_hig_low * pa_r_hig_low* pa_r_hig_low ) / log( PA_VRAT ) );
+    const double pa_vrat = Input_Opt.ADV_AERO_ICE_BIN_VRAT;
+    const double pa_r_low = Input_Opt.ADV_AERO_ICE_BIN_R_LOW;
+    const double pa_r_hig = Input_Opt.ADV_AERO_ICE_BIN_R_HIG;
+    double pa_r_hig_low = pa_r_hig / pa_r_low;
+    nBin_PA = std::floor( 1 + log( pa_r_hig_low * pa_r_hig_low* pa_r_hig_low ) / log( pa_vrat ) );
 
     Vector_1D PA_rE( nBin_PA + 1, 0.0 ); /* Bin edges in m */
     Vector_1D PA_rJ( nBin_PA    , 0.0 ); /* Bin center radius in m */
     Vector_1D PA_vJ( nBin_PA    , 0.0 ); /* Bin volume centers in m^3 */
 
-    const double PA_RRAT = cbrt( PA_VRAT );
-    PA_rE[0] = PA_R_LOW;
+    const double PA_RRAT = cbrt( pa_vrat );
+    PA_rE[0] = pa_r_low;
     for ( UInt iBin_PA = 1; iBin_PA < nBin_PA + 1; iBin_PA++ )
         PA_rE[iBin_PA] = PA_rE[iBin_PA-1] * PA_RRAT;                                        /* [m]   */
 
@@ -169,7 +172,7 @@ void Solution::Initialize(std::string fileName,
 
     if ( PA_nDens >= 0.0E+00 ) {
         const double expsPA = 1.6;
-        const double rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * PA_R_LOW );
+        const double rPA = std::max( RAD[0] * exp( - 2.5 * log(expsPA) * log(expsPA) ), 1.5 * pa_r_low );
         AIM::Grid_Aerosol PAAerosol( size_x, size_y, PA_rJ, PA_rE, PA_nDens, rPA, expsPA, "lognormal" );
 
         solidAerosol = PAAerosol;
