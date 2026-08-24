@@ -194,7 +194,7 @@ namespace Diag {
         binRadVar.putAtt("units", "m");
         binRadVar.putAtt("long_name", "Ice bin center radius");
         binRadVar.putVar(&(iceAer.getBinCenters())[0]);
-        tVar.putAtt("units", "seconds since simulation start");
+        tVar.putAtt("units", "hours since simulation start");
         tVar.putAtt("long_name", "time");
         tVar.putVar(&(cur_time));
 
