@@ -1,0 +1,6 @@
+# A removed leaf key. It must be rejected by name, with the unused-option message
+# and not the parameter sweep one.
+SIMULATION MENU:
+  OUTPUT SUBMENU:
+    Output folder (string): ./
+  Use threaded FFT (T/F): F

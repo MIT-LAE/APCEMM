@@ -69,8 +69,7 @@ private:
     void processInputBackgroundLine(std::istream &s, Vector_1D &amb_Value,
                                     Vector_2D &aer_Value);
     void setAmbientConcentrations(const Input &input, Vector_1D &amb_Value);
-    void initializeSpeciesH2O(const Input &input, const OptInput &input_Opt,
-                              Vector_1D &amb_Value, const double airDens,
+    void initializeSpeciesH2O(Vector_1D &amb_Value, const double airDens,
                               const Meteorology &met);
     void setSpeciesValues(Vector_1D &AERFRAC, Vector_1D &SOLIDFRAC,
                           const Vector_1D &stratData);

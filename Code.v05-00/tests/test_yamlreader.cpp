@@ -201,15 +201,6 @@ TEST_CASE("Read Yaml File"){
             REQUIRE(input.SIMULATION_OMP_NUM_THREADS == 8);
         #endif
         REQUIRE(input.SIMULATION_OVERWRITE == true);
-        REQUIRE(input.SIMULATION_THREADED_FFT == true);
-        REQUIRE(input.SIMULATION_USE_FFTW_WISDOM == true);
-        REQUIRE(input.SIMULATION_SAVE_FORWARD == true);
-        REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
-        REQUIRE(input.SIMULATION_ADJOINT == true);
-        REQUIRE(input.SIMULATION_ADJOINT_FILENAME == "APCEMM_ADJ_Case_*");
-        REQUIRE(input.SIMULATION_BOXMODEL == true);
-        REQUIRE(input.SIMULATION_BOX_FILENAME == "APCEMM_BOX_CASE_*");
-
     }
     SECTION("Read Param Menu"){
         // readParamMenu fills an Input object directly, with hPa converted to
@@ -235,9 +226,6 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(scenario.backgCH4() == 1.76);
         REQUIRE(scenario.backgSO2() == 7.25);
 
-        REQUIRE(scenario.EI_NOx() == 10);
-        REQUIRE(scenario.EI_CO() == 1);
-        REQUIRE(scenario.EI_HC() == 0.6);
         REQUIRE(scenario.EI_SO2() == 0.1);
         REQUIRE(scenario.EI_SO2TOSO4() == 0.05);
         REQUIRE(scenario.EI_Soot() == 0.06);
@@ -255,25 +243,13 @@ TEST_CASE("Read Yaml File"){
         OptInput input;
         readTransportMenu(input, data["TRANSPORT MENU"]);
         REQUIRE(input.TRANSPORT_TRANSPORT == true);
-        REQUIRE(input.TRANSPORT_FILL == true);
         REQUIRE(input.TRANSPORT_TIMESTEP == 10);
-        REQUIRE(input.TRANSPORT_UPDRAFT == true);
-        REQUIRE(input.TRANSPORT_UPDRAFT_TIMESCALE == 3600);
-        REQUIRE(input.TRANSPORT_UPDRAFT_VELOCITY == 5);
-    }
-    SECTION("Read Chemistry Menu"){
-        OptInput input;
-        readChemMenu(input, data["CHEMISTRY MENU"]);
-        REQUIRE(input.CHEMISTRY_CHEMISTRY == true);
-        REQUIRE(input.CHEMISTRY_HETCHEM == true);
-        REQUIRE(input.CHEMISTRY_JRATE_FOLDER == "/net/d04/data/fritzt/APCEMM_Data/J-Rates");
     }
     SECTION("Read Aerosol Menu"){
         OptInput input;
         readAeroMenu(input, data["AEROSOL MENU"]);
         REQUIRE(input.AEROSOL_GRAVSETTLING == true);
         REQUIRE(input.AEROSOL_COAGULATION_SOLID == true);
-        REQUIRE(input.AEROSOL_COAGULATION_LIQUID == true);
         REQUIRE(input.AEROSOL_ICE_GROWTH == true);
         REQUIRE(input.AEROSOL_ICE_GROWTH_TIMESTEP == 10);
     }
@@ -287,19 +263,14 @@ TEST_CASE("Read Yaml File"){
             error = e.what();
         }
     
-        REQUIRE(input.MET_LOADMET == true);
         REQUIRE(input.MET_FILENAME == "/path/to/met/input");
         REQUIRE(input.MET_DT == 1.0);
-        REQUIRE(input.MET_LOADTEMP == true);
         REQUIRE(input.MET_TEMPTIMESERIES == true);
         REQUIRE(input.MET_INTERPTEMPDATA == true);
-        REQUIRE(input.MET_LOADRH == true);
         REQUIRE(input.MET_RHTIMESERIES == true);
         REQUIRE(input.MET_INTERPRHDATA == true);
-        REQUIRE(input.MET_LOADSHEAR == true);
         REQUIRE(input.MET_SHEARTIMESERIES == true);
         REQUIRE(input.MET_INTERPSHEARDATA == true);
-        REQUIRE(input.MET_LOADVERTVELOC == true);
         REQUIRE(input.MET_VERTVELOCTIMESERIES == true);
         REQUIRE(input.MET_INTERPVERTVELOC == true);
         REQUIRE(input.MET_ENABLE_TEMP_PERTURB == true);
@@ -309,19 +280,9 @@ TEST_CASE("Read Yaml File"){
     SECTION("Read Diagnostic Menu"){
         OptInput input;
         readDiagMenu(input, data["DIAGNOSTIC MENU"]);
-        REQUIRE(input.DIAG_FILENAME == "trac_avg.apcemm.hhmm");
-        REQUIRE(input.TS_SPEC == true);
-        REQUIRE(input.TS_FILENAME == "ts_hhmm.nc");
-        REQUIRE(input.TS_SPECIES.size() == 3);
-        REQUIRE(input.TS_SPECIES[2] == 3);
-        REQUIRE(input.TS_FREQ == 10);
         REQUIRE(input.TS_AERO == true);
         REQUIRE(input.TS_AERO_FILENAME == "ts_aerosol_hhmm.nc");
-        REQUIRE(input.TS_AEROSOL.size() == 3);
-        REQUIRE(input.TS_AEROSOL[2] == 5);
         REQUIRE(input.TS_AERO_FREQ == 10);
-        REQUIRE(input.PL_PL == true);
-        REQUIRE(input.PL_O3 == true);
     }
     SECTION("Read Advanced Options Menu") {
         OptInput input;
@@ -332,10 +293,6 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.ADV_GRID_XLIM_RIGHT == 1.0e+3);
         REQUIRE(input.ADV_GRID_YLIM_DOWN == 1.5e+3);
         REQUIRE(input.ADV_GRID_YLIM_UP == 300);
-        REQUIRE(input.ADV_CSIZE_DEPTH_BASE == 180.0);
-        REQUIRE(input.ADV_CSIZE_DEPTH_SCALING_FACTOR == 0.5);
-        REQUIRE(input.ADV_CSIZE_WIDTH_BASE == 100.0);
-        REQUIRE(input.ADV_CSIZE_WIDTH_SCALING_FACTOR == 0.5);
         REQUIRE(input.ADV_AMBIENT_LAPSERATE == -3.0);
         REQUIRE(input.ADV_TROPOPAUSE_PRESSURE == 2.0e+4);
 
@@ -364,9 +321,6 @@ TEST_CASE("Read one input file into a scenario"){
     REQUIRE(scenario.backgCO() == 40);
     REQUIRE(scenario.backgCH4() == 1.76);
     REQUIRE(scenario.backgSO2() == 7.25);
-    REQUIRE(scenario.EI_NOx() == 10);
-    REQUIRE(scenario.EI_CO() == 1);
-    REQUIRE(scenario.EI_HC() == 0.6);
     REQUIRE(scenario.EI_SO2() == 0.1);
     REQUIRE(scenario.EI_SO2TOSO4() == 0.05);
     REQUIRE(scenario.EI_Soot() == 0.06);
@@ -412,10 +366,21 @@ TEST_CASE("Reject input files written for the removed multi-case runs"){
         );
     }
 
-    SECTION("Deprecated options do not cause validation failure"){
-        // Deprecated timesteps in user YAML should be accepted with a warning rather than throwing
-        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
-        REQUIRE_NOTHROW(YamlInputReader::mergeYamlInputFiles({filename}));
+}
+
+TEST_CASE("Reject input files naming an option that was removed for being unused"){
+    // Test that obsolete options are correctly reporting an error with a descriptive error message
+    SECTION("A removed leaf key is named in the error"){
+        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test17.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::mergeYamlInputFiles({filename}),
+            Catch::Matchers::ContainsSubstring("Removed option found") &&
+            Catch::Matchers::ContainsSubstring("SIMULATION MENU -> Use threaded FFT (T/F)") &&
+            Catch::Matchers::ContainsSubstring("never changed a result") &&
+            Catch::Matchers::ContainsSubstring("test17.yaml") &&
+            // Check that the message overrides the default "Unknow key found"
+            !Catch::Matchers::ContainsSubstring("Unknown key found")
+        );
     }
 }
 
@@ -557,9 +522,6 @@ TEST_CASE("Merge Input Files"){
     REQUIRE(scenario.backgCO() == 40);
     REQUIRE(scenario.backgCH4() == 1.76);
     REQUIRE(scenario.backgSO2() == 7.25);
-    REQUIRE(scenario.EI_NOx() == 10);
-    REQUIRE(scenario.EI_CO() == 1);
-    REQUIRE(scenario.EI_HC() == 0.6);
     REQUIRE(scenario.EI_SO2() == 0.1);
     REQUIRE(scenario.EI_SO2TOSO4() == 0.05);
     REQUIRE(scenario.EI_Soot() == 0.06);
@@ -640,7 +602,8 @@ TEST_CASE("Validate Input Files"){
         YAML::Node merged;
         REQUIRE_NOTHROW(merged = YamlInputReader::mergeYamlInputFiles({filename6}));
         REQUIRE_NOTHROW(YamlInputReader::populateInput(input, scenario, merged));
-        REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
+        REQUIRE(input.SIMULATION_FORCE_SEED == false);
+        REQUIRE(input.SIMULATION_SEED_VALUE == 0);
     }
 
     SECTION("Empty input file stays valid"){
@@ -649,7 +612,7 @@ TEST_CASE("Validate Input Files"){
         // leaves every compiled default in place.
         YAML::Node merged;
         REQUIRE_NOTHROW(merged = YamlInputReader::mergeYamlInputFiles({filename7}));
-        REQUIRE(merged["SIMULATION MENU"]["SAVE FORWARD RESULTS SUBMENU"]["netCDF filename format (string)"].as<string>() == "APCEMM_Case_*");
+        REQUIRE(merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Seed value (positive int)"].as<string>() == "0");
         REQUIRE(merged["SIMULATION MENU"]["OUTPUT SUBMENU"]["Output folder (string)"].as<string>() == "=MISSING=");
     }
 
@@ -870,7 +833,7 @@ TEST_CASE("checkDefaultPaths guards the compiled-in defaults"){
     }
 }
 
-TEST_CASE("An unset output folder is reported while reading the input"){
+TEST_CASE("Not setting output folder is an error"){
     // 'Output folder (string)' is required and the defaults is set to '=MISSING='.
     // Check that populateInput throws if the output dir is unspecified.
     // Without this check APCEMM creates a directory named '=MISSING=' in the

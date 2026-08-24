@@ -35,11 +35,9 @@ namespace YamlInputReader{
     // directory.
     static const std::set<std::string> PATH_KEYS = {
         "SIMULATION MENU -> OUTPUT SUBMENU -> Output folder (string)",
-        "SIMULATION MENU -> FFTW WISDOM SUBMENU -> Dir w/ write permission (string)",
         "SIMULATION MENU -> Input background condition (string)",
         "SIMULATION MENU -> Input engine emissions (string)",
         "SIMULATION MENU -> External EPM NetCDF file",
-        "CHEMISTRY MENU -> Photolysis rates folder (string)",
         "METEOROLOGY MENU -> METEOROLOGICAL INPUT SUBMENU -> Met input file path (string)",
     };
 

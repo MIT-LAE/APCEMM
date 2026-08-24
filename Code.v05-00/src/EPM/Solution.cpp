@@ -68,7 +68,7 @@ void Solution::Initialize(std::string fileName,
     setAmbientConcentrations(input, amb_Value);
 
       /* Initialize and allocate space for species */
-    initializeSpeciesH2O(input, Input_Opt, amb_Value, airDens, met);
+    initializeSpeciesH2O(amb_Value, airDens, met);
 
     Vector_1D stratData{ Species[ind_SO4][0][0],   Species[ind_HNO3][0][0],  \
                          Species[ind_HCl][0][0],   Species[ind_HOCl][0][0],  \
@@ -263,15 +263,14 @@ void Solution::setAmbientConcentrations(const Input& input, Vector_1D& amb_Value
 
 }
 
-void Solution::initializeSpeciesH2O(const Input& input, const OptInput& Input_Opt, Vector_1D& amb_Value, const double airDens, const Meteorology& met){
-    UInt actualX = size_x;
-    UInt actualY = size_y;
-    if ( !Input_Opt.CHEMISTRY_CHEMISTRY ) {
-        actualX = 1;
-        actualY = 1;
-
-        reducedSize = 1;
-    }
+void Solution::initializeSpeciesH2O(Vector_1D& amb_Value, const double airDens, const Meteorology& met){
+    // Every species except the H2O family is held as a single cell because chemistry was
+    // the only thing that needed them on the full grid and it is no longer supported.
+    // This is a placeholder fix, ideally we would fully remove the structure holding arrays for non H2O
+    // species but that's a more complex refactor.
+    UInt actualX = 1;
+    UInt actualY = 1;
+    reducedSize = 1;
 
     Vector_2D tmpArray( size_y, Vector_1D( size_x, 0.0E+00 ) );
     Vector_2D tmpArray_Reduced( actualY, Vector_1D( actualX, 0.0E+00 ) );
@@ -290,29 +289,13 @@ void Solution::initializeSpeciesH2O(const Input& input, const OptInput& Input_Op
         }
     }
 
-    if ( Input_Opt.MET_LOADMET ) {
-        /* Use meteorological input? */
-
-        //TODO: Fix this insanely wasteful copy. Probably not happening without significant refactoring everything.
-        Species[ind_H2Omet] = met.H2O_field();
-        /* Update H2O */
-        for ( UInt i = 0; i < size_x; i++ ) {
-            for ( UInt j = 0; j < size_y; j++ ) {
-                Species[ind_H2O][j][i] = Species[ind_H2Omet][j][i] \
-                                       + Species[ind_H2Oplume][j][i];
-            }
-        }
-    } else {
-        /* Else use user-defined H2O profile */
-        double H2Oval = (input.relHumidity_w()/((double) 100.0) * \
-                          physFunc::pSat_H2Ol( input.temperature_K() ) / ( kB * input.temperature_K() )) / 1.00E+06;
-        for ( UInt i = 0; i < size_x; i++ ) {
-            for ( UInt j = 0; j < size_y; j++ ) {
-                //H2O[j][i] = H2Oval;
-                Species[ind_H2Omet][j][i] = H2Oval;
-                /* RH_w = x_H2O * P / Psat_H2Ol(T) = [H2O](#/cm3) * 1E6 * kB * T / Psat_H2Ol(T) */
-                Species[ind_H2O][j][i] = Species[ind_H2Omet][j][i] + Species[ind_H2Oplume][j][i];
-            }
+    //TODO: Fix this insanely wasteful copy. Probably not happening without significant refactoring everything.
+    Species[ind_H2Omet] = met.H2O_field();
+    /* Update H2O */
+    for ( UInt i = 0; i < size_x; i++ ) {
+        for ( UInt j = 0; j < size_y; j++ ) {
+            Species[ind_H2O][j][i] = Species[ind_H2Omet][j][i] \
+                                   + Species[ind_H2Oplume][j][i];
         }
     }
 
