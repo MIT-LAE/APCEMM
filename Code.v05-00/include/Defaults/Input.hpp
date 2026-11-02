@@ -1,6 +1,6 @@
 R"====(
 SIMULATION MENU:
-  OpenMP Num Threads (positive int): 8
+  OpenMP Num Threads (positive int): 4
   OUTPUT SUBMENU:
     Output folder (string): =MISSING=
     Overwrite if folder exists (T/F): T
@@ -86,7 +86,7 @@ TRANSPORT MENU:
   # Outdated, not used (was used by spectral solver)
   Fill Negative Values (T/F): T
   Outer time step [min] (double): 1
-  Inner physics time step [s] (double): 60.0
+  Inner physics time step [s] (double): 10.0
   # Keep off: not sure of the effect yet + met updraft is included (if met file input)
   PLUME UPDRAFT SUBMENU:
     Turn on plume updraft (T/F): F

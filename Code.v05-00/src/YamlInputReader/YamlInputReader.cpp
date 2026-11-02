@@ -451,7 +451,13 @@ namespace YamlInputReader{
         } else if (transportNode["Transport and ice growth substep [s] (double)"]) {
             input.TRANSPORT_ICE_GROWTH_SUBSTEP = parseDoubleString(transportNode["Transport and ice growth substep [s] (double)"].as<string>(), "Transport and ice growth substep [s] (double)");
         } else {
-            input.TRANSPORT_ICE_GROWTH_SUBSTEP = 60.0;
+            input.TRANSPORT_ICE_GROWTH_SUBSTEP = 10.0;
+        }
+
+        if (input.TRANSPORT_ICE_GROWTH_SUBSTEP <= 0.0) {
+            throw std::invalid_argument("In YamlInputReader::readTransportMenu: 'Inner physics time step [s]' (" + 
+                                       std::to_string(input.TRANSPORT_ICE_GROWTH_SUBSTEP) + 
+                                       " s) must be strictly greater than 0.0 s");
         }
 
         if (input.TRANSPORT_ICE_GROWTH_SUBSTEP > input.TRANSPORT_TIMESTEP * 60.0) {
@@ -591,18 +597,10 @@ namespace YamlInputReader{
         input.ADV_EP_N_POSTJET = parseDoubleString(earlyPlumeSubmenu["Post-jet ice crystal count [#/m] (double)"].as<string>(), "Post-jet ice crystal count [#/m] (double)");
         input.ADV_SAVE_PSD_GRID = parseBoolString(advancedNode["Save gridded particle size distribution (T/F)"].as<string>(), "Save gridded particle size distribution (T/F)");
 
-        if (advancedNode["AEROSOL GRID SUBMENU"]) {
-            YAML::Node aeroGridSubmenu = advancedNode["AEROSOL GRID SUBMENU"];
-            if (aeroGridSubmenu["Ice bin volume ratio [-] (double)"]) {
-                input.ADV_AERO_ICE_BIN_VRAT = parseDoubleString(aeroGridSubmenu["Ice bin volume ratio [-] (double)"].as<string>(), "Ice bin volume ratio [-] (double)");
-            }
-            if (aeroGridSubmenu["Ice bin r_min [m] (double)"]) {
-                input.ADV_AERO_ICE_BIN_R_LOW = parseDoubleString(aeroGridSubmenu["Ice bin r_min [m] (double)"].as<string>(), "Ice bin r_min [m] (double)");
-            }
-            if (aeroGridSubmenu["Ice bin r_max [m] (double)"]) {
-                input.ADV_AERO_ICE_BIN_R_HIG = parseDoubleString(aeroGridSubmenu["Ice bin r_max [m] (double)"].as<string>(), "Ice bin r_max [m] (double)");
-            }
-        }
+        YAML::Node aeroGridSubmenu = advancedNode["AEROSOL GRID SUBMENU"];
+        input.ADV_AERO_ICE_BIN_VRAT = parseDoubleString(aeroGridSubmenu["Ice bin volume ratio [-] (double)"].as<string>(), "Ice bin volume ratio [-] (double)");
+        input.ADV_AERO_ICE_BIN_R_LOW = parseDoubleString(aeroGridSubmenu["Ice bin r_min [m] (double)"].as<string>(), "Ice bin r_min [m] (double)");
+        input.ADV_AERO_ICE_BIN_R_HIG = parseDoubleString(aeroGridSubmenu["Ice bin r_max [m] (double)"].as<string>(), "Ice bin r_max [m] (double)");
 
         if (input.ADV_AERO_ICE_BIN_VRAT <= 1.0) {
             throw std::invalid_argument("Ice bin volume ratio [-] in AEROSOL GRID SUBMENU must be strictly greater than 1.0!");

@@ -114,8 +114,7 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
         // Interleaved Transport and Ice Growth Subcycling over the outer timestep dt
         if (simVars_.TRANSPORT || simVars_.ICE_GROWTH) {
             const double dt_step = timestepVars_.dt;
-            const double dt_sub_target = (optInput_.TRANSPORT_ICE_GROWTH_SUBSTEP > 0.0) 
-                                       ? optInput_.TRANSPORT_ICE_GROWTH_SUBSTEP : 60.0;
+            const double dt_sub_target = optInput_.TRANSPORT_ICE_GROWTH_SUBSTEP;
             const int n_subcycles = std::max(1, static_cast<int>(std::ceil(dt_step / dt_sub_target)));
             const double dt_sub = dt_step / n_subcycles;
 
