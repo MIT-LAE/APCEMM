@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 #include <iostream>
+#include <random>
 #include "Core/Mesh.hpp"
 #include "FVM_ANDS/FVM_Solver.hpp"
 using std::cout;
@@ -619,6 +620,173 @@ namespace FVM_ANDS{
             double velocity = 0.6; // dt = ds = 1 -> no integer shift, fractional CFL = 0.6
             semiLagrangianAdvection1D(slice, velocity, dt, ds, bc_left, bc_right);
             checkMonotonicity(slice);
+        }
+    }
+}
+
+namespace FVM_ANDS{
+    // Zero Dirichlet boundary conditions on all four sides of an nx x ny grid.
+    BoundaryConditions zeroDirichletBC(int nx, int ny){
+        BoundaryConditions bc;
+        bc.bcType_top = BoundaryConditionFlag::DIRICHLET_INT_BPOINT;
+        bc.bcType_left = BoundaryConditionFlag::DIRICHLET_INT_BPOINT;
+        bc.bcType_right = BoundaryConditionFlag::DIRICHLET_INT_BPOINT;
+        bc.bcType_bot = BoundaryConditionFlag::DIRICHLET_INT_BPOINT;
+        bc.bcVals_top = Vector_1D(nx, 0);
+        bc.bcVals_bot = Vector_1D(nx, 0);
+        bc.bcVals_left = Vector_1D(ny, 0);
+        bc.bcVals_right = Vector_1D(ny, 0);
+        return bc;
+    }
+
+    TEST_CASE("Variable-D diffusion matrix uses face coefficients"){
+        /*
+        Discretize div(D grad phi) with a strongly discontinuous D.
+        If both rows next to a face use the same face D:
+        - the interior block of the matrix is symmetric,
+        - every column of a cell away from the boundary sums to 1 (mass conservation).
+        */
+        int nx = 20, ny = 17;
+        double xlim_left = 0.0, xlim_right = 0.9, ylim_bot = 0.0, ylim_top = 0.35;
+        double dt = 1e-2;
+        int nInt = nx * ny;
+        int nTot = nInt + 2 * nx + 2 * ny;
+
+        // Random base D, with a 7x jump inside a rectangle (like DiffParam at t = 0).
+        // Rectangle is (10, nx-2) x (9, ny-1)
+        std::mt19937 rng(20);
+        std::uniform_real_distribution<double> dist(0.5, 1.5);
+        Eigen::VectorXd Dh(nInt), Dv(nInt);
+        for(int i = 0; i < nx; i++){
+            for(int j = 0; j < ny; j++){
+                double factor = (i >= 10 && i <= nx - 2 && j >= 9 && j <= ny - 1) ? 7.0 : 1.0;
+                Dh[i*ny + j] = factor * dist(rng);
+                Dv[i*ny + j] = factor * 0.1 * dist(rng);
+            }
+        }
+
+        AdvDiffParams params = AdvDiffParams(0, 0, 0, 1.0, 1.0, dt);
+        Mesh mesh = Mesh(nx, ny, xlim_left, xlim_right, ylim_top, ylim_bot, MeshDomainLimitsSpec::ABS_COORDS);
+        Eigen::VectorXd phi_init = Eigen::VectorXd::Zero(nTot);
+        FVM_Solver solver(params, mesh.x(), mesh.y(), zeroDirichletBC(nx, ny), phi_init);
+        solver.updateDiffusion(Dh, Dv);
+        solver.buildCoeffMatrix();
+        Eigen::SparseMatrix<double, Eigen::RowMajor> mat = solver.coefMatrix();
+
+        SECTION("Interior block is exactly symmetric"){
+            // Only the interior block (rows and columns 0..nInt-1) is symmetric.
+            // Indices >= nInt are ghost points. The ghost rows hold the BC equation (0.5, 0.5),
+            // not a diffusion stencil, so the full matrix is not symmetric.
+            Eigen::SparseMatrix<double, Eigen::RowMajor> A_int = mat.topLeftCorner(nInt, nInt);
+            Eigen::SparseMatrix<double, Eigen::RowMajor> A_int_T = A_int.transpose();
+            // A(i, j) and A(j, i) come from the same face D so they must be exactly equal
+            // The Frobenius norm of the difference is 0 only if every entry matches its mirror.
+            REQUIRE((A_int - A_int_T).norm() == 0.0);
+        }
+
+        SECTION("Column sums equal 1 away from the boundary"){
+            // A row vector of ones times the matrix gives the sum of each column: colSum[k] = sum over rows of A(row, k).
+            Eigen::RowVectorXd colSum = Eigen::RowVectorXd::Ones(nTot) * mat;
+            double maxDefect = 0;
+            for(int i = 1; i < nx - 1; i++){
+                for(int j = 1; j < ny - 1; j++){
+                    int k = i*ny + j;
+                    // Round-off scales with the largest entry in the column which is the diagonal.
+                    double columnDefect = std::abs(colSum[k] - 1.0) / mat.coeff(k, k);
+                    maxDefect = std::max(maxDefect, columnDefect);
+                }
+            }
+            REQUIRE(maxDefect < 1e-14);
+        }
+    }
+
+    // Run nSteps of transport on a Gaussian blob with zero Dirichlet BC, through operatorSplitSolve,
+    // (what LAGRIDPlumeModel::runTransport uses). It builds the operator-split diffusion matrix
+    // and solves the implicit diffusion step with SOR.
+    // All velocities are zero, so the advection half-steps do nothing and the step is pure diffusion.
+    // If enhanceBlob is true, D is 7x larger where phi > 1e-4 * max(phi), as in updateDiffVecs.
+    // sorThreshold is the SOR relative residual threshold (default value: 1e-3, lowered for testing).
+    // Returns the relative mass change and the largest |phi| on a boundary cell, relative to max(phi_0).
+    std::tuple<double, double> diffusionMassChange(bool enhanceBlob, int nSteps, double sorThreshold){
+        // Cell size is fixed (dx = 1/60, dy = 1/50), so dt*D/dx^2 does not depend on the domain size.
+        // The domain must be large enough that the blob does not reach the boundary in nSteps.
+        double Lx = 2.0, Ly = 2.0;
+        int nx = static_cast<int>(60 * Lx), ny = static_cast<int>(50 * Ly);
+        double dt = 0.25, Dh_base = 2.5e-4, Dv_base = 1.25e-4, sigma = 0.03;
+        int nInt = nx * ny;
+        int nTot = nInt + 2 * nx + 2 * ny;
+        Mesh mesh = Mesh(nx, ny, 0.0, Lx, Ly, 0.0, MeshDomainLimitsSpec::ABS_COORDS);
+        double dx = mesh.x()[1] - mesh.x()[0];
+        double dy = mesh.y()[1] - mesh.y()[0];
+
+        // Interior cells first (index i*ny + j), then the ghost points.
+        Eigen::VectorXd phi = Eigen::VectorXd::Zero(nTot);
+        for(int i = 0; i < nx; i++){
+            for(int j = 0; j < ny; j++){
+                double rx = mesh.x()[i] - 0.5 * Lx, ry = mesh.y()[j] - 0.5 * Ly;
+                phi[i*ny + j] = std::exp(-(rx*rx + ry*ry) / (2*sigma*sigma));
+            }
+        }
+        double phiMax0 = phi.maxCoeff();
+
+        Eigen::VectorXd Dh(nInt), Dv(nInt);
+        for(int k = 0; k < nInt; k++){
+            double factor = (enhanceBlob && phi[k] > 1e-4 * phiMax0) ? 7.0 : 1.0;
+            Dh[k] = factor * Dh_base;
+            Dv[k] = factor * Dv_base;
+        }
+
+        AdvDiffParams params = AdvDiffParams(0, 0, 0, Dh_base, Dv_base, dt);
+        FVM_Solver solver(params, mesh.x(), mesh.y(), zeroDirichletBC(nx, ny), phi);
+        solver.updateDiffusion(Dh, Dv);
+        solver.setSorThreshold(sorThreshold);
+
+        auto interior = Eigen::seq(0, nInt - 1);
+        double mass0 = dx * dy * phi(interior).sum();
+        for(int n = 0; n < nSteps; n++){
+            solver.operatorSplitSolve(false);
+        }
+        const Eigen::VectorXd& soln = solver.phi();
+        double mass1 = dx * dy * soln(interior).sum();
+
+        double boundaryMax = 0;
+        for(int i = 0; i < nx; i++){
+            for(int j = 0; j < ny; j++){
+                if(i == 0 || i == nx - 1 || j == 0 || j == ny - 1){
+                    boundaryMax = std::max(boundaryMax, std::abs(soln[i*ny + j]));
+                }
+            }
+        }
+        return std::make_tuple(std::abs(mass1 - mass0) / mass0, boundaryMax / phiMax0);
+    }
+
+    TEST_CASE("Implicit diffusion conserves mass with discontinuous D"){
+        int nSteps = 40;
+        double relMassChange, boundaryMax;
+
+        // At a tight SOR threshold, the only mass error left is round-off so this checks that the discretization itself conserves mass.
+        SECTION("Uniform D (control), tight SOR threshold"){
+            std::tie(relMassChange, boundaryMax) = diffusionMassChange(false, nSteps, 1e-13);
+            cout << "Uniform D, SOR 1e-13: relative mass change " << relMassChange << ", boundary max " << boundaryMax << endl;
+            // The blob must not reach the boundary, else the Dirichlet BC removes mass.
+            REQUIRE(boundaryMax < 1e-12);
+            REQUIRE(relMassChange < 1e-10);
+        }
+        SECTION("D jumps 7x at the blob edge, tight SOR threshold"){
+            std::tie(relMassChange, boundaryMax) = diffusionMassChange(true, nSteps, 1e-13);
+            cout << "Discontinuous D, SOR 1e-13: relative mass change " << relMassChange << ", boundary max " << boundaryMax << endl;
+            REQUIRE(boundaryMax < 1e-12);
+            REQUIRE(relMassChange < 1e-10);
+        }
+
+        // In the transport step, the SOR threshold is historically set to 1e-3. This might need to be revisited.
+        // The unconverged SOR residual changes the mass when D varies.
+        // This bound is a regression check on the transport step, conservation of the scheme is tested by the tighter check above.
+        SECTION("D jumps 7x at the blob edge, transport SOR threshold"){
+            std::tie(relMassChange, boundaryMax) = diffusionMassChange(true, nSteps, 1e-3);
+            cout << "Discontinuous D, SOR 1e-3: relative mass change " << relMassChange << ", boundary max " << boundaryMax << endl;
+            REQUIRE(boundaryMax < 1e-12);
+            REQUIRE(relMassChange < 0.05);
         }
     }
 }

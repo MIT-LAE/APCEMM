@@ -116,7 +116,7 @@ namespace FVM_ANDS{
         start = std::chrono::high_resolution_clock::now();
         #endif
 
-        advDiffSys_.sor_solve();
+        advDiffSys_.sor_solve(1.0, sorThreshold_);
 
         #ifdef ENABLE_TIMING
         stop = std::chrono::high_resolution_clock::now();

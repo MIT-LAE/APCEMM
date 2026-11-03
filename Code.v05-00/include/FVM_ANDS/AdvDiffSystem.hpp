@@ -249,6 +249,13 @@ namespace FVM_ANDS{
             void buildAdvectionCoeffs(int i, double& coeff_C, double& coeff_N, double& coeff_S, double& coeff_E, double& coeff_W);
             void updateGhostNodes();
 
+            // Diffusion coefficient on the face between interior cell i and its neighbour.
+            // Use the arithmetic mean if the neighbour is an interior cell.
+            // If the neighbour is a ghost point, use D[i] (one-sided). D only contains interior cells.
+            inline double faceDiff(int i, int idxNeighbor, const Eigen::VectorXd& D) const noexcept {
+                return idxNeighbor >= nInteriorPoints_ ? D[i] : 0.5 * (D[i] + D[idxNeighbor]);
+            }
+
             inline bool isValidPointID(int idx) const {
                 return (idx >= 0 && idx < phi_.rows());
             }
