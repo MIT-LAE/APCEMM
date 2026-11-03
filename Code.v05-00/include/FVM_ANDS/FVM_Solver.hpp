@@ -38,6 +38,11 @@ namespace FVM_ANDS{
             inline void setConvergenceThres(double tol){
                 convergenceThres_ = tol;
             }
+            // Relative residual threshold for the SOR diffusion solve in operatorSplitSolve.
+            // The default (1e-3) is used for transport but tests can lower it.
+            inline void setSorThreshold(double threshold){
+                sorThreshold_ = threshold;
+            }
             inline void setMaxIters(int iters){
                 maxIters_ = iters;
             }
@@ -102,6 +107,7 @@ namespace FVM_ANDS{
         private:
             int maxIters_;
             double convergenceThres_;
+            double sorThreshold_ = 1e-3;
             AdvDiffSystem advDiffSys_;
             bool useDiagPreCond_;
             bool matrix_prebuilt_ = false;

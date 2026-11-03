@@ -228,12 +228,17 @@ namespace FVM_ANDS{
             int idx_N = neighbor_point(FaceDirection::NORTH, i);
             int idx_S = neighbor_point(FaceDirection::SOUTH, i);
 
-            //Diffusion Terms
-            double coeff_C = 1 + 2 * dt_ * (Dh_vec_[i] / (dx_ * dx_) + Dv_vec_[i] / (dy_ * dy_));
-            double coeff_E = -Dh_vec_[i] * dt_ / (dx_ * dx_);
-            double coeff_W = -Dh_vec_[i] * dt_ / (dx_ * dx_) ;
-            double coeff_N = -Dv_vec_[i] * dt_ / (dy_ * dy_);
-            double coeff_S = -Dv_vec_[i] * dt_ / (dy_ * dy_);
+            //Diffusion Terms: discretize div(D grad phi) with D evaluated at the faces.
+            double D_E = faceDiff(i, idx_E, Dh_vec_);
+            double D_W = faceDiff(i, idx_W, Dh_vec_);
+            double D_N = faceDiff(i, idx_N, Dv_vec_);
+            double D_S = faceDiff(i, idx_S, Dv_vec_);
+
+            double coeff_C = 1 + dt_ * ((D_E + D_W) / (dx_ * dx_) + (D_N + D_S) / (dy_ * dy_));
+            double coeff_E = -D_E * dt_ / (dx_ * dx_);
+            double coeff_W = -D_W * dt_ / (dx_ * dx_);
+            double coeff_N = -D_N * dt_ / (dy_ * dy_);
+            double coeff_S = -D_S * dt_ / (dy_ * dy_);
 
             //Operator splitting uses implicit only for diffusion
             if(!operatorSplit && (u_double_ > 0 || v_double_ > 0 || shear_ > 0)){
