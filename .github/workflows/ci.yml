@@ -16,8 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        # The plain gcc:11.x tags use Debian bullseye, which is end of life and fails apt-get install.
-        gcc: [11.4-bookworm, 14.3]
+        gcc: [11.2, 14.3]
 
     steps:
 
@@ -29,7 +28,11 @@ jobs:
           submodules: 'recursive'
 
       - name: Install dependencies
+        # Debian bullseye security packages moved to archive.debian.org. The old server gives a 404.
         run: |
+          if grep -q bullseye /etc/os-release; then
+            sed -i 's|security.debian.org/debian-security|archive.debian.org/debian-security|' /etc/apt/sources.list
+          fi
           apt-get update
           apt-get install -y cmake curl zip unzip tar
 
