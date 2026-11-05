@@ -9,14 +9,16 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    # Use a pinned Ubuntu LTS
+    runs-on: ubuntu-26.04
 
-    # Fetch docker image with specific gcc version prebuilt
-    container: gcc:${{ matrix.gcc }}
+    env:
+      CC: gcc-${{ matrix.gcc }}
+      CXX: g++-${{ matrix.gcc }}
 
     strategy:
       matrix:
-        gcc: [11.2, 14.3]
+        gcc: [11, 14]
 
     steps:
 
@@ -27,10 +29,12 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Install dependencies
+      - name: Install compiler
         run: |
-          apt-get update
-          apt-get install -y cmake curl zip unzip tar
+          sudo apt-get update
+          sudo apt-get install -y g++-${{ matrix.gcc }}
+          "$CXX" --version
+          cmake --version
 
       - name: Cache vcpkg binary cache
         uses: actions/cache@v5
