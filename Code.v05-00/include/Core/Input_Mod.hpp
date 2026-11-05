@@ -58,6 +58,7 @@ struct OptInput
     bool        TRANSPORT_TRANSPORT;
     bool        TRANSPORT_FILL;
     double      TRANSPORT_TIMESTEP;
+    double      TRANSPORT_ICE_GROWTH_SUBSTEP;
     bool        TRANSPORT_UPDRAFT;
     double      TRANSPORT_UPDRAFT_TIMESCALE;
     double      TRANSPORT_UPDRAFT_VELOCITY;
@@ -138,6 +139,11 @@ struct OptInput
     double ADV_GRID_XLIM_LEFT;
     double ADV_GRID_YLIM_UP;
     double ADV_GRID_YLIM_DOWN;
+    unsigned int ADV_GRID_TARGET_PLUME_PTS;
+    double ADV_GRID_MIN_DX;
+    double ADV_GRID_MAX_DX;
+    double ADV_GRID_MIN_DY;
+    double ADV_GRID_MAX_DY;
     double ADV_CSIZE_DEPTH_BASE;
     double ADV_CSIZE_DEPTH_SCALING_FACTOR;
     double ADV_CSIZE_WIDTH_BASE;
@@ -149,6 +155,9 @@ struct OptInput
     bool ADV_EP_N_POSTJET_OVERRIDE;
     double ADV_EP_N_POSTJET;
     bool ADV_SAVE_PSD_GRID;
+    double ADV_AERO_ICE_BIN_VRAT;
+    double ADV_AERO_ICE_BIN_R_LOW;
+    double ADV_AERO_ICE_BIN_R_HIG;
 
 };
 

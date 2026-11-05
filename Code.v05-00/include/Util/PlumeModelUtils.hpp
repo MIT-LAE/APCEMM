@@ -18,8 +18,11 @@ namespace PlumeModelUtils {
                     double &v_x, double &v_y,                  \
                     double &dTrav_x, double &dTrav_y );
                     
+    void DiffParam( const double time, const double dt, double &d_x, double &d_y, \
+                    const double D_X, const double D_Y );
+
     void DiffParam( const double time, double &d_x, double &d_y, \
-                const double D_X, const double D_Y );
+                    const double D_X, const double D_Y );
 }
 
 

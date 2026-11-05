@@ -18,7 +18,6 @@
 
 /* Aerosol Size Ratios */
 #define LA_VRAT               1.80E+00    /* Size ratio between two consecutive bins */
-#define PA_VRAT               1.80E+00    /* Size ratio between two consecutive bins */
 
 /* Ring structure */
 #define NRING             15          /* Number of rings */
@@ -62,8 +61,6 @@
 /* Microphysics parameters */
 #define LA_R_LOW              1.00E-10    /* Sulfates' lower bin radius [m] */
 #define LA_R_HIG              5.00E-07    /* Sulfates' larger bin radius [m] */
-#define PA_R_LOW              5.00E-08    /* Ice/NAT lower bin radius [m] */
-#define PA_R_HIG              8.00E-05    /* Ice/NAT larger bin radius [m] */
 
 /* Early plume integration */
 #define VORTEX_SINKING        1           /* Consider vortex sinking? */

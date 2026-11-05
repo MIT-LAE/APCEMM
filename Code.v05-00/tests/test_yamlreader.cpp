@@ -257,9 +257,54 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.TRANSPORT_TRANSPORT == true);
         REQUIRE(input.TRANSPORT_FILL == true);
         REQUIRE(input.TRANSPORT_TIMESTEP == 10);
+        REQUIRE(input.TRANSPORT_ICE_GROWTH_SUBSTEP == 10.0);
         REQUIRE(input.TRANSPORT_UPDRAFT == true);
         REQUIRE(input.TRANSPORT_UPDRAFT_TIMESCALE == 3600);
         REQUIRE(input.TRANSPORT_UPDRAFT_VELOCITY == 5);
+
+        // Test with new "Outer time step [min]" and "Inner physics time step [s]" keys
+        YAML::Node customTransport = YAML::Load(
+            "Turn on Transport (T/F): T\n"
+            "Fill Negative Values (T/F): T\n"
+            "Outer time step [min] (double): 5\n"
+            "Inner physics time step [s] (double): 30.0\n"
+            "PLUME UPDRAFT SUBMENU:\n"
+            "  Turn on plume updraft (T/F): F\n"
+            "  Updraft timescale [s] (double): 3600\n"
+            "  Updraft veloc. [cm/s] (double): 5\n"
+        );
+        OptInput customInput;
+        readTransportMenu(customInput, customTransport);
+        REQUIRE(customInput.TRANSPORT_TIMESTEP == 5.0);
+        REQUIRE(customInput.TRANSPORT_ICE_GROWTH_SUBSTEP == 30.0);
+
+        // Test validation: Inner substep > Outer step throws
+        YAML::Node invalidTransport = YAML::Load(
+            "Turn on Transport (T/F): T\n"
+            "Fill Negative Values (T/F): T\n"
+            "Outer time step [min] (double): 1\n"
+            "Inner physics time step [s] (double): 120.0\n"
+            "PLUME UPDRAFT SUBMENU:\n"
+            "  Turn on plume updraft (T/F): F\n"
+            "  Updraft timescale [s] (double): 3600\n"
+            "  Updraft veloc. [cm/s] (double): 5\n"
+        );
+        OptInput invalidInput;
+        REQUIRE_THROWS_AS(readTransportMenu(invalidInput, invalidTransport), std::invalid_argument);
+
+        // Test validation: Inner substep <= 0 throws
+        YAML::Node nonPositiveSubstep = YAML::Load(
+            "Turn on Transport (T/F): T\n"
+            "Fill Negative Values (T/F): T\n"
+            "Outer time step [min] (double): 1\n"
+            "Inner physics time step [s] (double): 0.0\n"
+            "PLUME UPDRAFT SUBMENU:\n"
+            "  Turn on plume updraft (T/F): F\n"
+            "  Updraft timescale [s] (double): 3600\n"
+            "  Updraft veloc. [cm/s] (double): 5\n"
+        );
+        OptInput nonPositiveInput;
+        REQUIRE_THROWS_AS(readTransportMenu(nonPositiveInput, nonPositiveSubstep), std::invalid_argument);
     }
     SECTION("Read Chemistry Menu"){
         OptInput input;
@@ -275,7 +320,6 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.AEROSOL_COAGULATION_SOLID == true);
         REQUIRE(input.AEROSOL_COAGULATION_LIQUID == true);
         REQUIRE(input.AEROSOL_ICE_GROWTH == true);
-        REQUIRE(input.AEROSOL_ICE_GROWTH_TIMESTEP == 10);
     }
     SECTION("Read Met Menu"){
         OptInput input;
@@ -338,6 +382,9 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.ADV_CSIZE_WIDTH_SCALING_FACTOR == 0.5);
         REQUIRE(input.ADV_AMBIENT_LAPSERATE == -3.0);
         REQUIRE(input.ADV_TROPOPAUSE_PRESSURE == 2.0e+4);
+        REQUIRE(input.ADV_AERO_ICE_BIN_VRAT == 1.80);
+        REQUIRE(input.ADV_AERO_ICE_BIN_R_LOW == 5.0e-08);
+        REQUIRE(input.ADV_AERO_ICE_BIN_R_HIG == 8.0e-05);
 
     }
 

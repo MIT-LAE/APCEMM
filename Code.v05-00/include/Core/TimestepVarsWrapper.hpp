@@ -74,13 +74,12 @@ struct TimestepVarsWrapper
     }
     inline bool checkTimeForTransport()
     {
-        ITS_TIME_FOR_TRANSPORT = (((curr_Time_s + dt - lastTimeTransport) >= TRANSPORT_DT) || LAST_STEP);
+        ITS_TIME_FOR_TRANSPORT = (((curr_Time_s - lastTimeTransport) >= -1.0e-6) || LAST_STEP);
         return ITS_TIME_FOR_TRANSPORT;
     }
     inline bool checkTimeForIceGrowth()
     {
-        /* TODO: For now perform growth at every time step */
-        ITS_TIME_FOR_ICE_GROWTH = (((curr_Time_s + dt - lastTimeIceGrowth) >= ICE_GROWTH_DT) || LAST_STEP);
+        ITS_TIME_FOR_ICE_GROWTH = (((curr_Time_s - lastTimeIceGrowth) >= -1.0e-6) || LAST_STEP);
         return ITS_TIME_FOR_ICE_GROWTH;
     }
 };

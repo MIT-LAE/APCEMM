@@ -834,6 +834,10 @@ void sor_solve(const Eigen::SparseMatrix<double, Eigen::RowMajor> &A, const Eige
     Not sure how to do this better for now...
     */ 
     double diagCoeff = 0;
+    double rhs_norm_init = rhs.lpNorm<2>();
+    if (rhs_norm_init < 1.0e-30 && phi.lpNorm<2>() < 1.0e-30) {
+        return;
+    }
     double residual = 1;
 
     while(residual > threshold){
@@ -865,7 +869,9 @@ void sor_solve(const Eigen::SparseMatrix<double, Eigen::RowMajor> &A, const Eige
             } // end inner for loop
         } // end iters for loop
     
-        residual = (A * phi - rhs).eval().lpNorm<2>()/ rhs.lpNorm<2>();
+        double rhs_norm = rhs.lpNorm<2>();
+        double res_norm = (A * phi - rhs).eval().lpNorm<2>();
+        residual = (rhs_norm < 1.0e-30) ? res_norm : (res_norm / rhs_norm);
         if (isnan(residual)) throw std::runtime_error("NaN residual encountered");
     } // end while loop
 
