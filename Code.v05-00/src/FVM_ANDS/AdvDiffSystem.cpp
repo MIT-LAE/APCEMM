@@ -541,6 +541,172 @@ namespace FVM_ANDS{
         applyBoundaryCondition(); //need this to calculate minmod function at some timestep.
     }
 
+    /**
+     * @brief 1D Flux-Form Semi-Lagrangian (FFSL) advection with Lax-Wendroff TVD subgrid reconstruction.
+     * @see AdvDiffSystem.hpp for detailed algorithmic documentation and literature references.
+     */
+    void semiLagrangianAdvection1D(
+        std::vector<double>& slice,
+        double velocity,
+        double dt,
+        double ds,
+        double bc_left,
+        double bc_right)
+    {
+        const int N = static_cast<int>(slice.size());
+        if (N == 0) return;
+
+        double disp = velocity * dt;
+        if (std::abs(disp) < 1.0e-14 || dt <= 0.0) return;
+
+        if (velocity > 0.0) {
+            int k = static_cast<int>(disp / ds);
+            double rem_disp = disp - k * ds;
+            double rem_dt = rem_disp / velocity;
+
+            // Step 1: Discrete shift to the right (positive direction)
+            if (k > 0) {
+                if (k >= N) {
+                    std::fill(slice.begin(), slice.end(), bc_left);
+                } else {
+                    for (int m = N - 1; m >= k; --m) {
+                        slice[m] = slice[m - k];
+                    }
+                    for (int m = 0; m < k; ++m) {
+                        slice[m] = bc_left;
+                    }
+                }
+            }
+
+            // Step 2: Fractional Forward Euler step
+            if (rem_disp > 1.0e-12 && rem_dt > 0.0) {
+                const double cfl_frac = velocity * rem_dt / ds;
+                const double slope_weight = 0.5 * (1.0 - cfl_frac);
+
+                std::vector<double> face_flux(N + 1, 0.0);
+                face_flux[0] = bc_left;
+
+                auto minmod = [](double a, double b) -> double {
+                    if (a * b <= 0.0) return 0.0;
+                    return (a > 0.0) ? std::min(a, b) : std::max(a, b);
+                };
+
+                for (int m = 0; m < N - 1; ++m) {
+                    double diff_up = (m == 0) ? (2.0 * (slice[0] - bc_left)) : (slice[m] - slice[m - 1]);
+                    double diff_down = slice[m + 1] - slice[m];
+                    double slope = minmod(diff_up, diff_down);
+                    face_flux[m + 1] = slice[m] + slope_weight * slope;
+                }
+
+                // Outflow face at m = N
+                double diff_up_last = (N >= 2) ? (slice[N - 1] - slice[N - 2]) : (2.0 * (slice[0] - bc_left));
+                double diff_down_last = 2.0 * (bc_right - slice[N - 1]);
+                double slope_last = minmod(diff_up_last, diff_down_last);
+                face_flux[N] = slice[N - 1] + slope_weight * slope_last;
+
+                for (int m = 0; m < N; ++m) {
+                    slice[m] -= cfl_frac * (face_flux[m + 1] - face_flux[m]);
+                }
+            }
+        } else { // velocity < 0.0
+            double abs_vel = -velocity;
+            double abs_disp = -disp;
+            int k = static_cast<int>(abs_disp / ds);
+            double rem_disp = abs_disp - k * ds;
+            double rem_dt = rem_disp / abs_vel;
+
+            // Step 1: Discrete shift to the left (negative direction)
+            if (k > 0) {
+                if (k >= N) {
+                    std::fill(slice.begin(), slice.end(), bc_right);
+                } else {
+                    for (int m = 0; m < N - k; ++m) {
+                        slice[m] = slice[m + k];
+                    }
+                    for (int m = N - k; m < N; ++m) {
+                        slice[m] = bc_right;
+                    }
+                }
+            }
+
+            // Step 2: Fractional Forward Euler step
+            if (rem_disp > 1.0e-12 && rem_dt > 0.0) {
+                const double cfl_frac = abs_vel * rem_dt / ds;
+                const double slope_weight = 0.5 * (1.0 - cfl_frac);
+
+                std::vector<double> face_flux(N + 1, 0.0);
+                face_flux[N] = bc_right;
+
+                auto minmod = [](double a, double b) -> double {
+                    if (a * b <= 0.0) return 0.0;
+                    return (a > 0.0) ? std::min(a, b) : std::max(a, b);
+                };
+
+                for (int m = 0; m < N - 1; ++m) {
+                    double diff_up = (m + 1 == N - 1) ? (2.0 * (bc_right - slice[N - 1])) : (slice[m + 2] - slice[m + 1]);
+                    double diff_down = slice[m + 1] - slice[m];
+                    double slope = minmod(diff_down, diff_up);
+                    face_flux[m + 1] = slice[m + 1] - slope_weight * slope;
+                }
+
+                // Outflow face at m = 0 (leftward flow towards bc_left)
+                double diff_down_0 = 2.0 * (slice[0] - bc_left);
+                double diff_up_0 = (N >= 2) ? (slice[1] - slice[0]) : (2.0 * (bc_right - slice[0]));
+                double slope_0 = minmod(diff_up_0, diff_down_0);
+                face_flux[0] = slice[0] - slope_weight * slope_0;
+
+                for (int m = 0; m < N; ++m) {
+                    slice[m] -= cfl_frac * (face_flux[m] - face_flux[m + 1]);
+                }
+            }
+        }
+    }
+
+    void AdvDiffSystem::semiLagrangianAdvection(double dt, bool parallelAdvection) {
+        // 1. Horizontal Advection along X (row by row)
+        #pragma omp parallel if (parallelAdvection) default(shared)
+        {
+            std::vector<double> row(nx_);
+            #pragma omp for schedule(static)
+            for (int j = 0; j < ny_; ++j) {
+                double u_j = u_double_ - yCoord_[j] * shear_;
+                if (std::abs(u_j) > 1.0e-14) {
+                    for (int i = 0; i < nx_; ++i) {
+                        int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
+                        row[i] = phi_[idx];
+                    }
+                    semiLagrangianAdvection1D(row, u_j, dt, dx_, bcVals_left_[j], bcVals_right_[j]);
+                    for (int i = 0; i < nx_; ++i) {
+                        int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
+                        phi_[idx] = row[i];
+                    }
+                }
+            }
+        }
+
+        // 2. Vertical Advection along Y (column by column)
+        if (std::abs(v_double_) > 1.0e-14) {
+            #pragma omp parallel if (parallelAdvection) default(shared)
+            {
+                std::vector<double> col(ny_);
+                #pragma omp for schedule(static)
+                for (int i = 0; i < nx_; ++i) {
+                    for (int j = 0; j < ny_; ++j) {
+                        int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
+                        col[j] = phi_[idx];
+                    }
+                    semiLagrangianAdvection1D(col, v_double_, dt, dy_, bcVals_bot_[i], bcVals_top_[i]);
+                    for (int j = 0; j < ny_; ++j) {
+                        int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
+                        phi_[idx] = col[j];
+                    }
+                }
+            }
+        }
+
+        applyBoundaryCondition();
+    }
+
     Eigen::VectorXd AdvDiffSystem::forwardEulerAdvection(bool operatorSplit, bool parallelAdvection) const noexcept{
         Eigen::VectorXd soln(nTotalPoints_);
         // double avgBackgroundCalcTime = 0;

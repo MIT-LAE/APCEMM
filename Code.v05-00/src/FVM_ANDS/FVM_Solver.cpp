@@ -66,27 +66,15 @@ namespace FVM_ANDS{
         #endif
 
         //Strang Splitting
-        //Step 1: Calculate explicit advection timestep based on CFL condition set
-
         bool operatorSplit = true;
-        double courant = advDiffSys_.courant();
         double dt_max = advDiffSys_.timestep();
-        double dt_adv = dt_max * (courant_max / courant);
-
-        int n_timesteps_advection_half =  std::ceil((0.5 * dt_max) / dt_adv);
-        dt_adv = (0.5 * dt_max) / n_timesteps_advection_half;
 
         #ifdef ENABLE_TIMING
-        std::cout << "              N Advection timesteps = 2 * " << n_timesteps_advection_half << std::endl;
         auto start = std::chrono::high_resolution_clock::now();
         #endif
 
-        //Step 2: Solve Advection for half timestep
-        advDiffSys_.updateTimestep(dt_adv);
-        for(int i = 0; i < n_timesteps_advection_half; i++){
-            advDiffSys_.updatePhi(advDiffSys_.forwardEulerAdvection(operatorSplit, parallelAdvection));
-            advDiffSys_.applyBoundaryCondition();
-        }
+        //Step 1: Solve Advection for half timestep via Semi-Lagrangian advection
+        advDiffSys_.semiLagrangianAdvection(0.5 * dt_max, parallelAdvection);
 
         #ifdef ENABLE_TIMING
         auto stop = std::chrono::high_resolution_clock::now();
@@ -96,7 +84,7 @@ namespace FVM_ANDS{
         start = std::chrono::high_resolution_clock::now();
         #endif
 
-        //Step 3: Implicitly solve diffusion (first to help smoothen out potential steep gradients)
+        //Step 2: Implicitly solve diffusion (first to help smoothen out potential steep gradients)
         advDiffSys_.updateTimestep(dt_max);
 
         // Should never happen given using operatorSplit is hard coded into runTransport and above, but serves as
@@ -128,12 +116,6 @@ namespace FVM_ANDS{
         start = std::chrono::high_resolution_clock::now();
         #endif
 
-        // auto mat = advDiffSys_.getCoefMatrix();
-        // auto b = advDiffSys_.getRHS();
-        // solver_.compute(mat);
-        // Eigen::VectorXd solution = solver_.solveWithGuess(b, advDiffSys_.phi());
-        // advDiffSys_.updatePhi(std::move(solution));
-        
         advDiffSys_.sor_solve();
 
         #ifdef ENABLE_TIMING
@@ -144,15 +126,8 @@ namespace FVM_ANDS{
         start = std::chrono::high_resolution_clock::now();
         #endif
 
-        //Step 4: Explicitly solve advection to full timestep
-
-        advDiffSys_.updateTimestep(dt_adv);
-        for(int i = 0; i < n_timesteps_advection_half; i++){
-            advDiffSys_.updatePhi(advDiffSys_.forwardEulerAdvection(operatorSplit));
-            advDiffSys_.applyBoundaryCondition();
-        }
-
-        advDiffSys_.updateTimestep(dt_max);
+        //Step 3: Solve advection for second half timestep via Semi-Lagrangian advection
+        advDiffSys_.semiLagrangianAdvection(0.5 * dt_max, parallelAdvection);
 
         #ifdef ENABLE_TIMING
         stop = std::chrono::high_resolution_clock::now();
@@ -185,19 +160,8 @@ namespace FVM_ANDS{
         advDiffSys_.updatePhi(vec_Eigen);
         advDiffSys_.updateBoundaryCondition(bc);
 
-        bool operatorSplit = true;
-        double courant = advDiffSys_.courant();
         double dt_max = advDiffSys_.timestep();
-        double dt_adv = dt_max * (courant_max / courant);
-
-        int n_timesteps_advection_half =  std::ceil((0.5 * dt_max) / dt_adv);
-        dt_adv = (0.5 * dt_max) / n_timesteps_advection_half;
-
-        advDiffSys_.updateTimestep(dt_adv);
-        for(int i = 0; i < n_timesteps_advection_half; i++){
-            advDiffSys_.updatePhi(advDiffSys_.forwardEulerAdvection(operatorSplit));
-            advDiffSys_.applyBoundaryCondition();
-        } 
+        advDiffSys_.semiLagrangianAdvection(0.5 * dt_max);
         vec = eigenVec_to_std2dVec(advDiffSys_.phi(), vec[0].size(), vec.size());
     }
 
