@@ -18,7 +18,7 @@ jobs:
 
     strategy:
       matrix:
-        gcc: [11, 14]
+        gcc: [14, 11]
 
     steps:
 
