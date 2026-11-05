@@ -16,7 +16,8 @@ jobs:
 
     strategy:
       matrix:
-        gcc: [11.2, 14.3]
+        # The plain gcc:11.x tags use Debian bullseye, which is end of life and fails apt-get install.
+        gcc: [11.4-bookworm, 14.3]
 
     steps:
 
