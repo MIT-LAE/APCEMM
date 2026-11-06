@@ -18,6 +18,8 @@
 #include <cstring>
 
 #include "Core/Input.hpp"
+#include "Core/Input_Mod.hpp"
+#include "Core/Fuel.hpp"
 #include "Core/Engine.hpp"
 #include "Core/Vortex.hpp"
 #include "Core/Meteorology.hpp"
@@ -28,16 +30,11 @@ class Aircraft
 
         /* Constructors */
 
-        Aircraft( );
-        Aircraft( const Input& input, std::string engineFilePath, std::string engineName = "GEnx-2B67B");
+        Aircraft( ) = delete;
+        Aircraft( const Input& input, const OptInput& optInput, const Fuel& fuel, std::string engineName = "GEnx-2B67B");
 
         /* Debug */
         void Debug( ) const;
-
-        /* Compute vortex losses */
-
-        double VortexLosses( const double N_postjet, const double WV_exhaust, const double N0_ref,\
-                        const double wingspan_ref );
 
         /* Getters: */
 
@@ -55,6 +52,8 @@ class Aircraft
         inline double Mach() const { return machNumber_; }
         /* Fuel consumption per distance */
         inline double fuel_per_dist() const { return fuel_per_dist_; }
+        /* Exhaust water vapor [g/m] */
+        inline double WV_exhaust() const { return WV_exhaust_; }
         /* Wingspan */
         inline double Wingspan() const { return wingspan_; }
         /* Current mass */
@@ -101,6 +100,9 @@ class Aircraft
 
         /* Fuel consumption */
         double fuel_per_dist_; /* [kg/m] */
+
+        /* Exhaust water vapor */
+        double WV_exhaust_; /* [g/m] */
 
         /* Dimensions */
         double wingspan_; /* [m] */

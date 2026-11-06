@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
@@ -26,43 +28,60 @@ double HET[NSPEC][3];        /* Heterogeneous chemistry rates (global) */
 double TIME;                 /* Current integration time (global) */
 double SZA_CST[3];           /* Require this for adjoint integration */
 
+namespace {
+
+/* Initial grid coordinates: required for meteorology setup, which is needed for the EPM. */
+Vector_1D initialYEdges(const OptInput &optInput) {
+    double dy = (optInput.ADV_GRID_YLIM_UP + optInput.ADV_GRID_YLIM_DOWN) /
+                optInput.ADV_GRID_NY;
+    double y0 = -optInput.ADV_GRID_YLIM_DOWN;
+    Vector_1D yEdges(optInput.ADV_GRID_NY + 1);
+    std::generate(yEdges.begin(), yEdges.end(),
+                  [dy, y0, j = 0]() mutable { return y0 + dy * j++; });
+    return yEdges;
+}
+
+Vector_1D initialYCoords(const OptInput &optInput) {
+    double dy = (optInput.ADV_GRID_YLIM_UP + optInput.ADV_GRID_YLIM_DOWN) /
+                optInput.ADV_GRID_NY;
+    double y0 = -optInput.ADV_GRID_YLIM_DOWN;
+    Vector_1D yCoords(optInput.ADV_GRID_NY);
+    std::generate(yCoords.begin(), yCoords.end(),
+                  [dy, y0, j = 0]() mutable { return y0 + dy * (0.5 + j++); });
+    return yCoords;
+}
+
+/* Set the met variables in the input object, and return it so that the
+   aircraft can be built from it in the member initializer list. */
+const Input &setMetVariables(Input &input, const Meteorology &met) {
+    input.set_temperature_K(met.tempRef());
+    input.set_relHumidity_w(met.rhwRef());
+    input.set_relHumidity_i(met.rhiRef());
+    return input;
+}
+
+} // namespace
+
 LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, Input &input) :
     optInput_(optInput), input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
     jetA_(Fuel("C12H24")),
-    yCoords_(optInput_.ADV_GRID_NY),
-    yEdges_(optInput_.ADV_GRID_NY + 1)
+    yCoords_(initialYCoords(optInput_)),
+    yEdges_(initialYEdges(optInput_)),
+    met_(optInput_, input.pressure_Pa(), yCoords_, yEdges_),
+    aircraft_(setMetVariables(input, met_), optInput_, jetA_)
 {
     /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */
     jetA_.setFSC(input.EI_SO2() * 500.0);
 
-    // Set up initial grid coordinates: required for meteorology setup, which
-    // is needed for the EPM.
-    double dy = (optInput_.ADV_GRID_YLIM_UP + optInput_.ADV_GRID_YLIM_DOWN) /
-                optInput_.ADV_GRID_NY;
-    double y0 = -optInput_.ADV_GRID_YLIM_DOWN;
-    std::generate(yEdges_.begin(), yEdges_.end(),
-                  [dy, y0, j = 0]() mutable { return y0 + dy * j++; });
-    std::generate(yCoords_.begin(), yCoords_.end(),
-                  [dy, y0, j = 0]() mutable { return y0 + dy * (0.5 + j++); });
-
-    met_ = Meteorology(optInput_, input.pressure_Pa(), yCoords_, yEdges_);
     std::cout << "Temperature      = " << met_.tempRef() << " K" << std::endl;
     std::cout << "RHw              = " << met_.rhwRef() << " %" << std::endl;
     std::cout << "RHi              = " << met_.rhiRef() << " %" << std::endl;
     std::cout << "Saturation depth = " << met_.satdepthEstimate() << " m" << std::endl;
-    
-    // Set the met variables in the input object
-    input.set_temperature_K(met_.tempRef());
-    input.set_relHumidity_w(met_.rhwRef());
-    input.set_relHumidity_i(met_.rhiRef());
-    input_ = input;
 
     simVars_ = MPMSimVarsWrapper(input_, optInput_, met_.satdepthEstimate());
     timestepVars_ = TimestepVarsWrapper(input_, optInput_);
-    aircraft_ = Aircraft(input_, optInput_.SIMULATION_INPUT_ENG_EI);
     EI_ = Emission(aircraft_.engine(), jetA_, input_.EI_SO2TOSO4());
-    WV_exhaust_ = EI_.getH2O() * aircraft_.fuel_per_dist();
     std::cout << "H2O EI     = " << EI_.getH2O() << std::endl;
 
     timestepVars_.setTimeArray(PlumeModelUtils::BuildTime (
@@ -315,12 +334,11 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     std::cout << "EI_icenum postjet: " << N_postjet / aircraft_.fuel_per_dist() << " [#/kg]" << std::endl;
 
     // Run vortex phase parameterization
-    const double N0_ref = optInput_.ADV_EP_N_REF;
-    const double wingspan_ref = optInput_.ADV_EP_WINGSPAN_REF;
-    const double icenum_survfrac = aircraft_.VortexLosses(N_postjet, WV_exhaust_, N0_ref, wingspan_ref);
+    const double icenum_survfrac = aircraft_.vortex().icenum_survfrac(N_postjet);
+    aircraft_.vortex().print_summary(N_postjet, icenum_survfrac);
     std::cout << "Parameterized vortex sinking survival fraction: " << icenum_survfrac
                 << std::endl;
-    if (icenum_survfrac <= 0.00E+00) {
+    if (std::isnan(icenum_survfrac) || icenum_survfrac <= 0.00E+00) {
         std::cout << "EndSim: vortex sinking" << std::endl;
         return SimStatus::NoSurvivalVortex;
     }
@@ -391,7 +409,7 @@ void LAGRIDPlumeModel::initH2O() {
     auto areas = VectorUtils::cellAreas(xEdges_, yEdges_);
     const double icemass = iceAerosol_.TotalIceMass_sum(areas);
 
-    double mass_WV = WV_exhaust_ / 1e3 - icemass; // WV_exhaust converted from [g/m] -> [kg/m]
+    double mass_WV = aircraft_.WV_exhaust() / 1e3 - icemass; // WV_exhaust converted from [g/m] -> [kg/m]
     double E_H2O = mass_WV / (MW_H2O) * Na;
 
     // Spread the emitted water evenly over the cells that contain ice crystals

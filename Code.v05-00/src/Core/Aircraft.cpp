@@ -16,15 +16,15 @@
 #include <iostream>
 #include "Util/PhysConstant.hpp"
 #include "Core/Aircraft.hpp"
+#include "Core/Emission.hpp"
 
-Aircraft::Aircraft( )
+Aircraft::Aircraft( const Input& input, const OptInput& optInput, const Fuel& fuel, std::string engineName) :
+    fuel_per_dist_( input.fuelFlow() / input.flightSpeed() ),
+    WV_exhaust_( Emission::EI_H2O( fuel ) * fuel_per_dist_ ),
+    vortex_( input.relHumidity_i(), input.temperature_K(), input.pressure_Pa(), input.nBV(), \
+             input.wingspan(), input.aircraftMass(), input.flightSpeed(), WV_exhaust_, \
+             optInput.ADV_EP_N_REF, optInput.ADV_EP_WINGSPAN_REF )
 {
-
-    /* Default Constructor */
-
-} /* End of Aircraft::Aircraft */
-
-Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string engineName){
     /* Flight characteristics */
     //Sets both flight speed and mach number
 
@@ -37,7 +37,7 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
     setVFlight(input.flightSpeed(), T_CA_K_);
 
     /* Engine characteristics */
-    engine_ = Engine( engineName.c_str(), engineFilePath, T_CA_K_, p_CA_Pa_, \
+    engine_ = Engine( engineName.c_str(), optInput.SIMULATION_INPUT_ENG_EI, T_CA_K_, p_CA_Pa_, \
                         RHW_CA_PC_, machNumber_ );
 
     engNumber_ = input.numEngines();
@@ -47,63 +47,11 @@ Aircraft::Aircraft( const Input& input, std::string engineFilePath, std::string 
     setEI_HC( input.EI_HC() );
     setEI_Soot( input.EI_Soot() );
     setSootRad( input.sootRad() );
-    fuel_per_dist_ = input.fuelFlow() / vFlight_ms_;
 
     /* Dimensions */
     wingspan_ = input.wingspan();
     currMass_ = input.aircraftMass();
 }
-
-double Aircraft::VortexLosses( const double N_postjet, const double WV_exhaust, \
-    const double N0_ref, const double wingspan_ref )
-{
-
-    /* Perform the vortex parametrisation (in the Vortex constructor) */
-    vortex_ = Vortex( RHi_CA_PC_, T_CA_K_, p_CA_Pa_, nBV_Hz_, wingspan_, \
-                    currMass_, vFlight_ms_, WV_exhaust, N_postjet, N0_ref,\
-                    wingspan_ref );
-
-
-    std::cout << std::endl << std::endl;
-    std::cout << "***** Vortex parametrisation START *****" << std::endl;
-    std::cout << std::endl;
-    std::cout << "AMBIENT PARAMS" << std::endl;
-    std::cout << "Cruise Temperature  = " << T_CA_K_ << " [K]" << std::endl; //
-    std::cout << "Cruise RHi          = " << RHi_CA_PC_ << " [%]" << std::endl; //
-    std::cout << "N_BV                = " << vortex_.N_BV() << " [1/s]" << std::endl; //
-    std::cout << std::endl;
-    std::cout << "VORTEX PARAMS" << std::endl;
-    std::cout << "Reference ice count = " << N0_ref << " [#/m]" << std::endl; //
-    std::cout << "Post-jet ice count  = " << N_postjet << " [#/m]" << std::endl; //
-    std::cout << "Exhaust Water Vapor = " << WV_exhaust << " [g/m]" << std::endl; //
-    std::cout << "gamma               = " << vortex_.gamma() << " [m^2/s]" << std::endl;
-    std::cout << std::endl;
-    std::cout << "AIRCRAFT PARAMS" << std::endl;
-    std::cout << "wingspan            = " << wingspan_ << " [m]" << std::endl; //
-    std::cout << "reference wingspan  = " << wingspan_ref << " [m]" << std::endl; //
-    std::cout << "flight speed        = " << vFlight_ms_ << " [m/s]" << std::endl; //
-    std::cout << std::endl;
-    std::cout << "PARAMETRISATION RESULTS (SURVIVAL FRACTION)" << std::endl;
-    std::cout << "z_desc              = " << vortex_.z_desc() << " [m]" << std::endl; //
-    std::cout << "z_atm               = " << vortex_.z_atm() << " [m]" << std::endl; //
-    std::cout << "z_emit              = " << vortex_.z_emit() << " [m]" << std::endl; //
-    std::cout << "z_delta (survfrac)  = " << vortex_.z_delta_fns() << " [m]" << std::endl; //
-    std::cout << "Survival Fraction   = " << vortex_.icenum_survfrac() << std::endl; //
-    std::cout << std::endl;
-    std::cout << "PARAMETRISATION RESULTS (GEOMETRY)" << std::endl;
-    std::cout << "z_delta (depth)     = " << vortex_.z_delta_h() << " [m]" << std::endl; //
-    std::cout << "Survfrac (depth)    = " << vortex_.icenum_survfrac_h() << std::endl; //
-    std::cout << "Contrail Depth      = " << vortex_.depth_mature() << " [m]" << std::endl; //
-    std::cout << "Contrail Area Width = " << vortex_.width_rect_mature() << " [m]" << std::endl; //
-    std::cout << "Contrail Area       = " << vortex_.area_mature() << " [m*2]" << std::endl; //
-    std::cout << "Contrail Center y   = " << vortex_.z_center() << " [m]" << std::endl; //
-    std::cout << std::endl;
-    std::cout << "***** Vortex parametrisation END *****" << std::endl;
-    std::cout << std::endl << std::endl;
-
-    return vortex_.icenum_survfrac();
-
-} /* End of Aircraft::VortexLosses */
 
 void Aircraft::setEI_NOx(const double NOx)
 {
@@ -242,18 +190,6 @@ void Aircraft::Debug( ) const
     std::cout << std::setw(10) << engine_.getTheta() << " [ - ]" << "\n";
     std::cout << "      +Engine delta       : ";
     std::cout << std::setw(10) << engine_.getDelta() << " [ - ]" << "\n";
-    std::cout << " --- \n";
-
-    std::cout << "      +Brunt-Vaisala frequency : ";
-    std::cout << std::setw(10) << vortex_.N_BV() << " [ Hz ]" << "\n";
-    std::cout << "      +Initial circulation     : ";
-    std::cout << std::setw(10) << vortex_.gamma() << " [ m^2/s ]" << "\n";
-    std::cout << "      +Max. downwash displace. : ";
-    std::cout << std::setw(10) << vortex_.z_desc() << " [ m ]" << "\n";
-    std::cout << "      +Mean downwash displace. : ";
-    std::cout << std::setw(10) << vortex_.z_center() << " [ m ]" << "\n";
-    std::cout << "      +Initial contrail depth  : ";
-    std::cout << std::setw(10) << vortex_.depth_mature() << " [ m ]" << "\n";
     std::cout << "\n";
     std::cout << "\n";
 
