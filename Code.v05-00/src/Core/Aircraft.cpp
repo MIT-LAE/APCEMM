@@ -18,19 +18,19 @@
 #include "Core/Aircraft.hpp"
 #include "Core/Emission.hpp"
 
-Aircraft::Aircraft( const Input& input, const OptInput& optInput, const Fuel& fuel, std::string engineName) :
+Aircraft::Aircraft( const Input& input, const Meteorology& met, const OptInput& optInput, const Fuel& fuel, std::string engineName) :
     fuel_per_dist_( input.fuelFlow() / input.flightSpeed() ),
     WV_exhaust_( Emission::EI_H2O( fuel ) * fuel_per_dist_ ),
-    vortex_( input.relHumidity_i(), input.temperature_K(), input.pressure_Pa(), input.nBV(), \
+    vortex_( met.rhiRef(), met.tempRef(), input.pressure_Pa(), input.nBV(), \
              input.wingspan(), input.aircraftMass(), input.flightSpeed(), WV_exhaust_, \
              optInput.ADV_EP_N_REF, optInput.ADV_EP_WINGSPAN_REF )
 {
     /* Flight characteristics */
     //Sets both flight speed and mach number
 
-    T_CA_K_ = input.temperature_K(); // From the meteorology, at the reference altitude
-    RHW_CA_PC_ = input.relHumidity_w(); // From the meteorology, at the reference altitude
-    RHi_CA_PC_ = input.relHumidity_i(); // From the meteorology, at the reference altitude
+    T_CA_K_ = met.tempRef(); // From the meteorology, at the reference altitude
+    RHW_CA_PC_ = met.rhwRef(); // From the meteorology, at the reference altitude
+    RHi_CA_PC_ = met.rhiRef(); // From the meteorology, at the reference altitude
     nBV_Hz_ = input.nBV(); // From the yaml input
     p_CA_Pa_ = input.pressure_Pa(); // From the yaml input
 
