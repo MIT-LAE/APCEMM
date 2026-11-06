@@ -26,9 +26,6 @@ class Input
 
     double simulationTime_ = 0.0;
 
-    double temperature_K_ = 0.0;
-    double relHumidity_w_ = 0.0;
-    double relHumidity_i_ = 0.0;
     double horizDiff_ = 0.0;
     double vertiDiff_ = 0.0;
 
@@ -77,17 +74,10 @@ class Input
         void checkInputValidity() const;
 
         double simulationTime() const { return simulationTime_; }
-        double temperature_K() const { return temperature_K_; } // From the meteorology
         double pressure_Pa() const { return pressure_Pa_; }
-        double relHumidity_w() const { return relHumidity_w_; } // From the meteorology
-        double relHumidity_i() const { return relHumidity_i_; } // From the meteorology
         double horizDiff() const { return horizDiff_; }
         double vertiDiff() const { return vertiDiff_; }
         inline double nBV() const { return nBV_; }
-
-        void set_temperature_K( double T_CA_K ) { temperature_K_ = T_CA_K; }
-        void set_relHumidity_w( double RHW_CA ) { relHumidity_w_ = RHW_CA; }
-        void set_relHumidity_i( double RHi_CA ) { relHumidity_i_ = RHi_CA; }
 
         double longitude_deg() const { return longitude_deg_; }
         double latitude_deg() const { return latitude_deg_; }

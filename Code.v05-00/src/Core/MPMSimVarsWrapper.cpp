@@ -1,4 +1,3 @@
-#include "Util/PhysFunction.hpp"
 #include "Core/MPMSimVarsWrapper.hpp"
 
 MPMSimVarsWrapper::MPMSimVarsWrapper(const Input& input, const OptInput& Input_Opt, const double depth_estimate):
@@ -38,15 +37,7 @@ MPMSimVarsWrapper::MPMSimVarsWrapper(const Input& input, const OptInput& Input_O
 	TS_AERO_FREQ(Input_Opt.TS_AERO_FREQ),
 	SAVE_PL(Input_Opt.PL_PL),
 	SAVE_O3PL(Input_Opt.PL_O3),
-	temperature_K(input.temperature_K()),
-	pressure_Pa(input.pressure_Pa()),
-	relHumidity_w(input.relHumidity_w())
-
-
+	pressure_Pa(input.pressure_Pa())
 {
-    /* Compute relative humidity w.r.t ice */
-    relHumidity_i = relHumidity_w * physFunc::pSat_H2Ol( temperature_K )\
-                                             / physFunc::pSat_H2Os( temperature_K );
-
 }
 

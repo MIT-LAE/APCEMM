@@ -88,12 +88,7 @@ struct MPMSimVarsWrapper{
     /* If DIAG_OUTPUT is turned on, make sure that output timestep is a
      * multiple of the dynamic timestep */
 
-    double temperature_K;
     double pressure_Pa;
-    double relHumidity_w;
-
-    /* Compute relative humidity w.r.t ice */
-    double relHumidity_i;
 
     MPMSimVarsWrapper() = default;
     MPMSimVarsWrapper(const Input& input, const OptInput& Input_Opt, const double depth_estimate);
