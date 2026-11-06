@@ -173,14 +173,21 @@ void Emission::Populate_withFuel( const Fuel &fuel )
 {
     /*** Fuel characteristics */
     CO2 = ( 12.0107 * fuel.getAtomC() ) / ( 12.0107 * fuel.getAtomC() + 1.0079 * fuel.getAtomH() + 10.0067 * fuel.getAtomN() + 32.065 * fuel.getAtomS() ) * ( 44.0095 / ( 1 * 12.0107 ) ); /* [ g/g fuel ] */
-    H2O = (  1.0079 * fuel.getAtomH() ) / ( 12.0107 * fuel.getAtomC() + 1.0079 * fuel.getAtomH() + 10.0067 * fuel.getAtomN() + 32.065 * fuel.getAtomS() ) * ( 18.0153 / ( 2 *  1.0079 ) ); /* [ g/g fuel ] */
+    H2O = EI_H2O( fuel ); /* [ g/kg fuel ] */
     /* Convert to g/kg */
     CO2 *= 1000; /* [ g/kg fuel ]*/
-    H2O *= 1000; /* [ g/kg fuel ]*/
     /* getFSC from fuel */
     SO2 = fuel.getFSC() * 2.0 / 1000.0;
 
 } /* End of Emission::Populate_withFuel */
+
+double Emission::EI_H2O( const Fuel &fuel )
+{
+
+    const double EI = (  1.0079 * fuel.getAtomH() ) / ( 12.0107 * fuel.getAtomC() + 1.0079 * fuel.getAtomH() + 10.0067 * fuel.getAtomN() + 32.065 * fuel.getAtomS() ) * ( 18.0153 / ( 2 *  1.0079 ) ); /* [ g/g fuel ] */
+    return EI * 1000; /* [ g/kg fuel ] */
+
+} /* End of Emission::EI_H2O */
 
 Emission& Emission::operator=( const Emission &em )
 {

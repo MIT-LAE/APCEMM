@@ -28,6 +28,7 @@ class Emission
         ~Emission( );
         void Populate_withEngine( const Engine &engine );
         void Populate_withFuel( const Fuel &fuel );
+        static double EI_H2O( const Fuel &fuel );
         Emission& operator=( const Emission &em );
         Emission& operator+( const Emission &em );
         double getCO2( ) const;

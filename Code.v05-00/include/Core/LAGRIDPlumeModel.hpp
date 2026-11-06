@@ -38,18 +38,20 @@ class LAGRIDPlumeModel {
         const OptInput& optInput_;
         Input& input_;
         int numThreads_;
-        Aircraft aircraft_;
+        /* Declaration order matters: aircraft_ needs the fuel and the meteorology,
+           and the meteorology needs the grid. */
         Fuel jetA_;
+        Vector_1D yCoords_;
+        Vector_1D yEdges_;
+        Meteorology met_;
+        Aircraft aircraft_;
         Emission EI_;
         MPMSimVarsWrapper simVars_;
         TimestepVarsWrapper timestepVars_;
         AIM::Grid_Aerosol iceAerosol_;
-        Meteorology met_;
         Vector_2D diffCoeffX_;
         Vector_2D diffCoeffY_;
         double survivalFrac_;
-        Vector_1D yCoords_;
-        Vector_1D yEdges_;
         Vector_1D xCoords_;
         Vector_1D xEdges_;
         Vector_2D H2O_;
@@ -59,7 +61,6 @@ class LAGRIDPlumeModel {
         double simTime_h_;
         double solarTime_h_;
         double shear_rep_;
-        double WV_exhaust_; // Exhaust water vapour
 
         typedef std::pair<std::vector<std::vector<int>>, VectorUtils::MaskInfo> MaskType;
         inline MaskType iceNumberMask(double cutoff_ratio = NUM_FILTER_RATIO) {
