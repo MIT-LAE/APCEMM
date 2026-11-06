@@ -10,10 +10,15 @@
 /* File                 : Vortex.cpp                                */
 /*                                                                  */
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#ifndef FMT_HEADER_ONLY
+#define FMT_HEADER_ONLY
+#endif
 
 #include <algorithm>
 #include <cmath>
-#include <iostream>
+#include <cstdio>
+#include <string_view>
+#include <fmt/core.h>
 #include "Util/PhysConstant.hpp"
 #include "Core/Vortex.hpp"
 
@@ -32,7 +37,7 @@ Vortex::Vortex( double RHi_PC, double temperature_K, double pressure_Pa,  \
 
     /* Normalized dissipation rate, [ - ] */
     if ( N_BV <= 1.0E-05 ) {
-        std::cout << "In Vortex::Vortex: Brunt-Vaisala frequency is beneath 1.0E-5 (N_BV = " << N_BV << " [s^-1]). Taking the default value 1.3E-02.\n";
+        fmt::print( "In Vortex::Vortex: Brunt-Vaisala frequency is beneath 1.0E-5 (N_BV = {:g} [s^-1]). Taking the default value 1.3E-02.\n", N_BV );
         N_BV = 1.3E-02;
     }
     N_BV_ = N_BV;
@@ -115,45 +120,49 @@ double Vortex::icenum_survfrac( const double N_postjet ) const
 
 void Vortex::print_summary( const double N_postjet, const double survfrac ) const
 {
-    std::cout << std::endl << std::endl;
-    std::cout << "***** Vortex parametrisation START *****" << std::endl;
-    std::cout << std::endl;
-    std::cout << "AMBIENT PARAMS" << std::endl;
-    std::cout << "Cruise Temperature  = " << temperature_K_ << " [K]" << std::endl; //
-    std::cout << "Cruise RHi          = " << RHi_PC_ << " [%]" << std::endl; //
-    std::cout << "N_BV                = " << N_BV_ << " [1/s]" << std::endl; //
-    std::cout << std::endl;
-    std::cout << "VORTEX PARAMS" << std::endl;
-    std::cout << "Reference ice count = " << N0_ref_ << " [#/m]" << std::endl; //
-    std::cout << "Post-jet ice count  = " << N_postjet << " [#/m]" << std::endl; //
-    std::cout << "Exhaust Water Vapor = " << WV_exhaust_ << " [g/m]" << std::endl; //
-    std::cout << "Density of emitted water vapor: " << rho_emit_ << " [kg/m^3]" << std::endl;
-    std::cout << "gamma               = " << gamma_ << " [m^2/s]" << std::endl;
-    std::cout << std::endl;
-    std::cout << "AIRCRAFT PARAMS" << std::endl;
-    std::cout << "wingspan            = " << wingspan_ << " [m]" << std::endl; //
-    std::cout << "reference wingspan  = " << wingspan_ref_ << " [m]" << std::endl; //
-    std::cout << "flight speed        = " << vFlight_ << " [m/s]" << std::endl; //
-    std::cout << std::endl;
-    std::cout << "PARAMETRISATION RESULTS (SURVIVAL FRACTION)" << std::endl;
-    std::cout << "z_desc              = " << z_desc_ << " [m]" << std::endl; //
-    std::cout << "z_atm               = " << z_atm_ << " [m]" << std::endl; //
-    std::cout << "z_emit              = " << z_emit_ << " [m]" << std::endl; //
-    std::cout << "z_delta (survfrac)  = " << z_delta( psi( N_postjet ) ) << " [m]" << std::endl; //
-    std::cout << "Survival Fraction   = " << survfrac << std::endl; //
+    const auto row = []( std::string_view label, double value, std::string_view unit ) {
+        fmt::print( "{:<20}= {:g} [{}]\n", label, value, unit );
+    };
+
+    fmt::print( "\n\n***** Vortex parametrisation START *****\n\n" );
+
+    fmt::print( "AMBIENT PARAMS\n" );
+    row( "Cruise Temperature", temperature_K_, "K" );
+    row( "Cruise RHi", RHi_PC_, "%" );
+    row( "N_BV", N_BV_, "1/s" );
+
+    fmt::print( "\nVORTEX PARAMS\n" );
+    row( "Reference ice count", N0_ref_, "#/m" );
+    row( "Post-jet ice count", N_postjet, "#/m" );
+    row( "Exhaust Water Vapor", WV_exhaust_, "g/m" );
+    row( "Emitted WV density", rho_emit_, "g/m^3" );
+    row( "gamma", gamma_, "m^2/s" );
+
+    fmt::print( "\nAIRCRAFT PARAMS\n" );
+    row( "wingspan", wingspan_, "m" );
+    row( "reference wingspan", wingspan_ref_, "m" );
+    row( "flight speed", vFlight_, "m/s" );
+
+    fmt::print( "\nPARAMETRISATION RESULTS (SURVIVAL FRACTION)\n" );
+    row( "z_desc", z_desc_, "m" );
+    row( "z_atm", z_atm_, "m" );
+    row( "z_emit", z_emit_, "m" );
+    row( "z_delta (survfrac)", z_delta( psi( N_postjet ) ), "m" );
+    row( "Survival Fraction", survfrac , "-");
     if ( survfrac == 0.0E+00 )
-        std::cout << "Contrail has fully melted because of vortex-sinking losses" << std::endl;
-    std::cout << std::endl;
-    std::cout << "PARAMETRISATION RESULTS (GEOMETRY)" << std::endl;
-    std::cout << "z_delta (depth)     = " << z_delta( 1.0 ) << " [m]" << std::endl; //
-    std::cout << "Survfrac (depth)    = " << survfrac_from_psi( 1.0 ) << std::endl; //
-    std::cout << "Contrail Depth      = " << depth_mature_ << " [m]" << std::endl; //
-    std::cout << "Contrail Area Width = " << width_rect_mature_ << " [m]" << std::endl; //
-    std::cout << "Contrail Area       = " << width_rect_mature_ * depth_mature_ << " [m*2]" << std::endl; //
-    std::cout << "Contrail Center y   = " << z_center_ << " [m]" << std::endl; //
-    std::cout << std::endl;
-    std::cout << "***** Vortex parametrisation END *****" << std::endl;
-    std::cout << std::endl << std::endl;
+        fmt::print( "Contrail has fully melted because of vortex-sinking losses\n" );
+
+    fmt::print( "\nPARAMETRISATION RESULTS (GEOMETRY)\n" );
+    row( "z_delta (depth)", z_delta( 1.0 ), "m" );
+    row( "Survfrac (depth)", survfrac_from_psi( 1.0 ), "-" );
+    row( "Contrail Depth", depth_mature_, "m" );
+    row( "Contrail Area Width", width_rect_mature_, "m" );
+    row( "Contrail Area", width_rect_mature_ * depth_mature_, "m^2" );
+    row( "Contrail Center y", z_center_, "m" );
+
+    fmt::print( "\n***** Vortex parametrisation END *****\n\n\n" );
+
+    std::fflush( stdout );
 
 } /* End of Vortex::print_summary */
 
