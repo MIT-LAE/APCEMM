@@ -28,48 +28,14 @@ double HET[NSPEC][3];        /* Heterogeneous chemistry rates (global) */
 double TIME;                 /* Current integration time (global) */
 double SZA_CST[3];           /* Require this for adjoint integration */
 
-namespace {
-
-/* Initial grid coordinates: required for meteorology setup, which is needed for the EPM. */
-Vector_1D initialYEdges(const OptInput &optInput) {
-    double dy = (optInput.ADV_GRID_YLIM_UP + optInput.ADV_GRID_YLIM_DOWN) /
-                optInput.ADV_GRID_NY;
-    double y0 = -optInput.ADV_GRID_YLIM_DOWN;
-    Vector_1D yEdges(optInput.ADV_GRID_NY + 1);
-    std::generate(yEdges.begin(), yEdges.end(),
-                  [dy, y0, j = 0]() mutable { return y0 + dy * j++; });
-    return yEdges;
-}
-
-Vector_1D initialYCoords(const OptInput &optInput) {
-    double dy = (optInput.ADV_GRID_YLIM_UP + optInput.ADV_GRID_YLIM_DOWN) /
-                optInput.ADV_GRID_NY;
-    double y0 = -optInput.ADV_GRID_YLIM_DOWN;
-    Vector_1D yCoords(optInput.ADV_GRID_NY);
-    std::generate(yCoords.begin(), yCoords.end(),
-                  [dy, y0, j = 0]() mutable { return y0 + dy * (0.5 + j++); });
-    return yCoords;
-}
-
-/* Set the met variables in the input object, and return it so that the
-   aircraft can be built from it in the member initializer list. */
-const Input &setMetVariables(Input &input, const Meteorology &met) {
-    input.set_temperature_K(met.tempRef());
-    input.set_relHumidity_w(met.rhwRef());
-    input.set_relHumidity_i(met.rhiRef());
-    return input;
-}
-
-} // namespace
-
-LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, Input &input) :
+LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input) :
     optInput_(optInput), input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
     jetA_(Fuel("C12H24")),
     yCoords_(initialYCoords(optInput_)),
     yEdges_(initialYEdges(optInput_)),
     met_(optInput_, input.pressure_Pa(), yCoords_, yEdges_),
-    aircraft_(setMetVariables(input, met_), optInput_, jetA_)
+    aircraft_(input, met_, optInput_, jetA_)
 {
     /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */
     jetA_.setFSC(input.EI_SO2() * 500.0);

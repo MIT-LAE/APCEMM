@@ -31,7 +31,7 @@ class Aircraft
         /* Constructors */
 
         Aircraft( ) = delete;
-        Aircraft( const Input& input, const OptInput& optInput, const Fuel& fuel, std::string engineName = "GEnx-2B67B");
+        Aircraft( const Input& input, const Meteorology& met, const OptInput& optInput, const Fuel& fuel, std::string engineName = "GEnx-2B67B");
 
         /* Debug */
         void Debug( ) const;

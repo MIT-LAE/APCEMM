@@ -1,6 +1,7 @@
 #ifndef LAGRIDPLUMEMODEL_H
 #define LAGRIDPLUMEMODEL_H
 
+#include <algorithm>
 #include <variant>
 #include "AIM/Aerosol.hpp"
 #include "LAGRID/RemappingFunctions.hpp"
@@ -25,7 +26,7 @@ class LAGRIDPlumeModel {
         static constexpr double RIGHT_BUFFER_SCALING = 1.5;
 
         LAGRIDPlumeModel() = delete;
-        LAGRIDPlumeModel(const OptInput &Input_Opt, Input &input);
+        LAGRIDPlumeModel(const OptInput &Input_Opt, const Input &input);
         SimStatus runFullModel();
         std::variant<EPM::Output, SimStatus> runEPM();
         struct BufferInfo {
@@ -35,8 +36,29 @@ class LAGRIDPlumeModel {
             double botBuffer;
         };
     private:
+        /* Initial grid coordinates: required for meteorology setup, which is needed for the EPM. */
+        static Vector_1D initialYEdges(const OptInput &optInput) {
+            double dy = (optInput.ADV_GRID_YLIM_UP + optInput.ADV_GRID_YLIM_DOWN) /
+                        optInput.ADV_GRID_NY;
+            double y0 = -optInput.ADV_GRID_YLIM_DOWN;
+            Vector_1D yEdges(optInput.ADV_GRID_NY + 1);
+            std::generate(yEdges.begin(), yEdges.end(),
+                          [dy, y0, j = 0]() mutable { return y0 + dy * j++; });
+            return yEdges;
+        }
+
+        static Vector_1D initialYCoords(const OptInput &optInput) {
+            double dy = (optInput.ADV_GRID_YLIM_UP + optInput.ADV_GRID_YLIM_DOWN) /
+                        optInput.ADV_GRID_NY;
+            double y0 = -optInput.ADV_GRID_YLIM_DOWN;
+            Vector_1D yCoords(optInput.ADV_GRID_NY);
+            std::generate(yCoords.begin(), yCoords.end(),
+                          [dy, y0, j = 0]() mutable { return y0 + dy * (0.5 + j++); });
+            return yCoords;
+        }
+
         const OptInput& optInput_;
-        Input& input_;
+        const Input& input_;
         int numThreads_;
         /* Declaration order matters: aircraft_ needs the fuel and the meteorology,
            and the meteorology needs the grid. */
