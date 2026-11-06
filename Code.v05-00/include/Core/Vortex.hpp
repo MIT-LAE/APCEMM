@@ -26,7 +26,7 @@
  * This includes the geometry of the mature plume, because U2016 makes the
  * contrail depth independent of the ice crystal number.
  * Only the survival fraction needs the post-jet ice crystal number from the
- * EPM, so the caller passes this number to the method that needs it. */
+ * EPM, so it is computed later via icenum_survfrac */
 class Vortex
 {
     public:
@@ -48,13 +48,13 @@ class Vortex
                 double vFlight, double WV_exhaust, \
                 double N0_ref, double wingspan_ref );
 
-        /* Downwash displacement of the early plume center [m] */
+        /* Initial sinking of contrail center [m] */
         double z_center() const { return z_center_; }
 
         /* Initial (parametrised) contrail depth of the mature plume [m] */
         double depth_mature() const { return depth_mature_; }
 
-        /* Initial (parametrised) contrail width of the mature plume [m] */
+        /* Rectangle-equivalent width of initial mature plume [m] */
         double width_rect_mature() const { return width_rect_mature_; }
 
         /* Fraction of ice crystals that survive the vortex phase [-],
@@ -121,11 +121,7 @@ class Vortex
          * Unit: g / m^3 */
         double rho_emit_;
 
-        /* Maximum downwash displacement,
-         * equal to the height delta between the
-         * release altitude and the bottom of the
-         * early plume after the vortex phase.
-         * See Fig.3 in Unterstrasser and Görsch (2014)
+        /* Maximum downwash displacement, Eq. 5 in Lottermosser and Unterstrasser (2025)
          * Unit: m */
         double z_desc_;
 
