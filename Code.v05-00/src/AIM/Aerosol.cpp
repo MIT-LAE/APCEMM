@@ -862,14 +862,20 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         * bin and thus the particle size and only depends
         * on meteorological parameters. */
         if ( totPart < 0.00 ) { return; }
+        const double VOL_TO_RAD_FACTOR = 3.0 / (4.0 * PI);
+        Vector_1D kelvin_factor(nBin, 1.0);
         for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
-        
+            const double r_local = (icePart[iBin][jNy][iNx] > 0.0)
+                ? std::cbrt(VOL_TO_RAD_FACTOR * bin_VCenters[iBin][jNy][iNx])
+                : bin_Centers[iBin];
+            kelvin_factor[iBin] = physFunc::Kelvin(r_local);
+
             //Factor of 1e6 for cm3 - m3 conversion. 
-            kGrowth[iBin] = 1.0e6 * icePart[iBin][jNy][iNx] * 4.0 * PI * bin_Centers[iBin]\
-                * EffDiffCoef( bin_Centers[iBin], T, P, H2O[jNy][iNx]);  
+            kGrowth[iBin] = 1.0e6 * icePart[iBin][jNy][iNx] * 4.0 * PI * r_local\
+                * EffDiffCoef( r_local, T, P, H2O[jNy][iNx]);  
 
             totalkGrowth += kGrowth[iBin];
-            totalkGrowth_kelvin += kGrowth[iBin] * physFunc::Kelvin(bin_Centers[iBin]);
+            totalkGrowth_kelvin += kGrowth[iBin] * kelvin_factor[iBin];
         }
         
         /* Compute the molar saturation concentration 
@@ -888,7 +894,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
         
         for ( UInt iBin = 0; iBin < nBin; iBin++ ) {
             //Update molar concentration of ice [mol/cm3] and convert to volumetric concentration [m3/cm3]
-            c_qit = (iceVol[iBin][jNy][iNx] * RHO_ICE / MW_H2O) + dt*kGrowth[iBin]*(C_qt - physFunc::Kelvin(bin_Centers[iBin])*C_qsi);
+            c_qit = (iceVol[iBin][jNy][iNx] * RHO_ICE / MW_H2O) + dt*kGrowth[iBin]*(C_qt - kelvin_factor[iBin]*C_qsi);
             iceVol[iBin][jNy][iNx] = c_qit * MW_H2O / RHO_ICE;
         
             iceVol[iBin][jNy][iNx] = \
