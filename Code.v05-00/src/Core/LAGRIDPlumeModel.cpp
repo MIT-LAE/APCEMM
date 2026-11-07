@@ -881,10 +881,29 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
     //Need 2 extra points account for the buffer
     int nx_new = floor((maskInfo.maxX - maskInfo.minX) / dx_grid_new) + 2;
     int ny_new = floor((maskInfo.maxY - maskInfo.minY) / dy_grid_new) + 2;
-    LAGRID::Remapping remapping(maskInfo.minX - dx_grid_new, maskInfo.minY - dy_grid_new, dx_grid_new, dy_grid_new, nx_new, ny_new);
+    double y0_remap = maskInfo.minY - dy_grid_new;
+    double topBuffer = buffers.topBuffer;
+    double botBuffer = buffers.botBuffer;
+    const auto& altInit = met_.AltitudeInit();
+    if (!altInit.empty() && !met_.AltEdges().empty() && !yEdges_.empty()) {
+        const double altOffset = met_.AltEdges()[0] - yEdges_[0];
+        const double minAllowedYEdge = altInit.front() - altOffset + 1.0e-3;
+        const double maxAllowedYEdge = altInit.back() - altOffset - 1.0e-3;
+        if (y0_remap < minAllowedYEdge) {
+            y0_remap = minAllowedYEdge;
+        }
+        if (y0_remap + ny_new * dy_grid_new > maxAllowedYEdge) {
+            ny_new = std::max(1, static_cast<int>(std::floor((maxAllowedYEdge - y0_remap) / dy_grid_new)));
+        }
+        const double curBotEdge = y0_remap;
+        const double curTopEdge = y0_remap + ny_new * dy_grid_new;
+        botBuffer = std::max(0.0, std::min(botBuffer, curBotEdge - minAllowedYEdge));
+        topBuffer = std::max(0.0, std::min(topBuffer, maxAllowedYEdge - curTopEdge));
+    }
+    LAGRID::Remapping remapping(maskInfo.minX - dx_grid_new, y0_remap, dx_grid_new, dy_grid_new, nx_new, ny_new);
 
     auto remappedGrid = LAGRID::mapToStructuredGrid(boxGrid, remapping);
-    remappedGrid.addBuffer(buffers.leftBuffer, buffers.rightBuffer, buffers.topBuffer, buffers.botBuffer, 0.0);
+    remappedGrid.addBuffer(buffers.leftBuffer, buffers.rightBuffer, topBuffer, botBuffer, 0.0);
     // Contains: phi, xCoords, yCoords
 
     // Extract the new x and y coordinates

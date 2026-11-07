@@ -591,22 +591,25 @@ namespace FVM_ANDS{
                 std::vector<double> face_flux(N + 1, 0.0);
                 face_flux[0] = bc_left;
 
-                auto minmod = [](double a, double b) -> double {
+                auto superbee = [](double a, double b) -> double {
                     if (a * b <= 0.0) return 0.0;
-                    return (a > 0.0) ? std::min(a, b) : std::max(a, b);
+                    const double s = (a > 0.0) ? 1.0 : -1.0;
+                    const double aa = std::abs(a);
+                    const double bb = std::abs(b);
+                    return s * std::max(std::min(2.0 * aa, bb), std::min(aa, 2.0 * bb));
                 };
 
                 for (int m = 0; m < N - 1; ++m) {
                     double diff_up = (m == 0) ? (2.0 * (slice[0] - bc_left)) : (slice[m] - slice[m - 1]);
                     double diff_down = slice[m + 1] - slice[m];
-                    double slope = minmod(diff_up, diff_down);
+                    double slope = superbee(diff_up, diff_down);
                     face_flux[m + 1] = slice[m] + slope_weight * slope;
                 }
 
                 // Outflow face at m = N
                 double diff_up_last = (N >= 2) ? (slice[N - 1] - slice[N - 2]) : (2.0 * (slice[0] - bc_left));
                 double diff_down_last = 2.0 * (bc_right - slice[N - 1]);
-                double slope_last = minmod(diff_up_last, diff_down_last);
+                double slope_last = superbee(diff_up_last, diff_down_last);
                 face_flux[N] = slice[N - 1] + slope_weight * slope_last;
 
                 for (int m = 0; m < N; ++m) {
@@ -642,22 +645,25 @@ namespace FVM_ANDS{
                 std::vector<double> face_flux(N + 1, 0.0);
                 face_flux[N] = bc_right;
 
-                auto minmod = [](double a, double b) -> double {
+                auto superbee = [](double a, double b) -> double {
                     if (a * b <= 0.0) return 0.0;
-                    return (a > 0.0) ? std::min(a, b) : std::max(a, b);
+                    const double s = (a > 0.0) ? 1.0 : -1.0;
+                    const double aa = std::abs(a);
+                    const double bb = std::abs(b);
+                    return s * std::max(std::min(2.0 * aa, bb), std::min(aa, 2.0 * bb));
                 };
 
                 for (int m = 0; m < N - 1; ++m) {
                     double diff_up = (m + 1 == N - 1) ? (2.0 * (bc_right - slice[N - 1])) : (slice[m + 2] - slice[m + 1]);
                     double diff_down = slice[m + 1] - slice[m];
-                    double slope = minmod(diff_down, diff_up);
+                    double slope = superbee(diff_down, diff_up);
                     face_flux[m + 1] = slice[m + 1] - slope_weight * slope;
                 }
 
                 // Outflow face at m = 0 (leftward flow towards bc_left)
                 double diff_down_0 = 2.0 * (slice[0] - bc_left);
                 double diff_up_0 = (N >= 2) ? (slice[1] - slice[0]) : (2.0 * (bc_right - slice[0]));
-                double slope_0 = minmod(diff_up_0, diff_down_0);
+                double slope_0 = superbee(diff_up_0, diff_down_0);
                 face_flux[0] = slice[0] - slope_weight * slope_0;
 
                 for (int m = 0; m < N; ++m) {
@@ -732,9 +738,12 @@ namespace FVM_ANDS{
         if (std::abs(disp) < 1.0e-14 || dt <= 0.0) return;
 
         const double q_nom = 0.5 * (q_min + q_max);
-        auto minmod = [](double a, double b) -> double {
+        auto superbee = [](double a, double b) -> double {
             if (a * b <= 0.0) return 0.0;
-            return (a > 0.0) ? std::min(a, b) : std::max(a, b);
+            const double s = (a > 0.0) ? 1.0 : -1.0;
+            const double aa = std::abs(a);
+            const double bb = std::abs(b);
+            return s * std::max(std::min(2.0 * aa, bb), std::min(aa, 2.0 * bb));
         };
 
         if (velocity > 0.0) {
@@ -785,7 +794,7 @@ namespace FVM_ANDS{
                 for (int m = 0; m < N - 1; ++m) {
                     double diff_up = (m == 0) ? (2.0 * (sliceN[0] - bcN_left)) : (sliceN[m] - sliceN[m - 1]);
                     double diff_down = sliceN[m + 1] - sliceN[m];
-                    double slope = minmod(diff_up, diff_down);
+                    double slope = superbee(diff_up, diff_down);
                     face_flux_N[m + 1] = sliceN[m] + slope_weight * slope;
 
                     double q_face = q[m];
@@ -794,7 +803,7 @@ namespace FVM_ANDS{
                         bool down_ok = active[m + 1];
                         double dq_up = up_ok ? ((m == 0) ? (2.0 * (q[0] - q_left)) : (q[m] - q[m - 1])) : 0.0;
                         double dq_down = down_ok ? (q[m + 1] - q[m]) : 0.0;
-                        double q_slope = minmod(dq_up, dq_down);
+                        double q_slope = superbee(dq_up, dq_down);
                         q_face = std::max(q_min, std::min(q_max, q[m] + slope_weight * q_slope));
                     }
                     face_flux_V[m + 1] = face_flux_N[m + 1] * q_face;
@@ -803,7 +812,7 @@ namespace FVM_ANDS{
                 // Outflow face at m = N
                 double diff_up_last = (N >= 2) ? (sliceN[N - 1] - sliceN[N - 2]) : (2.0 * (sliceN[0] - bcN_left));
                 double diff_down_last = 2.0 * (bcN_right - sliceN[N - 1]);
-                double slope_last = minmod(diff_up_last, diff_down_last);
+                double slope_last = superbee(diff_up_last, diff_down_last);
                 face_flux_N[N] = sliceN[N - 1] + slope_weight * slope_last;
 
                 double q_face_last = q[N - 1];
@@ -811,7 +820,7 @@ namespace FVM_ANDS{
                     bool up_ok = (N >= 2) ? active[N - 2] : active_left;
                     double dq_up = up_ok ? ((N >= 2) ? (q[N - 1] - q[N - 2]) : (2.0 * (q[0] - q_left))) : 0.0;
                     double dq_down = active_right ? (2.0 * (q_right - q[N - 1])) : 0.0;
-                    double q_slope = minmod(dq_up, dq_down);
+                    double q_slope = superbee(dq_up, dq_down);
                     q_face_last = std::max(q_min, std::min(q_max, q[N - 1] + slope_weight * q_slope));
                 }
                 face_flux_V[N] = face_flux_N[N] * q_face_last;
@@ -871,7 +880,7 @@ namespace FVM_ANDS{
                 for (int m = 0; m < N - 1; ++m) {
                     double diff_up = (m + 1 == N - 1) ? (2.0 * (bcN_right - sliceN[N - 1])) : (sliceN[m + 2] - sliceN[m + 1]);
                     double diff_down = sliceN[m + 1] - sliceN[m];
-                    double slope = minmod(diff_down, diff_up);
+                    double slope = superbee(diff_down, diff_up);
                     face_flux_N[m + 1] = sliceN[m + 1] - slope_weight * slope;
 
                     double q_face = q[m + 1];
@@ -880,7 +889,7 @@ namespace FVM_ANDS{
                         bool down_ok = active[m];
                         double dq_up = up_ok ? ((m + 1 == N - 1) ? (2.0 * (q_right - q[N - 1])) : (q[m + 2] - q[m + 1])) : 0.0;
                         double dq_down = down_ok ? (q[m + 1] - q[m]) : 0.0;
-                        double q_slope = minmod(dq_down, dq_up);
+                        double q_slope = superbee(dq_down, dq_up);
                         q_face = std::max(q_min, std::min(q_max, q[m + 1] - slope_weight * q_slope));
                     }
                     face_flux_V[m + 1] = face_flux_N[m + 1] * q_face;
@@ -889,7 +898,7 @@ namespace FVM_ANDS{
                 // Outflow face at m = 0 (leftward flow towards bcN_left)
                 double diff_down_0 = 2.0 * (sliceN[0] - bcN_left);
                 double diff_up_0 = (N >= 2) ? (sliceN[1] - sliceN[0]) : (2.0 * (bcN_right - sliceN[0]));
-                double slope_0 = minmod(diff_up_0, diff_down_0);
+                double slope_0 = superbee(diff_up_0, diff_down_0);
                 face_flux_N[0] = sliceN[0] - slope_weight * slope_0;
 
                 double q_face_0 = q[0];
@@ -897,7 +906,7 @@ namespace FVM_ANDS{
                     bool up_ok = (N >= 2) ? active[1] : active_right;
                     double dq_up = up_ok ? ((N >= 2) ? (q[1] - q[0]) : (2.0 * (q_right - q[0]))) : 0.0;
                     double dq_down = active_left ? (2.0 * (q[0] - q_left)) : 0.0;
-                    double q_slope = minmod(dq_up, dq_down);
+                    double q_slope = superbee(dq_up, dq_down);
                     q_face_0 = std::max(q_min, std::min(q_max, q[0] - slope_weight * q_slope));
                 }
                 face_flux_V[0] = face_flux_N[0] * q_face_0;
@@ -937,9 +946,12 @@ namespace FVM_ANDS{
         const double sub_dt = dt / n_substeps;
         const double q_nom = 0.5 * (q_min + q_max);
 
-        auto minmod = [](double a, double b) -> double {
+        auto superbee = [](double a, double b) -> double {
             if (a * b <= 0.0) return 0.0;
-            return (a > 0.0) ? std::min(a, b) : std::max(a, b);
+            const double s = (a > 0.0) ? 1.0 : -1.0;
+            const double aa = std::abs(a);
+            const double bb = std::abs(b);
+            return s * std::max(std::min(2.0 * aa, bb), std::min(aa, 2.0 * bb));
         };
 
         std::vector<double> q(N, q_nom);
@@ -975,7 +987,7 @@ namespace FVM_ANDS{
 
                 double diff_up = (m + 1 == N - 1) ? (2.0 * (bcN_top - colN[N - 1])) : (colN[m + 2] - colN[m + 1]);
                 double diff_down = colN[m + 1] - colN[m];
-                double slope = minmod(diff_down, diff_up);
+                double slope = superbee(diff_down, diff_up);
                 double face_val_N = colN[m + 1] - slope_weight * slope;
                 flux_N[m + 1] = c_m1 * face_val_N;
 
@@ -985,7 +997,7 @@ namespace FVM_ANDS{
                     bool down_ok = active[m];
                     double dq_up = up_ok ? ((m + 1 == N - 1) ? (2.0 * (q_top - q[N - 1])) : (q[m + 2] - q[m + 1])) : 0.0;
                     double dq_down = down_ok ? (q[m + 1] - q[m]) : 0.0;
-                    double q_slope = minmod(dq_down, dq_up);
+                    double q_slope = superbee(dq_down, dq_up);
                     q_face = std::max(q_min, std::min(q_max, q[m + 1] - slope_weight * q_slope));
                 }
                 flux_V[m + 1] = flux_N[m + 1] * q_face;
@@ -998,7 +1010,7 @@ namespace FVM_ANDS{
 
                 double diff_down_0 = 2.0 * (colN[0] - bcN_bot);
                 double diff_up_0 = (N >= 2) ? (colN[1] - colN[0]) : (2.0 * (bcN_top - colN[0]));
-                double slope_0 = minmod(diff_up_0, diff_down_0);
+                double slope_0 = superbee(diff_up_0, diff_down_0);
                 double face_val_N0 = colN[0] - slope_weight * slope_0;
                 flux_N[0] = c_0 * face_val_N0;
 
@@ -1007,7 +1019,7 @@ namespace FVM_ANDS{
                     bool up_ok = (N >= 2) ? active[1] : active_top;
                     double dq_up = up_ok ? ((N >= 2) ? (q[1] - q[0]) : (2.0 * (q_top - q[0]))) : 0.0;
                     double dq_down = active_bot ? (2.0 * (q[0] - q_bot)) : 0.0;
-                    double q_slope = minmod(dq_up, dq_down);
+                    double q_slope = superbee(dq_up, dq_down);
                     q_face_0 = std::max(q_min, std::min(q_max, q[0] - slope_weight * q_slope));
                 }
                 flux_V[0] = flux_N[0] * q_face_0;
