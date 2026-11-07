@@ -566,6 +566,9 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
     start = std::chrono::high_resolution_clock::now();
     #endif
     
+    Vector_3D& pdfRef = iceAerosol_.getPDF();
+    Vector_3D volume = iceAerosol_.Volume();
+
     #pragma omp parallel for default(shared) schedule(dynamic)
     for ( UInt n = 0; n < iceAerosol_.getNBin(); n++ ) {
         /* Transport particle number and volume for each bin and
@@ -580,8 +583,12 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
         solver.updateAdvection(0, -vFall_[n], shear_rep_);
 
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
-        solver.operatorSplitSolve2DVec(iceAerosol_.getPDF()[n], ZERO_BC, false);
+        solver.operatorSplitSolve2DVec(pdfRef[n], ZERO_BC, false);
+        solver.operatorSplitSolve2DVec(volume[n], ZERO_BC, false);
     }
+
+    // Recalculate intra-bin centers across the domain after transport
+    iceAerosol_.UpdateCenters(volume, pdfRef);
 
     #ifdef ENABLE_TIMING
     end = std::chrono::high_resolution_clock::now();
