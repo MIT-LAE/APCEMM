@@ -592,22 +592,6 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
         //Update solver params for this bin
         solver.updateAdvection(0, -vFall_[n], shear_rep_);
 
-        Vector_2D vFall2D;
-        const Vector_2D* vFall2DPtr = nullptr;
-        if (simVars_.GRAVSETTLING) {
-            vFall2D = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size(), 0.0));
-            for (std::size_t j = 0; j < yCoords_.size(); ++j) {
-                const double P_j = press1D[j];
-                for (std::size_t i = 0; i < xCoords_.size(); ++i) {
-                    const double r_cell = (pdfRef[n][j][i] > 0.0)
-                        ? std::cbrt(VOL_TO_RAD_FACTOR * binVCenters[n][j][i])
-                        : binCenters[n];
-                    vFall2D[j][i] = AIM::SettlingVelocityScalar(r_cell, temp2D[j][i], P_j);
-                }
-            }
-            vFall2DPtr = &vFall2D;
-        }
-
         // Scale volume[n] by 1 / (dln(r) * V_nom) so its numerical magnitude matches pdfRef[n]
         // during transport, preventing norm thresholds (1e-30 in sor_solve, 1e-100 in operatorSplitSolve2DVec)
         // from treating volume[n] differently from pdfRef[n].
@@ -617,6 +601,20 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
         const double invVolScale = 1.0 / volScale;
         const double qMin = binVEdges[n] / vNom;
         const double qMax = binVEdges[n + 1] / vNom;
+        const double rNom = std::cbrt(VOL_TO_RAD_FACTOR * vNom);
+
+        Vector_2D vFall2D;
+        const Vector_2D* vFall2DPtr = nullptr;
+        if (simVars_.GRAVSETTLING) {
+            vFall2D = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size(), 0.0));
+            for (std::size_t j = 0; j < yCoords_.size(); ++j) {
+                const double P_j = press1D[j];
+                for (std::size_t i = 0; i < xCoords_.size(); ++i) {
+                    vFall2D[j][i] = AIM::SettlingVelocityScalar(rNom, temp2D[j][i], P_j);
+                }
+            }
+            vFall2DPtr = &vFall2D;
+        }
 
         for (std::size_t j = 0; j < volume[n].size(); ++j) {
             for (std::size_t i = 0; i < volume[n][j].size(); ++i) {

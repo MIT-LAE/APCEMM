@@ -672,8 +672,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
                     kernel.buildF(bin_VCenters, jNy, iNx);
 
 
-                    #pragma omp parallel for default(shared) private(iBin, jBin, kBin, kBin_, nPart) \
-                        schedule(dynamic, 1)
+                    /* Sequential forward substitution over iBin (since P[iBin] depends on v_new[kBin] for kBin < iBin) */
                     for (iBin = 0; iBin < nBin; iBin++)
                     {
 
@@ -708,8 +707,12 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
                         /* Mass conserving scheme: */
                         v_new[iBin][jNy][iNx] = (v[iBin][jNy][iNx] + dt * P[iBin]) / (1.0 + dt * L[iBin]);
-                        if (v[iBin][jNy][iNx] > 0.0E+00)
+                        if (v[iBin][jNy][iNx] > 0.0E+00) {
                             pdf[iBin][jNy][iNx] *= v_new[iBin][jNy][iNx] / v[iBin][jNy][iNx];
+                        } else if (v_new[iBin][jNy][iNx] > 0.0E+00) {
+                            const double dLogBin = log_Bin_Edges[iBin + 1] - log_Bin_Edges[iBin];
+                            pdf[iBin][jNy][iNx] = v_new[iBin][jNy][iNx] / (bin_VCenters[iBin][jNy][iNx] * dLogBin);
+                        }
                     }
                 }
             }

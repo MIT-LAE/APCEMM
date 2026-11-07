@@ -235,10 +235,10 @@ TEST_CASE("Aerosol Flexible Bin Grid Construction", "[aerosol][bins]") {
     const double r_low = 5.0e-8;  // 0.05 um
     const double r_hig = 8.0e-5;  // 80.0 um
 
-    SECTION("Default Grid Parameters (VRAT = 1.80)") {
-        const double vrat = 1.80;
+    SECTION("Default Grid Parameters (VRAT = 1.50)") {
+        const double vrat = 1.50;
         const UInt expected_nbins = static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(vrat)));
-        REQUIRE(expected_nbins == 38);
+        REQUIRE(expected_nbins == 55);
 
         const double rrat = cbrt(vrat);
         Vector_1D edges(expected_nbins + 1);
@@ -256,16 +256,17 @@ TEST_CASE("Aerosol Flexible Bin Grid Construction", "[aerosol][bins]") {
     }
 
     SECTION("VRAT Spectrum Geometric Invariance (1.2 to 3.0)") {
-        const std::vector<double> vrats = {1.2, 1.5, 1.8, 2.0, 2.1, 2.4, 2.7, 3.0};
+        const std::vector<double> vrats = {1.2, 1.35, 1.5, 1.8, 2.0, 2.1, 2.4, 2.7, 3.0};
         const std::vector<UInt> expected_counts = {
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.2))), // ~122
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.5))), // 55
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.8))), // 38
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.0))), // 32
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.1))), // 30
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.4))), // 26
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.7))), // 23
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(3.0)))  // 21
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.2))),  // ~122
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.35))), // 75
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.5))),  // 55
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.8))),  // 38
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.0))),  // 32
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.1))),  // 30
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.4))),  // 26
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.7))),  // 23
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(3.0)))   // 21
         };
 
         for (size_t k = 0; k < vrats.size(); k++) {
