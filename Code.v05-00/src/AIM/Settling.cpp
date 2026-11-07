@@ -117,6 +117,13 @@ namespace AIM
 
     }
 
+    double SettlingVelocityScalar( const double r, const double T, const double P )
+    {
+        return 2.0E+00 * physConst::g * ( physConst::RHO_ICE - physFunc::rhoAir( T, P ) ) *
+               r * r / ( 9.0E+00 * physFunc::dynVisc( T ) ) *
+               physFunc::slip_flowCorrection( physFunc::Kn( r, T, P ) );
+    }
+
 }
 
 

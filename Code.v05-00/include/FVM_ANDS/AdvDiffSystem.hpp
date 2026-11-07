@@ -110,6 +110,23 @@ namespace FVM_ANDS{
         double q_min,
         double q_max);
 
+    /**
+     * @brief Substepped 1D conservative Eulerian TVD vertical settling for coupled two-moment aerosol transport
+     *        with spatially varying downward settling speed \f$w_m = v_{\text{fall}}(r_m, T_m, P_m) \ge 0\f$.
+     */
+    void verticalSettlingTwoMoment1D(
+        std::vector<double>& colN,
+        std::vector<double>& colV,
+        const std::vector<double>& w_fall,
+        double dt,
+        double dy,
+        double bcN_bot,
+        double bcN_top,
+        double bcV_bot,
+        double bcV_top,
+        double q_min,
+        double q_max);
+
     struct AdvDiffParams {
         AdvDiffParams(double u, double v, double shear, double Dh, double Dv, double dt){
             this->u = u;
@@ -135,7 +152,7 @@ namespace FVM_ANDS{
             void applyBoundaryCondition();
             void updateBoundaryCondition(const BoundaryConditions& bc);
             void semiLagrangianAdvection(double dt, bool parallelAdvection = false);
-            void semiLagrangianAdvectionTwoMoment(Eigen::VectorXd& phiN, Eigen::VectorXd& phiV, double dt, double q_min, double q_max, bool parallelAdvection = false);
+            void semiLagrangianAdvectionTwoMoment(Eigen::VectorXd& phiN, Eigen::VectorXd& phiV, double dt, double q_min, double q_max, bool parallelAdvection = false, const Vector_2D* vFall2D = nullptr);
             Eigen::VectorXd forwardEulerAdvection(bool operatorSplit = false, bool parallelAdvection = false) const noexcept;
             // Breakup the implementation of sor_solve to allow for easy testing by inputing an arbitrary linear system to solve:
             // Implementation is moved outside of the class, and make class method to be used in code

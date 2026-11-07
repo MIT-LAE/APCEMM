@@ -910,13 +910,124 @@ namespace FVM_ANDS{
         }
     }
 
+    void verticalSettlingTwoMoment1D(
+        std::vector<double>& colN,
+        std::vector<double>& colV,
+        const std::vector<double>& w_fall,
+        double dt,
+        double dy,
+        double bcN_bot,
+        double bcN_top,
+        double bcV_bot,
+        double bcV_top,
+        double q_min,
+        double q_max)
+    {
+        const int N = static_cast<int>(colN.size());
+        if (N == 0 || dt <= 0.0 || dy <= 0.0) return;
+
+        double max_w = 0.0;
+        for (int m = 0; m < N; ++m) {
+            if (w_fall[m] > max_w) max_w = w_fall[m];
+        }
+        if (max_w * dt < 1.0e-14) return;
+
+        const double max_cfl = max_w * dt / dy;
+        const int n_substeps = std::max(1, static_cast<int>(std::ceil(max_cfl / 0.8)));
+        const double sub_dt = dt / n_substeps;
+        const double q_nom = 0.5 * (q_min + q_max);
+
+        auto minmod = [](double a, double b) -> double {
+            if (a * b <= 0.0) return 0.0;
+            return (a > 0.0) ? std::min(a, b) : std::max(a, b);
+        };
+
+        std::vector<double> q(N, q_nom);
+        std::vector<bool> active(N, false);
+        std::vector<double> flux_N(N + 1, 0.0);
+        std::vector<double> flux_V(N + 1, 0.0);
+
+        const bool active_bot = (bcN_bot > 1.0e-30);
+        const double q_bot = active_bot ? std::max(q_min, std::min(q_max, bcV_bot / bcN_bot)) : q_nom;
+        const bool active_top = (bcN_top > 1.0e-30);
+        const double q_top = active_top ? std::max(q_min, std::min(q_max, bcV_top / bcN_top)) : q_nom;
+
+        for (int step = 0; step < n_substeps; ++step) {
+            for (int m = 0; m < N; ++m) {
+                if (colN[m] > 1.0e-30) {
+                    q[m] = std::max(q_min, std::min(q_max, colV[m] / colN[m]));
+                    active[m] = true;
+                } else {
+                    q[m] = q_nom;
+                    active[m] = false;
+                }
+            }
+
+            // Top boundary inflow face at m = N (downward flow from top boundary into cell N-1)
+            const double c_top = std::max(0.0, w_fall[N - 1]) * sub_dt / dy;
+            flux_N[N] = c_top * bcN_top;
+            flux_V[N] = c_top * bcV_top;
+
+            // Interior faces m + 1/2 (for m = 0 .. N-2): downward flow from cell m + 1 into cell m
+            for (int m = 0; m < N - 1; ++m) {
+                const double c_m1 = std::max(0.0, w_fall[m + 1]) * sub_dt / dy;
+                const double slope_weight = 0.5 * (1.0 - c_m1);
+
+                double diff_up = (m + 1 == N - 1) ? (2.0 * (bcN_top - colN[N - 1])) : (colN[m + 2] - colN[m + 1]);
+                double diff_down = colN[m + 1] - colN[m];
+                double slope = minmod(diff_down, diff_up);
+                double face_val_N = colN[m + 1] - slope_weight * slope;
+                flux_N[m + 1] = c_m1 * face_val_N;
+
+                double q_face = q[m + 1];
+                if (active[m + 1]) {
+                    bool up_ok = (m + 1 == N - 1) ? active_top : active[m + 2];
+                    bool down_ok = active[m];
+                    double dq_up = up_ok ? ((m + 1 == N - 1) ? (2.0 * (q_top - q[N - 1])) : (q[m + 2] - q[m + 1])) : 0.0;
+                    double dq_down = down_ok ? (q[m + 1] - q[m]) : 0.0;
+                    double q_slope = minmod(dq_down, dq_up);
+                    q_face = std::max(q_min, std::min(q_max, q[m + 1] - slope_weight * q_slope));
+                }
+                flux_V[m + 1] = flux_N[m + 1] * q_face;
+            }
+
+            // Bottom boundary outflow face at m = 0 (downward flow from cell 0 towards bcN_bot)
+            {
+                const double c_0 = std::max(0.0, w_fall[0]) * sub_dt / dy;
+                const double slope_weight = 0.5 * (1.0 - c_0);
+
+                double diff_down_0 = 2.0 * (colN[0] - bcN_bot);
+                double diff_up_0 = (N >= 2) ? (colN[1] - colN[0]) : (2.0 * (bcN_top - colN[0]));
+                double slope_0 = minmod(diff_up_0, diff_down_0);
+                double face_val_N0 = colN[0] - slope_weight * slope_0;
+                flux_N[0] = c_0 * face_val_N0;
+
+                double q_face_0 = q[0];
+                if (active[0]) {
+                    bool up_ok = (N >= 2) ? active[1] : active_top;
+                    double dq_up = up_ok ? ((N >= 2) ? (q[1] - q[0]) : (2.0 * (q_top - q[0]))) : 0.0;
+                    double dq_down = active_bot ? (2.0 * (q[0] - q_bot)) : 0.0;
+                    double q_slope = minmod(dq_up, dq_down);
+                    q_face_0 = std::max(q_min, std::min(q_max, q[0] - slope_weight * q_slope));
+                }
+                flux_V[0] = flux_N[0] * q_face_0;
+            }
+
+            for (int m = 0; m < N; ++m) {
+                colN[m] -= (flux_N[m] - flux_N[m + 1]);
+                colV[m] -= (flux_V[m] - flux_V[m + 1]);
+            }
+        }
+    }
+
     void AdvDiffSystem::semiLagrangianAdvectionTwoMoment(
         Eigen::VectorXd& phiN,
         Eigen::VectorXd& phiV,
         double dt,
         double q_min,
         double q_max,
-        bool parallelAdvection)
+        bool parallelAdvection,
+        const Vector_2D* vFall2D)
     {
         // 1. Horizontal Advection along X (row by row)
         #pragma omp parallel if (parallelAdvection) default(shared)
@@ -946,8 +1057,34 @@ namespace FVM_ANDS{
             }
         }
 
-        // 2. Vertical Advection along Y (column by column)
-        if (std::abs(v_double_) > 1.0e-14) {
+        // 2. Vertical Settling / Advection along Y (column by column)
+        if (vFall2D != nullptr) {
+            #pragma omp parallel if (parallelAdvection) default(shared)
+            {
+                std::vector<double> colN(ny_);
+                std::vector<double> colV(ny_);
+                std::vector<double> wCol(ny_);
+                #pragma omp for schedule(static)
+                for (int i = 0; i < nx_; ++i) {
+                    for (int j = 0; j < ny_; ++j) {
+                        int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
+                        colN[j] = phiN[idx];
+                        colV[j] = phiV[idx];
+                        wCol[j] = (*vFall2D)[j][i];
+                    }
+                    verticalSettlingTwoMoment1D(
+                        colN, colV, wCol, dt, dy_,
+                        bcVals_bot_[i], bcVals_top_[i],
+                        bcVals_bot_[i], bcVals_top_[i],
+                        q_min, q_max);
+                    for (int j = 0; j < ny_; ++j) {
+                        int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
+                        phiN[idx] = colN[j];
+                        phiV[idx] = colV[j];
+                    }
+                }
+            }
+        } else if (std::abs(v_double_) > 1.0e-14) {
             #pragma omp parallel if (parallelAdvection) default(shared)
             {
                 std::vector<double> colN(ny_);

@@ -161,7 +161,8 @@ namespace FVM_ANDS{
         const BoundaryConditions& bc,
         double q_min,
         double q_max,
-        bool parallelAdvection)
+        bool parallelAdvection,
+        const Vector_2D* vFall2D)
     {
         Eigen::VectorXd vecN_Eigen = std2dVec_to_eigenVec(vecN);
         const double VECTORNORM_MIN = 1e-100;
@@ -175,7 +176,7 @@ namespace FVM_ANDS{
         advDiffSys_.updateBoundaryCondition(bc);
 
         // Step 1: First half-step coupled two-moment Semi-Lagrangian advection
-        advDiffSys_.semiLagrangianAdvectionTwoMoment(vecN_Eigen, vecV_Eigen, 0.5 * dt_max, q_min, q_max, parallelAdvection);
+        advDiffSys_.semiLagrangianAdvectionTwoMoment(vecN_Eigen, vecV_Eigen, 0.5 * dt_max, q_min, q_max, parallelAdvection, vFall2D);
 
         // Step 2: Implicit diffusion for full timestep on both moments using identical linear operator
         advDiffSys_.updateTimestep(dt_max);
@@ -196,7 +197,7 @@ namespace FVM_ANDS{
         vecV_Eigen = advDiffSys_.phi();
 
         // Step 3: Second half-step coupled two-moment Semi-Lagrangian advection
-        advDiffSys_.semiLagrangianAdvectionTwoMoment(vecN_Eigen, vecV_Eigen, 0.5 * dt_max, q_min, q_max, parallelAdvection);
+        advDiffSys_.semiLagrangianAdvectionTwoMoment(vecN_Eigen, vecV_Eigen, 0.5 * dt_max, q_min, q_max, parallelAdvection, vFall2D);
 
         vecN = eigenVec_to_std2dVec(vecN_Eigen, vecN[0].size(), vecN.size());
         vecV = eigenVec_to_std2dVec(vecV_Eigen, vecV[0].size(), vecV.size());

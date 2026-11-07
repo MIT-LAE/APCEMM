@@ -888,4 +888,49 @@ namespace FVM_ANDS{
             }
         }
     }
+
+    TEST_CASE("Substepped 1D vertical settling with spatially varying vFall conserves mass and number", "[two_moment][settling]"){
+        const int N = 40;
+        const double q_min = 0.714;
+        const double q_max = 1.286;
+        const double dy = 10.0;
+        const double dt = 30.0; // half of 60s subcycle step
+
+        std::vector<double> colN(N, 0.0);
+        std::vector<double> colV(N, 0.0);
+        std::vector<double> w_fall(N, 0.0);
+
+        for (int m = 0; m < N; ++m) {
+            // Spatially varying settling velocity from 0.15 m/s to 0.55 m/s (requires subcycling since max CFL = 0.55*30/10 = 1.65 > 0.8)
+            w_fall[m] = 0.15 + 0.40 * double(m) / double(N - 1);
+            if (m >= 18 && m <= 28) {
+                colN[m] = (m == 18 || m == 28) ? 0.5 : 4.0;
+                double q_local = 0.82 + 0.36 * double(m - 18) / 10.0;
+                colV[m] = colN[m] * q_local;
+            }
+        }
+
+        double initSumN = 0.0, initSumV = 0.0;
+        for (int m = 0; m < N; ++m) {
+            initSumN += colN[m];
+            initSumV += colV[m];
+        }
+
+        verticalSettlingTwoMoment1D(colN, colV, w_fall, dt, dy, 0.0, 0.0, 0.0, 0.0, q_min, q_max);
+
+        double finalSumN = 0.0, finalSumV = 0.0;
+        for (int m = 0; m < N; ++m) {
+            REQUIRE(colN[m] >= -1e-15);
+            REQUIRE(colV[m] >= -1e-15);
+            finalSumN += colN[m];
+            finalSumV += colV[m];
+            if (colN[m] > 1.0e-12) {
+                double q_m = colV[m] / colN[m];
+                REQUIRE(q_m >= 0.82 - 1e-12);
+                REQUIRE(q_m <= 1.18 + 1e-12);
+            }
+        }
+        REQUIRE(finalSumN == Catch::Approx(initSumN).margin(1e-12));
+        REQUIRE(finalSumV == Catch::Approx(initSumV).margin(1e-12));
+    }
 }

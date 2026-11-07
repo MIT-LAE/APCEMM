@@ -570,6 +570,11 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
     Vector_3D volume = iceAerosol_.Volume();
     const Vector_1D& binVEdges = iceAerosol_.getBinVEdges();
     const Vector_1D& logBinEdges = iceAerosol_.getLogBinEdges();
+    const Vector_3D& binVCenters = iceAerosol_.getBinVCenters();
+    const Vector_1D& binCenters = iceAerosol_.getBinCenters();
+    const Vector_2D& temp2D = met_.Temp();
+    const Vector_1D& press1D = met_.Press();
+    const double VOL_TO_RAD_FACTOR = 3.0 / (4.0 * PI);
 
     #pragma omp parallel for default(shared) schedule(dynamic)
     for ( UInt n = 0; n < iceAerosol_.getNBin(); n++ ) {
@@ -586,6 +591,22 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
         
         //Update solver params for this bin
         solver.updateAdvection(0, -vFall_[n], shear_rep_);
+
+        Vector_2D vFall2D;
+        const Vector_2D* vFall2DPtr = nullptr;
+        if (simVars_.GRAVSETTLING) {
+            vFall2D = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size(), 0.0));
+            for (std::size_t j = 0; j < yCoords_.size(); ++j) {
+                const double P_j = press1D[j];
+                for (std::size_t i = 0; i < xCoords_.size(); ++i) {
+                    const double r_cell = (pdfRef[n][j][i] > 0.0)
+                        ? std::cbrt(VOL_TO_RAD_FACTOR * binVCenters[n][j][i])
+                        : binCenters[n];
+                    vFall2D[j][i] = AIM::SettlingVelocityScalar(r_cell, temp2D[j][i], P_j);
+                }
+            }
+            vFall2DPtr = &vFall2D;
+        }
 
         // Scale volume[n] by 1 / (dln(r) * V_nom) so its numerical magnitude matches pdfRef[n]
         // during transport, preventing norm thresholds (1e-30 in sor_solve, 1e-100 in operatorSplitSolve2DVec)
@@ -604,7 +625,7 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
         }
 
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
-        solver.operatorSplitSolveTwoMoment2DVec(pdfRef[n], volume[n], ZERO_BC, qMin, qMax, false);
+        solver.operatorSplitSolveTwoMoment2DVec(pdfRef[n], volume[n], ZERO_BC, qMin, qMax, false, vFall2DPtr);
 
         for (std::size_t j = 0; j < volume[n].size(); ++j) {
             for (std::size_t i = 0; i < volume[n][j].size(); ++i) {
