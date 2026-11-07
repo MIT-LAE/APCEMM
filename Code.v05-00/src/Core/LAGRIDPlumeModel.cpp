@@ -568,12 +568,17 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
     
     Vector_3D& pdfRef = iceAerosol_.getPDF();
     Vector_3D volume = iceAerosol_.Volume();
+    const Vector_1D& binVEdges = iceAerosol_.getBinVEdges();
+    const Vector_1D& logBinEdges = iceAerosol_.getLogBinEdges();
 
     #pragma omp parallel for default(shared) schedule(dynamic)
     for ( UInt n = 0; n < iceAerosol_.getNBin(); n++ ) {
         /* Transport particle number and volume for each bin and
             * recompute centers of each bin for each grid cell
             * accordingly */
+        if (FVM_ANDS::FVM_Solver::eigenSqVectorNorm_double(pdfRef[n]) < 1e-100) {
+            continue;
+        }
         
         // Fetch the solver for this thread
         int tid = omp_get_thread_num();
@@ -582,9 +587,29 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
         //Update solver params for this bin
         solver.updateAdvection(0, -vFall_[n], shear_rep_);
 
+        // Scale volume[n] by 1 / (dln(r) * V_nom) so its numerical magnitude matches pdfRef[n]
+        // during transport, preventing norm thresholds (1e-30 in sor_solve, 1e-100 in operatorSplitSolve2DVec)
+        // from treating volume[n] differently from pdfRef[n].
+        const double dLogBin = logBinEdges[n + 1] - logBinEdges[n];
+        const double vNom = 0.5 * (binVEdges[n] + binVEdges[n + 1]);
+        const double volScale = dLogBin * vNom;
+        const double invVolScale = 1.0 / volScale;
+
+        for (std::size_t j = 0; j < volume[n].size(); ++j) {
+            for (std::size_t i = 0; i < volume[n][j].size(); ++i) {
+                volume[n][j][i] *= invVolScale;
+            }
+        }
+
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
         solver.operatorSplitSolve2DVec(pdfRef[n], ZERO_BC, false);
         solver.operatorSplitSolve2DVec(volume[n], ZERO_BC, false);
+
+        for (std::size_t j = 0; j < volume[n].size(); ++j) {
+            for (std::size_t i = 0; i < volume[n][j].size(); ++i) {
+                volume[n][j][i] *= volScale;
+            }
+        }
     }
 
     // Recalculate intra-bin centers across the domain after transport

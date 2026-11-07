@@ -191,6 +191,7 @@ class AIM::Grid_Aerosol
         inline const Vector_1D& getBinCenters() const { return bin_Centers; };
         inline const Vector_3D& getBinVCenters() const { return bin_VCenters; };
         inline const Vector_1D& getBinEdges() const { return bin_Edges; };
+        inline const Vector_1D& getBinVEdges() const { return bin_VEdges; };
         inline const Vector_1D& getBinSizes() const { return bin_Sizes; };
         inline const Vector_1D& getLogBinEdges() const { return log_Bin_Edges; };
         inline UInt getNBin() const { return nBin; };
