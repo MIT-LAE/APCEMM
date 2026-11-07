@@ -840,4 +840,52 @@ namespace FVM_ANDS{
         }
         REQUIRE(populatedCount > 100);
     }
+
+    TEST_CASE("Coupled two-moment 1D FFSL advection preserves mass, number, and bounded V/N ratio", "[two_moment][advection]"){
+        const int N = 40;
+        const double q_min = 0.714;
+        const double q_max = 1.286;
+        const double dt = 1.0;
+        const double ds = 1.0;
+
+        SECTION("Positive and negative multi-cell advection of step profile with varying V/N"){
+            for (double velocity : {2.35, -1.75}) {
+                std::vector<double> sliceN(N, 0.0);
+                std::vector<double> sliceV(N, 0.0);
+
+                // Sharp plume core with a spatial gradient in mean particle volume q = V/N in [0.80, 1.20]
+                for (int m = 10; m <= 22; ++m) {
+                    sliceN[m] = (m == 10 || m == 22) ? 0.2 : 5.0; // steep edge jump
+                    double q_local = 0.80 + 0.40 * double(m - 10) / 12.0;
+                    sliceV[m] = sliceN[m] * q_local;
+                }
+
+                double initSumN = 0.0, initSumV = 0.0;
+                for (int m = 0; m < N; ++m) {
+                    initSumN += sliceN[m];
+                    initSumV += sliceV[m];
+                }
+
+                semiLagrangianAdvectionTwoMoment1D(
+                    sliceN, sliceV, velocity, dt, ds,
+                    0.0, 0.0, 0.0, 0.0, q_min, q_max);
+
+                double finalSumN = 0.0, finalSumV = 0.0;
+                for (int m = 0; m < N; ++m) {
+                    REQUIRE(sliceN[m] >= -1e-15);
+                    REQUIRE(sliceV[m] >= -1e-15);
+                    finalSumN += sliceN[m];
+                    finalSumV += sliceV[m];
+                    if (sliceN[m] > 1.0e-12) {
+                        double q_m = sliceV[m] / sliceN[m];
+                        // Must stay strictly inside [0.80, 1.20] without overshooting or undershooting to bin edges
+                        REQUIRE(q_m >= 0.80 - 1e-12);
+                        REQUIRE(q_m <= 1.20 + 1e-12);
+                    }
+                }
+                REQUIRE(finalSumN == Catch::Approx(initSumN).margin(1e-12));
+                REQUIRE(finalSumV == Catch::Approx(initSumV).margin(1e-12));
+            }
+        }
+    }
 }

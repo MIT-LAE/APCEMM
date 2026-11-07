@@ -82,6 +82,34 @@ namespace FVM_ANDS{
      */
     void semiLagrangianAdvection1D(std::vector<double>& slice, double velocity, double dt, double ds, double bc_left, double bc_right);
 
+    /**
+     * @brief Coupled two-moment 1D Flux-Form Semi-Lagrangian (FFSL) advection with consistent flux weights.
+     *
+     * @details
+     * Simultaneously advects a primary number-like scalar \f$\phi_N(s,t)\f$ and a secondary volume-like scalar
+     * \f$\phi_V(s,t) = q(s,t) \phi_N(s,t)\f$ across a uniform grid with spacing \f$\Delta s\f$ and timestep \f$\Delta t\f$:
+     * 1. Both \f$\phi_N\f$ and \f$\phi_V\f$ undergo the exact same integer shift \f$k = \lfloor |v|\Delta t / \Delta s \rfloor\f$.
+     * 2. For the fractional step \f$c_{\text{frac}} \in (0, 1)\f$, the primary number flux \f$F_{N, m+1/2}\f$ is evaluated
+     *    via TVD Lax-Wendroff reconstruction on \f$\phi_N\f$, while the secondary volume flux is defined consistently as
+     *    \f$F_{V, m+1/2} = F_{N, m+1/2} \, q_{m+1/2}\f$, where \f$q_{m+1/2} \in [q_{\min}, q_{\max}]\f$ is reconstructed
+     *    from the cell-mean ratio \f$q_m = \phi_{V,m} / \phi_{N,m}\f$ using TVD minmod limiting across populated neighbors.
+     *
+     * This guarantees strict conservation of both moments, exact preservation of a uniform mean particle size \f$q_m \equiv q_0\f$,
+     * and zero spurious overshoots or undershoots of \f$q_m\f$ across steep plume boundaries.
+     */
+    void semiLagrangianAdvectionTwoMoment1D(
+        std::vector<double>& sliceN,
+        std::vector<double>& sliceV,
+        double velocity,
+        double dt,
+        double ds,
+        double bcN_left,
+        double bcN_right,
+        double bcV_left,
+        double bcV_right,
+        double q_min,
+        double q_max);
+
     struct AdvDiffParams {
         AdvDiffParams(double u, double v, double shear, double Dh, double Dv, double dt){
             this->u = u;
@@ -107,6 +135,7 @@ namespace FVM_ANDS{
             void applyBoundaryCondition();
             void updateBoundaryCondition(const BoundaryConditions& bc);
             void semiLagrangianAdvection(double dt, bool parallelAdvection = false);
+            void semiLagrangianAdvectionTwoMoment(Eigen::VectorXd& phiN, Eigen::VectorXd& phiV, double dt, double q_min, double q_max, bool parallelAdvection = false);
             Eigen::VectorXd forwardEulerAdvection(bool operatorSplit = false, bool parallelAdvection = false) const noexcept;
             // Breakup the implementation of sor_solve to allow for easy testing by inputing an arbitrary linear system to solve:
             // Implementation is moved outside of the class, and make class method to be used in code

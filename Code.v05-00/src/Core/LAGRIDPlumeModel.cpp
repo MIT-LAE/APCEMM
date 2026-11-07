@@ -594,6 +594,8 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
         const double vNom = 0.5 * (binVEdges[n] + binVEdges[n + 1]);
         const double volScale = dLogBin * vNom;
         const double invVolScale = 1.0 / volScale;
+        const double qMin = binVEdges[n] / vNom;
+        const double qMax = binVEdges[n + 1] / vNom;
 
         for (std::size_t j = 0; j < volume[n].size(); ++j) {
             for (std::size_t i = 0; i < volume[n][j].size(); ++i) {
@@ -602,8 +604,7 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
         }
 
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
-        solver.operatorSplitSolve2DVec(pdfRef[n], ZERO_BC, false);
-        solver.operatorSplitSolve2DVec(volume[n], ZERO_BC, false);
+        solver.operatorSplitSolveTwoMoment2DVec(pdfRef[n], volume[n], ZERO_BC, qMin, qMax, false);
 
         for (std::size_t j = 0; j < volume[n].size(); ++j) {
             for (std::size_t i = 0; i < volume[n][j].size(); ++i) {
