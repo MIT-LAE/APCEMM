@@ -8,10 +8,7 @@
 
 namespace EPM::Models::OriginalImpl
 {
-    /* History of the EPM state on the outer time grid. The caller records
-     * each state explicitly; this class is not an odeint observer. odeint
-     * copies observers by value, which made the old counter-based observer
-     * record the wrong states (TASK-3). */
+    /* History of the EPM state on the outer time grid */
     class StateHistory
     {
     public:
@@ -30,11 +27,11 @@ namespace EPM::Models::OriginalImpl
         const std::vector<UInt> m_indices;
     };
 
-    /* odeint observer that sets a flag once the plume reaches water
-     * saturation (RH_w >= 1). odeint calls it at every adaptive step, so it
-     * also catches a saturation peak between two outer grid points. It holds
-     * only a reference to an external flag and no state of its own: odeint
-     * copies observers by value, and every copy writes to the same flag. */
+    /* Boost odeint observer that sets a flag once the plume reaches water
+     * saturation. Called every adaptive step by the integrator
+     * so that it can catch a saturation peak between two outer grid points.
+     * Contains only a reference to an external boolean flag because the boost
+     * integrator copies observers by value. */
     class WaterSaturationObserver
     {
     public:

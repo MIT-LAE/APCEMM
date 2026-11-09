@@ -171,6 +171,7 @@ namespace EPM::Models::OriginalImpl {
 
     } /* End of StateHistory::print2File */
 
+    // t is omitted because it is unused
     void WaterSaturationObserver::operator()(const Vector_1D &x, double /* t */) const {
         if ( m_reached )
             return;
