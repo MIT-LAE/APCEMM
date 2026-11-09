@@ -69,16 +69,24 @@ namespace {
      * This is the simplest smooth profile that can be below 1 at both
      * endpoints and above 1 between them. Its RHS is linear in t, so the
      * stepper integrates it exactly. */
+
+    /* Water mixing ratio [-] at time t: satMixingRatio * RH_w(t) */
+    double h2oParabola(double t, double satMixingRatio, double rhEnd, double rhPeak, double tEnd) {
+        return satMixingRatio * (rhEnd + (rhPeak - rhEnd) * 4.0 * t * (tEnd - t) / (tEnd * tEnd));
+    }
+
+    /* Time derivative of h2oParabola [1/s] */
+    double h2oParabolaDerivative(double t, double satMixingRatio, double rhEnd, double rhPeak, double tEnd) {
+        return satMixingRatio * (rhPeak - rhEnd) * 4.0 * (tEnd - 2.0 * t) / (tEnd * tEnd);
+    }
+
+    /* Toy EPM RHS: only the water mixing ratio changes, along h2oParabola */
     struct WaterParabolaRHS {
         double satMixingRatio, rhEnd, rhPeak, tEnd;
 
-        double h2o(double t) const {
-            return satMixingRatio * (rhEnd + (rhPeak - rhEnd) * 4.0 * t * (tEnd - t) / (tEnd * tEnd));
-        }
-
         void operator()(const Vector_1D &x, Vector_1D &dxdt, double t) const {
             std::fill(dxdt.begin(), dxdt.end(), 0.0);
-            dxdt[EPM_ind_H2O] = satMixingRatio * (rhPeak - rhEnd) * 4.0 * (tEnd - 2.0 * t) / (tEnd * tEnd);
+            dxdt[EPM_ind_H2O] = h2oParabolaDerivative(t, satMixingRatio, rhEnd, rhPeak, tEnd);
         }
     };
 
@@ -93,12 +101,13 @@ namespace {
         const double T = 220.0;
         const double P = 2.65e4;
         const double tEnd = 10.0;
-        const WaterParabolaRHS rhs{physFunc::pSat_H2Ol(T) / P, rhEnd, rhPeak, tEnd};
+        const double satMixingRatio = physFunc::pSat_H2Ol(T) / P;
+        const WaterParabolaRHS rhs{satMixingRatio, rhEnd, rhPeak, tEnd};
 
         Vector_1D x(13, 0.0);
         x[EPM_ind_T] = T;
         x[EPM_ind_P] = P;
-        x[EPM_ind_H2O] = rhs.h2o(0.0);
+        x[EPM_ind_H2O] = h2oParabola(0.0, satMixingRatio, rhEnd, rhPeak, tEnd);
 
         bool reached = false;
         const WaterSaturationObserver observer(reached);
