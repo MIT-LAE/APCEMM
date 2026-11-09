@@ -19,7 +19,7 @@ namespace EPM::Models::OriginalImpl
         Vector_1D grid(nLog);
         const double log10_tStart = std::log10(tStart);
         const double log10_tEnd = std::log10(tEnd);
-        const double inv_denominator = 1/double( nLog - 1.0 );
+        const double inv_denominator = 1.0 / ( nLog - 1.0 );
         for ( UInt i = 0; i < nLog; i++ )
             grid[i] = std::pow( 10.0, log10_tStart + i * ( log10_tEnd - log10_tStart ) * inv_denominator );
 
