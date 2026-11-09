@@ -255,6 +255,10 @@ namespace EPM::Models
         bool reachedWaterSat = false;
         const WaterSaturationObserver waterSatObserver(reachedWaterSat);
 
+        /* Adaptive stepper. It holds only the tolerances and scratch buffers,
+         * no step size, so one instance serves every interval. */
+        const auto stepper = boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS );
+
         /* Creating ode's right hand side */
         gas_aerosol_rhs rhs(
             temperature_K, simVars_.pressure_Pa, delta_T,
@@ -296,8 +300,7 @@ namespace EPM::Models
             /* Diffusion + Water uptake. On return, x is the state at the end
              * of the interval, timeArray[iTime+1]. */
             boost::numeric::odeint::integrate_adaptive(
-                boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS ),
-                rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0,
+                stepper, rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0,
                 waterSatObserver );
             history.record( x, timeArray[iTime+1] );
 
