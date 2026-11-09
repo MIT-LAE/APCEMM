@@ -163,18 +163,40 @@ TEST_CASE("EPM advanceInterval records the end state", "[epm]") {
 }
 
 TEST_CASE("EPM outer time grid", "[epm]") {
-    const Vector_1D grid = makeEPMTimeGrid(301, 1.0E-04, 2.0E+03, 180.0);
+    SECTION("EPM grid holds an exact 180 s point") {
+        const Vector_1D grid = makeEPMTimeGrid(301, 1.0E-04, 2.0E+03, 180.0);
 
-    REQUIRE(grid.size() == 302);
-    REQUIRE(grid.front() == Catch::Approx(1.0E-04).epsilon(1.0E-12));
-    REQUIRE(grid.back() == Catch::Approx(2.0E+03).epsilon(1.0E-12));
-    for (std::size_t i = 0; i + 1 < grid.size(); i++)
-        REQUIRE(grid[i] < grid[i + 1]);
-    REQUIRE(std::count(grid.begin(), grid.end(), 180.0) == 1);
+        REQUIRE(grid.size() == 302);
+        REQUIRE(grid.front() == 1.0E-04);
+        REQUIRE(grid.back() == 2.0E+03);
+        for (std::size_t i = 0; i + 1 < grid.size(); i++)
+            REQUIRE(grid[i] < grid[i + 1]);
+        REQUIRE(std::count(grid.begin(), grid.end(), 180.0) == 1);
+    }
 
-    /* An insert point that is already on the grid is not duplicated:
-     * the grid 1, 10, 100, 1000, 10000 already holds 10 */
-    REQUIRE(makeEPMTimeGrid(5, 1.0, 1.0E+04, 10.0).size() == 5);
+    SECTION("Endpoints are exact, so an insert at an endpoint adds no point") {
+        /* Without pinning, pow/log10 rounding puts the last point of this
+         * grid at 180.00000000000017 */
+        const Vector_1D atEnd = makeEPMTimeGrid(301, 1.0E-04, 180.0, 180.0);
+        REQUIRE(atEnd.size() == 301);
+        REQUIRE(atEnd.back() == 180.0);
+        REQUIRE(atEnd[299] < atEnd[300]);
 
-    REQUIRE_THROWS(makeEPMTimeGrid(301, 1.0E-04, 2.0E+03, 3000.0));
+        const Vector_1D atStart = makeEPMTimeGrid(301, 1.0E-04, 180.0, 1.0E-04);
+        REQUIRE(atStart.size() == 301);
+        REQUIRE(atStart.front() == 1.0E-04);
+        REQUIRE(atStart == atEnd);
+    }
+
+    SECTION("An insert point that is already on the grid is not duplicated") {
+        /* The grid 1, 10, 100, 1000, 10000 already holds 10 */
+        REQUIRE(makeEPMTimeGrid(5, 1.0, 1.0E+04, 10.0).size() == 5);
+    }
+
+    SECTION("Invalid arguments throw") {
+        REQUIRE_THROWS(makeEPMTimeGrid(301, 1.0E-04, 2.0E+03, 3000.0));
+        REQUIRE_THROWS(makeEPMTimeGrid(301, 1.0E-04, 2.0E+03, 1.0E-05));
+        REQUIRE_THROWS(makeEPMTimeGrid(1, 1.0E-04, 2.0E+03, 180.0));
+        REQUIRE_THROWS(makeEPMTimeGrid(301, 2.0E+03, 1.0E-04, 180.0));
+    }
 }
