@@ -255,10 +255,7 @@ namespace EPM::Models
         x[11] = 0.0;
         x[12] = 0.0;
 
-        Vector_2D obs_Var;
-        Vector_1D obs_Time;
-
-        StateObserver observer(obs_Var, obs_Time, EPM_ind, simVars_.TS_FOLDER + OutputFiles::MICROPHYSICS, 2);
+        StateHistory history(EPM_ind, simVars_.TS_FOLDER + OutputFiles::MICROPHYSICS);
 
         /* Creating ode's right hand side */
         gas_aerosol_rhs rhs(
@@ -306,22 +303,25 @@ namespace EPM::Models
                 P_b = simVars_.pressure_Pa; // Set initial pressure in plume to ambient pressure
             }
             else {
-                // dilFactor_b = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
-                SO4l_b = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l];
-                T_b = observer.m_states[observer.m_states.size()-1][EPM_ind_T];
-                P_b = observer.m_states[observer.m_states.size()-1][EPM_ind_P];
+                // dilFactor_b = history.states().back()[EPM_ind_Trac];
+                SO4l_b = history.states().back()[EPM_ind_SO4l];
+                T_b = history.states().back()[EPM_ind_T];
+                P_b = history.states().back()[EPM_ind_P];
             }
+
+            /* Record the state at the start of the interval */
+            history.record( x, timeArray[iTime] );
 
             /* Diffusion + Water uptake */
             if ( adaptiveStep == 1 ) {
-                totSteps += boost::numeric::odeint::integrate_adaptive( boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS ), rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0, observer );
+                totSteps += boost::numeric::odeint::integrate_adaptive( boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS ), rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0 );
             }
             else {
-                totSteps += boost::numeric::odeint::integrate( rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0, observer );
+                totSteps += boost::numeric::odeint::integrate( rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0 );
             }
 
-            // dilFactor = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac] / dilFactor_b;
-            SO4l = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l] ;
+            // dilFactor = history.states().back()[EPM_ind_Trac] / dilFactor_b;
+            SO4l = history.states().back()[EPM_ind_SO4l] ;
 
             n_air = Na * x[EPM_ind_P]/(R * x[EPM_ind_T] * 1.0e6);
             n_air_prev = Na *  P_b/(R * T_b * 1.0e6);  // P_b and T_b seems to be used uninitialized during the first timestep with iTime = 0
@@ -329,11 +329,11 @@ namespace EPM::Models
             nPDF_new = ( SO4l*n_air - SO4l_b*n_air_prev);
 
             if ( nPDF_new >= 1.0E-20 ) {
-                x_star   = AIM::x_star( observer.m_states[observer.m_states.size()-1][EPM_ind_T], observer.m_states[observer.m_states.size()-1][EPM_ind_H2O] * n_air, std::max(x[EPM_ind_SO4g] * n_air, 0.0) );
-                nTot     = AIM::nTot( observer.m_states[observer.m_states.size()-1][EPM_ind_T], x_star, observer.m_states[observer.m_states.size()-1][EPM_ind_H2O] * n_air, std::max(x[EPM_ind_SO4g]*n_air, 0.0) );
+                x_star   = AIM::x_star( history.states().back()[EPM_ind_T], history.states().back()[EPM_ind_H2O] * n_air, std::max(x[EPM_ind_SO4g] * n_air, 0.0) );
+                nTot     = AIM::nTot( history.states().back()[EPM_ind_T], x_star, history.states().back()[EPM_ind_H2O] * n_air, std::max(x[EPM_ind_SO4g]*n_air, 0.0) );
                 nTot     = ( nTot <= 1.0E-20 ) ? 1.0E-20 : nTot;
                 radSO4   = AIM::radCluster( x_star, nTot );
-//                rho_Sulf = AIM::rho( x_star, observer.m_states[observer.m_states.size()-1][EPM_ind_T]);
+//                rho_Sulf = AIM::rho( x_star, history.states().back()[EPM_ind_T]);
 
                 if ( radSO4 >= 1.0E-10 ) {
                     AIM::Aerosol nPDF_SO4_new( SO4_rJ, SO4_rE, nPDF_new, radSO4, sSO4, "lognormal" );
@@ -352,14 +352,14 @@ namespace EPM::Models
 
             /* Aerosol PDF @ 3mins */
             if ( iTime == iTime_3mins ) {
-                PartRad_3mins  = observer.m_states[observer.m_states.size()-1][EPM_ind_ParR];
-                PartDens_3mins = observer.m_states[observer.m_states.size()-1][EPM_ind_Part] * n_air;
+                PartRad_3mins  = history.states().back()[EPM_ind_ParR];
+                PartDens_3mins = history.states().back()[EPM_ind_Part] * n_air;
                 n_air_3mins = n_air;
-                H2OMol_3mins   = observer.m_states[observer.m_states.size()-1][EPM_ind_H2O]; //* observer.m_states[observer.m_states.size()-1][EPM_ind_P] / (kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T]) * 1.0E-06;
-                Tracer_3mins   = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
+                H2OMol_3mins   = history.states().back()[EPM_ind_H2O]; //* history.states().back()[EPM_ind_P] / (kB * history.states().back()[EPM_ind_T]) * 1.0E-06;
+                Tracer_3mins   = history.states().back()[EPM_ind_Trac];
 //                SO4pdf_3mins   = nPDF_SO4;
-                SO4l_3mins     = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l]; // * observer.m_states[observer.m_states.size()-1][EPM_ind_P] / ( kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 ) ;
-                SO4g_3mins     = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4g]; // * observer.m_states[observer.m_states.size()-1][EPM_ind_P] / ( kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 ) ;
+                SO4l_3mins     = history.states().back()[EPM_ind_SO4l]; // * history.states().back()[EPM_ind_P] / ( kB * history.states().back()[EPM_ind_T] * 1.0E+06 ) ;
+                SO4g_3mins     = history.states().back()[EPM_ind_SO4g]; // * history.states().back()[EPM_ind_P] / ( kB * history.states().back()[EPM_ind_T] * 1.0E+06 ) ;
 //                pSO4pdf_3mins  = new AIM::Aerosol( nPDF_SO4 );
                 pSO4pdf_3mins.updatePdf( nPDF_SO4.getPDF() );
 
@@ -369,11 +369,11 @@ namespace EPM::Models
 
 #pragma omp critical
         {
-            observer.print2File();
+            history.print2File();
         }
         /* Output variables */
         /* Check if contrail is water supersaturated at some point during formation */
-        if ( !simVars_.CHEMISTRY && !observer.checkwatersat() ) {
+        if ( !simVars_.CHEMISTRY && !history.checkwatersat() ) {
             std::cout << "EndSim: Never reaches water saturation... ending simulation" << std::endl;
             //exit(0);
             return SimStatus::NoWaterSaturation;
