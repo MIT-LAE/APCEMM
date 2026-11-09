@@ -5,6 +5,7 @@
 #include <catch2/catch_approx.hpp>
 
 #include "EPM/Models/Original/Indexes.hpp"
+#include "EPM/Models/Original/Integrate.hpp"
 #include "EPM/Models/Original/StateObserver.hpp"
 #include "EPM/Utils/Physics.hpp"
 #include "Util/PhysFunction.hpp"
@@ -131,4 +132,32 @@ TEST_CASE("EPM water saturation observer", "[epm]") {
         StateHistory history({}, "");
         REQUIRE_FALSE(runWaterHump(0.5, 0.8, history));
     }
+}
+
+TEST_CASE("EPM advanceInterval records the end state", "[epm]") {
+    /* dx/dt = -x, so x(t) = exp(-t) */
+    const auto decay = [](const Vector_1D &x, Vector_1D &dxdt, double /* t */) { dxdt[0] = -x[0]; };
+    const auto noObserver = [](const Vector_1D &, double) {};
+    const Vector_1D grid = {0.0, 0.5, 1.0, 2.0};
+
+    StateHistory history({}, "");
+    Vector_1D x = {1.0};
+    history.record(x, grid[0]);
+    for (std::size_t i = 0; i + 1 < grid.size(); i++) {
+        advanceInterval(
+            boost::numeric::odeint::make_controlled<epm_error_stepper>(1.0E-10, 1.0E-10),
+            decay, x, grid[i], grid[i + 1], (grid[i + 1] - grid[i]) / 100.0,
+            noObserver, history);
+
+        /* The last row is the state that x now holds, at the interval end */
+        REQUIRE(history.states().back() == x);
+        REQUIRE(history.times().back() == grid[i + 1]);
+    }
+
+    /* One row for the initial state plus one per interval, and row i is
+     * the state at grid[i] */
+    REQUIRE(history.states().size() == grid.size());
+    REQUIRE(history.times() == grid);
+    for (std::size_t i = 0; i < grid.size(); i++)
+        REQUIRE(history.states()[i][0] == Catch::Approx(std::exp(-grid[i])).epsilon(1.0E-8));
 }
