@@ -261,9 +261,6 @@ namespace EPM::Models
             H2O_amb, SO4_amb, SO4l_amb, SO4g_amb, HNO3_amb, Soot_amb,
             EI_.getSootRad(), KernelSO4Soot, nPDF_SO4);
 
-        /* Total number of steps */
-        UInt totSteps = 0;
-
         /* Current time step in s */
         double currTimeStep;
 
@@ -298,7 +295,7 @@ namespace EPM::Models
 
             /* Diffusion + Water uptake. On return, x is the state at the end
              * of the interval, timeArray[iTime+1]. */
-            totSteps += advanceInterval(
+            advanceInterval(
                 boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS ),
                 rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0,
                 waterSatObserver, history );
@@ -326,7 +323,6 @@ namespace EPM::Models
                 std::cout << "Time: " << timeArray[iTime+1] << ", Number: " << nPDF_SO4.Moment() << ", Radius: " << nPDF_SO4.Radius() << "\n";
             }
 
-            totSteps += 1;
             iTime++;
 
             /* Snapshot @ 3mins: x, n_air and the sulfate PDF are all at timeArray[iTime] */
