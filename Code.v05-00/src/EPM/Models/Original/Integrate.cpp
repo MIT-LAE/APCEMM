@@ -295,10 +295,11 @@ namespace EPM::Models
 
             /* Diffusion + Water uptake. On return, x is the state at the end
              * of the interval, timeArray[iTime+1]. */
-            advanceInterval(
+            boost::numeric::odeint::integrate_adaptive(
                 boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS ),
                 rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0,
-                waterSatObserver, history );
+                waterSatObserver );
+            history.record( x, timeArray[iTime+1] );
 
             /* Liquid sulfate budget at the end of the interval */
             n_air = Na * x[EPM_ind_P] / ( R * x[EPM_ind_T] * 1.0e6 );
