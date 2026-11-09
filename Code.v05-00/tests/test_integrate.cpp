@@ -161,3 +161,20 @@ TEST_CASE("EPM advanceInterval records the end state", "[epm]") {
     for (std::size_t i = 0; i < grid.size(); i++)
         REQUIRE(history.states()[i][0] == Catch::Approx(std::exp(-grid[i])).epsilon(1.0E-8));
 }
+
+TEST_CASE("EPM outer time grid", "[epm]") {
+    const Vector_1D grid = makeEPMTimeGrid(301, 1.0E-04, 2.0E+03, 180.0);
+
+    REQUIRE(grid.size() == 302);
+    REQUIRE(grid.front() == Catch::Approx(1.0E-04).epsilon(1.0E-12));
+    REQUIRE(grid.back() == Catch::Approx(2.0E+03).epsilon(1.0E-12));
+    for (std::size_t i = 0; i + 1 < grid.size(); i++)
+        REQUIRE(grid[i] < grid[i + 1]);
+    REQUIRE(std::count(grid.begin(), grid.end(), 180.0) == 1);
+
+    /* An insert point that is already on the grid is not duplicated:
+     * the grid 1, 10, 100, 1000, 10000 already holds 10 */
+    REQUIRE(makeEPMTimeGrid(5, 1.0, 1.0E+04, 10.0).size() == 5);
+
+    REQUIRE_THROWS(makeEPMTimeGrid(301, 1.0E-04, 2.0E+03, 3000.0));
+}

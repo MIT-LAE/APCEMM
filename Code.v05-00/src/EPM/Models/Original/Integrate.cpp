@@ -203,21 +203,13 @@ namespace EPM::Models
         SO4g_amb = ( SO4g_amb > 0.0 ) ? SO4g_amb : 0.0;
         SO4l_amb = ( SO4l_amb > 0.0 ) ? SO4l_amb : 0.0;
 
-        UInt nTime = 301;
+        /* Outer time grid: 301 log-spaced points from 1e-4 s to 2000 s, plus
+         * an exact point at 3 minutes for the hand-off snapshot */
+        const Vector_1D timeArray = makeEPMTimeGrid(301, 1.0E-04, 2.0E+03, 3.0 * 60.0);
+        const UInt nTime = timeArray.size();
         UInt iTime;
-        Vector_1D timeArray(nTime);
-        double timeInitial = 1.0E-04;
-        double log10_timeInitial = log10(timeInitial);
-        double timeFinal   = 2.0E+03;
-        double log10_timeFinal = log10(timeFinal);
-        double inv_denominator = 1/double( nTime - 1.0 );
-        for ( iTime = 0; iTime < nTime; iTime++ ) {
-            timeArray[iTime] = pow( 10.0, log10_timeInitial + iTime * ( log10_timeFinal - log10_timeInitial ) * inv_denominator );
-        }
 
-        UInt iTime_3mins;
-        auto const it = std::lower_bound(timeArray.begin(), timeArray.end(), 3.0 * 60.0);
-        iTime_3mins = it - timeArray.begin();
+        const UInt iTime_3mins = std::lower_bound(timeArray.begin(), timeArray.end(), 3.0 * 60.0) - timeArray.begin();
 
         /* vars[0] : Temperature,                   Unit K
          * vars[1] : Water molecular concentration, Unit molecules/cm^3

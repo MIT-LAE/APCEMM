@@ -1,7 +1,10 @@
 #ifndef EPM_MODELS_ORIGINALIMPL_INTEGRATE_H_INCLUDED
 #define EPM_MODELS_ORIGINALIMPL_INTEGRATE_H_INCLUDED
 
+#include <algorithm>
+#include <cmath>
 #include <cstddef>
+#include <stdexcept>
 
 #include <boost/numeric/odeint/integrate/integrate_adaptive.hpp>
 
@@ -10,6 +13,28 @@
 
 namespace EPM::Models::OriginalImpl
 {
+    /* Outer EPM time grid: nLog log-spaced points from tStart to tEnd, plus
+     * tInsert as an extra exact grid point (unless it already is one). The
+     * EPM uses tInsert = 180 s, so that the 3-minute hand-off falls exactly
+     * on a grid point. */
+    inline Vector_1D makeEPMTimeGrid(UInt nLog, double tStart, double tEnd, double tInsert)
+    {
+        if ( nLog < 2 || !( tStart > 0.0 && tStart < tInsert && tInsert < tEnd ) )
+            throw std::invalid_argument("makeEPMTimeGrid: need nLog >= 2 and 0 < tStart < tInsert < tEnd");
+
+        Vector_1D grid(nLog);
+        const double log10_tStart = std::log10(tStart);
+        const double log10_tEnd = std::log10(tEnd);
+        const double inv_denominator = 1/double( nLog - 1.0 );
+        for ( UInt i = 0; i < nLog; i++ )
+            grid[i] = std::pow( 10.0, log10_tStart + i * ( log10_tEnd - log10_tStart ) * inv_denominator );
+
+        auto const it = std::lower_bound(grid.begin(), grid.end(), tInsert);
+        if ( *it != tInsert )
+            grid.insert(it, tInsert);
+        return grid;
+    }
+
     /* Advance the EPM state x over one outer interval [t0, t1], then record
      * the end state x(t1) at time t1. The observer sees every adaptive step
      * but does not touch the history. Returns the number of adaptive steps. */
