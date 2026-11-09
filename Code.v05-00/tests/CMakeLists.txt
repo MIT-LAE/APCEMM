@@ -10,6 +10,7 @@ set(SRC_TEST
     test_integrate.cpp
     test_metfunction.cpp
     test_aircraft.cpp
+    test_emission.cpp
     test_yamlreader.cpp
 )
 #Add preprocessor def of the tests dir

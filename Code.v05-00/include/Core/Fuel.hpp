@@ -22,7 +22,7 @@ class Fuel
     public:
 
         Fuel( );
-        Fuel( const char *fuelName );
+        Fuel( const char *fuelName, const double FSC_ppm );
         Fuel( const Fuel &f );
         Fuel& operator=( const Fuel &f );
         ~Fuel( );
@@ -32,7 +32,6 @@ class Fuel
         double getAtomN() const;
         double getAtomS() const;
         double getFSC() const;
-        void setFSC( const double FSC_ );
         std::string getChemFormula() const;
         
     protected:

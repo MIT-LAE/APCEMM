@@ -31,15 +31,15 @@ double SZA_CST[3];           /* Require this for adjoint integration */
 LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input) :
     optInput_(optInput), input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
-    jetA_(Fuel("C12H24")),
+    /* Fuel sulfur content [ppm] from EI(SO2) [g/kg fuel]:
+       EI(SO2) = FSC * 1e-3 * M_SO2 / M_S, with M_SO2 / M_S ~ 2, so FSC = 500 * EI(SO2) */
+    jetA_("C12H24", input.EI_SO2() * 500.0),
     yCoords_(initialYCoords(optInput_)),
     yEdges_(initialYEdges(optInput_)),
     met_(optInput_, input.pressure_Pa(), yCoords_, yEdges_),
-    aircraft_(input, met_, optInput_, jetA_)
+    aircraft_(input, met_, optInput_, jetA_),
+    EI_(aircraft_.engine(), jetA_, input.EI_SO2TOSO4())
 {
-    /* Multiply by 500 since it gets multiplied by 1/500 within the Emission object ... */
-    jetA_.setFSC(input.EI_SO2() * 500.0);
-
     std::cout << "Temperature      = " << met_.tempRef() << " K" << std::endl;
     std::cout << "RHw              = " << met_.rhwRef() << " %" << std::endl;
     std::cout << "RHi              = " << met_.rhiRef() << " %" << std::endl;
@@ -47,7 +47,6 @@ LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input)
 
     simVars_ = MPMSimVarsWrapper(input_, optInput_, met_.satdepthEstimate());
     timestepVars_ = TimestepVarsWrapper(input_, optInput_);
-    EI_ = Emission(aircraft_.engine(), jetA_, input_.EI_SO2TOSO4());
     std::cout << "H2O EI     = " << EI_.getH2O() << std::endl;
 
     timestepVars_.setTimeArray(PlumeModelUtils::BuildTime (
