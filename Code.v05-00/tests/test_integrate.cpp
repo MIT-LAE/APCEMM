@@ -63,20 +63,22 @@ namespace {
     /* Same stepper as the EPM outer loop in Integrate.cpp */
     using epm_error_stepper = boost::numeric::odeint::runge_kutta_fehlberg78<Vector_1D>;
 
-    /* Toy EPM state: T and P stay constant, and the water mixing ratio
-     * follows RH_w(t) = rhEnd + (rhPeak - rhEnd) * sin^2(pi t / tEnd).
-     * RH_w equals rhEnd at both ends of [0, tEnd] and peaks at mid-interval. */
-    struct WaterHumpRHS {
+    /* Toy EPM state: T and P stay constant, and RH_w follows a parabola:
+     *   RH_w(t) = rhEnd + (rhPeak - rhEnd) * 4 t (tEnd - t) / tEnd^2
+     * RH_w equals rhEnd at t = 0 and t = tEnd, and rhPeak at t = tEnd / 2.
+     * This is the simplest smooth profile that can be below 1 at both
+     * endpoints and above 1 between them. Its RHS is linear in t, so the
+     * stepper integrates it exactly. */
+    struct WaterParabolaRHS {
         double satMixingRatio, rhEnd, rhPeak, tEnd;
 
         double h2o(double t) const {
-            const double s = std::sin(M_PI * t / tEnd);
-            return satMixingRatio * (rhEnd + (rhPeak - rhEnd) * s * s);
+            return satMixingRatio * (rhEnd + (rhPeak - rhEnd) * 4.0 * t * (tEnd - t) / (tEnd * tEnd));
         }
 
         void operator()(const Vector_1D &x, Vector_1D &dxdt, double t) const {
             std::fill(dxdt.begin(), dxdt.end(), 0.0);
-            dxdt[EPM_ind_H2O] = satMixingRatio * (rhPeak - rhEnd) * M_PI / tEnd * std::sin(2.0 * M_PI * t / tEnd);
+            dxdt[EPM_ind_H2O] = satMixingRatio * (rhPeak - rhEnd) * 4.0 * (tEnd - 2.0 * t) / (tEnd * tEnd);
         }
     };
 
@@ -87,11 +89,11 @@ namespace {
     /* Integrate one outer interval [0, 10] s with the toy RHS, as the EPM
      * outer loop does (dt0 = interval / 100). Record only the endpoints and
      * return whether the observer saw saturation. */
-    bool runWaterHump(double rhEnd, double rhPeak, StateHistory &history) {
+    bool runWaterParabola(double rhEnd, double rhPeak, StateHistory &history) {
         const double T = 220.0;
         const double P = 2.65e4;
         const double tEnd = 10.0;
-        const WaterHumpRHS rhs{physFunc::pSat_H2Ol(T) / P, rhEnd, rhPeak, tEnd};
+        const WaterParabolaRHS rhs{physFunc::pSat_H2Ol(T) / P, rhEnd, rhPeak, tEnd};
 
         Vector_1D x(13, 0.0);
         x[EPM_ind_T] = T;
@@ -112,11 +114,12 @@ namespace {
 
 TEST_CASE("EPM water saturation observer", "[epm]") {
     SECTION("Flags a saturation peak between two recorded endpoints") {
-        /* RH_w >= 1 for t in about [1, 9] s. The controller grows the step
-         * by at most 5x from dt0 = 0.1 s, so it cannot jump from below 1 s
-         * to beyond 9 s: at least one observed step is saturated. */
+        /* RH_w is 0.9 at both endpoints and >= 1 for t in about
+         * [0.26, 9.74] s. The controller grows the step by at most 5x from
+         * dt0 = 0.1 s, so it cannot jump from below 0.26 s to beyond
+         * 9.74 s: at least one observed step is saturated. */
         StateHistory history({}, "");
-        const bool reached = runWaterHump(0.9, 1.9, history);
+        const bool reached = runWaterParabola(0.9, 1.9, history);
 
         /* The endpoints never reach saturation ... */
         REQUIRE(history.states().size() == 2);
@@ -130,7 +133,7 @@ TEST_CASE("EPM water saturation observer", "[epm]") {
 
     SECTION("Stays false when the plume never saturates") {
         StateHistory history({}, "");
-        REQUIRE_FALSE(runWaterHump(0.5, 0.8, history));
+        REQUIRE_FALSE(runWaterParabola(0.5, 0.8, history));
     }
 }
 
