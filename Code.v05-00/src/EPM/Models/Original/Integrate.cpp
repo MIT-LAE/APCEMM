@@ -255,8 +255,7 @@ namespace EPM::Models
         bool reachedWaterSat = false;
         const WaterSaturationObserver waterSatObserver(reachedWaterSat);
 
-        /* Adaptive stepper. It holds only the tolerances and scratch buffers,
-         * no step size, so one instance serves every interval. */
+        /* Adaptive stepper that can be shared by all integration steps */
         const auto stepper = boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS );
 
         /* Creating ode's right hand side */
@@ -322,11 +321,6 @@ namespace EPM::Models
                 }
             }
 
-            /* For debugging purposes */
-            if ( 0 ) {
-                std::cout << "Time: " << timeArray[iTime+1] << ", Number: " << nPDF_SO4.Moment() << ", Radius: " << nPDF_SO4.Radius() << "\n";
-            }
-
             iTime++;
 
             /* Snapshot @ 3mins: x, n_air and the sulfate PDF are all at timeArray[iTime] */
@@ -351,7 +345,6 @@ namespace EPM::Models
         /* Check if contrail is water supersaturated at some point during formation */
         if ( !simVars_.CHEMISTRY && !reachedWaterSat ) {
             std::cout << "EndSim: Never reaches water saturation... ending simulation" << std::endl;
-            //exit(0);
             return SimStatus::NoWaterSaturation;
         }
 
