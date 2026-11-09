@@ -14,11 +14,7 @@
 namespace EPM::Models::OriginalImpl
 {
     /* Outer EPM time grid: nLog log-spaced points from tStart to tEnd, plus
-     * tInsert as an extra exact grid point (unless it already is one). The
-     * first and last points are exactly tStart and tEnd; pow/log10 rounding
-     * would otherwise leave them a few ULP off. tInsert may equal tStart or
-     * tEnd, and then adds no point. The EPM uses tInsert = 180 s, so that the
-     * 3-minute hand-off falls exactly on a grid point. */
+     * tInsert as an extra exact grid point (unless it already is one). */
     inline Vector_1D makeEPMTimeGrid(UInt nLog, double tStart, double tEnd, double tInsert)
     {
         if ( nLog < 2 || !( tStart > 0.0 && tStart < tEnd && tStart <= tInsert && tInsert <= tEnd ) )
@@ -30,10 +26,12 @@ namespace EPM::Models::OriginalImpl
         const double inv_denominator = 1/double( nLog - 1.0 );
         for ( UInt i = 0; i < nLog; i++ )
             grid[i] = std::pow( 10.0, log10_tStart + i * ( log10_tEnd - log10_tStart ) * inv_denominator );
+
+        // Ensure that start and end times are exact (can be slight off due to rounding in log/exp)
         grid.front() = tStart;
         grid.back() = tEnd;
 
-        /* grid.back() == tEnd >= tInsert, so it is never end() */
+        // Add tInsert if it's not already in the grid
         auto const it = std::lower_bound(grid.begin(), grid.end(), tInsert);
         if ( *it != tInsert )
             grid.insert(it, tInsert);

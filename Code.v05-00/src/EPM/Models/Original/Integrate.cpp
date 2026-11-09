@@ -203,13 +203,17 @@ namespace EPM::Models
         SO4g_amb = ( SO4g_amb > 0.0 ) ? SO4g_amb : 0.0;
         SO4l_amb = ( SO4l_amb > 0.0 ) ? SO4l_amb : 0.0;
 
-        /* Outer time grid: 301 log-spaced points from 1e-4 s to 2000 s, plus
-         * an exact point at 3 minutes for the hand-off snapshot */
-        const Vector_1D timeArray = makeEPMTimeGrid(301, 1.0E-04, 2.0E+03, 3.0 * 60.0);
+        /* Outer time grid: 301 log-spaced points from 1e-4s to 180s
+        which is the step at which we start the mature plume model */
+        const double t_3mins = 3.0 * 60.0;
+        const Vector_1D timeArray = makeEPMTimeGrid(301, 1.0E-04, t_3mins, t_3mins);
         const UInt nTime = timeArray.size();
-        UInt iTime;
+        UInt iTime = 0;
 
-        const UInt iTime_3mins = std::lower_bound(timeArray.begin(), timeArray.end(), 3.0 * 60.0) - timeArray.begin();
+        // This is the last index of timeArray when tEnd = tInsert = 180s
+        // Kept here a search in case we decide to run the EPM for longer (tEnd > tInsert in makeEPMTimeGrid)
+        // and keep tInsert = 3 mins as the mature plume model starting point.
+        const UInt iTime_3mins = std::lower_bound(timeArray.begin(), timeArray.end(), t_3mins) - timeArray.begin();
 
         /* vars[0] : Temperature,                   Unit K
          * vars[1] : Water molecular concentration, Unit molecules/cm^3
@@ -277,12 +281,9 @@ namespace EPM::Models
         double n_air_3mins = 0;
         AIM::Aerosol pSO4pdf_3mins( nPDF_SO4 );
 
-        /* Record the initial state. After each interval, advanceInterval
-         * records the end state, so history row i is the state at
-         * timeArray[i]. */
+        // Record the initial state 
         history.record( x, timeArray[0] );
 
-        iTime = 0;
         while ( iTime + 1 < nTime ) {
 
             /* Update current time step */
