@@ -31,9 +31,7 @@ double SZA_CST[3];           /* Require this for adjoint integration */
 LAGRIDPlumeModel::LAGRIDPlumeModel(const OptInput &optInput, const Input &input) :
     optInput_(optInput), input_(input),
     numThreads_(optInput.SIMULATION_OMP_NUM_THREADS),
-    /* Fuel sulfur content [ppm] from EI(SO2) [g/kg fuel]:
-       EI(SO2) = FSC * 1e-3 * M_SO2 / M_S, with M_SO2 / M_S ~ 2, so FSC = 500 * EI(SO2) */
-    jetA_("C12H24", input.EI_SO2() * 500.0),
+    jetA_(Fuel::fromEISO2("C12H24", input.EI_SO2())),
     yCoords_(initialYCoords(optInput_)),
     yEdges_(initialYEdges(optInput_)),
     met_(optInput_, input.pressure_Pa(), yCoords_, yEdges_),

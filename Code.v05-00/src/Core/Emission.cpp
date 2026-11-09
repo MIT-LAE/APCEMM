@@ -106,8 +106,7 @@ void Emission::Populate_withFuel( const Fuel &fuel )
     H2O = EI_H2O( fuel ); /* [ g/kg fuel ] */
     /* Convert to g/kg */
     CO2 *= 1000; /* [ g/kg fuel ]*/
-    /* getFSC from fuel */
-    SO2 = fuel.getFSC() * 2.0 / 1000.0;
+    SO2 = fuel.EI_SO2(); /* [ g/kg fuel ] */
 
 } /* End of Emission::Populate_withFuel */
 

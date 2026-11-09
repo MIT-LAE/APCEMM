@@ -38,6 +38,13 @@ Fuel::Fuel( const char *fuelChem, const double FSC_ppm )
 
 } /* End of Fuel::Fuel */
 
+Fuel Fuel::fromEISO2( const char *fuelChem, const double EI_SO2 )
+{
+
+    return Fuel( fuelChem, EI_SO2 / EI_SO2_PER_FSC );
+
+} /* End of Fuel::fromEISO2 */
+
 Fuel::Fuel( const Fuel &f )
 {
 
@@ -168,6 +175,13 @@ double Fuel::getFSC() const
     return FSC;
 
 } /* End of Fuel::getFSC */
+
+double Fuel::EI_SO2() const
+{
+
+    return FSC * EI_SO2_PER_FSC;
+
+} /* End of Fuel::EI_SO2 */
 
 std::string Fuel::getChemFormula() const
 {

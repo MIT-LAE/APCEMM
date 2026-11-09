@@ -2,6 +2,7 @@
 #include <string>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 #include "Core/Emission.hpp"
 #include "Core/Engine.hpp"
@@ -73,10 +74,16 @@ TEST_CASE("Fuel sulfur content", "[Fuel]") {
         REQUIRE(emission.getSO2() == 0.0);
     }
 
-    SECTION("FSC = 500 * EI(SO2) gives back EI(SO2)") {
-        const Fuel fuel("C12H24", 1.2 * 500.0);
+    SECTION("Fuel::fromEISO2 gives back EI(SO2)") {
+        const Fuel fuel = Fuel::fromEISO2("C12H24", 1.2);
+        REQUIRE(fuel.EI_SO2() == Catch::Approx(1.2).epsilon(1e-15));
         const Emission emission(testEngine(), fuel, 0.02);
-        REQUIRE(emission.getSO2() == 1.2);
+        REQUIRE(emission.getSO2() == fuel.EI_SO2());
+    }
+
+    SECTION("EI(SO2) per ppm of sulfur uses the SO2 to S molar mass ratio") {
+        /* 1000 ppm = 1 g S/kg fuel, which gives about 2 g SO2/kg fuel */
+        REQUIRE(Fuel("C12H24", 1000.0).EI_SO2() == Catch::Approx(MW_SO2 / MW_S).epsilon(1e-15));
     }
 
     SECTION("Negative FSC throws") {
