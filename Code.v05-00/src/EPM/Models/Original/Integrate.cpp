@@ -257,6 +257,10 @@ namespace EPM::Models
 
         StateHistory history(EPM_ind, simVars_.TS_FOLDER + OutputFiles::MICROPHYSICS);
 
+        /* Set at any adaptive step where the plume reaches water saturation */
+        bool reachedWaterSat = false;
+        const WaterSaturationObserver waterSatObserver(reachedWaterSat);
+
         /* Creating ode's right hand side */
         gas_aerosol_rhs rhs(
             temperature_K, simVars_.pressure_Pa, delta_T,
@@ -314,10 +318,10 @@ namespace EPM::Models
 
             /* Diffusion + Water uptake */
             if ( adaptiveStep == 1 ) {
-                totSteps += boost::numeric::odeint::integrate_adaptive( boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS ), rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0 );
+                totSteps += boost::numeric::odeint::integrate_adaptive( boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS ), rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0, waterSatObserver );
             }
             else {
-                totSteps += boost::numeric::odeint::integrate( rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0 );
+                totSteps += boost::numeric::odeint::integrate( rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0, waterSatObserver );
             }
 
             // dilFactor = history.states().back()[EPM_ind_Trac] / dilFactor_b;
@@ -373,7 +377,7 @@ namespace EPM::Models
         }
         /* Output variables */
         /* Check if contrail is water supersaturated at some point during formation */
-        if ( !simVars_.CHEMISTRY && !history.checkwatersat() ) {
+        if ( !simVars_.CHEMISTRY && !reachedWaterSat ) {
             std::cout << "EndSim: Never reaches water saturation... ending simulation" << std::endl;
             //exit(0);
             return SimStatus::NoWaterSaturation;

@@ -22,13 +22,27 @@ namespace EPM::Models::OriginalImpl
         const Vector_1D& times() const { return m_times; }
 
         void print2File() const;
-        bool checkwatersat() const;
 
     private:
         Vector_2D m_states;
         Vector_1D m_times;
         std::string m_fileName;
         const std::vector<UInt> m_indices;
+    };
+
+    /* odeint observer that sets a flag once the plume reaches water
+     * saturation (RH_w >= 1). odeint calls it at every adaptive step, so it
+     * also catches a saturation peak between two outer grid points. It holds
+     * only a reference to an external flag and no state of its own: odeint
+     * copies observers by value, and every copy writes to the same flag. */
+    class WaterSaturationObserver
+    {
+    public:
+        explicit WaterSaturationObserver(bool &reached): m_reached(reached) {}
+        void operator()(const Vector_1D &x, double t) const;
+
+    private:
+        bool &m_reached;
     };
 }
 

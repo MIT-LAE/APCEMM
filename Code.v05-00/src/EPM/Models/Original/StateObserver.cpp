@@ -17,6 +17,7 @@
 #include <utility>
 #include "Util/PhysConstant.hpp"
 #include "Util/PhysFunction.hpp"
+#include "EPM/Models/Original/Indexes.hpp"
 #include "EPM/Models/Original/StateObserver.hpp"
 
 using physConst::kB;
@@ -170,22 +171,12 @@ namespace EPM::Models::OriginalImpl {
 
     } /* End of StateHistory::print2File */
 
-    bool StateHistory::checkwatersat( ) const {
-        std::size_t counter = 0;
-        float RHw;
-        bool watersup { false };
+    void WaterSaturationObserver::operator()(const Vector_1D &x, double /* t */) const {
+        if ( m_reached )
+            return;
 
-        /* Loop over until RHw >= 1.0 */
-        while ( !watersup && counter < m_states.size() ) {
-            /* Check value of RHw and update watersub */
-            RHw = m_states[counter][m_indices[3]] * m_states[counter][m_indices[2]] / pSat_H2Ol( m_states[counter][m_indices[1]] );
-            if ( RHw >= 1.0 ) {
-                watersup = true;
-            }
-
-            counter += 1;
-        }
-
-        return watersup;
+        const double RHw = x[EPM_ind_H2O] * x[EPM_ind_P] / pSat_H2Ol( x[EPM_ind_T] );
+        if ( RHw >= 1.0 )
+            m_reached = true;
     }
 }
