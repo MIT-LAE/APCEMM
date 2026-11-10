@@ -35,7 +35,8 @@ TEST_CASE("Build kernel", "[single-file]") {
 
         kernel = buildBrownianKernel(T, p, bin_centers, rho_1, bin_R, rho_2);
 
-        // Rounding in the table only lets us pass the test with 0.05 tolerance...
+        // Table only lets us pass the test with 0.05 tolerance, this could be due to rounding
+        // or the slightly different parameters for air etc...
         REQUIRE(1e6 * kernel[0] == Catch::Approx(8.5e-5).epsilon(5e-2));
 
     }
@@ -55,12 +56,13 @@ TEST_CASE("Build kernel", "[single-file]") {
 
         REQUIRE(1e6 * kernel[0][0] == Catch::Approx(8.9e-10).epsilon(1e-2));
 
-        bin_centers2[0] = 0.5*0.01e-6;
-        kernel = buildBrownianKernel(T, p, bin_centers1, rho_1, bin_centers2, rho_2);
+        bin_centers1[0] = 0.5*0.01e-6;
+        Vector_2D kernel_sym1 = buildBrownianKernel(T, p, bin_centers1, rho_1, bin_centers2, rho_2);
+        Vector_2D kernel_sym2 = buildBrownianKernel(T, p, bin_centers2, rho_1, bin_centers1, rho_2);
 
-        REQUIRE(1e6 * kernel[0][0] == Catch::Approx(5.7e-9).epsilon(1e-2));
-
-
+        // Kernel is symmetric
+        REQUIRE(kernel_sym1[0][0] == kernel_sym2[0][0]);
+        REQUIRE(1e6 * kernel_sym1[0][0] == Catch::Approx(5.7e-9).epsilon(1e-2));
     }
 
     SECTION("Convective diffusion enhancement 1D") {
