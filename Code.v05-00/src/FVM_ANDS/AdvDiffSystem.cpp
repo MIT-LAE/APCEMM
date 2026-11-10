@@ -1031,7 +1031,7 @@ namespace FVM_ANDS{
         double q_min,
         double q_max,
         bool parallelAdvection,
-        const Vector_2D* vFall2D)
+        std::span<const Vector_1D> vFall2D)
     {
         // 1. Horizontal Advection along X (row by row)
         #pragma omp parallel if (parallelAdvection) default(shared)
@@ -1061,7 +1061,7 @@ namespace FVM_ANDS{
         }
 
         // 2. Vertical Settling / Advection along Y (column by column)
-        if (vFall2D != nullptr) {
+        if (!vFall2D.empty()) {
             #pragma omp parallel if (parallelAdvection) default(shared)
             {
                 std::vector<double> colN(ny_);
@@ -1073,7 +1073,7 @@ namespace FVM_ANDS{
                         int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
                         colN[j] = phiN[idx];
                         colV[j] = phiV[idx];
-                        wCol[j] = (*vFall2D)[j][i];
+                        wCol[j] = vFall2D[j][i];
                     }
                     verticalSettlingTwoMoment1D(
                         colN, colV, wCol, dt, dy_,

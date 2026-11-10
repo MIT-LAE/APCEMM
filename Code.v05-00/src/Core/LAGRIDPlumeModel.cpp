@@ -606,7 +606,6 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
         const double rNom = std::cbrt(VOL_TO_RAD_FACTOR * vNom);
 
         Vector_2D vFall2D;
-        const Vector_2D* vFall2DPtr = nullptr;
         if (simVars_.GRAVSETTLING) {
             vFall2D = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size(), 0.0));
             for (std::size_t j = 0; j < yCoords_.size(); ++j) {
@@ -615,7 +614,6 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
                     vFall2D[j][i] = AIM::SettlingVelocityScalar(rNom, temp2D[j][i], P_j);
                 }
             }
-            vFall2DPtr = &vFall2D;
         }
 
         for (std::size_t j = 0; j < volume[n].size(); ++j) {
@@ -625,7 +623,7 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
         }
 
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
-        solver.operatorSplitSolveTwoMoment2DVec(pdfRef[n], volume[n], ZERO_BC, qMin, qMax, false, vFall2DPtr);
+        solver.operatorSplitSolveTwoMoment2DVec(pdfRef[n], volume[n], ZERO_BC, qMin, qMax, false, vFall2D);
 
         for (std::size_t j = 0; j < volume[n].size(); ++j) {
             for (std::size_t i = 0; i < volume[n][j].size(); ++i) {

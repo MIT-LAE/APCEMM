@@ -162,7 +162,7 @@ namespace FVM_ANDS{
         double q_min,
         double q_max,
         bool parallelAdvection,
-        const Vector_2D* vFall2D)
+        std::span<const Vector_1D> vFall2D)
     {
         Eigen::VectorXd vecN_Eigen = std2dVec_to_eigenVec(vecN);
         const double VECTORNORM_MIN = 1e-100;

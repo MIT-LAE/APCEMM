@@ -6,6 +6,7 @@
 #include "FVM_ANDS_HelperFunctions.hpp"
 #include <cmath>
 #include <memory>
+#include <span>
 
 namespace FVM_ANDS{
 
@@ -163,7 +164,7 @@ namespace FVM_ANDS{
             void applyBoundaryCondition();
             void updateBoundaryCondition(const BoundaryConditions& bc);
             void semiLagrangianAdvection(double dt, bool parallelAdvection = false);
-            void semiLagrangianAdvectionTwoMoment(Eigen::VectorXd& phiN, Eigen::VectorXd& phiV, double dt, double q_min, double q_max, bool parallelAdvection = false, const Vector_2D* vFall2D = nullptr);
+            void semiLagrangianAdvectionTwoMoment(Eigen::VectorXd& phiN, Eigen::VectorXd& phiV, double dt, double q_min, double q_max, bool parallelAdvection = false, std::span<const Vector_1D> vFall2D = {});
             Eigen::VectorXd forwardEulerAdvection(bool operatorSplit = false, bool parallelAdvection = false) const noexcept;
             // Breakup the implementation of sor_solve to allow for easy testing by inputing an arbitrary linear system to solve:
             // Implementation is moved outside of the class, and make class method to be used in code
