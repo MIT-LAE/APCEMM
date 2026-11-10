@@ -14,9 +14,10 @@ TEST_CASE("Build kernel", "[single-file]") {
     
     SECTION("Brownian kernel 1D") {
         // Tests from Seinfeld and Pandis (2006) Table 13.3
-        // Act more like order of magnitude tests
+        // Act more like order of magnitude tests as table values
+        // only have 2 significant digits
 
-        double T = 288.15;
+        double T = 298.15;
         double p = 101325.0;
         Vector_1D bin_centers(1);
         bin_centers[0] = 0.5*0.002e-6;
@@ -26,7 +27,7 @@ TEST_CASE("Build kernel", "[single-file]") {
 
         Vector_1D kernel = buildBrownianKernel(T, p, bin_centers, rho_1, bin_R, rho_2);
 
-        REQUIRE(1e6 * kernel[0] == Catch::Approx(8.9e-10).epsilon(0.5));
+        REQUIRE(1e6 * kernel[0] == Catch::Approx(8.9e-10).epsilon(1e-2));
 
         // Test from Seinfeld and Pandis (2006) Table 13.3
         
@@ -34,12 +35,14 @@ TEST_CASE("Build kernel", "[single-file]") {
 
         kernel = buildBrownianKernel(T, p, bin_centers, rho_1, bin_R, rho_2);
 
-        REQUIRE(1e6 * kernel[0] == Catch::Approx(8.5e-5).epsilon(1e-1));
+        // Rounding in the table only lets us pass the test with 0.05 tolerance...
+        REQUIRE(1e6 * kernel[0] == Catch::Approx(8.5e-5).epsilon(5e-2));
 
     }
 
     SECTION("Brownian kernel 2D") {
-        double T = 288.15;
+        // Same as above
+        double T = 298.15;
         double p = 101325.0;
         Vector_1D bin_centers1(1);
         Vector_1D bin_centers2(1);
@@ -47,11 +50,16 @@ TEST_CASE("Build kernel", "[single-file]") {
         bin_centers2[0] = 0.5*0.002e-6;
         double rho_1 =  1.0e3;
         double rho_2 = 1.0e3;
-        // double bin_R = 0.5*0.002e-6;
 
         Vector_2D kernel = buildBrownianKernel(T, p, bin_centers1, rho_1, bin_centers2, rho_2);
 
-        REQUIRE(1e6 * kernel[0][0] == Catch::Approx(8.9e-10).epsilon(0.5));
+        REQUIRE(1e6 * kernel[0][0] == Catch::Approx(8.9e-10).epsilon(1e-2));
+
+        bin_centers2[0] = 0.5*0.01e-6;
+        kernel = buildBrownianKernel(T, p, bin_centers1, rho_1, bin_centers2, rho_2);
+
+        REQUIRE(1e6 * kernel[0][0] == Catch::Approx(5.7e-9).epsilon(1e-2));
+
 
     }
 

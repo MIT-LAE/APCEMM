@@ -22,17 +22,17 @@ namespace AIM
     "Description and evaluation of the community aerosol dynamics model MAFOR v2.0"
     https://doi.org/10.5194/gmd-15-3969-2022
     */
-    inline double brownianCoagulationCoefficient(double r1, double r2, double diff_coeff1, double diff_coef2, double delta1, double delta2, double velp1, double velp2)
+    static inline double brownianCoagulationCoefficient(double r1, double r2, double diff_coef1, double diff_coef2, double delta1, double delta2, double velp1, double velp2)
     {
         auto norm = [](double a, double b) {return sqrt(a * a + b * b);};
 
         double radius_sum = r1 + r2;
-        double diff_coeff_sum = diff_coeff1 + diff_coef2;
+        double diff_coeff_sum = diff_coef1 + diff_coef2;
         double numerator = 4.0 * physConst::PI * radius_sum * diff_coeff_sum;
         double denominator_term1 = radius_sum / (radius_sum + norm( delta1, delta2));
         double denominator_term2 = 4.0 * diff_coeff_sum / (norm(velp1, velp2) * radius_sum);
         return numerator / (denominator_term1 + denominator_term2);
-    } 
+    }
 
     Vector_1D buildBrownianKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers, double rho_1 , double bin_R, double rho_2 )
     {
