@@ -928,7 +928,7 @@ namespace FVM_ANDS{
         for (int m = 0; m < N; ++m) {
             if (w_fall[m] > max_w) max_w = w_fall[m];
         }
-        max_w *= std::cbrt(q_max * q_max);
+        max_w *= settlingScaling(q_max);
         if (max_w * dt < 1.0e-14) return;
 
         const double max_cfl = max_w * dt / dy;
@@ -965,14 +965,14 @@ namespace FVM_ANDS{
             }
 
             // Top boundary inflow face at m = N (downward flow from top boundary into cell N-1)
-            const double w_top = std::max(0.0, w_fall[N - 1]) * std::cbrt(q_top * q_top);
+            const double w_top = std::max(0.0, w_fall[N - 1]) * settlingScaling(q_top);
             const double c_top = w_top * sub_dt / dy;
             flux_N[N] = c_top * bcN_top;
             flux_V[N] = c_top * bcV_top;
 
             // Interior faces m + 1/2 (for m = 0 .. N-2): downward flow from cell m + 1 into cell m
             for (int m = 0; m < N - 1; ++m) {
-                const double w_m1 = std::max(0.0, w_fall[m + 1]) * std::cbrt(q[m + 1] * q[m + 1]);
+                const double w_m1 = std::max(0.0, w_fall[m + 1]) * settlingScaling(q[m + 1]);
                 const double c_m1 = w_m1 * sub_dt / dy;
                 const double slope_weight = 0.5 * (1.0 - c_m1);
 
@@ -996,7 +996,7 @@ namespace FVM_ANDS{
 
             // Bottom boundary outflow face at m = 0 (downward flow from cell 0 towards bcN_bot)
             {
-                const double w_0 = std::max(0.0, w_fall[0]) * std::cbrt(q[0] * q[0]);
+                const double w_0 = std::max(0.0, w_fall[0]) * settlingScaling(q[0]);
                 const double c_0 = w_0 * sub_dt / dy;
                 const double slope_weight = 0.5 * (1.0 - c_0);
 

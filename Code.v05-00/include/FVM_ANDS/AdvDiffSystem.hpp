@@ -4,6 +4,7 @@
 #include <Eigen/Sparse>
 #include "FVM_ANDS/BoundaryCondition.hpp"
 #include "FVM_ANDS_HelperFunctions.hpp"
+#include <cmath>
 #include <memory>
 
 namespace FVM_ANDS{
@@ -107,6 +108,20 @@ namespace FVM_ANDS{
         double bcN_right,
         double q_min,
         double q_max);
+
+    /**
+     * @brief Scales the nominal bin terminal settling velocity to the local moving-center particle volume.
+     *
+     * @details
+     * Given the normalized volume ratio \f$q = V_{\text{cell}} / V_{\text{nom}} = (r / r_{\text{nom}})^3\f$,
+     * approximates the intra-bin variation of gravitational settling speed relative to the nominal bin speed
+     * \f$v_{\text{fall}}(r_{\text{nom}}, T, P)\f$ using the Stokes quadratic radius dependence
+     * \f$v_{\text{fall}} \propto r^2 \propto q^{2/3}\f$ (neglecting the weak intra-bin variation of the
+     * Cunningham slip-flow correction factor across a single sectional bin).
+     */
+    inline double settlingScaling(double q) {
+        return std::cbrt(q * q);
+    }
 
     /**
      * @brief Substepped 1D conservative Eulerian TVD vertical settling for coupled two-moment aerosol transport
