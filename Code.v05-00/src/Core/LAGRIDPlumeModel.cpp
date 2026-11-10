@@ -1,6 +1,8 @@
 #include <chrono>
 #include <filesystem>
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include "AIM/Settling.hpp"
 #include "Util/PlumeModelUtils.hpp"
 #include "Core/OutputFilenames.hpp"
@@ -887,11 +889,31 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
         const double altOffset = met_.AltEdges()[0] - yEdges_[0];
         const double minAllowedYEdge = altInit.front() - altOffset + 1.0e-3;
         const double maxAllowedYEdge = altInit.back() - altOffset - 1.0e-3;
+        if (maskInfo.minY < minAllowedYEdge || maskInfo.maxY > maxAllowedYEdge) {
+            throw std::runtime_error(
+                "LAGRIDPlumeModel::createRegriddingWeightsSparse: Contrail mask altitude range [" +
+                std::to_string(maskInfo.minY + altOffset) + ", " +
+                std::to_string(maskInfo.maxY + altOffset) +
+                "] m extends beyond the meteorological input altitude range [" +
+                std::to_string(altInit.front()) + ", " +
+                std::to_string(altInit.back()) +
+                "] m, which would discard contrail ice mass.");
+        }
         if (y0_remap < minAllowedYEdge) {
             y0_remap = minAllowedYEdge;
         }
         if (y0_remap + ny_new * dy_grid_new > maxAllowedYEdge) {
             ny_new = std::max(1, static_cast<int>(std::floor((maxAllowedYEdge - y0_remap) / dy_grid_new)));
+        }
+        if (y0_remap > maskInfo.minY || y0_remap + ny_new * dy_grid_new < maskInfo.maxY) {
+            throw std::runtime_error(
+                "LAGRIDPlumeModel::createRegriddingWeightsSparse: Clamping remapped grid to meteorological altitude range [" +
+                std::to_string(altInit.front()) + ", " +
+                std::to_string(altInit.back()) +
+                "] m clips the active contrail mask [" +
+                std::to_string(maskInfo.minY + altOffset) + ", " +
+                std::to_string(maskInfo.maxY + altOffset) +
+                "] m and would discard contrail ice mass.");
         }
         const double curBotEdge = y0_remap;
         const double curTopEdge = y0_remap + ny_new * dy_grid_new;
