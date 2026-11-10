@@ -309,8 +309,9 @@ namespace EPM::Models
             nPDF_new = x[EPM_ind_SO4l] * n_air - SO4l_prev * n_air_prev;
 
             if ( nPDF_new >= 1.0E-20 ) {
-                x_star   = AIM::x_star( x[EPM_ind_T], x[EPM_ind_H2O] * n_air, std::max(x[EPM_ind_SO4g] * n_air, 0.0) );
-                nTot     = AIM::nTot( x[EPM_ind_T], x_star, x[EPM_ind_H2O] * n_air, std::max(x[EPM_ind_SO4g]*n_air, 0.0) );
+                double RH_liquid = n_air * x[EPM_ind_H2O] * 1.0e6 * physConst::kB * x[EPM_ind_T] / pSat_H2Ol( x[EPM_ind_T] ) ; 
+                x_star   = AIM::x_star( x[EPM_ind_T], RH_liquid, std::max(x[EPM_ind_SO4g] * n_air, 0.0) );
+                nTot     = AIM::nTot( x[EPM_ind_T], x_star, RH_liquid, std::max(x[EPM_ind_SO4g]*n_air, 0.0) );
                 nTot     = ( nTot <= 1.0E-20 ) ? 1.0E-20 : nTot;
                 radSO4   = AIM::radCluster( x_star, nTot );
 
