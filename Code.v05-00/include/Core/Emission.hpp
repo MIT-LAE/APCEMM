@@ -22,15 +22,8 @@ class Emission
 {
     public:
 
-        Emission( );
         Emission( const Engine &engine, const Fuel &fuel, const double SO2ToSO4Ratio);
-        Emission( const Emission &e );
-        ~Emission( );
-        void Populate_withEngine( const Engine &engine );
-        void Populate_withFuel( const Fuel &fuel );
         static double EI_H2O( const Fuel &fuel );
-        Emission& operator=( const Emission &em );
-        Emission& operator+( const Emission &em );
         double getCO2( ) const;
         double getH2O( ) const;
         double getNOx( ) const;
@@ -87,6 +80,9 @@ class Emission
         std::string fuelChem;
 
     private:
+
+        void Populate_withEngine( const Engine &engine );
+        void Populate_withFuel( const Fuel &fuel );
 
 };
 

@@ -10,9 +10,10 @@ set(SRC_TEST
     test_integrate.cpp
     test_metfunction.cpp
     test_aircraft.cpp
+    test_emission.cpp
     test_yamlreader.cpp
 )
-#Add preprocessor def of the tests dir
+# Add preprocessor def of the tests dir
 add_definitions(-DAPCEMM_TESTS_DIR="${CMAKE_SOURCE_DIR}/tests")
 
 add_executable(unittest ${SRC_TEST})

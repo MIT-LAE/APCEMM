@@ -12,6 +12,8 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include <iostream>
+#include <stdexcept>
+#include <string>
 #include "Core/Fuel.hpp"
 
 Fuel::Fuel( )
@@ -21,17 +23,27 @@ Fuel::Fuel( )
 
 } /* End of Fuel::Fuel */
 
-Fuel::Fuel( const char *fuelChem )
+Fuel::Fuel( const char *fuelChem, const double FSC_ppm )
 {
 
     /* Constructor */
+    if ( FSC_ppm < 0.0 )
+        throw std::invalid_argument( "Fuel: fuel sulfur content must be >= 0 ppm, got " + std::to_string( FSC_ppm ) );
+
     getAtoms( fuelChem );
 
-    FSC = 1600; /* [ppm] */
+    FSC = FSC_ppm; /* [ppm] */
 
     std::string ChemFormula( fuelChem );
 
 } /* End of Fuel::Fuel */
+
+Fuel Fuel::fromEISO2( const char *fuelChem, const double EI_SO2 )
+{
+
+    return Fuel( fuelChem, EI_SO2 / EI_SO2_PER_FSC );
+
+} /* End of Fuel::fromEISO2 */
 
 Fuel::Fuel( const Fuel &f )
 {
@@ -164,13 +176,12 @@ double Fuel::getFSC() const
 
 } /* End of Fuel::getFSC */
 
-void Fuel::setFSC( const double FSC_ )
+double Fuel::EI_SO2() const
 {
 
-    if ( FSC_ > 0.0E+00 )
-        FSC = FSC_;
+    return FSC * EI_SO2_PER_FSC;
 
-} /* End of Fuel::setFSC */
+} /* End of Fuel::EI_SO2 */
 
 std::string Fuel::getChemFormula() const
 {

@@ -57,17 +57,18 @@ class LAGRIDPlumeModel {
             return yCoords;
         }
 
+        /* Declaration order matters due to the initializer list:
+        Emission need aircraft to be initialized beforehand, which needs the fuel and the meteorology,
+        and the meteorology needs the grid. */
         const OptInput& optInput_;
         const Input& input_;
         int numThreads_;
-        /* Declaration order matters: aircraft_ needs the fuel and the meteorology,
-           and the meteorology needs the grid. */
         Fuel jetA_;
         Vector_1D yCoords_;
         Vector_1D yEdges_;
         Meteorology met_;
         Aircraft aircraft_;
-        Emission EI_;
+        const Emission EI_;
         MPMSimVarsWrapper simVars_;
         TimestepVarsWrapper timestepVars_;
         AIM::Grid_Aerosol iceAerosol_;

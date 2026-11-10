@@ -15,34 +15,6 @@
 #include <iomanip>
 #include "Core/Emission.hpp"
 
-Emission::Emission( )
-{
-    /* Default Constructor */
-
-    CO2 = 0.0;
-    H2O = 0.0;
-    NOx = 0.0;
-    NO  = 0.0;
-    NO2 = 0.0;
-    HNO2= 0.0;
-    SO2 = 0.0;
-    CO  = 0.0;
-    HC  = 0.0;
-
-    SO2toSO4 = 0.0;
-    
-    /* HC splitting */
-    CH4  = 0.268248 * HC;
-    C2H6 = 0.013750 * HC;
-    PRPE = 0.384804 * HC;
-    ALK4 = 0.013497 * HC;
-    CH2O = 0.184800 * HC;
-    ALD2 = 0.086150 * HC;
-    GLYX = 0.017129 * HC;
-    MGLY = 0.009899 * HC;
-
-} /* End of Emission::Emission */
-
 Emission::Emission( const Engine &engine, const Fuel &fuel, const double SO2ToSO4Ratio )
 {
 
@@ -76,7 +48,7 @@ Emission::Emission( const Engine &engine, const Fuel &fuel, const double SO2ToSO
         std::cout << "H2O emissions are negative: EI(H_2O) = " << H2O << "g/kg" << std::endl;
         H2O = 0.0;
     }
-    if ( SO2 <= 0.0 ) {
+    if ( SO2 < 0.0 ) {
         std::cout << "SO2 emissions are negative: EI(SO_2) = " << SO2 << "g/kg" << std::endl;
         SO2 = 0.0;
     }
@@ -109,48 +81,6 @@ Emission::Emission( const Engine &engine, const Fuel &fuel, const double SO2ToSO
 
 } /* End of Emission::Emission */
 
-Emission::Emission( const Emission &e )
-{
-
-    /* Constructor */
-
-    CO2 = e.CO2;
-    H2O = e.H2O;
-    NOx = e.NOx;
-    NO  = e.NO;
-    NO2 = e.NO2;
-    HNO2= e.HNO2;
-    SO2 = e.SO2;
-    CO  = e.CO;
-    HC  = e.HC;
-    
-    /* HC splitting */
-    CH4  = e.CH4;
-    C2H6 = e.C2H6;
-    PRPE = e.PRPE;
-    ALK4 = e.ALK4;
-    CH2O = e.CH2O;
-    ALD2 = e.ALD2;
-    GLYX = e.GLYX;
-    MGLY = e.MGLY;
-
-    Soot = e.Soot;
-    SootRad = e.SootRad;
-
-    SO2toSO4 = e.SO2toSO4;
-
-    engineName = e.engineName;
-    fuelChem = e.fuelChem;
-
-} /* End of Emission::Emission */
-
-
-Emission::~Emission( )
-{
-    /* Destructor */
-
-} /* End of Emission::~Emission */
-
 void Emission::Populate_withEngine( const Engine &engine )
 {
 
@@ -176,8 +106,7 @@ void Emission::Populate_withFuel( const Fuel &fuel )
     H2O = EI_H2O( fuel ); /* [ g/kg fuel ] */
     /* Convert to g/kg */
     CO2 *= 1000; /* [ g/kg fuel ]*/
-    /* getFSC from fuel */
-    SO2 = fuel.getFSC() * 2.0 / 1000.0;
+    SO2 = fuel.EI_SO2(); /* [ g/kg fuel ] */
 
 } /* End of Emission::Populate_withFuel */
 
@@ -188,66 +117,6 @@ double Emission::EI_H2O( const Fuel &fuel )
     return EI * 1000; /* [ g/kg fuel ] */
 
 } /* End of Emission::EI_H2O */
-
-Emission& Emission::operator=( const Emission &em )
-{
-
-    if ( &em == this )
-        return *this;
-
-    CO2 = em.CO2 ;
-    H2O = em.H2O ;
-    NOx = em.NOx ;
-    NO  = em.NO  ;
-    NO2 = em.NO2 ;
-    HNO2= em.HNO2;
-    SO2 = em.SO2 ;
-    CO  = em.CO  ;
-    HC  = em.HC  ;
-    CH4 = em.CH4 ;
-    C2H6= em.C2H6;
-    PRPE= em.PRPE;
-    ALK4= em.ALK4;
-    CH2O= em.CH2O;
-    ALD2= em.ALD2;
-    GLYX= em.GLYX;
-    MGLY= em.MGLY;
-    Soot= em.Soot;
-
-    SootRad= em.SootRad;
-    return *this;
-
-} /* End of Emission::operator= */
-
-Emission& Emission::operator+( const Emission &em )
-{
-
-    this->CO2  += em.CO2 ;
-    this->H2O  += em.H2O ;
-    this->NOx  += em.NOx ;
-    this->NO   += em.NO  ;
-    this->NO2  += em.NO2 ;
-    this->HNO2 += em.HNO2;
-    this->SO2  += em.SO2 ;
-    this->CO   += em.CO  ;
-    this->HC   += em.HC  ;
-    this->CH4  += em.CH4 ;
-    this->C2H6 += em.C2H6;
-    this->PRPE += em.PRPE;
-    this->ALK4 += em.ALK4;
-    this->CH2O += em.CH2O;
-    this->ALD2 += em.ALD2;
-    this->GLYX += em.GLYX;
-    this->MGLY += em.MGLY;
-    this->Soot += em.Soot;
-
-    if ( this->SootRad != em.SootRad )
-        std::cout << " Emission:operator+: SootRad differs for both Emission instances" << std::endl;
-
-    return *this;
-
-} /* End of Emission::operator+ */
-
 
 double Emission::getCO2( ) const
 {
