@@ -105,6 +105,7 @@ class Meteorology
         inline const Vector_1D& AltEdges() const { return altitudeEdges_; }
         inline const Vector_1D& PressEdges() const { return pressureEdges_; }
         inline const Vector_1D& Altitude() const { return altitude_; }
+        inline const Vector_1D& AltitudeInit() const { return altitudeInit_; }
         inline const Vector_1D& yCoords() const { return yCoords_; }
         inline const Vector_1D& yEdges() const { return yEdges_; }
 

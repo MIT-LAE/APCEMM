@@ -4,7 +4,9 @@
 #include <Eigen/Sparse>
 #include "FVM_ANDS/BoundaryCondition.hpp"
 #include "FVM_ANDS_HelperFunctions.hpp"
+#include <cmath>
 #include <memory>
+#include <span>
 
 namespace FVM_ANDS{
 
@@ -82,6 +84,61 @@ namespace FVM_ANDS{
      */
     void semiLagrangianAdvection1D(std::vector<double>& slice, double velocity, double dt, double ds, double bc_left, double bc_right);
 
+    /**
+     * @brief Coupled two-moment 1D Flux-Form Semi-Lagrangian (FFSL) advection with consistent flux weights.
+     *
+     * @details
+     * Simultaneously advects a primary number-like scalar \f$\phi_N(s,t)\f$ and a secondary volume-like scalar
+     * \f$\phi_V(s,t) = q(s,t) \phi_N(s,t)\f$ across a uniform grid with spacing \f$\Delta s\f$ and timestep \f$\Delta t\f$:
+     * 1. Both \f$\phi_N\f$ and \f$\phi_V\f$ undergo the exact same integer shift \f$k = \lfloor |v|\Delta t / \Delta s \rfloor\f$.
+     * 2. For the fractional step \f$c_{\text{frac}} \in (0, 1)\f$, the primary number flux \f$F_{N, m+1/2}\f$ is evaluated
+     *    via TVD Lax-Wendroff reconstruction on \f$\phi_N\f$, while the secondary volume flux is defined consistently as
+     *    \f$F_{V, m+1/2} = F_{N, m+1/2} \, q_{m+1/2}\f$, where \f$q_{m+1/2} \in [q_{\min}, q_{\max}]\f$ is reconstructed
+     *    from the cell-mean ratio \f$q_m = \phi_{V,m} / \phi_{N,m}\f$ using TVD minmod limiting across populated neighbors.
+     *
+     * This guarantees strict conservation of both moments, exact preservation of a uniform mean particle size \f$q_m \equiv q_0\f$,
+     * and zero spurious overshoots or undershoots of \f$q_m\f$ across steep plume boundaries.
+     */
+    void semiLagrangianAdvectionTwoMoment1D(
+        std::vector<double>& sliceN,
+        std::vector<double>& sliceV,
+        double velocity,
+        double dt,
+        double ds,
+        double bcN_left,
+        double bcN_right,
+        double q_min,
+        double q_max);
+
+    /**
+     * @brief Scales the nominal bin terminal settling velocity to the local moving-center particle volume.
+     *
+     * @details
+     * Given the normalized volume ratio \f$q = V_{\text{cell}} / V_{\text{nom}} = (r / r_{\text{nom}})^3\f$,
+     * approximates the intra-bin variation of gravitational settling speed relative to the nominal bin speed
+     * \f$v_{\text{fall}}(r_{\text{nom}}, T, P)\f$ using the Stokes quadratic radius dependence
+     * \f$v_{\text{fall}} \propto r^2 \propto q^{2/3}\f$ (neglecting the weak intra-bin variation of the
+     * Cunningham slip-flow correction factor across a single sectional bin).
+     */
+    inline double settlingScaling(double q) {
+        return std::cbrt(q * q);
+    }
+
+    /**
+     * @brief Substepped 1D conservative Eulerian TVD vertical settling for coupled two-moment aerosol transport
+     *        with spatially varying downward settling speed \f$w_m = v_{\text{fall}}(r_m, T_m, P_m) \ge 0\f$.
+     */
+    void verticalSettlingTwoMoment1D(
+        std::vector<double>& colN,
+        std::vector<double>& colV,
+        const std::vector<double>& w_fall,
+        double dt,
+        double dy,
+        double bcN_bot,
+        double bcN_top,
+        double q_min,
+        double q_max);
+
     struct AdvDiffParams {
         AdvDiffParams(double u, double v, double shear, double Dh, double Dv, double dt){
             this->u = u;
@@ -107,6 +164,7 @@ namespace FVM_ANDS{
             void applyBoundaryCondition();
             void updateBoundaryCondition(const BoundaryConditions& bc);
             void semiLagrangianAdvection(double dt, bool parallelAdvection = false);
+            void semiLagrangianAdvectionTwoMoment(Eigen::VectorXd& phiN, Eigen::VectorXd& phiV, double dt, double q_min, double q_max, bool parallelAdvection = false, std::span<const Vector_1D> vFall2D = {});
             Eigen::VectorXd forwardEulerAdvection(bool operatorSplit = false, bool parallelAdvection = false) const noexcept;
             // Breakup the implementation of sor_solve to allow for easy testing by inputing an arbitrary linear system to solve:
             // Implementation is moved outside of the class, and make class method to be used in code

@@ -789,4 +789,148 @@ namespace FVM_ANDS{
             REQUIRE(relMassChange < 0.05);
         }
     }
+
+    TEST_CASE("Normalized volume transport preserves constant particle volume at low concentrations", "[two_moment]"){
+        int nx = 30, ny = 30;
+        double Lx = 300.0, Ly = 300.0;
+        double dt = 10.0, Dh = 15.0, Dv = 0.15;
+        int nInt = nx * ny;
+        int nTot = nInt + 2 * nx + 2 * ny;
+        Mesh mesh = Mesh(nx, ny, 0.0, Lx, Ly, 0.0, MeshDomainLimitsSpec::ABS_COORDS);
+        BoundaryConditions bc = zeroDirichletBC(nx, ny);
+        Eigen::VectorXd phi_init = Eigen::VectorXd::Zero(nTot);
+
+        AdvDiffParams params(0.0, -0.02, 0.002, Dh, Dv, dt);
+        FVM_Solver solver(params, mesh.x(), mesh.y(), bc, phi_init);
+
+        // Low-concentration small-crystal bin: pdf ~ 1e-12 cm^-3, V_0 ~ 1e-20 m^3, dln(r) ~ 0.196
+        // Unscaled volume ~ 2e-33 m^3/cm^3 (< 1e-30 sor_solve threshold!)
+        const double dLogBin = 0.1959;
+        const double vEdgeLow = 0.8e-20;
+        const double vEdgeHigh = 1.44e-20;
+        const double vNom = 0.5 * (vEdgeLow + vEdgeHigh);
+        const double vTrue = 1.05e-20;
+        const double volScale = dLogBin * vNom;
+        const double invVolScale = 1.0 / volScale;
+
+        Vector_2D pdf(ny, Vector_1D(nx, 0.0));
+        Vector_2D volScaled(ny, Vector_1D(nx, 0.0));
+
+        for (int j = 10; j < 20; ++j) {
+            for (int i = 10; i < 20; ++i) {
+                pdf[j][i] = 1.0e-12;
+                double vol = dLogBin * vTrue * pdf[j][i];
+                volScaled[j][i] = vol * invVolScale;
+            }
+        }
+
+        solver.operatorSplitSolve2DVec(pdf, bc, false);
+        solver.operatorSplitSolve2DVec(volScaled, bc, false);
+
+        int populatedCount = 0;
+        for (int j = 0; j < ny; ++j) {
+            for (int i = 0; i < nx; ++i) {
+                double vol = volScaled[j][i] * volScale;
+                if (pdf[j][i] > 1.0e-20) {
+                    populatedCount++;
+                    double vRecovered = vol / (pdf[j][i] * dLogBin);
+                    REQUIRE(vRecovered == Catch::Approx(vTrue).epsilon(1e-12));
+                }
+            }
+        }
+        REQUIRE(populatedCount > 100);
+    }
+
+    TEST_CASE("Coupled two-moment 1D FFSL advection preserves mass, number, and bounded V/N ratio", "[two_moment][advection]"){
+        const int N = 40;
+        const double q_min = 0.714;
+        const double q_max = 1.286;
+        const double dt = 1.0;
+        const double ds = 1.0;
+
+        SECTION("Positive and negative multi-cell advection of step profile with varying V/N"){
+            for (double velocity : {2.35, -1.75}) {
+                std::vector<double> sliceN(N, 0.0);
+                std::vector<double> sliceV(N, 0.0);
+
+                // Sharp plume core with a spatial gradient in mean particle volume q = V/N in [0.80, 1.20]
+                for (int m = 10; m <= 22; ++m) {
+                    sliceN[m] = (m == 10 || m == 22) ? 0.2 : 5.0; // steep edge jump
+                    double q_local = 0.80 + 0.40 * double(m - 10) / 12.0;
+                    sliceV[m] = sliceN[m] * q_local;
+                }
+
+                double initSumN = 0.0, initSumV = 0.0;
+                for (int m = 0; m < N; ++m) {
+                    initSumN += sliceN[m];
+                    initSumV += sliceV[m];
+                }
+
+                semiLagrangianAdvectionTwoMoment1D(
+                    sliceN, sliceV, velocity, dt, ds,
+                    0.0, 0.0, q_min, q_max);
+
+                double finalSumN = 0.0, finalSumV = 0.0;
+                for (int m = 0; m < N; ++m) {
+                    REQUIRE(sliceN[m] >= -1e-15);
+                    REQUIRE(sliceV[m] >= -1e-15);
+                    finalSumN += sliceN[m];
+                    finalSumV += sliceV[m];
+                    if (sliceN[m] > 1.0e-12) {
+                        double q_m = sliceV[m] / sliceN[m];
+                        // Must stay strictly inside [0.80, 1.20] without overshooting or undershooting to bin edges
+                        REQUIRE(q_m >= 0.80 - 1e-12);
+                        REQUIRE(q_m <= 1.20 + 1e-12);
+                    }
+                }
+                REQUIRE(finalSumN == Catch::Approx(initSumN).margin(1e-12));
+                REQUIRE(finalSumV == Catch::Approx(initSumV).margin(1e-12));
+            }
+        }
+    }
+
+    TEST_CASE("Substepped 1D vertical settling with spatially varying vFall conserves mass and number", "[two_moment][settling]"){
+        const int N = 40;
+        const double q_min = 0.714;
+        const double q_max = 1.286;
+        const double dy = 10.0;
+        const double dt = 30.0; // half of 60s subcycle step
+
+        std::vector<double> colN(N, 0.0);
+        std::vector<double> colV(N, 0.0);
+        std::vector<double> w_fall(N, 0.0);
+
+        for (int m = 0; m < N; ++m) {
+            // Spatially varying settling velocity from 0.15 m/s to 0.55 m/s (requires subcycling since max CFL = 0.55*30/10 = 1.65 > 0.8)
+            w_fall[m] = 0.15 + 0.40 * double(m) / double(N - 1);
+            if (m >= 18 && m <= 28) {
+                colN[m] = (m == 18 || m == 28) ? 0.5 : 4.0;
+                double q_local = 0.82 + 0.36 * double(m - 18) / 10.0;
+                colV[m] = colN[m] * q_local;
+            }
+        }
+
+        double initSumN = 0.0, initSumV = 0.0;
+        for (int m = 0; m < N; ++m) {
+            initSumN += colN[m];
+            initSumV += colV[m];
+        }
+
+        verticalSettlingTwoMoment1D(colN, colV, w_fall, dt, dy, 0.0, 0.0, q_min, q_max);
+
+        double finalSumN = 0.0, finalSumV = 0.0;
+        for (int m = 0; m < N; ++m) {
+            REQUIRE(colN[m] >= -1e-15);
+            REQUIRE(colV[m] >= -1e-15);
+            finalSumN += colN[m];
+            finalSumV += colV[m];
+            if (colN[m] > 1.0e-12) {
+                double q_m = colV[m] / colN[m];
+                REQUIRE(q_m >= 0.82 - 1e-12);
+                REQUIRE(q_m <= 1.18 + 1e-12);
+            }
+        }
+        REQUIRE(finalSumN == Catch::Approx(initSumN).margin(1e-12));
+        REQUIRE(finalSumV == Catch::Approx(initSumV).margin(1e-12));
+    }
 }

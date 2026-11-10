@@ -20,6 +20,7 @@ namespace AIM
 {
 
     Vector_1D SettlingVelocity( const Vector_1D binCenters, const double T, const double P );
+    double SettlingVelocityScalar( const double r, const double T, const double P );
 
 }
 

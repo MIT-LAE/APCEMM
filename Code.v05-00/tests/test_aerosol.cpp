@@ -1,6 +1,7 @@
 #include "AIM/Aerosol.hpp"
 #include "Util/ForwardDecl.hpp"
 #include "Util/PhysConstant.hpp"
+#include "Util/PhysFunction.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
@@ -234,10 +235,10 @@ TEST_CASE("Aerosol Flexible Bin Grid Construction", "[aerosol][bins]") {
     const double r_low = 5.0e-8;  // 0.05 um
     const double r_hig = 8.0e-5;  // 80.0 um
 
-    SECTION("Default Grid Parameters (VRAT = 1.80)") {
-        const double vrat = 1.80;
+    SECTION("Default Grid Parameters (VRAT = 1.50)") {
+        const double vrat = 1.50;
         const UInt expected_nbins = static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(vrat)));
-        REQUIRE(expected_nbins == 38);
+        REQUIRE(expected_nbins == 55);
 
         const double rrat = cbrt(vrat);
         Vector_1D edges(expected_nbins + 1);
@@ -255,16 +256,17 @@ TEST_CASE("Aerosol Flexible Bin Grid Construction", "[aerosol][bins]") {
     }
 
     SECTION("VRAT Spectrum Geometric Invariance (1.2 to 3.0)") {
-        const std::vector<double> vrats = {1.2, 1.5, 1.8, 2.0, 2.1, 2.4, 2.7, 3.0};
+        const std::vector<double> vrats = {1.2, 1.35, 1.5, 1.8, 2.0, 2.1, 2.4, 2.7, 3.0};
         const std::vector<UInt> expected_counts = {
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.2))), // ~122
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.5))), // 55
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.8))), // 38
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.0))), // 32
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.1))), // 30
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.4))), // 26
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.7))), // 23
-            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(3.0)))  // 21
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.2))),  // ~122
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.35))), // 75
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.5))),  // 55
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(1.8))),  // 38
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.0))),  // 32
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.1))),  // 30
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.4))),  // 26
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(2.7))),  // 23
+            static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(3.0)))   // 21
         };
 
         for (size_t k = 0; k < vrats.size(); k++) {
@@ -322,6 +324,62 @@ TEST_CASE("Aerosol Flexible Bin Grid Construction", "[aerosol][bins]") {
             double m3 = aer.Moment(3);
             REQUIRE(m3 == Catch::Approx(analytic_m3).epsilon(0.05));
         }
+    }
+
+    SECTION("Size-Sensitive APC_Scheme Growth Continuity Across Bin Boundaries") {
+        const double vrat = 1.80;
+        const UInt nbins = static_cast<UInt>(std::floor(1 + 3.0 * log(r_hig / r_low) / log(vrat)));
+        const double rrat = cbrt(vrat);
+        Vector_1D edges(nbins + 1);
+        Vector_1D centers(nbins);
+        edges[0] = r_low;
+        for (UInt i = 1; i <= nbins; i++) {
+            edges[i] = edges[i - 1] * rrat;
+        }
+        for (UInt i = 0; i < nbins; i++) {
+            centers[i] = 0.5 * (edges[i] + edges[i + 1]);
+        }
+
+        // Create a 2x1 grid where cell (0,0) has crystals in bin k just below V_edge[k+1]
+        // and cell (0,1) has the same number of crystals in bin k+1 just above V_edge[k+1].
+        Grid_Aerosol gridAer(2, 1, centers, edges, 0.0, 1.0e-6, 1.5, "lognormal");
+        const UInt k = 25; // ~15 um bin
+        const Vector_1D& vEdges = gridAer.getBinVEdges();
+        const Vector_1D& logEdges = gridAer.getLogBinEdges();
+        const double vBoundary = vEdges[k + 1];
+        const double nConc = 0.5; // #/cm^3
+
+        Vector_3D pdf = gridAer.getPDF();
+        for (UInt b = 0; b < nbins; ++b) {
+            pdf[b][0][0] = 0.0;
+            pdf[b][0][1] = 0.0;
+        }
+        pdf[k][0][0] = nConc / (logEdges[k + 1] - logEdges[k]);
+        pdf[k + 1][0][1] = nConc / (logEdges[k + 2] - logEdges[k + 1]);
+        gridAer.updatePdf(pdf);
+
+        Vector_3D iceV(nbins, Vector_2D(1, Vector_1D(2, 0.0)));
+        iceV[k][0][0] = nConc * (0.9999 * vBoundary);
+        iceV[k + 1][0][1] = nConc * (1.0001 * vBoundary);
+        gridAer.UpdateCenters(iceV, gridAer.getPDF());
+
+        const double T_val = 217.0;
+        const double P_val = 26500.0;
+        const double pSat = physFunc::pSat_H2Os(T_val);
+        const double h2o_init = 1.40 * pSat / (physConst::kB * 1.0e6 * T_val); // RHi = 140%
+        Vector_2D H2O(1, Vector_1D(2, h2o_init));
+        Vector_2D T(1, Vector_1D(2, T_val));
+        Vector_1D P(1, P_val);
+
+        Vector_2D volBefore = gridAer.TotalVolume();
+        gridAer.Grow(10.0, H2O, T, P, 2, 0);
+        Vector_2D volAfter = gridAer.TotalVolume();
+
+        double dV_left = volAfter[0][0] - volBefore[0][0];
+        double dV_right = volAfter[0][1] - volBefore[0][1];
+        REQUIRE(dV_left > 0.0);
+        // With moving-center radius in APC_Scheme, growth rate across the bin edge is continuous (< 0.1% diff, rather than ~22% jump)
+        REQUIRE(dV_right == Catch::Approx(dV_left).epsilon(1e-3));
     }
 }
 

@@ -1,6 +1,8 @@
 #include <chrono>
 #include <filesystem>
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include "AIM/Settling.hpp"
 #include "Util/PlumeModelUtils.hpp"
 #include "Core/OutputFilenames.hpp"
@@ -566,11 +568,24 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
     start = std::chrono::high_resolution_clock::now();
     #endif
     
+    Vector_3D& pdfRef = iceAerosol_.getPDF();
+    Vector_3D volume = iceAerosol_.Volume();
+    const Vector_1D& binVEdges = iceAerosol_.getBinVEdges();
+    const Vector_1D& logBinEdges = iceAerosol_.getLogBinEdges();
+    const Vector_3D& binVCenters = iceAerosol_.getBinVCenters();
+    const Vector_1D& binCenters = iceAerosol_.getBinCenters();
+    const Vector_2D& temp2D = met_.Temp();
+    const Vector_1D& press1D = met_.Press();
+    const double VOL_TO_RAD_FACTOR = 3.0 / (4.0 * PI);
+
     #pragma omp parallel for default(shared) schedule(dynamic)
     for ( UInt n = 0; n < iceAerosol_.getNBin(); n++ ) {
         /* Transport particle number and volume for each bin and
             * recompute centers of each bin for each grid cell
             * accordingly */
+        if (FVM_ANDS::FVM_Solver::eigenSqVectorNorm_double(pdfRef[n]) < 1e-100) {
+            continue;
+        }
         
         // Fetch the solver for this thread
         int tid = omp_get_thread_num();
@@ -579,9 +594,46 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
         //Update solver params for this bin
         solver.updateAdvection(0, -vFall_[n], shear_rep_);
 
+        // Scale volume[n] by 1 / (dln(r) * V_nom) so its numerical magnitude matches pdfRef[n]
+        // during transport, preventing norm thresholds (1e-30 in sor_solve, 1e-100 in operatorSplitSolve2DVec)
+        // from treating volume[n] differently from pdfRef[n].
+        const double dLogBin = logBinEdges[n + 1] - logBinEdges[n];
+        const double vNom = 0.5 * (binVEdges[n] + binVEdges[n + 1]);
+        const double volScale = dLogBin * vNom;
+        const double invVolScale = 1.0 / volScale;
+        const double qMin = binVEdges[n] / vNom;
+        const double qMax = binVEdges[n + 1] / vNom;
+        const double rNom = std::cbrt(VOL_TO_RAD_FACTOR * vNom);
+
+        Vector_2D vFall2D;
+        if (simVars_.GRAVSETTLING) {
+            vFall2D = Vector_2D(yCoords_.size(), Vector_1D(xCoords_.size(), 0.0));
+            for (std::size_t j = 0; j < yCoords_.size(); ++j) {
+                const double P_j = press1D[j];
+                for (std::size_t i = 0; i < xCoords_.size(); ++i) {
+                    vFall2D[j][i] = AIM::SettlingVelocityScalar(rNom, temp2D[j][i], P_j);
+                }
+            }
+        }
+
+        for (std::size_t j = 0; j < volume[n].size(); ++j) {
+            for (std::size_t i = 0; i < volume[n][j].size(); ++i) {
+                volume[n][j][i] *= invVolScale;
+            }
+        }
+
         //passing in "false" to the "parallelAdvection" param to not spawn more threads
-        solver.operatorSplitSolve2DVec(iceAerosol_.getPDF()[n], ZERO_BC, false);
+        solver.operatorSplitSolveTwoMoment2DVec(pdfRef[n], volume[n], ZERO_BC, qMin, qMax, false, vFall2D);
+
+        for (std::size_t j = 0; j < volume[n].size(); ++j) {
+            for (std::size_t i = 0; i < volume[n][j].size(); ++i) {
+                volume[n][j][i] *= volScale;
+            }
+        }
     }
+
+    // Recalculate intra-bin centers across the domain after transport
+    iceAerosol_.UpdateCenters(volume, pdfRef);
 
     #ifdef ENABLE_TIMING
     end = std::chrono::high_resolution_clock::now();
@@ -827,10 +879,49 @@ Eigen::SparseMatrix<double> LAGRIDPlumeModel::createRegriddingWeightsSparse(cons
     //Need 2 extra points account for the buffer
     int nx_new = floor((maskInfo.maxX - maskInfo.minX) / dx_grid_new) + 2;
     int ny_new = floor((maskInfo.maxY - maskInfo.minY) / dy_grid_new) + 2;
-    LAGRID::Remapping remapping(maskInfo.minX - dx_grid_new, maskInfo.minY - dy_grid_new, dx_grid_new, dy_grid_new, nx_new, ny_new);
+    double y0_remap = maskInfo.minY - dy_grid_new;
+    double topBuffer = buffers.topBuffer;
+    double botBuffer = buffers.botBuffer;
+    const auto& altInit = met_.AltitudeInit();
+    if (!altInit.empty() && !met_.AltEdges().empty() && !yEdges_.empty()) {
+        const double altOffset = met_.AltEdges()[0] - yEdges_[0];
+        const double minAllowedYEdge = altInit.front() - altOffset + 1.0e-3;
+        const double maxAllowedYEdge = altInit.back() - altOffset - 1.0e-3;
+        if (maskInfo.minY < minAllowedYEdge || maskInfo.maxY > maxAllowedYEdge) {
+            throw std::runtime_error(
+                "LAGRIDPlumeModel::createRegriddingWeightsSparse: Contrail mask altitude range [" +
+                std::to_string(maskInfo.minY + altOffset) + ", " +
+                std::to_string(maskInfo.maxY + altOffset) +
+                "] m extends beyond the meteorological input altitude range [" +
+                std::to_string(altInit.front()) + ", " +
+                std::to_string(altInit.back()) +
+                "] m, which would discard contrail ice mass.");
+        }
+        if (y0_remap < minAllowedYEdge) {
+            y0_remap = minAllowedYEdge;
+        }
+        if (y0_remap + ny_new * dy_grid_new > maxAllowedYEdge) {
+            ny_new = std::max(1, static_cast<int>(std::floor((maxAllowedYEdge - y0_remap) / dy_grid_new)));
+        }
+        if (y0_remap > maskInfo.minY || y0_remap + ny_new * dy_grid_new < maskInfo.maxY) {
+            throw std::runtime_error(
+                "LAGRIDPlumeModel::createRegriddingWeightsSparse: Clamping remapped grid to meteorological altitude range [" +
+                std::to_string(altInit.front()) + ", " +
+                std::to_string(altInit.back()) +
+                "] m clips the active contrail mask [" +
+                std::to_string(maskInfo.minY + altOffset) + ", " +
+                std::to_string(maskInfo.maxY + altOffset) +
+                "] m and would discard contrail ice mass.");
+        }
+        const double curBotEdge = y0_remap;
+        const double curTopEdge = y0_remap + ny_new * dy_grid_new;
+        botBuffer = std::max(0.0, std::min(botBuffer, curBotEdge - minAllowedYEdge));
+        topBuffer = std::max(0.0, std::min(topBuffer, maxAllowedYEdge - curTopEdge));
+    }
+    LAGRID::Remapping remapping(maskInfo.minX - dx_grid_new, y0_remap, dx_grid_new, dy_grid_new, nx_new, ny_new);
 
     auto remappedGrid = LAGRID::mapToStructuredGrid(boxGrid, remapping);
-    remappedGrid.addBuffer(buffers.leftBuffer, buffers.rightBuffer, buffers.topBuffer, buffers.botBuffer, 0.0);
+    remappedGrid.addBuffer(buffers.leftBuffer, buffers.rightBuffer, topBuffer, botBuffer, 0.0);
     // Contains: phi, xCoords, yCoords
 
     // Extract the new x and y coordinates

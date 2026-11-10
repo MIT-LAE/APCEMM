@@ -198,7 +198,7 @@ ADVANCED OPTIONS MENU:
   Ambient Lapse Rate [K/km] (double): -3.0
   Tropopause Pressure [Pa] (double): 2.0e+4
   AEROSOL GRID SUBMENU:
-    Ice bin volume ratio [-] (double): 1.80
+    Ice bin volume ratio [-] (double): 1.50
     Ice bin r_min [m] (double): 5.0e-08
     Ice bin r_max [m] (double): 8.0e-05
   EARLY PLUME SUBMENU:

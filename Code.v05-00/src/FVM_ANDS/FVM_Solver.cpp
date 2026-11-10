@@ -155,6 +155,54 @@ namespace FVM_ANDS{
         vec = eigenVec_to_std2dVec(operatorSplitSolve(parallelAdvection, courant_max), vec[0].size(), vec.size());
     }
 
+    void FVM_Solver::operatorSplitSolveTwoMoment2DVec(
+        Vector_2D& vecN,
+        Vector_2D& vecV,
+        const BoundaryConditions& bc,
+        double q_min,
+        double q_max,
+        bool parallelAdvection,
+        std::span<const Vector_1D> vFall2D)
+    {
+        Eigen::VectorXd vecN_Eigen = std2dVec_to_eigenVec(vecN);
+        const double VECTORNORM_MIN = 1e-100;
+        if (eigenSqVectorNorm_double(vecN_Eigen) < VECTORNORM_MIN) {
+            return;
+        }
+        Eigen::VectorXd vecV_Eigen = std2dVec_to_eigenVec(vecV);
+
+        const bool operatorSplit = true;
+        const double dt_max = advDiffSys_.timestep();
+        advDiffSys_.updateBoundaryCondition(bc);
+
+        // Step 1: First half-step coupled two-moment Semi-Lagrangian advection
+        advDiffSys_.semiLagrangianAdvectionTwoMoment(vecN_Eigen, vecV_Eigen, 0.5 * dt_max, q_min, q_max, parallelAdvection, vFall2D);
+
+        // Step 2: Implicit diffusion for full timestep on both moments using identical linear operator
+        advDiffSys_.updateTimestep(dt_max);
+        if (!matrix_prebuilt_) {
+            advDiffSys_.buildCoeffMatrix(operatorSplit);
+        }
+
+        advDiffSys_.updatePhi(vecN_Eigen);
+        advDiffSys_.applyBoundaryCondition();
+        advDiffSys_.calcRHS();
+        advDiffSys_.sor_solve(1.0, sorThreshold_);
+        vecN_Eigen = advDiffSys_.phi();
+
+        advDiffSys_.updatePhi(vecV_Eigen);
+        advDiffSys_.applyBoundaryCondition();
+        advDiffSys_.calcRHS();
+        advDiffSys_.sor_solve(1.0, sorThreshold_);
+        vecV_Eigen = advDiffSys_.phi();
+
+        // Step 3: Second half-step coupled two-moment Semi-Lagrangian advection
+        advDiffSys_.semiLagrangianAdvectionTwoMoment(vecN_Eigen, vecV_Eigen, 0.5 * dt_max, q_min, q_max, parallelAdvection, vFall2D);
+
+        vecN = eigenVec_to_std2dVec(vecN_Eigen, vecN[0].size(), vecN.size());
+        vecV = eigenVec_to_std2dVec(vecV_Eigen, vecV[0].size(), vecV.size());
+    }
+
     void FVM_Solver::advectionHalfTimestepSolve(Vector_2D& vec, const BoundaryConditions& bc, double courant_max){
         Eigen::VectorXd vec_Eigen = std2dVec_to_eigenVec(vec);
         advDiffSys_.updatePhi(vec_Eigen);
