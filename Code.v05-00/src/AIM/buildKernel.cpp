@@ -18,6 +18,22 @@
 namespace AIM
 {
 
+    /* Fuchs interpolation formula (Fuchs, 1964) as described in eq. 9 of Karl et al. (2022)
+    "Description and evaluation of the community aerosol dynamics model MAFOR v2.0"
+    https://doi.org/10.5194/gmd-15-3969-2022
+    */
+    inline double brownianCoagulationCoefficient(double r1, double r2, double diff_coeff1, double diff_coef2, double delta1, double delta2, double velp1, double velp2)
+    {
+        auto norm = [](double a, double b) {return sqrt(a * a + b * b);};
+
+        double radius_sum = r1 + r2;
+        double diff_coeff_sum = diff_coeff1 + diff_coef2;
+        double numerator = 4.0 * physConst::PI * radius_sum * diff_coeff_sum;
+        double denominator_term1 = radius_sum / (radius_sum + norm( delta1, delta2));
+        double denominator_term2 = 4.0 * diff_coeff_sum / (norm(velp1, velp2) * radius_sum);
+        return numerator / (denominator_term1 + denominator_term2);
+    } 
+
     Vector_1D buildBrownianKernel( double temperature_K, double pressure_Pa, Vector_1D const &bin_Centers, double rho_1 , double bin_R, double rho_2 )
     {
 
@@ -58,9 +74,10 @@ namespace AIM
 
         /* Initialize Brownian kernel */
         for ( unsigned int iBin = 0; iBin < bin_Centers.size(); iBin++ ) {
-            K_Brownian[iBin] = 4.0 * physConst::PI * ( bin_Centers[iBin] + bin_R ) * ( diffCoef_1[iBin] + diffCoef_2 ) / \
-                               ( ( bin_Centers[iBin] + bin_R ) / ( bin_Centers[iBin] + bin_R + sqrt( delta_1[iBin] * delta_1[iBin] + delta_2 * delta_2 ) ) + \
-                                 4.0 * ( diffCoef_1[iBin] + diffCoef_2 ) / ( sqrt( velp_1[iBin] * velp_1[iBin] + velp_2 + velp_2 ) * ( bin_Centers[iBin] + bin_R ) ) );
+            K_Brownian[iBin] = brownianCoagulationCoefficient(bin_Centers[iBin], bin_R,
+                                                            diffCoef_1[iBin], diffCoef_2,
+                                                            delta_1[iBin], delta_2,
+                                                            velp_1[iBin], velp_2);
         }
 
         return K_Brownian;
@@ -115,9 +132,10 @@ namespace AIM
         for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
             K_Brownian.push_back( Vector_1D( bin_Centers_2.size() ) );
             for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_2.size(); iBin_2++ ) {
-                K_Brownian[iBin_1][iBin_2] = 4.0 * physConst::PI * ( bin_Centers_1[iBin_1] + bin_Centers_2[iBin_2] ) * ( diffCoef_1[iBin_1] + diffCoef_2[iBin_2] ) / \
-                                             ( ( bin_Centers_1[iBin_1] + bin_Centers_2[iBin_2] ) / ( bin_Centers_1[iBin_1] + bin_Centers_2[iBin_2] + sqrt( delta_1[iBin_1] * delta_1[iBin_1] + delta_2[iBin_2] * delta_2[iBin_2] ) ) \
-                                               + 4.0 * ( diffCoef_1[iBin_1] + diffCoef_2[iBin_2] ) / ( sqrt( velp_1[iBin_1] * velp_1[iBin_1] + velp_2[iBin_2] + velp_2[iBin_2] ) * ( bin_Centers_1[iBin_1] + bin_Centers_2[iBin_2] ) ) );
+                K_Brownian[iBin_1][iBin_2] = brownianCoagulationCoefficient(bin_Centers_1[iBin_1], bin_Centers_2[iBin_2],
+                                                                                diffCoef_1[iBin_1], diffCoef_2[iBin_2],
+                                                                                delta_1[iBin_1], delta_2[iBin_2],
+                                                                                velp_1[iBin_1], velp_2[iBin_2]);
             }
         }
 
