@@ -54,7 +54,7 @@ void Solution::Initialize(std::string fileName,
     readInputBackgroundConditions(input, amb_Value, aer_Value, fileName);
 
     const double AMBIENT_VALID_TIME = 8.0; //hours
-    SpinUp(amb_Value, input, airDens, AMBIENT_VALID_TIME, varSpeciesArray);
+    SpinUp(amb_Value, input, met, airDens, AMBIENT_VALID_TIME, varSpeciesArray);
 
     /* Enforce pre-defined values? *
      * Read input defined values for background concentrations */
@@ -89,7 +89,7 @@ void Solution::Initialize(std::string fileName,
     SAD.assign( 2, 0.0 );
 
     const double boxArea = (Input_Opt.ADV_GRID_XLIM_LEFT + Input_Opt.ADV_GRID_XLIM_RIGHT) * (Input_Opt.ADV_GRID_YLIM_UP + Input_Opt.ADV_GRID_YLIM_DOWN);
-    STATE_PSC = STRAT_AER( input.temperature_K(), input.pressure_Pa(), airDens,  \
+    STATE_PSC = STRAT_AER( met.tempRef(), input.pressure_Pa(), airDens,  \
                            input.latitude_deg(), stratData,                      \
                            boxArea, KHETI_SLA, SOLIDFRAC,                        \
                            AERFRAC, RAD, RHO, KG, NDENS, SAD, Input_Opt.ADV_TROPOPAUSE_PRESSURE, DBG );
@@ -307,8 +307,8 @@ void Solution::initializeSpeciesH2O(const Input& input, const OptInput& Input_Op
         }
     } else {
         /* Else use user-defined H2O profile */
-        double H2Oval = (input.relHumidity_w()/((double) 100.0) * \
-                          physFunc::pSat_H2Ol( input.temperature_K() ) / ( kB * input.temperature_K() )) / 1.00E+06;
+        double H2Oval = (met.rhwRef()/((double) 100.0) * \
+                          physFunc::pSat_H2Ol( met.tempRef() ) / ( kB * met.tempRef() )) / 1.00E+06;
         for ( UInt i = 0; i < size_x; i++ ) {
             for ( UInt j = 0; j < size_y; j++ ) {
                 //H2O[j][i] = H2Oval;
@@ -372,7 +372,7 @@ void Solution::getData(Vector_1D &varSpeciesArray, const UInt i, const UInt j) {
 /* 
 No functions check the return code of this function, temp fix is to return void
 */
-void Solution::SpinUp(Vector_1D &amb_Value, const Input &input, const double airDens,
+void Solution::SpinUp(Vector_1D &amb_Value, const Input &input, const Meteorology &met, const double airDens,
                       const double startTime, Vector_1D &varSpeciesArray, const bool DBG) {
     /* Chemistry timestep
      * DT_CHEM               = 10 mins */
@@ -444,7 +444,7 @@ void Solution::SpinUp(Vector_1D &amb_Value, const Input &input, const double air
         for ( UInt iReact = 0; iReact < NREACT; iReact++ )
             RCONST[iReact] = 0.0E+00;
 
-        Update_RCONST( input.temperature_K(), input.pressure_Pa(), airDens, varSpeciesArray[ind_H2O] );
+        Update_RCONST( met.tempRef(), input.pressure_Pa(), airDens, varSpeciesArray[ind_H2O] );
 
         /* ~~~~~~~~~~~~~~~~~~~~~~~~ */
         /* ~~~~~ Integration ~~~~~~ */

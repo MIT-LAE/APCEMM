@@ -39,7 +39,7 @@ public:
     void getData(Vector_1D &varSpeciesArray, const UInt i = 0, const UInt j = 0);
 
     void SpinUp(Vector_1D &amb_Value, const Input &input,
-                const double airDens, const double startTime,
+                const Meteorology &met, const double airDens, const double startTime,
                 Vector_1D &varSpeciesArray, const bool DGB = 0);
 
     double getSootDensity() const { return sootDens[0][0]; }
