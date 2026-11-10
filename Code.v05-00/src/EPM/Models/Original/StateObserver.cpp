@@ -14,8 +14,10 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <utility>
 #include "Util/PhysConstant.hpp"
 #include "Util/PhysFunction.hpp"
+#include "EPM/Models/Original/Indexes.hpp"
 #include "EPM/Models/Original/StateObserver.hpp"
 
 using physConst::kB;
@@ -24,46 +26,21 @@ using physFunc::pSat_H2Ol, physFunc::pSat_H2Os, physFunc::pSat_H2SO4, physFunc::
 
 
 namespace EPM::Models::OriginalImpl {
-    StateObserver::StateObserver(
-        Vector_2D &states, Vector_1D &times,
-        std::vector<UInt> indices,
-        std::string filename, UInt write_every):
-        m_write_every(write_every),
-        fileName(filename),
-        m_states(states),
-        m_times(times),
-        m_indices(indices)
+    StateHistory::StateHistory(std::vector<UInt> indices, std::string fileName):
+        m_fileName(std::move(fileName)),
+        m_indices(std::move(indices))
     {}
 
-    StateObserver& StateObserver::operator=(const StateObserver &obs) {
-        if ( &obs == this )
-            return *this;
-
-        m_write_every = obs.m_write_every;
-        m_count = obs.m_count;
-        m_states = obs.m_states;
-        m_times = obs.m_times;
-        fileName = obs.fileName;
-        return *this;
+    void StateHistory::record(const Vector_1D &x, double t) {
+        m_states.push_back( x );
+        m_times.push_back( t );
     }
 
-    void StateObserver::operator()(const Vector_1D &x, double t) {
-        if ( ( m_count % m_write_every ) == 0 ) {
-            m_states.push_back( x );
-            m_times.push_back( t );
-            m_count++;
-        }
-    }
-
-    double StateObserver::getLastElement() const {
-        return m_states[m_count][0];
-    }
-
-    void StateObserver::print2File( ) const {
-        std::ofstream file (fileName);
+    void StateHistory::print2File( ) const {
+        std::ofstream file (m_fileName);
 
         if ( file.is_open() == 0 ) {
-            std::cout << "\nIn StateObserver::StateObserver: Couldn't open " << fileName << "!\n";
+            std::cout << "\nIn StateHistory::print2File: Couldn't open " << m_fileName << "!\n";
         } else {
             unsigned int counter;
             const char* sep = ", ";
@@ -192,24 +169,15 @@ namespace EPM::Models::OriginalImpl {
             file.close();
         }
 
-    } /* End of StateObserver::print2File */
+    } /* End of StateHistory::print2File */
 
-    bool StateObserver::checkwatersat( ) const {
-        std::size_t counter = 0;
-        float RHw;
-        bool watersup { false };
+    // t is omitted because it is unused
+    void WaterSaturationObserver::operator()(const Vector_1D &x, double /* t */) const {
+        if ( m_reached )
+            return;
 
-        /* Loop over until RHw >= 1.0 */
-        while ( !watersup && counter < m_states.size() ) {
-            /* Check value of RHw and update watersub */
-            RHw = m_states[counter][m_indices[3]] * m_states[counter][m_indices[2]] / pSat_H2Ol( m_states[counter][m_indices[1]] );
-            if ( RHw >= 1.0 ) {
-                watersup = true;
-            }
-
-            counter += 1;
-        }
-
-        return watersup;
+        const double RHw = x[EPM_ind_H2O] * x[EPM_ind_P] / pSat_H2Ol( x[EPM_ind_T] );
+        if ( RHw >= 1.0 )
+            m_reached = true;
     }
 }

@@ -8,28 +8,38 @@
 
 namespace EPM::Models::OriginalImpl
 {
-    class StateObserver
+    /* History of the EPM state on the outer time grid */
+    class StateHistory
     {
     public:
-        StateObserver(
-            Vector_2D &states, Vector_1D &times,
-            std::vector<UInt> indices,
-            std::string fileName, UInt write_every = 100);
-        StateObserver& operator=(const StateObserver &obs);
-        void operator()(const Vector_1D &x, double t);
-        double getLastElement() const;
+        StateHistory(std::vector<UInt> indices, std::string fileName);
+
+        void record(const Vector_1D &x, double t);
+        const Vector_2D& states() const { return m_states; }
+        const Vector_1D& times() const { return m_times; }
+
         void print2File() const;
-        bool checkwatersat() const;
-
-        UInt m_write_every;
-        UInt m_count = 0;
-        std::string fileName;
-
-        Vector_2D &m_states;
-        Vector_1D &m_times;
 
     private:
+        Vector_2D m_states;
+        Vector_1D m_times;
+        std::string m_fileName;
         const std::vector<UInt> m_indices;
+    };
+
+    /* Boost odeint observer that sets a flag once the plume reaches water
+     * saturation. Called every adaptive step by the integrator
+     * so that it can catch a saturation peak between two outer grid points.
+     * Contains only a reference to an external boolean flag because the boost
+     * integrator copies observers by value. */
+    class WaterSaturationObserver
+    {
+    public:
+        explicit WaterSaturationObserver(bool &reached): m_reached(reached) {}
+        void operator()(const Vector_1D &x, double t) const;
+
+    private:
+        bool &m_reached;
     };
 }
 

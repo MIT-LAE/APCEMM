@@ -29,6 +29,7 @@
 #include "EPM/EPM.hpp"
 #include "EPM/Models/Original.hpp"
 #include "EPM/Models/Original/Indexes.hpp"
+#include "EPM/Models/Original/Integrate.hpp"
 #include "EPM/Models/Original/RHS.hpp"
 #include "EPM/Models/Original/StateObserver.hpp"
 
@@ -202,24 +203,17 @@ namespace EPM::Models
         SO4g_amb = ( SO4g_amb > 0.0 ) ? SO4g_amb : 0.0;
         SO4l_amb = ( SO4l_amb > 0.0 ) ? SO4l_amb : 0.0;
 
-        /* Adaptive time stepping? */
-        const bool adaptiveStep = 1;
+        /* Outer time grid: 301 log-spaced points from 1e-4s to 180s
+        which is the step at which we start the mature plume model */
+        const double t_3mins = 3.0 * 60.0;
+        const Vector_1D timeArray = makeEPMTimeGrid(301, 1.0E-04, t_3mins, t_3mins);
+        const UInt nTime = timeArray.size();
+        UInt iTime = 0;
 
-        UInt nTime = 301;
-        UInt iTime;
-        Vector_1D timeArray(nTime);
-        double timeInitial = 1.0E-04;
-        double log10_timeInitial = log10(timeInitial);
-        double timeFinal   = 2.0E+03;
-        double log10_timeFinal = log10(timeFinal);
-        double inv_denominator = 1/double( nTime - 1.0 );
-        for ( iTime = 0; iTime < nTime; iTime++ ) {
-            timeArray[iTime] = pow( 10.0, log10_timeInitial + iTime * ( log10_timeFinal - log10_timeInitial ) * inv_denominator );
-        }
-
-        UInt iTime_3mins;
-        auto const it = std::lower_bound(timeArray.begin(), timeArray.end(), 3.0 * 60.0);
-        iTime_3mins = it - timeArray.begin();
+        // This is the last index of timeArray when tEnd = tInsert = 180s
+        // Kept here a search in case we decide to run the EPM for longer (tEnd > tInsert in makeEPMTimeGrid)
+        // and keep tInsert = 3 mins as the mature plume model starting point.
+        const UInt iTime_3mins = std::lower_bound(timeArray.begin(), timeArray.end(), t_3mins) - timeArray.begin();
 
         /* vars[0] : Temperature,                   Unit K
          * vars[1] : Water molecular concentration, Unit molecules/cm^3
@@ -255,10 +249,14 @@ namespace EPM::Models
         x[11] = 0.0;
         x[12] = 0.0;
 
-        Vector_2D obs_Var;
-        Vector_1D obs_Time;
+        StateHistory history(EPM_ind, simVars_.TS_FOLDER + OutputFiles::MICROPHYSICS);
 
-        StateObserver observer(obs_Var, obs_Time, EPM_ind, simVars_.TS_FOLDER + OutputFiles::MICROPHYSICS, 2);
+        /* Set at any adaptive step where the plume reaches water saturation */
+        bool reachedWaterSat = false;
+        const WaterSaturationObserver waterSatObserver(reachedWaterSat);
+
+        /* Adaptive stepper that can be shared by all integration steps */
+        const auto stepper = boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS );
 
         /* Creating ode's right hand side */
         gas_aerosol_rhs rhs(
@@ -266,17 +264,11 @@ namespace EPM::Models
             H2O_amb, SO4_amb, SO4l_amb, SO4g_amb, HNO3_amb, Soot_amb,
             EI_.getSootRad(), KernelSO4Soot, nPDF_SO4);
 
-        /* Total number of steps */
-        UInt totSteps = 0;
-
         /* Current time step in s */
         double currTimeStep;
 
-        /* Dilution factor */
-        // double dilFactor, dilFactor_b;
-
         /* Freshly nucleated aerosol characteristics */
-        double SO4l, SO4l_b, T_b, P_b, n_air_prev, n_air;
+        double SO4l_prev, n_air_prev, n_air;
         double nPDF_new, x_star, nTot, radSO4;
 
         /* Get conditions @ 3 mins */
@@ -289,7 +281,9 @@ namespace EPM::Models
         double n_air_3mins = 0;
         AIM::Aerosol pSO4pdf_3mins( nPDF_SO4 );
 
-        iTime = 0;
+        // Record the initial state 
+        history.record( x, timeArray[0] );
+
         while ( iTime + 1 < nTime ) {
 
             /* Update current time step */
@@ -298,42 +292,27 @@ namespace EPM::Models
             /* Coagulation of sulfate aerosols */
             nPDF_SO4.Coagulate( currTimeStep, Kernel );
 
-            /* Get dilution factor */
-            if ( iTime == 0 ) {
-                // dilFactor_b = 1.0;
-                SO4l_b = 0.0;
-                T_b = Tc0; // Set initial temperature in plume to core exit temp
-                P_b = simVars_.pressure_Pa; // Set initial pressure in plume to ambient pressure
-            }
-            else {
-                // dilFactor_b = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
-                SO4l_b = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l];
-                T_b = observer.m_states[observer.m_states.size()-1][EPM_ind_T];
-                P_b = observer.m_states[observer.m_states.size()-1][EPM_ind_P];
-            }
+            /* Liquid sulfate budget at the start of the interval, timeArray[iTime] */
+            SO4l_prev  = x[EPM_ind_SO4l];
+            n_air_prev = Na * x[EPM_ind_P] / ( R * x[EPM_ind_T] * 1.0e6 );
 
-            /* Diffusion + Water uptake */
-            if ( adaptiveStep == 1 ) {
-                totSteps += boost::numeric::odeint::integrate_adaptive( boost::numeric::odeint::make_controlled< error_stepper_type >( EPM_ATOLS, EPM_RTOLS ), rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0, observer );
-            }
-            else {
-                totSteps += boost::numeric::odeint::integrate( rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0, observer );
-            }
+            /* Diffusion + Water uptake. On return, x is the state at the end
+             * of the interval, timeArray[iTime+1]. */
+            boost::numeric::odeint::integrate_adaptive(
+                stepper, rhs, x, timeArray[iTime], timeArray[iTime+1], currTimeStep/100.0,
+                waterSatObserver );
+            history.record( x, timeArray[iTime+1] );
 
-            // dilFactor = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac] / dilFactor_b;
-            SO4l = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l] ;
+            /* Liquid sulfate budget at the end of the interval */
+            n_air = Na * x[EPM_ind_P] / ( R * x[EPM_ind_T] * 1.0e6 );
 
-            n_air = Na * x[EPM_ind_P]/(R * x[EPM_ind_T] * 1.0e6);
-            n_air_prev = Na *  P_b/(R * T_b * 1.0e6);  // P_b and T_b seems to be used uninitialized during the first timestep with iTime = 0
-
-            nPDF_new = ( SO4l*n_air - SO4l_b*n_air_prev);
+            nPDF_new = x[EPM_ind_SO4l] * n_air - SO4l_prev * n_air_prev;
 
             if ( nPDF_new >= 1.0E-20 ) {
-                x_star   = AIM::x_star( observer.m_states[observer.m_states.size()-1][EPM_ind_T], observer.m_states[observer.m_states.size()-1][EPM_ind_H2O] * n_air, std::max(x[EPM_ind_SO4g] * n_air, 0.0) );
-                nTot     = AIM::nTot( observer.m_states[observer.m_states.size()-1][EPM_ind_T], x_star, observer.m_states[observer.m_states.size()-1][EPM_ind_H2O] * n_air, std::max(x[EPM_ind_SO4g]*n_air, 0.0) );
+                x_star   = AIM::x_star( x[EPM_ind_T], x[EPM_ind_H2O] * n_air, std::max(x[EPM_ind_SO4g] * n_air, 0.0) );
+                nTot     = AIM::nTot( x[EPM_ind_T], x_star, x[EPM_ind_H2O] * n_air, std::max(x[EPM_ind_SO4g]*n_air, 0.0) );
                 nTot     = ( nTot <= 1.0E-20 ) ? 1.0E-20 : nTot;
                 radSO4   = AIM::radCluster( x_star, nTot );
-//                rho_Sulf = AIM::rho( x_star, observer.m_states[observer.m_states.size()-1][EPM_ind_T]);
 
                 if ( radSO4 >= 1.0E-10 ) {
                     AIM::Aerosol nPDF_SO4_new( SO4_rJ, SO4_rE, nPDF_new, radSO4, sSO4, "lognormal" );
@@ -342,40 +321,30 @@ namespace EPM::Models
                 }
             }
 
-            /* For debugging purposes */
-            if ( 0 ) {
-                std::cout << "Time: " << timeArray[iTime+1] << ", Number: " << nPDF_SO4.Moment() << ", Radius: " << nPDF_SO4.Radius() << "\n";
-            }
-
-            totSteps += 1;
             iTime++;
 
-            /* Aerosol PDF @ 3mins */
+            /* Snapshot @ 3mins: x, n_air and the sulfate PDF are all at timeArray[iTime] */
             if ( iTime == iTime_3mins ) {
-                PartRad_3mins  = observer.m_states[observer.m_states.size()-1][EPM_ind_ParR];
-                PartDens_3mins = observer.m_states[observer.m_states.size()-1][EPM_ind_Part] * n_air;
-                n_air_3mins = n_air;
-                H2OMol_3mins   = observer.m_states[observer.m_states.size()-1][EPM_ind_H2O]; //* observer.m_states[observer.m_states.size()-1][EPM_ind_P] / (kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T]) * 1.0E-06;
-                Tracer_3mins   = observer.m_states[observer.m_states.size()-1][EPM_ind_Trac];
-//                SO4pdf_3mins   = nPDF_SO4;
-                SO4l_3mins     = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4l]; // * observer.m_states[observer.m_states.size()-1][EPM_ind_P] / ( kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 ) ;
-                SO4g_3mins     = observer.m_states[observer.m_states.size()-1][EPM_ind_SO4g]; // * observer.m_states[observer.m_states.size()-1][EPM_ind_P] / ( kB * observer.m_states[observer.m_states.size()-1][EPM_ind_T] * 1.0E+06 ) ;
-//                pSO4pdf_3mins  = new AIM::Aerosol( nPDF_SO4 );
+                PartRad_3mins  = x[EPM_ind_ParR];
+                PartDens_3mins = x[EPM_ind_Part] * n_air;
+                n_air_3mins    = n_air;
+                H2OMol_3mins   = x[EPM_ind_H2O];
+                Tracer_3mins   = x[EPM_ind_Trac];
+                SO4l_3mins     = x[EPM_ind_SO4l];
+                SO4g_3mins     = x[EPM_ind_SO4g];
                 pSO4pdf_3mins.updatePdf( nPDF_SO4.getPDF() );
-
             }
 
         }
 
 #pragma omp critical
         {
-            observer.print2File();
+            history.print2File();
         }
         /* Output variables */
         /* Check if contrail is water supersaturated at some point during formation */
-        if ( !simVars_.CHEMISTRY && !observer.checkwatersat() ) {
+        if ( !simVars_.CHEMISTRY && !reachedWaterSat ) {
             std::cout << "EndSim: Never reaches water saturation... ending simulation" << std::endl;
-            //exit(0);
             return SimStatus::NoWaterSaturation;
         }
 
