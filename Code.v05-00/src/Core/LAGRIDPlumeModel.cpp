@@ -572,8 +572,6 @@ void LAGRIDPlumeModel::runTransport(double timestep, double time_start) {
     Vector_3D volume = iceAerosol_.Volume();
     const Vector_1D& binVEdges = iceAerosol_.getBinVEdges();
     const Vector_1D& logBinEdges = iceAerosol_.getLogBinEdges();
-    const Vector_3D& binVCenters = iceAerosol_.getBinVCenters();
-    const Vector_1D& binCenters = iceAerosol_.getBinCenters();
     const Vector_2D& temp2D = met_.Temp();
     const Vector_1D& press1D = met_.Press();
     const double VOL_TO_RAD_FACTOR = 3.0 / (4.0 * PI);

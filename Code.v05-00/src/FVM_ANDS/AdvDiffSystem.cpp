@@ -935,7 +935,6 @@ namespace FVM_ANDS{
         const int n_substeps = std::max(1, static_cast<int>(std::ceil(max_cfl / 0.8)));
         const double sub_dt = dt / n_substeps;
         const double q_nom = 0.5 * (q_min + q_max);
-        const double bcV_bot = bcN_bot * q_nom;
         const double bcV_top = bcN_top * q_nom;
 
         auto minmod = [](double a, double b) -> double {

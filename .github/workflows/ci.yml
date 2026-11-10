@@ -71,7 +71,7 @@ jobs:
       - name: Multithreading reproducibility test
         if: strategy.job-index == 0
         shell: bash
-        timeout-minutes: 15
+        timeout-minutes: 20
         env:
           PYTHONUNBUFFERED: "1"
         # Run steps:

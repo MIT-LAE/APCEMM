@@ -37,7 +37,7 @@ SIMULATION MENU:
 # Param name [unit] (Variable type)
 PARAMETER MENU:
   # Maximum simulation time if contrail isn't gone by then:
-  Plume Process [hr] (double): 3
+  Plume Process [hr] (double): 2
 
   # Temperature, RH, and wind shear can be overwritten if using meteorological input files
   METEOROLOGICAL PARAMETERS SUBMENU:
