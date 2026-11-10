@@ -868,7 +868,7 @@ namespace FVM_ANDS{
 
                 semiLagrangianAdvectionTwoMoment1D(
                     sliceN, sliceV, velocity, dt, ds,
-                    0.0, 0.0, 0.0, 0.0, q_min, q_max);
+                    0.0, 0.0, q_min, q_max);
 
                 double finalSumN = 0.0, finalSumV = 0.0;
                 for (int m = 0; m < N; ++m) {
@@ -916,7 +916,7 @@ namespace FVM_ANDS{
             initSumV += colV[m];
         }
 
-        verticalSettlingTwoMoment1D(colN, colV, w_fall, dt, dy, 0.0, 0.0, 0.0, 0.0, q_min, q_max);
+        verticalSettlingTwoMoment1D(colN, colV, w_fall, dt, dy, 0.0, 0.0, q_min, q_max);
 
         double finalSumN = 0.0, finalSumV = 0.0;
         for (int m = 0; m < N; ++m) {

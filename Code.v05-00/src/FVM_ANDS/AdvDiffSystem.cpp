@@ -720,8 +720,6 @@ namespace FVM_ANDS{
         double ds,
         double bcN_left,
         double bcN_right,
-        double bcV_left,
-        double bcV_right,
         double q_min,
         double q_max)
     {
@@ -732,6 +730,8 @@ namespace FVM_ANDS{
         if (std::abs(disp) < 1.0e-14 || dt <= 0.0) return;
 
         const double q_nom = 0.5 * (q_min + q_max);
+        const double bcV_left = bcN_left * q_nom;
+        const double bcV_right = bcN_right * q_nom;
         auto minmod = [](double a, double b) -> double {
             if (a * b <= 0.0) return 0.0;
             return (a > 0.0) ? std::min(a, b) : std::max(a, b);
@@ -773,9 +773,9 @@ namespace FVM_ANDS{
                     }
                 }
                 const bool active_left = (bcN_left > 1.0e-30);
-                const double q_left = active_left ? std::max(q_min, std::min(q_max, bcV_left / bcN_left)) : q_nom;
+                const double q_left = q_nom;
                 const bool active_right = (bcN_right > 1.0e-30);
-                const double q_right = active_right ? std::max(q_min, std::min(q_max, bcV_right / bcN_right)) : q_nom;
+                const double q_right = q_nom;
 
                 std::vector<double> face_flux_N(N + 1, 0.0);
                 std::vector<double> face_flux_V(N + 1, 0.0);
@@ -859,9 +859,9 @@ namespace FVM_ANDS{
                     }
                 }
                 const bool active_left = (bcN_left > 1.0e-30);
-                const double q_left = active_left ? std::max(q_min, std::min(q_max, bcV_left / bcN_left)) : q_nom;
+                const double q_left = q_nom;
                 const bool active_right = (bcN_right > 1.0e-30);
-                const double q_right = active_right ? std::max(q_min, std::min(q_max, bcV_right / bcN_right)) : q_nom;
+                const double q_right = q_nom;
 
                 std::vector<double> face_flux_N(N + 1, 0.0);
                 std::vector<double> face_flux_V(N + 1, 0.0);
@@ -918,8 +918,6 @@ namespace FVM_ANDS{
         double dy,
         double bcN_bot,
         double bcN_top,
-        double bcV_bot,
-        double bcV_top,
         double q_min,
         double q_max)
     {
@@ -937,6 +935,8 @@ namespace FVM_ANDS{
         const int n_substeps = std::max(1, static_cast<int>(std::ceil(max_cfl / 0.8)));
         const double sub_dt = dt / n_substeps;
         const double q_nom = 0.5 * (q_min + q_max);
+        const double bcV_bot = bcN_bot * q_nom;
+        const double bcV_top = bcN_top * q_nom;
 
         auto minmod = [](double a, double b) -> double {
             if (a * b <= 0.0) return 0.0;
@@ -949,9 +949,9 @@ namespace FVM_ANDS{
         std::vector<double> flux_V(N + 1, 0.0);
 
         const bool active_bot = (bcN_bot > 1.0e-30);
-        const double q_bot = active_bot ? std::max(q_min, std::min(q_max, bcV_bot / bcN_bot)) : q_nom;
+        const double q_bot = q_nom;
         const bool active_top = (bcN_top > 1.0e-30);
-        const double q_top = active_top ? std::max(q_min, std::min(q_max, bcV_top / bcN_top)) : q_nom;
+        const double q_top = q_nom;
 
         for (int step = 0; step < n_substeps; ++step) {
             for (int m = 0; m < N; ++m) {
@@ -1050,7 +1050,6 @@ namespace FVM_ANDS{
                     semiLagrangianAdvectionTwoMoment1D(
                         rowN, rowV, u_j, dt, dx_,
                         bcVals_left_[j], bcVals_right_[j],
-                        bcVals_left_[j], bcVals_right_[j],
                         q_min, q_max);
                     for (int i = 0; i < nx_; ++i) {
                         int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
@@ -1079,7 +1078,6 @@ namespace FVM_ANDS{
                     verticalSettlingTwoMoment1D(
                         colN, colV, wCol, dt, dy_,
                         bcVals_bot_[i], bcVals_top_[i],
-                        bcVals_bot_[i], bcVals_top_[i],
                         q_min, q_max);
                     for (int j = 0; j < ny_; ++j) {
                         int idx = twoDIdx_to_vecIdx(i, j, nx_, ny_, format_);
@@ -1102,7 +1100,6 @@ namespace FVM_ANDS{
                     }
                     semiLagrangianAdvectionTwoMoment1D(
                         colN, colV, v_double_, dt, dy_,
-                        bcVals_bot_[i], bcVals_top_[i],
                         bcVals_bot_[i], bcVals_top_[i],
                         q_min, q_max);
                     for (int j = 0; j < ny_; ++j) {

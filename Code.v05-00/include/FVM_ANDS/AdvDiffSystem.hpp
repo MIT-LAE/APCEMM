@@ -105,8 +105,6 @@ namespace FVM_ANDS{
         double ds,
         double bcN_left,
         double bcN_right,
-        double bcV_left,
-        double bcV_right,
         double q_min,
         double q_max);
 
@@ -122,8 +120,6 @@ namespace FVM_ANDS{
         double dy,
         double bcN_bot,
         double bcN_top,
-        double bcV_bot,
-        double bcV_top,
         double q_min,
         double q_max);
 
