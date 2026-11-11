@@ -160,19 +160,18 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
             break;
         }
 
-        // Convert all quantities from #/cm3 to #/#
-        // delta-P/delta-Z is proportional to number density, and accounts
-        // for temperature variation (because the calculation of yEdge
-        // included it). This uses the hydrostatic assumption:
-        //    dp/dz = -rho*g = -(n/V)Mg
+        // Normalize volumetric concentrations ([# or molec / cm^3]) by local
+        // hydrostatic pressure gradient |dP/dz| = rho * g ([Pa / m]).
+        // This accounts for temperature/pressure variation across vertical grid
+        // compression/expansion before remapping, yielding [#/cm^3 / (Pa/m)].
         Vector_3D& pdfRef = iceAerosol_.getPDF();
         auto pressureEdges = met_.PressEdges();
         #pragma omp parallel for
         for (std::size_t j=0; j<yCoords_.size(); j++){
             double localND = (pressureEdges[j] - pressureEdges[j+1])/(yEdges_[j+1] - yEdges_[j]);
             for (std::size_t i=0; i<xCoords_.size(); i++){
-                Contrail_[j][i] = Contrail_[j][i] / localND; // parts per trillion
-                H2O_[j][i] = H2O_[j][i] / localND; // parts per trillion
+                Contrail_[j][i] = Contrail_[j][i] / localND;
+                H2O_[j][i] = H2O_[j][i] / localND;
                 for(UInt n = 0; n < iceAerosol_.getNBin(); n++) {
                     pdfRef[n][j][i] = pdfRef[n][j][i] / localND;
                 }
@@ -790,11 +789,8 @@ void LAGRIDPlumeModel::remapAllVars(double remapTimestep, const std::vector<std:
     // and re-interpolate variables such as temperature
     met_.regenerate(yCoords_, yEdges_, xCoords_.size());
 
-    // Convert back from v/v to number density.
-    // delta-P/delta-Z is proportional to number density, and accounts
-    // for temperature variation (because the calculation of yEdge
-    // included it). This uses the hydrostatic assumption:
-    //    dp/dz = -rho*g = -(n/V)Mg
+    // Convert back from [#/cm^3 / (Pa/m)] to volumetric concentration [# or molec / cm^3]
+    // using the updated layer hydrostatic pressure gradient |dP/dz| = rho * g ([Pa / m]).
     auto pressureEdges = met_.PressEdges(); 
     #pragma omp parallel for
     for (std::size_t j=0; j<yCoords_.size(); j++){

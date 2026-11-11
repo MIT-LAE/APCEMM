@@ -158,7 +158,7 @@ namespace Diag {
         time( &rawtime );
         strftime(buffer, sizeof(buffer),"%d-%m-%Y %H:%M:%S", localtime(&rawtime));
 
-        // Create time as seconds since start
+        // Create time as hours since start
         const float cur_time = hh+mm/60.0+ss/3600.0;
 
         // Create dimensions - make time unlimited (record dimension)
@@ -255,7 +255,7 @@ namespace Diag {
         add2DVar(currFile, iceAer.IWC(), xyDims, "IWC", "Ice Water Content", "kg / m^3");
 
         /* Saving RHi */
-        add2DVar(currFile, physFunc::RHi_Field(H2O, met.Temp(), met.Press()), xyDims, "RHi", "Relative Humidity w.r.t. Ice", "%");
+        add2DVar(currFile, physFunc::RHi_Field(H2O, met.Temp(), met.Press()), xyDims, "RHi", "Relative Humidity w.r.t. Ice", "-");
 
         //Contrail width, depth, and integrated OD
         add0DVar(currFile, iceAer.extinctionWidth(xCoord), tDim, "width", "Contrail Extinction-Defined Width", "m");

@@ -18,11 +18,11 @@ struct {
     double Output::*value;
 } scalar_vars[] = {{"finalTemp", "K", &Output::finalTemp},
                    {"iceRadius", "m", &Output::iceRadius},
-                   {"iceDensity", "kg/m^3", &Output::iceDensity},
-                   {"sootDensity", "kg/m^3", &Output::sootDensity},
-                   {"H2O_mol", "molec/cm^3", &Output::H2O_mol},
-                   {"SO4g_mol", "molec/cm^3", &Output::SO4g_mol},
-                   {"SO4l_mol", "molec/cm^3", &Output::SO4l_mol},
+                   {"iceDensity", "#/cm^3", &Output::iceDensity},
+                   {"sootDensity", "#/cm^3", &Output::sootDensity},
+                   {"H2O_mol", "mol/mol", &Output::H2O_mol},
+                   {"SO4g_mol", "mol/mol", &Output::SO4g_mol},
+                   {"SO4l_mol", "mol/mol", &Output::SO4l_mol},
                    {"area", "m^2", &Output::area},
                    {"bypassArea", "m^2", &Output::bypassArea},
                    {"coreExitTemp", "K", &Output::coreExitTemp}};
@@ -64,7 +64,8 @@ void Output::write(std::string filename) const {
     r_e_var.putVar(aerosol.getBinEdges().data());
 
     NcVar pdf_var = nc.addVar(var.name + "_pdf", ncDouble, r_dim);
-    pdf_var.putAtt("long_name", var.name + " aerosol particle size distribution");
+    pdf_var.putAtt("units", "#/cm^3");
+    pdf_var.putAtt("long_name", var.name + " aerosol particle size distribution (dN/dln(r))");
     pdf_var.putVar(aerosol.getPDF().data());
   }
 }

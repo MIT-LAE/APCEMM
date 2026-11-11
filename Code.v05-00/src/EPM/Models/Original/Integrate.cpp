@@ -169,26 +169,26 @@ namespace EPM::Models
         double n_air_eng = Na * simVars_.pressure_Pa / (R * Tc0 * 1.0e6) ;
 
 
-        /* Store ambient concentrations */
-        double H2O_amb  = VAR_[ind_H2O]/n_air_amb;     /* [molec/cm^3] */
-        double SO4_amb  = VAR_[ind_SO4]/n_air_amb;     /* [molec/cm^3] */
-        double SO4l_amb, SO4g_amb;               /* [molec/cm^3] */
-        double HNO3_amb = VAR_[ind_HNO3]/n_air_amb;    /* [molec/cm^3] */
-        double Soot_amb = sootDensity/n_air_amb; ///n_air_amb; /* [#/cm^3] */
+        /* Store ambient mixing ratios */
+        double H2O_amb  = VAR_[ind_H2O]/n_air_amb;     /* [mol/mol] */
+        double SO4_amb  = VAR_[ind_SO4]/n_air_amb;     /* [mol/mol] */
+        double SO4l_amb, SO4g_amb;                     /* [mol/mol] */
+        double HNO3_amb = VAR_[ind_HNO3]/n_air_amb;    /* [mol/mol] */
+        double Soot_amb = sootDensity/n_air_amb;       /* [#/molec_air] */
 
         /* Add emissions of one engine to concentration arrays */
         VAR_[ind_H2O] += EI_.getH2O() / ( MW_H2O  * 1.0E+03 ) * aircraft_.FuelFlow() / double(aircraft_.EngNumber()) / aircraft_.VFlight() * Na / Ab0     * 1.00E-06 ;
         /* [ molec/cm^3 ] += [ g/kgf ]   / [ kg/mol ] * [ g/kg ] * [ kgf/s ]                                  / [ m/s ]      * [ molec/mol ] / [ m^2 ] * [ m^3/cm^3 ]
          *                += [ molec/cm^3 ] */
 
-        VAR_[ind_H2O] = VAR_[ind_H2O] / n_air_eng ;
+        VAR_[ind_H2O] = VAR_[ind_H2O] / n_air_eng ; /* [mol/mol] */
 
         /* Variable SO2 */
         VAR_[ind_SO4] += EI_.getSO2toSO4() * EI_.getSO2() / ( MW_H2SO4  * 1.0E+03 ) * aircraft_.FuelFlow() / double(aircraft_.EngNumber()) / aircraft_.VFlight() * Na / Ab0 * 1.00E-06;
-        VAR_[ind_SO4] = VAR_[ind_SO4] / n_air_eng;
+        VAR_[ind_SO4] = VAR_[ind_SO4] / n_air_eng; /* [mol/mol] */
 
         double varSoot = Soot_amb + EI_.getSoot() / ( 4.0 / double(3.0) * PI * RHO_SOOT * 1.00E+03 * EI_.getSootRad() * EI_.getSootRad() * EI_.getSootRad() ) * aircraft_.FuelFlow() / double(aircraft_.EngNumber()) / aircraft_.VFlight() / Ab0 * 1.00E-06 ; /* [ #/cm^3 ] */
-        varSoot = varSoot / n_air_eng;
+        varSoot = varSoot / n_air_eng; /* [#/molec_air] */
 
         /* Unit check:
          *                 = [#/cm^3] + [g/kg_f]     / (                                         [kg/m^3]            * [g/kg]   * [m^3]                                               ) * [kg_f/s]                         / [m/s]            / [m^2] * [m^3/cm^3]
@@ -215,14 +215,20 @@ namespace EPM::Models
         // and keep tInsert = 3 mins as the mature plume model starting point.
         const UInt iTime_3mins = std::lower_bound(timeArray.begin(), timeArray.end(), t_3mins) - timeArray.begin();
 
-        /* vars[0] : Temperature,                   Unit K
-         * vars[1] : Water molecular concentration, Unit molecules/cm^3
-         * vars[2] : Gaseous SO4 concentration,     Unit molecules/cm^3
-         * vars[3] : Liquid SO4 concentration,      Unit molecules/cm^3
-         * vars[4] : Gaseous HNO3 concentration,    Unit molecules/cm^3
-         * vars[5] : Liquid HNO3 concentration,     Unit molecules/cm^3
-         * vars[6] : Soot ambient concentration,    Unit #/cm^3
-         * vars[7] : Ice particle radius,           Unit m
+        /* State vector x:
+         * x[EPM_ind_Trac] : Plume dilution tracer,          Unit [-]
+         * x[EPM_ind_T]    : Temperature,                    Unit K
+         * x[EPM_ind_P]    : Pressure,                       Unit Pa
+         * x[EPM_ind_H2O]  : Water vapor mixing ratio,       Unit mol/mol
+         * x[EPM_ind_SO4]  : Total SO4 mixing ratio,         Unit mol/mol
+         * x[EPM_ind_SO4l] : Liquid SO4 mixing ratio,        Unit mol/mol
+         * x[EPM_ind_SO4g] : Gaseous SO4 mixing ratio,       Unit mol/mol
+         * x[EPM_ind_SO4s] : On-soot SO4 mixing ratio,       Unit mol/mol
+         * x[EPM_ind_HNO3] : Gaseous HNO3 mixing ratio,      Unit mol/mol
+         * x[EPM_ind_Part] : Particle mixing ratio,          Unit #/molec_air
+         * x[EPM_ind_ParR] : Particle radius,                Unit m
+         * x[EPM_ind_the1] : Soot coverage (adsorption),     Unit [-]
+         * x[EPM_ind_the2] : Soot coverage (scavenging),     Unit [-]
          */
 
         const std::vector<UInt> EPM_ind = {
@@ -355,7 +361,7 @@ namespace EPM::Models
              Ice_rad  = PartRad_3mins;
              Ice_den  = PartDens_3mins;
              Soot_den = 0.0;
-             H2O_mol  = pSat_H2Os( final_Temp ); // / ( kB * final_Temp * 1.0E+06 )  ;
+             H2O_mol  = pSat_H2Os( final_Temp ) / simVars_.pressure_Pa;
 
         }
         /* No persistent contrail */
