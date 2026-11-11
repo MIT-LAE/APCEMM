@@ -307,7 +307,7 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.ADV_GRID_XLIM_RIGHT == 1.0e+3);
         REQUIRE(input.ADV_GRID_YLIM_DOWN == 1.5e+3);
         REQUIRE(input.ADV_GRID_YLIM_UP == 300);
-        REQUIRE(input.ADV_TROPOPAUSE_PRESSURE == 2.0e+4);
+        REQUIRE(input.ADV_TROPOPAUSE_PRESSURE == 3.0e+4);
         REQUIRE(input.ADV_AERO_ICE_BIN_VRAT == 1.80);
         REQUIRE(input.ADV_AERO_ICE_BIN_R_LOW == 5.0e-08);
         REQUIRE(input.ADV_AERO_ICE_BIN_R_HIG == 8.0e-05);

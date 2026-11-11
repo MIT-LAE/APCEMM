@@ -120,7 +120,7 @@ ADVANCED OPTIONS MENU:
     XLIM_LEFT (positive double): 1.0e+3
     YLIM_UP (positive double): 300
     YLIM_DOWN (positive double): 1.5e+3
-  Tropopause Pressure [Pa] (double): 2.0e+4
+  Tropopause Pressure [Pa] (double): 3.0e+4
   EARLY PLUME SUBMENU:
     Reference ice crystal count [#/m] (double): 3.38e12
     Reference wingspan [m] (double): 60.3

@@ -125,7 +125,7 @@ ADVANCED OPTIONS MENU:
     Max DX [m] (double): 50.0
     Min DY [m] (double): 5.0
     Max DY [m] (double): 7.0
-  Tropopause Pressure [Pa] (double): 2.0e+4
+  Tropopause Pressure [Pa] (double): 3.0e+4
   AEROSOL GRID SUBMENU:
     Ice bin volume ratio [-] (double): 1.50
     Ice bin r_min [m] (double): 5.0e-08

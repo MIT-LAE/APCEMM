@@ -239,7 +239,7 @@ unsigned int STRAT_AER( const double temperature_K     , const double pressure_P
     /* Code begins here ! */
     IS_POLAR = ( ( latitude_deg <= PSC_MINLAT ) || ( latitude_deg >= PSC_MAXLAT ) );
 
-    IS_STRAT = ( pressure_Pa < 300.0E+02 ) ; //TROPP );
+    IS_STRAT = ( pressure_Pa < tropopausePressure ) ; //TROPP );
 
     IS_VALID = ( ( IS_POLAR ) && ( IS_STRAT ) && ( pressure_Pa > PSC_PMIN ) && ( pressure_Pa < PSC_PMAX) );
     IS_VALID = ( IS_VALID || PSC_FULL );
