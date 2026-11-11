@@ -101,8 +101,11 @@ namespace EPM::Models::OriginalImpl {
         double CoagRate = 0;
         Vector_1D pdf = nPDF_SO4.getPDF();
         Vector_1D binCenters = nPDF_SO4.getBinCenters();
+        const Vector_1D &logBinEdges = nPDF_SO4.getLogBinEdges();
         for ( unsigned int iBin = 0; iBin < nPDF_SO4.getNBin(); iBin++ ) {
-            CoagRate += ( KernelSO4Soot[iBin] * pdf[iBin] * PI * binCenters[iBin] * binCenters[iBin] ) * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] );
+            /* pdf is a density dN/dln(r): multiply by the log bin width to get the number in the bin */
+            const double nSO4 = pdf[iBin] * ( logBinEdges[iBin+1] - logBinEdges[iBin] );
+            CoagRate += ( KernelSO4Soot[iBin] * nSO4 * PI * binCenters[iBin] * binCenters[iBin] ) * ( 1.0 - x[EPM_ind_the1] - x[EPM_ind_the2] );
             /* Unit check:
                 * [cm^3/s] * [#/cm3] * [m^2] = [m^2/s]
                 */

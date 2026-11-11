@@ -146,43 +146,36 @@ TEST_CASE ("Aerosol", "[single-file]" ) {
     SECTION("Coagulation, Smoluchowski monodisperse analytical solution") {
         // Test against figure 15.2 from Jacobson (2005)
         double T = 298.;
-        // double p = 101325.;
-        // double rho = 1.0e3;
-        double n0 = 10.e6; 
+        double n0 = 10.e6; // [#/cm^3]
         double r0 = 3.0e-9; 
         double V0 = (4/3.0)*physConst::PI*pow(r0, 3);
-        // double h = 12.0 * 3600;
         double kb = 1.38064852e-23;
         double eta = 1.8235e-5;
-        double beta = 1.0e6 * 8*kb*T/(3*eta);
+        double beta = 1.0e6 * 8*kb*T/(3*eta); // Constant kernel [cm^3/s]
         int N = 100;
+        double V_rat = 1.2;
 
-        Vector_1D bin_numbers(N);
+        // Volume-ratio grid. The edge volumes are 2 V_i / (1 + V_rat), so
+        // that the mean of the two edge volumes of bin i, which Aerosol uses
+        // as the bin volume, is exactly V_i.
         Vector_1D volumes(N);
         Vector_1D bin_centers(N);
         Vector_1D bin_edges(N+1);
-        Vector_1D pdf(N); 
-        std::fill(pdf.begin(), pdf.end(), 0);
-        
-        double V_rat = 1.2;
-
         for (int i = 0; i < N ; i++) {
-            bin_numbers[i] = i;
             volumes[i] = V0 * pow(V_rat, i);
-            bin_centers[i] = pow(0.75*volumes[i]/ physConst::PI, 1.0/3.0);
-            bin_edges[i] = pow(0.75*(volumes[i]-V0/2.0)/ physConst::PI, 1.0/3.0);
-            bin_edges[i+1] = pow(0.75*(volumes[i]+V0/2.0)/ physConst::PI, 1.0/3.0);
-
+            bin_centers[i] = cbrt(0.75*volumes[i] / physConst::PI);
+        }
+        for (int i = 0; i <= N ; i++) {
+            double V_edge = 2.0 * V0 * pow(V_rat, i) / (1.0 + V_rat);
+            bin_edges[i] = cbrt(0.75*V_edge / physConst::PI);
         }
 
-
-        Vector_2D beta_vec( N, Vector_1D( N, 0.0E+00 ) );
+        Vector_2D beta_vec( N, Vector_1D( N, beta ) );
         Vector_3D f_vec(N, Vector_2D(N, Vector_1D(N, 0.0)));
         double Vsum, Vfraction;
         int low_idx;  
         for (int i = 0; i < N ; i++) {
             for (int j = 0; j < N ; j++) {
-                beta_vec[i][j] = beta;
                 Vsum = volumes[i] + volumes[j];
                 low_idx = std::lower_bound(volumes.begin(), volumes.end(), Vsum) - volumes.begin() - 1;
             
@@ -198,24 +191,38 @@ TEST_CASE ("Aerosol", "[single-file]" ) {
             }
         }
 
-        pdf[0] = n0;
+        // pdf is a density dN/dln(r): put n0 particles in the first bin
+        const double dlnr = log(bin_edges[1]) - log(bin_edges[0]);
+        Vector_1D pdf(N, 0.0);
+        pdf[0] = n0 / dlnr;
 
         Aerosol aerosol(bin_centers, bin_edges, 0.0, mu, sigma);
         aerosol.updatePdf(pdf);
+        REQUIRE(aerosol.Moment(0) == Catch::Approx(n0).epsilon(1e-12));
+        const double M3_0 = aerosol.Moment(3);
 
-        int N_steps = 66;
-
-        for (int i = 0; i < N_steps*6; i++) {
-            aerosol.Coagulate(100., beta_vec, f_vec);
+        const double dt = 100.;
+        const int N_steps = 66*6;
+        for (int i = 0; i < N_steps; i++) {
+            aerosol.Coagulate(dt, beta_vec, f_vec);
         }
-        
-        // Convert result to dn/dlog(diameter)
+
+        // Total number against the analytical solution for a constant
+        // kernel: N(t) = N0 / (1 + beta N0 t / 2)
+        const double t = N_steps * dt;
+        const double N_exact = n0 / (1.0 + 0.5 * beta * n0 * t);
+        REQUIRE(aerosol.Moment(0) == Catch::Approx(N_exact).epsilon(1e-2));
+
+        // Coagulation conserves volume
+        REQUIRE(aerosol.Moment(3) == Catch::Approx(M3_0).epsilon(1e-12));
+
+        // Convert result to dN/dlog10(D): dN/dlog10(D) = ln(10) * dN/dln(r)
         Vector_1D result = aerosol.getPDF();
         for (int i = 0; i < N ; i++) {
-            result[i] /= log10(2*bin_edges[i+1]) - log10(2*bin_edges[i]);
+            result[i] *= log(10.0);
         }
         
-        // Check first entro to be non-zero but also smaller than the initial condition
+        // Check first entry to be non-zero but also smaller than the initial condition
         REQUIRE(result[0] < 1.0e5);
         REQUIRE(result[0] > 0.0);
 
@@ -224,8 +231,8 @@ TEST_CASE ("Aerosol", "[single-file]" ) {
         max = *std::max_element(result.begin(), result.end());
         REQUIRE(max == Catch::Approx(2.0e5).epsilon(0.5));
 
-        // Check decay beyond maximum
-        low_idx = std::lower_bound(bin_centers.begin(), bin_centers.end(), 0.6*0.03e-6) - result.begin() -1;
+        // Check decay beyond the maximum (D = 0.03 um): dN/dlog10(D) < 10 at D = 0.08 um
+        low_idx = std::lower_bound(bin_centers.begin(), bin_centers.end(), 0.04e-6) - bin_centers.begin() -1;
         REQUIRE(result[low_idx] < 10.0);
     }
 
