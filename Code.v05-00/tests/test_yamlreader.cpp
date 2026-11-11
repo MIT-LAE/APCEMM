@@ -264,7 +264,7 @@ TEST_CASE("Read Yaml File"){
         OptInput input;
         readAeroMenu(input, data["AEROSOL MENU"]);
         REQUIRE(input.AEROSOL_GRAVSETTLING == true);
-        REQUIRE(input.AEROSOL_COAGULATION_SOLID == true);
+        REQUIRE(input.AEROSOL_COAGULATION_SOLID == false);
         REQUIRE(input.AEROSOL_ICE_GROWTH == true);
     }
     SECTION("Read Met Menu"){
