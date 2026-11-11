@@ -35,8 +35,8 @@ namespace AIM
             Kernel[iBin_1].resize( bin_Centers_1.size() );
         }
 
-        if ( ( pair == CoagulationPair::LiquidLiquid ) || ( pair == CoagulationPair::LiquidSoot ) ) {
-            /* Liquid-liquid and liquid-soot coagulation */
+        if ( pair == CoagulationPair::LiquidLiquid ) {
+            /* Liquid-liquid coagulation */
 
             /* Declare and assign coagulation kernels for different physical processes */
             Vector_2D K_Brow = buildBrownianKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_1, rho_1 );
@@ -69,7 +69,8 @@ namespace AIM
 
         }
         else {
-            throw std::invalid_argument( "In AIM::Coagulation::Coagulation: invalid CoagulationPair value." );
+            /* LiquidSoot also ends here because all that is implemented in this kernel is for one population with itself */
+            throw std::invalid_argument( "In AIM::Coagulation::Coagulation: the single-population kernel accepts only LiquidLiquid or IceIce." );
         }
 
         for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
@@ -91,8 +92,6 @@ namespace AIM
 
         double temperature_K = temperature_K_;
         double pressure_Pa = pressure_Pa_;
-
-        /* Declare coagulation kernel and set shape */
 
         if ( ( pair == CoagulationPair::LiquidLiquid ) || ( pair == CoagulationPair::LiquidSoot ) ) {
             /* Liquid-liquid and liquid-soot coagulation */
