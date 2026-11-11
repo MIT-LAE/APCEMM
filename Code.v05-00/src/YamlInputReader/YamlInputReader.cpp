@@ -459,18 +459,8 @@ namespace YamlInputReader{
     }
     void readTransportMenu(OptInput& input, const YAML::Node& transportNode){
         input.TRANSPORT_TRANSPORT = parseBoolString(transportNode["Turn on Transport (T/F)"].as<string>(), "Turn on Transport (T/F)");
-        
-        if (transportNode["Outer time step [min] (double)"]) {
-            input.TRANSPORT_TIMESTEP = parseDoubleString(transportNode["Outer time step [min] (double)"].as<string>(), "Outer time step [min] (double)");
-        } else {
-            throw std::invalid_argument("In YamlInputReader::readTransportMenu: Missing 'Outer time step [min] (double)'");
-        }
-
-        if (transportNode["Inner physics time step [s] (double)"]) {
-            input.TRANSPORT_ICE_GROWTH_SUBSTEP = parseDoubleString(transportNode["Inner physics time step [s] (double)"].as<string>(), "Inner physics time step [s] (double)");
-        } else {
-            input.TRANSPORT_ICE_GROWTH_SUBSTEP = 10.0;
-        }
+        input.TRANSPORT_TIMESTEP = parseDoubleString(transportNode["Outer time step [min] (double)"].as<string>(), "Outer time step [min] (double)");
+        input.TRANSPORT_ICE_GROWTH_SUBSTEP = parseDoubleString(transportNode["Inner physics time step [s] (double)"].as<string>(), "Inner physics time step [s] (double)");
 
         if (input.TRANSPORT_ICE_GROWTH_SUBSTEP <= 0.0) {
             throw std::invalid_argument("In YamlInputReader::readTransportMenu: 'Inner physics time step [s]' (" + 
