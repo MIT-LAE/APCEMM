@@ -44,7 +44,7 @@ class AIM::Coagulation
     public:
 
         Coagulation( CoagulationPair pair, Vector_1D const &bin_Centers_1, Vector_1D const &bin_VCenters_1, double rho_1, double temperature_K_, double pressure_Pa_ );
-        Coagulation( CoagulationPair pair, Vector_1D const &bin_Centers_1, double rho_1, double bin_Centers_2, double rho_2, double temperature_K_, double pressure_Pa_ );
+        Coagulation( CoagulationPair pair, Vector_1D const &bin_Centers_1, double rho_1, double radius_2, double rho_2, double temperature_K_, double pressure_Pa_ );
 
         void buildF( const Vector_1D &bin_VCenters );
         void buildF( const Vector_3D &bin_VCenters, const UInt jNy, const UInt iNx );
