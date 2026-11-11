@@ -1,9 +1,15 @@
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 #include <boost/numeric/odeint.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <netcdf>
 
+#include "EPM/EPM.hpp"
 #include "EPM/Models/Original/Indexes.hpp"
 #include "EPM/Models/Original/Integrate.hpp"
 #include "EPM/Models/Original/StateObserver.hpp"
@@ -153,4 +159,100 @@ TEST_CASE("EPM outer time grid", "[epm]") {
         REQUIRE(std::count(grid.begin(), grid.end(), 180.0) == 1);
     }
 
+}
+
+TEST_CASE("EPM output units and Micro.out HNO3 saturation", "[epm]") {
+    SECTION("StateHistory computes physical HNO3Sat from mixing ratios and pressure") {
+        const std::filesystem::path tmpFile =
+            std::filesystem::temp_directory_path() / "apcemm_test_micro.out";
+        std::filesystem::remove(tmpFile);
+
+        const std::vector<UInt> indices = {
+            EPM_ind_Trac, EPM_ind_T, EPM_ind_P, EPM_ind_H2O, EPM_ind_SO4,
+            EPM_ind_SO4l, EPM_ind_SO4g, EPM_ind_SO4s, EPM_ind_HNO3,
+            EPM_ind_Part, EPM_ind_ParR, EPM_ind_the1, EPM_ind_the2};
+
+        Vector_1D x(13, 0.0);
+        const double T = 223.9425;
+        const double P = 26500.0;
+        const double x_H2O = 4.4245 / P;
+        const double x_HNO3 = 2.1616e-03 / P;
+        x[EPM_ind_Trac] = 5.688e-4;
+        x[EPM_ind_T] = T;
+        x[EPM_ind_P] = P;
+        x[EPM_ind_H2O] = x_H2O;
+        x[EPM_ind_HNO3] = x_HNO3;
+
+        StateHistory history(indices, tmpFile.string());
+        history.record(x, 180.0);
+        history.print2File();
+
+        std::ifstream in(tmpFile);
+        REQUIRE(in.is_open());
+        std::string header, sepLine, dataLine;
+        std::getline(in, header);
+        std::getline(in, sepLine);
+        std::getline(in, dataLine);
+        in.close();
+        std::filesystem::remove(tmpFile);
+
+        std::vector<double> cols;
+        std::stringstream ss(dataLine);
+        std::string item;
+        while (std::getline(ss, item, ',')) {
+            if (!item.empty() && item.find_first_not_of(" \t\r\n") != std::string::npos) {
+                cols.push_back(std::stod(item));
+            }
+        }
+        REQUIRE(cols.size() == 18);
+
+        const double expectedHNO3Sat =
+            (x_HNO3 * P) / physFunc::pSat_HNO3(T, x_H2O * P);
+        // Column 13 (0-indexed) is HNO3Sat[-]
+        REQUIRE(cols[13] == Catch::Approx(expectedHNO3Sat).epsilon(1.0e-5));
+        REQUIRE(cols[13] > 1.0);
+    }
+
+    SECTION("EPM::Output::write records accurate units attributes") {
+        const std::filesystem::path tmpNc =
+            std::filesystem::temp_directory_path() / "apcemm_test_epm_output.nc";
+        std::filesystem::remove(tmpNc);
+
+        Vector_1D edges = {1.0e-7, 2.0e-7, 4.0e-7};
+        Vector_1D centers = {1.5e-7, 3.0e-7};
+        AIM::Aerosol aer(centers, edges, 100.0, 2.0e-7, 1.4, "lognormal");
+
+        EPM::Output out{};
+        out.finalTemp = 223.75;
+        out.iceRadius = 2.5e-6;
+        out.iceDensity = 226.5;
+        out.sootDensity = 0.0;
+        out.H2O_mol = 1.6e-4;
+        out.SO4g_mol = 1.0e-15;
+        out.SO4l_mol = 3.0e-11;
+        out.SO4Aer = aer;
+        out.IceAer = aer;
+        out.area = 700.0;
+        out.bypassArea = 0.98;
+        out.coreExitTemp = 553.65;
+        out.write(tmpNc.string());
+
+        {
+            netCDF::NcFile nc(tmpNc.string(), netCDF::NcFile::read);
+            auto readAttr = [&](const std::string &varName, const std::string &attName) {
+                std::string val;
+                nc.getVar(varName).getAtt(attName).getValues(val);
+                return val;
+            };
+            REQUIRE(readAttr("iceDensity", "units") == "#/cm^3");
+            REQUIRE(readAttr("sootDensity", "units") == "#/cm^3");
+            REQUIRE(readAttr("H2O_mol", "units") == "mol/mol");
+            REQUIRE(readAttr("SO4g_mol", "units") == "mol/mol");
+            REQUIRE(readAttr("SO4l_mol", "units") == "mol/mol");
+            REQUIRE(readAttr("so4_pdf", "units") == "#/cm^3");
+            REQUIRE(readAttr("ice_pdf", "units") == "#/cm^3");
+            REQUIRE(readAttr("area", "long_name") == "plume cross-sectional area per engine after EPM");
+        }
+        std::filesystem::remove(tmpNc);
+    }
 }

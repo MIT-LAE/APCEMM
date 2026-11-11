@@ -137,9 +137,10 @@ namespace EPM::Models::OriginalImpl {
                             + condensationRate( m_part_r, x[EPM_ind_T], x[EPM_ind_P], x[EPM_ind_H2O]*n_air, x[EPM_ind_the1] + x[EPM_ind_the2] ) ) \
                                 * x[EPM_ind_Part] * Na / MW_H2O \
                             -  nucRate * ( 1.0 - x_SO4 ) * nMolec / n_air;
-        /* Unit check:
-            * [1/s] * ( [molec/cm3] - [molec/cm^3] ) = [molec/cm^3/s]
-            * ([-] * [kg/s] + [kg/s]) * [#/cm^3] * [molec/kg] = [molec/cm^3/s]
+        /* Unit check (mixing ratio rates in [1/s]):
+            * [1/s] * ( [mol/mol] - [mol/mol] ) = [1/s]
+            * ([-] * [kg/s] + [kg/s]) * [#/molec_air] * [molec/kg] = [1/s]
+            * [molec/cm^3/s] * [-] * [molec/cluster] / [molec_air/cm^3] = [1/s]
             * */
 
         /* Liquid SO4 differential equation */

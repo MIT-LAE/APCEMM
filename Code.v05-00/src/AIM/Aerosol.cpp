@@ -1300,7 +1300,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
         return m2;
 
-    } /* End of Grid_Aerosol::TotalVolume */
+    } /* End of Grid_Aerosol::TotalArea */
 
     Vector_2D Grid_Aerosol::TotalVolume() const
     {

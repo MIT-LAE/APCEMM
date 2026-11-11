@@ -15,17 +15,19 @@ namespace EPM {
 struct {
     std::string name;
     std::string units;
+    std::string long_name;
     double Output::*value;
-} scalar_vars[] = {{"finalTemp", "K", &Output::finalTemp},
-                   {"iceRadius", "m", &Output::iceRadius},
-                   {"iceDensity", "kg/m^3", &Output::iceDensity},
-                   {"sootDensity", "kg/m^3", &Output::sootDensity},
-                   {"H2O_mol", "molec/cm^3", &Output::H2O_mol},
-                   {"SO4g_mol", "molec/cm^3", &Output::SO4g_mol},
-                   {"SO4l_mol", "molec/cm^3", &Output::SO4l_mol},
-                   {"area", "m^2", &Output::area},
-                   {"bypassArea", "m^2", &Output::bypassArea},
-                   {"coreExitTemp", "K", &Output::coreExitTemp}};
+} scalar_vars[] = {
+    {"finalTemp", "K", "plume temperature after vortex sinking", &Output::finalTemp},
+    {"iceRadius", "m", "mean ice crystal radius after EPM", &Output::iceRadius},
+    {"iceDensity", "#/cm^3", "ice crystal number concentration after EPM", &Output::iceDensity},
+    {"sootDensity", "#/cm^3", "soot particle number concentration after EPM", &Output::sootDensity},
+    {"H2O_mol", "mol/mol", "water vapor volume mixing ratio after EPM", &Output::H2O_mol},
+    {"SO4g_mol", "mol/mol", "gaseous sulfate volume mixing ratio after EPM", &Output::SO4g_mol},
+    {"SO4l_mol", "mol/mol", "liquid sulfate volume mixing ratio after EPM", &Output::SO4l_mol},
+    {"area", "m^2", "plume cross-sectional area per engine after EPM", &Output::area},
+    {"bypassArea", "m^2", "engine bypass area per engine", &Output::bypassArea},
+    {"coreExitTemp", "K", "engine core exit temperature", &Output::coreExitTemp}};
 
 struct {
     std::string name;
@@ -42,6 +44,7 @@ void Output::write(std::string filename) const {
   for (auto &var : scalar_vars) {
     NcVar nc_var = nc.addVar(var.name, ncDouble);
     nc_var.putAtt("units", var.units);
+    nc_var.putAtt("long_name", var.long_name);
     nc_var.putVar(&(this->*var.value));
   }
 
@@ -64,7 +67,8 @@ void Output::write(std::string filename) const {
     r_e_var.putVar(aerosol.getBinEdges().data());
 
     NcVar pdf_var = nc.addVar(var.name + "_pdf", ncDouble, r_dim);
-    pdf_var.putAtt("long_name", var.name + " aerosol particle size distribution");
+    pdf_var.putAtt("units", "#/cm^3");
+    pdf_var.putAtt("long_name", var.name + " aerosol particle size distribution (dN/dln(r))");
     pdf_var.putVar(aerosol.getPDF().data());
   }
 }
