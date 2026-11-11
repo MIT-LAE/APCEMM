@@ -132,7 +132,5 @@ namespace YamlInputReader{
       }
       return static_cast<unsigned int>(val);
     }
-
-    vector<int> parseVectorIntString(const string paramString, const string paramLocation = "");
 }
 #endif

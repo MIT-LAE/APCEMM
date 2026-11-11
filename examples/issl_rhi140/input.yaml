@@ -61,7 +61,8 @@ PARAMETER MENU:
 TRANSPORT MENU:
   # Keep on
   Turn on Transport (T/F): T
-  Transport Timestep [min] (double): 1
+  Outer time step [min] (double): 1
+  Inner physics time step [s] (double): 10.0
 
 AEROSOL MENU:
   # Keep on

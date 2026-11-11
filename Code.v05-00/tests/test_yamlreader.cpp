@@ -169,21 +169,6 @@ TEST_CASE("YamlInputReader Helper Functions"){
             Catch::Matchers::ContainsSubstring("Something went wrong with processing a number")
         );
     }
-    SECTION("Parse a list of integer indices"){
-        // Species and aerosol timeseries indices keep the space-separated form
-        vector<int> indices = parseVectorIntString(" 1 3 5 ");
-        REQUIRE(indices.size() == 3);
-        REQUIRE(indices[0] == 1);
-        REQUIRE(indices[1] == 3);
-        REQUIRE(indices[2] == 5);
-
-        REQUIRE(parseVectorIntString("1") == vector<int>{1});
-
-        REQUIRE_THROWS_WITH(
-            parseVectorIntString("1 2.5", "Species indices to include (list of ints)"),
-            Catch::Matchers::ContainsSubstring("Decimals not allowed in int inputs")
-        );
-    }
 }
 TEST_CASE("Read Yaml File"){
     string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test.yaml";

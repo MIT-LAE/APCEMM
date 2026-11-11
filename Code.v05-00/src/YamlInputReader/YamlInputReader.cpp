@@ -92,11 +92,9 @@ namespace YamlInputReader{
         return false;
     }
 
+    // Kept in case of future aliased keys, currently empty
     bool checkAliasedKey(const std::string& key) {
-        static const std::set<std::string> aliasedKeys = {
-            "Transport Timestep [min] (double)",
-            "Transport and ice growth substep [s] (double)",
-        };
+        static const std::set<std::string> aliasedKeys = {};
         return aliasedKeys.contains(key);
     }
 
@@ -146,6 +144,8 @@ namespace YamlInputReader{
             "Turn on plume updraft (T/F)",
             "Updraft timescale [s] (double)",
             "Updraft veloc. [cm/s] (double)",
+            "Transport Timestep [min] (double)",
+            "Transport and ice growth substep [s] (double)",
             // CHEMISTRY MENU: chemistry is no longer supported
             "CHEMISTRY MENU",
             "Turn on Chemistry (T/F)",
@@ -268,19 +268,6 @@ namespace YamlInputReader{
             // Resolve relative paths against the location of the current input file before merging
             resolvePathsInPlace(userData, std::filesystem::path(filename).parent_path());
 
-            // Map legacy aliases if present
-            if (userData["TRANSPORT MENU"]) {
-                if (userData["TRANSPORT MENU"]["Transport Timestep [min] (double)"] && 
-                    !userData["TRANSPORT MENU"]["Outer time step [min] (double)"]) {
-                    userData["TRANSPORT MENU"]["Outer time step [min] (double)"] = 
-                        userData["TRANSPORT MENU"]["Transport Timestep [min] (double)"];
-                }
-                if (userData["TRANSPORT MENU"]["Transport and ice growth substep [s] (double)"] && 
-                    !userData["TRANSPORT MENU"]["Inner physics time step [s] (double)"]) {
-                    userData["TRANSPORT MENU"]["Inner physics time step [s] (double)"] = 
-                        userData["TRANSPORT MENU"]["Transport and ice growth substep [s] (double)"];
-                }
-            }
             mergedData = mergeYamlNodes(mergedData, userData);
         }
 
@@ -475,16 +462,12 @@ namespace YamlInputReader{
         
         if (transportNode["Outer time step [min] (double)"]) {
             input.TRANSPORT_TIMESTEP = parseDoubleString(transportNode["Outer time step [min] (double)"].as<string>(), "Outer time step [min] (double)");
-        } else if (transportNode["Transport Timestep [min] (double)"]) {
-            input.TRANSPORT_TIMESTEP = parseDoubleString(transportNode["Transport Timestep [min] (double)"].as<string>(), "Transport Timestep [min] (double)");
         } else {
             throw std::invalid_argument("In YamlInputReader::readTransportMenu: Missing 'Outer time step [min] (double)'");
         }
 
         if (transportNode["Inner physics time step [s] (double)"]) {
             input.TRANSPORT_ICE_GROWTH_SUBSTEP = parseDoubleString(transportNode["Inner physics time step [s] (double)"].as<string>(), "Inner physics time step [s] (double)");
-        } else if (transportNode["Transport and ice growth substep [s] (double)"]) {
-            input.TRANSPORT_ICE_GROWTH_SUBSTEP = parseDoubleString(transportNode["Transport and ice growth substep [s] (double)"].as<string>(), "Transport and ice growth substep [s] (double)");
         } else {
             input.TRANSPORT_ICE_GROWTH_SUBSTEP = 10.0;
         }
@@ -658,15 +641,5 @@ namespace YamlInputReader{
         }
         if(s.length() > 0) tokens.push_back(s);
         return tokens;
-    }
-
-    vector<int> parseVectorIntString(const string paramString, const string paramLocation){
-        Vector_1D vec1d = parseVectorDoubleString(paramString, paramLocation);
-        vector<int> vecint;
-        for (double d: vec1d){
-            if(std::fmod(d,1.0) > 1e-40) throw (std::invalid_argument("Decimals not allowed in int inputs at " + paramLocation + "!"));
-            vecint.push_back((int)(d));
-        }
-        return vecint;
     }
 }
