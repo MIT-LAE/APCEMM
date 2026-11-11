@@ -119,7 +119,7 @@ namespace EPM::Models::OriginalImpl {
         /* Temperature differential equation
             * \frac{dT}{dt} = - w_T(t) * ( T - T_amb )
             * The plume stays at flight level, so T_amb is the ambient temperature
-            * at flight level. The vortex parametrisation accounts for the sinking. */
+            * at flight level. */
         dxdt[EPM_ind_T] = - entrainRate * ( x[EPM_ind_T] - m_temperature_K );
         /* Unit check:
             * entrainRate * ...  : [1/s] * ( [K] - [K] ) = [K/s] */

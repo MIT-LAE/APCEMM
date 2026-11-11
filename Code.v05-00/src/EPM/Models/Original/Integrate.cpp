@@ -53,8 +53,8 @@ namespace EPM::Models
         out.bypassArea = input_.bypassArea();
         out.coreExitTemp = input_.coreExitTemp();
 
-        /* The EPM integrates the plume at flight level. It does not model
-         * vortex sinking: the vortex parametrisation accounts for the
+        /* The EPM integrates the plume at flight level, and
+         * the vortex parametrisation afterwards accounts for the
          * sinking and its ice crystal loss. */
         SimStatus returnCode = RunMicrophysics(out, sootDensity);
 
