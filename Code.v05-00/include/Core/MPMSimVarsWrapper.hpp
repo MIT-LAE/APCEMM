@@ -24,7 +24,6 @@ struct MPMSimVarsWrapper{
 
     bool GRAVSETTLING;
     bool ICE_COAG;
-    bool LIQ_COAG;
     bool ICE_GROWTH;
 
     /* ======================================================================= */
