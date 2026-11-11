@@ -176,23 +176,25 @@ namespace EPM::Models
         double HNO3_amb = VAR_[ind_HNO3]/n_air_amb;    /* [mol/mol] */
         double Soot_amb = sootDensity/n_air_amb;       /* [#/molec_air] */
 
-        /* Add emissions of one engine to concentration arrays */
-        VAR_[ind_H2O] += EI_.getH2O() / ( MW_H2O  * 1.0E+03 ) * aircraft_.FuelFlow() / double(aircraft_.EngNumber()) / aircraft_.VFlight() * Na / Ab0     * 1.00E-06 ;
-        /* [ molec/cm^3 ] += [ g/kgf ]   / [ kg/mol ] * [ g/kg ] * [ kgf/s ]                                  / [ m/s ]      * [ molec/mol ] / [ m^2 ] * [ m^3/cm^3 ]
-         *                += [ molec/cm^3 ] */
+        /* Add emissions of one engine using ambient mixing ratio plus
+         * emitted exhaust divided by engine-exit air number density n_air_eng.
+         * fuel_conc has units [kg_fuel / cm^3] at the engine exit plane. */
+        const double fuel_conc = aircraft_.FuelFlow() / double(aircraft_.EngNumber()) / aircraft_.VFlight() / Ab0 * 1.00E-06;
 
-        VAR_[ind_H2O] = VAR_[ind_H2O] / n_air_eng ; /* [mol/mol] */
+        const double H2O_emis = EI_.getH2O() / ( MW_H2O * 1.0E+03 ) * Na * fuel_conc; /* [molec/cm^3] */
+        VAR_[ind_H2O] = H2O_amb + H2O_emis / n_air_eng; /* [mol/mol] */
 
         /* Variable SO2 */
-        VAR_[ind_SO4] += EI_.getSO2toSO4() * EI_.getSO2() / ( MW_H2SO4  * 1.0E+03 ) * aircraft_.FuelFlow() / double(aircraft_.EngNumber()) / aircraft_.VFlight() * Na / Ab0 * 1.00E-06;
-        VAR_[ind_SO4] = VAR_[ind_SO4] / n_air_eng; /* [mol/mol] */
+        const double SO4_emis = EI_.getSO2toSO4() * EI_.getSO2() / ( MW_H2SO4 * 1.0E+03 ) * Na * fuel_conc; /* [molec/cm^3] */
+        VAR_[ind_SO4] = SO4_amb + SO4_emis / n_air_eng; /* [mol/mol] */
 
-        double varSoot = Soot_amb + EI_.getSoot() / ( 4.0 / double(3.0) * PI * RHO_SOOT * 1.00E+03 * EI_.getSootRad() * EI_.getSootRad() * EI_.getSootRad() ) * aircraft_.FuelFlow() / double(aircraft_.EngNumber()) / aircraft_.VFlight() / Ab0 * 1.00E-06 ; /* [ #/cm^3 ] */
-        varSoot = varSoot / n_air_eng; /* [#/molec_air] */
+        const double soot_emis = EI_.getSoot() / ( 4.0 / double(3.0) * PI * RHO_SOOT * 1.00E+03 * EI_.getSootRad() * EI_.getSootRad() * EI_.getSootRad() ) * fuel_conc; /* [#/cm^3] */
+        const double varSoot = Soot_amb + soot_emis / n_air_eng; /* [#/molec_air] */
 
         /* Unit check:
-         *                 = [#/cm^3] + [g/kg_f]     / (                                         [kg/m^3]            * [g/kg]   * [m^3]                                               ) * [kg_f/s]                         / [m/s]            / [m^2] * [m^3/cm^3]
-         *                 = [#/cm^3] */
+         *   fuel_conc = [kg_f/s] / [m/s] / [m^2] * [m^3/cm^3] = [kg_f/cm^3]
+         *   soot_emis = [g/kg_f] / ([kg/m^3] * [g/kg] * [m^3]) * [kg_f/cm^3] = [#/cm^3]
+         *   varSoot   = [#/molec_air] + [#/cm^3] / [molec_air/cm^3] = [#/molec_air] */
 
         /* Compute ambient share of liquid, gaseous sulfates
          * assuming that SO4 is in phase equilibrium */
@@ -249,7 +251,7 @@ namespace EPM::Models
         x[EPM_ind_SO4l] = 0.0;
         x[EPM_ind_SO4g] = VAR_[ind_SO4];
         x[EPM_ind_SO4s] = 0.0;
-        x[EPM_ind_HNO3] = VAR_[ind_HNO3] / n_air_eng;
+        x[EPM_ind_HNO3] = HNO3_amb;
         x[EPM_ind_Part] = varSoot;
         x[EPM_ind_ParR] = EI_.getSootRad();
         x[11] = 0.0;
@@ -361,7 +363,6 @@ namespace EPM::Models
              Ice_rad  = PartRad_3mins;
              Ice_den  = PartDens_3mins;
              Soot_den = 0.0;
-             H2O_mol  = pSat_H2Os( final_Temp ) / simVars_.pressure_Pa;
 
         }
         /* No persistent contrail */
@@ -369,12 +370,12 @@ namespace EPM::Models
              Ice_rad  = EI_.getSootRad();
              Ice_den  = 0.0;
              Soot_den = PartDens_3mins;
-             H2O_mol  = H2OMol_3mins;
              std::cout << "No persistent contrail..." << std::endl;
              if (!simVars_.CHEMISTRY) return SimStatus::NoPersistence;
         }
 	    std::cout << "Ice_den=" << Ice_den << std::endl;
 
+        H2O_mol  = H2OMol_3mins;
         SO4l_mol = SO4l_3mins;
         SO4g_mol = SO4g_3mins;
         SO4Aer = pSO4pdf_3mins;

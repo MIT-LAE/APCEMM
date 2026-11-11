@@ -239,18 +239,19 @@ TEST_CASE("EPM output units and Micro.out HNO3 saturation", "[epm]") {
 
         {
             netCDF::NcFile nc(tmpNc.string(), netCDF::NcFile::read);
-            auto readUnits = [&](const std::string &varName) {
-                std::string u;
-                nc.getVar(varName).getAtt("units").getValues(u);
-                return u;
+            auto readAttr = [&](const std::string &varName, const std::string &attName) {
+                std::string val;
+                nc.getVar(varName).getAtt(attName).getValues(val);
+                return val;
             };
-            REQUIRE(readUnits("iceDensity") == "#/cm^3");
-            REQUIRE(readUnits("sootDensity") == "#/cm^3");
-            REQUIRE(readUnits("H2O_mol") == "mol/mol");
-            REQUIRE(readUnits("SO4g_mol") == "mol/mol");
-            REQUIRE(readUnits("SO4l_mol") == "mol/mol");
-            REQUIRE(readUnits("so4_pdf") == "#/cm^3");
-            REQUIRE(readUnits("ice_pdf") == "#/cm^3");
+            REQUIRE(readAttr("iceDensity", "units") == "#/cm^3");
+            REQUIRE(readAttr("sootDensity", "units") == "#/cm^3");
+            REQUIRE(readAttr("H2O_mol", "units") == "mol/mol");
+            REQUIRE(readAttr("SO4g_mol", "units") == "mol/mol");
+            REQUIRE(readAttr("SO4l_mol", "units") == "mol/mol");
+            REQUIRE(readAttr("so4_pdf", "units") == "#/cm^3");
+            REQUIRE(readAttr("ice_pdf", "units") == "#/cm^3");
+            REQUIRE(readAttr("area", "long_name") == "plume cross-sectional area per engine after EPM");
         }
         std::filesystem::remove(tmpNc);
     }
