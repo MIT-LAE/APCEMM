@@ -42,7 +42,7 @@ PARAMETER MENU:
 
 TRANSPORT MENU:
   Turn on Transport (T/F): T
-  Transport Timestep [min] (double): 10
+  Outer time step [min] (double): 10
 
 AEROSOL MENU:
   Turn on grav. settling (T/F): T
