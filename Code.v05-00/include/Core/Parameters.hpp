@@ -63,7 +63,6 @@
 #define LA_R_HIG              5.00E-07    /* Sulfates' larger bin radius [m] */
 
 /* Early plume integration */
-#define VORTEX_SINKING        1           /* Consider vortex sinking? */
 #define EPM_RTOLS             1.00E-05    /* Relative tolerances in EPM */
 #define EPM_ATOLS             1.00E-07    /* Absolute tolerances in EPM */
 

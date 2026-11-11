@@ -18,7 +18,7 @@ struct {
     std::string long_name;
     double Output::*value;
 } scalar_vars[] = {
-    {"finalTemp", "K", "plume temperature after vortex sinking", &Output::finalTemp},
+    {"finalTemp", "K", "plume temperature at flight level (ambient)", &Output::finalTemp},
     {"iceRadius", "m", "mean ice crystal radius after EPM", &Output::iceRadius},
     {"iceDensity", "#/cm^3", "ice crystal number concentration after EPM", &Output::iceDensity},
     {"sootDensity", "#/cm^3", "soot particle number concentration after EPM", &Output::sootDensity},

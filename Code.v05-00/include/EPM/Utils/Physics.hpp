@@ -3,10 +3,6 @@
 
 namespace EPM::Utils::Physics {
 
-/* Vortex sinking timescales, taken from Unterstrasser et al., 2008 */
-const double t_Vortex_0 = 8.00E+00;
-const double t_Vortex_1 = 1.10E+02;
-
 /* Dilution timescales for a B747, taken from:
 * B. Kärcher, "A trajectory box model for aircraft exhaust plumes", Journal of Geophysical Research, 1995 */
 const double t_0 = 1.00E-04; /* [s],  */
@@ -34,7 +30,6 @@ const double uc0 = 475.7;
 double entrainmentRate(const double time);
 double depositionRate(const double r, const double T, const double P, const double H2O,
                       const double r_0,  const double theta );
-double dT_Vortex(const double time, const double delta_T, bool deriv = 0);
 bool isFreezable(const double r, const double T, const double H2O,
                  const double r0);
 double condensationRate(const double r, const double T, const double P,

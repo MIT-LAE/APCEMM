@@ -86,33 +86,6 @@ double depositionRate(const double r, const double T, const double P,
     }
 } /* End of depositionRate */
 
-double dT_Vortex(const double time, const double delta_T, bool deriv) {
-    /* DESCRIPTION:
-        * Returns the temperature increase / rate of change from cruise altitude as a
-        * function of time */
-
-    /* INPUT:
-        * - double time    :: time since engine exit plane expressed in s
-        * - double delta_T :: temperature increase in K after vortex sinking in K
-        * - bool deriv         :: rate of change or delta?
-        *
-        * OUTPUT:
-        * - double :: temperature increase / rate of change from cruise altitude in K */
-
-    if ( deriv == 0 ) {
-        if ( ( time >= t_Vortex_0 ) )
-            return std::min( delta_T, delta_T * ( time - t_Vortex_0 ) / ( t_Vortex_1 - t_Vortex_0 ) );
-        else
-            return 0.0;
-    } else {
-        if ( ( time >= t_Vortex_0 ) && ( time <= t_Vortex_1 ) )
-            return delta_T / ( t_Vortex_1 - t_Vortex_0 );
-        else
-            return 0.0;
-    }
-
-} /* End of dT_Vortex */
-
 bool isFreezable(const double r, const double T, const double H2O, const double r0) {
     /* DESCRIPTION:
         * Returns whether or not water can freeze on a particle */

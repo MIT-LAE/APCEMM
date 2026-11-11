@@ -148,7 +148,6 @@ struct OptInput
     double ADV_CSIZE_DEPTH_SCALING_FACTOR;
     double ADV_CSIZE_WIDTH_BASE;
     double ADV_CSIZE_WIDTH_SCALING_FACTOR;
-    double ADV_AMBIENT_LAPSERATE;
     double ADV_TROPOPAUSE_PRESSURE;
     double ADV_EP_N_REF;
     double ADV_EP_WINGSPAN_REF;

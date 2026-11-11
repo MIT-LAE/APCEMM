@@ -194,7 +194,6 @@ ADVANCED OPTIONS MENU:
     Contrail Depth Scaling Factor [-] (double): 1.0
     Base Contrail Width [m] (double): 0.0
     Contrail Width Scaling Factor [-] (double): 1.0
-  Ambient Lapse Rate [K/km] (double): -3.0
   Tropopause Pressure [Pa] (double): 2.0e+4
   AEROSOL GRID SUBMENU:
     Ice bin volume ratio [-] (double): 1.50

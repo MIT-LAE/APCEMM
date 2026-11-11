@@ -118,7 +118,8 @@ class LAGRIDPlumeModel {
         }
 
         void createOutputDirectories();
-        void initializeGrid(const EPM::Output &epmOut);
+        // Returns Failed if the initial contrail contains no grid cell centre, else Incomplete
+        SimStatus initializeGrid(const EPM::Output &epmOut);
         void saveTSAerosol();
         void initH2O();
         void updateDiffVecs(double time_start, double dt);

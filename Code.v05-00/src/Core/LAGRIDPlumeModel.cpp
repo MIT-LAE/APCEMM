@@ -3,6 +3,7 @@
 #include <cmath>
 #include <filesystem>
 #include <memory>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include "AIM/Settling.hpp"
@@ -63,7 +64,11 @@ SimStatus LAGRIDPlumeModel::runFullModel() {
     EPM::Output epmOut = std::get<EPM::Output>(epm_result);
 
     //Initialize aerosol into grid and init H2O
-    initializeGrid(epmOut);
+    //Fails if grid is too coarse to resolve initial contrail output from EPM
+    SimStatus initStatus = initializeGrid(epmOut);
+    if (initStatus == SimStatus::Failed) {
+        return SimStatus::Failed;
+    }
     initH2O();
     saveTSAerosol();
 
@@ -300,8 +305,20 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     aircraft_.vortex().print_summary(N_postjet, icenum_survfrac);
     std::cout << "Parameterized vortex sinking survival fraction: " << icenum_survfrac
                 << std::endl;
-    if (std::isnan(icenum_survfrac) || icenum_survfrac <= 0.00E+00) {
-        std::cout << "EndSim: vortex sinking" << std::endl;
+
+    if (std::isnan(icenum_survfrac)) {
+        throw std::runtime_error("Vortex sinking: NaN ice crystal number survival fraction");
+    }
+
+    if (icenum_survfrac <= 0.00E+00) {
+        std::cout << "EndSim: vortex sinking (ice crystal number survival fraction is 0)" << std::endl;
+        return SimStatus::NoSurvivalVortex;
+    }
+    // The depth uses the survival fraction at psi = 1 (U2016), which can be 0
+    // while the survival fraction at the actual psi > 0. We treat a plume
+    // with 0 depth as lost in the vortex phase.
+    if (aircraft_.vortex().depth_mature() <= 0.0) {
+        std::cout << "EndSim: vortex sinking (initial contrail depth is 0)" << std::endl;
         return SimStatus::NoSurvivalVortex;
     }
     epmOutput.IceAer.scalePdf(icenum_survfrac);
@@ -311,7 +328,7 @@ std::variant<EPM::Output, SimStatus> LAGRIDPlumeModel::runEPM() {
     return epmOutput;
 }
 
-void LAGRIDPlumeModel::initializeGrid(const EPM::Output &epmOut) {
+SimStatus LAGRIDPlumeModel::initializeGrid(const EPM::Output &epmOut) {
     auto& epmIceAer = epmOut.IceAer;
 
     /* TODO: Fix the initial boundaries */
@@ -343,6 +360,31 @@ void LAGRIDPlumeModel::initializeGrid(const EPM::Output &epmOut) {
     const double xcenter = 0;
     const double ycenter = -aircraft_.vortex().z_center();
 
+    if (initWidth < dx_init) {
+        std::cout << "WARNING: contrail initial width (" << initWidth << " m) is smaller than "
+        << "initial grid resolution (dx = " << dx_init << " m)." << std::endl;
+    }
+    if (initDepth < dy) {
+        std::cout << "WARNING: contrail initial depth (" << initDepth << " m) is smaller than "
+        << "initial grid resolution (dy = " << dy << " m)." << std::endl;
+    }
+
+    // The initVarToGridRectangular function places ice only in cells whose center is
+    // contained in the initial contrail rectangle. If the initial rectangle does not contain
+    // any grid cell center then the grid cannot resolve the initial plume.
+    // Fail the simulation with SimStatus::Failed and an error message
+    auto anyCentreIn = [](const Vector_1D &centres, double low, double high) {
+        return std::any_of(centres.begin(), centres.end(),
+                           [low, high](double c) { return c >= low && c <= high; });
+    };
+    if (!anyCentreIn(xCoords_, xcenter - initWidth/2.0, xcenter + initWidth/2.0) ||
+        !anyCentreIn(yCoords_, ycenter - initDepth/2.0, ycenter + initDepth/2.0)) {
+        std::cout << "EndSim: the initial contrail (width " << initWidth << " m, depth "
+                  << initDepth << " m, centre y " << ycenter << " m) does not contain a grid cell centre"
+                  << " (dx = " << dx_init << " m, dy = " << dy << " m). Refine the grid." << std::endl;
+        return SimStatus::Failed;
+    }
+
     for (UInt n = 0; n < iceAerosol_.getNBin(); n++) {
         double EPM_nPart_bin = epmIceAer.binMoment(n) * epmOut.area;
         double logBinRatio = log(iceAerosol_.getBinEdges()[n+1] / iceAerosol_.getBinEdges()[n]);
@@ -355,6 +397,10 @@ void LAGRIDPlumeModel::initializeGrid(const EPM::Output &epmOut) {
 
     std::cout << "Mature Plume Initial Num Particles: " << initNumParts_ << std::endl;
     std::cout << "Mature Plume Initial Ice Mass: " << iceAerosol_.TotalIceMass_sum(areas) << std::endl;
+
+    // Placeholder that is unused, this is the normal path
+    // Caller only checks for the SimStatus::Failed return
+    return SimStatus::Incomplete;
 }
 
 void LAGRIDPlumeModel::initH2O() {
