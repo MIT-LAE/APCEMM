@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <stdexcept>
 #include "AIM/buildKernel.hpp"
 #include "Util/PhysFunction.hpp"
 #include "AIM/Coagulation.hpp"
@@ -21,96 +22,7 @@
 namespace AIM
 {
 
-    Coagulation::Coagulation( )
-    {
-
-        /* Default Constructor */
-
-    } /* End of Coagulation::Coagulation */
-
-    Coagulation::Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, double rho_1, Vector_1D const &bin_Centers_2, double rho_2, double temperature_K_, double pressure_Pa_ ): Kernel( bin_Centers_1.size() )
-    {
-
-        /* Constructor */
-
-        double temperature_K = temperature_K_;
-        double pressure_Pa = pressure_Pa_;
-
-        /* Set shape */
-        for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
-            Kernel[iBin_1].resize( bin_Centers_2.size() );
-        }
-
-        if ( ( strcmp ( phase, "liq" ) == 0) || ( strcmp( phase, "liquid" ) == 0) || ( strcmp( phase, "sulfate" ) == 0) ) {
-            /* Liquid-liquid coagulation */
-
-            /* Declare and assign coagulation kernels for different physical processes */
-            Vector_2D K_Brow = buildBrownianKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
-            Vector_2D K_DE   = buildDEKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2, K_Brow );
-
-            /* Fill in total coagulation kernel */
-            for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
-                for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_2.size(); iBin_2++ ) {
-                    Kernel[iBin_1][iBin_2] = ( K_Brow[iBin_1][iBin_2] + K_DE[iBin_1][iBin_2] ) * 1.00E+06; /* Conversion from m^3/s to cm^3/s */
-                }
-            }
-
-        } 
-        else if ( ( strcmp ( phase, "ice" ) == 0) ) { 
-            /* Ice-Ice coagulation */
-
-            /* Declare and assign coagulation kernels for different physical processes */
-            Vector_2D K_Brow = buildBrownianKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
-            Vector_2D K_DE   = buildDEKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2, K_Brow );
-            Vector_2D K_GC   = buildGCKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
-            Vector_2D K_TI   = buildTIKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
-            Vector_2D K_TS   = buildTSKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
-            
-            /* Fill in total coagulation kernel */
-            for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
-                for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_2.size(); iBin_2++ ) {
-                    Kernel[iBin_1][iBin_2] = ( K_Brow[iBin_1][iBin_2] + K_DE[iBin_1][iBin_2] + K_GC[iBin_1][iBin_2] + K_TI[iBin_1][iBin_2] + K_TS[iBin_1][iBin_2] ) * 1.00E+06; /* Conversion from m^3/s to cm^3/s */
-                }
-            }
-
-        }
-        else if ( ( strcmp ( phase, "soot" ) == 0) || ( strcmp( phase, "bc" ) == 0) ) {
-            /* Soot-soot coagulation */
-
-            /* Declare and assign coagulation kernels for different physical processes */
-            Vector_2D K_Brow = buildBrownianKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
-            Vector_2D K_DE   = buildDEKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2, K_Brow );
-
-            /* Fill in total coagulation kernel */
-            for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
-                for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_2.size(); iBin_2++ ) {
-                    Kernel[iBin_1][iBin_2] = ( K_Brow[iBin_1][iBin_2] + K_DE[iBin_1][iBin_2] ) * 1.00E+06; /* Conversion from m^3/s to cm^3/s */
-                }
-            }
-
-        }
-        else {
-            std::cout << "\nIn AIM::Coagulation::Coagulation: phase " << phase << " is not defined.";
-            std::cout << "\nOptions are: liquid, ice or soot.";
-        }
-
-        if ( strcmp( phase, "liq" ) == 0 )
-            buildBeta( bin_Centers_1 );
-        else {
-            for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
-                beta.push_back( Vector_1D( bin_Centers_1.size() ) );
-                for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_2.size(); iBin_2++ ) {
-                    /* Assuming an aggregation efficiency of 1 */
-                    beta[iBin_1][iBin_2] = Kernel[iBin_1][iBin_2];
-                }
-            }
-        }
-        buildF   ( bin_VCenters_1 );
-
-
-    } /* End of Coagulation::Coagulation */
-
-    Coagulation::Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, double rho_1, double temperature_K_, double pressure_Pa_ ): Kernel( bin_Centers_1.size() )
+    Coagulation::Coagulation( CoagulationPair pair, Vector_1D const &bin_Centers_1, Vector_1D const &bin_VCenters_1, double rho_1, double temperature_K_, double pressure_Pa_ ): Kernel( bin_Centers_1.size() )
     {
 
         /* Constructor */
@@ -123,7 +35,7 @@ namespace AIM
             Kernel[iBin_1].resize( bin_Centers_1.size() );
         }
 
-        if ( ( strcmp ( phase, "liq" ) == 0) || ( strcmp( phase, "liquid" ) == 0) || ( strcmp( phase, "sulfate" ) == 0) ) {
+        if ( pair == CoagulationPair::LiquidLiquid ) {
             /* Liquid-liquid coagulation */
 
             /* Declare and assign coagulation kernels for different physical processes */
@@ -137,8 +49,8 @@ namespace AIM
                 }
             }
 
-        } 
-        else if ( ( strcmp ( phase, "ice" ) == 0) ) { 
+        }
+        else if ( pair == CoagulationPair::IceIce ) {
             /* Ice-Ice coagulation */
 
             /* Declare and assign coagulation kernels for different physical processes */
@@ -156,42 +68,23 @@ namespace AIM
             }
 
         }
-        else if ( ( strcmp ( phase, "soot" ) == 0) || ( strcmp( phase, "bc" ) == 0) ) {
-            /* Soot-soot coagulation */
-
-            /* Declare and assign coagulation kernels for different physical processes */
-            Vector_2D K_Brow = buildBrownianKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_1, rho_1 );
-            Vector_2D K_DE   = buildDEKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_1, rho_1, K_Brow );
-
-            /* Fill in total coagulation kernel */
-            for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
-                for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_1.size(); iBin_2++ ) {
-                    Kernel[iBin_1][iBin_2] = ( K_Brow[iBin_1][iBin_2] + K_DE[iBin_1][iBin_2] ) * 1.00E+06; /* Conversion from m^3/s to cm^3/s */
-                }
-            }
-
-        }
         else {
-            std::cout << "\nIn AIM::Coagulation::Coagulation: phase " << phase << " is not defined.";
-            std::cout << "\nOptions are: liquid, ice or soot.";
+            /* LiquidSoot also ends here because all that is implemented in this kernel is for one population with itself */
+            throw std::invalid_argument( "In AIM::Coagulation::Coagulation: the single-population kernel accepts only LiquidLiquid or IceIce." );
         }
 
-        if ( strcmp( phase, "liq" ) == 0 )
-            buildBeta( bin_Centers_1 );
-        else {
-            for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
-                beta.push_back( Vector_1D( bin_Centers_1.size() ) );
-                for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_1.size(); iBin_2++ ) {
-                    /* Assuming an aggregation efficiency of 1 */
-                    beta[iBin_1][iBin_2] = Kernel[iBin_1][iBin_2];
-                }
+        for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
+            beta.push_back( Vector_1D( bin_Centers_1.size() ) );
+            for ( unsigned int iBin_2 = 0; iBin_2 < bin_Centers_1.size(); iBin_2++ ) {
+                /* Assuming an aggregation efficiency of 1 */
+                beta[iBin_1][iBin_2] = Kernel[iBin_1][iBin_2];
             }
         }
         buildF   ( bin_VCenters_1 );
 
     } /* End of Coagulation::Coagulation */
             
-    Coagulation::Coagulation( const char* phase, Vector_1D const &bin_Centers_1, double rho_1, double bin_Centers_2, double rho_2, double temperature_K_, double pressure_Pa_ ):
+    Coagulation::Coagulation( CoagulationPair pair, Vector_1D const &bin_Centers_1, double rho_1, double radius_2, double rho_2, double temperature_K_, double pressure_Pa_ ):
         Kernel_1D( bin_Centers_1.size() )
     {
 
@@ -200,30 +93,28 @@ namespace AIM
         double temperature_K = temperature_K_;
         double pressure_Pa = pressure_Pa_;
 
-        /* Declare coagulation kernel and set shape */
-
-        if ( ( strcmp ( phase, "liq" ) == 0) || ( strcmp( phase, "liquid" ) == 0) ) {
-            /* Liquid-liquid coagulation */
+        if ( ( pair == CoagulationPair::LiquidLiquid ) || ( pair == CoagulationPair::LiquidSoot ) ) {
+            /* Liquid-liquid and liquid-soot coagulation */
 
             /* Declare and assign coagulation kernels for different physical processes */
-            Vector_1D K_Brow = buildBrownianKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
-            Vector_1D K_DE   = buildDEKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2, K_Brow );
+            Vector_1D K_Brow = buildBrownianKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, radius_2, rho_2 );
+            Vector_1D K_DE   = buildDEKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, radius_2, rho_2, K_Brow );
 
             /* Fill in total coagulation kernel */
             for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
                 Kernel_1D[iBin_1] = ( K_Brow[iBin_1] + K_DE[iBin_1] ) * 1.00E+06; /* Conversion from m^3/s to cm^3/s */
             }
 
-        } 
-        else if ( ( strcmp ( phase, "ice" ) == 0) ) { 
+        }
+        else if ( pair == CoagulationPair::IceIce ) {
             /* Ice-Ice coagulation */
 
             /* Declare and assign coagulation kernels for different physical processes */
-            Vector_1D K_Brow = buildBrownianKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
-            Vector_1D K_DE   = buildDEKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2, K_Brow );
-            Vector_1D K_GC   = buildGCKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
-            Vector_1D K_TI   = buildTIKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
-            Vector_1D K_TS   = buildTSKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
+            Vector_1D K_Brow = buildBrownianKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, radius_2, rho_2 );
+            Vector_1D K_DE   = buildDEKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, radius_2, rho_2, K_Brow );
+            Vector_1D K_GC   = buildGCKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, radius_2, rho_2 );
+            Vector_1D K_TI   = buildTIKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, radius_2, rho_2 );
+            Vector_1D K_TS   = buildTSKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, radius_2, rho_2 );
             
             /* Fill in total coagulation kernel */
             for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
@@ -231,101 +122,11 @@ namespace AIM
             }
 
         }
-        else if ( ( strcmp ( phase, "soot" ) == 0) || ( strcmp( phase, "bc" ) == 0) ) {
-            /* Soot-soot coagulation */
-
-            /* Declare and assign coagulation kernels for different physical processes */
-            Vector_1D K_Brow = buildBrownianKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2 );
-            Vector_1D K_DE   = buildDEKernel( temperature_K, pressure_Pa, bin_Centers_1, rho_1, bin_Centers_2, rho_2, K_Brow );
-
-            /* Fill in total coagulation kernel */
-            for ( unsigned int iBin_1 = 0; iBin_1 < bin_Centers_1.size(); iBin_1++ ) {
-                Kernel_1D[iBin_1] = ( K_Brow[iBin_1] + K_DE[iBin_1] ) * 1.00E+06; /* Conversion from m^3/s to cm^3/s */
-            }
-
-        }
         else {
-            std::cout << "\nIn AIM::Coagulation::Coagulation: phase " << phase << " is not defined.";
-            std::cout << "\nOptions are: liquid, ice or soot.";
+            throw std::invalid_argument( "In AIM::Coagulation::Coagulation: invalid CoagulationPair value." );
         }
 
     } /* End of Coagulation::Coagulation */
-
-    Coagulation::~Coagulation( )
-    {
-
-        /* Destructor */
-
-    } /* End of Coagulation::~Coagulation */
-
-    Coagulation::Coagulation( const Coagulation &k )
-    {
-
-        Kernel = k.Kernel;
-        Kernel_1D = k.Kernel_1D;
-        beta = k.beta;
-        f = k.f;
-        indices = k.indices;
-
-    } /* End of Coagulation::Coagulation */
-
-    Coagulation& Coagulation::operator=( const Coagulation &k )
-    {
-
-        if ( &k == this )
-            return *this;
-
-        Kernel = k.Kernel;
-        Kernel_1D = k.Kernel_1D;
-        beta = k.beta;
-        f = k.f;
-        indices = k.indices;
-        return *this;
-
-    } /* End of Coagulation::operator= */
-
-    void Coagulation::buildBeta( const Vector_1D &bin_Centers )
-    {
-
-        Vector_1D E_coal( bin_Centers.size() );
-        Vector_1D E_prev( bin_Centers.size() );
-        double r1, r2;
-
-        /* For Newton-Raphson iteration process */
-        bool notConverged = 1;
-        double metric = 0;
-        
-        for ( UInt iBin = 0; iBin < bin_Centers.size(); iBin++ ) {
-            beta.push_back( Vector_1D( bin_Centers.size() ) );
-
-            for ( UInt jBin = 0; jBin < bin_Centers.size(); jBin++ ) {
-                E_coal[jBin] = 0.5; 
-                E_prev[jBin] = 0.0;
-
-                /* Get smallest radius in micrometers */
-                r1 = std::min(bin_Centers[iBin], bin_Centers[jBin]) * 1.0E+06; /* [mum] */
-                
-                /* Get largest radius in micrometers */
-                r2 = std::max(bin_Centers[iBin], bin_Centers[jBin]) * 1.0E+06; /* [mum] */
-
-                /* Perform Newton-Raphson iteration */
-                notConverged = 1;
-                metric = 0.0;
-                while ( notConverged ) {
-
-                    E_prev[jBin] = E_coal[jBin];
-                    E_coal[jBin] = std::max( std::min( E_coal[jBin] - \
-                                   ( A0 + E_coal[jBin] * ( A1 + E_coal[jBin] * ( A2 + E_coal[jBin] * A3 )) - log( r1 ) - log( r2 / double(200.0) ) ) / ( A1 + E_coal[jBin] * ( 2.0 * A2 + E_coal[jBin] * 3.0 * A3 ) ), 1.0 ), 0.0 );
-
-                    metric = std::abs( E_coal[jBin] - E_prev[jBin] );
-                    notConverged = ( metric > 1.0E-03 );
-                }
-
-                beta[iBin][jBin] = E_coal[jBin] * Kernel[iBin][jBin];
-            }
-        }
-
-    } /* End of Coagulation::buildBeta */
 
     void Coagulation::buildF(const Vector_1D &bin_VCenters )
     {

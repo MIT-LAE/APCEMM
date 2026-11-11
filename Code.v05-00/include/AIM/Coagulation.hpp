@@ -15,7 +15,6 @@
 #define COAGULATION_H_INCLUDED
 
 #include <vector>
-#include <cstring>
 #include "Util/ForwardDecl.hpp"
 
 namespace AIM
@@ -27,6 +26,13 @@ namespace AIM
 
     class Coagulation;
 
+    /* Colliding particle pair. It selects the physical processes in the kernel. */
+    enum class CoagulationPair {
+        LiquidLiquid, /* Brownian + convective diffusion enhancement */
+        LiquidSoot,   /* Brownian + convective diffusion enhancement */
+        IceIce        /* Same as above, plus gravitational collection, turbulent inertial motion and turbulent shear */
+    };
+
 }
 
 class AIM::Coagulation
@@ -37,15 +43,9 @@ class AIM::Coagulation
 
     public:
 
-        Coagulation( );
-        Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, double rho_1, Vector_1D const &bin_Centers_2, double rho_2, double temperature_K_, double pressure_Pa_ );
-        Coagulation( const char* phase, Vector_1D const &bin_Centers_1, Vector_1D &bin_VCenters_1, double rho_1, double temperature_K_, double pressure_Pa_ );
-        Coagulation( const char* phase, Vector_1D const &bin_Centers_1, double rho_1, double bin_Centers_2, double rho_2, double temperature_K_, double pressure_Pa_ );
-            
-        ~Coagulation( );
-        Coagulation( const Coagulation& k );
-        Coagulation& operator=( const Coagulation& k );
-        void buildBeta( const Vector_1D &bin_Centers );
+        Coagulation( CoagulationPair pair, Vector_1D const &bin_Centers_1, Vector_1D const &bin_VCenters_1, double rho_1, double temperature_K_, double pressure_Pa_ );
+        Coagulation( CoagulationPair pair, Vector_1D const &bin_Centers_1, double rho_1, double radius_2, double rho_2, double temperature_K_, double pressure_Pa_ );
+
         void buildF( const Vector_1D &bin_VCenters );
         void buildF( const Vector_3D &bin_VCenters, const UInt jNy, const UInt iNx );
         Vector_2D getKernel() const;
@@ -61,14 +61,6 @@ class AIM::Coagulation
         Vector_2D Kernel;
         Vector_1D Kernel_1D;
         Vector_2D beta;
-
-    private:
-
-        const double A0 = 5.07;
-        const double A1 = -5.94;
-        const double A2 = 7.27;
-        const double A3 = -5.29;
-
 
 };
 
