@@ -147,8 +147,8 @@ namespace EPM::Models
 
 
         /* Create coagulation kernels */
-        const AIM::Coagulation Kernel( "liquid", SO4_rJ, SO4_vJ, RHO_SULF, temperature_K, simVars_.pressure_Pa );
-        const AIM::Coagulation Kernel_SO4_Soot( "liquid", SO4_rJ, RHO_SULF, EI_.getSootRad(), RHO_SOOT, temperature_K, simVars_.pressure_Pa );
+        const AIM::Coagulation Kernel( AIM::CoagulationPair::LiquidLiquid, SO4_rJ, SO4_vJ, RHO_SULF, temperature_K, simVars_.pressure_Pa );
+        const AIM::Coagulation Kernel_SO4_Soot( AIM::CoagulationPair::LiquidSoot, SO4_rJ, RHO_SULF, EI_.getSootRad(), RHO_SOOT, temperature_K, simVars_.pressure_Pa );
 
         const Vector_1D KernelSO4Soot = Kernel_SO4_Soot.getKernel_1D();
 
