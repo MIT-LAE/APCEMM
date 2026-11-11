@@ -82,10 +82,9 @@ namespace YamlInputReader{
     // before the generic unknown-key error so an outdated input file gets a warning
     // naming the option that is deprecated instead of failing with "Unknown key found".
     bool checkDeprecatedKey(const std::string& key, const std::string& errorPath) {
-        static const std::set<std::string> deprecatedKeys = {
-            "Ice growth timestep [min] (double)",
-            "Ambient Lapse Rate [K/km] (double)",
-        };
+        // Currently empty: every option deprecated is now put in checkRemovedKey()
+        // instead. Kept here for future deprecations.
+        static const std::set<std::string> deprecatedKeys = {};
         if (deprecatedKeys.contains(key)) {
             std::cout << "WARNING: Deprecated option found: '" << errorPath << "'. This option is no longer used and has no effect." << std::endl;
             return true;
@@ -156,6 +155,8 @@ namespace YamlInputReader{
             // AEROSOL MENU: no coagulation runs, so its timestep never applied
             "Coag. timestep [min] (double)",
             "Turn on liquid coagulation (T/F)",
+            // AEROSOL MENU: the outer and inner time steps of the TRANSPORT MENU set the ice growth step
+            "Ice growth timestep [min] (double)",
             // METEOROLOGY MENU: met now comes from the netCDF file only
             "Use met. input (T/F)",
             "Init temp. from met. (T/F)",
@@ -177,6 +178,8 @@ namespace YamlInputReader{
             "Contrail Depth Scaling Factor [-] (double)",
             "Base Contrail Width [m] (double)",
             "Contrail Width Scaling Factor [-] (double)",
+            // ADVANCED OPTIONS MENU: the EPM no longer models vortex sinking, so it needs no lapse rate
+            "Ambient Lapse Rate [K/km] (double)",
         };
         if (removedUnusedKeys.contains(key)) {
             throw std::runtime_error("Removed option found: '" + errorPath + "'. Delete it from your input file. " + UNUSED_OPTION_MESSAGE);
@@ -503,9 +506,6 @@ namespace YamlInputReader{
         input.AEROSOL_GRAVSETTLING = parseBoolString(aeroNode["Turn on grav. settling (T/F)"].as<string>(), "Turn on grav. settling (T/F)");
         input.AEROSOL_COAGULATION_SOLID = parseBoolString(aeroNode["Turn on solid coagulation (T/F)"].as<string>(), "Turn on solid coagulation (T/F)");
         input.AEROSOL_ICE_GROWTH = parseBoolString(aeroNode["Turn on ice growth (T/F)"].as<string>(), "Turn on ice growth (T/F)");
-        if (aeroNode["Ice growth timestep [min] (double)"]) {
-            std::cout << "WARNING: 'Ice growth timestep [min] (double)' in input.yaml is deprecated and ignored. Time stepping is now controlled by 'Outer time step [min]' and 'Inner physics time step [s]' under TRANSPORT MENU." << std::endl;
-        }
     }
     void readMetMenu(OptInput& input, const YAML::Node& metNode){
         YAML::Node metInputSubmenu = metNode["METEOROLOGICAL INPUT SUBMENU"];

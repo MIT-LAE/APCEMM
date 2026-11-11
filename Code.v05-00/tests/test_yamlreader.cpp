@@ -396,12 +396,6 @@ TEST_CASE("Reject input files written for the removed multi-case runs"){
             Catch::Matchers::ContainsSubstring("one input file per value")
         );
     }
-
-    SECTION("Deprecated options do not cause validation failure"){
-        // Deprecated keys in user YAML (timesteps, ambient lapse rate) should be accepted with a warning rather than throwing
-        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
-        REQUIRE_NOTHROW(YamlInputReader::mergeYamlInputFiles({filename}));
-}
 }
 
 TEST_CASE("Reject input files naming an option that was removed for being unused"){

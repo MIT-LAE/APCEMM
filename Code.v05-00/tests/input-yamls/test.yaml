@@ -53,7 +53,6 @@ AEROSOL MENU:
   Turn on grav. settling (T/F): T
   Turn on solid coagulation (T/F): T
   Turn on ice growth (T/F): T
-  Ice growth timestep [min] (double): 10
 
 METEOROLOGY MENU:
   METEOROLOGICAL INPUT SUBMENU:
@@ -90,7 +89,6 @@ ADVANCED OPTIONS MENU:
     XLIM_LEFT (positive double): 1.0e+3
     YLIM_UP (positive double): 300
     YLIM_DOWN (positive double): 1.5e+3
-  Ambient Lapse Rate [K/km] (double): -3.0
   Tropopause Pressure [Pa] (double): 2.0e+4
   AEROSOL GRID SUBMENU:
     Ice bin volume ratio [-] (double): 1.80
