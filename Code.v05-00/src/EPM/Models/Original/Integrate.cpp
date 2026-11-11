@@ -53,15 +53,10 @@ namespace EPM::Models
         out.bypassArea = input_.bypassArea();
         out.coreExitTemp = input_.coreExitTemp();
 
-        /* Get mean vortex displacement in [m] */
-        double delta_z = VORTEX_SINKING ? aircraft_.vortex().z_center() : 0.0;
-
-        /* Compute adiabatic and real temperature changes */
-        double delta_T    = -optInput_.ADV_AMBIENT_LAPSERATE * delta_z * 1.0E-03;
-        /*          [ K ] =          [ K/km ] *  [ m ]  * [ km/m ]
-         * The minus sign is because delta_z is the distance pointing down */
-
-        SimStatus returnCode = RunMicrophysics(out, sootDensity, delta_T);
+        /* The EPM integrates the plume at flight level. It does not model
+         * vortex sinking: the vortex parametrisation accounts for the
+         * sinking and its ice crystal loss. */
+        SimStatus returnCode = RunMicrophysics(out, sootDensity);
 
         if (returnCode != SimStatus::EPMSuccess)
             return returnCode;
@@ -69,7 +64,7 @@ namespace EPM::Models
     }
 
     SimStatus Original::RunMicrophysics(
-        Output &state, double sootDensity, double delta_T) {
+        Output &state, double sootDensity) {
         double &temperature_K = state.finalTemp;
         double &Ice_rad = state.iceRadius;
         double &Ice_den = state.iceDensity;
@@ -83,13 +78,8 @@ namespace EPM::Models
         double Ab0 = state.bypassArea;
         double Tc0 = state.coreExitTemp;
 
-        double relHumidity_i_Final;
-
-      /* RH is in % */
-      relHumidity_i_Final = met_.rhwRef() * pSat_H2Ol(temperature_K + delta_T) /
-                            pSat_H2Os(temperature_K + delta_T) / 100.0;
-
-      double final_Temp = temperature_K + delta_T;
+        /* Persistence check: ambient RHi at flight level. rhiRef is in %. */
+        const double relHumidity_i_Final = met_.rhiRef() / 100.0;
 
       /* Homogeneous NAT, using supercooling requirement *
        * Heterogeneous NAT, no supercooling requirement */
@@ -268,7 +258,7 @@ namespace EPM::Models
 
         /* Creating ode's right hand side */
         gas_aerosol_rhs rhs(
-            temperature_K, simVars_.pressure_Pa, delta_T,
+            temperature_K, simVars_.pressure_Pa,
             H2O_amb, SO4_amb, SO4l_amb, SO4g_amb, HNO3_amb, Soot_amb,
             EI_.getSootRad(), KernelSO4Soot, nPDF_SO4);
 
@@ -389,9 +379,6 @@ namespace EPM::Models
 
 //        std::cout << " Soot end: " << ( varSoot - Soot_amb  ) * 1E6 * Ab0 << " [#/m]\n";
 //        std::cout << " Soot end: " << ( Soot_den - Soot_amb ) * 1E6 * Ab0 / Tracer_3mins << "[#/m]\n";
-
-        /* Update temperature after vortex sinking */
-        temperature_K = final_Temp;
 
         return SimStatus::EPMSuccess;
     } /* End of RunMicrophysics */

@@ -17,7 +17,7 @@ public:
 private:
     std::variant<EPM::Output, SimStatus> Integrate(double sootDensity);
 
-    SimStatus RunMicrophysics(EPM::Output &out, double sootDensity, double delta_T);
+    SimStatus RunMicrophysics(EPM::Output &out, double sootDensity);
 
     Vector_1D VAR_;  // Concentration of variable species.
 };

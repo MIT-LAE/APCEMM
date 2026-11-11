@@ -117,13 +117,12 @@ namespace EPM::Models::OriginalImpl {
         dxdt[EPM_ind_Trac] = - entrainRate * x[EPM_ind_Trac];
 
         /* Temperature differential equation
-            * \frac{dT}{dt} = v_z(t) * \frac{dT}{dz} - w_T(t) * ( T - T_amb(t) ) */
-        dxdt[EPM_ind_T] = dT_Vortex( t, m_delta_T, 1 ) \
-                        - entrainRate * ( x[EPM_ind_T] - ( m_temperature_K + dT_Vortex ( t, m_delta_T ) ) );
+            * \frac{dT}{dt} = - w_T(t) * ( T - T_amb )
+            * The plume stays at flight level, so T_amb is the ambient temperature
+            * at flight level. The vortex parametrisation accounts for the sinking. */
+        dxdt[EPM_ind_T] = - entrainRate * ( x[EPM_ind_T] - m_temperature_K );
         /* Unit check:
-            * dT_Vortex(.,.,1): [K/s]
-            * dT_Vortex(.,.,0): [K]
-            * entrainRate * ...  : [1/s] * ( [K] - ( [K] + [K] ) ) = [K/s] */
+            * entrainRate * ...  : [1/s] * ( [K] - [K] ) = [K/s] */
 
         /* Pressure differential equation
             * \frac{dP}{dt} = 0 */

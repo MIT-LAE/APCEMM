@@ -380,7 +380,6 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.ADV_CSIZE_DEPTH_SCALING_FACTOR == 0.5);
         REQUIRE(input.ADV_CSIZE_WIDTH_BASE == 100.0);
         REQUIRE(input.ADV_CSIZE_WIDTH_SCALING_FACTOR == 0.5);
-        REQUIRE(input.ADV_AMBIENT_LAPSERATE == -3.0);
         REQUIRE(input.ADV_TROPOPAUSE_PRESSURE == 2.0e+4);
         REQUIRE(input.ADV_AERO_ICE_BIN_VRAT == 1.80);
         REQUIRE(input.ADV_AERO_ICE_BIN_R_LOW == 5.0e-08);
@@ -460,7 +459,7 @@ TEST_CASE("Reject input files written for the removed multi-case runs"){
     }
 
     SECTION("Deprecated options do not cause validation failure"){
-        // Deprecated timesteps in user YAML should be accepted with a warning rather than throwing
+        // Deprecated keys in user YAML (timesteps, ambient lapse rate) should be accepted with a warning rather than throwing
         string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
         REQUIRE_NOTHROW(YamlInputReader::mergeYamlInputFiles({filename}));
     }

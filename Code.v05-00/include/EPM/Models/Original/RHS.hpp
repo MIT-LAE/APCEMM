@@ -21,7 +21,6 @@ namespace EPM::Models::OriginalImpl {
 struct gas_aerosol_rhs {
     const double m_temperature_K;
     const double m_pressure_Pa;
-    const double m_delta_T;
     const double m_H2O_mixingratio;
     const double m_SO4_mixingratio;
     const double m_SO4l_mixingratio;
@@ -38,13 +37,12 @@ struct gas_aerosol_rhs {
     AIM::Aerosol &nPDF_SO4;
 
 
-    gas_aerosol_rhs(double temperature_K, double pressure_Pa, double delta_T,
+    gas_aerosol_rhs(double temperature_K, double pressure_Pa,
                     double H2O_mixingratio, double SO4_mixingratio, double SO4l_mixingratio,
                     double SO4g_mixingratio, double HNO3_mixingratio, double part_mixingratio,
                     double part_r0, Vector_1D Kernel_, AIM::Aerosol &nPDF_SO4_) :
         m_temperature_K(temperature_K),
         m_pressure_Pa(pressure_Pa),
-        m_delta_T(delta_T),
         m_H2O_mixingratio (H2O_mixingratio),
         m_SO4_mixingratio (SO4_mixingratio),
         m_SO4l_mixingratio (SO4l_mixingratio),

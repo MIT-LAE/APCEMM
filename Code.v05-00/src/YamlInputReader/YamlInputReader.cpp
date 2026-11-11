@@ -87,6 +87,7 @@ namespace YamlInputReader{
             "Coag. timestep [min] (double)",
             "Temp. Perturb. Timescale (min)",
             "Ice growth timestep [min] (double)",
+            "Ambient Lapse Rate [K/km] (double)",
         };
         if (deprecatedKeys.contains(key)) {
             std::cout << "WARNING: Deprecated option found: '" << errorPath << "'. This option is no longer used and has no effect." << std::endl;
@@ -575,7 +576,6 @@ namespace YamlInputReader{
         input.ADV_CSIZE_WIDTH_BASE = parseDoubleString(csizeSubmenu["Base Contrail Width [m] (double)"].as<string>(), "Base Contrail Width [m] (double)");
         input.ADV_CSIZE_WIDTH_SCALING_FACTOR = parseDoubleString(csizeSubmenu["Contrail Width Scaling Factor [-] (double)"].as<string>(), "Contrail Width Scaling Factor [-] (double)");
 
-        input.ADV_AMBIENT_LAPSERATE = parseDoubleString(advancedNode["Ambient Lapse Rate [K/km] (double)"].as<string>(), "Ambient Lapse Rate [K/km] (double)");
         input.ADV_TROPOPAUSE_PRESSURE = parseDoubleString(advancedNode["Tropopause Pressure [Pa] (double)"].as<string>(), "Tropopause Pressure [Pa] (double)");
 
         if (input.ADV_GRID_XLIM_LEFT < 0 ||
