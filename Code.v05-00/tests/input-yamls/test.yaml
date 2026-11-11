@@ -51,7 +51,7 @@ TRANSPORT MENU:
 
 AEROSOL MENU:
   Turn on grav. settling (T/F): T
-  Turn on solid coagulation (T/F): T
+  Turn on solid coagulation (T/F): F
   Turn on ice growth (T/F): T
 
 METEOROLOGY MENU:

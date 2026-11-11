@@ -479,6 +479,11 @@ namespace YamlInputReader{
         input.AEROSOL_GRAVSETTLING = parseBoolString(aeroNode["Turn on grav. settling (T/F)"].as<string>(), "Turn on grav. settling (T/F)");
         input.AEROSOL_COAGULATION_SOLID = parseBoolString(aeroNode["Turn on solid coagulation (T/F)"].as<string>(), "Turn on solid coagulation (T/F)");
         input.AEROSOL_ICE_GROWTH = parseBoolString(aeroNode["Turn on ice growth (T/F)"].as<string>(), "Turn on ice growth (T/F)");
+
+        if (input.AEROSOL_COAGULATION_SOLID) {
+            throw std::invalid_argument("In YamlInputReader::readAeroMenu: Solid coagulation in mature plume is currently disabled, set 'Turn on solid coagulation (T/F)' to F");
+        }
+
     }
     void readMetMenu(OptInput& input, const YAML::Node& metNode){
         YAML::Node metInputSubmenu = metNode["METEOROLOGICAL INPUT SUBMENU"];

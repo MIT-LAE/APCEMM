@@ -67,8 +67,8 @@ TRANSPORT MENU:
 AEROSOL MENU:
   # Keep on
   Turn on grav. settling (T/F): T
-  # Keep on
-  Turn on solid coagulation (T/F): T
+  # Keep off, currently disabled
+  Turn on solid coagulation (T/F): F
   # Keep on
   Turn on ice growth (T/F): T
 
