@@ -158,93 +158,7 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
     void Aerosol::Coagulate(const double dt, const Coagulation &kernel)
     {
-
-        /* DESCRIPTION:
-         * Performs self-coagulation. Updates Aerosol.pdf
-         * The numerical scheme is taken from:
-         * M.Z. Jacobson, Fundamentals of atmospheric modeling. Cambridge university press, 2005.*/
-
-        /* INPUT:
-         * - double dt      :: Timestep in s
-         * - Coagulation kernel :: Coagulation structure containing the coagulation kernels
-         *
-         * OUTPUT:
-         *
-         */
-
-        /* Allocate variables */
-        Vector_1D P(nBin, 0.0E+00);
-        Vector_1D L(nBin, 0.0E+00);
-        Vector_1D v(nBin);
-        UInt iBin, jBin, kBin;
-
-        for (iBin = 0; iBin < nBin; iBin++)
-        {
-            v[iBin] = pdf[iBin] * bin_VCenters[iBin] * 1.0E+06;
-            /* Unit check:
-             * [#/cm^3] * [m^3] * [cm^3/m^3] = [cm^3/cm^3] */
-        }
-
-        /* Copy v into v_new */
-        Vector_1D v_new = v;
-
-        /* \frac{dv}{dt}[iBin] = P - L * v[iBin]
-         * Production     P = sum of all the bins (smaller than iBin) that coagulate into a particle of size iBin
-         * Loss L * v[iBin] = sum of all the bins that coagulate with iBin
-         *
-         * Scheme 1:
-         * v_new - v = ( P - L * v ) * dt
-         * Scheme 2:
-         * v_new - v = ( P - L * v_new ) * dt
-         * v_new = ( v + P * dt ) / ( 1.0 + L )
-         * The latter is mass-conserving */
-
-        /* Can this be improved?
-         * Can for loops be removed? */
-        for (iBin = 0; iBin < nBin; iBin++)
-        {
-
-            /* Build production and loss terms */
-            for (jBin = 0; jBin < nBin; jBin++)
-            {
-                if (jBin <= iBin)
-                {
-
-                    for (kBin = 0; kBin < iBin; kBin++)
-                    {
-                        /* k coagulating with j to form i */
-                        if (kernel.f[kBin][jBin][iBin] != 0.0)
-                            P[iBin] += kernel.f[kBin][jBin][iBin] * kernel.beta[kBin][jBin] * v_new[kBin] * pdf[jBin];
-                    }
-                }
-                /* i coagulating with j to deplete i */
-                if (kernel.f[iBin][jBin][iBin] != 1.0)
-                    L[iBin] += (1.0 - kernel.f[iBin][jBin][iBin]) * kernel.beta[iBin][jBin] * pdf[jBin];
-            }
-
-            /* Non-mass conserving scheme: */
-            //            v_new[iBin] = v[iBin] + ( P[iBin] - L[iBin] * v[iBin] ) * dt;
-
-            /* Mass conserving scheme: */
-            v_new[iBin] = (v[iBin] + dt * P[iBin]) / (1.0 + dt * L[iBin]);
-        }
-
-        /* For debug purposes */
-        const bool checkMass = 0;
-        if (checkMass)
-        {
-            std::cout << "Coagulation is a volume-conserving process. The two following quantities should be identical\n";
-            std::cout << "At t     : " << Moment(3) << "\n";
-        }
-
-        for (iBin = 0; iBin < nBin; iBin++)
-        {
-            pdf[iBin] = 1.0e-6 * v_new[iBin] / bin_VCenters[iBin];
-        }
-
-        if (checkMass)
-            std::cout << "At t + dt: " << Moment(3) << "\n";
-
+        Coagulate(dt, kernel.beta, kernel.f);
     } /* End of Aerosol::Coagulate */
 
     void Aerosol::Coagulate(const double dt, const Vector_2D &beta, const Vector_3D &f)
@@ -252,62 +166,64 @@ void Aerosol::addAerosolToPDF( const Aerosol &rhs ) {
 
         /* DESCRIPTION:
          * Performs self-coagulation. Updates Aerosol.pdf
-         * The numerical scheme is taken from:
+         * The numerical scheme is the semi-implicit, volume-conserving scheme of:
          * M.Z. Jacobson, Fundamentals of atmospheric modeling. Cambridge university press, 2005.*/
 
         /* INPUT:
          * - double dt   :: Timestep in s
-         * - Vector_2D  beta :: Coagulation kernel
+         * - Vector_2D  beta :: Coagulation kernel [cm^3/#/s]
          * - Vector_3D  f    :: Coagulation vector: "In which bin does the result of the coagulation of two other bins end up?"
          *
          * OUTPUT:
          *
          */
 
-        /* Allocate variables */
-        Vector_1D P(nBin);
-        Vector_1D L(nBin);
+        /* pdf is a density dN/dln(r) [#/cm^3]. The scheme works on the
+         * number concentration in each bin, n = pdf * dln(r) [#/cm^3]. */
+        Vector_1D n(nBin);
         Vector_1D v(nBin);
-        UInt iBin, jBin, kBin;
-
-        for (iBin = 0; iBin < nBin; iBin++)
+        for (UInt iBin = 0; iBin < nBin; iBin++)
         {
-            v[iBin] = pdf[iBin] * bin_VCenters[iBin] * 1.0E+06;
+            n[iBin] = pdf[iBin] * (log_Bin_Edges[iBin + 1] - log_Bin_Edges[iBin]);
+            v[iBin] = n[iBin] * bin_VCenters[iBin] * 1.0E+06;
             /* Unit check:
              * [#/cm^3] * [m^3] * [cm^3/m^3] = [cm^3/cm^3] */
         }
-
-        /* Copy v into v_new */
-        Vector_1D v_new = v;
 
         /* \frac{dv}{dt}[iBin] = P - L * v[iBin]
          * Production     P = sum of all the bins (smaller than iBin) that coagulate into a particle of size iBin
          * Loss L * v[iBin] = sum of all the bins that coagulate with iBin
          *
-         * Scheme 1:
-         * v_new - v = ( P - L * v ) * dt
-         * Scheme 2:
          * v_new - v = ( P - L * v_new ) * dt
-         * v_new = ( v + P * dt ) / ( 1.0 + L )
-         * The latter is mass-conserving */
-
-        /* Can this be improved?
-         * Can for loops be removed? */
-        for (iBin = 0; iBin < nBin; iBin++)
+         * v_new = ( v + P * dt ) / ( 1.0 + L * dt )
+         * P uses v_new of the smaller bins and both P and L use n at the
+         * start of the step. This makes the scheme volume-conserving. */
+        Vector_1D v_new = v;
+        for (UInt iBin = 0; iBin < nBin; iBin++)
         {
-            for (jBin = 0; jBin < nBin; jBin++)
+            double P = 0.0E+00;
+            double L = 0.0E+00;
+            for (UInt jBin = 0; jBin < nBin; jBin++)
             {
                 if (jBin <= iBin)
                 {
-                    for (kBin = 0; kBin < iBin; kBin++)
+                    for (UInt kBin = 0; kBin < iBin; kBin++)
                     {
-                        P[iBin] += f[kBin][jBin][iBin] * beta[kBin][jBin] * v_new[kBin] * pdf[jBin];
+                        /* k coagulating with j to form i */
+                        if (f[kBin][jBin][iBin] != 0.0)
+                            P += f[kBin][jBin][iBin] * beta[kBin][jBin] * v_new[kBin] * n[jBin];
                     }
                 }
-                L[iBin] += (1.0 - f[iBin][jBin][iBin]) * beta[iBin][jBin] * pdf[jBin];
+                /* i coagulating with j to deplete i */
+                if (f[iBin][jBin][iBin] != 1.0)
+                    L += (1.0 - f[iBin][jBin][iBin]) * beta[iBin][jBin] * n[jBin];
             }
-            v_new[iBin] = (v[iBin] + dt * P[iBin]) / (1.0 + dt * L[iBin]);
-            pdf[iBin] = 1.0e-6 * v_new[iBin] / bin_VCenters[iBin]; // Convert back to m3/cm3
+            v_new[iBin] = (v[iBin] + dt * P) / (1.0 + dt * L);
+        }
+
+        for (UInt iBin = 0; iBin < nBin; iBin++)
+        {
+            pdf[iBin] = 1.0E-06 * v_new[iBin] / (bin_VCenters[iBin] * (log_Bin_Edges[iBin + 1] - log_Bin_Edges[iBin]));
         }
 
     } /* End of Aerosol::Coagulate */
