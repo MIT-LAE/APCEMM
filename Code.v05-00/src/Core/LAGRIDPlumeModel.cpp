@@ -3,6 +3,7 @@
 #include <cmath>
 #include <filesystem>
 #include <memory>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include "AIM/Settling.hpp"
@@ -358,6 +359,15 @@ SimStatus LAGRIDPlumeModel::initializeGrid(const EPM::Output &epmOut) {
     const double initDepth = aircraft_.vortex().depth_mature();
     const double xcenter = 0;
     const double ycenter = -aircraft_.vortex().z_center();
+
+    if (initWidth < dx_init) {
+        std::cout << "WARNING: contrail initial width (" << initWidth << " m) is smaller than "
+        << "initial grid resolution (dx = " << dx_init << " m)." << std::endl;
+    }
+    if (initDepth < dy) {
+        std::cout << "WARNING: contrail initial depth (" << initDepth << " m) is smaller than "
+        << "initial grid resolution (dy = " << dy << " m)." << std::endl;
+    }
 
     // The initVarToGridRectangular function places ice only in cells whose center is
     // contained in the initial contrail rectangle. If the initial rectangle does not contain
