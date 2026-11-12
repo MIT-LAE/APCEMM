@@ -19,7 +19,6 @@ PARAMETER MENU:
   # Maximum simulation time if contrail isn't gone by then:
   Plume Process [hr] (double): 12
 
-  # Temperature, RH, and wind shear can be overwritten if using meteorological input files
   METEOROLOGICAL PARAMETERS SUBMENU:
     # Pressure altitude at which the contrail is initialized
     Pressure [hPa] (double): 265

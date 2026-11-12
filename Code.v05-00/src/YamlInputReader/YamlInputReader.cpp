@@ -481,7 +481,7 @@ namespace YamlInputReader{
         input.AEROSOL_ICE_GROWTH = parseBoolString(aeroNode["Turn on ice growth (T/F)"].as<string>(), "Turn on ice growth (T/F)");
 
         if (input.AEROSOL_COAGULATION_SOLID) {
-            throw std::invalid_argument("In YamlInputReader::readAeroMenu: Solid coagulation in mature plume is currently disabled" 
+            throw std::invalid_argument("In YamlInputReader::readAeroMenu: Solid coagulation in mature plume is currently disabled "
                                         "(and has been since at least v1.1), set 'Turn on solid coagulation (T/F)' to F");
         }
 

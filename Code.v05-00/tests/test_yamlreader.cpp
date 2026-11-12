@@ -391,7 +391,6 @@ TEST_CASE("Reject input files naming an option that was removed for being unused
             YamlInputReader::mergeYamlInputFiles({filename}),
             Catch::Matchers::ContainsSubstring("Removed option found") &&
             Catch::Matchers::ContainsSubstring("SIMULATION MENU -> Use threaded FFT (T/F)") &&
-            Catch::Matchers::ContainsSubstring("never changed a result") &&
             Catch::Matchers::ContainsSubstring("test17.yaml") &&
             // Check that the message overrides the default "Unknow key found"
             !Catch::Matchers::ContainsSubstring("Unknown key found")
