@@ -2,7 +2,7 @@
 
 Usage: python input-migration.py <old_input.yaml> <new_input.yaml>
 
-The script reads the input file line by line, and applies three changes:
+The script reads the input file line by line, and applies four changes:
 
 1. Delete every removed key. If the key opens a submenu, also delete its whole block.
    Also delete the comment lines directly above a removed key (no blank line between),
@@ -10,6 +10,10 @@ The script reads the input file line by line, and applies three changes:
 2. Rename the legacy time step keys in the TRANSPORT MENU to their current names.
    If the file already has the current name, delete the legacy key instead.
 3. Set 'Turn on solid coagulation (T/F)' to F, because the YAML reader now rejects T.
+4. Convert 'Ice growth timestep [min]' in the AEROSOL MENU to
+   'Inner physics time step [s]' in the TRANSPORT MENU, to keep the v1.2 step size.
+
+Stale comments will still be in the new input file.
 """
 
 import re
@@ -86,7 +90,19 @@ REMOVED_UNUSED_KEYS = {
     "Ambient Lapse Rate [K/km] (double)",
 }
 
-REMOVED_KEYS = REMOVED_SWEEP_KEYS | REMOVED_UNUSED_KEYS
+REMOVED_DEPRECATED_KEYS = {
+    # PARAMETER MENU -> METEOROLOGICAL PARAMETERS SUBMENU: met now comes from the netCDF file
+    "Temperature [K] (double)",
+    "R.Hum. wrt water [%] (double)",
+    "Wind shear [1/s] (double)",
+    # METEOROLOGY MENU: humidity, lapse rate, and diurnal options with no effect
+    "HUMIDITY SCALING OPTIONS",
+    "IMPOSE MOIST LAYER DEPTH SUBMENU",
+    "IMPOSE LAPSE RATE SUBMENU",
+    "Add diurnal variations (T/F)",
+}
+
+REMOVED_KEYS = REMOVED_SWEEP_KEYS | REMOVED_UNUSED_KEYS | REMOVED_DEPRECATED_KEYS
 
 # Legacy key -> current key.
 # These were the aliases in checkAliasedKey() and mergeYamlInputFiles().
@@ -94,9 +110,23 @@ RENAMED_KEYS = {
     ("TRANSPORT MENU",): {
         "Transport Timestep [min] (double)": "Outer time step [min] (double)",
         "Transport and ice growth substep [s] (double)": "Inner physics time step [s] (double)",
-        "Ice growth timestep [min] (double)": "Inner physics time step [s] (double)",
     },
 }
+
+# In v1.2 ice growth ran every 'Ice growth timestep [min]'. Now it runs every
+# 'Inner physics time step [s]'. The two keys are in different menus and use different
+# units, so convert_ice_growth_step() converts the value instead of a rename.
+ICE_GROWTH_PATH = ("AEROSOL MENU",)
+ICE_GROWTH_KEY = "Ice growth timestep [min] (double)"
+ICE_GROWTH_SWITCH_KEY = "Turn on ice growth (T/F)"
+TRANSPORT_PATH = ("TRANSPORT MENU",)
+OUTER_STEP_KEY = "Outer time step [min] (double)"
+INNER_STEP_KEY = "Inner physics time step [s] (double)"
+# Values from defaults/input.yaml, used when the file does not set the key.
+DEFAULT_OUTER_STEP_MIN = 1.0
+DEFAULT_INNER_STEP_S = 10.0
+# Accepted spellings of false, from parseBoolString() in YamlInputReader.hpp.
+FALSE_STRINGS = {"F", "FALSE", "NO", "N", "0"}
 
 # Keys that we force to a specific setting.
 FORCED_VALUES = {
@@ -187,6 +217,111 @@ def split_value(rest: str) -> tuple[str, str]:
     return value, comment
 
 
+def find_key(lines: list[Line], path: tuple[str, ...], key: str) -> int | None:
+    """Return the index of the kept line with this parent path and key, or None."""
+    for i, line in enumerate(lines):
+        if line.key == key and line.path == path and not line.delete:
+            return i
+    return None
+
+
+def format_double(value: float) -> str:
+    """Write a double so that it reads as a double, for example 60.0 and not 60."""
+    text = f"{value:.10g}"
+    if not any(c in text for c in ".eEn"):
+        text += ".0"
+    return text
+
+
+def convert_ice_growth_step(lines: list[Line], messages: list[str]) -> None:
+    """Replace the v1.2 ice growth step with the inner physics time step.
+
+    Run this after the deletions and the renames: the ice growth line is already
+    marked for deletion, and the outer time step has its current name.
+    Insert the new key directly after the outer time step, or after the menu key.
+    """
+    growth_index = None
+    for i, line in enumerate(lines):
+        if line.key == ICE_GROWTH_KEY and line.path == ICE_GROWTH_PATH:
+            growth_index = i
+            break
+    if growth_index is None:
+        return
+    growth_path = " -> ".join(ICE_GROWTH_PATH + (ICE_GROWTH_KEY,))
+    inner_path = " -> ".join(TRANSPORT_PATH + (INNER_STEP_KEY,))
+    growth_value, _ = split_value(lines[growth_index].rest)
+
+    # If ice growth is off, the old step had no effect.
+    switch_index = find_key(lines, ICE_GROWTH_PATH, ICE_GROWTH_SWITCH_KEY)
+    if switch_index is not None:
+        switch_value, _ = split_value(lines[switch_index].rest)
+        if switch_value.strip().upper() in FALSE_STRINGS:
+            messages.append(f"Did not convert '{growth_path}': ice growth is off.")
+            return
+
+    if find_key(lines, TRANSPORT_PATH, INNER_STEP_KEY) is not None:
+        messages.append(
+            f"Did not convert '{growth_path}' ({growth_value} min): "
+            f"the file already sets '{inner_path}'."
+        )
+        return
+
+    try:
+        inner_s = float(growth_value) * 60.0
+    except ValueError:
+        messages.append(
+            f"WARNING: '{growth_path}' is '{growth_value}', which is not a number. "
+            f"Set '{inner_path}' yourself."
+        )
+        return
+    if inner_s <= 0.0:
+        messages.append(
+            f"WARNING: '{growth_path}' is {growth_value}, but the inner time step must be "
+            f"greater than 0. Set '{inner_path}' yourself."
+        )
+        return
+
+    menu_index = find_key(lines, (), TRANSPORT_PATH[0])
+    if menu_index is None:
+        messages.append(
+            f"WARNING: the file has no {TRANSPORT_PATH[0]}, so '{growth_path}' is not converted. "
+            f"Set '{inner_path}' to {format_double(inner_s)} yourself."
+        )
+        return
+
+    outer_index = find_key(lines, TRANSPORT_PATH, OUTER_STEP_KEY)
+    outer_min = DEFAULT_OUTER_STEP_MIN
+    if outer_index is not None:
+        try:
+            outer_min = float(split_value(lines[outer_index].rest)[0])
+        except ValueError:
+            pass  # The reader reports the bad outer step.
+
+    # The reader rejects an inner step that is longer than the outer step.
+    note = ""
+    if inner_s > outer_min * 60.0:
+        inner_s = outer_min * 60.0
+        note = (
+            f" WARNING: the inner time step cannot be longer than the outer time step, "
+            f"so the value is capped at {format_double(inner_s)} s."
+        )
+
+    if outer_index is not None:
+        anchor = outer_index
+        indent = lines[outer_index].indent
+    else:
+        anchor = menu_index
+        indent = lines[menu_index].indent + 2
+    new_line = Line(f"{' ' * indent}{INNER_STEP_KEY}: {format_double(inner_s)}\n")
+    new_line.path = TRANSPORT_PATH
+    lines.insert(anchor + 1, new_line)
+    messages.append(
+        f"Converted '{growth_path}' ({growth_value} min) to "
+        f"'{inner_path}' ({format_double(inner_s)} s), to keep the step size of v1.2. "
+        f"The current default is {format_double(DEFAULT_INNER_STEP_S)} s.{note}"
+    )
+
+
 def migrate(lines: list[Line]) -> list[str]:
     """Edit the lines in place and return the messages for the user."""
     messages = []
@@ -257,6 +392,7 @@ def migrate(lines: list[Line]) -> list[str]:
                     f"Set it to {TROPOPAUSE_OLD_HARDCODED_PA:.1e} to keep the results of main."
                 )
 
+    convert_ice_growth_step(lines, messages)
     return messages
 
 
