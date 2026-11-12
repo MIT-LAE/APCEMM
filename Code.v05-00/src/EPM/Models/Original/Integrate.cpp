@@ -342,7 +342,7 @@ namespace EPM::Models
         }
         /* Output variables */
         /* Check if contrail is water supersaturated at some point during formation */
-        if ( !simVars_.CHEMISTRY && !reachedWaterSat ) {
+        if ( !reachedWaterSat ) {
             std::cout << "EndSim: Never reaches water saturation... ending simulation" << std::endl;
             return SimStatus::NoWaterSaturation;
         }
@@ -361,7 +361,7 @@ namespace EPM::Models
              Ice_den  = 0.0;
              Soot_den = PartDens_3mins;
              std::cout << "No persistent contrail..." << std::endl;
-             if (!simVars_.CHEMISTRY) return SimStatus::NoPersistence;
+             return SimStatus::NoPersistence;
         }
 	    std::cout << "Ice_den=" << Ice_den << std::endl;
 

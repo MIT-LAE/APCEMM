@@ -195,10 +195,7 @@ int main( int argc, char* argv[])
         fmt::print(" P   [hPa]: {:>8.2f}\n", scenario.pressure_Pa()/100.0);
 
         // Report relevant input met data when crashing
-        if (Input_Opt.MET_LOADMET)
-        {
-            fmt::print(" Met file : {:>}\n",  Input_Opt.MET_FILENAME);
-        }
+        fmt::print(" Met file : {:>}\n",  Input_Opt.MET_FILENAME);
     }
     else { std::cout << "\n APCEMM completed." << std::endl; }
 

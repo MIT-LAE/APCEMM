@@ -169,21 +169,6 @@ TEST_CASE("YamlInputReader Helper Functions"){
             Catch::Matchers::ContainsSubstring("Something went wrong with processing a number")
         );
     }
-    SECTION("Parse a list of integer indices"){
-        // Species and aerosol timeseries indices keep the space-separated form
-        vector<int> indices = parseVectorIntString(" 1 3 5 ");
-        REQUIRE(indices.size() == 3);
-        REQUIRE(indices[0] == 1);
-        REQUIRE(indices[1] == 3);
-        REQUIRE(indices[2] == 5);
-
-        REQUIRE(parseVectorIntString("1") == vector<int>{1});
-
-        REQUIRE_THROWS_WITH(
-            parseVectorIntString("1 2.5", "Species indices to include (list of ints)"),
-            Catch::Matchers::ContainsSubstring("Decimals not allowed in int inputs")
-        );
-    }
 }
 TEST_CASE("Read Yaml File"){
     string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test.yaml";
@@ -201,15 +186,6 @@ TEST_CASE("Read Yaml File"){
             REQUIRE(input.SIMULATION_OMP_NUM_THREADS == 8);
         #endif
         REQUIRE(input.SIMULATION_OVERWRITE == true);
-        REQUIRE(input.SIMULATION_THREADED_FFT == true);
-        REQUIRE(input.SIMULATION_USE_FFTW_WISDOM == true);
-        REQUIRE(input.SIMULATION_SAVE_FORWARD == true);
-        REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
-        REQUIRE(input.SIMULATION_ADJOINT == true);
-        REQUIRE(input.SIMULATION_ADJOINT_FILENAME == "APCEMM_ADJ_Case_*");
-        REQUIRE(input.SIMULATION_BOXMODEL == true);
-        REQUIRE(input.SIMULATION_BOX_FILENAME == "APCEMM_BOX_CASE_*");
-
     }
     SECTION("Read Param Menu"){
         // readParamMenu fills an Input object directly, with hPa converted to
@@ -235,9 +211,6 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(scenario.backgCH4() == 1.76);
         REQUIRE(scenario.backgSO2() == 7.25);
 
-        REQUIRE(scenario.EI_NOx() == 10);
-        REQUIRE(scenario.EI_CO() == 1);
-        REQUIRE(scenario.EI_HC() == 0.6);
         REQUIRE(scenario.EI_SO2() == 0.1);
         REQUIRE(scenario.EI_SO2TOSO4() == 0.05);
         REQUIRE(scenario.EI_Soot() == 0.06);
@@ -255,23 +228,14 @@ TEST_CASE("Read Yaml File"){
         OptInput input;
         readTransportMenu(input, data["TRANSPORT MENU"]);
         REQUIRE(input.TRANSPORT_TRANSPORT == true);
-        REQUIRE(input.TRANSPORT_FILL == true);
         REQUIRE(input.TRANSPORT_TIMESTEP == 10);
         REQUIRE(input.TRANSPORT_ICE_GROWTH_SUBSTEP == 10.0);
-        REQUIRE(input.TRANSPORT_UPDRAFT == true);
-        REQUIRE(input.TRANSPORT_UPDRAFT_TIMESCALE == 3600);
-        REQUIRE(input.TRANSPORT_UPDRAFT_VELOCITY == 5);
 
         // Test with new "Outer time step [min]" and "Inner physics time step [s]" keys
         YAML::Node customTransport = YAML::Load(
             "Turn on Transport (T/F): T\n"
-            "Fill Negative Values (T/F): T\n"
             "Outer time step [min] (double): 5\n"
             "Inner physics time step [s] (double): 30.0\n"
-            "PLUME UPDRAFT SUBMENU:\n"
-            "  Turn on plume updraft (T/F): F\n"
-            "  Updraft timescale [s] (double): 3600\n"
-            "  Updraft veloc. [cm/s] (double): 5\n"
         );
         OptInput customInput;
         readTransportMenu(customInput, customTransport);
@@ -281,13 +245,8 @@ TEST_CASE("Read Yaml File"){
         // Test validation: Inner substep > Outer step throws
         YAML::Node invalidTransport = YAML::Load(
             "Turn on Transport (T/F): T\n"
-            "Fill Negative Values (T/F): T\n"
             "Outer time step [min] (double): 1\n"
             "Inner physics time step [s] (double): 120.0\n"
-            "PLUME UPDRAFT SUBMENU:\n"
-            "  Turn on plume updraft (T/F): F\n"
-            "  Updraft timescale [s] (double): 3600\n"
-            "  Updraft veloc. [cm/s] (double): 5\n"
         );
         OptInput invalidInput;
         REQUIRE_THROWS_AS(readTransportMenu(invalidInput, invalidTransport), std::invalid_argument);
@@ -295,30 +254,17 @@ TEST_CASE("Read Yaml File"){
         // Test validation: Inner substep <= 0 throws
         YAML::Node nonPositiveSubstep = YAML::Load(
             "Turn on Transport (T/F): T\n"
-            "Fill Negative Values (T/F): T\n"
             "Outer time step [min] (double): 1\n"
             "Inner physics time step [s] (double): 0.0\n"
-            "PLUME UPDRAFT SUBMENU:\n"
-            "  Turn on plume updraft (T/F): F\n"
-            "  Updraft timescale [s] (double): 3600\n"
-            "  Updraft veloc. [cm/s] (double): 5\n"
         );
         OptInput nonPositiveInput;
         REQUIRE_THROWS_AS(readTransportMenu(nonPositiveInput, nonPositiveSubstep), std::invalid_argument);
-    }
-    SECTION("Read Chemistry Menu"){
-        OptInput input;
-        readChemMenu(input, data["CHEMISTRY MENU"]);
-        REQUIRE(input.CHEMISTRY_CHEMISTRY == true);
-        REQUIRE(input.CHEMISTRY_HETCHEM == true);
-        REQUIRE(input.CHEMISTRY_JRATE_FOLDER == "/net/d04/data/fritzt/APCEMM_Data/J-Rates");
     }
     SECTION("Read Aerosol Menu"){
         OptInput input;
         readAeroMenu(input, data["AEROSOL MENU"]);
         REQUIRE(input.AEROSOL_GRAVSETTLING == true);
-        REQUIRE(input.AEROSOL_COAGULATION_SOLID == true);
-        REQUIRE(input.AEROSOL_COAGULATION_LIQUID == true);
+        REQUIRE(input.AEROSOL_COAGULATION_SOLID == false);
         REQUIRE(input.AEROSOL_ICE_GROWTH == true);
     }
     SECTION("Read Met Menu"){
@@ -331,19 +277,14 @@ TEST_CASE("Read Yaml File"){
             error = e.what();
         }
     
-        REQUIRE(input.MET_LOADMET == true);
         REQUIRE(input.MET_FILENAME == "/path/to/met/input");
         REQUIRE(input.MET_DT == 1.0);
-        REQUIRE(input.MET_LOADTEMP == true);
         REQUIRE(input.MET_TEMPTIMESERIES == true);
         REQUIRE(input.MET_INTERPTEMPDATA == true);
-        REQUIRE(input.MET_LOADRH == true);
         REQUIRE(input.MET_RHTIMESERIES == true);
         REQUIRE(input.MET_INTERPRHDATA == true);
-        REQUIRE(input.MET_LOADSHEAR == true);
         REQUIRE(input.MET_SHEARTIMESERIES == true);
         REQUIRE(input.MET_INTERPSHEARDATA == true);
-        REQUIRE(input.MET_LOADVERTVELOC == true);
         REQUIRE(input.MET_VERTVELOCTIMESERIES == true);
         REQUIRE(input.MET_INTERPVERTVELOC == true);
         REQUIRE(input.MET_ENABLE_TEMP_PERTURB == true);
@@ -353,19 +294,9 @@ TEST_CASE("Read Yaml File"){
     SECTION("Read Diagnostic Menu"){
         OptInput input;
         readDiagMenu(input, data["DIAGNOSTIC MENU"]);
-        REQUIRE(input.DIAG_FILENAME == "trac_avg.apcemm.hhmm");
-        REQUIRE(input.TS_SPEC == true);
-        REQUIRE(input.TS_FILENAME == "ts_hhmm.nc");
-        REQUIRE(input.TS_SPECIES.size() == 3);
-        REQUIRE(input.TS_SPECIES[2] == 3);
-        REQUIRE(input.TS_FREQ == 10);
         REQUIRE(input.TS_AERO == true);
         REQUIRE(input.TS_AERO_FILENAME == "ts_aerosol_hhmm.nc");
-        REQUIRE(input.TS_AEROSOL.size() == 3);
-        REQUIRE(input.TS_AEROSOL[2] == 5);
         REQUIRE(input.TS_AERO_FREQ == 10);
-        REQUIRE(input.PL_PL == true);
-        REQUIRE(input.PL_O3 == true);
     }
     SECTION("Read Advanced Options Menu") {
         OptInput input;
@@ -376,11 +307,13 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.ADV_GRID_XLIM_RIGHT == 1.0e+3);
         REQUIRE(input.ADV_GRID_YLIM_DOWN == 1.5e+3);
         REQUIRE(input.ADV_GRID_YLIM_UP == 300);
-        REQUIRE(input.ADV_CSIZE_DEPTH_BASE == 180.0);
-        REQUIRE(input.ADV_CSIZE_DEPTH_SCALING_FACTOR == 0.5);
-        REQUIRE(input.ADV_CSIZE_WIDTH_BASE == 100.0);
-        REQUIRE(input.ADV_CSIZE_WIDTH_SCALING_FACTOR == 0.5);
-        REQUIRE(input.ADV_TROPOPAUSE_PRESSURE == 2.0e+4);
+        // Values differ from defaults/input.yaml, so a value that is not read fails here
+        REQUIRE(input.ADV_GRID_TARGET_PLUME_PTS == 60);
+        REQUIRE(input.ADV_GRID_MIN_DX == 25.0);
+        REQUIRE(input.ADV_GRID_MAX_DX == 55.0);
+        REQUIRE(input.ADV_GRID_MIN_DY == 4.0);
+        REQUIRE(input.ADV_GRID_MAX_DY == 8.0);
+        REQUIRE(input.ADV_TROPOPAUSE_PRESSURE == 3.0e+4);
         REQUIRE(input.ADV_AERO_ICE_BIN_VRAT == 1.80);
         REQUIRE(input.ADV_AERO_ICE_BIN_R_LOW == 5.0e-08);
         REQUIRE(input.ADV_AERO_ICE_BIN_R_HIG == 8.0e-05);
@@ -410,9 +343,6 @@ TEST_CASE("Read one input file into a scenario"){
     REQUIRE(scenario.backgCO() == 40);
     REQUIRE(scenario.backgCH4() == 1.76);
     REQUIRE(scenario.backgSO2() == 7.25);
-    REQUIRE(scenario.EI_NOx() == 10);
-    REQUIRE(scenario.EI_CO() == 1);
-    REQUIRE(scenario.EI_HC() == 0.6);
     REQUIRE(scenario.EI_SO2() == 0.1);
     REQUIRE(scenario.EI_SO2TOSO4() == 0.05);
     REQUIRE(scenario.EI_Soot() == 0.06);
@@ -457,9 +387,52 @@ TEST_CASE("Reject input files written for the removed multi-case runs"){
             Catch::Matchers::ContainsSubstring("one input file per value")
         );
     }
+}
 
-    SECTION("Deprecated options do not cause validation failure"){
-        // Deprecated keys in user YAML (timesteps, ambient lapse rate) should be accepted with a warning rather than throwing
+TEST_CASE("Reject input files naming an option that was removed for being unused"){
+    // Test that obsolete options are correctly reporting an error with a descriptive error message
+    SECTION("A removed leaf key is named in the error"){
+        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test17.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::mergeYamlInputFiles({filename}),
+            Catch::Matchers::ContainsSubstring("Removed option found") &&
+            Catch::Matchers::ContainsSubstring("SIMULATION MENU -> Use threaded FFT (T/F)") &&
+            Catch::Matchers::ContainsSubstring(YamlInputReader::UNUSED_OPTION_MESSAGE) &&
+            Catch::Matchers::ContainsSubstring("test17.yaml") &&
+            // Check that the message overrides the default "Unknow key found"
+            !Catch::Matchers::ContainsSubstring("Unknown key found") &&
+            !Catch::Matchers::ContainsSubstring(YamlInputReader::ONE_RUN_PER_PROCESS_MESSAGE)
+        );
+    }
+
+    SECTION("A removed submenu is rejected on the submenu, not its children"){
+        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test18.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::mergeYamlInputFiles({filename}),
+            Catch::Matchers::ContainsSubstring("Removed option found") &&
+            Catch::Matchers::ContainsSubstring("TRANSPORT MENU -> PLUME UPDRAFT SUBMENU") &&
+            Catch::Matchers::ContainsSubstring(YamlInputReader::UNUSED_OPTION_MESSAGE) &&
+            !Catch::Matchers::ContainsSubstring("Turn on plume updraft") &&
+            !Catch::Matchers::ContainsSubstring("Unknown key found")
+        );
+    }
+
+    SECTION("A key that used to warn as deprecated now throws"){
+        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test19.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::mergeYamlInputFiles({filename}),
+            Catch::Matchers::ContainsSubstring("Removed option found") &&
+            Catch::Matchers::ContainsSubstring("AEROSOL MENU -> Coag. timestep [min] (double)") &&
+            Catch::Matchers::ContainsSubstring(YamlInputReader::UNUSED_OPTION_MESSAGE) &&
+            !Catch::Matchers::ContainsSubstring("Unknown key found") &&
+            !Catch::Matchers::ContainsSubstring(YamlInputReader::ONE_RUN_PER_PROCESS_MESSAGE)
+        );
+    }
+
+    SECTION("Keys that share a name with a removed one but are still live stay valid"){
+        // removedUnusedKeys matches on the key name without its menu path. "Inst timeseries
+        // file (string)" and "Save frequency [min] (double)" left SPECIES TIMESERIES SUBMENU
+        // but are still live under AEROSOL TIMESERIES SUBMENU, so they must be accepted there.
         string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
         REQUIRE_NOTHROW(YamlInputReader::mergeYamlInputFiles({filename}));
     }
@@ -525,13 +498,14 @@ TEST_CASE("mergeYamlInputFiles resolves defaults and overrides into one node"){
     REQUIRE(metParams["Horiz. diff. coeff. [m^2/s] (double)"].as<double>() == 17.0);
     // Set by neither file, so the compiled-in default stays
     REQUIRE(merged["SIMULATION MENU"]["External EPM NetCDF file"].as<string>() == "=MISSING=");
-    REQUIRE(merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Force seed value (T/F)"].as<string>() == "F");
+    REQUIRE(merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Force seed value (T/F)"].as<string>() == "T");
 }
 
 TEST_CASE("recordEffectiveSeed updates seed submenu"){
     string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
     YAML::Node merged = YamlInputReader::mergeYamlInputFiles({filename});
-    // Verify that the default is an unforced seed otherwise the rest of the test is useless
+    // The default forces the seed. Start from an unforced seed, otherwise the rest of the test is useless.
+    merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Force seed value (T/F)"] = "F";
     REQUIRE(merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Force seed value (T/F)"].as<string>() == "F");
 
     SECTION("The seed submenu is rewritten in place"){
@@ -603,9 +577,6 @@ TEST_CASE("Merge Input Files"){
     REQUIRE(scenario.backgCO() == 40);
     REQUIRE(scenario.backgCH4() == 1.76);
     REQUIRE(scenario.backgSO2() == 7.25);
-    REQUIRE(scenario.EI_NOx() == 10);
-    REQUIRE(scenario.EI_CO() == 1);
-    REQUIRE(scenario.EI_HC() == 0.6);
     REQUIRE(scenario.EI_SO2() == 0.1);
     REQUIRE(scenario.EI_SO2TOSO4() == 0.05);
     REQUIRE(scenario.EI_Soot() == 0.06);
@@ -686,7 +657,8 @@ TEST_CASE("Validate Input Files"){
         YAML::Node merged;
         REQUIRE_NOTHROW(merged = YamlInputReader::mergeYamlInputFiles({filename6}));
         REQUIRE_NOTHROW(YamlInputReader::populateInput(input, scenario, merged));
-        REQUIRE(input.SIMULATION_FORWARD_FILENAME == "APCEMM_Case_*");
+        REQUIRE(input.SIMULATION_FORCE_SEED == true);
+        REQUIRE(input.SIMULATION_SEED_VALUE == 0);
     }
 
     SECTION("Empty input file stays valid"){
@@ -695,7 +667,7 @@ TEST_CASE("Validate Input Files"){
         // leaves every compiled default in place.
         YAML::Node merged;
         REQUIRE_NOTHROW(merged = YamlInputReader::mergeYamlInputFiles({filename7}));
-        REQUIRE(merged["SIMULATION MENU"]["SAVE FORWARD RESULTS SUBMENU"]["netCDF filename format (string)"].as<string>() == "APCEMM_Case_*");
+        REQUIRE(merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Seed value (positive int)"].as<string>() == "0");
         REQUIRE(merged["SIMULATION MENU"]["OUTPUT SUBMENU"]["Output folder (string)"].as<string>() == "=MISSING=");
     }
 
@@ -916,7 +888,7 @@ TEST_CASE("checkDefaultPaths guards the compiled-in defaults"){
     }
 }
 
-TEST_CASE("An unset output folder is reported while reading the input"){
+TEST_CASE("Not setting output folder is an error"){
     // 'Output folder (string)' is required and the defaults is set to '=MISSING='.
     // Check that populateInput throws if the output dir is unspecified.
     // Without this check APCEMM creates a directory named '=MISSING=' in the

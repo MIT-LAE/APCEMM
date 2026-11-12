@@ -70,8 +70,8 @@ class Engine
         double EI_HC;  /* [g/kg fuel] */
 
         /* Soot */
-        double EI_Soot; /* [g/kg fuel] */
-        double SootRad; /* [m] */
+        double EI_Soot = 0.0; /* [g/kg fuel] */
+        double SootRad = 0.0; /* [m] */
 
         /* Fuel flow */
         double fuelflow; /* [kg fuel/s] */

@@ -2,7 +2,7 @@
 # compiled defaults untouched, at the top level and inside a submenu.
 # The output folder is required, so it is the one value this file sets.
 SIMULATION MENU:
-  SAVE FORWARD RESULTS SUBMENU:
+  RANDOM NUMBER GENERATION SUBMENU:
   OUTPUT SUBMENU:
     Output folder (string): ./
 PARAMETER MENU:

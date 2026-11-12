@@ -42,9 +42,6 @@ Aircraft::Aircraft( const Input& input, const Meteorology& met, const OptInput& 
 
     engNumber_ = input.numEngines();
     setFuelFlow( input.fuelFlow() );
-    setEI_NOx( input.EI_NOx() );
-    setEI_CO( input.EI_CO() );
-    setEI_HC( input.EI_HC() );
     setEI_Soot( input.EI_Soot() );
     setSootRad( input.sootRad() );
 
@@ -53,43 +50,17 @@ Aircraft::Aircraft( const Input& input, const Meteorology& met, const OptInput& 
     currMass_ = input.aircraftMass();
 }
 
-void Aircraft::setEI_NOx(const double NOx)
-{
-
-    if ( NOx > 0.0E+00 )
-        engine_.setEI_NOx(NOx);
-
-} /* End of Aircraft::setEI_NOx */
-
-void Aircraft::setEI_CO(const double CO)
-{
-
-    if ( CO > 0.0E+00 )
-        engine_.setEI_CO(CO);
-
-} /* End of Aircraft::setEI_CO */
-
-void Aircraft::setEI_HC(const double HC)
-{
-
-    if ( HC > 0.0E+00 )
-        engine_.setEI_HC(HC);
-
-} /* End of Aircraft::setEI_HC */
-
 void Aircraft::setEI_Soot(const double Soot)
 {
 
-    if ( Soot > 0.0E+00 )
-        engine_.setEI_Soot(Soot);
+    engine_.setEI_Soot(Soot);
 
 } /* End of Aircraft::setEI_Soot */
 
 void Aircraft::setSootRad(const double sootRad)
 {
 
-    if ( sootRad > 0.0E+00 )
-        engine_.setSootRad(sootRad);
+    engine_.setSootRad(sootRad);
 
 } /* End of Aircraft::setSootRad */
 

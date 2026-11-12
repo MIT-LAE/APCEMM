@@ -42,7 +42,6 @@ struct TimestepVarsWrapper
     bool ITS_TIME_FOR_ICE_GROWTH;
 
     double TRANSPORT_DT;    // [s]
-    double ICE_GROWTH_DT;   // [s]
 
     double lastTimeTransport;
     double lastTimeIceGrowth;
