@@ -1,0 +1,3 @@
+# A key that used to be accepted with a deprecation warning and is now removed outright.
+AEROSOL MENU:
+  Coag. timestep [min] (double): 60

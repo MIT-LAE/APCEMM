@@ -1,0 +1,6 @@
+# A removed submenu. Validation rejects the submenu itself, so its children are
+# never reached and the message names the submenu.
+TRANSPORT MENU:
+  PLUME UPDRAFT SUBMENU:
+    Turn on plume updraft (T/F): F
+    Updraft timescale [s] (double): 3600

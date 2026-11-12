@@ -400,8 +400,41 @@ TEST_CASE("Reject input files naming an option that was removed for being unused
             Catch::Matchers::ContainsSubstring(YamlInputReader::UNUSED_OPTION_MESSAGE) &&
             Catch::Matchers::ContainsSubstring("test17.yaml") &&
             // Check that the message overrides the default "Unknow key found"
+            !Catch::Matchers::ContainsSubstring("Unknown key found") &&
+            !Catch::Matchers::ContainsSubstring(YamlInputReader::ONE_RUN_PER_PROCESS_MESSAGE)
+        );
+    }
+
+    SECTION("A removed submenu is rejected on the submenu, not its children"){
+        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test18.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::mergeYamlInputFiles({filename}),
+            Catch::Matchers::ContainsSubstring("Removed option found") &&
+            Catch::Matchers::ContainsSubstring("TRANSPORT MENU -> PLUME UPDRAFT SUBMENU") &&
+            Catch::Matchers::ContainsSubstring(YamlInputReader::UNUSED_OPTION_MESSAGE) &&
+            !Catch::Matchers::ContainsSubstring("Turn on plume updraft") &&
             !Catch::Matchers::ContainsSubstring("Unknown key found")
         );
+    }
+
+    SECTION("A key that used to warn as deprecated now throws"){
+        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test19.yaml";
+        REQUIRE_THROWS_WITH(
+            YamlInputReader::mergeYamlInputFiles({filename}),
+            Catch::Matchers::ContainsSubstring("Removed option found") &&
+            Catch::Matchers::ContainsSubstring("AEROSOL MENU -> Coag. timestep [min] (double)") &&
+            Catch::Matchers::ContainsSubstring(YamlInputReader::UNUSED_OPTION_MESSAGE) &&
+            !Catch::Matchers::ContainsSubstring("Unknown key found") &&
+            !Catch::Matchers::ContainsSubstring(YamlInputReader::ONE_RUN_PER_PROCESS_MESSAGE)
+        );
+    }
+
+    SECTION("Keys that share a name with a removed one but are still live stay valid"){
+        // removedUnusedKeys matches on the key name without its menu path. "Inst timeseries
+        // file (string)" and "Save frequency [min] (double)" left SPECIES TIMESERIES SUBMENU
+        // but are still live under AEROSOL TIMESERIES SUBMENU, so they must be accepted there.
+        string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
+        REQUIRE_NOTHROW(YamlInputReader::mergeYamlInputFiles({filename}));
     }
 }
 
