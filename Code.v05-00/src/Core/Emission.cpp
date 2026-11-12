@@ -69,10 +69,6 @@ Emission::Emission( const Engine &engine, const Fuel &fuel, const double SO2ToSO
         std::cout << "Soot emissions are negative: EI(Soot) = " << Soot << "g/kg" << std::endl;
         Soot = 0.0;
     }
-    if ( SootRad <= 1.0E-09 ) {
-        std::cout << "Soot emissions are negative: Rad_Soot = " << SootRad << std::endl;
-        SootRad = 1.0E-09;
-    }
 
     SO2toSO4 = SO2ToSO4Ratio;
 
