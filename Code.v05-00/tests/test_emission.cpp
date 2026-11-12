@@ -14,7 +14,10 @@ const std::string engineFileName = std::string(APCEMM_TESTS_DIR) + "/../defaults
 
 Engine testEngine() {
     /* Cruise-like conditions: T [K], p [Pa], RHw [%], Mach [-] */
-    return Engine("GEnx-2B67B", engineFileName, 217.0, 22000.0, 40.0, 0.8);
+    Engine engine = Engine("GEnx-2B67B", engineFileName, 217.0, 22000.0, 40.0, 0.8);
+    engine.setEI_Soot(0.02);
+    engine.setSootRad(20e-9);
+    return engine;
 }
 
 /* Check every observable member, so that a copy that drops any member fails */
