@@ -25,8 +25,7 @@ namespace YamlInputReader{
     // Appended to every error raised by an input file that still names an option which was
     // parsed and stored but never read on any run path.
     inline const string UNUSED_OPTION_MESSAGE =
-        "This option was read but never used, setting it never changed a "
-        "result. It is removed so that it can no longer be misleading.";
+        "This option was read but never used / is no longer supported.";
 
 
     // Merge default and user provided files, returns a merged YAML::Node

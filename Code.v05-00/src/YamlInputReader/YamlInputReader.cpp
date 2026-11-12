@@ -481,7 +481,8 @@ namespace YamlInputReader{
         input.AEROSOL_ICE_GROWTH = parseBoolString(aeroNode["Turn on ice growth (T/F)"].as<string>(), "Turn on ice growth (T/F)");
 
         if (input.AEROSOL_COAGULATION_SOLID) {
-            throw std::invalid_argument("In YamlInputReader::readAeroMenu: Solid coagulation in mature plume is currently disabled, set 'Turn on solid coagulation (T/F)' to F");
+            throw std::invalid_argument("In YamlInputReader::readAeroMenu: Solid coagulation in mature plume is currently disabled" 
+                                        "(and has been since at least v1.1), set 'Turn on solid coagulation (T/F)' to F");
         }
 
     }
@@ -518,35 +519,11 @@ namespace YamlInputReader{
         input.ADV_GRID_YLIM_UP = parseDoubleString(gridSubmenu["YLIM_UP (positive double)"].as<string>(), "YLIM_UP (positive double)");
         input.ADV_GRID_YLIM_DOWN = parseDoubleString(gridSubmenu["YLIM_DOWN (positive double)"].as<string>(), "YLIM_DOWN (positive double)");
 
-        if (gridSubmenu["Target points in plume [-] (int)"]) {
-            input.ADV_GRID_TARGET_PLUME_PTS = parseUIntString(gridSubmenu["Target points in plume [-] (int)"].as<string>(), "Target points in plume [-] (int)");
-        } else {
-            input.ADV_GRID_TARGET_PLUME_PTS = 50;
-        }
-
-        if (gridSubmenu["Min DX [m] (double)"]) {
-            input.ADV_GRID_MIN_DX = parseDoubleString(gridSubmenu["Min DX [m] (double)"].as<string>(), "Min DX [m] (double)");
-        } else {
-            input.ADV_GRID_MIN_DX = 20.0;
-        }
-
-        if (gridSubmenu["Max DX [m] (double)"]) {
-            input.ADV_GRID_MAX_DX = parseDoubleString(gridSubmenu["Max DX [m] (double)"].as<string>(), "Max DX [m] (double)");
-        } else {
-            input.ADV_GRID_MAX_DX = 50.0;
-        }
-
-        if (gridSubmenu["Min DY [m] (double)"]) {
-            input.ADV_GRID_MIN_DY = parseDoubleString(gridSubmenu["Min DY [m] (double)"].as<string>(), "Min DY [m] (double)");
-        } else {
-            input.ADV_GRID_MIN_DY = 5.0;
-        }
-
-        if (gridSubmenu["Max DY [m] (double)"]) {
-            input.ADV_GRID_MAX_DY = parseDoubleString(gridSubmenu["Max DY [m] (double)"].as<string>(), "Max DY [m] (double)");
-        } else {
-            input.ADV_GRID_MAX_DY = 7.0;
-        }
+        input.ADV_GRID_TARGET_PLUME_PTS = parseUIntString(gridSubmenu["Target points in plume [-] (int)"].as<string>(), "Target points in plume [-] (int)");
+        input.ADV_GRID_MIN_DX = parseDoubleString(gridSubmenu["Min DX [m] (double)"].as<string>(), "Min DX [m] (double)");
+        input.ADV_GRID_MAX_DX = parseDoubleString(gridSubmenu["Max DX [m] (double)"].as<string>(), "Max DX [m] (double)");
+        input.ADV_GRID_MIN_DY = parseDoubleString(gridSubmenu["Min DY [m] (double)"].as<string>(), "Min DY [m] (double)");
+        input.ADV_GRID_MAX_DY = parseDoubleString(gridSubmenu["Max DY [m] (double)"].as<string>(), "Max DY [m] (double)");
 
         if (input.ADV_GRID_MIN_DX > input.ADV_GRID_MAX_DX) {
             throw std::invalid_argument("Min DX [m] cannot be greater than Max DX [m] in GRID SUBMENU!");
