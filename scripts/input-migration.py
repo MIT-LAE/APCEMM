@@ -1,4 +1,5 @@
 """Migrate an APCEMM input file from v1.2 to v1.3.
+You should still double check the output yourself.
 
 Usage: python input-migration.py <old_input.yaml> <new_input.yaml>
 
@@ -122,9 +123,6 @@ ICE_GROWTH_SWITCH_KEY = "Turn on ice growth (T/F)"
 TRANSPORT_PATH = ("TRANSPORT MENU",)
 OUTER_STEP_KEY = "Outer time step [min] (double)"
 INNER_STEP_KEY = "Inner physics time step [s] (double)"
-# Values from defaults/input.yaml, used when the file does not set the key.
-DEFAULT_OUTER_STEP_MIN = 1.0
-DEFAULT_INNER_STEP_S = 10.0
 # Accepted spellings of false, from parseBoolString() in YamlInputReader.hpp.
 FALSE_STRINGS = {"F", "FALSE", "NO", "N", "0"}
 
@@ -281,44 +279,46 @@ def convert_ice_growth_step(lines: list[Line], messages: list[str]) -> None:
         )
         return
 
-    menu_index = find_key(lines, (), TRANSPORT_PATH[0])
-    if menu_index is None:
+    # The reader rejects an inner step that is longer than the outer step, so the
+    # conversion needs the outer step of the file. Without it, write no inner step:
+    # APCEMM then uses the value of defaults/input.yaml.
+    outer_path = " -> ".join(TRANSPORT_PATH + (OUTER_STEP_KEY,))
+    outer_index = find_key(lines, TRANSPORT_PATH, OUTER_STEP_KEY)
+    if outer_index is None:
         messages.append(
-            f"WARNING: the file has no {TRANSPORT_PATH[0]}, so '{growth_path}' is not converted. "
-            f"Set '{inner_path}' to {format_double(inner_s)} yourself."
+            f"WARNING: the file does not set '{outer_path}', so '{growth_path}' is not converted. "
+            f"APCEMM uses the default inner time step. To keep the step size of v1.2, "
+            f"set '{inner_path}' to {format_double(inner_s)}."
+        )
+        return
+    outer_value, _ = split_value(lines[outer_index].rest)
+    try:
+        outer_s = float(outer_value) * 60.0
+    except ValueError:
+        messages.append(
+            f"WARNING: '{outer_path}' is '{outer_value}', which is not a number, "
+            f"so '{growth_path}' is not converted. To keep the step size of v1.2, "
+            f"set '{inner_path}' to {format_double(inner_s)}."
         )
         return
 
-    outer_index = find_key(lines, TRANSPORT_PATH, OUTER_STEP_KEY)
-    outer_min = DEFAULT_OUTER_STEP_MIN
-    if outer_index is not None:
-        try:
-            outer_min = float(split_value(lines[outer_index].rest)[0])
-        except ValueError:
-            pass  # The reader reports the bad outer step.
-
-    # The reader rejects an inner step that is longer than the outer step.
-    note = ""
-    if inner_s > outer_min * 60.0:
-        inner_s = outer_min * 60.0
-        note = (
-            f" WARNING: the inner time step cannot be longer than the outer time step, "
-            f"so the value is capped at {format_double(inner_s)} s."
+    if inner_s > outer_s:
+        messages.append(
+            f"WARNING: '{growth_path}' ({growth_value} min) is longer than '{outer_path}' "
+            f"({outer_value} min), so it is not converted. APCEMM does not accept an inner "
+            f"time step that is longer than the outer time step. "
+            f"APCEMM uses the default inner time step. Set '{inner_path}' yourself."
         )
+        return
 
-    if outer_index is not None:
-        anchor = outer_index
-        indent = lines[outer_index].indent
-    else:
-        anchor = menu_index
-        indent = lines[menu_index].indent + 2
+    indent = lines[outer_index].indent
     new_line = Line(f"{' ' * indent}{INNER_STEP_KEY}: {format_double(inner_s)}\n")
     new_line.path = TRANSPORT_PATH
-    lines.insert(anchor + 1, new_line)
+    lines.insert(outer_index + 1, new_line)
     messages.append(
         f"Converted '{growth_path}' ({growth_value} min) to "
         f"'{inner_path}' ({format_double(inner_s)} s), to keep the step size of v1.2. "
-        f"The current default is {format_double(DEFAULT_INNER_STEP_S)} s.{note}"
+        f"To use the default inner time step instead, delete this line."
     )
 
 
