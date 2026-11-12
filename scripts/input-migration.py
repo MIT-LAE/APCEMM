@@ -14,6 +14,10 @@ The script reads the input file line by line, and applies four changes:
 4. Convert 'Ice growth timestep [min]' in the AEROSOL MENU to
    'Inner physics time step [s]' in the TRANSPORT MENU, to keep the v1.2 step size.
 
+If a flag in the METEOROLOGICAL INPUT SUBMENU turns off the met file (entirely, or for
+temperature, RH, wind shear, or vertical velocity), the script cannot convert the file
+as v1.3 relies entirely on the netCDF file. Conversion fails.
+
 Stale comments will still be in the new input file.
 """
 
@@ -125,6 +129,19 @@ OUTER_STEP_KEY = "Outer time step [min] (double)"
 INNER_STEP_KEY = "Inner physics time step [s] (double)"
 # Accepted spellings of false, from parseBoolString() in YamlInputReader.hpp.
 FALSE_STRINGS = {"F", "FALSE", "NO", "N", "0"}
+
+# In v1.2 these flags could turn off the met file, entirely or for one variable.
+# APCEMM then used the constant values and the moist layer and lapse rate options,
+# which are all removed now. v1.3 reads met data only from the met file, so the script
+# cannot convert such a file.
+MET_INPUT_PATH = ("METEOROLOGY MENU", "METEOROLOGICAL INPUT SUBMENU")
+MET_INPUT_FLAGS = (
+    "Use met. input (T/F)",
+    "Init temp. from met. (T/F)",
+    "Init RH from met. (T/F)",
+    "Init wind shear from met. (T/F)",
+    "Init vert. veloc. from met. data (T/F)",
+)
 
 # Keys that we force to a specific setting.
 FORCED_VALUES = {
@@ -322,6 +339,17 @@ def convert_ice_growth_step(lines: list[Line], messages: list[str]) -> None:
     )
 
 
+def find_met_input_off(lines: list[Line]) -> list[str]:
+    """Return the met input flags that are off, as full paths with their values."""
+    off = []
+    for line in lines:
+        if line.key in MET_INPUT_FLAGS and line.path == MET_INPUT_PATH:
+            value, _ = split_value(line.rest)
+            if value.strip().upper() in FALSE_STRINGS:
+                off.append(f"{' -> '.join(line.path + (line.key,))}: {value}")
+    return off
+
+
 def migrate(lines: list[Line]) -> list[str]:
     """Edit the lines in place and return the messages for the user."""
     messages = []
@@ -342,7 +370,9 @@ def migrate(lines: list[Line]) -> list[str]:
         if line.key in renames:
             new_key = renames[line.key]
             if new_key in present.get(line.path, set()):
-                messages.append(f"Deleted '{full_path}': the file already sets '{new_key}'.")
+                messages.append(
+                    f"Deleted '{full_path}': the file already sets '{new_key}'."
+                )
             else:
                 prefix = line.text[: line.indent]
                 line.text = f"{prefix}{new_key}:{line.rest}\n"
@@ -358,8 +388,12 @@ def migrate(lines: list[Line]) -> list[str]:
             # Delete the comments directly above the key (they describe it).
             # A comment that is less indented than the key is a section header: keep it.
             j = i - 1
-            while (j >= 0 and lines[j].is_comment and not lines[j].delete
-                   and lines[j].indent >= line.indent):
+            while (
+                j >= 0
+                and lines[j].is_comment
+                and not lines[j].delete
+                and lines[j].indent >= line.indent
+            ):
                 lines[j].delete = True
                 j -= 1
             if line.key not in renames:
@@ -375,9 +409,15 @@ def migrate(lines: list[Line]) -> list[str]:
                 line.text = f"{prefix}{line.key}: {new_value}{comment}\n"
                 messages.append(f"Set '{full_path}' to {new_value} (was {value}).")
                 # Fix the comment above, if it tells the user to keep the option on.
-                if i > 0 and lines[i - 1].is_comment and lines[i - 1].text.strip() == "# Keep on":
+                if (
+                    i > 0
+                    and lines[i - 1].is_comment
+                    and lines[i - 1].text.strip() == "# Keep on"
+                ):
                     prev = lines[i - 1]
-                    prev.text = f"{prev.text[: prev.indent]}# Keep off, currently disabled\n"
+                    prev.text = (
+                        f"{prev.text[: prev.indent]}# Keep off, currently disabled\n"
+                    )
 
         if line.key == TROPOPAUSE_KEY:
             value, _ = split_value(line.rest)
@@ -389,7 +429,7 @@ def migrate(lines: list[Line]) -> list[str]:
                 messages.append(
                     f"WARNING: '{full_path}' is {value}. On v1.2 APCEMM ignored this value and "
                     f"used {TROPOPAUSE_OLD_HARDCODED_PA:.1e} Pa. Now APCEMM uses the value. "
-                    f"Set it to {TROPOPAUSE_OLD_HARDCODED_PA:.1e} to be consistent with v1.2."
+                    f"Set it to {TROPOPAUSE_OLD_HARDCODED_PA:.1e} to be consistent with v1.2. "
                     "Contrail simulation results should not be affected by the value anyway."
                 )
 
@@ -407,6 +447,10 @@ def drop_extra_blank_lines(texts: list[str]) -> list[str]:
     return out
 
 
+class ConversionError(Exception):
+    """The script cannot convert the input file. It writes no output file."""
+
+
 def run(input_file: Path, output_file: Path):
     with open(input_file, encoding="utf-8") as f:
         original = f.readlines()
@@ -414,6 +458,17 @@ def run(input_file: Path, output_file: Path):
         original[-1] += "\n"
 
     lines = [Line(text) for text in original]
+    annotate_paths(lines)
+    met_input_off = find_met_input_off(lines)
+    if met_input_off:
+        flags = "\n".join(f"  {flag}" for flag in met_input_off)
+        raise ConversionError(
+            f"{input_file} cannot be converted. These flags turn off / overrode the met file:\n"
+            f"{flags}\n"
+            "In v1.2 APCEMM then used the constant temperature, RH, wind shear, moist layer, "
+            "and lapse rate options. v1.3 removes these options and reads met data only from "
+            "the met file."
+        )
     messages = migrate(lines)
 
     kept = [line.text for line in lines if not line.delete]
@@ -432,13 +487,25 @@ def run(input_file: Path, output_file: Path):
     if not messages:
         print("No change needed.")
 
+    print(
+        "\nFinal checks you need to do:\n"
+        " -> Paths to engine/ambient conditions files might need to be replaced with '=DEFAULT='\n"
+        " -> Check that 'Inner physics time step [s] (double)' is consistent with your previous input & new scheme\n"
+    )
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print(__doc__)
         sys.exit(1)
+
     in_path = Path(sys.argv[1])
     out_path = Path(sys.argv[2])
 
-    run(input_file=in_path, output_file=out_path)
+    try:
+        run(input_file=in_path, output_file=out_path)
+    except ConversionError as error:
+        print(error)
+        print(f"Did not write {out_path}.")
+        sys.exit(1)
     print(f"Saved to {out_path}")
