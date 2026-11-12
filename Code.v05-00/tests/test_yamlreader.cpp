@@ -498,13 +498,14 @@ TEST_CASE("mergeYamlInputFiles resolves defaults and overrides into one node"){
     REQUIRE(metParams["Horiz. diff. coeff. [m^2/s] (double)"].as<double>() == 17.0);
     // Set by neither file, so the compiled-in default stays
     REQUIRE(merged["SIMULATION MENU"]["External EPM NetCDF file"].as<string>() == "=MISSING=");
-    REQUIRE(merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Force seed value (T/F)"].as<string>() == "F");
+    REQUIRE(merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Force seed value (T/F)"].as<string>() == "T");
 }
 
 TEST_CASE("recordEffectiveSeed updates seed submenu"){
     string filename = string(APCEMM_TESTS_DIR) + YAML_DIR + "/test1.yaml";
     YAML::Node merged = YamlInputReader::mergeYamlInputFiles({filename});
-    // Verify that the default is an unforced seed otherwise the rest of the test is useless
+    // The default forces the seed. Start from an unforced seed, otherwise the rest of the test is useless.
+    merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Force seed value (T/F)"] = "F";
     REQUIRE(merged["SIMULATION MENU"]["RANDOM NUMBER GENERATION SUBMENU"]["Force seed value (T/F)"].as<string>() == "F");
 
     SECTION("The seed submenu is rewritten in place"){
@@ -656,7 +657,7 @@ TEST_CASE("Validate Input Files"){
         YAML::Node merged;
         REQUIRE_NOTHROW(merged = YamlInputReader::mergeYamlInputFiles({filename6}));
         REQUIRE_NOTHROW(YamlInputReader::populateInput(input, scenario, merged));
-        REQUIRE(input.SIMULATION_FORCE_SEED == false);
+        REQUIRE(input.SIMULATION_FORCE_SEED == true);
         REQUIRE(input.SIMULATION_SEED_VALUE == 0);
     }
 
