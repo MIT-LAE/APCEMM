@@ -65,7 +65,7 @@ Emission::Emission( const Engine &engine, const Fuel &fuel, const double SO2ToSO
         HC = 0.0;
     }
 
-    if ( Soot <= 0.0 ) {
+    if ( Soot < 0.0 ) {
         std::cout << "Soot emissions are negative: EI(Soot) = " << Soot << "g/kg" << std::endl;
         Soot = 0.0;
     }

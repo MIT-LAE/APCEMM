@@ -68,7 +68,7 @@ void Input::checkInputValidity() const {
     if ( EI_Soot_ < 0.0E+00 || EI_Soot_ > 2.0E-01 )
         reject( "EI_Soot", EI_Soot_, "g/kg_fuel", "0 to 0.2" );
 
-    if ( sootRad_ < 1.0E-10  || sootRad_ > 1.0E-07 )
+    if ( sootRad_ < 1.0E-10 || sootRad_ > 1.0E-07 )
         reject( "sootRad", sootRad_ * 1.0E+09, "nm", "0.1 to 100" );
 
     if ( fuelFlow_ < 0.0E+00 )

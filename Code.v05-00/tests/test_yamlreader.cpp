@@ -307,6 +307,12 @@ TEST_CASE("Read Yaml File"){
         REQUIRE(input.ADV_GRID_XLIM_RIGHT == 1.0e+3);
         REQUIRE(input.ADV_GRID_YLIM_DOWN == 1.5e+3);
         REQUIRE(input.ADV_GRID_YLIM_UP == 300);
+        // Values differ from defaults/input.yaml, so a value that is not read fails here
+        REQUIRE(input.ADV_GRID_TARGET_PLUME_PTS == 60);
+        REQUIRE(input.ADV_GRID_MIN_DX == 25.0);
+        REQUIRE(input.ADV_GRID_MAX_DX == 55.0);
+        REQUIRE(input.ADV_GRID_MIN_DY == 4.0);
+        REQUIRE(input.ADV_GRID_MAX_DY == 8.0);
         REQUIRE(input.ADV_TROPOPAUSE_PRESSURE == 3.0e+4);
         REQUIRE(input.ADV_AERO_ICE_BIN_VRAT == 1.80);
         REQUIRE(input.ADV_AERO_ICE_BIN_R_LOW == 5.0e-08);
@@ -391,6 +397,7 @@ TEST_CASE("Reject input files naming an option that was removed for being unused
             YamlInputReader::mergeYamlInputFiles({filename}),
             Catch::Matchers::ContainsSubstring("Removed option found") &&
             Catch::Matchers::ContainsSubstring("SIMULATION MENU -> Use threaded FFT (T/F)") &&
+            Catch::Matchers::ContainsSubstring(YamlInputReader::UNUSED_OPTION_MESSAGE) &&
             Catch::Matchers::ContainsSubstring("test17.yaml") &&
             // Check that the message overrides the default "Unknow key found"
             !Catch::Matchers::ContainsSubstring("Unknown key found")
