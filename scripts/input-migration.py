@@ -387,9 +387,10 @@ def migrate(lines: list[Line]) -> list[str]:
                 pressure = None
             if pressure != TROPOPAUSE_OLD_HARDCODED_PA:
                 messages.append(
-                    f"WARNING: '{full_path}' is {value}. On main APCEMM ignored this value and "
+                    f"WARNING: '{full_path}' is {value}. On v1.2 APCEMM ignored this value and "
                     f"used {TROPOPAUSE_OLD_HARDCODED_PA:.1e} Pa. Now APCEMM uses the value. "
-                    f"Set it to {TROPOPAUSE_OLD_HARDCODED_PA:.1e} to keep the results of main."
+                    f"Set it to {TROPOPAUSE_OLD_HARDCODED_PA:.1e} to be consistent with v1.2."
+                    "Contrail simulation results should not be affected by the value anyway."
                 )
 
     convert_ice_growth_step(lines, messages)
