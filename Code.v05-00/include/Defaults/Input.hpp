@@ -8,7 +8,7 @@ SIMULATION MENU:
   Input background condition (string): =DEFAULT=
   Input engine emissions (string): =DEFAULT=
   RANDOM NUMBER GENERATION SUBMENU:
-    Force seed value (T/F): F
+    Force seed value (T/F): T
     Seed value (positive int): 0
   EPM type (original/external/new): original
   External EPM NetCDF file: =MISSING=
@@ -97,7 +97,7 @@ METEOROLOGY MENU:
   # The relative importance of grav. waves vs. turb. is increased by increasing the timescale
   # See Lewellen, Persistent Contrails and Contrail Cirrus (2014) for full details.
   TEMPERATURE PERTURBATION SUBMENU:
-    Enable Temp. Pert. (T/F): F
+    Enable Temp. Pert. (T/F): T
     Temp. Perturb. Amplitude (double): 1.0
 
 # The only thing that should be changed here is the save frequency
