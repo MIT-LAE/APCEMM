@@ -346,8 +346,8 @@ Engine::Engine(std::string engineName, std::string engineFileName,
   EI_HC *= cruise_correction;
 
   /** Computing engine Soot emission index **/
-  EI_Soot = 0.02;     /* [g/kg fuel] */
-  SootRad = 20.0E-09; /* [m] */
+  // EI_Soot = 0.02;     /* [g/kg fuel] */
+  // SootRad = 20.0E-09; /* [m] */
 
 } /* End of Engine::Engine */
 

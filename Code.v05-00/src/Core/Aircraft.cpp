@@ -53,16 +53,14 @@ Aircraft::Aircraft( const Input& input, const Meteorology& met, const OptInput& 
 void Aircraft::setEI_Soot(const double Soot)
 {
 
-    if ( Soot > 0.0E+00 )
-        engine_.setEI_Soot(Soot);
+    engine_.setEI_Soot(Soot);
 
 } /* End of Aircraft::setEI_Soot */
 
 void Aircraft::setSootRad(const double sootRad)
 {
 
-    if ( sootRad > 0.0E+00 )
-        engine_.setSootRad(sootRad);
+    engine_.setSootRad(sootRad);
 
 } /* End of Aircraft::setSootRad */
 
